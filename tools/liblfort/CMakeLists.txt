@@ -6,7 +6,6 @@ set(LLVM_LINK_COMPONENTS
   )
 
 set(SOURCES
-  ARCMigrate.cpp
   CIndex.cpp
   CIndexCXX.cpp
   CIndexCodeCompletion.cpp
@@ -43,7 +42,6 @@ set(SOURCES
   )
 
 set(LIBRARIES
-  lfortARCMigrate
   lfortRewriteCore
   lfortRewriteFrontend
   lfortFrontend

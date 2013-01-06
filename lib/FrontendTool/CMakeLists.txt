@@ -17,5 +17,4 @@ target_link_libraries(lfortFrontendTool
   lfortStaticAnalyzerFrontend
   lfortStaticAnalyzerCheckers
   lfortStaticAnalyzerCore
-  lfortARCMigrate
   )

@@ -13,10 +13,6 @@ LIBRARYNAME := lfortFrontendTool
 include $(LFORT_LEVEL)/Makefile
 include $(LFORT_LEVEL)/../../Makefile.config
 
-ifeq ($(ENABLE_LFORT_ARCMT),1)
-  CXX.Flags += -DLFORT_ENABLE_ARCMT
-endif
-
 ifeq ($(ENABLE_LFORT_REWRITER),1)
   CXX.Flags += -DLFORT_ENABLE_REWRITER
 endif

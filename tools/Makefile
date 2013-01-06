@@ -11,7 +11,7 @@ LFORT_LEVEL := ..
 
 include $(LFORT_LEVEL)/../../Makefile.config
 
-DIRS := driver liblfort c-index-test arcmt-test c-arcmt-test diagtool \
+DIRS := driver liblfort c-index-test diagtool \
         lfort-check
 
 # Recurse into the extra repository of tools if present.

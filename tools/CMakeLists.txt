@@ -1,7 +1,5 @@
 add_subdirectory(liblfort)
 add_subdirectory(c-index-test)
-add_subdirectory(arcmt-test)
-add_subdirectory(c-arcmt-test)
 add_subdirectory(diagtool)
 add_subdirectory(driver)
 add_subdirectory(lfort-check)

@@ -10,7 +10,7 @@ LFORT_LEVEL := ..
 
 # ARCMigrate and Rewrite are always needed because of liblfort.
 PARALLEL_DIRS = Headers Basic Lex Parse AST Sema CodeGen Analysis Frontend \
-                FrontendTool Tooling Driver Format Edit ARCMigrate Rewrite \
+                FrontendTool Tooling Driver Format Edit Rewrite \
                 Serialization
 
 include $(LFORT_LEVEL)/../../Makefile.config

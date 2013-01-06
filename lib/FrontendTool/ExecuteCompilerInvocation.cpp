@@ -13,7 +13,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "lfort/FrontendTool/Utils.h"
-#include "lfort/ARCMigrate/ARCMTActions.h"
 #include "lfort/CodeGen/CodeGenAction.h"
 #include "lfort/Driver/OptTable.h"
 #include "lfort/Driver/Option.h"

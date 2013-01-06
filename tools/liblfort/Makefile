@@ -17,7 +17,7 @@ SHARED_LIBRARY = 1
 
 include $(LFORT_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
-USEDLIBS = lfortARCMigrate.a lfortRewriteCore.a lfortRewriteFrontend.a \
+USEDLIBS = lfortRewriteCore.a lfortRewriteFrontend.a \
 	   lfortFrontend.a lfortDriver.a \
 	   lfortSerialization.a \
 	   lfortParse.a lfortSema.a lfortEdit.a lfortAnalysis.a \
