@@ -9,7 +9,7 @@
 LFORT_LEVEL := ../..
 
 TOOLNAME = lfort
-TOOLALIAS = lfort++
+TOOLALIAS = lfort77
 
 # We don't currently expect production LFort builds to be interested in
 # plugins. This is important for startup performance.

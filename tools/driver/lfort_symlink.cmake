@@ -18,9 +18,9 @@ endif()
 
 set(bindir "${LFORTXX_DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/")
 set(lfort "lfort${EXECUTABLE_SUFFIX}")
-set(lfortxx "lfort++${EXECUTABLE_SUFFIX}")
+set(lfortxx "lfort77${EXECUTABLE_SUFFIX}")
 
-message("Creating lfort++ executable based on ${lfort}")
+message("Creating lfort77 executable based on ${lfort}")
 
 execute_process(
   COMMAND "${CMAKE_COMMAND}" -E ${LFORTXX_LINK_OR_COPY} "${lfort}" "${lfortxx}"
