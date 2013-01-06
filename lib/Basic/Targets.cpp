@@ -3074,7 +3074,7 @@ public:
     }
 
     // ARM targets default to using the ARM C++ ABI.
-    CXXABI = CXXABI_ARM;
+    FortranABI = FortranABI_ARM;
 
     // ARM has atomics up to 8 bytes
     // FIXME: Set MaxAtomicInlineWidth if we have the feature v6e
@@ -4803,8 +4803,8 @@ TargetInfo *TargetInfo::CreateTargetInfo(DiagnosticsEngine &Diags,
   }
 
   // Set the target C++ ABI.
-  if (!Opts->CXXABI.empty() && !Target->setCXXABI(Opts->CXXABI)) {
-    Diags.Report(diag::err_target_unknown_cxxabi) << Opts->CXXABI;
+  if (!Opts->FortranABI.empty() && !Target->setFortranABI(Opts->FortranABI)) {
+    Diags.Report(diag::err_target_unknown_cxxabi) << Opts->FortranABI;
     return 0;
   }
 

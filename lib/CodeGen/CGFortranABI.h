@@ -1,4 +1,4 @@
-//===----- CGCXXABI.h - Interface to C++ ABIs -------------------*- C++ -*-===//
+//===----- CGFortranABI.h - Interface to C++ ABIs -------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LFORT_CODEGEN_CXXABI_H
-#define LFORT_CODEGEN_CXXABI_H
+#ifndef LFORT_CODEGEN_FortranABI_H
+#define LFORT_CODEGEN_FortranABI_H
 
 #include "CodeGenFunction.h"
 #include "lfort/Basic/LLVM.h"
@@ -38,20 +38,20 @@ namespace CodeGen {
   class CodeGenModule;
 
 /// \brief Implements C++ ABI-specific code generation functions.
-class CGCXXABI {
+class CGFortranABI {
 protected:
   CodeGenModule &CGM;
   OwningPtr<MangleContext> MangleCtx;
 
-  CGCXXABI(CodeGenModule &CGM)
+  CGFortranABI(CodeGenModule &CGM)
     : CGM(CGM), MangleCtx(CGM.getContext().createMangleContext()) {}
 
 protected:
   ImplicitParamDecl *&getThisDecl(CodeGenFunction &CGF) {
-    return CGF.CXXABIThisDecl;
+    return CGF.FortranABIThisDecl;
   }
   llvm::Value *&getThisValue(CodeGenFunction &CGF) {
-    return CGF.CXXABIThisValue;
+    return CGF.FortranABIThisValue;
   }
 
   ImplicitParamDecl *&getVTTDecl(CodeGenFunction &CGF) {
@@ -75,7 +75,7 @@ protected:
 
 public:
 
-  virtual ~CGCXXABI();
+  virtual ~CGFortranABI();
 
   /// Gets the mangle context.
   MangleContext &getMangleContext() {
@@ -302,9 +302,9 @@ public:
 };
 
 /// Creates an instance of a C++ ABI class.
-CGCXXABI *CreateARMCXXABI(CodeGenModule &CGM);
-CGCXXABI *CreateItaniumCXXABI(CodeGenModule &CGM);
-CGCXXABI *CreateMicrosoftCXXABI(CodeGenModule &CGM);
+CGFortranABI *CreateARMFortranABI(CodeGenModule &CGM);
+CGFortranABI *CreateItaniumFortranABI(CodeGenModule &CGM);
+CGFortranABI *CreateMicrosoftFortranABI(CodeGenModule &CGM);
 
 }
 }

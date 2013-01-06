@@ -76,7 +76,7 @@ ASTRecordLayout::ASTRecordLayout(const ASTContext &Ctx,
     if (const CXXRecordDecl *PrimaryBase = getPrimaryBase()) {
       if (isPrimaryBaseVirtual()) {
         // Microsoft ABI doesn't have primary virtual base
-        if (Ctx.getTargetInfo().getCXXABI() != CXXABI_Microsoft) {
+        if (Ctx.getTargetInfo().getFortranABI() != FortranABI_Microsoft) {
         assert(getVBaseClassOffset(PrimaryBase).isZero() &&
                "Primary virtual base must be at offset 0!");
         }

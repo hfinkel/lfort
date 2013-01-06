@@ -1,4 +1,4 @@
-//===------- ItaniumCXXABI.cpp - Emit LLVM Code from ASTs for a Module ----===//
+//===------- ItaniumFortranABI.cpp - Emit LLVM Code from ASTs for a Module ----===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -18,7 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGRecordLayout.h"
 #include "CGVTables.h"
 #include "CodeGenFunction.h"
@@ -33,7 +33,7 @@ using namespace lfort;
 using namespace CodeGen;
 
 namespace {
-class ItaniumCXXABI : public CodeGen::CGCXXABI {
+class ItaniumFortranABI : public CodeGen::CGFortranABI {
 private:
   llvm::IntegerType *PtrDiffTy;
 protected:
@@ -50,8 +50,8 @@ protected:
   }
 
 public:
-  ItaniumCXXABI(CodeGen::CodeGenModule &CGM, bool IsARM = false) :
-    CGCXXABI(CGM), PtrDiffTy(0), IsARM(IsARM) { }
+  ItaniumFortranABI(CodeGen::CodeGenModule &CGM, bool IsARM = false) :
+    CGFortranABI(CGM), PtrDiffTy(0), IsARM(IsARM) { }
 
   bool isZeroInitializable(const MemberPointerType *MPT);
 
@@ -133,9 +133,9 @@ public:
   void EmitVTables(const CXXRecordDecl *Class);
 };
 
-class ARMCXXABI : public ItaniumCXXABI {
+class ARMFortranABI : public ItaniumFortranABI {
 public:
-  ARMCXXABI(CodeGen::CodeGenModule &CGM) : ItaniumCXXABI(CGM, /*ARM*/ true) {}
+  ARMFortranABI(CodeGen::CodeGenModule &CGM) : ItaniumFortranABI(CGM, /*ARM*/ true) {}
 
   void BuildConstructorSignature(const CXXConstructorDecl *Ctor,
                                  CXXCtorType T,
@@ -175,16 +175,16 @@ private:
 };
 }
 
-CodeGen::CGCXXABI *CodeGen::CreateItaniumCXXABI(CodeGenModule &CGM) {
-  return new ItaniumCXXABI(CGM);
+CodeGen::CGFortranABI *CodeGen::CreateItaniumFortranABI(CodeGenModule &CGM) {
+  return new ItaniumFortranABI(CGM);
 }
 
-CodeGen::CGCXXABI *CodeGen::CreateARMCXXABI(CodeGenModule &CGM) {
-  return new ARMCXXABI(CGM);
+CodeGen::CGFortranABI *CodeGen::CreateARMFortranABI(CodeGenModule &CGM) {
+  return new ARMFortranABI(CGM);
 }
 
 llvm::Type *
-ItaniumCXXABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
+ItaniumFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   if (MPT->isMemberDataPointer())
     return getPtrDiffTy();
   return llvm::StructType::get(getPtrDiffTy(), getPtrDiffTy(), NULL);
@@ -211,7 +211,7 @@ ItaniumCXXABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
 /// If the member is non-virtual, memptr.ptr is the address of
 /// the function to call.
 llvm::Value *
-ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
                                                llvm::Value *&This,
                                                llvm::Value *MemFnPtr,
                                                const MemberPointerType *MPT) {
@@ -296,7 +296,7 @@ ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
 
 /// Compute an l-value by applying the given pointer-to-member to a
 /// base object.
-llvm::Value *ItaniumCXXABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
                                                          llvm::Value *Base,
                                                          llvm::Value *MemPtr,
                                            const MemberPointerType *MPT) {
@@ -343,7 +343,7 @@ llvm::Value *ItaniumCXXABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
 /// This is why -1 is a reasonable choice for null data member
 /// pointers.
 llvm::Value *
-ItaniumCXXABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
                                            const CastExpr *E,
                                            llvm::Value *src) {
   assert(E->getCastKind() == CK_DerivedToBaseMemberPointer ||
@@ -399,7 +399,7 @@ ItaniumCXXABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
 }
 
 llvm::Constant *
-ItaniumCXXABI::EmitMemberPointerConversion(const CastExpr *E,
+ItaniumFortranABI::EmitMemberPointerConversion(const CastExpr *E,
                                            llvm::Constant *src) {
   assert(E->getCastKind() == CK_DerivedToBaseMemberPointer ||
          E->getCastKind() == CK_BaseToDerivedMemberPointer ||
@@ -447,7 +447,7 @@ ItaniumCXXABI::EmitMemberPointerConversion(const CastExpr *E,
 }
 
 llvm::Constant *
-ItaniumCXXABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
+ItaniumFortranABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
   llvm::Type *ptrdiff_t = getPtrDiffTy();
 
   // Itanium C++ ABI 2.3:
@@ -461,7 +461,7 @@ ItaniumCXXABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
 }
 
 llvm::Constant *
-ItaniumCXXABI::EmitMemberDataPointer(const MemberPointerType *MPT,
+ItaniumFortranABI::EmitMemberDataPointer(const MemberPointerType *MPT,
                                      CharUnits offset) {
   // Itanium C++ ABI 2.3:
   //   A pointer to data member is an offset from the base address of
@@ -469,11 +469,11 @@ ItaniumCXXABI::EmitMemberDataPointer(const MemberPointerType *MPT,
   return llvm::ConstantInt::get(getPtrDiffTy(), offset.getQuantity());
 }
 
-llvm::Constant *ItaniumCXXABI::EmitMemberPointer(const CXXMethodDecl *MD) {
+llvm::Constant *ItaniumFortranABI::EmitMemberPointer(const CXXMethodDecl *MD) {
   return BuildMemberPointer(MD, CharUnits::Zero());
 }
 
-llvm::Constant *ItaniumCXXABI::BuildMemberPointer(const CXXMethodDecl *MD,
+llvm::Constant *ItaniumFortranABI::BuildMemberPointer(const CXXMethodDecl *MD,
                                                   CharUnits ThisAdjustment) {
   assert(MD->isInstance() && "Member function must not be static!");
   MD = MD->getCanonicalDecl();
@@ -532,7 +532,7 @@ llvm::Constant *ItaniumCXXABI::BuildMemberPointer(const CXXMethodDecl *MD,
   return llvm::ConstantStruct::getAnon(MemPtr);
 }
 
-llvm::Constant *ItaniumCXXABI::EmitMemberPointer(const APValue &MP,
+llvm::Constant *ItaniumFortranABI::EmitMemberPointer(const APValue &MP,
                                                  QualType MPType) {
   const MemberPointerType *MPT = MPType->castAs<MemberPointerType>();
   const ValueDecl *MPD = MP.getMemberPointerDecl();
@@ -569,7 +569,7 @@ llvm::Constant *ItaniumCXXABI::EmitMemberPointer(const APValue &MP,
 ///
 /// ARM is different here only because null-ness is more complicated.
 llvm::Value *
-ItaniumCXXABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
                                            llvm::Value *L,
                                            llvm::Value *R,
                                            const MemberPointerType *MPT,
@@ -643,7 +643,7 @@ ItaniumCXXABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
 }
 
 llvm::Value *
-ItaniumCXXABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
                                           llvm::Value *MemPtr,
                                           const MemberPointerType *MPT) {
   CGBuilderTy &Builder = CGF.Builder;
@@ -678,13 +678,13 @@ ItaniumCXXABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
 
 /// The Itanium ABI requires non-zero initialization only for data
 /// member pointers, for which '0' is a valid offset.
-bool ItaniumCXXABI::isZeroInitializable(const MemberPointerType *MPT) {
+bool ItaniumFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
   return MPT->getPointeeType()->isFunctionType();
 }
 
 /// The Itanium ABI always places an offset to the complete object
 /// at entry -2 in the vtable.
-llvm::Value *ItaniumCXXABI::adjustToCompleteObject(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::adjustToCompleteObject(CodeGenFunction &CGF,
                                                    llvm::Value *ptr,
                                                    QualType type) {
   // Grab the vtable pointer as an intptr_t*.
@@ -703,7 +703,7 @@ llvm::Value *ItaniumCXXABI::adjustToCompleteObject(CodeGenFunction &CGF,
 
 /// The generic ABI passes 'this', plus a VTT if it's initializing a
 /// base subobject.
-void ItaniumCXXABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
+void ItaniumFortranABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
                                               CXXCtorType Type,
                                               CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys) {
@@ -717,17 +717,17 @@ void ItaniumCXXABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
 }
 
 /// The ARM ABI does the same as the Itanium ABI, but returns 'this'.
-void ARMCXXABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
+void ARMFortranABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
                                           CXXCtorType Type,
                                           CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys) {
-  ItaniumCXXABI::BuildConstructorSignature(Ctor, Type, ResTy, ArgTys);
+  ItaniumFortranABI::BuildConstructorSignature(Ctor, Type, ResTy, ArgTys);
   ResTy = ArgTys[0];
 }
 
 /// The generic ABI passes 'this', plus a VTT if it's destroying a
 /// base subobject.
-void ItaniumCXXABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
+void ItaniumFortranABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
                                              CXXDtorType Type,
                                              CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys) {
@@ -742,17 +742,17 @@ void ItaniumCXXABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
 
 /// The ARM ABI does the same as the Itanium ABI, but returns 'this'
 /// for non-deleting destructors.
-void ARMCXXABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
+void ARMFortranABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
                                          CXXDtorType Type,
                                          CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys) {
-  ItaniumCXXABI::BuildDestructorSignature(Dtor, Type, ResTy, ArgTys);
+  ItaniumFortranABI::BuildDestructorSignature(Dtor, Type, ResTy, ArgTys);
 
   if (Type != Dtor_Deleting)
     ResTy = ArgTys[0];
 }
 
-void ItaniumCXXABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
                                                 QualType &ResTy,
                                                 FunctionArgList &Params) {
   /// Create the 'this' variable.
@@ -775,17 +775,17 @@ void ItaniumCXXABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
   }
 }
 
-void ARMCXXABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void ARMFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
                                             QualType &ResTy,
                                             FunctionArgList &Params) {
-  ItaniumCXXABI::BuildInstanceFunctionParams(CGF, ResTy, Params);
+  ItaniumFortranABI::BuildInstanceFunctionParams(CGF, ResTy, Params);
 
   // Return 'this' from certain constructors and destructors.
   if (HasThisReturn(CGF.CurGD))
     ResTy = Params[0]->getType();
 }
 
-void ItaniumCXXABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
   /// Initialize the 'this' slot.
   EmitThisParam(CGF);
 
@@ -797,8 +797,8 @@ void ItaniumCXXABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
   }
 }
 
-void ARMCXXABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
-  ItaniumCXXABI::EmitInstanceFunctionProlog(CGF);
+void ARMFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+  ItaniumFortranABI::EmitInstanceFunctionProlog(CGF);
 
   /// Initialize the return slot to 'this' at the start of the
   /// function.
@@ -806,28 +806,28 @@ void ARMCXXABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
     CGF.Builder.CreateStore(getThisValue(CGF), CGF.ReturnValue);
 }
 
-void ARMCXXABI::EmitReturnFromThunk(CodeGenFunction &CGF,
+void ARMFortranABI::EmitReturnFromThunk(CodeGenFunction &CGF,
                                     RValue RV, QualType ResultType) {
   if (!isa<CXXDestructorDecl>(CGF.CurGD.getDecl()))
-    return ItaniumCXXABI::EmitReturnFromThunk(CGF, RV, ResultType);
+    return ItaniumFortranABI::EmitReturnFromThunk(CGF, RV, ResultType);
 
   // Destructor thunks in the ARM ABI have indeterminate results.
   llvm::Type *T =
     cast<llvm::PointerType>(CGF.ReturnValue->getType())->getElementType();
   RValue Undef = RValue::get(llvm::UndefValue::get(T));
-  return ItaniumCXXABI::EmitReturnFromThunk(CGF, Undef, ResultType);
+  return ItaniumFortranABI::EmitReturnFromThunk(CGF, Undef, ResultType);
 }
 
 /************************** Array allocation cookies **************************/
 
-CharUnits ItaniumCXXABI::getArrayCookieSizeImpl(QualType elementType) {
+CharUnits ItaniumFortranABI::getArrayCookieSizeImpl(QualType elementType) {
   // The array cookie is a size_t; pad that up to the element alignment.
   // The cookie is actually right-justified in that space.
   return std::max(CharUnits::fromQuantity(CGM.SizeSizeInBytes),
                   CGM.getContext().getTypeAlignInChars(elementType));
 }
 
-llvm::Value *ItaniumCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                   llvm::Value *NewPtr,
                                                   llvm::Value *NumElements,
                                                   const CXXNewExpr *expr,
@@ -864,7 +864,7 @@ llvm::Value *ItaniumCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 CookieSize.getQuantity());  
 }
 
-llvm::Value *ItaniumCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
                                                 llvm::Value *allocPtr,
                                                 CharUnits cookieSize) {
   // The element size is right-justified in the cookie.
@@ -882,7 +882,7 @@ llvm::Value *ItaniumCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
   return CGF.Builder.CreateLoad(numElementsPtr);
 }
 
-CharUnits ARMCXXABI::getArrayCookieSizeImpl(QualType elementType) {
+CharUnits ARMFortranABI::getArrayCookieSizeImpl(QualType elementType) {
   // On ARM, the cookie is always:
   //   struct array_cookie {
   //     std::size_t element_size; // element_size != 0
@@ -893,7 +893,7 @@ CharUnits ARMCXXABI::getArrayCookieSizeImpl(QualType elementType) {
   return CharUnits::fromQuantity(2 * CGM.SizeSizeInBytes);
 }
 
-llvm::Value *ARMCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *ARMFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                               llvm::Value *NewPtr,
                                               llvm::Value *NumElements,
                                               const CXXNewExpr *expr,
@@ -929,7 +929,7 @@ llvm::Value *ARMCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 CookieSize.getQuantity());
 }
 
-llvm::Value *ARMCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *ARMFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
                                             llvm::Value *allocPtr,
                                             CharUnits cookieSize) {
   // The number of elements is at offset sizeof(size_t) relative to
@@ -990,7 +990,7 @@ namespace {
 
 /// The ARM code here follows the Itanium code closely enough that we
 /// just special-case it at particular places.
-void ItaniumCXXABI::EmitGuardedInit(CodeGenFunction &CGF,
+void ItaniumFortranABI::EmitGuardedInit(CodeGenFunction &CGF,
                                     const VarDecl &D,
                                     llvm::GlobalVariable *var,
                                     bool shouldPerformInit) {
@@ -1163,7 +1163,7 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
 }
 
 /// Register a global destructor as best as we know how.
-void ItaniumCXXABI::registerGlobalDtor(CodeGenFunction &CGF,
+void ItaniumFortranABI::registerGlobalDtor(CodeGenFunction &CGF,
                                        llvm::Constant *dtor,
                                        llvm::Constant *addr) {
   // Use __cxa_atexit if available.
@@ -1182,6 +1182,6 @@ void ItaniumCXXABI::registerGlobalDtor(CodeGenFunction &CGF,
 }
 
 /// Generate and emit virtual tables for the given class.
-void ItaniumCXXABI::EmitVTables(const CXXRecordDecl *Class) {
+void ItaniumFortranABI::EmitVTables(const CXXRecordDecl *Class) {
   CGM.getVTables().GenerateClassData(CGM.getVTableLinkage(Class), Class);
 }

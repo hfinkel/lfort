@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenModule.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGObjCRuntime.h"
 #include "lfort/AST/RecordLayout.h"
 #include "lfort/AST/Type.h"
@@ -114,7 +114,7 @@ RTTIBuilder::GetAddrOfTypeName(QualType Ty,
                                llvm::GlobalVariable::LinkageTypes Linkage) {
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXRTTIName(Ty, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXRTTIName(Ty, Out);
   Out.flush();
   StringRef Name = OutName.str();
 
@@ -136,7 +136,7 @@ llvm::Constant *RTTIBuilder::GetAddrOfExternalRTTIDescriptor(QualType Ty) {
   // Mangle the RTTI name.
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXRTTI(Ty, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXRTTI(Ty, Out);
   Out.flush();
   StringRef Name = OutName.str();
 
@@ -539,7 +539,7 @@ maybeUpdateRTTILinkage(CodeGenModule &CGM, llvm::GlobalVariable *GV,
   // Get the typename global.
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXRTTIName(Ty, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXRTTIName(Ty, Out);
   Out.flush();
   StringRef Name = OutName.str();
 
@@ -559,7 +559,7 @@ llvm::Constant *RTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
   // Check if we've already emitted an RTTI descriptor for this type.
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXRTTI(Ty, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXRTTI(Ty, Out);
   Out.flush();
   StringRef Name = OutName.str();
 

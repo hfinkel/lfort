@@ -882,7 +882,7 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args) {
   for (arg_iterator it = Args.filtered_begin(OPT_c_isystem),
        ie = Args.filtered_end(); it != ie; ++it)
     Opts.AddPath((*it)->getValue(), frontend::CSystem, true, false, true);
-  for (arg_iterator it = Args.filtered_begin(OPT_cxx_isystem),
+  for (arg_iterator it = Args.filtered_begin(OPT_fortran_isystem),
        ie = Args.filtered_end(); it != ie; ++it)
     Opts.AddPath((*it)->getValue(), frontend::CXXSystem, true, false, true);
   for (arg_iterator it = Args.filtered_begin(OPT_objc_isystem),
@@ -1416,7 +1416,7 @@ static void ParsePreprocessorOutputArgs(PreprocessorOutputOptions &Opts,
 static void ParseTargetArgs(TargetOptions &Opts, ArgList &Args) {
   using namespace options;
   Opts.ABI = Args.getLastArgValue(OPT_target_abi);
-  Opts.CXXABI = Args.getLastArgValue(OPT_cxx_abi);
+  Opts.FortranABI = Args.getLastArgValue(OPT_fortran_abi);
   Opts.CPU = Args.getLastArgValue(OPT_target_cpu);
   Opts.FeaturesAsWritten = Args.getAllArgValues(OPT_target_feature);
   Opts.LinkerVersion = Args.getLastArgValue(OPT_target_linker_version);
@@ -1566,7 +1566,7 @@ std::string CompilerInvocation::getModuleHash() const {
   
   // Extend the signature with the target options.
   code = hash_combine(code, TargetOpts->Triple, TargetOpts->CPU,
-                      TargetOpts->ABI, TargetOpts->CXXABI,
+                      TargetOpts->ABI, TargetOpts->FortranABI,
                       TargetOpts->LinkerVersion);
   for (unsigned i = 0, n = TargetOpts->FeaturesAsWritten.size(); i != n; ++i)
     code = hash_combine(code, TargetOpts->FeaturesAsWritten[i]);

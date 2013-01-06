@@ -17,8 +17,8 @@ let Flags = [CC1Option, NoDriverOption] in {
 // Target Options
 //===----------------------------------------------------------------------===//
 
-def cxx_abi : Separate<["-"], "cxx-abi">,
-  HelpText<"Target a particular C++ ABI type">;
+def fortran_abi : Separate<["-"], "fortran-abi">,
+  HelpText<"Target a particular Fortran ABI type">;
 def target_abi : Separate<["-"], "target-abi">,
   HelpText<"Target a particular ABI type">;
 def target_cpu : Separate<["-"], "target-cpu">,
@@ -38,7 +38,7 @@ def triple_EQ : Joined<["-"], "triple=">, Alias<triple>;
 def analysis_UnoptimizedCFG : Flag<["-"], "unoptimized-cfg">,
   HelpText<"Generate unoptimized CFGs for all analyses">;
 def analysis_CFGAddImplicitDtors : Flag<["-"], "cfg-add-implicit-dtors">,
-  HelpText<"Add C++ implicit destructors to CFGs for all analyses">;
+  HelpText<"Add Fortran implicit destructors to CFGs for all analyses">;
 
 def analyzer_store : Separate<["-"], "analyzer-store">,
   HelpText<"Source Code Analysis - Abstract Memory Store Models">;
@@ -146,7 +146,7 @@ def dwarf_debug_flags : Separate<["-"], "dwarf-debug-flags">,
 def dwarf_column_info : Flag<["-"], "dwarf-column-info">,
   HelpText<"Turn on column location information.">;
 def fforbid_guard_variables : Flag<["-"], "fforbid-guard-variables">,
-  HelpText<"Emit an error if a C++ static local initializer would need a guard variable">;
+  HelpText<"Emit an error if a Fortran static local initializer would need a guard variable">;
 def no_implicit_float : Flag<["-"], "no-implicit-float">,
   HelpText<"Don't generate implicit floating point instructions">;
 def fdump_vtable_layouts : Flag<["-"], "fdump-vtable-layouts">,

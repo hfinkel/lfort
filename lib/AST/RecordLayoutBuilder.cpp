@@ -676,8 +676,8 @@ protected:
                           bool FieldPacked, const FieldDecl *D);
   void LayoutBitField(const FieldDecl *D);
 
-  bool isMicrosoftCXXABI() const {
-    return Context.getTargetInfo().getCXXABI() == CXXABI_Microsoft;
+  bool isMicrosoftFortranABI() const {
+    return Context.getTargetInfo().getFortranABI() == FortranABI_Microsoft;
   }
 
   void MSLayoutVirtualBases(const CXXRecordDecl *RD);
@@ -858,7 +858,7 @@ void RecordLayoutBuilder::DeterminePrimaryBase(const CXXRecordDecl *RD) {
   }
 
   // The Microsoft ABI doesn't have primary virtual bases.
-  if (isMicrosoftCXXABI()) {
+  if (isMicrosoftFortranABI()) {
     assert(!PrimaryBase && "Should not get here with a primary base!");
     return;
   }
@@ -1089,7 +1089,7 @@ RecordLayoutBuilder::LayoutNonVirtualBases(const CXXRecordDecl *RD) {
   // In the MS ABI, add the vb-table pointer if we need one, which is
   // whenever we have a virtual base and we can't re-use a vb-table
   // pointer from a non-virtual base.
-  if (isMicrosoftCXXABI() &&
+  if (isMicrosoftFortranABI() &&
       HasDirectVirtualBases && !HasNonVirtualBaseWithVBTable) {
     CharUnits PtrWidth = 
       Context.toCharUnitsFromBits(Context.getTargetInfo().getPointerWidth(0));
@@ -1176,7 +1176,7 @@ bool RecordLayoutBuilder::needsVFTable(const CXXRecordDecl *RD) const {
   // this class has no virtual functions as a base class (i.e. it's
   // non-polymorphic or only has virtual functions from virtual
   // bases),x it still needs a vtable to locate its virtual bases.
-  if (!isMicrosoftCXXABI())
+  if (!isMicrosoftFortranABI())
     return RD->isDynamicClass();
 
   // In the MS ABI, we need a vfptr if the class has virtual functions
@@ -1379,7 +1379,7 @@ bool
 RecordLayoutBuilder::isPossiblePrimaryBase(const CXXRecordDecl *base) const {
   // In the Itanium ABI, a class can be a primary base class if it has
   // a vtable for any reason.
-  if (!isMicrosoftCXXABI())
+  if (!isMicrosoftFortranABI())
     return base->isDynamicClass();
 
   // In the MS ABI, a class can only be a primary base class if it
@@ -1499,7 +1499,7 @@ void RecordLayoutBuilder::LayoutVirtualBase(const BaseSubobjectInfo *Base,
   VBases.insert(std::make_pair(Base->Class, 
                        ASTRecordLayout::VBaseInfo(Offset, IsVtordispNeed)));
 
-  if (!isMicrosoftCXXABI())
+  if (!isMicrosoftFortranABI())
     AddPrimaryVirtualBaseOffsets(Base, Offset);
 }
 
@@ -1653,7 +1653,7 @@ void RecordLayoutBuilder::Layout(const CXXRecordDecl *RD) {
                                  Context.getTargetInfo().getCharAlign()));
   NonVirtualAlignment = Alignment;
 
-  if (isMicrosoftCXXABI()) {
+  if (isMicrosoftFortranABI()) {
     if (NonVirtualSize != NonVirtualSize.RoundUpToAlignment(Alignment)) {
     CharUnits AlignMember = 
       NonVirtualSize.RoundUpToAlignment(Alignment) - NonVirtualSize;
@@ -2210,7 +2210,7 @@ void RecordLayoutBuilder::FinishLayout(const NamedDecl *D) {
 
   // MSVC doesn't round up to the alignment of the record with virtual bases.
   if (const CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(D)) {
-    if (isMicrosoftCXXABI() && RD->getNumVBases())
+    if (isMicrosoftFortranABI() && RD->getNumVBases())
       return;
   }
 
@@ -2448,7 +2448,7 @@ ASTContext::getASTRecordLayout(const RecordDecl *D) const {
     // FIXME: IsPODForThePurposeOfLayout should be stored in the record layout.
     // This does not affect the calculations of MSVC layouts
     bool IsPODForThePurposeOfLayout = 
-      (!Builder.isMicrosoftCXXABI() && cast<CXXRecordDecl>(D)->isPOD());
+      (!Builder.isMicrosoftFortranABI() && cast<CXXRecordDecl>(D)->isPOD());
 
     // FIXME: This should be done in FinalizeLayout.
     CharUnits DataSize =
@@ -2606,7 +2606,7 @@ static void DumpCXXRecordLayout(raw_ostream &OS,
 
   // Vtable pointer.
   if (RD->isDynamicClass() && !PrimaryBase &&
-      C.getTargetInfo().getCXXABI() != CXXABI_Microsoft) {
+      C.getTargetInfo().getFortranABI() != FortranABI_Microsoft) {
     PrintOffset(OS, Offset, IndentLevel);
     OS << '(' << *RD << " vtable pointer)\n";
   }

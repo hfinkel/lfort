@@ -34,9 +34,8 @@ class ToolChain {
 public:
   typedef SmallVector<std::string, 4> path_list;
 
-  enum CXXStdlibType {
-    CST_Libcxx,
-    CST_Libstdcxx
+  enum FortRTLibType {
+    CST_Libfortrt
   };
 
   enum RuntimeLibType {
@@ -241,18 +240,18 @@ public:
   // given compilation arguments.
   virtual RuntimeLibType GetRuntimeLibType(const ArgList &Args) const;
 
-  // GetCXXStdlibType - Determine the C++ standard library type to use with the
+  // GetFortRTLibType - Determine the Fortran standard library type to use with the
   // given compilation arguments.
-  virtual CXXStdlibType GetCXXStdlibType(const ArgList &Args) const;
+  virtual FortRTLibType GetFortRTLibType(const ArgList &Args) const;
 
-  /// AddLFortCXXStdlibIncludeArgs - Add the lfort -cc1 level arguments to set
-  /// the include paths to use for the given C++ standard library type.
-  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  /// AddLFortFortranStdlibIncludeArgs - Add the lfort -cc1 level arguments to set
+  /// the include paths to use for the given Fortran standard library type.
+  virtual void AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
-  /// AddCXXStdlibLibArgs - Add the system specific linker arguments to use
-  /// for the given C++ standard library type.
-  virtual void AddCXXStdlibLibArgs(const ArgList &Args,
+  /// AddFortRTLibArgs - Add the system specific linker arguments to use
+  /// for the given Fortran standard library type.
+  virtual void AddFortRTLibArgs(const ArgList &Args,
                                    ArgStringList &CmdArgs) const;
 
   /// AddCCKextLibArgs - Add the system specific linker arguments to use

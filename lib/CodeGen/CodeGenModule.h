@@ -72,7 +72,7 @@ namespace CodeGen {
   class CallArgList;
   class CodeGenFunction;
   class CodeGenTBAA;
-  class CGCXXABI;
+  class CGFortranABI;
   class CGDebugInfo;
   class CGObjCRuntime;
   class CGOpenCLRuntime;
@@ -222,7 +222,7 @@ class CodeGenModule : public CodeGenTypeCache {
   const llvm::DataLayout &TheDataLayout;
   mutable const TargetCodeGenInfo *TheTargetCodeGenInfo;
   DiagnosticsEngine &Diags;
-  CGCXXABI &ABI;
+  CGFortranABI &ABI;
   CodeGenTypes Types;
   CodeGenTBAA *TBAA;
 
@@ -395,8 +395,8 @@ public:
     return *CUDARuntime;
   }
 
-  /// getCXXABI() - Return a reference to the configured C++ ABI.
-  CGCXXABI &getCXXABI() { return ABI; }
+  /// getFortranABI() - Return a reference to the configured C++ ABI.
+  CGFortranABI &getFortranABI() { return ABI; }
 
   ARCEntrypoints &getARCEntrypoints() const {
     assert(getLangOpts().ObjCAutoRefCount && ARCData != 0);

@@ -14,7 +14,7 @@
 
 #include "CGCall.h"
 #include "ABIInfo.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
@@ -202,7 +202,7 @@ CodeGenTypes::arrangeCXXConstructorDeclaration(const CXXConstructorDecl *D,
   argTypes.push_back(GetThisType(Context, D->getParent()));
   CanQualType resultType = Context.VoidTy;
 
-  TheCXXABI.BuildConstructorSignature(D, ctorKind, resultType, argTypes);
+  TheFortranABI.BuildConstructorSignature(D, ctorKind, resultType, argTypes);
 
   CanQual<FunctionProtoType> FTP = GetFormalType(D);
 
@@ -227,7 +227,7 @@ CodeGenTypes::arrangeCXXDestructor(const CXXDestructorDecl *D,
   argTypes.push_back(GetThisType(Context, D->getParent()));
   CanQualType resultType = Context.VoidTy;
 
-  TheCXXABI.BuildDestructorSignature(D, dtorKind, resultType, argTypes);
+  TheFortranABI.BuildDestructorSignature(D, dtorKind, resultType, argTypes);
 
   CanQual<FunctionProtoType> FTP = GetFormalType(D);
   assert(FTP->getNumArgs() == 0 && "dtor with formal parameters");

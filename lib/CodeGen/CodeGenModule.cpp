@@ -13,7 +13,7 @@
 
 #include "CodeGenModule.h"
 #include "CGCUDARuntime.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGCall.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
@@ -50,11 +50,11 @@ using namespace CodeGen;
 
 static const char AnnotationSection[] = "llvm.metadata";
 
-static CGCXXABI &createCXXABI(CodeGenModule &CGM) {
-  switch (CGM.getContext().getTargetInfo().getCXXABI()) {
-  case CXXABI_ARM: return *CreateARMCXXABI(CGM);
-  case CXXABI_Itanium: return *CreateItaniumCXXABI(CGM);
-  case CXXABI_Microsoft: return *CreateMicrosoftCXXABI(CGM);
+static CGFortranABI &createFortranABI(CodeGenModule &CGM) {
+  switch (CGM.getContext().getTargetInfo().getFortranABI()) {
+  case FortranABI_ARM: return *CreateARMFortranABI(CGM);
+  case FortranABI_Itanium: return *CreateItaniumFortranABI(CGM);
+  case FortranABI_Microsoft: return *CreateMicrosoftFortranABI(CGM);
   }
 
   llvm_unreachable("invalid C++ ABI kind");
@@ -66,7 +66,7 @@ CodeGenModule::CodeGenModule(ASTContext &C, const CodeGenOptions &CGO,
                              DiagnosticsEngine &diags)
   : Context(C), LangOpts(C.getLangOpts()), CodeGenOpts(CGO), TheModule(M),
     TheDataLayout(TD), TheTargetCodeGenInfo(0), Diags(diags),
-    ABI(createCXXABI(*this)), 
+    ABI(createFortranABI(*this)), 
     Types(*this),
     TBAA(0),
     VTables(*this), ObjCRuntime(0), OpenCLRuntime(0), CUDARuntime(0),
@@ -376,7 +376,7 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
   if (!Str.empty())
     return Str;
 
-  if (!getCXXABI().getMangleContext().shouldMangleDeclName(ND)) {
+  if (!getFortranABI().getMangleContext().shouldMangleDeclName(ND)) {
     IdentifierInfo *II = ND->getIdentifier();
     assert(II && "Attempt to mangle unnamed decl.");
 
@@ -387,14 +387,14 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
   SmallString<256> Buffer;
   llvm::raw_svector_ostream Out(Buffer);
   if (const CXXConstructorDecl *D = dyn_cast<CXXConstructorDecl>(ND))
-    getCXXABI().getMangleContext().mangleCXXCtor(D, GD.getCtorType(), Out);
+    getFortranABI().getMangleContext().mangleCXXCtor(D, GD.getCtorType(), Out);
   else if (const CXXDestructorDecl *D = dyn_cast<CXXDestructorDecl>(ND))
-    getCXXABI().getMangleContext().mangleCXXDtor(D, GD.getDtorType(), Out);
+    getFortranABI().getMangleContext().mangleCXXDtor(D, GD.getDtorType(), Out);
   else if (const BlockDecl *BD = dyn_cast<BlockDecl>(ND))
-    getCXXABI().getMangleContext().mangleBlock(BD, Out,
+    getFortranABI().getMangleContext().mangleBlock(BD, Out,
       dyn_cast_or_null<VarDecl>(initializedGlobalDecl.getDecl()));
   else
-    getCXXABI().getMangleContext().mangleName(ND, Out);
+    getFortranABI().getMangleContext().mangleName(ND, Out);
 
   // Allocate space for the mangled name.
   Out.flush();
@@ -409,7 +409,7 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
 
 void CodeGenModule::getBlockMangledName(GlobalDecl GD, MangleBuffer &Buffer,
                                         const BlockDecl *BD) {
-  MangleContext &MangleCtx = getCXXABI().getMangleContext();
+  MangleContext &MangleCtx = getFortranABI().getMangleContext();
   const Decl *D = GD.getDecl();
   llvm::raw_svector_ostream Out(Buffer.getBuffer());
   if (D == 0)
@@ -723,7 +723,7 @@ void CodeGenModule::EmitDeferred() {
     if (!DeferredVTables.empty()) {
       const CXXRecordDecl *RD = DeferredVTables.back();
       DeferredVTables.pop_back();
-      getCXXABI().EmitVTables(RD);
+      getFortranABI().EmitVTables(RD);
       continue;
     }
 
@@ -1028,7 +1028,7 @@ namespace {
 bool
 CodeGenModule::isTriviallyRecursive(const FunctionDecl *FD) {
   StringRef Name;
-  if (getCXXABI().getMangleContext().shouldMangleDeclName(FD)) {
+  if (getFortranABI().getMangleContext().shouldMangleDeclName(FD)) {
     // asm labels are a special kind of mangling we have to support.
     AsmLabelAttr *Attr = FD->getAttr<AsmLabelAttr>();
     if (!Attr)
@@ -1406,7 +1406,7 @@ void CodeGenModule::EmitTentativeDefinition(const VarDecl *D) {
 
 void CodeGenModule::EmitVTable(CXXRecordDecl *Class, bool DefinitionRequired) {
   if (DefinitionRequired)
-    getCXXABI().EmitVTables(Class);
+    getFortranABI().EmitVTables(Class);
 }
 
 llvm::GlobalVariable::LinkageTypes 

@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGCall.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
@@ -86,7 +86,7 @@ llvm::AllocaInst *CodeGenFunction::CreateMemTemp(QualType Ty,
 llvm::Value *CodeGenFunction::EvaluateExprAsBool(const Expr *E) {
   if (const MemberPointerType *MPT = E->getType()->getAs<MemberPointerType>()) {
     llvm::Value *MemPtr = EmitScalarExpr(E);
-    return CGM.getCXXABI().EmitMemberPointerIsNotNull(*this, MemPtr, MPT);
+    return CGM.getFortranABI().EmitMemberPointerIsNotNull(*this, MemPtr, MPT);
   }
 
   QualType BoolTy = getContext().BoolTy;
@@ -164,7 +164,7 @@ CreateReferenceTemporary(CodeGenFunction &CGF, QualType Type,
     if (VD->hasGlobalStorage()) {
       SmallString<256> Name;
       llvm::raw_svector_ostream Out(Name);
-      CGF.CGM.getCXXABI().getMangleContext().mangleReferenceTemporary(VD, Out);
+      CGF.CGM.getFortranABI().getMangleContext().mangleReferenceTemporary(VD, Out);
       Out.flush();
 
       llvm::Type *RefTempTy = CGF.ConvertTypeForMem(Type);
@@ -349,7 +349,7 @@ EmitExprForReferenceBinding(CodeGenFunction &CGF, const Expr *E,
 
         case SubobjectAdjustment::MemberPointerAdjustment: {
           llvm::Value *Ptr = CGF.EmitScalarExpr(Adjustment.Ptr.RHS);
-          Object = CGF.CGM.getCXXABI().EmitMemberDataPointerAddress(
+          Object = CGF.CGM.getFortranABI().EmitMemberDataPointerAddress(
                         CGF, Object, Ptr, Adjustment.Ptr.MPT);
           break;
         }
@@ -407,7 +407,7 @@ CodeGenFunction::EmitReferenceBindingToExpr(const Expr *E,
     if (ReferenceTemporaryDtor) {
       llvm::Constant *DtorFn = 
         CGM.GetAddrOfCXXDestructor(ReferenceTemporaryDtor, Dtor_Complete);
-      CGM.getCXXABI().registerGlobalDtor(*this, DtorFn, 
+      CGM.getFortranABI().registerGlobalDtor(*this, DtorFn, 
                                     cast<llvm::Constant>(ReferenceTemporary));
     } else {
       assert(!ObjCARCReferenceLifetimeType.isNull());
@@ -555,7 +555,7 @@ void CodeGenFunction::EmitTypeCheck(TypeCheckKind TCK, SourceLocation Loc,
     //        being the implementation happens to be deterministic.
     llvm::SmallString<64> MangledName;
     llvm::raw_svector_ostream Out(MangledName);
-    CGM.getCXXABI().getMangleContext().mangleCXXRTTI(Ty.getUnqualifiedType(),
+    CGM.getFortranABI().getMangleContext().mangleCXXRTTI(Ty.getUnqualifiedType(),
                                                      Out);
     llvm::hash_code TypeHash = hash_value(Out.str());
 
@@ -1674,7 +1674,7 @@ LValue CodeGenFunction::EmitDeclRefLValue(const DeclRefExpr *E) {
     if (!V) {
       if (FieldDecl *FD = LambdaCaptureFields.lookup(VD)) {
         QualType LambdaTagType = getContext().getTagDeclType(FD->getParent());
-        LValue LambdaLV = MakeNaturalAlignAddrLValue(CXXABIThisValue,
+        LValue LambdaLV = MakeNaturalAlignAddrLValue(FortranABIThisValue,
                                                      LambdaTagType);
         return EmitLValueForField(LambdaLV, FD);
       }
@@ -2989,7 +2989,7 @@ EmitPointerToDataMemberBinaryExpr(const BinaryOperator *E) {
     = E->getRHS()->getType()->getAs<MemberPointerType>();
 
   llvm::Value *AddV =
-    CGM.getCXXABI().EmitMemberDataPointerAddress(*this, BaseV, OffsetV, MPT);
+    CGM.getFortranABI().EmitMemberDataPointerAddress(*this, BaseV, OffsetV, MPT);
 
   return MakeAddrLValue(AddV, MPT->getPointeeType());
 }

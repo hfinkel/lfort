@@ -13,7 +13,7 @@
 
 #include "CodeGenFunction.h"
 #include "CGCUDARuntime.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
 #include "lfort/Frontend/CodeGenOptions.h"
@@ -351,7 +351,7 @@ CodeGenFunction::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
 
   // Ask the ABI to load the callee.  Note that This is modified.
   llvm::Value *Callee =
-    CGM.getCXXABI().EmitLoadOfMemberFunctionPointer(*this, This, MemFnPtr, MPT);
+    CGM.getFortranABI().EmitLoadOfMemberFunctionPointer(*this, This, MemFnPtr, MPT);
   
   CallArgList Args;
 
@@ -545,7 +545,7 @@ static CharUnits CalculateCookiePadding(CodeGenFunction &CGF,
   if (E->getOperatorNew()->isReservedGlobalPlacementOperator())
     return CharUnits::Zero();
 
-  return CGF.CGM.getCXXABI().GetArrayCookieSize(E);
+  return CGF.CGM.getFortranABI().GetArrayCookieSize(E);
 }
 
 static llvm::Value *EmitCXXNewAllocSize(CodeGenFunction &CGF,
@@ -1272,7 +1272,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
          CalculateCookiePadding(*this, E).isZero());
   if (allocSize != allocSizeWithoutCookie) {
     assert(E->isArray());
-    allocation = CGM.getCXXABI().InitializeArrayCookie(*this, allocation,
+    allocation = CGM.getFortranABI().InitializeArrayCookie(*this, allocation,
                                                        numElements,
                                                        E, allocType);
   }
@@ -1389,7 +1389,7 @@ static void EmitObjectDelete(CodeGenFunction &CGF,
           // Derive the complete-object pointer, which is what we need
           // to pass to the deallocation function.
           llvm::Value *completePtr =
-            CGF.CGM.getCXXABI().adjustToCompleteObject(CGF, Ptr, ElementType);
+            CGF.CGM.getFortranABI().adjustToCompleteObject(CGF, Ptr, ElementType);
 
           CGF.EHStack.pushCleanup<CallObjectDelete>(NormalAndEHCleanup,
                                                     completePtr, OperatorDelete,
@@ -1522,7 +1522,7 @@ static void EmitArrayDelete(CodeGenFunction &CGF,
   llvm::Value *numElements = 0;
   llvm::Value *allocatedPtr = 0;
   CharUnits cookieSize;
-  CGF.CGM.getCXXABI().ReadArrayCookie(CGF, deletedPtr, E, elementType,
+  CGF.CGM.getFortranABI().ReadArrayCookie(CGF, deletedPtr, E, elementType,
                                       numElements, allocatedPtr, cookieSize);
 
   assert(allocatedPtr && "ReadArrayCookie didn't set allocated pointer");

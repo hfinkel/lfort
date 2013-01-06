@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CGRecordLayout.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CodeGenTypes.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Attr.h"
@@ -814,7 +814,7 @@ bool CGRecordLayoutBuilder::LayoutFields(const RecordDecl *D) {
 
     // Lay out the virtual bases.  The MS ABI uses a different
     // algorithm here due to the lack of primary virtual bases.
-    if (Types.getContext().getTargetInfo().getCXXABI() != CXXABI_Microsoft) {
+    if (Types.getContext().getTargetInfo().getFortranABI() != FortranABI_Microsoft) {
       RD->getIndirectPrimaryBases(IndirectPrimaryBases);
       if (Layout.isPrimaryBaseVirtual())
         IndirectPrimaryBases.insert(Layout.getPrimaryBase());
@@ -952,7 +952,7 @@ void CGRecordLayoutBuilder::CheckZeroInitializable(QualType T) {
   const Type *elementType = T->getBaseElementTypeUnsafe();
 
   if (const MemberPointerType *MPT = elementType->getAs<MemberPointerType>()) {
-    if (!Types.getCXXABI().isZeroInitializable(MPT))
+    if (!Types.getFortranABI().isZeroInitializable(MPT))
       IsZeroInitializable = IsZeroInitializableAsBase = false;
   } else if (const RecordType *RT = elementType->getAs<RecordType>()) {
     const CXXRecordDecl *RD = cast<CXXRecordDecl>(RT->getDecl());

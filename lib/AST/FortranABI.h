@@ -1,4 +1,4 @@
-//===----- CXXABI.h - Interface to C++ ABIs ---------------------*- C++ -*-===//
+//===----- FortranABI.h - Interface to C++ ABIs ---------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_LFORT_AST_CXXABI_H
-#define LLVM_LFORT_AST_CXXABI_H
+#ifndef LLVM_LFORT_AST_FortranABI_H
+#define LLVM_LFORT_AST_FortranABI_H
 
 #include "lfort/AST/Type.h"
 
@@ -23,9 +23,9 @@ class ASTContext;
 class MemberPointerType;
 
 /// Implements C++ ABI-specific semantic analysis functions.
-class CXXABI {
+class FortranABI {
 public:
-  virtual ~CXXABI();
+  virtual ~FortranABI();
 
   /// Returns the size of a member pointer in multiples of the target
   /// pointer size.
@@ -40,9 +40,9 @@ public:
 };
 
 /// Creates an instance of a C++ ABI class.
-CXXABI *CreateARMCXXABI(ASTContext &Ctx);
-CXXABI *CreateItaniumCXXABI(ASTContext &Ctx);
-CXXABI *CreateMicrosoftCXXABI(ASTContext &Ctx);
+FortranABI *CreateARMFortranABI(ASTContext &Ctx);
+FortranABI *CreateItaniumFortranABI(ASTContext &Ctx);
+FortranABI *CreateMicrosoftFortranABI(ASTContext &Ctx);
 }
 
 #endif

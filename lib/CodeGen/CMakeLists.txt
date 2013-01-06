@@ -17,7 +17,7 @@ add_lfort_library(lfortCodeGen
   CGCUDANV.cpp
   CGCUDARuntime.cpp
   CGCXX.cpp
-  CGCXXABI.cpp
+  CGFortranABI.cpp
   CGCleanup.cpp
   CGDebugInfo.cpp
   CGDecl.cpp
@@ -44,8 +44,8 @@ add_lfort_library(lfortCodeGen
   CodeGenModule.cpp
   CodeGenTBAA.cpp
   CodeGenTypes.cpp
-  ItaniumCXXABI.cpp
-  MicrosoftCXXABI.cpp
+  ItaniumFortranABI.cpp
+  MicrosoftFortranABI.cpp
   ModuleBuilder.cpp
   TargetInfo.cpp
   )

@@ -76,46 +76,20 @@ bool types::isAcceptedByLFort(ID Id) {
     return false;
 
   case TY_Asm:
-  case TY_C: case TY_PP_C:
-  case TY_CL:
-  case TY_CUDA:
-  case TY_ObjC: case TY_PP_ObjC: case TY_PP_ObjC_Alias:
-  case TY_CXX: case TY_PP_CXX:
-  case TY_ObjCXX: case TY_PP_ObjCXX: case TY_PP_ObjCXX_Alias:
-  case TY_CHeader: case TY_PP_CHeader:
-  case TY_CLHeader:
-  case TY_ObjCHeader: case TY_PP_ObjCHeader:
-  case TY_CXXHeader: case TY_PP_CXXHeader:
-  case TY_ObjCXXHeader: case TY_PP_ObjCXXHeader:
+  case TY_Fortran: case TY_PP_Fortran:
+  case TY_Fortran77: case TY_PP_Fortran77:
   case TY_AST:
   case TY_LLVM_IR: case TY_LLVM_BC:
     return true;
   }
 }
 
-bool types::isObjC(ID Id) {
+bool types::isF77(ID Id) {
   switch (Id) {
   default:
     return false;
 
-  case TY_ObjC: case TY_PP_ObjC: case TY_PP_ObjC_Alias:
-  case TY_ObjCXX: case TY_PP_ObjCXX:
-  case TY_ObjCHeader: case TY_PP_ObjCHeader:
-  case TY_ObjCXXHeader: case TY_PP_ObjCXXHeader: case TY_PP_ObjCXX_Alias:
-    return true;
-  }
-}
-
-bool types::isCXX(ID Id) {
-  switch (Id) {
-  default:
-    return false;
-
-  case TY_CXX: case TY_PP_CXX:
-  case TY_ObjCXX: case TY_PP_ObjCXX: case TY_PP_ObjCXX_Alias:
-  case TY_CXXHeader: case TY_PP_CXXHeader:
-  case TY_ObjCXXHeader: case TY_PP_ObjCXXHeader:
-  case TY_CUDA:
+  case TY_Fortran77: case TY_PP_Fortran77:
     return true;
   }
 }
@@ -129,8 +103,8 @@ types::ID types::lookupTypeForExtension(const char *Ext) {
            .Case("h", TY_CHeader)
            .Case("C", TY_CXX)
            .Case("H", TY_CXXHeader)
-           .Case("f", TY_PP_Fortran)
-           .Case("F", TY_Fortran)
+           .Case("f", TY_PP_Fortran77)
+           .Case("F", TY_Fortran77)
            .Case("s", TY_PP_Asm)
            .Case("S", TY_Asm)
            .Case("o", TY_Object)
@@ -155,10 +129,10 @@ types::ID types::lookupTypeForExtension(const char *Ext) {
            .Case("cpp", TY_CXX)
            .Case("CPP", TY_CXX)
            .Case("CXX", TY_CXX)
-           .Case("for", TY_PP_Fortran)
-           .Case("FOR", TY_PP_Fortran)
-           .Case("fpp", TY_Fortran)
-           .Case("FPP", TY_Fortran)
+           .Case("for", TY_PP_Fortran77)
+           .Case("FOR", TY_PP_Fortran77)
+           .Case("fpp", TY_Fortran77)
+           .Case("FPP", TY_Fortran77)
            .Case("f90", TY_PP_Fortran)
            .Case("f95", TY_PP_Fortran)
            .Case("F90", TY_Fortran)
@@ -224,18 +198,14 @@ phases::ID types::getCompilationPhase(ID Id, unsigned N) {
   return phases::Link;
 }
 
-ID types::lookupCXXTypeForCType(ID Id) {
+ID types::lookupF77TypeForFortranType(ID Id) {
   switch (Id) {
   default:
     return Id;
 
-  case types::TY_C:
-    return types::TY_CXX;
-  case types::TY_PP_C:
-    return types::TY_PP_CXX;
-  case types::TY_CHeader:
-    return types::TY_CXXHeader;
-  case types::TY_PP_CHeader:
-    return types::TY_PP_CXXHeader;
+  case types::TY_Fortran:
+    return types::TY_Fortran77;
+  case types::TY_PP_Fortran:
+    return types::TY_PP_Fortran77;
   }
 }

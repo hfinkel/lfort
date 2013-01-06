@@ -84,7 +84,7 @@ TargetInfo::TargetInfo(const std::string &T) : TargetOpts(), Triple(T)
   ComplexLongDoubleUsesFP2Ret = false;
 
   // Default to using the Itanium ABI.
-  CXXABI = CXXABI_Itanium;
+  FortranABI = FortranABI_Itanium;
 
   // Default to an empty address space map.
   AddrSpaceMap = &DefaultAddrSpaceMap;

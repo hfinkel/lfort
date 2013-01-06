@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenTypes.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGCall.h"
 #include "CGOpenCLRuntime.h"
 #include "CGRecordLayout.h"
@@ -32,7 +32,7 @@ CodeGenTypes::CodeGenTypes(CodeGenModule &CGM)
   : Context(CGM.getContext()), Target(Context.getTargetInfo()),
     TheModule(CGM.getModule()), TheDataLayout(CGM.getDataLayout()),
     TheABIInfo(CGM.getTargetCodeGenInfo().getABIInfo()),
-    TheCXXABI(CGM.getCXXABI()),
+    TheFortranABI(CGM.getFortranABI()),
     CodeGenOpts(CGM.getCodeGenOpts()), CGM(CGM) {
   SkippedLayout = false;
 }
@@ -571,7 +571,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
 
   case Type::MemberPointer: {
     ResultType = 
-      getCXXABI().ConvertMemberPointerType(cast<MemberPointerType>(Ty));
+      getFortranABI().ConvertMemberPointerType(cast<MemberPointerType>(Ty));
     break;
   }
 
@@ -685,7 +685,7 @@ bool CodeGenTypes::isZeroInitializable(QualType T) {
 
   // We have to ask the ABI about member pointers.
   if (const MemberPointerType *MPT = T->getAs<MemberPointerType>())
-    return getCXXABI().isZeroInitializable(MPT);
+    return getFortranABI().isZeroInitializable(MPT);
   
   // Everything else is okay.
   return true;

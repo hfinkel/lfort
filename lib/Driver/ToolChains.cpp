@@ -327,8 +327,7 @@ void DarwinLFort::AddLinkRuntimeLibArgs(const ArgList &Args,
     } else {
       AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.ubsan_osx.a", true);
 
-      // The Ubsan runtime library requires C++.
-      AddCXXStdlibLibArgs(Args, CmdArgs);
+      // FIXME: The Ubsan runtime library requires C++.
     }
   }
 
@@ -344,8 +343,7 @@ void DarwinLFort::AddLinkRuntimeLibArgs(const ArgList &Args,
     } else {
       AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.asan_osx.a", true);
 
-      // The ASAN runtime library requires C++ and CoreFoundation.
-      AddCXXStdlibLibArgs(Args, CmdArgs);
+      // FIXME: The ASAN runtime library requires C++ and CoreFoundation.
       CmdArgs.push_back("-framework");
       CmdArgs.push_back("CoreFoundation");
     }
@@ -544,52 +542,14 @@ void Darwin::AddDeploymentTarget(DerivedArgList &Args) const {
   setTarget(/*IsIPhoneOS=*/ !OSXVersion, Major, Minor, Micro, IsIOSSim);
 }
 
-void DarwinLFort::AddCXXStdlibLibArgs(const ArgList &Args,
+void DarwinLFort::AddFortRTLibArgs(const ArgList &Args,
                                       ArgStringList &CmdArgs) const {
-  CXXStdlibType Type = GetCXXStdlibType(Args);
+  FortRTLibType Type = GetFortRTLibType(Args);
 
   switch (Type) {
-  case ToolChain::CST_Libcxx:
-    CmdArgs.push_back("-lc++");
+  case ToolChain::CST_Libfortrt:
+    CmdArgs.push_back("-lfortrt");
     break;
-
-  case ToolChain::CST_Libstdcxx: {
-    // Unfortunately, -lstdc++ doesn't always exist in the standard search path;
-    // it was previously found in the gcc lib dir. However, for all the Darwin
-    // platforms we care about it was -lstdc++.6, so we search for that
-    // explicitly if we can't see an obvious -lstdc++ candidate.
-
-    // Check in the sysroot first.
-    bool Exists;
-    if (const Arg *A = Args.getLastArg(options::OPT_isysroot)) {
-      llvm::sys::Path P(A->getValue());
-      P.appendComponent("usr");
-      P.appendComponent("lib");
-      P.appendComponent("libstdc++.dylib");
-
-      if (llvm::sys::fs::exists(P.str(), Exists) || !Exists) {
-        P.eraseComponent();
-        P.appendComponent("libstdc++.6.dylib");
-        if (!llvm::sys::fs::exists(P.str(), Exists) && Exists) {
-          CmdArgs.push_back(Args.MakeArgString(P.str()));
-          return;
-        }
-      }
-    }
-
-    // Otherwise, look in the root.
-    // FIXME: This should be removed someday when we don't have to care about
-    // 10.6 and earlier, where /usr/lib/libstdc++.dylib does not exist.
-    if ((llvm::sys::fs::exists("/usr/lib/libstdc++.dylib", Exists) || !Exists)&&
-      (!llvm::sys::fs::exists("/usr/lib/libstdc++.6.dylib", Exists) && Exists)){
-      CmdArgs.push_back("/usr/lib/libstdc++.6.dylib");
-      return;
-    }
-
-    // Otherwise, let the linker search.
-    CmdArgs.push_back("-lstdc++");
-    break;
-  }
   }
 }
 
@@ -852,22 +812,6 @@ DerivedArgList *Darwin::TranslateArgs(const DerivedArgList &Args,
       assert(A->getOption().getID() == options::OPT_static &&
              "missing expected -static argument");
       it = DAL->getArgs().erase(it);
-    }
-  }
-
-  // Validate the C++ standard library choice.
-  CXXStdlibType Type = GetCXXStdlibType(*DAL);
-  if (Type == ToolChain::CST_Libcxx) {
-    // Check whether the target provides libc++.
-    StringRef where;
-
-    // Complain about targetting iOS < 5.0 in any way.
-    if (isTargetIPhoneOS() && isIPhoneOSVersionLT(5, 0))
-      where = "iOS 5.0";
-
-    if (where != StringRef()) {
-      getDriver().Diag(lfort::diag::err_drv_invalid_libcxx_deployment)
-        << where;
     }
   }
 
@@ -1589,35 +1533,14 @@ void Hexagon_TC::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
   addExternCSystemInclude(DriverArgs, CC1Args, GnuDir + "/hexagon/include");
 }
 
-void Hexagon_TC::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Hexagon_TC::AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                               ArgStringList &CC1Args) const {
 
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
       DriverArgs.hasArg(options::OPT_nostdincxx))
     return;
 
-  const Driver &D = getDriver();
-  std::string Ver(GetGCCLibAndIncVersion());
-  llvm::sys::Path IncludeDir(Hexagon_TC::GetGnuDir(D.InstalledDir));
-
-  IncludeDir.appendComponent("hexagon/include/c++/");
-  IncludeDir.appendComponent(Ver);
-  addSystemInclude(DriverArgs, CC1Args, IncludeDir.str());
-}
-
-ToolChain::CXXStdlibType
-Hexagon_TC::GetCXXStdlibType(const ArgList &Args) const {
-  Arg *A = Args.getLastArg(options::OPT_stdlib_EQ);
-  if (!A)
-    return ToolChain::CST_Libstdcxx;
-
-  StringRef Value = A->getValue();
-  if (Value != "libstdc++") {
-    getDriver().Diag(diag::err_drv_invalid_stdlib_name)
-      << A->getAsString(Args);
-  }
-
-  return ToolChain::CST_Libstdcxx;
+  // FIXME: TODO
 }
 
 static Arg *GetLastHexagonArchArg(const ArgList &Args)
@@ -1788,47 +1711,20 @@ Tool &Bitrig::SelectTool(const Compilation &C, const JobAction &JA,
   return *T;
 }
 
-void Bitrig::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Bitrig::AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                           ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
       DriverArgs.hasArg(options::OPT_nostdincxx))
     return;
 
-  switch (GetCXXStdlibType(DriverArgs)) {
-  case ToolChain::CST_Libcxx:
-    addSystemInclude(DriverArgs, CC1Args,
-                     getDriver().SysRoot + "/usr/include/c++/");
-    break;
-  case ToolChain::CST_Libstdcxx:
-    addSystemInclude(DriverArgs, CC1Args,
-                     getDriver().SysRoot + "/usr/include/c++/stdc++");
-    addSystemInclude(DriverArgs, CC1Args,
-                     getDriver().SysRoot + "/usr/include/c++/stdc++/backward");
-
-    StringRef Triple = getTriple().str();
-    if (Triple.startswith("amd64"))
-      addSystemInclude(DriverArgs, CC1Args,
-                       getDriver().SysRoot + "/usr/include/c++/stdc++/x86_64" +
-                       Triple.substr(5));
-    else
-      addSystemInclude(DriverArgs, CC1Args,
-                       getDriver().SysRoot + "/usr/include/c++/stdc++/" +
-                       Triple);
-    break;
-  }
+  // FIXME: TODO
 }
 
-void Bitrig::AddCXXStdlibLibArgs(const ArgList &Args,
+void Bitrig::AddFortRTLibArgs(const ArgList &Args,
                                  ArgStringList &CmdArgs) const {
-  switch (GetCXXStdlibType(Args)) {
-  case ToolChain::CST_Libcxx:
-    CmdArgs.push_back("-lc++");
-    CmdArgs.push_back("-lcxxrt");
-    // Include supc++ to provide Unwind until provided by libcxx.
-    CmdArgs.push_back("-lgcc");
-    break;
-  case ToolChain::CST_Libstdcxx:
-    CmdArgs.push_back("-lstdc++");
+  switch (GetFortRTLibType(Args)) {
+  case ToolChain::CST_Libfortrt:
+    CmdArgs.push_back("-lfortrt");
     break;
   }
 }
@@ -2564,63 +2460,13 @@ void Linux::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
   addExternCSystemInclude(DriverArgs, CC1Args, D.SysRoot + "/usr/include");
 }
 
-/// \brief Helper to add the thre variant paths for a libstdc++ installation.
-/*static*/ bool Linux::addLibStdCXXIncludePaths(Twine Base, Twine TargetArchDir,
-                                                const ArgList &DriverArgs,
-                                                ArgStringList &CC1Args) {
-  if (!llvm::sys::fs::exists(Base))
-    return false;
-  addSystemInclude(DriverArgs, CC1Args, Base);
-  addSystemInclude(DriverArgs, CC1Args, Base + "/" + TargetArchDir);
-  addSystemInclude(DriverArgs, CC1Args, Base + "/backward");
-  return true;
-}
-
-void Linux::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Linux::AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
       DriverArgs.hasArg(options::OPT_nostdincxx))
     return;
 
-  // Check if libc++ has been enabled and provide its include paths if so.
-  if (GetCXXStdlibType(DriverArgs) == ToolChain::CST_Libcxx) {
-    // libc++ is always installed at a fixed path on Linux currently.
-    addSystemInclude(DriverArgs, CC1Args,
-                     getDriver().SysRoot + "/usr/include/c++/v1");
-    return;
-  }
-
-  // We need a detected GCC installation on Linux to provide libstdc++'s
-  // headers. We handled the libc++ case above.
-  if (!GCCInstallation.isValid())
-    return;
-
-  // By default, look for the C++ headers in an include directory adjacent to
-  // the lib directory of the GCC installation. Note that this is expect to be
-  // equivalent to '/usr/include/c++/X.Y' in almost all cases.
-  StringRef LibDir = GCCInstallation.getParentLibPath();
-  StringRef InstallDir = GCCInstallation.getInstallPath();
-  StringRef Version = GCCInstallation.getVersion().Text;
-  StringRef TripleStr = GCCInstallation.getTriple().str();
-
-  const std::string IncludePathCandidates[] = {
-    LibDir.str() + "/../include/c++/" + Version.str(),
-    // Gentoo is weird and places its headers inside the GCC install, so if the
-    // first attempt to find the headers fails, try this pattern.
-    InstallDir.str() + "/include/g++-v4",
-    // Android standalone toolchain has C++ headers in yet another place.
-    LibDir.str() + "/../" + TripleStr.str() + "/include/c++/" + Version.str(),
-    // Freescale SDK C++ headers are directly in <sysroot>/usr/include/c++,
-    // without a subdirectory corresponding to the gcc version.
-    LibDir.str() + "/../include/c++",
-  };
-
-  for (unsigned i = 0; i < llvm::array_lengthof(IncludePathCandidates); ++i) {
-    if (addLibStdCXXIncludePaths(IncludePathCandidates[i], (TripleStr +
-                GCCInstallation.getMultiarchSuffix()),
-            DriverArgs, CC1Args))
-      break;
-  }
+  // FIXME: TODO
 }
 
 /// DragonFly - DragonFly tool chain which can call as(1) and ld(1) directly.

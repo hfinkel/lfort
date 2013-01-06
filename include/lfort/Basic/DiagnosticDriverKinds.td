@@ -131,8 +131,8 @@ def warn_drv_assuming_mfloat_abi_is : Warning<
   "unknown platform, assuming -mfloat-abi=%0">;
 def warn_ignoring_ftabstop_value : Warning<
   "ignoring invalid -ftabstop value '%0', using default value %1">;
-def warn_drv_treating_input_as_cxx : Warning<
-  "treating '%0' input as '%1' when in C++ mode, this behavior is deprecated">,
+def warn_drv_treating_input_as_f77 : Warning<
+  "treating '%0' input as '%1' when not in Fortran 77 mode, this behavior is deprecated">,
   InGroup<Deprecated>;
 def warn_drv_objc_gc_unsupported : Warning<
   "Objective-C garbage collection is not supported on this platform, ignoring '%0'">;

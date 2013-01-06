@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "lfort/AST/ASTContext.h"
-#include "CXXABI.h"
+#include "FortranABI.h"
 #include "lfort/AST/ASTMutationListener.h"
 #include "lfort/AST/Attr.h"
 #include "lfort/AST/CharUnits.h"
@@ -569,18 +569,18 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
   return CanonTTP;
 }
 
-CXXABI *ASTContext::createCXXABI(const TargetInfo &T) {
+FortranABI *ASTContext::createFortranABI(const TargetInfo &T) {
   if (!LangOpts.CPlusPlus) return 0;
 
-  switch (T.getCXXABI()) {
-  case CXXABI_ARM:
-    return CreateARMCXXABI(*this);
-  case CXXABI_Itanium:
-    return CreateItaniumCXXABI(*this);
-  case CXXABI_Microsoft:
-    return CreateMicrosoftCXXABI(*this);
+  switch (T.getFortranABI()) {
+  case FortranABI_ARM:
+    return CreateARMFortranABI(*this);
+  case FortranABI_Itanium:
+    return CreateItaniumFortranABI(*this);
+  case FortranABI_Microsoft:
+    return CreateMicrosoftFortranABI(*this);
   }
-  llvm_unreachable("Invalid CXXABI type!");
+  llvm_unreachable("Invalid FortranABI type!");
 }
 
 static const LangAS::Map *getAddressSpaceMap(const TargetInfo &T,
@@ -784,7 +784,7 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target) {
 
   this->Target = &Target;
   
-  ABI.reset(createCXXABI(Target));
+  ABI.reset(createFortranABI(Target));
   AddrSpaceMap = getAddressSpaceMap(Target, LangOpts);
   
   // C99 6.2.5p19.
@@ -7569,7 +7569,7 @@ CallingConv ASTContext::getDefaultCXXMethodCallConv(bool isVariadic) {
 }
 
 CallingConv ASTContext::getCanonicalCallConv(CallingConv CC) const {
-  if (CC == CC_C && !LangOpts.MRTD && getTargetInfo().getCXXABI() != CXXABI_Microsoft)
+  if (CC == CC_C && !LangOpts.MRTD && getTargetInfo().getFortranABI() != FortranABI_Microsoft)
     return CC_Default;
   return CC;
 }
@@ -7580,17 +7580,17 @@ bool ASTContext::isNearlyEmpty(const CXXRecordDecl *RD) const {
 }
 
 MangleContext *ASTContext::createMangleContext() {
-  switch (Target->getCXXABI()) {
-  case CXXABI_ARM:
-  case CXXABI_Itanium:
+  switch (Target->getFortranABI()) {
+  case FortranABI_ARM:
+  case FortranABI_Itanium:
     return createItaniumMangleContext(*this, getDiagnostics());
-  case CXXABI_Microsoft:
+  case FortranABI_Microsoft:
     return createMicrosoftMangleContext(*this, getDiagnostics());
   }
   llvm_unreachable("Unsupported ABI");
 }
 
-CXXABI::~CXXABI() {}
+FortranABI::~FortranABI() {}
 
 size_t ASTContext::getSideTableAllocatedMemory() const {
   return ASTRecordLayouts.getMemorySize()

@@ -279,19 +279,17 @@ static void ParseProgName(SmallVectorImpl<const char *> &ArgVector,
   // is gets added via -target as implicit first argument.
   static const struct {
     const char *Suffix;
-    bool IsCXX;
+    bool IsF77;
     bool IsCPP;
   } suffixes [] = {
     { "lfort", false, false },
-    { "lfort++", true, false },
-    { "lfort-c++", true, false },
-    { "lfort-cc", false, false },
+    { "lfort77", true, false },
+    { "lfort-f77", true, false },
     { "lfort-cpp", false, true },
-    { "lfort-g++", true, false },
-    { "lfort-gcc", false, false },
-    { "cc", false, false },
+    { "lfort-g77", true, false },
+    { "lfort-gfortran", false, false },
     { "cpp", false, true },
-    { "++", true, false },
+    { "77", true, false },
   };
   std::string ProgName(llvm::sys::path::stem(ArgVector[0]));
   StringRef ProgNameRef(ProgName);
@@ -304,8 +302,8 @@ static void ParseProgName(SmallVectorImpl<const char *> &ArgVector,
     for (i = 0; i < sizeof(suffixes) / sizeof(suffixes[0]); ++i) {
       if (ProgNameRef.endswith(suffixes[i].Suffix)) {
         FoundMatch = true;
-        if (suffixes[i].IsCXX)
-          TheDriver.CCCIsCXX = true;
+        if (suffixes[i].IsF77)
+          TheDriver.CCCIsF77 = true;
         if (suffixes[i].IsCPP)
           TheDriver.CCCIsCPP = true;
         break;

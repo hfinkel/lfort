@@ -14,7 +14,7 @@
 // We might split this into multiple files if it gets too unwieldy
 
 #include "CodeGenModule.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CodeGenFunction.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Decl.h"

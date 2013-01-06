@@ -34,9 +34,9 @@ public:
   /// If given, the name of the target ABI to use.
   std::string ABI;
 
-  /// If given, the name of the target C++ ABI to use. If not given, defaults
+  /// If given, the name of the target Fortran ABI to use. If not given, defaults
   /// to "itanium".
-  std::string CXXABI;
+  std::string FortranABI;
 
   /// If given, the version string of the linker in use.
   std::string LinkerVersion;

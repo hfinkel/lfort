@@ -63,12 +63,16 @@ TYPE("c++-header",               CXXHeader,    PP_CXXHeader,    0,       "pu")
 TYPE("objective-c++-header-cpp-output", PP_ObjCXXHeader, INVALID, "mii", "p")
 TYPE("objective-c++-header",     ObjCXXHeader, PP_ObjCXXHeader, 0,       "pu")
 
+// Fortran.
+TYPE("f77",                      PP_Fortran77, INVALID,         "f",     "u")
+TYPE("f77-cpp-input",            Fortran77,    PP_Fortran77,    "F",     "u")
+TYPE("f95",                      PP_Fortran,   INVALID,         "f95",   "u")
+TYPE("f95-cpp-input",            Fortran,      PP_Fortran,      "F95",   "u")
+
 // Other languages.
 TYPE("ada",                      Ada,          INVALID,         0,       "u")
 TYPE("assembler",                PP_Asm,       INVALID,         "s",     "au")
 TYPE("assembler-with-cpp",       Asm,          PP_Asm,          0,       "au")
-TYPE("f95",                      PP_Fortran,   INVALID,         0,       "u")
-TYPE("f95-cpp-input",            Fortran,      PP_Fortran,      0,       "u")
 TYPE("java",                     Java,         INVALID,         0,       "u")
 
 // LLVM IR/LTO types. We define separate types for IR and LTO because LTO

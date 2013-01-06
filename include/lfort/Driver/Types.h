@@ -59,11 +59,8 @@ namespace types {
   /// isAcceptedByLFort - Can lfort handle this input type.
   bool isAcceptedByLFort(ID Id);
 
-  /// isCXX - Is this a "C++" input (C++ and Obj-C++ sources and headers).
-  bool isCXX(ID Id);
-
-  /// isObjC - Is this an "ObjC" input (Obj-C and Obj-C++ sources and headers).
-  bool isObjC(ID Id);
+  /// isF77 - Is this a Fortran 77 input.
+  bool isF77(ID Id);
 
   /// lookupTypeForExtension - Lookup the type to use for the file
   /// extension \p Ext.
@@ -81,9 +78,9 @@ namespace types {
   /// be done for this type.
   phases::ID getCompilationPhase(ID Id, unsigned N);
   
-  /// lookupCXXTypeForCType - Lookup CXX input type that corresponds to given
-  /// C type (used for lfort++ emulation of g++ behaviour)
-  ID lookupCXXTypeForCType(ID Id);
+  /// lookupF77TypeForFortranType - Lookup Fortran 77 input type that corresponds to given
+  /// Fortran type (used for lfort77 emulation of gfortran behaviour)
+  ID lookupF77TypeForFortranType(ID Id);
 
 } // end namespace types
 } // end namespace driver

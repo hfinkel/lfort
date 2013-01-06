@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGObjCRuntime.h"
 #include "CGRecordLayout.h"
 #include "CodeGenModule.h"
@@ -697,7 +697,7 @@ public:
     case CK_ReinterpretMemberPointer:
     case CK_DerivedToBaseMemberPointer:
     case CK_BaseToDerivedMemberPointer:
-      return CGM.getCXXABI().EmitMemberPointerConversion(E, C);
+      return CGM.getFortranABI().EmitMemberPointerConversion(E, C);
 
     // These will never be supported.
     case CK_ObjCObjectLValueCast:
@@ -1217,7 +1217,7 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
     return llvm::ConstantArray::get(AType, Elts);
   }
   case APValue::MemberPointer:
-    return getCXXABI().EmitMemberPointer(Value, DestType);
+    return getFortranABI().EmitMemberPointer(Value, DestType);
   }
   llvm_unreachable("Unknown APValue kind");
 }
@@ -1248,12 +1248,12 @@ CodeGenModule::getMemberPointerConstant(const UnaryOperator *uo) {
 
   // A member function pointer.
   if (const CXXMethodDecl *method = dyn_cast<CXXMethodDecl>(decl))
-    return getCXXABI().EmitMemberPointer(method);
+    return getFortranABI().EmitMemberPointer(method);
 
   // Otherwise, a member data pointer.
   uint64_t fieldOffset = getContext().getFieldOffset(decl);
   CharUnits chars = getContext().toCharUnitsFromBits((int64_t) fieldOffset);
-  return getCXXABI().EmitMemberDataPointer(type, chars);
+  return getFortranABI().EmitMemberDataPointer(type, chars);
 }
 
 static void
@@ -1486,7 +1486,7 @@ llvm::Constant *CodeGenModule::EmitNullConstant(QualType T) {
   
   // Itanium C++ ABI 2.3:
   //   A NULL pointer is represented as -1.
-  return getCXXABI().EmitNullMemberPointer(T->castAs<MemberPointerType>());
+  return getFortranABI().EmitNullMemberPointer(T->castAs<MemberPointerType>());
 }
 
 llvm::Constant *

@@ -174,8 +174,8 @@ static void AddLinkerInputs(const ToolChain &TC,
     const Arg &A = II.getInputArg();
 
     // Handle reserved library options.
-    if (A.getOption().matches(options::OPT_Z_reserved_lib_stdcxx)) {
-      TC.AddCXXStdlibLibArgs(Args, CmdArgs);
+    if (A.getOption().matches(options::OPT_Z_reserved_lib_fortrt)) {
+      TC.AddFortRTLibArgs(Args, CmdArgs);
     } else if (A.getOption().matches(options::OPT_Z_reserved_lib_cckext)) {
       TC.AddCCKextLibArgs(Args, CmdArgs);
     } else
@@ -433,18 +433,6 @@ void LFort::AddPreprocessingOptions(Compilation &C,
   // CPATH - included following the user specified includes (but prior to
   // builtin and standard includes).
   addDirectoryList(Args, CmdArgs, "-I", "CPATH");
-  // C_INCLUDE_PATH - system includes enabled when compiling C.
-  addDirectoryList(Args, CmdArgs, "-c-isystem", "C_INCLUDE_PATH");
-  // CPLUS_INCLUDE_PATH - system includes enabled when compiling C++.
-  addDirectoryList(Args, CmdArgs, "-cxx-isystem", "CPLUS_INCLUDE_PATH");
-  // OBJC_INCLUDE_PATH - system includes enabled when compiling ObjC.
-  addDirectoryList(Args, CmdArgs, "-objc-isystem", "OBJC_INCLUDE_PATH");
-  // OBJCPLUS_INCLUDE_PATH - system includes enabled when compiling ObjC++.
-  addDirectoryList(Args, CmdArgs, "-objcxx-isystem", "OBJCPLUS_INCLUDE_PATH");
-
-  // Add C++ include arguments, if needed.
-  if (types::isCXX(Inputs[0].getType()))
-    getToolChain().AddLFortCXXStdlibIncludeArgs(Args, CmdArgs);
 
   // Add system include arguments.
   getToolChain().AddLFortSystemIncludeArgs(Args, CmdArgs);
@@ -1301,87 +1289,6 @@ shouldUseExceptionTablesForObjCExceptions(const ObjCRuntime &runtime,
            Triple.getArch() == llvm::Triple::arm));
 }
 
-/// addExceptionArgs - Adds exception related arguments to the driver command
-/// arguments. There's a master flag, -fexceptions and also language specific
-/// flags to enable/disable C++ and Objective-C exceptions.
-/// This makes it possible to for example disable C++ exceptions but enable
-/// Objective-C exceptions.
-static void addExceptionArgs(const ArgList &Args, types::ID InputType,
-                             const llvm::Triple &Triple,
-                             bool KernelOrKext,
-                             const ObjCRuntime &objcRuntime,
-                             ArgStringList &CmdArgs) {
-  if (KernelOrKext) {
-    // -mkernel and -fapple-kext imply no exceptions, so claim exception related
-    // arguments now to avoid warnings about unused arguments.
-    Args.ClaimAllArgs(options::OPT_fexceptions);
-    Args.ClaimAllArgs(options::OPT_fno_exceptions);
-    Args.ClaimAllArgs(options::OPT_fobjc_exceptions);
-    Args.ClaimAllArgs(options::OPT_fno_objc_exceptions);
-    Args.ClaimAllArgs(options::OPT_fcxx_exceptions);
-    Args.ClaimAllArgs(options::OPT_fno_cxx_exceptions);
-    return;
-  }
-
-  // Exceptions are enabled by default.
-  bool ExceptionsEnabled = true;
-
-  // This keeps track of whether exceptions were explicitly turned on or off.
-  bool DidHaveExplicitExceptionFlag = false;
-
-  if (Arg *A = Args.getLastArg(options::OPT_fexceptions,
-                               options::OPT_fno_exceptions)) {
-    if (A->getOption().matches(options::OPT_fexceptions))
-      ExceptionsEnabled = true;
-    else
-      ExceptionsEnabled = false;
-
-    DidHaveExplicitExceptionFlag = true;
-  }
-
-  bool ShouldUseExceptionTables = false;
-
-  // Exception tables and cleanups can be enabled with -fexceptions even if the
-  // language itself doesn't support exceptions.
-  if (ExceptionsEnabled && DidHaveExplicitExceptionFlag)
-    ShouldUseExceptionTables = true;
-
-  // Obj-C exceptions are enabled by default, regardless of -fexceptions. This
-  // is not necessarily sensible, but follows GCC.
-  if (types::isObjC(InputType) &&
-      Args.hasFlag(options::OPT_fobjc_exceptions,
-                   options::OPT_fno_objc_exceptions,
-                   true)) {
-    CmdArgs.push_back("-fobjc-exceptions");
-
-    ShouldUseExceptionTables |=
-      shouldUseExceptionTablesForObjCExceptions(objcRuntime, Triple);
-  }
-
-  if (types::isCXX(InputType)) {
-    bool CXXExceptionsEnabled = ExceptionsEnabled;
-
-    if (Arg *A = Args.getLastArg(options::OPT_fcxx_exceptions,
-                                 options::OPT_fno_cxx_exceptions,
-                                 options::OPT_fexceptions,
-                                 options::OPT_fno_exceptions)) {
-      if (A->getOption().matches(options::OPT_fcxx_exceptions))
-        CXXExceptionsEnabled = true;
-      else if (A->getOption().matches(options::OPT_fno_cxx_exceptions))
-        CXXExceptionsEnabled = false;
-    }
-
-    if (CXXExceptionsEnabled) {
-      CmdArgs.push_back("-fcxx-exceptions");
-
-      ShouldUseExceptionTables = true;
-    }
-  }
-
-  if (ShouldUseExceptionTables)
-    CmdArgs.push_back("-fexceptions");
-}
-
 static bool ShouldDisableCFI(const ArgList &Args,
                              const ToolChain &TC) {
   bool Default = true;
@@ -2153,17 +2060,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
   // Explicitly error on some things we know we don't support and can't just
   // ignore.
   types::ID InputType = Inputs[0].getType();
-  if (!Args.hasArg(options::OPT_fallow_unsupported)) {
-    Arg *Unsupported;
-    if (types::isCXX(InputType) &&
-        getToolChain().getTriple().isOSDarwin() &&
-        getToolChain().getTriple().getArch() == llvm::Triple::x86) {
-      if ((Unsupported = Args.getLastArg(options::OPT_fapple_kext)) ||
-          (Unsupported = Args.getLastArg(options::OPT_mkernel)))
-        D.Diag(diag::err_drv_lfort_unsupported_opt_cxx_darwin_i386)
-          << Unsupported->getOption().getName();
-    }
-  }
 
   Args.AddAllArgs(CmdArgs, options::OPT_v);
   Args.AddLastArg(CmdArgs, options::OPT_H);
@@ -2227,7 +2123,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
   } else {
     if (Args.hasArg(options::OPT_nostdlibinc))
         CmdArgs.push_back("-nostdsysteminc");
-    Args.AddLastArg(CmdArgs, options::OPT_nostdincxx);
     Args.AddLastArg(CmdArgs, options::OPT_nobuiltininc);
   }
 
@@ -2325,10 +2220,10 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
   // option.
   if (Arg *Std = Args.getLastArg(options::OPT_std_EQ, options::OPT_ansi)) {
     if (Std->getOption().matches(options::OPT_ansi))
-      if (types::isCXX(InputType))
-        CmdArgs.push_back("-std=c++98");
+      if (types::isF77(InputType))
+        CmdArgs.push_back("-std=f77");
       else
-        CmdArgs.push_back("-std=c89");
+        CmdArgs.push_back("-std=f95");
     else
       Std->render(Args, CmdArgs);
 
@@ -2340,14 +2235,12 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
     // Honor -std-default.
     //
     // FIXME: LFort doesn't correctly handle -std= when the input language
-    // doesn't match. For the time being just ignore this for C++ inputs;
+    // doesn't match. For the time being just ignore this for Fortran 77 inputs;
     // eventually we want to do all the standard defaulting here instead of
     // splitting it between the driver and lfort -cc1.
-    if (!types::isCXX(InputType))
+    if (!types::isF77(InputType))
       Args.AddAllArgsTranslated(CmdArgs, options::OPT_std_default_EQ,
                                 "-std=", /*Joined=*/true);
-    else if (getToolChain().getTriple().getOS() == llvm::Triple::Win32)
-      CmdArgs.push_back("-std=c++11");
 
     Args.AddLastArg(CmdArgs, options::OPT_trigraphs);
   }
@@ -2359,15 +2252,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
     // For perfect compatibility with GCC, we do this even in the presence of
     // '-w'. This flag names something other than a warning for GCC.
     CmdArgs.push_back("-fconst-strings");
-  }
-
-  // GCC provides a macro definition '__DEPRECATED' when -Wdeprecated is active
-  // during C++ compilation, which it is by default. GCC keeps this define even
-  // in the presence of '-w', match this behavior bug-for-bug.
-  if (types::isCXX(InputType) &&
-      Args.hasFlag(options::OPT_Wdeprecated, options::OPT_Wno_deprecated,
-                   true)) {
-    CmdArgs.push_back("-fdeprecated-macro");
   }
 
   // Translate GCC's misnamer '-fasm' arguments to '-fgnu-keywords'.
@@ -2594,8 +2478,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
   // these by hand.
 
   if (Args.hasArg(options::OPT_mkernel)) {
-    if (!Args.hasArg(options::OPT_fapple_kext) && types::isCXX(InputType))
-      CmdArgs.push_back("-fapple-kext");
     if (!Args.hasArg(options::OPT_fbuiltin))
       CmdArgs.push_back("-fno-builtin");
     Args.ClaimAllArgs(options::OPT_fno_builtin);
@@ -2621,16 +2503,8 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-fblocks-runtime-optional");
   }
 
-  // -fmodules enables modules (off by default). However, for C++/Objective-C++,
-  // users must also pass -fcxx-modules. The latter flag will disappear once the
-  // modules implementation is solid for C++/Objective-C++ programs as well.
-  if (Args.hasFlag(options::OPT_fmodules, options::OPT_fno_modules, false)) {
-    bool AllowedInCXX = Args.hasFlag(options::OPT_fcxx_modules, 
-                                     options::OPT_fno_cxx_modules, 
-                                     false);
-    if (AllowedInCXX || !types::isCXX(InputType))
-      CmdArgs.push_back("-fmodules");
-  }
+  // Fortran uses modules.
+  CmdArgs.push_back("-fmodules");
 
   // -faccess-control is default.
   if (Args.hasFlag(options::OPT_fno_access_control,
@@ -2779,23 +2653,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
     getToolChain().CheckObjCARC();
 
     CmdArgs.push_back("-fobjc-arc");
-
-    // FIXME: It seems like this entire block, and several around it should be
-    // wrapped in isObjC, but for now we just use it here as this is where it
-    // was being used previously.
-    if (types::isCXX(InputType) && types::isObjC(InputType)) {
-      if (getToolChain().GetCXXStdlibType(Args) == ToolChain::CST_Libcxx)
-        CmdArgs.push_back("-fobjc-arc-cxxlib=libc++");
-      else
-        CmdArgs.push_back("-fobjc-arc-cxxlib=libstdc++");
-    }
-
-    // Allow the user to enable full exceptions code emission.
-    // We define off for Objective-CC, on for Objective-C++.
-    if (Args.hasFlag(options::OPT_fobjc_arc_exceptions,
-                     options::OPT_fno_objc_arc_exceptions,
-                     /*default*/ types::isCXX(InputType)))
-      CmdArgs.push_back("-fobjc-arc-exceptions");
   }
 
   // -fobjc-infer-related-result-type is the default, except in the Objective-C
@@ -2820,10 +2677,6 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
         << GCArg->getAsString(Args);
     }
   }
-
-  // Add exception args.
-  addExceptionArgs(Args, InputType, getToolChain().getTriple(),
-                   KernelOrKext, objcRuntime, CmdArgs);
 
   if (getToolChain().UseSjLjExceptions())
     CmdArgs.push_back("-fsjlj-exceptions");
@@ -3464,8 +3317,8 @@ void gcc::Common::ConstructJob(Compilation &C, const JobAction &JA,
       const Arg &A = II.getInputArg();
 
       // Reverse translate some rewritten options.
-      if (A.getOption().matches(options::OPT_Z_reserved_lib_stdcxx)) {
-        CmdArgs.push_back("-lstdc++");
+      if (A.getOption().matches(options::OPT_Z_reserved_lib_fortrt)) {
+        CmdArgs.push_back("-lgfortran");
         continue;
       }
 
@@ -3478,10 +3331,10 @@ void gcc::Common::ConstructJob(Compilation &C, const JobAction &JA,
   const char *GCCName;
   if (!customGCCName.empty())
     GCCName = customGCCName.c_str();
-  else if (D.CCCIsCXX) {
-    GCCName = "g++";
+  else if (D.CCCIsF77) {
+    GCCName = "g77";
   } else
-    GCCName = "gcc";
+    GCCName = "gfortran";
 
   const char *Exec =
     Args.MakeArgString(getToolChain().GetProgramPath(GCCName));
@@ -3738,10 +3591,8 @@ void hexagon::Link::ConstructJob(Compilation &C, const JobAction &JA,
   // Libraries
   //----------------------------------------------------------------------------
   if (incStdLib && incDefLibs) {
-    if (D.CCCIsCXX) {
-      ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
-      CmdArgs.push_back("-lm");
-    }
+    ToolChain.AddFortRTLibArgs(Args, CmdArgs);
+    CmdArgs.push_back("-lm");
 
     CmdArgs.push_back("--start-group");
 
@@ -4161,12 +4012,6 @@ void darwin::Link::ConstructJob(Compilation &C, const JobAction &JA,
   Args.AddAllArgs(CmdArgs, options::OPT_m_Separate);
   Args.AddAllArgs(CmdArgs, options::OPT_r);
 
-  // Forward -ObjC when either -ObjC or -ObjC++ is used, to force loading
-  // members of static archive libraries which implement Objective-C classes or
-  // categories.
-  if (Args.hasArg(options::OPT_ObjC) || Args.hasArg(options::OPT_ObjCXX))
-    CmdArgs.push_back("-ObjC");
-
   if (Args.hasArg(options::OPT_rdynamic))
     CmdArgs.push_back("-export_dynamic");
 
@@ -4318,8 +4163,7 @@ void darwin::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (getToolChain().getDriver().CCCIsCXX)
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
 
     // link_ssp spec is empty.
 
@@ -4500,8 +4344,6 @@ void solaris::Link::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back(Args.MakeArgString(LibPath + "values-Xa.o"));
       CmdArgs.push_back(Args.MakeArgString(GCCLibPath + "crtbegin.o"));
     }
-    if (getToolChain().getDriver().CCCIsCXX)
-      CmdArgs.push_back(Args.MakeArgString(LibPath + "cxa_finalize.o"));
   }
 
   CmdArgs.push_back(Args.MakeArgString("-L" + GCCLibPath));
@@ -4515,8 +4357,7 @@ void solaris::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (getToolChain().getDriver().CCCIsCXX)
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
     CmdArgs.push_back("-lgcc_s");
     if (!Args.hasArg(options::OPT_shared)) {
       CmdArgs.push_back("-lgcc");
@@ -4753,13 +4594,11 @@ void openbsd::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (D.CCCIsCXX) {
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
-      if (Args.hasArg(options::OPT_pg)) 
-        CmdArgs.push_back("-lm_p");
-      else
-        CmdArgs.push_back("-lm");
-    }
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
+    if (Args.hasArg(options::OPT_pg)) 
+      CmdArgs.push_back("-lm_p");
+    else
+      CmdArgs.push_back("-lm");
 
     // FIXME: For some reason GCC passes -lgcc before adding
     // the default system libraries. Just mimic this for now.
@@ -4883,13 +4722,11 @@ void bitrig::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (D.CCCIsCXX) {
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
-      if (Args.hasArg(options::OPT_pg))
-        CmdArgs.push_back("-lm_p");
-      else
-        CmdArgs.push_back("-lm");
-    }
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
+    if (Args.hasArg(options::OPT_pg))
+      CmdArgs.push_back("-lm_p");
+    else
+      CmdArgs.push_back("-lm");
 
     if (Args.hasArg(options::OPT_pthread)) {
       if (!Args.hasArg(options::OPT_shared) &&
@@ -5128,13 +4965,11 @@ void freebsd::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (D.CCCIsCXX) {
-      ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
-      if (Args.hasArg(options::OPT_pg))
-        CmdArgs.push_back("-lm_p");
-      else
-        CmdArgs.push_back("-lm");
-    }
+    ToolChain.AddFortRTLibArgs(Args, CmdArgs);
+    if (Args.hasArg(options::OPT_pg))
+      CmdArgs.push_back("-lm_p");
+    else
+      CmdArgs.push_back("-lm");
     // FIXME: For some reason GCC passes -lgcc and -lgcc_s before adding
     // the default system libraries. Just mimic this for now.
     if (Args.hasArg(options::OPT_pg))
@@ -5298,10 +5133,8 @@ void netbsd::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (D.CCCIsCXX) {
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
-      CmdArgs.push_back("-lm");
-    }
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
+    CmdArgs.push_back("-lm");
     // FIXME: For some reason GCC passes -lgcc and -lgcc_s before adding
     // the default system libraries. Just mimic this for now.
     if (Args.hasArg(options::OPT_static)) {
@@ -5439,23 +5272,15 @@ static void AddLibgcc(llvm::Triple Triple, const Driver &D,
   bool isAndroid = Triple.getEnvironment() == llvm::Triple::Android;
   bool StaticLibgcc = Args.hasArg(options::OPT_static) ||
                       Args.hasArg(options::OPT_static_libgcc);
-  if (!D.CCCIsCXX)
-    CmdArgs.push_back("-lgcc");
-
   if (StaticLibgcc || isAndroid) {
-    if (D.CCCIsCXX)
-      CmdArgs.push_back("-lgcc");
+    CmdArgs.push_back("-lgcc");
   } else {
-    if (!D.CCCIsCXX)
-      CmdArgs.push_back("--as-needed");
     CmdArgs.push_back("-lgcc_s");
-    if (!D.CCCIsCXX)
-      CmdArgs.push_back("--no-as-needed");
   }
 
   if (StaticLibgcc && !isAndroid)
     CmdArgs.push_back("-lgcc_eh");
-  else if (!Args.hasArg(options::OPT_shared) && D.CCCIsCXX)
+  else if (!Args.hasArg(options::OPT_shared))
     CmdArgs.push_back("-lgcc");
 
   // According to Android ABI, we have to link with libdl if we are
@@ -5648,7 +5473,7 @@ void linuxtools::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   SanitizerArgs Sanitize(D, Args);
 
-  // Call these before we add the C++ ABI library.
+  // Call these before we add the Fortran ABI library.
   if (Sanitize.needsUbsanRt())
     addUbsanRTLinux(getToolChain(), Args, CmdArgs);
   if (Sanitize.needsAsanRt())
@@ -5658,15 +5483,14 @@ void linuxtools::Link::ConstructJob(Compilation &C, const JobAction &JA,
   if (Sanitize.needsMsanRt())
     addMsanRTLinux(getToolChain(), Args, CmdArgs);
 
-  if (D.CCCIsCXX &&
-      !Args.hasArg(options::OPT_nostdlib) &&
+  if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    bool OnlyLibstdcxxStatic = Args.hasArg(options::OPT_static_libstdcxx) &&
+    bool OnlyLibfortrtStatic = Args.hasArg(options::OPT_static_libfortrt) &&
       !Args.hasArg(options::OPT_static);
-    if (OnlyLibstdcxxStatic)
+    if (OnlyLibfortrtStatic)
       CmdArgs.push_back("-Bstatic");
-    ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
-    if (OnlyLibstdcxxStatic)
+    ToolChain.AddFortRTLibArgs(Args, CmdArgs);
+    if (OnlyLibfortrtStatic)
       CmdArgs.push_back("-Bdynamic");
     CmdArgs.push_back("-lm");
   }
@@ -5767,10 +5591,8 @@ void minix::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (D.CCCIsCXX) {
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
-      CmdArgs.push_back("-lm");
-    }
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
+    CmdArgs.push_back("-lm");
   }
 
   if (!Args.hasArg(options::OPT_nostdlib) &&
@@ -5900,10 +5722,8 @@ void dragonfly::Link::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("/usr/lib");
     }
 
-    if (D.CCCIsCXX) {
-      getToolChain().AddCXXStdlibLibArgs(Args, CmdArgs);
-      CmdArgs.push_back("-lm");
-    }
+    getToolChain().AddFortRTLibArgs(Args, CmdArgs);
+    CmdArgs.push_back("-lm");
 
     if (Args.hasArg(options::OPT_shared)) {
       CmdArgs.push_back("-lgcc_pic");

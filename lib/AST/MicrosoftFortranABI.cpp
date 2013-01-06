@@ -1,4 +1,4 @@
-//===------- MicrosoftCXXABI.cpp - AST support for the Microsoft C++ ABI --===//
+//===------- MicrosoftFortranABI.cpp - AST support for the Microsoft C++ ABI --===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CXXABI.h"
+#include "FortranABI.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/DeclCXX.h"
 #include "lfort/AST/RecordLayout.h"
@@ -22,10 +22,10 @@
 using namespace lfort;
 
 namespace {
-class MicrosoftCXXABI : public CXXABI {
+class MicrosoftFortranABI : public FortranABI {
   ASTContext &Context;
 public:
-  MicrosoftCXXABI(ASTContext &Ctx) : Context(Ctx) { }
+  MicrosoftFortranABI(ASTContext &Ctx) : Context(Ctx) { }
 
   unsigned getMemberPointerSize(const MemberPointerType *MPT) const;
 
@@ -52,7 +52,7 @@ public:
 };
 }
 
-unsigned MicrosoftCXXABI::getMemberPointerSize(const MemberPointerType *MPT) const {
+unsigned MicrosoftFortranABI::getMemberPointerSize(const MemberPointerType *MPT) const {
   QualType Pointee = MPT->getPointeeType();
   CXXRecordDecl *RD = MPT->getClass()->getAsCXXRecordDecl();
   if (RD->getNumVBases() > 0) {
@@ -65,7 +65,7 @@ unsigned MicrosoftCXXABI::getMemberPointerSize(const MemberPointerType *MPT) con
   return 1;
 }
 
-CXXABI *lfort::CreateMicrosoftCXXABI(ASTContext &Ctx) {
-  return new MicrosoftCXXABI(Ctx);
+FortranABI *lfort::CreateMicrosoftFortranABI(ASTContext &Ctx) {
+  return new MicrosoftFortranABI(Ctx);
 }
 

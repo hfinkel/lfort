@@ -357,7 +357,7 @@ public:
                          const char *DarwinStaticLib,
                          bool AlwaysLink = false) const;
 
-  virtual void AddCXXStdlibLibArgs(const ArgList &Args,
+  virtual void AddFortRTLibArgs(const ArgList &Args,
                                    ArgStringList &CmdArgs) const;
 
   virtual void AddCCKextLibArgs(const ArgList &Args,
@@ -434,9 +434,9 @@ public:
   virtual Tool &SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const;
 
-  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
-  virtual void AddCXXStdlibLibArgs(const ArgList &Args,
+  virtual void AddFortRTLibArgs(const ArgList &Args,
                                    ArgStringList &CmdArgs) const;
   virtual unsigned GetDefaultStackProtectorLevel(bool KernelOrKext) const {
      return 1;
@@ -497,7 +497,7 @@ public:
                                          ArgStringList &CC1Args) const;
   virtual void addLFortTargetOptions(const ArgList &DriverArgs,
                                      ArgStringList &CC1Args) const;
-  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
   std::string Linker;
@@ -525,9 +525,8 @@ public:
 
   virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
-  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
-  virtual CXXStdlibType GetCXXStdlibType(const ArgList &Args) const;
 
   StringRef GetGCCLibAndIncVersion() const { return GCCLibAndIncVersion.Text; }
 
@@ -574,7 +573,7 @@ public:
 
   virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
-  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
 };

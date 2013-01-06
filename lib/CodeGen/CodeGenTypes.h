@@ -50,7 +50,7 @@ namespace lfort {
   typedef CanQual<Type> CanQualType;
 
 namespace CodeGen {
-  class CGCXXABI;
+  class CGFortranABI;
   class CGRecordLayout;
   class CodeGenModule;
   class RequiredArgs;
@@ -65,7 +65,7 @@ public:
   llvm::Module &TheModule;
   const llvm::DataLayout &TheDataLayout;
   const ABIInfo &TheABIInfo;
-  CGCXXABI &TheCXXABI;
+  CGFortranABI &TheFortranABI;
   const CodeGenOptions &CodeGenOpts;
   CodeGenModule &CGM;
 
@@ -115,7 +115,7 @@ public:
   ASTContext &getContext() const { return Context; }
   const ABIInfo &getABIInfo() const { return TheABIInfo; }
   const CodeGenOptions &getCodeGenOpts() const { return CodeGenOpts; }
-  CGCXXABI &getCXXABI() const { return TheCXXABI; }
+  CGFortranABI &getFortranABI() const { return TheFortranABI; }
   llvm::LLVMContext &getLLVMContext() { return TheModule.getContext(); }
 
   /// ConvertType - Convert type T into a llvm::Type.

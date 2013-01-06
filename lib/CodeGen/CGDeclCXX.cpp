@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGObjCRuntime.h"
 #include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/StringExtras.h"
@@ -99,7 +99,7 @@ static void EmitDeclDestroy(CodeGenFunction &CGF, const VarDecl &D,
     argument = llvm::Constant::getNullValue(CGF.Int8PtrTy);
   }
 
-  CGM.getCXXABI().registerGlobalDtor(CGF, function, argument);
+  CGM.getFortranABI().registerGlobalDtor(CGF, function, argument);
 }
 
 /// Emit code to cause the variable at the given address to be considered as
@@ -212,7 +212,7 @@ void CodeGenFunction::EmitCXXGuardedInit(const VarDecl &D,
               "this initialization requires a guard variable, which "
               "the kernel does not support");
 
-  CGM.getCXXABI().EmitGuardedInit(*this, D, DeclPtr, PerformInit);
+  CGM.getFortranABI().EmitGuardedInit(*this, D, DeclPtr, PerformInit);
 }
 
 static llvm::Function *

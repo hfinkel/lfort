@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenModule.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "lfort/AST/RecordLayout.h"
 #include "lfort/AST/VTTBuilder.h"
 using namespace lfort;
@@ -101,7 +101,7 @@ llvm::GlobalVariable *CodeGenVTables::GetAddrOfVTT(const CXXRecordDecl *RD) {
 
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXVTT(RD, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXVTT(RD, Out);
   Out.flush();
   StringRef Name = OutName.str();
 

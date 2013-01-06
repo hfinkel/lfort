@@ -50,7 +50,7 @@ Driver::Driver(StringRef LFortExecutable,
     DefaultImageName(DefaultImageName),
     DriverTitle("lfort LLVM compiler"),
     CCPrintOptionsFilename(0), CCPrintHeadersFilename(0),
-    CCLogDiagnosticsFilename(0), CCCIsCXX(false),
+    CCLogDiagnosticsFilename(0), CCCIsF77(false),
     CCCIsCPP(false),CCCEcho(false), CCCPrintBindings(false),
     CCPrintOptions(false), CCPrintHeaders(false), CCLogDiagnostics(false),
     CCGenDiagnostics(false), CCCGenericGCCName(""), CheckInputsExist(true),
@@ -199,9 +199,9 @@ DerivedArgList *Driver::TranslateInputArgs(const InputArgList &Args) const {
       StringRef Value = A->getValue();
 
       // Rewrite unless -nostdlib is present.
-      if (!HasNostdlib && Value == "stdc++") {
+      if (!HasNostdlib && Value == "gfortran") {
         DAL->AddFlagArg(A, Opts->getOption(
-                              options::OPT_Z_reserved_lib_stdcxx));
+                              options::OPT_Z_reserved_lib_fortrt));
         continue;
       }
 
@@ -267,7 +267,7 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
   CCCPrintOptions = Args->hasArg(options::OPT_ccc_print_options);
   CCCPrintActions = Args->hasArg(options::OPT_ccc_print_phases);
   CCCPrintBindings = Args->hasArg(options::OPT_ccc_print_bindings);
-  CCCIsCXX = Args->hasArg(options::OPT_ccc_cxx) || CCCIsCXX;
+  CCCIsF77 = Args->hasArg(options::OPT_ccc_f77) || CCCIsF77;
   CCCEcho = Args->hasArg(options::OPT_ccc_echo);
   if (const Arg *A = Args->getLastArg(options::OPT_ccc_gcc_name))
     CCCGenericGCCName = A->getValue();
@@ -914,7 +914,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
           // spurious errors (e.g., no inputs).
           if (!Args.hasArgNoClaim(options::OPT_E) && !CCCIsCPP)
             Diag(lfort::diag::err_drv_unknown_stdin_type);
-          Ty = types::TY_C;
+          Ty = types::TY_Fortran;
         } else {
           // Otherwise lookup by extension.
           // Fallback is C if invoked as C preprocessor or Object otherwise.
@@ -925,33 +925,21 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
 
           if (Ty == types::TY_INVALID) {
             if (CCCIsCPP)
-              Ty = types::TY_C;
+              Ty = types::TY_Fortran;
             else
               Ty = types::TY_Object;
           }
 
-          // If the driver is invoked as C++ compiler (like lfort++ or c++) it
-          // should autodetect some input files as C++ for g++ compatibility.
-          if (CCCIsCXX) {
+          // If the driver is invoked as a Fortran 77 compiler (like lfort77 or f77) it
+          // should autodetect some input files as Fortran 90 for gfortran compatibility.
+          if (CCCIsF77) {
             types::ID OldTy = Ty;
-            Ty = types::lookupCXXTypeForCType(Ty);
+            Ty = types::lookupF77TypeForFortranType(Ty);
 
             if (Ty != OldTy)
-              Diag(lfort::diag::warn_drv_treating_input_as_cxx)
+              Diag(lfort::diag::warn_drv_treating_input_as_f77)
                 << getTypeName(OldTy) << getTypeName(Ty);
           }
-        }
-
-        // -ObjC and -ObjC++ override the default language, but only for "source
-        // files". We just treat everything that isn't a linker input as a
-        // source file.
-        //
-        // FIXME: Clean this up if we move the phase sequence into the type.
-        if (Ty != types::TY_Object) {
-          if (Args.hasArg(options::OPT_ObjC))
-            Ty = types::TY_ObjC;
-          else if (Args.hasArg(options::OPT_ObjCXX))
-            Ty = types::TY_ObjCXX;
         }
       } else {
         assert(InputTypeArg && "InputType set w/o InputTypeArg");

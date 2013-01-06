@@ -32,11 +32,11 @@ add_lfort_library(lfortAST
   ExprCXX.cpp
   ExternalASTSource.cpp
   InheritViz.cpp
-  ItaniumCXXABI.cpp
+  ItaniumFortranABI.cpp
   ItaniumMangle.cpp
   LambdaMangleContext.cpp
   Mangle.cpp
-  MicrosoftCXXABI.cpp
+  MicrosoftFortranABI.cpp
   MicrosoftMangle.cpp
   NestedNameSpecifier.cpp
   NSAPI.cpp

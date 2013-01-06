@@ -13,7 +13,7 @@
 
 #include "CodeGenFunction.h"
 #include "CGCUDARuntime.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGDebugInfo.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
@@ -42,11 +42,11 @@ CodeGenFunction::CodeGenFunction(CodeGenModule &cgm, bool suppressNewContext)
     FirstBlockInfo(0), EHResumeBlock(0), ExceptionSlot(0), EHSelectorSlot(0),
     DebugInfo(0), DisableDebugInfo(false), DidCallStackSave(false),
     IndirectBranch(0), SwitchInsn(0), CaseRangeBlock(0), UnreachableBlock(0),
-    CXXABIThisDecl(0), CXXABIThisValue(0), CXXThisValue(0), CXXVTTDecl(0),
+    FortranABIThisDecl(0), FortranABIThisValue(0), CXXThisValue(0), CXXVTTDecl(0),
     CXXVTTValue(0), OutermostConditional(0), TerminateLandingPad(0),
     TerminateHandler(0), TrapBB(0) {
   if (!suppressNewContext)
-    CGM.getCXXABI().getMangleContext().startNewFunction();
+    CGM.getFortranABI().getMangleContext().startNewFunction();
 
   llvm::FastMathFlags FMF;
   if (CGM.getLangOpts().FastMath)
@@ -429,7 +429,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
   EmitFunctionProlog(*CurFnInfo, CurFn, Args);
 
   if (D && isa<CXXMethodDecl>(D) && cast<CXXMethodDecl>(D)->isInstance()) {
-    CGM.getCXXABI().EmitInstanceFunctionProlog(*this);
+    CGM.getFortranABI().EmitInstanceFunctionProlog(*this);
     const CXXMethodDecl *MD = cast<CXXMethodDecl>(D);
     if (MD->getParent()->isLambda() &&
         MD->getOverloadedOperator() == OO_Call) {
@@ -440,7 +440,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
         // If this lambda captures this, load it.
         QualType LambdaTagType =
             getContext().getTagDeclType(LambdaThisCaptureField->getParent());
-        LValue LambdaLV = MakeNaturalAlignAddrLValue(CXXABIThisValue,
+        LValue LambdaLV = MakeNaturalAlignAddrLValue(FortranABIThisValue,
                                                      LambdaTagType);
         LValue ThisLValue = EmitLValueForField(LambdaLV,
                                                LambdaThisCaptureField);
@@ -450,7 +450,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
       // Not in a lambda; just use 'this' from the method.
       // FIXME: Should we generate a new load for each use of 'this'?  The
       // fast register allocator would be happier...
-      CXXThisValue = CXXABIThisValue;
+      CXXThisValue = FortranABIThisValue;
     }
   }
 
@@ -516,7 +516,7 @@ void CodeGenFunction::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
 
   CurGD = GD;
   if (isa<CXXMethodDecl>(FD) && cast<CXXMethodDecl>(FD)->isInstance())
-    CGM.getCXXABI().BuildInstanceFunctionParams(*this, ResTy, Args);
+    CGM.getFortranABI().BuildInstanceFunctionParams(*this, ResTy, Args);
 
   for (unsigned i = 0, e = FD->getNumParams(); i != e; ++i)
     Args.push_back(FD->getParamDecl(i));

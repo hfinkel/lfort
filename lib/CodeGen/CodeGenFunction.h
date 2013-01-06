@@ -74,7 +74,7 @@ namespace CodeGen {
   class CGFunctionInfo;
   class CGRecordLayout;
   class CGBlockInfo;
-  class CGCXXABI;
+  class CGFortranABI;
   class BlockFlags;
   class BlockFieldFlags;
 
@@ -535,7 +535,7 @@ class CodeGenFunction : public CodeGenTypeCache {
   CodeGenFunction(const CodeGenFunction &) LLVM_DELETED_FUNCTION;
   void operator=(const CodeGenFunction &) LLVM_DELETED_FUNCTION;
 
-  friend class CGCXXABI;
+  friend class CGFortranABI;
 public:
   /// A jump destination is an abstract label, branching to which may
   /// require a jump out through normal cleanups.
@@ -1172,8 +1172,8 @@ private:
 
   /// CXXThisDecl - When generating code for a C++ member function,
   /// this will hold the implicit 'this' declaration.
-  ImplicitParamDecl *CXXABIThisDecl;
-  llvm::Value *CXXABIThisValue;
+  ImplicitParamDecl *FortranABIThisDecl;
+  llvm::Value *FortranABIThisValue;
   llvm::Value *CXXThisValue;
 
   /// CXXVTTDecl - When generating code for a base object constructor or

@@ -1,4 +1,4 @@
-//===------- ItaniumCXXABI.cpp - AST support for the Itanium C++ ABI ------===//
+//===------- ItaniumFortranABI.cpp - AST support for the Itanium C++ ABI ------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -17,7 +17,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CXXABI.h"
+#include "FortranABI.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/DeclCXX.h"
 #include "lfort/AST/RecordLayout.h"
@@ -27,11 +27,11 @@
 using namespace lfort;
 
 namespace {
-class ItaniumCXXABI : public CXXABI {
+class ItaniumFortranABI : public FortranABI {
 protected:
   ASTContext &Context;
 public:
-  ItaniumCXXABI(ASTContext &Ctx) : Context(Ctx) { }
+  ItaniumFortranABI(ASTContext &Ctx) : Context(Ctx) { }
 
   unsigned getMemberPointerSize(const MemberPointerType *MPT) const {
     QualType Pointee = MPT->getPointeeType();
@@ -58,16 +58,16 @@ public:
   }
 };
 
-class ARMCXXABI : public ItaniumCXXABI {
+class ARMFortranABI : public ItaniumFortranABI {
 public:
-  ARMCXXABI(ASTContext &Ctx) : ItaniumCXXABI(Ctx) { }
+  ARMFortranABI(ASTContext &Ctx) : ItaniumFortranABI(Ctx) { }
 };
 }
 
-CXXABI *lfort::CreateItaniumCXXABI(ASTContext &Ctx) {
-  return new ItaniumCXXABI(Ctx);
+FortranABI *lfort::CreateItaniumFortranABI(ASTContext &Ctx) {
+  return new ItaniumFortranABI(Ctx);
 }
 
-CXXABI *lfort::CreateARMCXXABI(ASTContext &Ctx) {
-  return new ARMCXXABI(Ctx);
+FortranABI *lfort::CreateARMFortranABI(ASTContext &Ctx) {
+  return new ARMFortranABI(Ctx);
 }

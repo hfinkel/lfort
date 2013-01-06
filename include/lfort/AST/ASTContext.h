@@ -55,7 +55,7 @@ namespace lfort {
   class IdentifierTable;
   class SelectorTable;
   class TargetInfo;
-  class CXXABI;
+  class FortranABI;
   // Decls
   class DeclContext;
   class CXXConversionDecl;
@@ -376,8 +376,8 @@ class ASTContext : public RefCountedBase<ASTContext> {
   PartialDiagnostic::StorageAllocator DiagAllocator;
 
   /// \brief The current C++ ABI.
-  OwningPtr<CXXABI> ABI;
-  CXXABI *createCXXABI(const TargetInfo &T);
+  OwningPtr<FortranABI> ABI;
+  FortranABI *createFortranABI(const TargetInfo &T);
 
   /// \brief The logical -> physical address space map.
   const LangAS::Map *AddrSpaceMap;

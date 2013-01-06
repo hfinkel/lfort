@@ -44,19 +44,19 @@ class SourceManager;
 namespace Builtin { struct Info; }
 
 /// \brief The types of C++ ABIs for which we can generate code.
-enum TargetCXXABI {
+enum TargetFortranABI {
   /// The generic ("Itanium") C++ ABI, documented at:
   ///   http://www.codesourcery.com/public/cxx-abi/
-  CXXABI_Itanium,
+  FortranABI_Itanium,
 
   /// The ARM C++ ABI, based largely on the Itanium ABI but with
   /// significant differences.
   ///    http://infocenter.arm.com
   ///                    /help/topic/com.arm.doc.ihi0041c/IHI0041C_cppabi.pdf
-  CXXABI_ARM,
+  FortranABI_ARM,
 
   /// The Visual Studio ABI.  Only scattered official documentation exists.
-  CXXABI_Microsoft
+  FortranABI_Microsoft
 };
 
 /// \brief Exposes information about the current target.
@@ -89,7 +89,7 @@ protected:
   const llvm::fltSemantics *HalfFormat, *FloatFormat, *DoubleFormat,
     *LongDoubleFormat;
   unsigned char RegParmMax, SSERegParmMax;
-  TargetCXXABI CXXABI;
+  TargetFortranABI FortranABI;
   const LangAS::Map *AddrSpaceMap;
 
   mutable StringRef PlatformName;
@@ -631,8 +631,8 @@ public:
   }
 
   /// \brief Get the C++ ABI currently in use.
-  virtual TargetCXXABI getCXXABI() const {
-    return CXXABI;
+  virtual TargetFortranABI getFortranABI() const {
+    return FortranABI;
   }
 
   /// \brief Target the specified CPU.
@@ -652,22 +652,22 @@ public:
   /// \brief Use this specified C++ ABI.
   ///
   /// \return False on error (invalid C++ ABI name).
-  bool setCXXABI(const std::string &Name) {
-    static const TargetCXXABI Unknown = static_cast<TargetCXXABI>(-1);
-    TargetCXXABI ABI = llvm::StringSwitch<TargetCXXABI>(Name)
-      .Case("arm", CXXABI_ARM)
-      .Case("itanium", CXXABI_Itanium)
-      .Case("microsoft", CXXABI_Microsoft)
+  bool setFortranABI(const std::string &Name) {
+    static const TargetFortranABI Unknown = static_cast<TargetFortranABI>(-1);
+    TargetFortranABI ABI = llvm::StringSwitch<TargetFortranABI>(Name)
+      .Case("arm", FortranABI_ARM)
+      .Case("itanium", FortranABI_Itanium)
+      .Case("microsoft", FortranABI_Microsoft)
       .Default(Unknown);
     if (ABI == Unknown) return false;
-    return setCXXABI(ABI);
+    return setFortranABI(ABI);
   }
 
   /// \brief Set the C++ ABI to be used by this implementation.
   ///
   /// \return False on error (ABI not valid on this target)
-  virtual bool setCXXABI(TargetCXXABI ABI) {
-    CXXABI = ABI;
+  virtual bool setFortranABI(TargetFortranABI ABI) {
+    FortranABI = ABI;
     return true;
   }
 

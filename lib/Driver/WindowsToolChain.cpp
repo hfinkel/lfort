@@ -357,7 +357,7 @@ void Windows::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
   addSystemIncludes(DriverArgs, CC1Args, Paths);
 }
 
-void Windows::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Windows::AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                            ArgStringList &CC1Args) const {
-  // FIXME: There should probably be logic here to find libc++ on Windows.
+  // FIXME: There should probably be logic here to find Fortran modules on Windows.
 }

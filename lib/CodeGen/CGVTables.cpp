@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/CXXInheritance.h"
 #include "lfort/AST/RecordLayout.h"
@@ -66,10 +66,10 @@ llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
   SmallString<256> Name;
   llvm::raw_svector_ostream Out(Name);
   if (const CXXDestructorDecl* DD = dyn_cast<CXXDestructorDecl>(MD))
-    getCXXABI().getMangleContext().mangleCXXDtorThunk(DD, GD.getDtorType(),
+    getFortranABI().getMangleContext().mangleCXXDtorThunk(DD, GD.getDtorType(),
                                                       Thunk.This, Out);
   else
-    getCXXABI().getMangleContext().mangleThunk(MD, Thunk, Out);
+    getFortranABI().getMangleContext().mangleThunk(MD, Thunk, Out);
   Out.flush();
 
   llvm::Type *Ty = getTypes().GetFunctionTypeForVTable(GD);
@@ -324,7 +324,7 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
 
   // Create the implicit 'this' parameter declaration.
   CurGD = GD;
-  CGM.getCXXABI().BuildInstanceFunctionParams(*this, ResultType, FunctionArgs);
+  CGM.getFortranABI().BuildInstanceFunctionParams(*this, ResultType, FunctionArgs);
 
   // Add the rest of the parameters.
   for (FunctionDecl::param_const_iterator I = MD->param_begin(),
@@ -340,8 +340,8 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
   StartFunction(GlobalDecl(), ResultType, Fn, FnInfo, FunctionArgs,
                 SourceLocation());
 
-  CGM.getCXXABI().EmitInstanceFunctionProlog(*this);
-  CXXThisValue = CXXABIThisValue;
+  CGM.getFortranABI().EmitInstanceFunctionProlog(*this);
+  CXXThisValue = FortranABIThisValue;
 
   // Adjust the 'this' pointer if necessary.
   llvm::Value *AdjustedThisPtr = 
@@ -398,7 +398,7 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
     RV = PerformReturnAdjustment(*this, ResultType, RV, Thunk);
 
   if (!ResultType->isVoidType() && Slot.isNull())
-    CGM.getCXXABI().EmitReturnFromThunk(*this, RV, ResultType);
+    CGM.getFortranABI().EmitReturnFromThunk(*this, RV, ResultType);
 
   // Disable the final ARC autorelease.
   AutoreleaseResult = false;
@@ -590,7 +590,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
         if (!PureVirtualFn) {
           llvm::FunctionType *Ty = 
             llvm::FunctionType::get(CGM.VoidTy, /*isVarArg=*/false);
-          StringRef PureCallName = CGM.getCXXABI().GetPureVirtualCallName();
+          StringRef PureCallName = CGM.getFortranABI().GetPureVirtualCallName();
           PureVirtualFn = CGM.CreateRuntimeFunction(Ty, PureCallName);
           PureVirtualFn = llvm::ConstantExpr::getBitCast(PureVirtualFn,
                                                          CGM.Int8PtrTy);
@@ -601,7 +601,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
           llvm::FunctionType *Ty =
             llvm::FunctionType::get(CGM.VoidTy, /*isVarArg=*/false);
           StringRef DeletedCallName =
-            CGM.getCXXABI().GetDeletedVirtualCallName();
+            CGM.getFortranABI().GetDeletedVirtualCallName();
           DeletedVirtualFn = CGM.CreateRuntimeFunction(Ty, DeletedCallName);
           DeletedVirtualFn = llvm::ConstantExpr::getBitCast(DeletedVirtualFn,
                                                          CGM.Int8PtrTy);
@@ -651,7 +651,7 @@ llvm::GlobalVariable *CodeGenVTables::GetAddrOfVTable(const CXXRecordDecl *RD) {
 
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().mangleCXXVTable(RD, Out);
+  CGM.getFortranABI().getMangleContext().mangleCXXVTable(RD, Out);
   Out.flush();
   StringRef Name = OutName.str();
 
@@ -705,7 +705,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   // Get the mangled construction vtable name.
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
-  CGM.getCXXABI().getMangleContext().
+  CGM.getFortranABI().getMangleContext().
     mangleCXXCtorVTable(RD, Base.getBaseOffset().getQuantity(), Base.getBase(), 
                         Out);
   Out.flush();

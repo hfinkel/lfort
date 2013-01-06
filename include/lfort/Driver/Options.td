@@ -84,8 +84,8 @@ def ccc_debug_Group : OptionGroup<"<lfort debug/development internal options>">,
   Group<ccc_Group>, HelpText<"DEBUG/DEVELOPMENT OPTIONS">;
 
 class CCCDriverOpt : Group<ccc_driver_Group>, Flags<[DriverOption, HelpHidden]>;
-def ccc_cxx : Flag<["-"], "ccc-cxx">, CCCDriverOpt,
-  HelpText<"Act as a C++ driver">;
+def ccc_f77 : Flag<["-"], "ccc-f77">, CCCDriverOpt,
+  HelpText<"Act as a Fortran 77 driver">;
 def ccc_echo : Flag<["-"], "ccc-echo">, CCCDriverOpt,
   HelpText<"Echo commands before running them">;
 def ccc_gcc_name : Separate<["-"], "ccc-gcc-name">, CCCDriverOpt,
@@ -252,8 +252,8 @@ def compatibility__version : JoinedOrSeparate<["-"], "compatibility_version">;
 def coverage : Flag<["-", "--"], "coverage">;
 def cpp_precomp : Flag<["-"], "cpp-precomp">, Group<lfort_ignored_f_Group>;
 def current__version : JoinedOrSeparate<["-"], "current_version">;
-def cxx_isystem : JoinedOrSeparate<["-"], "cxx-isystem">, Group<lfort_i_Group>,
-  HelpText<"Add directory to the C++ SYSTEM include search path">, Flags<[CC1Option]>,
+def fortran_isystem : JoinedOrSeparate<["-"], "fortran-isystem">, Group<lfort_i_Group>,
+  HelpText<"Add directory to the Fortran SYSTEM include search path">, Flags<[CC1Option]>,
   MetaVarName<"<directory>">;
 def c : Flag<["-"], "c">, Flags<[DriverOption]>,
   HelpText<"Only run preprocess, compile, and assemble steps">;
@@ -1011,7 +1011,7 @@ def single__module : Flag<["-"], "single_module">;
 def specs_EQ : Joined<["-", "--"], "specs=">;
 def specs : Separate<["-", "--"], "specs">, Flags<[Unsupported]>;
 def static_libgcc : Flag<["-"], "static-libgcc">;
-def static_libstdcxx : Flag<["-"], "static-libstdc++">;
+def static_libfortrt : Flag<["-"], "static-libfortrt">;
 def static : Flag<["-", "--"], "static">, Flags<[NoArgumentUnused]>;
 def std_default_EQ : Joined<["-"], "std-default=">;
 def std_EQ : Joined<["-", "--"], "std=">, Flags<[CC1Option]>, Group<L_Group>,
@@ -1181,7 +1181,7 @@ def Zlinker_input : Separate<["-"], "Zlinker-input">,
     Flags<[Unsupported, NoArgumentUnused]>;
 
 // Reserved library options.
-def Z_reserved_lib_stdcxx : Flag<["-"], "Z-reserved-lib-stdc++">,
+def Z_reserved_lib_fortrt : Flag<["-"], "Z-reserved-lib-fortrt">,
     Flags<[LinkerInput, NoArgumentUnused, Unsupported]>, Group<reserved_lib_Group>;
 def Z_reserved_lib_cckext : Flag<["-"], "Z-reserved-lib-cckext">,
     Flags<[LinkerInput, NoArgumentUnused, Unsupported]>, Group<reserved_lib_Group>;

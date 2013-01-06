@@ -108,8 +108,8 @@ public:
   /// A list of inputs and their types for the given arguments.
   typedef SmallVector<std::pair<types::ID, const Arg*>, 16> InputList;
 
-  /// Whether the driver should follow g++ like behavior.
-  unsigned CCCIsCXX : 1;
+  /// Whether the driver should follow f77 like behavior.
+  unsigned CCCIsF77 : 1;
 
   /// Whether the driver is just the preprocessor.
   unsigned CCCIsCPP : 1;

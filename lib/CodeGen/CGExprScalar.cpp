@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
@@ -532,7 +532,7 @@ Value *ScalarExprEmitter::EmitConversionToBool(Value *Src, QualType SrcType) {
     return EmitFloatToBoolConversion(Src);
 
   if (const MemberPointerType *MPT = dyn_cast<MemberPointerType>(SrcType))
-    return CGF.CGM.getCXXABI().EmitMemberPointerIsNotNull(CGF, Src, MPT);
+    return CGF.CGM.getFortranABI().EmitMemberPointerIsNotNull(CGF, Src, MPT);
 
   assert((SrcType->isIntegerType() || isa<llvm::PointerType>(Src->getType())) &&
          "Unknown scalar type to convert");
@@ -1274,7 +1274,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       (void) Visit(E);
 
     const MemberPointerType *MPT = CE->getType()->getAs<MemberPointerType>();
-    return CGF.CGM.getCXXABI().EmitNullMemberPointer(MPT);
+    return CGF.CGM.getFortranABI().EmitNullMemberPointer(MPT);
   }
 
   case CK_ReinterpretMemberPointer:
@@ -1288,7 +1288,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     // actual control flow may be required in order to perform the
     // check, which it is for data member pointers (but not member
     // function pointers on Itanium and ARM).
-    return CGF.CGM.getCXXABI().EmitMemberPointerConversion(CGF, CE, Src);
+    return CGF.CGM.getFortranABI().EmitMemberPointerConversion(CGF, CE, Src);
   }
 
   case CK_ARCProduceObject:
@@ -1366,7 +1366,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   case CK_MemberPointerToBoolean: {
     llvm::Value *MemPtr = Visit(E);
     const MemberPointerType *MPT = E->getType()->getAs<MemberPointerType>();
-    return CGF.CGM.getCXXABI().EmitMemberPointerIsNotNull(CGF, MemPtr, MPT);
+    return CGF.CGM.getFortranABI().EmitMemberPointerIsNotNull(CGF, MemPtr, MPT);
   }
 
   case CK_FloatingComplexToReal:
@@ -2468,7 +2468,7 @@ Value *ScalarExprEmitter::EmitCompare(const BinaryOperator *E,unsigned UICmpOpc,
            E->getOpcode() == BO_NE);
     Value *LHS = CGF.EmitScalarExpr(E->getLHS());
     Value *RHS = CGF.EmitScalarExpr(E->getRHS());
-    Result = CGF.CGM.getCXXABI().EmitMemberPointerComparison(
+    Result = CGF.CGM.getFortranABI().EmitMemberPointerComparison(
                    CGF, LHS, RHS, MPT, E->getOpcode() == BO_NE);
   } else if (!LHSTy->isAnyComplexType()) {
     Value *LHS = Visit(E->getLHS());

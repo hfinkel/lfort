@@ -216,18 +216,16 @@ ToolChain::RuntimeLibType ToolChain::GetRuntimeLibType(
   return GetDefaultRuntimeLibType();
 }
 
-ToolChain::CXXStdlibType ToolChain::GetCXXStdlibType(const ArgList &Args) const{
+ToolChain::FortRTLibType ToolChain::GetFortRTLibType(const ArgList &Args) const{
   if (Arg *A = Args.getLastArg(options::OPT_stdlib_EQ)) {
     StringRef Value = A->getValue();
-    if (Value == "libc++")
-      return ToolChain::CST_Libcxx;
-    if (Value == "libstdc++")
-      return ToolChain::CST_Libstdcxx;
+    if (Value == "libfortrt")
+      return ToolChain::CST_Libfortrt;
     getDriver().Diag(diag::err_drv_invalid_stdlib_name)
       << A->getAsString(Args);
   }
 
-  return ToolChain::CST_Libstdcxx;
+  return ToolChain::CST_Libfortrt;
 }
 
 /// \brief Utility function to add a system include directory to CC1 arguments.
@@ -264,7 +262,7 @@ ToolChain::CXXStdlibType ToolChain::GetCXXStdlibType(const ArgList &Args) const{
   }
 }
 
-void ToolChain::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void ToolChain::AddLFortFortranStdlibIncludeArgs(const ArgList &DriverArgs,
                                              ArgStringList &CC1Args) const {
   // Header search paths should be handled by each of the subclasses.
   // Historically, they have not been, and instead have been handled inside of
@@ -272,23 +270,19 @@ void ToolChain::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
   // will slowly stop being called.
   //
   // While it is being called, replicate a bit of a hack to propagate the
-  // '-stdlib=' flag down to CC1 so that it can in turn customize the C++
+  // '-stdlib=' flag down to CC1 so that it can in turn customize the Fortran
   // header search paths with it. Once all systems are overriding this
   // function, the CC1 flag and this line can be removed.
   DriverArgs.AddAllArgs(CC1Args, options::OPT_stdlib_EQ);
 }
 
-void ToolChain::AddCXXStdlibLibArgs(const ArgList &Args,
+void ToolChain::AddFortRTLibArgs(const ArgList &Args,
                                     ArgStringList &CmdArgs) const {
-  CXXStdlibType Type = GetCXXStdlibType(Args);
+  FortRTLibType Type = GetFortRTLibType(Args);
 
   switch (Type) {
-  case ToolChain::CST_Libcxx:
-    CmdArgs.push_back("-lc++");
-    break;
-
-  case ToolChain::CST_Libstdcxx:
-    CmdArgs.push_back("-lstdc++");
+  case ToolChain::CST_Libfortrt:
+    CmdArgs.push_back("-lfortrt");
     break;
   }
 }

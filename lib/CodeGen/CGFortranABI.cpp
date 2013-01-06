@@ -1,4 +1,4 @@
-//===----- CGCXXABI.cpp - Interface to C++ ABIs -----------------*- C++ -*-===//
+//===----- CGFortranABI.cpp - Interface to C++ ABIs -----------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 
 using namespace lfort;
 using namespace CodeGen;
 
-CGCXXABI::~CGCXXABI() { }
+CGFortranABI::~CGFortranABI() { }
 
 static void ErrorUnsupportedABI(CodeGenFunction &CGF,
                                 StringRef S) {
@@ -35,11 +35,11 @@ static llvm::Constant *GetBogusMemberPointer(CodeGenModule &CGM,
 }
 
 llvm::Type *
-CGCXXABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
+CGFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   return CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
 }
 
-llvm::Value *CGCXXABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
                                                        llvm::Value *&This,
                                                        llvm::Value *MemPtr,
                                                  const MemberPointerType *MPT) {
@@ -54,7 +54,7 @@ llvm::Value *CGCXXABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
   return llvm::Constant::getNullValue(FTy->getPointerTo());
 }
 
-llvm::Value *CGCXXABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
                                                     llvm::Value *Base,
                                                     llvm::Value *MemPtr,
                                               const MemberPointerType *MPT) {
@@ -63,20 +63,20 @@ llvm::Value *CGCXXABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
   return llvm::Constant::getNullValue(Ty);
 }
 
-llvm::Value *CGCXXABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
                                                    const CastExpr *E,
                                                    llvm::Value *Src) {
   ErrorUnsupportedABI(CGF, "member function pointer conversions");
   return GetBogusMemberPointer(CGM, E->getType());
 }
 
-llvm::Constant *CGCXXABI::EmitMemberPointerConversion(const CastExpr *E,
+llvm::Constant *CGFortranABI::EmitMemberPointerConversion(const CastExpr *E,
                                                       llvm::Constant *Src) {
   return GetBogusMemberPointer(CGM, E->getType());
 }
 
 llvm::Value *
-CGCXXABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
+CGFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
                                       llvm::Value *L,
                                       llvm::Value *R,
                                       const MemberPointerType *MPT,
@@ -86,7 +86,7 @@ CGCXXABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
 }
 
 llvm::Value *
-CGCXXABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+CGFortranABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
                                      llvm::Value *MemPtr,
                                      const MemberPointerType *MPT) {
   ErrorUnsupportedABI(CGF, "member function pointer null testing");
@@ -94,31 +94,31 @@ CGCXXABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
 }
 
 llvm::Constant *
-CGCXXABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
+CGFortranABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
   return GetBogusMemberPointer(CGM, QualType(MPT, 0));
 }
 
-llvm::Constant *CGCXXABI::EmitMemberPointer(const CXXMethodDecl *MD) {
+llvm::Constant *CGFortranABI::EmitMemberPointer(const CXXMethodDecl *MD) {
   return GetBogusMemberPointer(CGM,
                          CGM.getContext().getMemberPointerType(MD->getType(),
                                          MD->getParent()->getTypeForDecl()));
 }
 
-llvm::Constant *CGCXXABI::EmitMemberDataPointer(const MemberPointerType *MPT,
+llvm::Constant *CGFortranABI::EmitMemberDataPointer(const MemberPointerType *MPT,
                                                 CharUnits offset) {
   return GetBogusMemberPointer(CGM, QualType(MPT, 0));
 }
 
-llvm::Constant *CGCXXABI::EmitMemberPointer(const APValue &MP, QualType MPT) {
+llvm::Constant *CGFortranABI::EmitMemberPointer(const APValue &MP, QualType MPT) {
   return GetBogusMemberPointer(CGM, MPT);
 }
 
-bool CGCXXABI::isZeroInitializable(const MemberPointerType *MPT) {
+bool CGFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
   // Fake answer.
   return true;
 }
 
-void CGCXXABI::BuildThisParam(CodeGenFunction &CGF, FunctionArgList &params) {
+void CGFortranABI::BuildThisParam(CodeGenFunction &CGF, FunctionArgList &params) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(CGF.CurGD.getDecl());
 
   // FIXME: I'm not entirely sure I like using a fake decl just for code
@@ -131,7 +131,7 @@ void CGCXXABI::BuildThisParam(CodeGenFunction &CGF, FunctionArgList &params) {
   getThisDecl(CGF) = ThisDecl;
 }
 
-void CGCXXABI::EmitThisParam(CodeGenFunction &CGF) {
+void CGFortranABI::EmitThisParam(CodeGenFunction &CGF) {
   /// Initialize the 'this' slot.
   assert(getThisDecl(CGF) && "no 'this' variable for function");
   getThisValue(CGF)
@@ -139,23 +139,23 @@ void CGCXXABI::EmitThisParam(CodeGenFunction &CGF) {
                              "this");
 }
 
-void CGCXXABI::EmitReturnFromThunk(CodeGenFunction &CGF,
+void CGFortranABI::EmitReturnFromThunk(CodeGenFunction &CGF,
                                    RValue RV, QualType ResultType) {
   CGF.EmitReturnOfRValue(RV, ResultType);
 }
 
-CharUnits CGCXXABI::GetArrayCookieSize(const CXXNewExpr *expr) {
+CharUnits CGFortranABI::GetArrayCookieSize(const CXXNewExpr *expr) {
   if (!requiresArrayCookie(expr))
     return CharUnits::Zero();
   return getArrayCookieSizeImpl(expr->getAllocatedType());
 }
 
-CharUnits CGCXXABI::getArrayCookieSizeImpl(QualType elementType) {
+CharUnits CGFortranABI::getArrayCookieSizeImpl(QualType elementType) {
   // BOGUS
   return CharUnits::Zero();
 }
 
-llvm::Value *CGCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                              llvm::Value *NewPtr,
                                              llvm::Value *NumElements,
                                              const CXXNewExpr *expr,
@@ -165,7 +165,7 @@ llvm::Value *CGCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
   return 0;
 }
 
-bool CGCXXABI::requiresArrayCookie(const CXXDeleteExpr *expr,
+bool CGFortranABI::requiresArrayCookie(const CXXDeleteExpr *expr,
                                    QualType elementType) {
   // If the class's usual deallocation function takes two arguments,
   // it needs a cookie.
@@ -175,7 +175,7 @@ bool CGCXXABI::requiresArrayCookie(const CXXDeleteExpr *expr,
   return elementType.isDestructedType();
 }
 
-bool CGCXXABI::requiresArrayCookie(const CXXNewExpr *expr) {
+bool CGFortranABI::requiresArrayCookie(const CXXNewExpr *expr) {
   // If the class's usual deallocation function takes two arguments,
   // it needs a cookie.
   if (expr->doesUsualArrayDeleteWantSize())
@@ -184,7 +184,7 @@ bool CGCXXABI::requiresArrayCookie(const CXXNewExpr *expr) {
   return expr->getAllocatedType().isDestructedType();
 }
 
-void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
+void CGFortranABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
                                const CXXDeleteExpr *expr, QualType eltTy,
                                llvm::Value *&numElements,
                                llvm::Value *&allocPtr, CharUnits &cookieSize) {
@@ -207,21 +207,21 @@ void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
   numElements = readArrayCookieImpl(CGF, allocPtr, cookieSize);
 }
 
-llvm::Value *CGCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
                                            llvm::Value *ptr,
                                            CharUnits cookieSize) {
   ErrorUnsupportedABI(CGF, "reading a new[] cookie");
   return llvm::ConstantInt::get(CGF.SizeTy, 0);
 }
 
-void CGCXXABI::EmitGuardedInit(CodeGenFunction &CGF,
+void CGFortranABI::EmitGuardedInit(CodeGenFunction &CGF,
                                const VarDecl &D,
                                llvm::GlobalVariable *GV,
                                bool PerformInit) {
   ErrorUnsupportedABI(CGF, "static local variable initialization");
 }
 
-void CGCXXABI::registerGlobalDtor(CodeGenFunction &CGF,
+void CGFortranABI::registerGlobalDtor(CodeGenFunction &CGF,
                                   llvm::Constant *dtor,
                                   llvm::Constant *addr) {
   // The default behavior is to use atexit.
@@ -231,7 +231,7 @@ void CGCXXABI::registerGlobalDtor(CodeGenFunction &CGF,
 /// Returns the adjustment, in bytes, required for the given
 /// member-pointer operation.  Returns null if no adjustment is
 /// required.
-llvm::Constant *CGCXXABI::getMemberPointerAdjustment(const CastExpr *E) {
+llvm::Constant *CGFortranABI::getMemberPointerAdjustment(const CastExpr *E) {
   assert(E->getCastKind() == CK_DerivedToBaseMemberPointer ||
          E->getCastKind() == CK_BaseToDerivedMemberPointer);
 

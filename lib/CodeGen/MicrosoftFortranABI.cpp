@@ -1,4 +1,4 @@
-//===--- MicrosoftCXXABI.cpp - Emit LLVM Code from ASTs for a Module ------===//
+//===--- MicrosoftFortranABI.cpp - Emit LLVM Code from ASTs for a Module ------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,7 +14,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CGCXXABI.h"
+#include "CGFortranABI.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/Decl.h"
 #include "lfort/AST/DeclCXX.h"
@@ -24,9 +24,9 @@ using namespace CodeGen;
 
 namespace {
 
-class MicrosoftCXXABI : public CGCXXABI {
+class MicrosoftFortranABI : public CGFortranABI {
 public:
-  MicrosoftCXXABI(CodeGenModule &CGM) : CGCXXABI(CGM) {}
+  MicrosoftFortranABI(CodeGenModule &CGM) : CGFortranABI(CGM) {}
 
   StringRef GetPureVirtualCallName() { return "_purecall"; }
   // No known support for deleted functions in MSVC yet, so this choice is
@@ -102,19 +102,19 @@ public:
 
 }
 
-llvm::Value *MicrosoftCXXABI::adjustToCompleteObject(CodeGenFunction &CGF,
+llvm::Value *MicrosoftFortranABI::adjustToCompleteObject(CodeGenFunction &CGF,
                                                      llvm::Value *ptr,
                                                      QualType type) {
   // FIXME: implement
   return ptr;
 }
 
-bool MicrosoftCXXABI::needThisReturn(GlobalDecl GD) {
+bool MicrosoftFortranABI::needThisReturn(GlobalDecl GD) {
   const CXXMethodDecl* MD = cast<CXXMethodDecl>(GD.getDecl());
   return isa<CXXConstructorDecl>(MD);
 }
 
-void MicrosoftCXXABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
+void MicrosoftFortranABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
                                  CXXCtorType Type,
                                  CanQualType &ResTy,
                                  SmallVectorImpl<CanQualType> &ArgTys) {
@@ -124,7 +124,7 @@ void MicrosoftCXXABI::BuildConstructorSignature(const CXXConstructorDecl *Ctor,
   ResTy = ArgTys[0];
 }
 
-void MicrosoftCXXABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void MicrosoftFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
                                                   QualType &ResTy,
                                                   FunctionArgList &Params) {
   BuildThisParam(CGF, Params);
@@ -133,27 +133,27 @@ void MicrosoftCXXABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
   }
 }
 
-void MicrosoftCXXABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+void MicrosoftFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
   EmitThisParam(CGF);
   if (needThisReturn(CGF.CurGD)) {
     CGF.Builder.CreateStore(getThisValue(CGF), CGF.ReturnValue);
   }
 }
 
-bool MicrosoftCXXABI::requiresArrayCookie(const CXXDeleteExpr *expr,
+bool MicrosoftFortranABI::requiresArrayCookie(const CXXDeleteExpr *expr,
                                    QualType elementType) {
   // Microsoft seems to completely ignore the possibility of a
   // two-argument usual deallocation function.
   return elementType.isDestructedType();
 }
 
-bool MicrosoftCXXABI::requiresArrayCookie(const CXXNewExpr *expr) {
+bool MicrosoftFortranABI::requiresArrayCookie(const CXXNewExpr *expr) {
   // Microsoft seems to completely ignore the possibility of a
   // two-argument usual deallocation function.
   return expr->getAllocatedType().isDestructedType();
 }
 
-CharUnits MicrosoftCXXABI::getArrayCookieSizeImpl(QualType type) {
+CharUnits MicrosoftFortranABI::getArrayCookieSizeImpl(QualType type) {
   // The array cookie is always a size_t; we then pad that out to the
   // alignment of the element type.
   ASTContext &Ctx = getContext();
@@ -161,7 +161,7 @@ CharUnits MicrosoftCXXABI::getArrayCookieSizeImpl(QualType type) {
                   Ctx.getTypeAlignInChars(type));
 }
 
-llvm::Value *MicrosoftCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *MicrosoftFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
                                                   llvm::Value *allocPtr,
                                                   CharUnits cookieSize) {
   unsigned AS = allocPtr->getType()->getPointerAddressSpace();
@@ -170,7 +170,7 @@ llvm::Value *MicrosoftCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
   return CGF.Builder.CreateLoad(numElementsPtr);
 }
 
-llvm::Value* MicrosoftCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value* MicrosoftFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                     llvm::Value *newPtr,
                                                     llvm::Value *numElements,
                                                     const CXXNewExpr *expr,
@@ -195,7 +195,7 @@ llvm::Value* MicrosoftCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 cookieSize.getQuantity());
 }
 
-void MicrosoftCXXABI::EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+void MicrosoftFortranABI::EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
                                       llvm::GlobalVariable *DeclPtr,
                                       bool PerformInit) {
   // FIXME: this code was only tested for global initialization.
@@ -206,11 +206,11 @@ void MicrosoftCXXABI::EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
   CGF.EmitCXXGlobalVarDeclInit(D, DeclPtr, PerformInit);
 }
 
-void MicrosoftCXXABI::EmitVTables(const CXXRecordDecl *Class) {
+void MicrosoftFortranABI::EmitVTables(const CXXRecordDecl *Class) {
   // FIXME: implement
 }
 
-CGCXXABI *lfort::CodeGen::CreateMicrosoftCXXABI(CodeGenModule &CGM) {
-  return new MicrosoftCXXABI(CGM);
+CGFortranABI *lfort::CodeGen::CreateMicrosoftFortranABI(CodeGenModule &CGM) {
+  return new MicrosoftFortranABI(CGM);
 }
 
