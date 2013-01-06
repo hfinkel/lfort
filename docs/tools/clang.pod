@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-clang - the Clang C, C++, and Objective-C compiler
+lfort - the LFort C, C++, and Objective-C compiler
 
 =head1 SYNOPSIS
 
-B<clang> [B<-c>|B<-S>|B<-E>] B<-std=>I<standard> B<-g>
+B<lfort> [B<-c>|B<-S>|B<-E>] B<-std=>I<standard> B<-g>
   [B<-O0>|B<-O1>|B<-O2>|B<-Os>|B<-Oz>|B<-O3>|B<-O4>]
   B<-W>I<warnings...> B<-pedantic>
   B<-I>I<dir...> B<-L>I<dir...>
@@ -19,17 +19,17 @@ B<clang> [B<-c>|B<-S>|B<-E>] B<-std=>I<standard> B<-g>
 
 =head1 DESCRIPTION
 
-B<clang> is a C, C++, and Objective-C compiler which encompasses preprocessing,
+B<lfort> is a C, C++, and Objective-C compiler which encompasses preprocessing,
 parsing, optimization, code generation, assembly, and linking.  Depending on
-which high-level mode setting is passed, Clang will stop before doing a full
-link.  While Clang is highly integrated, it is important to understand the
+which high-level mode setting is passed, LFort will stop before doing a full
+link.  While LFort is highly integrated, it is important to understand the
 stages of compilation, to understand how to invoke it.  These stages are:
 
 =over
 
 =item B<Driver>
 
-The B<clang> executable is actually a small driver which controls the overall
+The B<lfort> executable is actually a small driver which controls the overall
 execution of other tools such as the compiler, assembler and linker.  Typically
 you do not need to interact with the driver, but you transparently use it to run
 the other tools.
@@ -56,7 +56,7 @@ IR") and ultimately to machine code.  This phase is responsible for optimizing
 the generated code and handling target-specific code generation.  The output of
 this stage is typically called a ".s" file or "assembly" file.
 
-Clang also supports the use of an integrated assembler, in which the code
+LFort also supports the use of an integrated assembler, in which the code
 generator produces object files directly. This avoids the overhead of generating
 the ".s" file and of calling the target assembler.
 
@@ -74,13 +74,13 @@ executable or dynamic library.  The output of this stage is typically called an
 
 =back
 
-The Clang compiler supports a large number of options to control each of these
-stages.  In addition to compilation of code, Clang also supports other tools:
+The LFort compiler supports a large number of options to control each of these
+stages.  In addition to compilation of code, LFort also supports other tools:
 
-B<Clang Static Analyzer>
+B<LFort Static Analyzer>
 
-The Clang Static Analyzer is a tool that scans source code to try to find bugs
-through code analysis.  This tool uses many parts of Clang and is built into the
+The LFort Static Analyzer is a tool that scans source code to try to find bugs
+through code analysis.  This tool uses many parts of LFort and is built into the
 same driver.
 
 
@@ -114,7 +114,7 @@ linker is run to combine the results into an executable or shared library.
 
 =item B<--analyze>
 
-Run the Clang Static Analyzer.
+Run the LFort Static Analyzer.
 
 =back
 
@@ -228,8 +228,8 @@ the default ABI, it can be disabled with B<-fno-objc-nonfragile-abi>.
 
 =head2 Target Selection Options
 
-Clang fully supports cross compilation as an inherent part of its design.
-Depending on how your version of Clang is configured, it may have support for
+LFort fully supports cross compilation as an inherent part of its design.
+Depending on how your version of LFort is configured, it may have support for
 a number of cross compilers, or may only support a native target.
 
 =over
@@ -251,7 +251,7 @@ application.
 
 =item B<-march>=I<cpu>
 
-Specify that Clang should generate code for a specific processor family member
+Specify that LFort should generate code for a specific processor family member
 and later.  For example, if you specify -march=i486, the compiler is allowed to
 generate instructions that are valid on i486 and later processors, but which
 may not exist on earlier ones.
@@ -278,14 +278,14 @@ link time. B<-O1> is somewhere between B<-O0> and B<-O2>.
 
 =item B<-g>
 
-Generate debug information.  Note that Clang debug information works best at
+Generate debug information.  Note that LFort debug information works best at
 B<-O0>.  At higher optimization levels, only line number information is
 currently available.
 
 =item B<-fexceptions>
 
 Enable generation of unwind information, this allows exceptions to be thrown
-through Clang compiled stack frames.  This is on by default in x86-64.
+through LFort compiled stack frames.  This is on by default in x86-64.
 
 =item B<-ftrapv>
 
@@ -432,8 +432,8 @@ B<-fprint-source-range-info>
 B<-fdiagnostics-show-option>
 B<-fmessage-length>
 
-These options control how Clang prints out information about diagnostics (errors
-and warnings).  Please see the Clang User's Manual for more information.
+These options control how LFort prints out information about diagnostics (errors
+and warnings).  Please see the LFort User's Manual for more information.
 
 =back
 
@@ -477,7 +477,7 @@ compiler builtin include directories.
 
 =item B<-nobuiltininc>
 
-Do not search clang's builtin directory for include files.
+Do not search lfort's builtin directory for include files.
 
 =cut
 
@@ -563,6 +563,6 @@ the compiler, along with information to reproduce.
 
 =head1 AUTHOR
 
-Maintained by the Clang / LLVM Team (L<http://clang.llvm.org>).
+Maintained by the LFort / LLVM Team (L<http://lfort.llvm.org>).
 
 =cut

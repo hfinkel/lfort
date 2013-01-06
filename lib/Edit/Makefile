@@ -1,4 +1,4 @@
-##===- clang/lib/Edit/Makefile -----------------------------*- Makefile -*-===##
+##===- lfort/lib/Edit/Makefile -----------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,8 +7,8 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangEdit
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortEdit
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

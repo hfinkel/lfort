@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_PRINTER_H_
-#define LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_PRINTER_H_
+#ifndef LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_PRINTER_H_
+#define LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_PRINTER_H_
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
 
-namespace clang {
+namespace lfort {
 class DiagnosticOptions;
 class LangOptions;
 class TextDiagnostic;
@@ -53,6 +53,6 @@ public:
   DiagnosticConsumer *clone(DiagnosticsEngine &Diags) const;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

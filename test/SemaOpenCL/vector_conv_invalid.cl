@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 typedef unsigned int uint4 __attribute((ext_vector_type(4)));
 typedef int int4 __attribute((ext_vector_type(4)));

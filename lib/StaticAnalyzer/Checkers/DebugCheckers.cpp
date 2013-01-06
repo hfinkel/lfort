@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/Analysis/Analyses/Dominators.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/Analysis/CallGraph.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "LFortSACheckers.h"
+#include "lfort/Analysis/Analyses/Dominators.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/Analysis/CallGraph.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
 #include "llvm/Support/Process.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 //===----------------------------------------------------------------------===//

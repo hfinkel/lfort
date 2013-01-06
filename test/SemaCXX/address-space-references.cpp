@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 typedef int __attribute__((address_space(1))) int_1;
 typedef int __attribute__((address_space(2))) int_2;

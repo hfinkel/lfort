@@ -10,14 +10,14 @@
 // This file defines the interface of a subengine of the CoreEngine.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_GR_SUBENGINE_H
-#define LLVM_CLANG_GR_SUBENGINE_H
+#ifndef LLVM_LFORT_GR_SUBENGINE_H
+#define LLVM_LFORT_GR_SUBENGINE_H
 
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
 
-namespace clang {
+namespace lfort {
 
 class CFGBlock;
 class CFGElement;
@@ -137,6 +137,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

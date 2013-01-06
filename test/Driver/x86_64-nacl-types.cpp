@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-nacl -std=c++11 -verify %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-nacl -std=c++11 -verify %s
 // expected-no-diagnostics
 
 #include <stddef.h>

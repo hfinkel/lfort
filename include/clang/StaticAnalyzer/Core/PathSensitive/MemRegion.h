@@ -13,15 +13,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_MEMREGION_H
-#define LLVM_CLANG_GR_MEMREGION_H
+#ifndef LLVM_LFORT_GR_MEMREGION_H
+#define LLVM_LFORT_GR_MEMREGION_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <string>
@@ -30,7 +30,7 @@ namespace llvm {
 class BumpPtrAllocator;
 }
 
-namespace clang {
+namespace lfort {
 
 class LocationContext;
 class StackFrameContext;
@@ -1268,7 +1268,7 @@ inline ASTContext &MemRegion::getContext() const {
   
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 //===----------------------------------------------------------------------===//
 // Pretty-printing regions.
@@ -1276,7 +1276,7 @@ inline ASTContext &MemRegion::getContext() const {
 
 namespace llvm {
 static inline raw_ostream &operator<<(raw_ostream &os,
-                                      const clang::ento::MemRegion* R) {
+                                      const lfort::ento::MemRegion* R) {
   R->dumpToStream(os);
   return os;
 }

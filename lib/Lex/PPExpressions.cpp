@@ -16,15 +16,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Lex/MacroInfo.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

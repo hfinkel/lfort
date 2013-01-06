@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_DESIGNATOR_H
-#define LLVM_CLANG_SEMA_DESIGNATOR_H
+#ifndef LLVM_LFORT_SEMA_DESIGNATOR_H
+#define LLVM_LFORT_SEMA_DESIGNATOR_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class Expr;
 class IdentifierInfo;
@@ -205,6 +205,6 @@ public:
   void FreeExprs(Sema &Actions) {}
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

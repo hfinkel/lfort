@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 typedef struct _IO_FILE FILE;
 extern FILE *stderr;

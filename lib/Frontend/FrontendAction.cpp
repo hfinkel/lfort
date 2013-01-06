@@ -7,29 +7,29 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/ChainedIncludesSource.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/FrontendPluginRegistry.h"
-#include "clang/Frontend/LayoutOverrideSource.h"
-#include "clang/Frontend/MultiplexConsumer.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseAST.h"
-#include "clang/Serialization/ASTDeserializationListener.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/ChainedIncludesSource.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/FrontendPluginRegistry.h"
+#include "lfort/Frontend/LayoutOverrideSource.h"
+#include "lfort/Frontend/MultiplexConsumer.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/ParseAST.h"
+#include "lfort/Serialization/ASTDeserializationListener.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Timer.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

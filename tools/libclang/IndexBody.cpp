@@ -10,7 +10,7 @@
 #include "IndexingContext.h"
 #include "RecursiveASTVisitor.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxindex;
 
 namespace {

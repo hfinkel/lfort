@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -g -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -g -emit-llvm %s -o /dev/null
 
-// This test passes if clang doesn't crash.
+// This test passes if lfort doesn't crash.
 
 template <class C> class scoped_ptr {
 public:

@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_DS_COCOA
-#define LLVM_CLANG_ANALYSIS_DS_COCOA
+#ifndef LLVM_LFORT_ANALYSIS_DS_COCOA
+#define LLVM_LFORT_ANALYSIS_DS_COCOA
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 class FunctionDecl;
 class QualType;
   
@@ -37,6 +37,6 @@ namespace coreFoundation {
   bool followsCreateRule(const FunctionDecl *FD);
 }
 
-}} // end: "clang:ento"
+}} // end: "lfort:ento"
 
 #endif

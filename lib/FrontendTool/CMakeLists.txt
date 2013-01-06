@@ -1,21 +1,21 @@
-add_clang_library(clangFrontendTool
+add_lfort_library(lfortFrontendTool
   ExecuteCompilerInvocation.cpp
   )
 
-add_dependencies(clangFrontendTool
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangDriverOptions
+add_dependencies(lfortFrontendTool
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortDriverOptions
   )
 
-target_link_libraries(clangFrontendTool
-  clangDriver
-  clangFrontend
-  clangRewriteCore
-  clangRewriteFrontend
-  clangCodeGen
-  clangStaticAnalyzerFrontend
-  clangStaticAnalyzerCheckers
-  clangStaticAnalyzerCore
-  clangARCMigrate
+target_link_libraries(lfortFrontendTool
+  lfortDriver
+  lfortFrontend
+  lfortRewriteCore
+  lfortRewriteFrontend
+  lfortCodeGen
+  lfortStaticAnalyzerFrontend
+  lfortStaticAnalyzerCheckers
+  lfortStaticAnalyzerCore
+  lfortARCMigrate
   )

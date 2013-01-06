@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - | not grep {foo\\* sub}
+// RUN: %lfort_cc1 %s -emit-llvm -o - | not grep {foo\\* sub}
 // This should not produce a subtrace constantexpr of a pointer
 struct foo {
   int Y;

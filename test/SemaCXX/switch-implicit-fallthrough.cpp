@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough %s
 
 
 int fallthrough(int n) {
@@ -10,19 +10,19 @@ int fallthrough(int n) {
       } else if (n - 3) {
         n = 102;
       }
-    case -1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case -1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       ;
-    case 0: {// expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 0: {// expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
     }
-    case 1:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 1:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       n += 100         ;
-    case 3:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 3:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       if (n > 0)
         n += 200;
-    case 4:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 4:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       if (n < 0)
         ;
-    case 5:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 5:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       switch (n) {
       case 111:
         break;
@@ -31,7 +31,7 @@ int fallthrough(int n) {
       case 113:
         break    ;
       }
-    case 6:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 6:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       n += 300;
     case 66:  // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert 'break;' to avoid fall-through}}
       break;
@@ -39,22 +39,22 @@ int fallthrough(int n) {
   switch (n / 20) {
     case 7:
       n += 400;
-      [[clang::fallthrough]];
+      [[lfort::fallthrough]];
     case 9:  // no warning here, intended fall-through marked with an attribute
       n += 800;
-      [[clang::fallthrough]];
+      [[lfort::fallthrough]];
     default: { // no warning here, intended fall-through marked with an attribute
       if (n % 2 == 0) {
         return 1;
       } else {
-        [[clang::fallthrough]];
+        [[lfort::fallthrough]];
       }
     }
     case 10:  // no warning here, intended fall-through marked with an attribute
       if (n % 3 == 0) {
         n %= 3;
       } else {
-        [[clang::fallthrough]];
+        [[lfort::fallthrough]];
       }
     case 110:  // expected-warning{{unannotated fall-through between switch labels}} but no fix-it hint as we have one fall-through annotation!
       n += 800;
@@ -145,16 +145,16 @@ int fallthrough_macro1(int n) {
 
 int fallthrough_position(int n) {
   switch (n) {
-      [[clang::fallthrough]];  // expected-warning{{fallthrough annotation in unreachable code}}
+      [[lfort::fallthrough]];  // expected-warning{{fallthrough annotation in unreachable code}}
     case 221:
-      [[clang::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
+      [[lfort::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
       return 1;
-      [[clang::fallthrough]];  // expected-warning{{fallthrough annotation in unreachable code}}
+      [[lfort::fallthrough]];  // expected-warning{{fallthrough annotation in unreachable code}}
     case 222:
-      [[clang::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
+      [[lfort::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
       n += 400;
-    case 223:          // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
-      [[clang::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
+    case 223:          // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+      [[lfort::fallthrough]]; // expected-warning{{fallthrough annotation does not directly precede switch label}}
   }
 
   // TODO: uncomment this test after CFG gets more options to deal with
@@ -165,7 +165,7 @@ int fallthrough_position(int n) {
   switch (sizeof(p)) {
     case 9:                    // this test will not work on compilers with 72-bit long
       n += static_cast<int>(p >> 32);
-      [[clang::fallthrough]];  // no warning here
+      [[lfort::fallthrough]];  // no warning here
     case 5:                    // it is not intended to work on compilers with 40-bit long as well
       n += static_cast<int>(p);
       break;
@@ -178,18 +178,18 @@ int fallthrough_position(int n) {
 }
 
 int fallthrough_targets(int n) {
-  [[clang::fallthrough]]; // expected-error{{fallthrough annotation is outside switch statement}}
+  [[lfort::fallthrough]]; // expected-error{{fallthrough annotation is outside switch statement}}
 
-  [[clang::fallthrough]]  // expected-error{{fallthrough attribute is only allowed on empty statements}}
+  [[lfort::fallthrough]]  // expected-error{{fallthrough attribute is only allowed on empty statements}}
   switch (n) {
     case 121:
       n += 400;
-      [[clang::fallthrough]]; // no warning here, correct target
+      [[lfort::fallthrough]]; // no warning here, correct target
     case 123:
-      [[clang::fallthrough]]  // expected-error{{fallthrough attribute is only allowed on empty statements}}
+      [[lfort::fallthrough]]  // expected-error{{fallthrough attribute is only allowed on empty statements}}
       n += 800;
       break;
-    [[clang::fallthrough]]    // expected-error{{fallthrough attribute is only allowed on empty statements}} expected-note{{did you forget ';'?}}
+    [[lfort::fallthrough]]    // expected-error{{fallthrough attribute is only allowed on empty statements}} expected-note{{did you forget ';'?}}
     case 125:
       n += 1600;
   }

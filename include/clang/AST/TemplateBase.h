@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_TEMPLATEBASE_H
-#define LLVM_CLANG_AST_TEMPLATEBASE_H
+#ifndef LLVM_LFORT_AST_TEMPLATEBASE_H
+#define LLVM_LFORT_AST_TEMPLATEBASE_H
 
-#include "clang/AST/TemplateName.h"
-#include "clang/AST/Type.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/AST/Type.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Compiler.h"
@@ -26,7 +26,7 @@ namespace llvm {
   class FoldingSetNodeID;
 }
 
-namespace clang {
+namespace lfort {
 
 class DiagnosticBuilder;
 class Expr;
@@ -641,6 +641,6 @@ inline const TemplateArgument &
   return getArgs()[Idx];
 }
   
-} // end namespace clang
+} // end namespace lfort
 
 #endif

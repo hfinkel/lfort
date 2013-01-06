@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-dump -ast-dump-filter Test %s | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -ast-dump -ast-dump-filter Test %s | FileCheck -strict-whitespace %s
 
 int TestLocation = 0;
 // CHECK:      VarDecl{{.*}}TestLocation

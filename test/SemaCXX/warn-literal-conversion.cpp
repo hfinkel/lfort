@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wliteral-conversion -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wliteral-conversion -verify %s
 
 void foo(int y);
 

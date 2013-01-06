@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-ASSIGN %s
-// RUN: %clang_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-ASSIGN %s
-// RUN: %clang_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-CTOR %s
+// RUN: %lfort_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-ASSIGN %s
+// RUN: %lfort_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-ASSIGN %s
+// RUN: %lfort_cc1 -emit-llvm -o - -std=c++11 %s | FileCheck -check-prefix=CHECK-CTOR %s
 
 // construct
 

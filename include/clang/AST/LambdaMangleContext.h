@@ -11,13 +11,13 @@
 //  the Itanium C++ ABI mangling numbers for lambda expressions.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LAMBDAMANGLECONTEXT_H
-#define LLVM_CLANG_LAMBDAMANGLECONTEXT_H
+#ifndef LLVM_LFORT_LAMBDAMANGLECONTEXT_H
+#define LLVM_LFORT_LAMBDAMANGLECONTEXT_H
 
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 
-namespace clang {
+namespace lfort {
 
 class CXXMethodDecl;
 class FunctionProtoType;
@@ -33,5 +33,5 @@ public:
   unsigned getManglingNumber(CXXMethodDecl *CallOperator);
 };
   
-} // end namespace clang
+} // end namespace lfort
 #endif

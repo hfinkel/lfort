@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=osx.cocoa.Loops,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=osx.cocoa.Loops,debug.ExprInspection -verify %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 #define nil ((id)0)
 
@@ -34,25 +34,25 @@ void clang_analyzer_eval(int);
 void test() {
   id x;
   for (x in [NSArray testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{TRUE}}
 
   for (x in [NSMutableDictionary testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{TRUE}}
 
   for (x in [NSSet testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{TRUE}}
 
   for (x in [[NSArray testObject] objectEnumerator])
-    clang_analyzer_eval(x != nil); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{TRUE}}
 
   for (x in [NSPointerArray testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{UNKNOWN}}
 }
 
 void testWithVarInFor() {
   for (id x in [NSArray testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{TRUE}}
   for (id x in [NSPointerArray testObject])
-    clang_analyzer_eval(x != nil); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(x != nil); // expected-warning{{UNKNOWN}}
 }
 

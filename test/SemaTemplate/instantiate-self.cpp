@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 // Check that we deal with cases where the instantiation of a class template
 // recursively requires the instantiation of the same template.

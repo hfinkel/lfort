@@ -1,5 +1,5 @@
-// RUN: %clang_cc1  -fsyntax-only -verify -Wno-objc-root-class %s
-// RUN: %clang_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class -Wmissing-selector-name %s
+// RUN: %lfort_cc1  -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class -Wmissing-selector-name %s
 // rdar://12263549
 
 @interface Super @end

@@ -1,18 +1,18 @@
 =============
-Clang Plugins
+LFort Plugins
 =============
 
-Clang Plugins make it possible to run extra user defined actions during a
+LFort Plugins make it possible to run extra user defined actions during a
 compilation. This document will provide a basic walkthrough of how to write and
-run a Clang Plugin.
+run a LFort Plugin.
 
 Introduction
 ============
 
-Clang Plugins run FrontendActions over code. See the :doc:`FrontendAction
+LFort Plugins run FrontendActions over code. See the :doc:`FrontendAction
 tutorial <RAVFrontendAction>` on how to write a ``FrontendAction`` using the
 ``RecursiveASTVisitor``. In this tutorial, we'll demonstrate how to write a
-simple clang plugin.
+simple lfort plugin.
 
 Writing a ``PluginASTAction``
 =============================
@@ -47,18 +47,18 @@ Putting it all together
 =======================
 
 Let's look at an example plugin that prints top-level function names.  This
-example is also checked into the clang repository; please also take a look at
+example is also checked into the lfort repository; please also take a look at
 the latest `checked in version of PrintFunctionNames.cpp
 <http://llvm.org/viewvc/llvm-project/cfe/trunk/examples/PrintFunctionNames/PrintFunctionNames.cpp?view=markup>`_.
 
 .. code-block:: c++
 
-    #include "clang/Frontend/FrontendPluginRegistry.h"
-    #include "clang/AST/ASTConsumer.h"
-    #include "clang/AST/AST.h"
-    #include "clang/Frontend/CompilerInstance.h"
+    #include "lfort/Frontend/FrontendPluginRegistry.h"
+    #include "lfort/AST/ASTConsumer.h"
+    #include "lfort/AST/AST.h"
+    #include "lfort/Frontend/CompilerInstance.h"
     #include "llvm/Support/raw_ostream.h"
-    using namespace clang;
+    using namespace lfort;
 
     namespace {
 
@@ -120,30 +120,30 @@ that are registered, and you can select the plugins to run by specifying the
 :option:`-plugin` option. Additional parameters for the plugins can be passed with
 :option:`-plugin-arg-<plugin-name>`.
 
-Note that those options must reach clang's cc1 process. There are two
+Note that those options must reach lfort's cc1 process. There are two
 ways to do so:
 
 * Directly call the parsing process by using the :option:`-cc1` option; this
   has the downside of not configuring the default header search paths, so
   you'll need to specify the full system path configuration on the command
   line.
-* Use clang as usual, but prefix all arguments to the cc1 process with
-  :option:`-Xclang`.
+* Use lfort as usual, but prefix all arguments to the cc1 process with
+  :option:`-Xlfort`.
 
 For example, to run the ``print-function-names`` plugin over a source file in
-clang, first build the plugin, and then call clang with the plugin from the
+lfort, first build the plugin, and then call lfort with the plugin from the
 source tree:
 
 .. code-block:: console
 
   $ export BD=/path/to/build/directory
   $ (cd $BD && make PrintFunctionNames )
-  $ clang++ -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
+  $ lfort++ -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
             -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D_GNU_SOURCE \
-            -I$BD/tools/clang/include -Itools/clang/include -I$BD/include -Iinclude \
-            tools/clang/tools/clang-check/ClangCheck.cpp -fsyntax-only \
-            -Xclang -load -Xclang $BD/lib/PrintFunctionNames.so -Xclang \
-            -plugin -Xclang print-fns
+            -I$BD/tools/lfort/include -Itools/lfort/include -I$BD/include -Iinclude \
+            tools/lfort/tools/lfort-check/LFortCheck.cpp -fsyntax-only \
+            -Xlfort -load -Xlfort $BD/lib/PrintFunctionNames.so -Xlfort \
+            -plugin -Xlfort print-fns
 
 Also see the print-function-name plugin example's
 `README <http://llvm.org/viewvc/llvm-project/cfe/trunk/examples/PrintFunctionNames/README.txt?view=markup>`_

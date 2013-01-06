@@ -6,21 +6,21 @@
 # License. See LICENSE.TXT for details.
 # 
 ##===----------------------------------------------------------------------===##
-CLANG_LEVEL := ..
+LFORT_LEVEL := ..
 
-# ARCMigrate and Rewrite are always needed because of libclang.
+# ARCMigrate and Rewrite are always needed because of liblfort.
 PARALLEL_DIRS = Headers Basic Lex Parse AST Sema CodeGen Analysis Frontend \
                 FrontendTool Tooling Driver Format Edit ARCMigrate Rewrite \
                 Serialization
 
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 
-ifeq ($(ENABLE_CLANG_REWRITER),1)
+ifeq ($(ENABLE_LFORT_REWRITER),1)
 PARALLEL_DIRS += ASTMatchers
 endif
 
-ifeq ($(ENABLE_CLANG_STATIC_ANALYZER),1)
+ifeq ($(ENABLE_LFORT_STATIC_ANALYZER),1)
 PARALLEL_DIRS += StaticAnalyzer
 endif
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

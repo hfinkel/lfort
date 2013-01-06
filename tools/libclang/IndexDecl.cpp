@@ -8,9 +8,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "IndexingContext.h"
-#include "clang/AST/DeclVisitor.h"
+#include "lfort/AST/DeclVisitor.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxindex;
 
 namespace {

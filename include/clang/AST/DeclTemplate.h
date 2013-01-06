@@ -12,17 +12,17 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLTEMPLATE_H
-#define LLVM_CLANG_AST_DECLTEMPLATE_H
+#ifndef LLVM_LFORT_AST_DECLTEMPLATE_H
+#define LLVM_LFORT_AST_DECLTEMPLATE_H
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Redeclarable.h"
-#include "clang/AST/TemplateBase.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Redeclarable.h"
+#include "lfort/AST/TemplateBase.h"
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/Support/Compiler.h"
 #include <limits>
 
-namespace clang {
+namespace lfort {
 
 class TemplateParameterList;
 class TemplateDecl;
@@ -2189,6 +2189,6 @@ public:
 inline AnyFunctionDecl::AnyFunctionDecl(FunctionTemplateDecl *FTD)
   : Function(FTD) { }
 
-} /* end of namespace clang */
+} /* end of namespace lfort */
 
 #endif

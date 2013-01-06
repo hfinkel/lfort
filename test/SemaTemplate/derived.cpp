@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 template<typename T> class vector2 {};
 template<typename T> class vector : vector2<T> {};

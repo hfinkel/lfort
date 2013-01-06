@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_JOB_H_
-#define CLANG_DRIVER_JOB_H_
+#ifndef LFORT_DRIVER_JOB_H_
+#define LFORT_DRIVER_JOB_H_
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
 class Command;
 class Tool;
@@ -113,6 +113,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

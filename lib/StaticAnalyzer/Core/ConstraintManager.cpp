@@ -11,9 +11,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 ConstraintManager::~ConstraintManager() {}

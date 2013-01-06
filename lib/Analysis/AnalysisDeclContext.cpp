@@ -12,25 +12,25 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/AnalysisContext.h"
 #include "BodyFarm.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/Analyses/CFGReachabilityAnalysis.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/Analysis/Analyses/PseudoConstantAnalysis.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/CFGStmtMap.h"
-#include "clang/Analysis/Support/BumpVector.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/Analyses/CFGReachabilityAnalysis.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/Analysis/Analyses/PseudoConstantAnalysis.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/CFGStmtMap.h"
+#include "lfort/Analysis/Support/BumpVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/SaveAndRestore.h"
 
-using namespace clang;
+using namespace lfort;
 
 typedef llvm::DenseMap<const void *, ManagedAnalysis *> ManagedAnalysisMap;
 
@@ -237,7 +237,7 @@ AnalysisDeclContext::getStackFrame(LocationContext const *Parent, const Stmt *S,
 
 const BlockInvocationContext *
 AnalysisDeclContext::getBlockInvocationContext(const LocationContext *parent,
-                                               const clang::BlockDecl *BD,
+                                               const lfort::BlockDecl *BD,
                                                const void *ContextData) {
   return getLocationContextManager().getBlockInvocationContext(this, parent,
                                                                BD, ContextData);

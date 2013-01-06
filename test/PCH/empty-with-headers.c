@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c99 -pedantic-errors %s
-// RUN: %clang_cc1 -fsyntax-only -std=c99 -emit-pch -o %t %s
-// RUN: %clang_cc1 -fsyntax-only -std=c99 -pedantic-errors -include-pch %t %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 -pedantic-errors %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 -emit-pch -o %t %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 -pedantic-errors -include-pch %t %s
 
-// RUN: %clang_cc1 -fsyntax-only -std=c99 -pedantic-errors -DINCLUDED %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 -pedantic-errors -DINCLUDED %s -verify
 // This last one should warn for -Wempty-translation-unit (C99 6.9p1).
 
 #if defined(INCLUDED)

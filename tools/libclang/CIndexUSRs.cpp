@@ -1,4 +1,4 @@
-//===- CIndexUSR.cpp - Clang-C Source Indexing Library --------------------===//
+//===- CIndexUSR.cpp - LFort-C Source Indexing Library --------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,15 +14,15 @@
 #include "CIndexer.h"
 #include "CXCursor.h"
 #include "CXString.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Lex/PreprocessingRecord.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Lex/PreprocessingRecord.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxstring;
 
 //===----------------------------------------------------------------------===//
 // USR generation.
@@ -585,7 +585,7 @@ void USRGenerator::VisitType(QualType T) {
           c = 'n'; break;
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
         case BuiltinType::Dependent:
         case BuiltinType::OCLImage1d:
         case BuiltinType::OCLImage1dArray:
@@ -816,10 +816,10 @@ bool cxcursor::getDeclCursorUSR(const Decl *D, SmallVectorImpl<char> &Buf) {
 
 extern "C" {
 
-CXString clang_getCursorUSR(CXCursor C) {
-  const CXCursorKind &K = clang_getCursorKind(C);
+CXString lfort_getCursorUSR(CXCursor C) {
+  const CXCursorKind &K = lfort_getCursorKind(C);
 
-  if (clang_isDeclaration(K)) {
+  if (lfort_isDeclaration(K)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (!D)
       return createCXString("");
@@ -866,45 +866,45 @@ CXString clang_getCursorUSR(CXCursor C) {
   return createCXString("");
 }
 
-CXString clang_constructUSR_ObjCIvar(const char *name, CXString classUSR) {
+CXString lfort_constructUSR_ObjCIvar(const char *name, CXString classUSR) {
   USRGenerator UG;
-  UG << extractUSRSuffix(clang_getCString(classUSR));
+  UG << extractUSRSuffix(lfort_getCString(classUSR));
   UG->GenObjCIvar(name);
   return createCXString(UG.str(), true);
 }
 
-CXString clang_constructUSR_ObjCMethod(const char *name,
+CXString lfort_constructUSR_ObjCMethod(const char *name,
                                        unsigned isInstanceMethod,
                                        CXString classUSR) {
   USRGenerator UG;
-  UG << extractUSRSuffix(clang_getCString(classUSR));
+  UG << extractUSRSuffix(lfort_getCString(classUSR));
   UG->GenObjCMethod(name, isInstanceMethod);
   return createCXString(UG.str(), true);
 }
 
-CXString clang_constructUSR_ObjCClass(const char *name) {
+CXString lfort_constructUSR_ObjCClass(const char *name) {
   USRGenerator UG;
   UG->GenObjCClass(name);
   return createCXString(UG.str(), true);
 }
 
-CXString clang_constructUSR_ObjCProtocol(const char *name) {
+CXString lfort_constructUSR_ObjCProtocol(const char *name) {
   USRGenerator UG;
   UG->GenObjCProtocol(name);
   return createCXString(UG.str(), true);
 }
 
-CXString clang_constructUSR_ObjCCategory(const char *class_name,
+CXString lfort_constructUSR_ObjCCategory(const char *class_name,
                                          const char *category_name) {
   USRGenerator UG;
   UG->GenObjCCategory(class_name, category_name);
   return createCXString(UG.str(), true);
 }
 
-CXString clang_constructUSR_ObjCProperty(const char *property,
+CXString lfort_constructUSR_ObjCProperty(const char *property,
                                          CXString classUSR) {
   USRGenerator UG;
-  UG << extractUSRSuffix(clang_getCString(classUSR));
+  UG << extractUSRSuffix(lfort_getCString(classUSR));
   UG->GenObjCProperty(property);
   return createCXString(UG.str(), true);
 }

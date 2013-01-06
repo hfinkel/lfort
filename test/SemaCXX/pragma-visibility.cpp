@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 namespace test1 __attribute__((visibility("hidden"))) { // expected-note{{surrounding namespace with visibility attribute starts here}}
 #pragma GCC visibility pop // expected-error{{#pragma visibility pop with no matching #pragma visibility push}}

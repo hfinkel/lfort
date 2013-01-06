@@ -1,14 +1,14 @@
 ======================
-Matching the Clang AST
+Matching the LFort AST
 ======================
 
-This document explains how to use Clang's LibASTMatchers to match interesting
+This document explains how to use LFort's LibASTMatchers to match interesting
 nodes of the AST and execute code that uses the matched nodes.  Combined with
 :doc:`LibTooling`, LibASTMatchers helps to write code-to-code transformation
 tools or query tools.
 
-We assume basic knowledge about the Clang AST.  See the :doc:`Introduction
-to the Clang AST <IntroductionToTheClangAST>` if you want to learn more
+We assume basic knowledge about the LFort AST.  See the :doc:`Introduction
+to the LFort AST <IntroductionToTheLFortAST>` if you want to learn more
 about how the AST is structured.
 
 ..  FIXME: create tutorial and link to the tutorial
@@ -17,7 +17,7 @@ Introduction
 ------------
 
 LibASTMatchers provides a domain specific language to create predicates on
-Clang's AST.  This DSL is written in and can be used from C++, allowing users
+LFort's AST.  This DSL is written in and can be used from C++, allowing users
 to write a single program to both match AST nodes and access the node's C++
 interface to extract attributes, source locations, or any other information
 provided on the AST level.
@@ -41,7 +41,7 @@ down the match, for example to match all classes that are derived from
 How to create a matcher
 -----------------------
 
-With more than a thousand classes in the Clang AST, one can quickly get lost
+With more than a thousand classes in the LFort AST, one can quickly get lost
 when trying to figure out how to create a matcher for a specific pattern.  This
 section will teach you how to use a rigorous step-by-step pattern to build the
 matcher you are interested in.  Note that there will always be matchers missing
@@ -52,7 +52,7 @@ AST matchers <astmatchers-writing>` later in this document.
 
 The precondition to using the matchers is to understand how the AST for what you
 want to match looks like.  The
-:doc:`Introduction to the Clang AST <IntroductionToTheClangAST>` teaches you
+:doc:`Introduction to the LFort AST <IntroductionToTheLFortAST>` teaches you
 how to dump a translation unit's AST into a human readable format.
 
 ..  FIXME: Introduce link to ASTMatchersTutorial.html
@@ -60,7 +60,7 @@ how to dump a translation unit's AST into a human readable format.
 
 In general, the strategy to create the right matchers is:
 
-#. Find the outermost class in Clang's AST you want to match.
+#. Find the outermost class in LFort's AST you want to match.
 #. Look at the `AST Matcher Reference <LibASTMatchersReference.html>`_ for
    matchers that either match the node you're interested in or narrow down
    attributes on the node.
@@ -81,7 +81,7 @@ To that end, matchers that match specific AST nodes (so called node matchers)
 are bindable; for example, ``recordDecl(hasName("MyClass")).bind("id")`` will
 bind the matched ``recordDecl`` node to the string "``id``", to be later
 retrieved in the `match callback
-<http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html>`_.
+<http://lfort.llvm.org/doxygen/classlfort_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html>`_.
 
 ..  FIXME: Introduce link to ASTMatchersTutorial.html
 ..  FIXME: Introduce link to ASTMatchersCookbook.html
@@ -116,7 +116,7 @@ corresponding matcher.
 
 There are multiple matcher definition macros that deal with polymorphic return
 values and different parameter counts.  See `ASTMatchersMacros.h
-<http://clang.llvm.org/doxygen/ASTMatchersMacros_8h.html>`_.
+<http://lfort.llvm.org/doxygen/ASTMatchersMacros_8h.html>`_.
 
 .. _astmatchers-writing:
 

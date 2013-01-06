@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/Rewriters.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Rewrite/Core/TokenRewriter.h"
+#include "lfort/Rewrite/Frontend/Rewriters.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Core/TokenRewriter.h"
 #include "llvm/Support/raw_ostream.h"
 
-void clang::DoRewriteTest(Preprocessor &PP, raw_ostream* OS) {
+void lfort::DoRewriteTest(Preprocessor &PP, raw_ostream* OS) {
   SourceManager &SM = PP.getSourceManager();
   const LangOptions &LangOpts = PP.getLangOpts();
 

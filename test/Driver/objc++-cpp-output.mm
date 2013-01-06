@@ -1,5 +1,5 @@
-// RUN: %clang -x objc++-cpp-output -c %s -o /dev/null
-// RUN: %clang -x objc++-cpp-output -c %s -o /dev/null -### 2>&1 | FileCheck %s
+// RUN: %lfort -x objc++-cpp-output -c %s -o /dev/null
+// RUN: %lfort -x objc++-cpp-output -c %s -o /dev/null -### 2>&1 | FileCheck %s
 
 // PR13820
 // REQUIRES: LP64

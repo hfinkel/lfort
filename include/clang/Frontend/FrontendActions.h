@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_FRONTENDACTIONS_H
-#define LLVM_CLANG_FRONTEND_FRONTENDACTIONS_H
+#ifndef LLVM_LFORT_FRONTEND_FRONTENDACTIONS_H
+#define LLVM_LFORT_FRONTEND_FRONTENDACTIONS_H
 
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendAction.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class Module;
   
@@ -98,7 +98,7 @@ public:
 };
 
 class GenerateModuleAction : public ASTFrontendAction {
-  clang::Module *Module;
+  lfort::Module *Module;
   
 protected:
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
@@ -210,6 +210,6 @@ protected:
   virtual bool hasPCHSupport() const { return true; }
 };
   
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

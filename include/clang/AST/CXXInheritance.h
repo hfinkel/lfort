@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_CXXINHERITANCE_H
-#define LLVM_CLANG_AST_CXXINHERITANCE_H
+#ifndef LLVM_LFORT_AST_CXXINHERITANCE_H
+#define LLVM_LFORT_AST_CXXINHERITANCE_H
 
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeOrdering.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeOrdering.h"
 #include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallVector.h"
@@ -26,7 +26,7 @@
 #include <list>
 #include <map>
 
-namespace clang {
+namespace lfort {
   
 class CXXBaseSpecifier;
 class CXXMethodDecl;
@@ -363,6 +363,6 @@ class CXXFinalOverriderMap
 class CXXIndirectPrimaryBaseSet
   : public llvm::SmallSet<const CXXRecordDecl*, 32> { };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

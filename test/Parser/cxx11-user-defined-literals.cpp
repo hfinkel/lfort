@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s -fms-extensions -triple x86_64-apple-darwin9.0.0
+// RUN: %lfort_cc1 -std=c++11 -verify %s -fms-extensions -triple x86_64-apple-darwin9.0.0
 
 // A ud-suffix cannot be used on string literals in a whole bunch of contexts:
 

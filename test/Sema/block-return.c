@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wno-int-to-pointer-cast -pedantic -fsyntax-only %s -verify -fblocks
+// RUN: %lfort_cc1 -Wno-int-to-pointer-cast -pedantic -fsyntax-only %s -verify -fblocks
 
 typedef void (^CL)(void);
 

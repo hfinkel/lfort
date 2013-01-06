@@ -11,23 +11,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/Edit/Commit.h"
-#include "clang/Edit/Rewriters.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Edit/Rewriters.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 using llvm::makeArrayRef;
 

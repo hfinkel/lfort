@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple armv7 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple armv7 -fsyntax-only -verify %s
 
 // va_list on ARM AAPCS is struct { void* __ap }.
 int test1(const __builtin_va_list &ap) {

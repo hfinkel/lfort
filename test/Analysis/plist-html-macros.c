@@ -1,10 +1,10 @@
 // REQUIRES: shell
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -verify %s
 // (sanity check)
 
 // RUN: rm -rf %t.dir
 // RUN: mkdir -p %t.dir
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-html -o %t.dir/index.plist %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-html -o %t.dir/index.plist %s
 // RUN: ls %t.dir | grep \\.html | count 1
 // RUN: grep \\.html %t.dir/index.plist | count 1
 

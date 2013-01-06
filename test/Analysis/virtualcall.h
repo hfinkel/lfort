@@ -1,5 +1,5 @@
 #ifdef AS_SYSTEM
-#pragma clang system_header
+#pragma lfort system_header
 
 namespace system {
   class A {

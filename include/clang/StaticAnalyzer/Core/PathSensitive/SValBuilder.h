@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_SVALBUILDER
-#define LLVM_CLANG_GR_SVALBUILDER
+#ifndef LLVM_LFORT_GR_SVALBUILDER
+#define LLVM_LFORT_GR_SVALBUILDER
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/BasicValueFactory.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/BasicValueFactory.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 
-namespace clang {
+namespace lfort {
 
 class CXXBoolLiteralExpr;
 
@@ -320,6 +320,6 @@ SValBuilder* createSimpleSValBuilder(llvm::BumpPtrAllocator &alloc,
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

@@ -13,14 +13,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_BLOCKCOUNTER
-#define LLVM_CLANG_GR_BLOCKCOUNTER
+#ifndef LLVM_LFORT_GR_BLOCKCOUNTER
+#define LLVM_LFORT_GR_BLOCKCOUNTER
 
 namespace llvm {
   class BumpPtrAllocator;
 }
 
-namespace clang {
+namespace lfort {
 
 class StackFrameContext;
 
@@ -57,6 +57,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

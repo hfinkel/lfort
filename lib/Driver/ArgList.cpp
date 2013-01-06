@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Option.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Option.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
-using namespace clang::driver;
+using namespace lfort;
+using namespace lfort::driver;
 
 void arg_iterator::SkipToNextArg() {
   for (; Current != Args.end(); ++Current) {
@@ -215,7 +215,7 @@ StringRef ArgList::getLastArgValue(OptSpecifier Id,
 }
 
 int ArgList::getLastArgIntValue(OptSpecifier Id, int Default,
-                                clang::DiagnosticsEngine *Diags) const {
+                                lfort::DiagnosticsEngine *Diags) const {
   int Res = Default;
 
   if (Arg *A = getLastArg(Id)) {

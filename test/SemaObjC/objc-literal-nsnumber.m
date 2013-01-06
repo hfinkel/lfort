@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -fblocks -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -fblocks -verify %s
 // rdar://10111397
 
 #if __LP64__

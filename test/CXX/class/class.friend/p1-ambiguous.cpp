@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // Make sure that friend declarations don't introduce ambiguous

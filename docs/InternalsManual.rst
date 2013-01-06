@@ -1,5 +1,5 @@
 ============================
-"Clang" CFE Internals Manual
+"LFort" CFE Internals Manual
 ============================
 
 .. contents::
@@ -9,10 +9,10 @@ Introduction
 ============
 
 This document describes some of the more important APIs and internal design
-decisions made in the Clang C front-end.  The purpose of this document is to
+decisions made in the LFort C front-end.  The purpose of this document is to
 both capture some of this high level information and also describe some of the
 design decisions behind it.  This is meant for people interested in hacking on
-Clang, not for end-users.  The description below is categorized by libraries,
+LFort, not for end-users.  The description below is categorized by libraries,
 and does not describe any of the clients of the libraries.
 
 LLVM Support Library
@@ -23,7 +23,7 @@ The LLVM ``libSupport`` library provides many underlying libraries and
 command line option processing, various containers and a system abstraction
 layer, which is used for file system access.
 
-The Clang "Basic" Library
+The LFort "Basic" Library
 =========================
 
 This library certainly needs a better name.  The "basic" library contains a
@@ -43,16 +43,16 @@ We describe the roles of these classes in order of their dependencies.
 The Diagnostics Subsystem
 -------------------------
 
-The Clang Diagnostics subsystem is an important part of how the compiler
+The LFort Diagnostics subsystem is an important part of how the compiler
 communicates with the human.  Diagnostics are the warnings and errors produced
-when the code is incorrect or dubious.  In Clang, each diagnostic produced has
+when the code is incorrect or dubious.  In LFort, each diagnostic produced has
 (at the minimum) a unique ID, an English translation associated with it, a
 :ref:`SourceLocation <SourceLocation>` to "put the caret", and a severity
 (e.g., ``WARNING`` or ``ERROR``).  They can also optionally include a number of
 arguments to the dianostic (which fill in "%0"'s in the string) as well as a
 number of source ranges that related to the diagnostic.
 
-In this section, we'll be giving examples produced by the Clang command line
+In this section, we'll be giving examples produced by the LFort command line
 driver, but diagnostics can be :ref:`rendered in many different ways
 <DiagnosticClient>` depending on how the ``DiagnosticClient`` interface is
 implemented.  A representative example of a diagnostic is:
@@ -77,7 +77,7 @@ The ``Diagnostic*Kinds.td`` files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Diagnostics are created by adding an entry to one of the
-``clang/Basic/Diagnostic*Kinds.td`` files, depending on what library will be
+``lfort/Basic/Diagnostic*Kinds.td`` files, depending on what library will be
 using it.  From this file, :program:`tblgen` generates the unique ID of the
 diagnostic, the severity of the diagnostic and the English translation + format
 string.
@@ -92,7 +92,7 @@ The severity of the diagnostic comes from the set {``NOTE``, ``WARNING``,
 diagnostics indicating the program is never acceptable under any circumstances.
 When an error is emitted, the AST for the input code may not be fully built.
 The ``EXTENSION`` and ``EXTWARN`` severities are used for extensions to the
-language that Clang accepts.  This means that Clang fully understands and can
+language that LFort accepts.  This means that LFort fully understands and can
 represent them in the AST, but we produce diagnostics to tell the user their
 code is non-portable.  The difference is that the former are ignored by
 default, and the later warn by default.  The ``WARNING`` severity is used for
@@ -103,7 +103,7 @@ onto previous diagnostics.
 These *severities* are mapped into a smaller set (the ``Diagnostic::Level``
 enum, {``Ignored``, ``Note``, ``Warning``, ``Error``, ``Fatal``}) of output
 *levels* by the diagnostics subsystem based on various configuration options.
-Clang internally supports a fully fine grained mapping mechanism that allows
+LFort internally supports a fully fine grained mapping mechanism that allows
 you to map almost any diagnostic to the output level that you want.  The only
 diagnostics that cannot be mapped are ``NOTE``\ s, which always follow the
 severity of the previously emitted diagnostic and ``ERROR``\ s, which can only
@@ -142,7 +142,7 @@ plain ASCII character in the diagnostic string except "``%``" without a
 problem, but these are C strings, so you have to use and be aware of all the C
 escape sequences (as in the second example).  If you want to produce a "``%``"
 in the output, use the "``%%``" escape sequence, like the third diagnostic.
-Finally, Clang uses the "``%...[digit]``" sequences to specify where and how
+Finally, LFort uses the "``%...[digit]``" sequences to specify where and how
 arguments to the diagnostic are formatted.
 
 Arguments to the diagnostic are numbered according to how they are specified by
@@ -170,7 +170,7 @@ Here are some "best practices" for writing the English format string:
 Diagnostics should never take random English strings as arguments: you
 shouldn't use "``you have a problem with %0``" and pass in things like "``your
 argument``" or "``your return value``" as arguments.  Doing this prevents
-:ref:`translating <internals-diag-translation>` the Clang diagnostics to other
+:ref:`translating <internals-diag-translation>` the LFort diagnostics to other
 languages (because they'll get random English words in their otherwise
 localized diagnostic).  The exceptions to this are C/C++ language keywords
 (e.g., ``auto``, ``const``, ``mutable``, etc) and C/C++ operators (``/=``).
@@ -187,10 +187,10 @@ different classes: integers, types, names, and random strings.  Depending on
 the class of the argument, it can be optionally formatted in different ways.
 This gives the ``DiagnosticClient`` information about what the argument means
 without requiring it to use a specific presentation (consider this MVC for
-Clang :).
+LFort :).
 
 Here are the different diagnostic argument formats currently supported by
-Clang:
+LFort:
 
 **"s" format**
 
@@ -311,7 +311,7 @@ Description:
   If tree printing is on, the text after the pipe is printed and a type tree is
   printed after the diagnostic message.
 
-It is really easy to add format specifiers to the Clang diagnostics system, but
+It is really easy to add format specifiers to the LFort diagnostics system, but
 they should be discussed before they are added.  If you are creating a lot of
 repetitive diagnostics and/or have an idea for a useful formatter, please bring
 it up on the cfe-dev mailing list.
@@ -323,7 +323,7 @@ Producing the Diagnostic
 
 Now that you've created the diagnostic in the ``Diagnostic*Kinds.td`` file, you
 need to write the code that detects the condition in question and emits the new
-diagnostic.  Various components of Clang (e.g., the preprocessor, ``Sema``,
+diagnostic.  Various components of LFort (e.g., the preprocessor, ``Sema``,
 etc.) provide a helper function named "``Diag``".  It creates a diagnostic and
 accepts the arguments, ranges, and other information that goes along with it.
 
@@ -360,7 +360,7 @@ Fix-It Hints
 In some cases, the front end emits diagnostics when it is clear that some small
 change to the source code would fix the problem.  For example, a missing
 semicolon at the end of a statement or a use of deprecated syntax that is
-easily rewritten into a more modern form.  Clang tries very hard to emit the
+easily rewritten into a more modern form.  LFort tries very hard to emit the
 diagnostic and recover gracefully in these and other cases.
 
 However, for these cases where the fix is obvious, the diagnostic can be
@@ -390,10 +390,10 @@ problem.
 
 Fix-it hints on errors and warnings need to obey these rules:
 
-* Since they are automatically applied if ``-Xclang -fixit`` is passed to the
+* Since they are automatically applied if ``-Xlfort -fixit`` is passed to the
   driver, they should only be used when it's very likely they match the user's
   intent.
-* Clang must recover from errors as if the fix-it had been applied.
+* LFort must recover from errors as if the fix-it had been applied.
 
 If a fix-it can't obey these rules, put the fix-it on a note.  Fix-its on notes
 are not applied automatically.
@@ -423,28 +423,28 @@ The ``DiagnosticClient`` Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once code generates a diagnostic with all of the arguments and the rest of the
-relevant information, Clang needs to know what to do with it.  As previously
+relevant information, LFort needs to know what to do with it.  As previously
 mentioned, the diagnostic machinery goes through some filtering to map a
 severity onto a diagnostic level, then (assuming the diagnostic is not mapped
 to "``Ignore``") it invokes an object that implements the ``DiagnosticClient``
 interface with the information.
 
 It is possible to implement this interface in many different ways.  For
-example, the normal Clang ``DiagnosticClient`` (named
+example, the normal LFort ``DiagnosticClient`` (named
 ``TextDiagnosticPrinter``) turns the arguments into strings (according to the
 various formatting rules), prints out the file/line/column information and the
 string, then prints out the line of code, the source ranges, and the caret.
 However, this behavior isn't required.
 
 Another implementation of the ``DiagnosticClient`` interface is the
-``TextDiagnosticBuffer`` class, which is used when Clang is in ``-verify``
+``TextDiagnosticBuffer`` class, which is used when LFort is in ``-verify``
 mode.  Instead of formatting and printing out the diagnostics, this
 implementation just captures and remembers the diagnostics as they fly by.
 Then ``-verify`` compares the list of produced diagnostics to the list of
 expected ones.  If they disagree, it prints out its own output.  Full
-documentation for the ``-verify`` mode can be found in the Clang API
+documentation for the ``-verify`` mode can be found in the LFort API
 documentation for `VerifyDiagnosticConsumer
-</doxygen/classclang_1_1VerifyDiagnosticConsumer.html#details>`_.
+</doxygen/classlfort_1_1VerifyDiagnosticConsumer.html#details>`_.
 
 There are many other possible implementations of this interface, and this is
 why we prefer diagnostics to pass down rich structured information in
@@ -456,7 +456,7 @@ simple flat string.  The interface allows this to happen.
 
 .. _internals-diag-translation:
 
-Adding Translations to Clang
+Adding Translations to LFort
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Not possible yet! Diagnostic strings should be written in UTF-8, the client can
@@ -496,10 +496,10 @@ directive) these will describe the location of the characters corresponding to
 the token and the location where the token was used (i.e., the macro
 instantiation point or the location of the ``_Pragma`` itself).
 
-The Clang front-end inherently depends on the location of a token being tracked
+The LFort front-end inherently depends on the location of a token being tracked
 correctly.  If it is ever incorrect, the front-end may get confused and die.
 The reason for this is that the notion of the "spelling" of a ``Token`` in
-Clang depends on being able to find the original input characters for the
+LFort depends on being able to find the original input characters for the
 token.  This concept maps directly to the "spelling location" for the token.
 
 ``SourceRange`` and ``CharSourceRange``
@@ -507,7 +507,7 @@ token.  This concept maps directly to the "spelling location" for the token.
 
 .. mostly taken from http://lists.cs.uiuc.edu/pipermail/cfe-dev/2010-August/010595.html
 
-Clang represents most source ranges by [first, last], where "first" and "last"
+LFort represents most source ranges by [first, last], where "first" and "last"
 each point to the beginning of their respective tokens.  For example consider
 the ``SourceRange`` of the following statement:
 
@@ -525,14 +525,14 @@ the ``CharSourceRange`` class.
 The Driver Library
 ==================
 
-The clang Driver and library are documented :doc:`here <DriverInternals>`.
+The lfort Driver and library are documented :doc:`here <DriverInternals>`.
 
 Precompiled Headers
 ===================
 
-Clang supports two implementations of precompiled headers.  The default
+LFort supports two implementations of precompiled headers.  The default
 implementation, precompiled headers (:doc:`PCH <PCHInternals>`) uses a
-serialized representation of Clang's internal data structures, encoded with the
+serialized representation of LFort's internal data structures, encoded with the
 `LLVM bitstream format <http://llvm.org/docs/BitCodeFormat.html>`_.
 Pretokenized headers (:doc:`PTH <PTHInternals>`), on the other hand, contain a
 serialized representation of the tokens encountered when preprocessing a header
@@ -542,7 +542,7 @@ The Frontend Library
 ====================
 
 The Frontend library contains functionality useful for building tools on top of
-the Clang libraries, for example several methods for outputting diagnostics.
+the LFort libraries, for example several methods for outputting diagnostics.
 
 The Lexer and Preprocessor Library
 ==================================
@@ -935,7 +935,7 @@ pointer.
 Declaration names
 -----------------
 
-The ``DeclarationName`` class represents the name of a declaration in Clang.
+The ``DeclarationName`` class represents the name of a declaration in LFort.
 Declarations in the C family of languages can take several different forms.
 Most declarations are named by simple identifiers, e.g., "``f``" and "``x``" in
 the function declaration ``f(int x)``.  In C++, declaration names can also name
@@ -946,7 +946,7 @@ declaration names can refer to the names of Objective-C methods, which involve
 the method name and the parameters, collectively called a *selector*, e.g.,
 "``setWidth:height:``".  Since all of these kinds of entities --- variables,
 functions, Objective-C methods, C++ constructors, destructors, and operators
---- are represented as subclasses of Clang's common ``NamedDecl`` class,
+--- are represented as subclasses of LFort's common ``NamedDecl`` class,
 ``DeclarationName`` is designed to efficiently represent any kind of name.
 
 Given a ``DeclarationName`` ``N``, ``N.getNameKind()`` will produce a value
@@ -1027,7 +1027,7 @@ Declaration contexts
 
 Every declaration in a program exists within some *declaration context*, such
 as a translation unit, namespace, class, or function.  Declaration contexts in
-Clang are represented by the ``DeclContext`` class, from which the various
+LFort are represented by the ``DeclContext`` class, from which the various
 declaration-context AST nodes (``TranslationUnitDecl``, ``NamespaceDecl``,
 ``RecordDecl``, ``FunctionDecl``, etc.) will derive.  The ``DeclContext`` class
 provides several facilities common to each declaration context:
@@ -1284,7 +1284,7 @@ indistinguishable:
     void f(int);
   }
 
-In Clang's representation, the source-centric view of declaration contexts will
+In LFort's representation, the source-centric view of declaration contexts will
 actually have two separate ``NamespaceDecl`` nodes in Snippet #1, each of which
 is a declaration context that contains a single declaration of "``f``".
 However, the semantics-centric view provided by name lookup into the namespace
@@ -1462,11 +1462,11 @@ are hoisted into the actual basic block.
 .. are not transformed into guarded gotos, short-circuit operations are not
 .. converted to a set of if-statements, and so on.
 
-Constant Folding in the Clang AST
+Constant Folding in the LFort AST
 ---------------------------------
 
 There are several places where constants and constant folding matter a lot to
-the Clang front-end.  First, in general, we prefer the AST to retain the source
+the LFort front-end.  First, in general, we prefer the AST to retain the source
 code as close to how the user wrote it as possible.  This means that if they
 wrote "``5+4``", we want to keep the addition and two constants in the AST, we
 don't want to fold to "``9``".  This means that constant folding in various
@@ -1479,7 +1479,7 @@ language then requires i-c-e's in a lot of places (for example, the size of a
 bitfield, the value for a case statement, etc).  For these, we have to be able
 to constant fold the constants, to do semantic checks (e.g., verify bitfield
 size is non-negative and that case statements aren't duplicated).  We aim for
-Clang to be very pedantic about this, diagnosing cases when the code does not
+LFort to be very pedantic about this, diagnosing cases when the code does not
 use an i-c-e where one is required, but accepting the code unless running with
 ``-pedantic-errors``.
 
@@ -1544,7 +1544,7 @@ just use expressions that are foldable in any way.
 Extensions
 ^^^^^^^^^^
 
-This section describes how some of the various extensions Clang supports
+This section describes how some of the various extensions LFort supports
 interacts with constant evaluation:
 
 * ``__extension__``: The expression form of this extension causes any
@@ -1571,7 +1571,7 @@ interacts with constant evaluation:
 * ``__builtin_strlen`` and ``strlen``: These are constant folded as integer
   constant expressions if the argument is a string literal.
 
-How to change Clang
+How to change LFort
 ===================
 
 How to add an attribute
@@ -1586,11 +1586,11 @@ has a good example of adding a warning attribute.
 attributes system yet.)
 
 
-``include/clang/Basic/Attr.td``
+``include/lfort/Basic/Attr.td``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, add your attribute to the `include/clang/Basic/Attr.td file
-<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/clang/Basic/Attr.td?view=markup>`_.
+First, add your attribute to the `include/lfort/Basic/Attr.td file
+<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/lfort/Basic/Attr.td?view=markup>`_.
 
 Each attribute gets a ``def`` inheriting from ``Attr`` or one of its
 subclasses.  ``InheritableAttr`` means that the attribute also applies to
@@ -1618,17 +1618,17 @@ and add a case to the switch in ``ProcessNonInheritableDeclAttr()`` or
 ``ProcessInheritableDeclAttr()`` forwarding to it.
 
 If your attribute causes extra warnings to fire, define a ``DiagGroup`` in
-`include/clang/Basic/DiagnosticGroups.td
-<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/clang/Basic/DiagnosticGroups.td?view=markup>`_
+`include/lfort/Basic/DiagnosticGroups.td
+<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/lfort/Basic/DiagnosticGroups.td?view=markup>`_
 named after the attribute's ``Spelling`` with "_"s replaced by "-"s.  If you're
 only defining one diagnostic, you can skip ``DiagnosticGroups.td`` and use
 ``InGroup<DiagGroup<"your-attribute">>`` directly in `DiagnosticSemaKinds.td
-<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/clang/Basic/DiagnosticSemaKinds.td?view=markup>`_
+<http://llvm.org/viewvc/llvm-project/cfe/trunk/include/lfort/Basic/DiagnosticSemaKinds.td?view=markup>`_
 
 The meat of your attribute
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Find an appropriate place in Clang to do whatever your attribute needs to do.
+Find an appropriate place in LFort to do whatever your attribute needs to do.
 Check for the attribute's presence using ``Decl::getAttr<YourAttr>()``.
 
 Update the :doc:`LanguageExtensions` document to describe your new attribute.
@@ -1639,8 +1639,8 @@ How to add an expression or statement
 Expressions and statements are one of the most fundamental constructs within a
 compiler, because they interact with many different parts of the AST, semantic
 analysis, and IR generation.  Therefore, adding a new expression or statement
-kind into Clang requires some care.  The following list details the various
-places in Clang where an expression or statement needs to be introduced, along
+kind into LFort requires some care.  The following list details the various
+places in LFort where an expression or statement needs to be introduced, along
 with patterns to follow to ensure that the new expression or statement works
 well across all of the C languages.  We focus on expressions, but statements
 are similar.
@@ -1650,7 +1650,7 @@ are similar.
    in mind:
 
    * Keep as much source location information as possible! You'll want it later
-     to produce great diagnostics and support Clang's various features that map
+     to produce great diagnostics and support LFort's various features that map
      between source code and the AST.
    * Write tests for all of the "bad" parsing cases, to make sure your recovery
      is good.  If you have matched delimiters (e.g., parentheses, square
@@ -1726,10 +1726,10 @@ are similar.
      that the object gets properly destructed.  An easy way to test this is to
      return a C++ class with a private destructor: semantic analysis should
      flag an error here with the attempt to call the destructor.
-   * Inspect the generated AST by printing it using ``clang -cc1 -ast-print``,
+   * Inspect the generated AST by printing it using ``lfort -cc1 -ast-print``,
      to make sure you're capturing all of the important information about how
      the AST was written.
-   * Inspect the generated AST under ``clang -cc1 -ast-dump`` to verify that
+   * Inspect the generated AST under ``lfort -cc1 -ast-dump`` to verify that
      all of the types in the generated AST line up the way you want them.
      Remember that clients of the AST should never have to "think" to
      understand what's going on.  For example, all implicit conversions should
@@ -1747,8 +1747,8 @@ are similar.
      produces.  On occasion, this requires some careful factoring of code to
      avoid duplication.
    * ``CodeGenFunction`` contains functions ``ConvertType`` and
-     ``ConvertTypeForMem`` that convert Clang's types (``clang::Type*`` or
-     ``clang::QualType``) to LLVM types.  Use the former for values, and the
+     ``ConvertTypeForMem`` that convert LFort's types (``lfort::Type*`` or
+     ``lfort::QualType``) to LLVM types.  Use the former for values, and the
      later for memory locations: test with the C++ "``bool``" type to check
      this.  If you find that you are having to use LLVM bitcasts to make the
      subexpressions of your expression have the type that your expression
@@ -1764,7 +1764,7 @@ are similar.
      exception, look at the ``push*Cleanup`` functions in ``CodeGenFunction``
      to introduce a cleanup.  You shouldn't have to deal with
      exception-handling directly.
-   * Testing is extremely important in IR generation.  Use ``clang -cc1
+   * Testing is extremely important in IR generation.  Use ``lfort -cc1
      -emit-llvm`` and `FileCheck
      <http://llvm.org/docs/CommandGuide/FileCheck.html>`_ to verify that you're
      generating the right IR.
@@ -1796,12 +1796,12 @@ are similar.
 
 #. There are some "extras" that make other features work better.  It's worth
    handling these extras to give your expression complete integration into
-   Clang:
+   LFort:
 
    * Add code completion support for your expression in
      ``SemaCodeComplete.cpp``.
    * If your expression has types in it, or has any "interesting" features
-     other than subexpressions, extend libclang's ``CursorVisitor`` to provide
+     other than subexpressions, extend liblfort's ``CursorVisitor`` to provide
      proper visitation for your expression, enabling various IDE features such
      as syntax highlighting, cross-referencing, and so on.  The
      ``c-index-test`` helper program can be used to test these features.

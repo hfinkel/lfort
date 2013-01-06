@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Config/config.h" // C_INCLUDE_DIRS
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/HeaderSearchOptions.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Config/config.h" // C_INCLUDE_DIRS
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
@@ -27,8 +27,8 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
-using namespace clang::frontend;
+using namespace lfort;
+using namespace lfort::frontend;
 
 namespace {
 
@@ -229,7 +229,7 @@ void InitHeaderSearch::AddDefaultCIncludePaths(const llvm::Triple &triple,
   // Builtin includes use #include_next directives and should be positioned
   // just prior C include dirs.
   if (HSOpts.UseBuiltinIncludes) {
-    // Ignore the sys root, we *always* look for clang headers relative to
+    // Ignore the sys root, we *always* look for lfort headers relative to
     // supplied path.
     llvm::sys::Path P(HSOpts.ResourceDir);
     P.appendComponent("include");
@@ -467,8 +467,8 @@ void InitHeaderSearch::AddDefaultIncludePaths(const LangOptions &Lang,
         // lib/c++/v1.
         llvm::sys::Path P(HSOpts.ResourceDir);
         if (!P.isEmpty()) {
-          P.eraseComponent();  // Remove version from foo/lib/clang/version
-          P.eraseComponent();  // Remove clang from foo/lib/clang
+          P.eraseComponent();  // Remove version from foo/lib/lfort/version
+          P.eraseComponent();  // Remove lfort from foo/lib/lfort
           
           // Get foo/lib/c++/v1
           P.appendComponent("c++");
@@ -659,7 +659,7 @@ void InitHeaderSearch::Realize(const LangOptions &Lang) {
   }
 }
 
-void clang::ApplyHeaderSearchOptions(HeaderSearch &HS,
+void lfort::ApplyHeaderSearchOptions(HeaderSearch &HS,
                                      const HeaderSearchOptions &HSOpts,
                                      const LangOptions &Lang,
                                      const llvm::Triple &Triple) {

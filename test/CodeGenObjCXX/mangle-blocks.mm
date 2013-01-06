@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -fblocks -o - -triple x86_64-apple-darwin10 -fobjc-runtime=macosx-fragile-10.5 %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -fblocks -o - -triple x86_64-apple-darwin10 -fobjc-runtime=macosx-fragile-10.5 %s | FileCheck %s
 
 // CHECK: @_ZGVN3foo22___Z3foov_block_invoke5valueE = internal global i64 0
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-pc-win32 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i686-pc-win32 -emit-llvm %s -o - | FileCheck %s
 
 class A {
  public:

@@ -1,6 +1,6 @@
 // RUN: cp %s %t
-// RUN: %clang_cc1 -pedantic -fixit %t
-// RUN: echo %clang_cc1 -pedantic -Werror -x c %t
+// RUN: %lfort_cc1 -pedantic -fixit %t
+// RUN: echo %lfort_cc1 -pedantic -Werror -x c %t
 /* XPASS: * */
 
 /* This is a test of the various code modification hints that are

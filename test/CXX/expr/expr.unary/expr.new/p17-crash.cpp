@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %lfort_cc1 -emit-llvm-only %s
 
 // this used to crash due to templ<int>'s dtor not being marked as used by the
 // new expression in func()

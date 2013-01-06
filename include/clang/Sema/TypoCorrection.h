@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_TYPOCORRECTION_H
-#define LLVM_CLANG_SEMA_TYPOCORRECTION_H
+#ifndef LLVM_LFORT_SEMA_TYPOCORRECTION_H
+#define LLVM_LFORT_SEMA_TYPOCORRECTION_H
 
-#include "clang/AST/DeclCXX.h"
+#include "lfort/AST/DeclCXX.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 /// @brief Simple class containing the result of Sema::CorrectTypo
 class TypoCorrection {

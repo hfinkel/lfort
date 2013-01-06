@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -std=c++11 -S -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -std=c++11 -S -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: @[[THREE_NULL_MEMPTRS:.*]] = private constant [3 x i32] [i32 -1, i32 -1, i32 -1]
 

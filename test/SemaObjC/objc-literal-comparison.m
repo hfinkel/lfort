@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=((id)0)" -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=(id)0" -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=0" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=((id)0)" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=(id)0" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare "-Dnil=0" -verify %s
 
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=((id)0)" -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=(id)0" -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=0" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=((id)0)" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=(id)0" -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-everything -Wobjc-literal-compare -fobjc-arc "-Dnil=0" -verify %s
 
 // (test the warning flag as well)
 
@@ -72,8 +72,8 @@ void testComparisonsWithoutFixits() {
 }
 
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-string-compare"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wobjc-string-compare"
 
 void testWarningFlags(id obj) {
   if (obj == @"") return; // no-warning
@@ -83,7 +83,7 @@ void testWarningFlags(id obj) {
   if (@1 == obj) return; // expected-warning{{direct comparison of a numeric literal has undefined behavior}} expected-note{{use 'isEqual:' instead}}
 }
 
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
 
 void testNilComparison() {

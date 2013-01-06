@@ -1,6 +1,6 @@
 // RUN: rm -f %t.objc.plist %t.objcpp.plist
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.coreFoundation.CFRetainRelease,osx.cocoa.ClassRelease,osx.cocoa.RetainCount -analyzer-store=region -fblocks -verify -Wno-objc-root-class %s -analyzer-output=plist -o %t.objc.plist
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.coreFoundation.CFRetainRelease,osx.cocoa.ClassRelease,osx.cocoa.RetainCount -analyzer-store=region -fblocks -verify -x objective-c++ -std=gnu++98 -Wno-objc-root-class %s -analyzer-output=plist -o %t.objcpp.plist
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.coreFoundation.CFRetainRelease,osx.cocoa.ClassRelease,osx.cocoa.RetainCount -analyzer-store=region -fblocks -verify -Wno-objc-root-class %s -analyzer-output=plist -o %t.objc.plist
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.coreFoundation.CFRetainRelease,osx.cocoa.ClassRelease,osx.cocoa.RetainCount -analyzer-store=region -fblocks -verify -x objective-c++ -std=gnu++98 -Wno-objc-root-class %s -analyzer-output=plist -o %t.objcpp.plist
 // FIXLATER: cat %t.objc.plist ; FileCheck --input-file=%t.objc.plist %s
 // FIXLATER: cat %t.objcpp.plist ; FileCheck --input-file=%t.objcpp.plist %s
 
@@ -716,7 +716,7 @@ void rdar6704930(unsigned char *s, unsigned int length) {
 @end
 
 //===----------------------------------------------------------------------===//
-// <rdar://problem/6257780> clang checker fails to catch use-after-release
+// <rdar://problem/6257780> lfort checker fails to catch use-after-release
 //===----------------------------------------------------------------------===//
 
 int rdar_6257780_Case1() {
@@ -899,7 +899,7 @@ typedef struct s6893565* TD6893565;
 @end
 
 //===----------------------------------------------------------------------===//
-// <rdar://problem/6902710> clang: false positives w/QC and CoreImage methods
+// <rdar://problem/6902710> lfort: false positives w/QC and CoreImage methods
 //===----------------------------------------------------------------------===//
 
 void rdar6902710(QCView *view, QCRenderer *renderer, CIContext *context,
@@ -913,7 +913,7 @@ void rdar6902710(QCView *view, QCRenderer *renderer, CIContext *context,
 
 //===----------------------------------------------------------------------===//
 // <rdar://problem/6945561> -[CIContext createCGLayerWithSize:info:]
-//                           misinterpreted by clang scan-build
+//                           misinterpreted by lfort scan-build
 //===----------------------------------------------------------------------===//
 
 void rdar6945561(CIContext *context, CGSize size, CFDictionaryRef d) {
@@ -1069,7 +1069,7 @@ void rdar_7184450_pos(CGContextRef myContext, CGFloat x, CGPoint myStartPoint,
 }
 
 //===----------------------------------------------------------------------===//
-// <rdar://problem/7299394> clang false positive: retained instance passed to
+// <rdar://problem/7299394> lfort false positive: retained instance passed to
 //                          thread in pthread_create marked as leak
 //
 // Until we have full IPA, the analyzer should stop tracking the reference
@@ -1262,7 +1262,7 @@ void rdar7265711_b(RDar7265711 *x) {
 }
 
 //===----------------------------------------------------------------------===//
-// <rdar://problem/7306898> clang thinks [NSCursor dragCopyCursor] returns a
+// <rdar://problem/7306898> lfort thinks [NSCursor dragCopyCursor] returns a
 //                          retained reference
 //===----------------------------------------------------------------------===//
 
@@ -1917,13 +1917,13 @@ void testCFConsumeAndStopTracking() {
   CFConsumeAndStopTracking((CFTypeRef)unretained, ^{}); // expected-warning {{Incorrect decrement of the reference count of an object that is not owned at this point by the caller}}
 }
 //===----------------------------------------------------------------------===//
-// Test 'pragma clang arc_cf_code_audited' support.
+// Test 'pragma lfort arc_cf_code_audited' support.
 //===----------------------------------------------------------------------===//
 
 typedef void *MyCFType;
-#pragma clang arc_cf_code_audited begin
+#pragma lfort arc_cf_code_audited begin
 MyCFType CreateMyCFType();
-#pragma clang arc_cf_code_audited end 
+#pragma lfort arc_cf_code_audited end 
     
 void test_custom_cf() {
   MyCFType x = CreateMyCFType(); // expected-warning {{leak of an object stored into 'x'}}

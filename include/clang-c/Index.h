@@ -1,4 +1,4 @@
-/*===-- clang-c/Index.h - Indexing Public C Interface -------------*- C -*-===*\
+/*===-- lfort-c/Index.h - Indexing Public C Interface -------------*- C -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -7,28 +7,28 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* This header provides a public inferface to a Clang library for extracting  *|
+|* This header provides a public inferface to a LFort library for extracting  *|
 |* high-level symbol information from source files without exposing the full  *|
-|* Clang C++ API.                                                             *|
+|* LFort C++ API.                                                             *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-#ifndef CLANG_C_INDEX_H
-#define CLANG_C_INDEX_H
+#ifndef LFORT_C_INDEX_H
+#define LFORT_C_INDEX_H
 
 #include <sys/stat.h>
 #include <time.h>
 #include <stdio.h>
 
-#include "clang-c/Platform.h"
-#include "clang-c/CXString.h"
+#include "lfort-c/Platform.h"
+#include "lfort-c/CXString.h"
 
 /**
- * \brief The version constants for the libclang API.
+ * \brief The version constants for the liblfort API.
  * CINDEX_VERSION_MINOR should increase when there are API additions.
  * CINDEX_VERSION_MAJOR is intended for "major" source/ABI breaking changes.
  *
- * The policy about the libclang API was always to keep it source and ABI
+ * The policy about the liblfort API was always to keep it source and ABI
  * compatible, thus CINDEX_VERSION_MAJOR is expected to remain stable.
  */
 #define CINDEX_VERSION_MAJOR 0
@@ -55,21 +55,21 @@
 extern "C" {
 #endif
 
-/** \defgroup CINDEX libclang: C Interface to Clang
+/** \defgroup CINDEX liblfort: C Interface to LFort
  *
- * The C Interface to Clang provides a relatively small API that exposes
+ * The C Interface to LFort provides a relatively small API that exposes
  * facilities for parsing source code into an abstract syntax tree (AST),
  * loading already-parsed ASTs, traversing the AST, associating
  * physical source locations with elements within the AST, and other
- * facilities that support Clang-based development tools.
+ * facilities that support LFort-based development tools.
  *
- * This C interface to Clang will never provide all of the information
- * representation stored in Clang's C++ AST, nor should it: the intent is to
+ * This C interface to LFort will never provide all of the information
+ * representation stored in LFort's C++ AST, nor should it: the intent is to
  * maintain an API that is relatively stable from one release to the next,
  * providing only the basic functionality needed to support development tools.
  *
  * To avoid namespace pollution, data types are prefixed with "CX" and
- * functions are prefixed with "clang_".
+ * functions are prefixed with "lfort_".
  *
  * @{
  */
@@ -181,32 +181,32 @@ typedef struct CXVersion {
  *
  * \code
  *   // excludeDeclsFromPCH = 1, displayDiagnostics=1
- *   Idx = clang_createIndex(1, 1);
+ *   Idx = lfort_createIndex(1, 1);
  *
  *   // IndexTest.pch was produced with the following command:
- *   // "clang -x c IndexTest.h -emit-ast -o IndexTest.pch"
- *   TU = clang_createTranslationUnit(Idx, "IndexTest.pch");
+ *   // "lfort -x c IndexTest.h -emit-ast -o IndexTest.pch"
+ *   TU = lfort_createTranslationUnit(Idx, "IndexTest.pch");
  *
  *   // This will load all the symbols from 'IndexTest.pch'
- *   clang_visitChildren(clang_getTranslationUnitCursor(TU),
+ *   lfort_visitChildren(lfort_getTranslationUnitCursor(TU),
  *                       TranslationUnitVisitor, 0);
- *   clang_disposeTranslationUnit(TU);
+ *   lfort_disposeTranslationUnit(TU);
  *
  *   // This will load all the symbols from 'IndexTest.c', excluding symbols
  *   // from 'IndexTest.pch'.
- *   char *args[] = { "-Xclang", "-include-pch=IndexTest.pch" };
- *   TU = clang_createTranslationUnitFromSourceFile(Idx, "IndexTest.c", 2, args,
+ *   char *args[] = { "-Xlfort", "-include-pch=IndexTest.pch" };
+ *   TU = lfort_createTranslationUnitFromSourceFile(Idx, "IndexTest.c", 2, args,
  *                                                  0, 0);
- *   clang_visitChildren(clang_getTranslationUnitCursor(TU),
+ *   lfort_visitChildren(lfort_getTranslationUnitCursor(TU),
  *                       TranslationUnitVisitor, 0);
- *   clang_disposeTranslationUnit(TU);
+ *   lfort_disposeTranslationUnit(TU);
  * \endcode
  *
  * This process of creating the 'pch', loading it separately, and using it (via
  * -include-pch) allows 'excludeDeclsFromPCH' to remove redundant callbacks
  * (which gives the indexer the same performance benefit as the compiler).
  */
-CINDEX_LINKAGE CXIndex clang_createIndex(int excludeDeclarationsFromPCH,
+CINDEX_LINKAGE CXIndex lfort_createIndex(int excludeDeclarationsFromPCH,
                                          int displayDiagnostics);
 
 /**
@@ -215,7 +215,7 @@ CINDEX_LINKAGE CXIndex clang_createIndex(int excludeDeclarationsFromPCH,
  * The index must not be destroyed until all of the translation units created
  * within that index have been destroyed.
  */
-CINDEX_LINKAGE void clang_disposeIndex(CXIndex index);
+CINDEX_LINKAGE void lfort_disposeIndex(CXIndex index);
 
 typedef enum {
   /**
@@ -224,25 +224,25 @@ typedef enum {
   CXGlobalOpt_None = 0x0,
 
   /**
-   * \brief Used to indicate that threads that libclang creates for indexing
+   * \brief Used to indicate that threads that liblfort creates for indexing
    * purposes should use background priority.
    *
-   * Affects #clang_indexSourceFile, #clang_indexTranslationUnit,
-   * #clang_parseTranslationUnit, #clang_saveTranslationUnit.
+   * Affects #lfort_indexSourceFile, #lfort_indexTranslationUnit,
+   * #lfort_parseTranslationUnit, #lfort_saveTranslationUnit.
    */
   CXGlobalOpt_ThreadBackgroundPriorityForIndexing = 0x1,
 
   /**
-   * \brief Used to indicate that threads that libclang creates for editing
+   * \brief Used to indicate that threads that liblfort creates for editing
    * purposes should use background priority.
    *
-   * Affects #clang_reparseTranslationUnit, #clang_codeCompleteAt,
-   * #clang_annotateTokens
+   * Affects #lfort_reparseTranslationUnit, #lfort_codeCompleteAt,
+   * #lfort_annotateTokens
    */
   CXGlobalOpt_ThreadBackgroundPriorityForEditing = 0x2,
 
   /**
-   * \brief Used to indicate that all threads that libclang creates should use
+   * \brief Used to indicate that all threads that liblfort creates should use
    * background priority.
    */
   CXGlobalOpt_ThreadBackgroundPriorityForAll =
@@ -257,14 +257,14 @@ typedef enum {
  * For example:
  * \code
  * CXIndex idx = ...;
- * clang_CXIndex_setGlobalOptions(idx,
- *     clang_CXIndex_getGlobalOptions(idx) |
+ * lfort_CXIndex_setGlobalOptions(idx,
+ *     lfort_CXIndex_getGlobalOptions(idx) |
  *     CXGlobalOpt_ThreadBackgroundPriorityForIndexing);
  * \endcode
  *
  * \param options A bitmask of options, a bitwise OR of CXGlobalOpt_XXX flags.
  */
-CINDEX_LINKAGE void clang_CXIndex_setGlobalOptions(CXIndex, unsigned options);
+CINDEX_LINKAGE void lfort_CXIndex_setGlobalOptions(CXIndex, unsigned options);
 
 /**
  * \brief Gets the general options associated with a CXIndex.
@@ -272,7 +272,7 @@ CINDEX_LINKAGE void clang_CXIndex_setGlobalOptions(CXIndex, unsigned options);
  * \returns A bitmask of options, a bitwise OR of CXGlobalOpt_XXX flags that
  * are associated with the given CXIndex object.
  */
-CINDEX_LINKAGE unsigned clang_CXIndex_getGlobalOptions(CXIndex);
+CINDEX_LINKAGE unsigned lfort_CXIndex_getGlobalOptions(CXIndex);
 
 /**
  * \defgroup CINDEX_FILES File manipulation routines
@@ -289,12 +289,12 @@ typedef void *CXFile;
 /**
  * \brief Retrieve the complete file and path name of the given file.
  */
-CINDEX_LINKAGE CXString clang_getFileName(CXFile SFile);
+CINDEX_LINKAGE CXString lfort_getFileName(CXFile SFile);
 
 /**
  * \brief Retrieve the last modification time of the given file.
  */
-CINDEX_LINKAGE time_t clang_getFileTime(CXFile SFile);
+CINDEX_LINKAGE time_t lfort_getFileTime(CXFile SFile);
 
 /**
  * \brief Determine whether the given header is guarded against
@@ -302,7 +302,7 @@ CINDEX_LINKAGE time_t clang_getFileTime(CXFile SFile);
  * \#ifndef/\#define/\#endif macro guards or with \#pragma once.
  */
 CINDEX_LINKAGE unsigned 
-clang_isFileMultipleIncludeGuarded(CXTranslationUnit tu, CXFile file);
+lfort_isFileMultipleIncludeGuarded(CXTranslationUnit tu, CXFile file);
 
 /**
  * \brief Retrieve a file handle within the given translation unit.
@@ -314,7 +314,7 @@ clang_isFileMultipleIncludeGuarded(CXTranslationUnit tu, CXFile file);
  * \returns the file handle for the named file in the translation unit \p tu,
  * or a NULL file handle if the file was not a part of this translation unit.
  */
-CINDEX_LINKAGE CXFile clang_getFile(CXTranslationUnit tu,
+CINDEX_LINKAGE CXFile lfort_getFile(CXTranslationUnit tu,
                                     const char *file_name);
 
 /**
@@ -324,7 +324,7 @@ CINDEX_LINKAGE CXFile clang_getFile(CXTranslationUnit tu,
 /**
  * \defgroup CINDEX_LOCATIONS Physical source locations
  *
- * Clang represents physical source locations in its abstract syntax tree in
+ * LFort represents physical source locations in its abstract syntax tree in
  * great detail, with file, line, and column information for the majority of
  * the tokens parsed in the source code. These data types and functions are
  * used to represent source location information, either for a particular
@@ -338,7 +338,7 @@ CINDEX_LINKAGE CXFile clang_getFile(CXTranslationUnit tu,
  * \brief Identifies a specific source location within a translation
  * unit.
  *
- * Use clang_getExpansionLocation() or clang_getSpellingLocation()
+ * Use lfort_getExpansionLocation() or lfort_getSpellingLocation()
  * to map a source location to a particular file, line, and column.
  */
 typedef struct {
@@ -349,7 +349,7 @@ typedef struct {
 /**
  * \brief Identifies a half-open character range in the source code.
  *
- * Use clang_getRangeStart() and clang_getRangeEnd() to retrieve the
+ * Use lfort_getRangeStart() and lfort_getRangeEnd() to retrieve the
  * starting and end locations from a source range, respectively.
  */
 typedef struct {
@@ -361,7 +361,7 @@ typedef struct {
 /**
  * \brief Retrieve a NULL (invalid) source location.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getNullLocation();
+CINDEX_LINKAGE CXSourceLocation lfort_getNullLocation();
 
 /**
  * \brief Determine whether two source locations, which must refer into
@@ -371,14 +371,14 @@ CINDEX_LINKAGE CXSourceLocation clang_getNullLocation();
  * \returns non-zero if the source locations refer to the same location, zero
  * if they refer to different locations.
  */
-CINDEX_LINKAGE unsigned clang_equalLocations(CXSourceLocation loc1,
+CINDEX_LINKAGE unsigned lfort_equalLocations(CXSourceLocation loc1,
                                              CXSourceLocation loc2);
 
 /**
  * \brief Retrieves the source location associated with a given file/line/column
  * in a particular translation unit.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getLocation(CXTranslationUnit tu,
+CINDEX_LINKAGE CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
                                                   CXFile file,
                                                   unsigned line,
                                                   unsigned column);
@@ -386,20 +386,20 @@ CINDEX_LINKAGE CXSourceLocation clang_getLocation(CXTranslationUnit tu,
  * \brief Retrieves the source location associated with a given character offset
  * in a particular translation unit.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getLocationForOffset(CXTranslationUnit tu,
+CINDEX_LINKAGE CXSourceLocation lfort_getLocationForOffset(CXTranslationUnit tu,
                                                            CXFile file,
                                                            unsigned offset);
 
 /**
  * \brief Retrieve a NULL (invalid) source range.
  */
-CINDEX_LINKAGE CXSourceRange clang_getNullRange();
+CINDEX_LINKAGE CXSourceRange lfort_getNullRange();
 
 /**
  * \brief Retrieve a source range given the beginning and ending source
  * locations.
  */
-CINDEX_LINKAGE CXSourceRange clang_getRange(CXSourceLocation begin,
+CINDEX_LINKAGE CXSourceRange lfort_getRange(CXSourceLocation begin,
                                             CXSourceLocation end);
 
 /**
@@ -407,13 +407,13 @@ CINDEX_LINKAGE CXSourceRange clang_getRange(CXSourceLocation begin,
  *
  * \returns non-zero if the ranges are the same, zero if they differ.
  */
-CINDEX_LINKAGE unsigned clang_equalRanges(CXSourceRange range1,
+CINDEX_LINKAGE unsigned lfort_equalRanges(CXSourceRange range1,
                                           CXSourceRange range2);
 
 /**
  * \brief Returns non-zero if \p range is null.
  */
-CINDEX_LINKAGE int clang_Range_isNull(CXSourceRange range);
+CINDEX_LINKAGE int lfort_Range_isNull(CXSourceRange range);
 
 /**
  * \brief Retrieve the file, line, column, and offset represented by
@@ -437,7 +437,7 @@ CINDEX_LINKAGE int clang_Range_isNull(CXSourceRange range);
  * \param offset [out] if non-NULL, will be set to the offset into the
  * buffer to which the given source location points.
  */
-CINDEX_LINKAGE void clang_getExpansionLocation(CXSourceLocation location,
+CINDEX_LINKAGE void lfort_getExpansionLocation(CXSourceLocation location,
                                                CXFile *file,
                                                unsigned *line,
                                                unsigned *column,
@@ -462,7 +462,7 @@ CINDEX_LINKAGE void clang_getExpansionLocation(CXSourceLocation location,
  *
  * File: dummy.c Line: 124 Column: 12
  *
- * whereas clang_getExpansionLocation would have returned
+ * whereas lfort_getExpansionLocation would have returned
  *
  * File: somefile.c Line: 3 Column: 12
  *
@@ -471,10 +471,10 @@ CINDEX_LINKAGE void clang_getExpansionLocation(CXSourceLocation location,
  *
  * \param filename [out] if non-NULL, will be set to the filename of the
  * source location. Note that filenames returned will be for "virtual" files,
- * which don't necessarily exist on the machine running clang - e.g. when
+ * which don't necessarily exist on the machine running lfort - e.g. when
  * parsing preprocessed output obtained from a different environment. If
  * a non-NULL value is passed in, remember to dispose of the returned value
- * using \c clang_disposeString() once you've finished with it. For an invalid
+ * using \c lfort_disposeString() once you've finished with it. For an invalid
  * source location, an empty string is returned.
  *
  * \param line [out] if non-NULL, will be set to the line number of the
@@ -483,7 +483,7 @@ CINDEX_LINKAGE void clang_getExpansionLocation(CXSourceLocation location,
  * \param column [out] if non-NULL, will be set to the column number of the
  * source location. For an invalid source location, zero is returned.
  */
-CINDEX_LINKAGE void clang_getPresumedLocation(CXSourceLocation location,
+CINDEX_LINKAGE void lfort_getPresumedLocation(CXSourceLocation location,
                                               CXString *filename,
                                               unsigned *line,
                                               unsigned *column);
@@ -493,10 +493,10 @@ CINDEX_LINKAGE void clang_getPresumedLocation(CXSourceLocation location,
  * by the given source location.
  *
  * This interface has been replaced by the newer interface
- * #clang_getExpansionLocation(). See that interface's documentation for
+ * #lfort_getExpansionLocation(). See that interface's documentation for
  * details.
  */
-CINDEX_LINKAGE void clang_getInstantiationLocation(CXSourceLocation location,
+CINDEX_LINKAGE void lfort_getInstantiationLocation(CXSourceLocation location,
                                                    CXFile *file,
                                                    unsigned *line,
                                                    unsigned *column,
@@ -524,7 +524,7 @@ CINDEX_LINKAGE void clang_getInstantiationLocation(CXSourceLocation location,
  * \param offset [out] if non-NULL, will be set to the offset into the
  * buffer to which the given source location points.
  */
-CINDEX_LINKAGE void clang_getSpellingLocation(CXSourceLocation location,
+CINDEX_LINKAGE void lfort_getSpellingLocation(CXSourceLocation location,
                                               CXFile *file,
                                               unsigned *line,
                                               unsigned *column,
@@ -553,7 +553,7 @@ CINDEX_LINKAGE void clang_getSpellingLocation(CXSourceLocation location,
  * \param offset [out] if non-NULL, will be set to the offset into the
  * buffer to which the given source location points.
  */
-CINDEX_LINKAGE void clang_getFileLocation(CXSourceLocation location,
+CINDEX_LINKAGE void lfort_getFileLocation(CXSourceLocation location,
                                           CXFile *file,
                                           unsigned *line,
                                           unsigned *column,
@@ -563,13 +563,13 @@ CINDEX_LINKAGE void clang_getFileLocation(CXSourceLocation location,
  * \brief Retrieve a source location representing the first character within a
  * source range.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getRangeStart(CXSourceRange range);
+CINDEX_LINKAGE CXSourceLocation lfort_getRangeStart(CXSourceRange range);
 
 /**
  * \brief Retrieve a source location representing the last character within a
  * source range.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getRangeEnd(CXSourceRange range);
+CINDEX_LINKAGE CXSourceLocation lfort_getRangeEnd(CXSourceRange range);
 
 /**
  * @}
@@ -630,7 +630,7 @@ typedef void *CXDiagnosticSet;
 /**
  * \brief Determine the number of diagnostics in a CXDiagnosticSet.
  */
-CINDEX_LINKAGE unsigned clang_getNumDiagnosticsInSet(CXDiagnosticSet Diags);
+CINDEX_LINKAGE unsigned lfort_getNumDiagnosticsInSet(CXDiagnosticSet Diags);
 
 /**
  * \brief Retrieve a diagnostic associated with the given CXDiagnosticSet.
@@ -639,15 +639,15 @@ CINDEX_LINKAGE unsigned clang_getNumDiagnosticsInSet(CXDiagnosticSet Diags);
  * \param Index the zero-based diagnostic number to retrieve.
  *
  * \returns the requested diagnostic. This diagnostic must be freed
- * via a call to \c clang_disposeDiagnostic().
+ * via a call to \c lfort_disposeDiagnostic().
  */
-CINDEX_LINKAGE CXDiagnostic clang_getDiagnosticInSet(CXDiagnosticSet Diags,
+CINDEX_LINKAGE CXDiagnostic lfort_getDiagnosticInSet(CXDiagnosticSet Diags,
                                                      unsigned Index);  
 
 
 /**
  * \brief Describes the kind of error that occurred (if any) in a call to
- * \c clang_loadDiagnostics.
+ * \c lfort_loadDiagnostics.
  */
 enum CXLoadDiag_Error {
   /**
@@ -675,7 +675,7 @@ enum CXLoadDiag_Error {
 };
   
 /**
- * \brief Deserialize a set of diagnostics from a Clang diagnostics bitcode
+ * \brief Deserialize a set of diagnostics from a LFort diagnostics bitcode
  * file.
  *
  * \param file The name of the file to deserialize.
@@ -685,30 +685,30 @@ enum CXLoadDiag_Error {
  *        if the file was not successfully loaded.
  *
  * \returns A loaded CXDiagnosticSet if successful, and NULL otherwise.  These
- * diagnostics should be released using clang_disposeDiagnosticSet().
+ * diagnostics should be released using lfort_disposeDiagnosticSet().
  */
-CINDEX_LINKAGE CXDiagnosticSet clang_loadDiagnostics(const char *file,
+CINDEX_LINKAGE CXDiagnosticSet lfort_loadDiagnostics(const char *file,
                                                   enum CXLoadDiag_Error *error,
                                                   CXString *errorString);
 
 /**
  * \brief Release a CXDiagnosticSet and all of its contained diagnostics.
  */
-CINDEX_LINKAGE void clang_disposeDiagnosticSet(CXDiagnosticSet Diags);
+CINDEX_LINKAGE void lfort_disposeDiagnosticSet(CXDiagnosticSet Diags);
 
 /**
  * \brief Retrieve the child diagnostics of a CXDiagnostic. 
  *
  * This CXDiagnosticSet does not need to be released by
- * clang_diposeDiagnosticSet.
+ * lfort_diposeDiagnosticSet.
  */
-CINDEX_LINKAGE CXDiagnosticSet clang_getChildDiagnostics(CXDiagnostic D);
+CINDEX_LINKAGE CXDiagnosticSet lfort_getChildDiagnostics(CXDiagnostic D);
 
 /**
  * \brief Determine the number of diagnostics produced for the given
  * translation unit.
  */
-CINDEX_LINKAGE unsigned clang_getNumDiagnostics(CXTranslationUnit Unit);
+CINDEX_LINKAGE unsigned lfort_getNumDiagnostics(CXTranslationUnit Unit);
 
 /**
  * \brief Retrieve a diagnostic associated with the given translation unit.
@@ -717,9 +717,9 @@ CINDEX_LINKAGE unsigned clang_getNumDiagnostics(CXTranslationUnit Unit);
  * \param Index the zero-based diagnostic number to retrieve.
  *
  * \returns the requested diagnostic. This diagnostic must be freed
- * via a call to \c clang_disposeDiagnostic().
+ * via a call to \c lfort_disposeDiagnostic().
  */
-CINDEX_LINKAGE CXDiagnostic clang_getDiagnostic(CXTranslationUnit Unit,
+CINDEX_LINKAGE CXDiagnostic lfort_getDiagnostic(CXTranslationUnit Unit,
                                                 unsigned Index);
 
 /**
@@ -729,18 +729,18 @@ CINDEX_LINKAGE CXDiagnostic clang_getDiagnostic(CXTranslationUnit Unit,
  * \param Unit the translation unit to query.
  */
 CINDEX_LINKAGE CXDiagnosticSet
-  clang_getDiagnosticSetFromTU(CXTranslationUnit Unit);  
+  lfort_getDiagnosticSetFromTU(CXTranslationUnit Unit);  
 
 /**
  * \brief Destroy a diagnostic.
  */
-CINDEX_LINKAGE void clang_disposeDiagnostic(CXDiagnostic Diagnostic);
+CINDEX_LINKAGE void lfort_disposeDiagnostic(CXDiagnostic Diagnostic);
 
 /**
  * \brief Options to control the display of diagnostics.
  *
  * The values in this enum are meant to be combined to customize the
- * behavior of \c clang_displayDiagnostic().
+ * behavior of \c lfort_displayDiagnostic().
  */
 enum CXDiagnosticDisplayOptions {
   /**
@@ -754,7 +754,7 @@ enum CXDiagnosticDisplayOptions {
    * test.c:28: warning: extra tokens at end of #endif directive
    * \endcode
    *
-   * This option corresponds to the clang flag \c -fshow-source-location.
+   * This option corresponds to the lfort flag \c -fshow-source-location.
    */
   CXDiagnostic_DisplaySourceLocation = 0x01,
 
@@ -762,7 +762,7 @@ enum CXDiagnosticDisplayOptions {
    * \brief If displaying the source-location information of the
    * diagnostic, also include the column number.
    *
-   * This option corresponds to the clang flag \c -fshow-column.
+   * This option corresponds to the lfort flag \c -fshow-column.
    */
   CXDiagnostic_DisplayColumn = 0x02,
 
@@ -771,7 +771,7 @@ enum CXDiagnosticDisplayOptions {
    * diagnostic, also include information about source ranges in a
    * machine-parsable format.
    *
-   * This option corresponds to the clang flag
+   * This option corresponds to the lfort flag
    * \c -fdiagnostics-print-source-range-info.
    */
   CXDiagnostic_DisplaySourceRanges = 0x04,
@@ -780,7 +780,7 @@ enum CXDiagnosticDisplayOptions {
    * \brief Display the option name associated with this diagnostic, if any.
    *
    * The option name displayed (e.g., -Wconversion) will be placed in brackets
-   * after the diagnostic text. This option corresponds to the clang flag
+   * after the diagnostic text. This option corresponds to the lfort flag
    * \c -fdiagnostics-show-option.
    */
   CXDiagnostic_DisplayOption = 0x08,
@@ -789,7 +789,7 @@ enum CXDiagnosticDisplayOptions {
    * \brief Display the category number associated with this diagnostic, if any.
    *
    * The category number is displayed within brackets after the diagnostic text.
-   * This option corresponds to the clang flag 
+   * This option corresponds to the lfort flag 
    * \c -fdiagnostics-show-category=id.
    */
   CXDiagnostic_DisplayCategoryId = 0x10,
@@ -798,7 +798,7 @@ enum CXDiagnosticDisplayOptions {
    * \brief Display the category name associated with this diagnostic, if any.
    *
    * The category name is displayed within brackets after the diagnostic text.
-   * This option corresponds to the clang flag 
+   * This option corresponds to the lfort flag 
    * \c -fdiagnostics-show-category=name.
    */
   CXDiagnostic_DisplayCategoryName = 0x20
@@ -809,8 +809,8 @@ enum CXDiagnosticDisplayOptions {
  *
  * This routine will format the given diagnostic to a string, rendering
  * the diagnostic according to the various options given. The
- * \c clang_defaultDiagnosticDisplayOptions() function returns the set of
- * options that most closely mimics the behavior of the clang compiler.
+ * \c lfort_defaultDiagnosticDisplayOptions() function returns the set of
+ * options that most closely mimics the behavior of the lfort compiler.
  *
  * \param Diagnostic The diagnostic to print.
  *
@@ -819,36 +819,36 @@ enum CXDiagnosticDisplayOptions {
  *
  * \returns A new string containing for formatted diagnostic.
  */
-CINDEX_LINKAGE CXString clang_formatDiagnostic(CXDiagnostic Diagnostic,
+CINDEX_LINKAGE CXString lfort_formatDiagnostic(CXDiagnostic Diagnostic,
                                                unsigned Options);
 
 /**
  * \brief Retrieve the set of display options most similar to the
- * default behavior of the clang compiler.
+ * default behavior of the lfort compiler.
  *
  * \returns A set of display options suitable for use with \c
- * clang_displayDiagnostic().
+ * lfort_displayDiagnostic().
  */
-CINDEX_LINKAGE unsigned clang_defaultDiagnosticDisplayOptions(void);
+CINDEX_LINKAGE unsigned lfort_defaultDiagnosticDisplayOptions(void);
 
 /**
  * \brief Determine the severity of the given diagnostic.
  */
 CINDEX_LINKAGE enum CXDiagnosticSeverity
-clang_getDiagnosticSeverity(CXDiagnostic);
+lfort_getDiagnosticSeverity(CXDiagnostic);
 
 /**
  * \brief Retrieve the source location of the given diagnostic.
  *
- * This location is where Clang would print the caret ('^') when
+ * This location is where LFort would print the caret ('^') when
  * displaying the diagnostic on the command line.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getDiagnosticLocation(CXDiagnostic);
+CINDEX_LINKAGE CXSourceLocation lfort_getDiagnosticLocation(CXDiagnostic);
 
 /**
  * \brief Retrieve the text of the given diagnostic.
  */
-CINDEX_LINKAGE CXString clang_getDiagnosticSpelling(CXDiagnostic);
+CINDEX_LINKAGE CXString lfort_getDiagnosticSpelling(CXDiagnostic);
 
 /**
  * \brief Retrieve the name of the command-line option that enabled this
@@ -862,7 +862,7 @@ CINDEX_LINKAGE CXString clang_getDiagnosticSpelling(CXDiagnostic);
  * \returns A string that contains the command-line option used to enable this
  * warning, such as "-Wconversion" or "-pedantic". 
  */
-CINDEX_LINKAGE CXString clang_getDiagnosticOption(CXDiagnostic Diag,
+CINDEX_LINKAGE CXString lfort_getDiagnosticOption(CXDiagnostic Diag,
                                                   CXString *Disable);
 
 /**
@@ -875,39 +875,39 @@ CINDEX_LINKAGE CXString clang_getDiagnosticOption(CXDiagnostic Diag,
  * \returns The number of the category that contains this diagnostic, or zero
  * if this diagnostic is uncategorized.
  */
-CINDEX_LINKAGE unsigned clang_getDiagnosticCategory(CXDiagnostic);
+CINDEX_LINKAGE unsigned lfort_getDiagnosticCategory(CXDiagnostic);
 
 /**
  * \brief Retrieve the name of a particular diagnostic category.  This
- *  is now deprecated.  Use clang_getDiagnosticCategoryText()
+ *  is now deprecated.  Use lfort_getDiagnosticCategoryText()
  *  instead.
  *
  * \param Category A diagnostic category number, as returned by 
- * \c clang_getDiagnosticCategory().
+ * \c lfort_getDiagnosticCategory().
  *
  * \returns The name of the given diagnostic category.
  */
 CINDEX_DEPRECATED CINDEX_LINKAGE
-CXString clang_getDiagnosticCategoryName(unsigned Category);
+CXString lfort_getDiagnosticCategoryName(unsigned Category);
 
 /**
  * \brief Retrieve the diagnostic category text for a given diagnostic.
  *
  * \returns The text of the given diagnostic category.
  */
-CINDEX_LINKAGE CXString clang_getDiagnosticCategoryText(CXDiagnostic);
+CINDEX_LINKAGE CXString lfort_getDiagnosticCategoryText(CXDiagnostic);
   
 /**
  * \brief Determine the number of source ranges associated with the given
  * diagnostic.
  */
-CINDEX_LINKAGE unsigned clang_getDiagnosticNumRanges(CXDiagnostic);
+CINDEX_LINKAGE unsigned lfort_getDiagnosticNumRanges(CXDiagnostic);
 
 /**
  * \brief Retrieve a source range associated with the diagnostic.
  *
  * A diagnostic's source ranges highlight important elements in the source
- * code. On the command line, Clang displays source ranges by
+ * code. On the command line, LFort displays source ranges by
  * underlining them with '~' characters.
  *
  * \param Diagnostic the diagnostic whose range is being extracted.
@@ -916,14 +916,14 @@ CINDEX_LINKAGE unsigned clang_getDiagnosticNumRanges(CXDiagnostic);
  *
  * \returns the requested source range.
  */
-CINDEX_LINKAGE CXSourceRange clang_getDiagnosticRange(CXDiagnostic Diagnostic,
+CINDEX_LINKAGE CXSourceRange lfort_getDiagnosticRange(CXDiagnostic Diagnostic,
                                                       unsigned Range);
 
 /**
  * \brief Determine the number of fix-it hints associated with the
  * given diagnostic.
  */
-CINDEX_LINKAGE unsigned clang_getDiagnosticNumFixIts(CXDiagnostic Diagnostic);
+CINDEX_LINKAGE unsigned lfort_getDiagnosticNumFixIts(CXDiagnostic Diagnostic);
 
 /**
  * \brief Retrieve the replacement information for a given fix-it.
@@ -950,7 +950,7 @@ CINDEX_LINKAGE unsigned clang_getDiagnosticNumFixIts(CXDiagnostic Diagnostic);
  * \returns A string containing text that should be replace the source
  * code indicated by the \c ReplacementRange.
  */
-CINDEX_LINKAGE CXString clang_getDiagnosticFixIt(CXDiagnostic Diagnostic,
+CINDEX_LINKAGE CXString lfort_getDiagnosticFixIt(CXDiagnostic Diagnostic,
                                                  unsigned FixIt,
                                                CXSourceRange *ReplacementRange);
 
@@ -972,7 +972,7 @@ CINDEX_LINKAGE CXString clang_getDiagnosticFixIt(CXDiagnostic Diagnostic,
  * \brief Get the original translation unit source file name.
  */
 CINDEX_LINKAGE CXString
-clang_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
+lfort_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
 
 /**
  * \brief Return the CXTranslationUnit for a given source file and the provided
@@ -982,7 +982,7 @@ clang_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
  * NULL pointer, the name of the source file is expected to reside in the
  * specified command line arguments.
  *
- * Note: When encountered in 'clang_command_line_args', the following options
+ * Note: When encountered in 'lfort_command_line_args', the following options
  * are ignored:
  *
  *   '-c'
@@ -994,13 +994,13 @@ clang_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
  * associated.
  *
  * \param source_filename The name of the source file to load, or NULL if the
- * source file is included in \p clang_command_line_args.
+ * source file is included in \p lfort_command_line_args.
  *
- * \param num_clang_command_line_args The number of command-line arguments in
- * \p clang_command_line_args.
+ * \param num_lfort_command_line_args The number of command-line arguments in
+ * \p lfort_command_line_args.
  *
- * \param clang_command_line_args The command-line arguments that would be
- * passed to the \c clang executable if it were being invoked out-of-process.
+ * \param lfort_command_line_args The command-line arguments that would be
+ * passed to the \c lfort executable if it were being invoked out-of-process.
  * These command-line options will be parsed and will affect how the translation
  * unit is parsed. Note that the following options are ignored: '-c',
  * '-emit-ast', '-fsyntax-only' (which is the default), and '-o \<output file>'.
@@ -1014,18 +1014,18 @@ clang_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
  * CXUnsavedFile) are copied when necessary, so the client only needs to
  * guarantee their validity until the call to this function returns.
  */
-CINDEX_LINKAGE CXTranslationUnit clang_createTranslationUnitFromSourceFile(
+CINDEX_LINKAGE CXTranslationUnit lfort_createTranslationUnitFromSourceFile(
                                          CXIndex CIdx,
                                          const char *source_filename,
-                                         int num_clang_command_line_args,
-                                   const char * const *clang_command_line_args,
+                                         int num_lfort_command_line_args,
+                                   const char * const *lfort_command_line_args,
                                          unsigned num_unsaved_files,
                                          struct CXUnsavedFile *unsaved_files);
 
 /**
  * \brief Create a translation unit from an AST file (-emit-ast).
  */
-CINDEX_LINKAGE CXTranslationUnit clang_createTranslationUnit(CXIndex,
+CINDEX_LINKAGE CXTranslationUnit lfort_createTranslationUnit(CXIndex,
                                              const char *ast_filename);
 
 /**
@@ -1078,7 +1078,7 @@ enum CXTranslationUnit_Flags {
    * initial includes at the top of the main file (what we refer to as
    * the "preamble" of the file). In subsequent parses, if the
    * preamble or the files in it have not changed, \c
-   * clang_reparseTranslationUnit() will re-use the implicit
+   * lfort_reparseTranslationUnit() will re-use the implicit
    * precompiled header to improve parsing performance.
    */
   CXTranslationUnit_PrecompiledPreamble = 0x04,
@@ -1095,7 +1095,7 @@ enum CXTranslationUnit_Flags {
 
   /**
    * \brief Used to indicate that the translation unit will be serialized with
-   * \c clang_saveTranslationUnit.
+   * \c lfort_saveTranslationUnit.
    *
    * This option is typically used when parsing a header with the intent of
    * producing a precompiled header.
@@ -1131,21 +1131,21 @@ enum CXTranslationUnit_Flags {
  * \brief Returns the set of flags that is suitable for parsing a translation
  * unit that is being edited.
  *
- * The set of flags returned provide options for \c clang_parseTranslationUnit()
+ * The set of flags returned provide options for \c lfort_parseTranslationUnit()
  * to indicate that the translation unit is likely to be reparsed many times,
- * either explicitly (via \c clang_reparseTranslationUnit()) or implicitly
- * (e.g., by code completion (\c clang_codeCompletionAt())). The returned flag
+ * either explicitly (via \c lfort_reparseTranslationUnit()) or implicitly
+ * (e.g., by code completion (\c lfort_codeCompletionAt())). The returned flag
  * set contains an unspecified set of optimizations (e.g., the precompiled 
  * preamble) geared toward improving the performance of these routines. The
  * set of optimizations enabled may change from one version to the next.
  */
-CINDEX_LINKAGE unsigned clang_defaultEditingTranslationUnitOptions(void);
+CINDEX_LINKAGE unsigned lfort_defaultEditingTranslationUnitOptions(void);
   
 /**
  * \brief Parse the given source file and the translation unit corresponding
  * to that file.
  *
- * This routine is the main entry point for the Clang C API, providing the
+ * This routine is the main entry point for the LFort C API, providing the
  * ability to parse a source file into a translation unit that can then be
  * queried by other functions in the API. This routine accepts a set of
  * command-line arguments so that the compilation can be configured in the same
@@ -1158,7 +1158,7 @@ CINDEX_LINKAGE unsigned clang_defaultEditingTranslationUnitOptions(void);
  * source file is included in \p command_line_args.
  *
  * \param command_line_args The command-line arguments that would be
- * passed to the \c clang executable if it were being invoked out-of-process.
+ * passed to the \c lfort executable if it were being invoked out-of-process.
  * These command-line options will be parsed and will affect how the translation
  * unit is parsed. Note that the following options are ignored: '-c', 
  * '-emit-ast', '-fsyntax-only' (which is the default), and '-o \<output file>'.
@@ -1183,7 +1183,7 @@ CINDEX_LINKAGE unsigned clang_defaultEditingTranslationUnitOptions(void);
  * any diagnostics produced by the compiler. If there is a failure from which
  * the compiler cannot recover, returns NULL.
  */
-CINDEX_LINKAGE CXTranslationUnit clang_parseTranslationUnit(CXIndex CIdx,
+CINDEX_LINKAGE CXTranslationUnit lfort_parseTranslationUnit(CXIndex CIdx,
                                                     const char *source_filename,
                                          const char * const *command_line_args,
                                                       int num_command_line_args,
@@ -1210,15 +1210,15 @@ enum CXSaveTranslationUnit_Flags {
  * unit.
  *
  * The set of flags returned provide options for
- * \c clang_saveTranslationUnit() by default. The returned flag
+ * \c lfort_saveTranslationUnit() by default. The returned flag
  * set contains an unspecified set of options that save translation units with
  * the most commonly-requested data.
  */
-CINDEX_LINKAGE unsigned clang_defaultSaveOptions(CXTranslationUnit TU);
+CINDEX_LINKAGE unsigned lfort_defaultSaveOptions(CXTranslationUnit TU);
 
 /**
  * \brief Describes the kind of error that occurred (if any) in a call to
- * \c clang_saveTranslationUnit().
+ * \c lfort_saveTranslationUnit().
  */
 enum CXSaveError {
   /**
@@ -1240,7 +1240,7 @@ enum CXSaveError {
    * to save the translation unit.
    * 
    * Errors that prevent the translation unit from being saved can be
-   * extracted using \c clang_getNumDiagnostics() and \c clang_getDiagnostic().
+   * extracted using \c lfort_getNumDiagnostics() and \c lfort_getDiagnostic().
    */
   CXSaveError_TranslationErrors = 2,
   
@@ -1257,7 +1257,7 @@ enum CXSaveError {
  *
  * Any translation unit that was parsed without error can be saved
  * into a file. The translation unit can then be deserialized into a
- * new \c CXTranslationUnit with \c clang_createTranslationUnit() or,
+ * new \c CXTranslationUnit with \c lfort_createTranslationUnit() or,
  * if it is an incomplete translation unit that corresponds to a
  * header, used as a precompiled header when parsing other translation
  * units.
@@ -1274,14 +1274,14 @@ enum CXSaveError {
  * enumeration. Zero (CXSaveError_None) indicates that the translation unit was 
  * saved successfully, while a non-zero value indicates that a problem occurred.
  */
-CINDEX_LINKAGE int clang_saveTranslationUnit(CXTranslationUnit TU,
+CINDEX_LINKAGE int lfort_saveTranslationUnit(CXTranslationUnit TU,
                                              const char *FileName,
                                              unsigned options);
 
 /**
  * \brief Destroy the specified CXTranslationUnit object.
  */
-CINDEX_LINKAGE void clang_disposeTranslationUnit(CXTranslationUnit);
+CINDEX_LINKAGE void lfort_disposeTranslationUnit(CXTranslationUnit);
 
 /**
  * \brief Flags that control the reparsing of translation units.
@@ -1302,12 +1302,12 @@ enum CXReparse_Flags {
  * unit.
  *
  * The set of flags returned provide options for
- * \c clang_reparseTranslationUnit() by default. The returned flag
+ * \c lfort_reparseTranslationUnit() by default. The returned flag
  * set contains an unspecified set of optimizations geared toward common uses
  * of reparsing. The set of optimizations enabled may change from one version 
  * to the next.
  */
-CINDEX_LINKAGE unsigned clang_defaultReparseOptions(CXTranslationUnit TU);
+CINDEX_LINKAGE unsigned lfort_defaultReparseOptions(CXTranslationUnit TU);
 
 /**
  * \brief Reparse the source files that produced this translation unit.
@@ -1327,7 +1327,7 @@ CINDEX_LINKAGE unsigned clang_defaultReparseOptions(CXTranslationUnit TU);
  *
  * \param TU The translation unit whose contents will be re-parsed. The
  * translation unit must originally have been built with 
- * \c clang_createTranslationUnitFromSourceFile().
+ * \c lfort_createTranslationUnitFromSourceFile().
  *
  * \param num_unsaved_files The number of unsaved file entries in \p
  * unsaved_files.
@@ -1339,15 +1339,15 @@ CINDEX_LINKAGE unsigned clang_defaultReparseOptions(CXTranslationUnit TU);
  * guarantee their validity until the call to this function returns.
  * 
  * \param options A bitset of options composed of the flags in CXReparse_Flags.
- * The function \c clang_defaultReparseOptions() produces a default set of
+ * The function \c lfort_defaultReparseOptions() produces a default set of
  * options recommended for most uses, based on the translation unit.
  *
  * \returns 0 if the sources could be reparsed. A non-zero value will be
  * returned if reparsing was impossible, such that the translation unit is
  * invalid. In such cases, the only valid call for \p TU is 
- * \c clang_disposeTranslationUnit(TU).
+ * \c lfort_disposeTranslationUnit(TU).
  */
-CINDEX_LINKAGE int clang_reparseTranslationUnit(CXTranslationUnit TU,
+CINDEX_LINKAGE int lfort_reparseTranslationUnit(CXTranslationUnit TU,
                                                 unsigned num_unsaved_files,
                                           struct CXUnsavedFile *unsaved_files,
                                                 unsigned options);
@@ -1383,7 +1383,7 @@ enum CXTUResourceUsageKind {
   *  the name of the memory category.  This string should never be freed.
   */
 CINDEX_LINKAGE
-const char *clang_getTUResourceUsageName(enum CXTUResourceUsageKind kind);
+const char *lfort_getTUResourceUsageName(enum CXTUResourceUsageKind kind);
 
 typedef struct CXTUResourceUsageEntry {
   /* \brief The memory usage category. */
@@ -1411,11 +1411,11 @@ typedef struct CXTUResourceUsage {
 
 /**
   * \brief Return the memory usage of a translation unit.  This object
-  *  should be released with clang_disposeCXTUResourceUsage().
+  *  should be released with lfort_disposeCXTUResourceUsage().
   */
-CINDEX_LINKAGE CXTUResourceUsage clang_getCXTUResourceUsage(CXTranslationUnit TU);
+CINDEX_LINKAGE CXTUResourceUsage lfort_getCXTUResourceUsage(CXTranslationUnit TU);
 
-CINDEX_LINKAGE void clang_disposeCXTUResourceUsage(CXTUResourceUsage usage);
+CINDEX_LINKAGE void lfort_disposeCXTUResourceUsage(CXTUResourceUsage usage);
 
 /**
  * @}
@@ -1604,8 +1604,8 @@ enum CXCursorKind {
    * argument-dependent lookup (e.g., the "swap" function at the end of the
    * example).
    *
-   * The functions \c clang_getNumOverloadedDecls() and 
-   * \c clang_getOverloadedDecl() can be used to retrieve the definitions
+   * The functions \c lfort_getNumOverloadedDecls() and 
+   * \c lfort_getOverloadedDecl() can be used to retrieve the definitions
    * referenced by this cursor.
    */
   CXCursor_OverloadedDeclRef             = 49,
@@ -2092,9 +2092,9 @@ enum CXCursorKind {
  * cursor, and retrieving cursors for any child nodes of a particular cursor.
  *
  * Cursors can be produced in two specific ways.
- * clang_getTranslationUnitCursor() produces a cursor for a translation unit,
- * from which one can use clang_visitChildren() to explore the rest of the
- * translation unit. clang_getCursor() maps from a physical source location
+ * lfort_getTranslationUnitCursor() produces a cursor for a translation unit,
+ * from which one can use lfort_visitChildren() to explore the rest of the
+ * translation unit. lfort_getCursor() maps from a physical source location
  * to the entity that resides at that location, allowing one to map from the
  * source code into the AST.
  */
@@ -2121,7 +2121,7 @@ typedef struct {
 /**
  * \brief Retrieve the NULL cursor, which represents no entity.
  */
-CINDEX_LINKAGE CXCursor clang_getNullCursor(void);
+CINDEX_LINKAGE CXCursor lfort_getNullCursor(void);
 
 /**
  * \brief Retrieve the cursor that represents the given translation unit.
@@ -2129,81 +2129,81 @@ CINDEX_LINKAGE CXCursor clang_getNullCursor(void);
  * The translation unit cursor can be used to start traversing the
  * various declarations within the given translation unit.
  */
-CINDEX_LINKAGE CXCursor clang_getTranslationUnitCursor(CXTranslationUnit);
+CINDEX_LINKAGE CXCursor lfort_getTranslationUnitCursor(CXTranslationUnit);
 
 /**
  * \brief Determine whether two cursors are equivalent.
  */
-CINDEX_LINKAGE unsigned clang_equalCursors(CXCursor, CXCursor);
+CINDEX_LINKAGE unsigned lfort_equalCursors(CXCursor, CXCursor);
 
 /**
  * \brief Returns non-zero if \p cursor is null.
  */
-CINDEX_LINKAGE int clang_Cursor_isNull(CXCursor cursor);
+CINDEX_LINKAGE int lfort_Cursor_isNull(CXCursor cursor);
 
 /**
  * \brief Compute a hash value for the given cursor.
  */
-CINDEX_LINKAGE unsigned clang_hashCursor(CXCursor);
+CINDEX_LINKAGE unsigned lfort_hashCursor(CXCursor);
   
 /**
  * \brief Retrieve the kind of the given cursor.
  */
-CINDEX_LINKAGE enum CXCursorKind clang_getCursorKind(CXCursor);
+CINDEX_LINKAGE enum CXCursorKind lfort_getCursorKind(CXCursor);
 
 /**
  * \brief Determine whether the given cursor kind represents a declaration.
  */
-CINDEX_LINKAGE unsigned clang_isDeclaration(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isDeclaration(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents a simple
  * reference.
  *
  * Note that other kinds of cursors (such as expressions) can also refer to
- * other cursors. Use clang_getCursorReferenced() to determine whether a
+ * other cursors. Use lfort_getCursorReferenced() to determine whether a
  * particular cursor refers to another entity.
  */
-CINDEX_LINKAGE unsigned clang_isReference(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isReference(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents an expression.
  */
-CINDEX_LINKAGE unsigned clang_isExpression(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isExpression(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents a statement.
  */
-CINDEX_LINKAGE unsigned clang_isStatement(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isStatement(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents an attribute.
  */
-CINDEX_LINKAGE unsigned clang_isAttribute(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isAttribute(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents an invalid
  * cursor.
  */
-CINDEX_LINKAGE unsigned clang_isInvalid(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isInvalid(enum CXCursorKind);
 
 /**
  * \brief Determine whether the given cursor kind represents a translation
  * unit.
  */
-CINDEX_LINKAGE unsigned clang_isTranslationUnit(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isTranslationUnit(enum CXCursorKind);
 
 /***
  * \brief Determine whether the given cursor represents a preprocessing
  * element, such as a preprocessor directive or macro instantiation.
  */
-CINDEX_LINKAGE unsigned clang_isPreprocessing(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isPreprocessing(enum CXCursorKind);
   
 /***
  * \brief Determine whether the given cursor represents a currently
  *  unexposed piece of the AST (e.g., CXCursor_UnexposedStmt).
  */
-CINDEX_LINKAGE unsigned clang_isUnexposed(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isUnexposed(enum CXCursorKind);
 
 /**
  * \brief Describe the linkage of the entity referred to by a cursor.
@@ -2229,7 +2229,7 @@ enum CXLinkageKind {
 /**
  * \brief Determine the linkage of the entity referred to by a given cursor.
  */
-CINDEX_LINKAGE enum CXLinkageKind clang_getCursorLinkage(CXCursor cursor);
+CINDEX_LINKAGE enum CXLinkageKind lfort_getCursorLinkage(CXCursor cursor);
 
 /**
  * \brief Determine the availability of the entity that this cursor refers to,
@@ -2240,7 +2240,7 @@ CINDEX_LINKAGE enum CXLinkageKind clang_getCursorLinkage(CXCursor cursor);
  * \returns The availability of the cursor.
  */
 CINDEX_LINKAGE enum CXAvailabilityKind 
-clang_getCursorAvailability(CXCursor cursor);
+lfort_getCursorAvailability(CXCursor cursor);
 
 /**
  * Describes the availability of a given entity on a particular platform, e.g.,
@@ -2311,12 +2311,12 @@ typedef struct CXPlatformAvailability {
  * available (which is unrelated to \c availability_size).
  *
  * Note that the client is responsible for calling 
- * \c clang_disposeCXPlatformAvailability to free each of the 
+ * \c lfort_disposeCXPlatformAvailability to free each of the 
  * platform-availability structures returned. There are 
  * \c min(N, availability_size) such structures.
  */
 CINDEX_LINKAGE int
-clang_getCursorPlatformAvailability(CXCursor cursor,
+lfort_getCursorPlatformAvailability(CXCursor cursor,
                                     int *always_deprecated,
                                     CXString *deprecated_message,
                                     int *always_unavailable,
@@ -2328,7 +2328,7 @@ clang_getCursorPlatformAvailability(CXCursor cursor,
  * \brief Free the memory associated with a \c CXPlatformAvailability structure.
  */
 CINDEX_LINKAGE void
-clang_disposeCXPlatformAvailability(CXPlatformAvailability *availability);
+lfort_disposeCXPlatformAvailability(CXPlatformAvailability *availability);
   
 /**
  * \brief Describe the "language" of the entity referred to by a cursor.
@@ -2343,12 +2343,12 @@ CINDEX_LINKAGE enum CXLanguageKind {
 /**
  * \brief Determine the "language" of the entity referred to by a given cursor.
  */
-CINDEX_LINKAGE enum CXLanguageKind clang_getCursorLanguage(CXCursor cursor);
+CINDEX_LINKAGE enum CXLanguageKind lfort_getCursorLanguage(CXCursor cursor);
 
 /**
  * \brief Returns the translation unit that a cursor originated from.
  */
-CINDEX_LINKAGE CXTranslationUnit clang_Cursor_getTranslationUnit(CXCursor);
+CINDEX_LINKAGE CXTranslationUnit lfort_Cursor_getTranslationUnit(CXCursor);
 
 
 /**
@@ -2359,19 +2359,19 @@ typedef struct CXCursorSetImpl *CXCursorSet;
 /**
  * \brief Creates an empty CXCursorSet.
  */
-CINDEX_LINKAGE CXCursorSet clang_createCXCursorSet();
+CINDEX_LINKAGE CXCursorSet lfort_createCXCursorSet();
 
 /**
  * \brief Disposes a CXCursorSet and releases its associated memory.
  */
-CINDEX_LINKAGE void clang_disposeCXCursorSet(CXCursorSet cset);
+CINDEX_LINKAGE void lfort_disposeCXCursorSet(CXCursorSet cset);
 
 /**
  * \brief Queries a CXCursorSet to see if it contains a specific CXCursor.
  *
  * \returns non-zero if the set contains the specified cursor.
 */
-CINDEX_LINKAGE unsigned clang_CXCursorSet_contains(CXCursorSet cset,
+CINDEX_LINKAGE unsigned lfort_CXCursorSet_contains(CXCursorSet cset,
                                                    CXCursor cursor);
 
 /**
@@ -2379,7 +2379,7 @@ CINDEX_LINKAGE unsigned clang_CXCursorSet_contains(CXCursorSet cset,
  *
  * \returns zero if the CXCursor was already in the set, and non-zero otherwise.
 */
-CINDEX_LINKAGE unsigned clang_CXCursorSet_insert(CXCursorSet cset,
+CINDEX_LINKAGE unsigned lfort_CXCursorSet_insert(CXCursorSet cset,
                                                  CXCursor cursor);
 
 /**
@@ -2388,7 +2388,7 @@ CINDEX_LINKAGE unsigned clang_CXCursorSet_insert(CXCursorSet cset,
  * The semantic parent of a cursor is the cursor that semantically contains
  * the given \p cursor. For many declarations, the lexical and semantic parents
  * are equivalent (the lexical parent is returned by 
- * \c clang_getCursorLexicalParent()). They diverge when declarations or
+ * \c lfort_getCursorLexicalParent()). They diverge when declarations or
  * definitions are provided out-of-line. For example:
  *
  * \code
@@ -2415,7 +2415,7 @@ CINDEX_LINKAGE unsigned clang_CXCursorSet_insert(CXCursorSet cset,
  *
  * For global declarations, the semantic parent is the translation unit.
  */
-CINDEX_LINKAGE CXCursor clang_getCursorSemanticParent(CXCursor cursor);
+CINDEX_LINKAGE CXCursor lfort_getCursorSemanticParent(CXCursor cursor);
 
 /**
  * \brief Determine the lexical parent of the given cursor.
@@ -2423,7 +2423,7 @@ CINDEX_LINKAGE CXCursor clang_getCursorSemanticParent(CXCursor cursor);
  * The lexical parent of a cursor is the cursor in which the given \p cursor
  * was actually written. For many declarations, the lexical and semantic parents
  * are equivalent (the semantic parent is returned by 
- * \c clang_getCursorSemanticParent()). They diverge when declarations or
+ * \c lfort_getCursorSemanticParent()). They diverge when declarations or
  * definitions are provided out-of-line. For example:
  *
  * \code
@@ -2451,7 +2451,7 @@ CINDEX_LINKAGE CXCursor clang_getCursorSemanticParent(CXCursor cursor);
  * For declarations written in the global scope, the lexical parent is
  * the translation unit.
  */
-CINDEX_LINKAGE CXCursor clang_getCursorLexicalParent(CXCursor cursor);
+CINDEX_LINKAGE CXCursor lfort_getCursorLexicalParent(CXCursor cursor);
 
 /**
  * \brief Determine the set of methods that are overridden by the given
@@ -2490,27 +2490,27 @@ CINDEX_LINKAGE CXCursor clang_getCursorLexicalParent(CXCursor cursor);
  * pointer to an array of cursors, representing the set of overridden
  * methods. If there are no overridden methods, the pointee will be
  * set to NULL. The pointee must be freed via a call to 
- * \c clang_disposeOverriddenCursors().
+ * \c lfort_disposeOverriddenCursors().
  *
  * \param num_overridden A pointer to the number of overridden
  * functions, will be set to the number of overridden functions in the
  * array pointed to by \p overridden.
  */
-CINDEX_LINKAGE void clang_getOverriddenCursors(CXCursor cursor, 
+CINDEX_LINKAGE void lfort_getOverriddenCursors(CXCursor cursor, 
                                                CXCursor **overridden,
                                                unsigned *num_overridden);
 
 /**
  * \brief Free the set of overridden cursors returned by \c
- * clang_getOverriddenCursors().
+ * lfort_getOverriddenCursors().
  */
-CINDEX_LINKAGE void clang_disposeOverriddenCursors(CXCursor *overridden);
+CINDEX_LINKAGE void lfort_disposeOverriddenCursors(CXCursor *overridden);
 
 /**
  * \brief Retrieve the file that is included by the given inclusion directive
  * cursor.
  */
-CINDEX_LINKAGE CXFile clang_getIncludedFile(CXCursor cursor);
+CINDEX_LINKAGE CXFile lfort_getIncludedFile(CXCursor cursor);
   
 /**
  * @}
@@ -2531,18 +2531,18 @@ CINDEX_LINKAGE CXFile clang_getIncludedFile(CXCursor cursor);
  * \brief Map a source location to the cursor that describes the entity at that
  * location in the source code.
  *
- * clang_getCursor() maps an arbitrary source location within a translation
+ * lfort_getCursor() maps an arbitrary source location within a translation
  * unit down to the most specific cursor that describes the entity at that
  * location. For example, given an expression \c x + y, invoking
- * clang_getCursor() with a source location pointing to "x" will return the
+ * lfort_getCursor() with a source location pointing to "x" will return the
  * cursor for "x"; similarly for "y". If the cursor points anywhere between
- * "x" or "y" (e.g., on the + or the whitespace around it), clang_getCursor()
+ * "x" or "y" (e.g., on the + or the whitespace around it), lfort_getCursor()
  * will return a cursor referring to the "+" expression.
  *
  * \returns a cursor representing the entity at the given source location, or
  * a NULL cursor if no such entity can be found.
  */
-CINDEX_LINKAGE CXCursor clang_getCursor(CXTranslationUnit, CXSourceLocation);
+CINDEX_LINKAGE CXCursor lfort_getCursor(CXTranslationUnit, CXSourceLocation);
 
 /**
  * \brief Retrieve the physical location of the source constructor referenced
@@ -2554,7 +2554,7 @@ CINDEX_LINKAGE CXCursor clang_getCursor(CXTranslationUnit, CXSourceLocation);
  * The location of a reference is where that reference occurs within the
  * source code.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getCursorLocation(CXCursor);
+CINDEX_LINKAGE CXSourceLocation lfort_getCursorLocation(CXCursor);
 
 /**
  * \brief Retrieve the physical extent of the source construct referenced by
@@ -2567,7 +2567,7 @@ CINDEX_LINKAGE CXSourceLocation clang_getCursorLocation(CXCursor);
  * the extent covers the location of the reference (e.g., where the referenced
  * entity was actually used).
  */
-CINDEX_LINKAGE CXSourceRange clang_getCursorExtent(CXCursor);
+CINDEX_LINKAGE CXSourceRange lfort_getCursorExtent(CXCursor);
 
 /**
  * @}
@@ -2674,7 +2674,7 @@ typedef struct {
 /**
  * \brief Retrieve the type of a CXCursor (if any).
  */
-CINDEX_LINKAGE CXType clang_getCursorType(CXCursor C);
+CINDEX_LINKAGE CXType lfort_getCursorType(CXCursor C);
 
 /**
  * \brief Retrieve the underlying type of a typedef declaration.
@@ -2682,7 +2682,7 @@ CINDEX_LINKAGE CXType clang_getCursorType(CXCursor C);
  * If the cursor does not reference a typedef declaration, an invalid type is
  * returned.
  */
-CINDEX_LINKAGE CXType clang_getTypedefDeclUnderlyingType(CXCursor C);
+CINDEX_LINKAGE CXType lfort_getTypedefDeclUnderlyingType(CXCursor C);
 
 /**
  * \brief Retrieve the integer type of an enum declaration.
@@ -2690,7 +2690,7 @@ CINDEX_LINKAGE CXType clang_getTypedefDeclUnderlyingType(CXCursor C);
  * If the cursor does not reference an enum declaration, an invalid type is
  * returned.
  */
-CINDEX_LINKAGE CXType clang_getEnumDeclIntegerType(CXCursor C);
+CINDEX_LINKAGE CXType lfort_getEnumDeclIntegerType(CXCursor C);
 
 /**
  * \brief Retrieve the integer value of an enum constant declaration as a signed
@@ -2700,7 +2700,7 @@ CINDEX_LINKAGE CXType clang_getEnumDeclIntegerType(CXCursor C);
  * Since this is also potentially a valid constant value, the kind of the cursor
  * must be verified before calling this function.
  */
-CINDEX_LINKAGE long long clang_getEnumConstantDeclValue(CXCursor C);
+CINDEX_LINKAGE long long lfort_getEnumConstantDeclValue(CXCursor C);
 
 /**
  * \brief Retrieve the integer value of an enum constant declaration as an unsigned
@@ -2710,14 +2710,14 @@ CINDEX_LINKAGE long long clang_getEnumConstantDeclValue(CXCursor C);
  * Since this is also potentially a valid constant value, the kind of the cursor
  * must be verified before calling this function.
  */
-CINDEX_LINKAGE unsigned long long clang_getEnumConstantDeclUnsignedValue(CXCursor C);
+CINDEX_LINKAGE unsigned long long lfort_getEnumConstantDeclUnsignedValue(CXCursor C);
 
 /**
  * \brief Retrieve the bit width of a bit field declaration as an integer.
  *
  * If a cursor that is not a bit field declaration is passed in, -1 is returned.
  */
-CINDEX_LINKAGE int clang_getFieldDeclBitWidth(CXCursor C);
+CINDEX_LINKAGE int lfort_getFieldDeclBitWidth(CXCursor C);
 
 /**
  * \brief Retrieve the number of non-variadic arguments associated with a given
@@ -2725,7 +2725,7 @@ CINDEX_LINKAGE int clang_getFieldDeclBitWidth(CXCursor C);
  *
  * If a cursor that is not a function or method is passed in, -1 is returned.
  */
-CINDEX_LINKAGE int clang_Cursor_getNumArguments(CXCursor C);
+CINDEX_LINKAGE int lfort_Cursor_getNumArguments(CXCursor C);
 
 /**
  * \brief Retrieve the argument cursor of a function or method.
@@ -2733,7 +2733,7 @@ CINDEX_LINKAGE int clang_Cursor_getNumArguments(CXCursor C);
  * If a cursor that is not a function or method is passed in or the index
  * exceeds the number of arguments, an invalid cursor is returned.
  */
-CINDEX_LINKAGE CXCursor clang_Cursor_getArgument(CXCursor C, unsigned i);
+CINDEX_LINKAGE CXCursor lfort_Cursor_getArgument(CXCursor C, unsigned i);
 
 /**
  * \brief Determine whether two CXTypes represent the same type.
@@ -2741,72 +2741,72 @@ CINDEX_LINKAGE CXCursor clang_Cursor_getArgument(CXCursor C, unsigned i);
  * \returns non-zero if the CXTypes represent the same type and
  *          zero otherwise.
  */
-CINDEX_LINKAGE unsigned clang_equalTypes(CXType A, CXType B);
+CINDEX_LINKAGE unsigned lfort_equalTypes(CXType A, CXType B);
 
 /**
  * \brief Return the canonical type for a CXType.
  *
- * Clang's type system explicitly models typedefs and all the ways
+ * LFort's type system explicitly models typedefs and all the ways
  * a specific type can be represented.  The canonical type is the underlying
  * type with all the "sugar" removed.  For example, if 'T' is a typedef
  * for 'int', the canonical type for 'T' would be 'int'.
  */
-CINDEX_LINKAGE CXType clang_getCanonicalType(CXType T);
+CINDEX_LINKAGE CXType lfort_getCanonicalType(CXType T);
 
 /**
  * \brief Determine whether a CXType has the "const" qualifier set,
  * without looking through typedefs that may have added "const" at a
  * different level.
  */
-CINDEX_LINKAGE unsigned clang_isConstQualifiedType(CXType T);
+CINDEX_LINKAGE unsigned lfort_isConstQualifiedType(CXType T);
 
 /**
  * \brief Determine whether a CXType has the "volatile" qualifier set,
  * without looking through typedefs that may have added "volatile" at
  * a different level.
  */
-CINDEX_LINKAGE unsigned clang_isVolatileQualifiedType(CXType T);
+CINDEX_LINKAGE unsigned lfort_isVolatileQualifiedType(CXType T);
 
 /**
  * \brief Determine whether a CXType has the "restrict" qualifier set,
  * without looking through typedefs that may have added "restrict" at a
  * different level.
  */
-CINDEX_LINKAGE unsigned clang_isRestrictQualifiedType(CXType T);
+CINDEX_LINKAGE unsigned lfort_isRestrictQualifiedType(CXType T);
 
 /**
  * \brief For pointer types, returns the type of the pointee.
  */
-CINDEX_LINKAGE CXType clang_getPointeeType(CXType T);
+CINDEX_LINKAGE CXType lfort_getPointeeType(CXType T);
 
 /**
  * \brief Return the cursor for the declaration of the given type.
  */
-CINDEX_LINKAGE CXCursor clang_getTypeDeclaration(CXType T);
+CINDEX_LINKAGE CXCursor lfort_getTypeDeclaration(CXType T);
 
 /**
  * Returns the Objective-C type encoding for the specified declaration.
  */
-CINDEX_LINKAGE CXString clang_getDeclObjCTypeEncoding(CXCursor C);
+CINDEX_LINKAGE CXString lfort_getDeclObjCTypeEncoding(CXCursor C);
 
 /**
  * \brief Retrieve the spelling of a given CXTypeKind.
  */
-CINDEX_LINKAGE CXString clang_getTypeKindSpelling(enum CXTypeKind K);
+CINDEX_LINKAGE CXString lfort_getTypeKindSpelling(enum CXTypeKind K);
 
 /**
  * \brief Retrieve the calling convention associated with a function type.
  *
  * If a non-function type is passed in, CXCallingConv_Invalid is returned.
  */
-CINDEX_LINKAGE enum CXCallingConv clang_getFunctionTypeCallingConv(CXType T);
+CINDEX_LINKAGE enum CXCallingConv lfort_getFunctionTypeCallingConv(CXType T);
 
 /**
  * \brief Retrieve the result type associated with a function type.
  *
  * If a non-function type is passed in, an invalid type is returned.
  */
-CINDEX_LINKAGE CXType clang_getResultType(CXType T);
+CINDEX_LINKAGE CXType lfort_getResultType(CXType T);
 
 /**
  * \brief Retrieve the number of non-variadic arguments associated with a
@@ -2814,7 +2814,7 @@ CINDEX_LINKAGE CXType clang_getResultType(CXType T);
  *
  * If a non-function type is passed in, -1 is returned.
  */
-CINDEX_LINKAGE int clang_getNumArgTypes(CXType T);
+CINDEX_LINKAGE int lfort_getNumArgTypes(CXType T);
 
 /**
  * \brief Retrieve the type of an argument of a function type.
@@ -2822,25 +2822,25 @@ CINDEX_LINKAGE int clang_getNumArgTypes(CXType T);
  * If a non-function type is passed in or the function does not have enough
  * parameters, an invalid type is returned.
  */
-CINDEX_LINKAGE CXType clang_getArgType(CXType T, unsigned i);
+CINDEX_LINKAGE CXType lfort_getArgType(CXType T, unsigned i);
 
 /**
  * \brief Return 1 if the CXType is a variadic function type, and 0 otherwise.
  */
-CINDEX_LINKAGE unsigned clang_isFunctionTypeVariadic(CXType T);
+CINDEX_LINKAGE unsigned lfort_isFunctionTypeVariadic(CXType T);
 
 /**
  * \brief Retrieve the result type associated with a given cursor.
  *
  * This only returns a valid type if the cursor refers to a function or method.
  */
-CINDEX_LINKAGE CXType clang_getCursorResultType(CXCursor C);
+CINDEX_LINKAGE CXType lfort_getCursorResultType(CXCursor C);
 
 /**
  * \brief Return 1 if the CXType is a POD (plain old data) type, and 0
  *  otherwise.
  */
-CINDEX_LINKAGE unsigned clang_isPODType(CXType T);
+CINDEX_LINKAGE unsigned lfort_isPODType(CXType T);
 
 /**
  * \brief Return the element type of an array, complex, or vector type.
@@ -2848,7 +2848,7 @@ CINDEX_LINKAGE unsigned clang_isPODType(CXType T);
  * If a type is passed in that is not an array, complex, or vector type,
  * an invalid type is returned.
  */
-CINDEX_LINKAGE CXType clang_getElementType(CXType T);
+CINDEX_LINKAGE CXType lfort_getElementType(CXType T);
 
 /**
  * \brief Return the number of elements of an array or vector type.
@@ -2856,27 +2856,27 @@ CINDEX_LINKAGE CXType clang_getElementType(CXType T);
  * If a type is passed in that is not an array or vector type,
  * -1 is returned.
  */
-CINDEX_LINKAGE long long clang_getNumElements(CXType T);
+CINDEX_LINKAGE long long lfort_getNumElements(CXType T);
 
 /**
  * \brief Return the element type of an array type.
  *
  * If a non-array type is passed in, an invalid type is returned.
  */
-CINDEX_LINKAGE CXType clang_getArrayElementType(CXType T);
+CINDEX_LINKAGE CXType lfort_getArrayElementType(CXType T);
 
 /**
  * \brief Return the array size of a constant array.
  *
  * If a non-array type is passed in, -1 is returned.
  */
-CINDEX_LINKAGE long long clang_getArraySize(CXType T);
+CINDEX_LINKAGE long long lfort_getArraySize(CXType T);
 
 /**
  * \brief Returns 1 if the base class specified by the cursor with kind
  *   CX_CXXBaseSpecifier is virtual.
  */
-CINDEX_LINKAGE unsigned clang_isVirtualBase(CXCursor);
+CINDEX_LINKAGE unsigned lfort_isVirtualBase(CXCursor);
     
 /**
  * \brief Represents the C++ access control level to a base class for a
@@ -2894,7 +2894,7 @@ enum CX_CXXAccessSpecifier {
  * represented by a cursor with kind CXCursor_CXXBaseSpecifier or
  * CXCursor_AccessSpecifier.
  */
-CINDEX_LINKAGE enum CX_CXXAccessSpecifier clang_getCXXAccessSpecifier(CXCursor);
+CINDEX_LINKAGE enum CX_CXXAccessSpecifier lfort_getCXXAccessSpecifier(CXCursor);
 
 /**
  * \brief Determine the number of overloaded declarations referenced by a 
@@ -2905,7 +2905,7 @@ CINDEX_LINKAGE enum CX_CXXAccessSpecifier clang_getCXXAccessSpecifier(CXCursor);
  * \returns The number of overloaded declarations referenced by \c cursor. If it
  * is not a \c CXCursor_OverloadedDeclRef cursor, returns 0.
  */
-CINDEX_LINKAGE unsigned clang_getNumOverloadedDecls(CXCursor cursor);
+CINDEX_LINKAGE unsigned lfort_getNumOverloadedDecls(CXCursor cursor);
 
 /**
  * \brief Retrieve a cursor for one of the overloaded declarations referenced
@@ -2919,9 +2919,9 @@ CINDEX_LINKAGE unsigned clang_getNumOverloadedDecls(CXCursor cursor);
  * \returns A cursor representing the declaration referenced by the given 
  * \c cursor at the specified \c index. If the cursor does not have an 
  * associated set of overloaded declarations, or if the index is out of bounds,
- * returns \c clang_getNullCursor();
+ * returns \c lfort_getNullCursor();
  */
-CINDEX_LINKAGE CXCursor clang_getOverloadedDecl(CXCursor cursor, 
+CINDEX_LINKAGE CXCursor lfort_getOverloadedDecl(CXCursor cursor, 
                                                 unsigned index);
   
 /**
@@ -2940,7 +2940,7 @@ CINDEX_LINKAGE CXCursor clang_getOverloadedDecl(CXCursor cursor,
  *  this function returns the collection element type.
  *
  */
-CINDEX_LINKAGE CXType clang_getIBOutletCollectionType(CXCursor);
+CINDEX_LINKAGE CXType lfort_getIBOutletCollectionType(CXCursor);
 
 /**
  * @}
@@ -2960,7 +2960,7 @@ CINDEX_LINKAGE CXType clang_getIBOutletCollectionType(CXCursor);
  * cursor should proceed after visiting a particular child cursor.
  *
  * A value of this enumeration type should be returned by each
- * \c CXCursorVisitor to indicate how clang_visitChildren() proceed.
+ * \c CXCursorVisitor to indicate how lfort_visitChildren() proceed.
  */
 enum CXChildVisitResult {
   /**
@@ -2983,13 +2983,13 @@ enum CXChildVisitResult {
  * \brief Visitor invoked for each cursor found by a traversal.
  *
  * This visitor function will be invoked for each cursor found by
- * clang_visitCursorChildren(). Its first argument is the cursor being
+ * lfort_visitCursorChildren(). Its first argument is the cursor being
  * visited, its second argument is the parent visitor for that cursor,
  * and its third argument is the client data provided to
- * clang_visitCursorChildren().
+ * lfort_visitCursorChildren().
  *
  * The visitor should return one of the \c CXChildVisitResult values
- * to direct clang_visitCursorChildren().
+ * to direct lfort_visitCursorChildren().
  */
 typedef enum CXChildVisitResult (*CXCursorVisitor)(CXCursor cursor,
                                                    CXCursor parent,
@@ -3017,7 +3017,7 @@ typedef enum CXChildVisitResult (*CXCursorVisitor)(CXCursor cursor,
  * \returns a non-zero value if the traversal was terminated
  * prematurely by the visitor returning \c CXChildVisit_Break.
  */
-CINDEX_LINKAGE unsigned clang_visitChildren(CXCursor parent,
+CINDEX_LINKAGE unsigned lfort_visitChildren(CXCursor parent,
                                             CXCursorVisitor visitor,
                                             CXClientData client_data);
 #ifdef __has_feature
@@ -3026,20 +3026,20 @@ CINDEX_LINKAGE unsigned clang_visitChildren(CXCursor parent,
  * \brief Visitor invoked for each cursor found by a traversal.
  *
  * This visitor block will be invoked for each cursor found by
- * clang_visitChildrenWithBlock(). Its first argument is the cursor being
+ * lfort_visitChildrenWithBlock(). Its first argument is the cursor being
  * visited, its second argument is the parent visitor for that cursor.
  *
  * The visitor should return one of the \c CXChildVisitResult values
- * to direct clang_visitChildrenWithBlock().
+ * to direct lfort_visitChildrenWithBlock().
  */
 typedef enum CXChildVisitResult 
      (^CXCursorVisitorBlock)(CXCursor cursor, CXCursor parent);
 
 /**
  * Visits the children of a cursor using the specified block.  Behaves
- * identically to clang_visitChildren() in all other respects.
+ * identically to lfort_visitChildren() in all other respects.
  */
-unsigned clang_visitChildrenWithBlock(CXCursor parent,
+unsigned lfort_visitChildrenWithBlock(CXCursor parent,
                                       CXCursorVisitorBlock block);
 #  endif
 #endif
@@ -3068,39 +3068,39 @@ unsigned clang_visitChildrenWithBlock(CXCursor parent,
  * compared across translation units to determine, e.g., when references in
  * one translation refer to an entity defined in another translation unit.
  */
-CINDEX_LINKAGE CXString clang_getCursorUSR(CXCursor);
+CINDEX_LINKAGE CXString lfort_getCursorUSR(CXCursor);
 
 /**
  * \brief Construct a USR for a specified Objective-C class.
  */
-CINDEX_LINKAGE CXString clang_constructUSR_ObjCClass(const char *class_name);
+CINDEX_LINKAGE CXString lfort_constructUSR_ObjCClass(const char *class_name);
 
 /**
  * \brief Construct a USR for a specified Objective-C category.
  */
 CINDEX_LINKAGE CXString
-  clang_constructUSR_ObjCCategory(const char *class_name,
+  lfort_constructUSR_ObjCCategory(const char *class_name,
                                  const char *category_name);
 
 /**
  * \brief Construct a USR for a specified Objective-C protocol.
  */
 CINDEX_LINKAGE CXString
-  clang_constructUSR_ObjCProtocol(const char *protocol_name);
+  lfort_constructUSR_ObjCProtocol(const char *protocol_name);
 
 
 /**
  * \brief Construct a USR for a specified Objective-C instance variable and
  *   the USR for its containing class.
  */
-CINDEX_LINKAGE CXString clang_constructUSR_ObjCIvar(const char *name,
+CINDEX_LINKAGE CXString lfort_constructUSR_ObjCIvar(const char *name,
                                                     CXString classUSR);
 
 /**
  * \brief Construct a USR for a specified Objective-C method and
  *   the USR for its containing class.
  */
-CINDEX_LINKAGE CXString clang_constructUSR_ObjCMethod(const char *name,
+CINDEX_LINKAGE CXString lfort_constructUSR_ObjCMethod(const char *name,
                                                       unsigned isInstanceMethod,
                                                       CXString classUSR);
 
@@ -3108,13 +3108,13 @@ CINDEX_LINKAGE CXString clang_constructUSR_ObjCMethod(const char *name,
  * \brief Construct a USR for a specified Objective-C property and the USR
  *  for its containing class.
  */
-CINDEX_LINKAGE CXString clang_constructUSR_ObjCProperty(const char *property,
+CINDEX_LINKAGE CXString lfort_constructUSR_ObjCProperty(const char *property,
                                                         CXString classUSR);
 
 /**
  * \brief Retrieve a name for the entity referenced by this cursor.
  */
-CINDEX_LINKAGE CXString clang_getCursorSpelling(CXCursor);
+CINDEX_LINKAGE CXString lfort_getCursorSpelling(CXCursor);
 
 /**
  * \brief Retrieve a range for a piece that forms the cursors spelling name.
@@ -3127,7 +3127,7 @@ CINDEX_LINKAGE CXString clang_getCursorSpelling(CXCursor);
  *  
  * \param options Reserved.
  */
-CINDEX_LINKAGE CXSourceRange clang_Cursor_getSpellingNameRange(CXCursor,
+CINDEX_LINKAGE CXSourceRange lfort_Cursor_getSpellingNameRange(CXCursor,
                                                           unsigned pieceIndex,
                                                           unsigned options);
 
@@ -3138,7 +3138,7 @@ CINDEX_LINKAGE CXSourceRange clang_Cursor_getSpellingNameRange(CXCursor,
  * such as the parameters of a function or template or the arguments of a 
  * class template specialization.
  */
-CINDEX_LINKAGE CXString clang_getCursorDisplayName(CXCursor);
+CINDEX_LINKAGE CXString lfort_getCursorDisplayName(CXCursor);
   
 /** \brief For a cursor that is a reference, retrieve a cursor representing the
  * entity that it references.
@@ -3150,7 +3150,7 @@ CINDEX_LINKAGE CXString clang_getCursorDisplayName(CXCursor);
  * definition, it returns that declaration or definition unchanged.
  * Otherwise, returns the NULL cursor.
  */
-CINDEX_LINKAGE CXCursor clang_getCursorReferenced(CXCursor);
+CINDEX_LINKAGE CXCursor lfort_getCursorReferenced(CXCursor);
 
 /**
  *  \brief For a cursor that is either a reference to or a declaration
@@ -3169,7 +3169,7 @@ CINDEX_LINKAGE CXCursor clang_getCursorReferenced(CXCursor);
  *  \endcode
  *
  *  there are three declarations of the function "f", but only the
- *  second one is a definition. The clang_getCursorDefinition()
+ *  second one is a definition. The lfort_getCursorDefinition()
  *  function will take any cursor pointing to a declaration of "f"
  *  (the first or fourth lines of the example) or a cursor referenced
  *  that uses "f" (the call to "f' inside "g") and will return a
@@ -3180,13 +3180,13 @@ CINDEX_LINKAGE CXCursor clang_getCursorReferenced(CXCursor);
  *  e.g., because there is no definition of that entity within this
  *  translation unit, returns a NULL cursor.
  */
-CINDEX_LINKAGE CXCursor clang_getCursorDefinition(CXCursor);
+CINDEX_LINKAGE CXCursor lfort_getCursorDefinition(CXCursor);
 
 /**
  * \brief Determine whether the declaration pointed to by this cursor
  * is also a definition of that entity.
  */
-CINDEX_LINKAGE unsigned clang_isCursorDefinition(CXCursor);
+CINDEX_LINKAGE unsigned lfort_isCursorDefinition(CXCursor);
 
 /**
  * \brief Retrieve the canonical cursor corresponding to the given cursor.
@@ -3212,21 +3212,21 @@ CINDEX_LINKAGE unsigned clang_isCursorDefinition(CXCursor);
  *
  * \returns The canonical cursor for the entity referred to by the given cursor.
  */
-CINDEX_LINKAGE CXCursor clang_getCanonicalCursor(CXCursor);
+CINDEX_LINKAGE CXCursor lfort_getCanonicalCursor(CXCursor);
 
 
 /**
  * \brief If the cursor points to a selector identifier in a objc method or
  * message expression, this returns the selector index.
  *
- * After getting a cursor with #clang_getCursor, this can be called to
+ * After getting a cursor with #lfort_getCursor, this can be called to
  * determine if the location points to a selector identifier.
  *
  * \returns The selector index if the cursor is an objc method or message
  * expression and the cursor is pointing to a selector identifier, or -1
  * otherwise.
  */
-CINDEX_LINKAGE int clang_Cursor_getObjCSelectorIndex(CXCursor);
+CINDEX_LINKAGE int lfort_Cursor_getObjCSelectorIndex(CXCursor);
 
 /**
  * \brief Given a cursor pointing to a C++ method call or an ObjC message,
@@ -3239,40 +3239,40 @@ CINDEX_LINKAGE int clang_Cursor_getObjCSelectorIndex(CXCursor);
  * If the method/message is "static" or the cursor does not point to a
  * method/message, it will return zero.
  */
-CINDEX_LINKAGE int clang_Cursor_isDynamicCall(CXCursor C);
+CINDEX_LINKAGE int lfort_Cursor_isDynamicCall(CXCursor C);
 
 /**
  * \brief Given a cursor pointing to an ObjC message, returns the CXType of the
  * receiver.
  */
-CINDEX_LINKAGE CXType clang_Cursor_getReceiverType(CXCursor C);
+CINDEX_LINKAGE CXType lfort_Cursor_getReceiverType(CXCursor C);
 
 /**
  * \brief Given a cursor that represents a declaration, return the associated
  * comment's source range.  The range may include multiple consecutive comments
  * with whitespace in between.
  */
-CINDEX_LINKAGE CXSourceRange clang_Cursor_getCommentRange(CXCursor C);
+CINDEX_LINKAGE CXSourceRange lfort_Cursor_getCommentRange(CXCursor C);
 
 /**
  * \brief Given a cursor that represents a declaration, return the associated
  * comment text, including comment markers.
  */
-CINDEX_LINKAGE CXString clang_Cursor_getRawCommentText(CXCursor C);
+CINDEX_LINKAGE CXString lfort_Cursor_getRawCommentText(CXCursor C);
 
 /**
  * \brief Given a cursor that represents a documentable entity (e.g.,
  * declaration), return the associated \\brief paragraph; otherwise return the
  * first paragraph.
  */
-CINDEX_LINKAGE CXString clang_Cursor_getBriefCommentText(CXCursor C);
+CINDEX_LINKAGE CXString lfort_Cursor_getBriefCommentText(CXCursor C);
 
 /**
  * \brief Given a cursor that represents a documentable entity (e.g.,
  * declaration), return the associated parsed comment as a
  * \c CXComment_FullComment AST node.
  */
-CINDEX_LINKAGE CXComment clang_Cursor_getParsedComment(CXCursor C);
+CINDEX_LINKAGE CXComment lfort_Cursor_getParsedComment(CXCursor C);
 
 /**
  * @}
@@ -3291,7 +3291,7 @@ typedef void *CXModule;
 /**
  * \brief Given a CXCursor_ModuleImportDecl cursor, return the associated module.
  */
-CINDEX_LINKAGE CXModule clang_Cursor_getModule(CXCursor C);
+CINDEX_LINKAGE CXModule lfort_Cursor_getModule(CXCursor C);
 
 /**
  * \param Module a module object.
@@ -3299,7 +3299,7 @@ CINDEX_LINKAGE CXModule clang_Cursor_getModule(CXCursor C);
  * \returns the parent of a sub-module or NULL if the given module is top-level,
  * e.g. for 'std.vector' it will return the 'std' module.
  */
-CINDEX_LINKAGE CXModule clang_Module_getParent(CXModule Module);
+CINDEX_LINKAGE CXModule lfort_Module_getParent(CXModule Module);
 
 /**
  * \param Module a module object.
@@ -3307,21 +3307,21 @@ CINDEX_LINKAGE CXModule clang_Module_getParent(CXModule Module);
  * \returns the name of the module, e.g. for the 'std.vector' sub-module it
  * will return "vector".
  */
-CINDEX_LINKAGE CXString clang_Module_getName(CXModule Module);
+CINDEX_LINKAGE CXString lfort_Module_getName(CXModule Module);
 
 /**
  * \param Module a module object.
  *
  * \returns the full name of the module, e.g. "std.vector".
  */
-CINDEX_LINKAGE CXString clang_Module_getFullName(CXModule Module);
+CINDEX_LINKAGE CXString lfort_Module_getFullName(CXModule Module);
 
 /**
  * \param Module a module object.
  *
  * \returns the number of top level headers associated with this module.
  */
-CINDEX_LINKAGE unsigned clang_Module_getNumTopLevelHeaders(CXModule Module);
+CINDEX_LINKAGE unsigned lfort_Module_getNumTopLevelHeaders(CXModule Module);
 
 /**
  * \param Module a module object.
@@ -3331,7 +3331,7 @@ CINDEX_LINKAGE unsigned clang_Module_getNumTopLevelHeaders(CXModule Module);
  * \returns the specified top level header associated with the module.
  */
 CINDEX_LINKAGE
-CXFile clang_Module_getTopLevelHeader(CXModule Module, unsigned Index);
+CXFile lfort_Module_getTopLevelHeader(CXModule Module, unsigned Index);
 
 /**
  * @}
@@ -3510,14 +3510,14 @@ enum CXCommentParamPassDirection {
  *
  * \returns the type of the AST node.
  */
-CINDEX_LINKAGE enum CXCommentKind clang_Comment_getKind(CXComment Comment);
+CINDEX_LINKAGE enum CXCommentKind lfort_Comment_getKind(CXComment Comment);
 
 /**
  * \param Comment AST node of any kind.
  *
  * \returns number of children of the AST node.
  */
-CINDEX_LINKAGE unsigned clang_Comment_getNumChildren(CXComment Comment);
+CINDEX_LINKAGE unsigned lfort_Comment_getNumChildren(CXComment Comment);
 
 /**
  * \param Comment AST node of any kind.
@@ -3527,7 +3527,7 @@ CINDEX_LINKAGE unsigned clang_Comment_getNumChildren(CXComment Comment);
  * \returns the specified child of the AST node.
  */
 CINDEX_LINKAGE
-CXComment clang_Comment_getChild(CXComment Comment, unsigned ChildIdx);
+CXComment lfort_Comment_getChild(CXComment Comment, unsigned ChildIdx);
 
 /**
  * \brief A \c CXComment_Paragraph node is considered whitespace if it contains
@@ -3538,7 +3538,7 @@ CXComment clang_Comment_getChild(CXComment Comment, unsigned ChildIdx);
  *
  * \returns non-zero if \c Comment is whitespace.
  */
-CINDEX_LINKAGE unsigned clang_Comment_isWhitespace(CXComment Comment);
+CINDEX_LINKAGE unsigned lfort_Comment_isWhitespace(CXComment Comment);
 
 /**
  * \returns non-zero if \c Comment is inline content and has a newline
@@ -3546,14 +3546,14 @@ CINDEX_LINKAGE unsigned clang_Comment_isWhitespace(CXComment Comment);
  * do not count.
  */
 CINDEX_LINKAGE
-unsigned clang_InlineContentComment_hasTrailingNewline(CXComment Comment);
+unsigned lfort_InlineContentComment_hasTrailingNewline(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_Text AST node.
  *
  * \returns text contained in the AST node.
  */
-CINDEX_LINKAGE CXString clang_TextComment_getText(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_TextComment_getText(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_InlineCommand AST node.
@@ -3561,7 +3561,7 @@ CINDEX_LINKAGE CXString clang_TextComment_getText(CXComment Comment);
  * \returns name of the inline command.
  */
 CINDEX_LINKAGE
-CXString clang_InlineCommandComment_getCommandName(CXComment Comment);
+CXString lfort_InlineCommandComment_getCommandName(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_InlineCommand AST node.
@@ -3570,7 +3570,7 @@ CXString clang_InlineCommandComment_getCommandName(CXComment Comment);
  * semantics in Doxygen.
  */
 CINDEX_LINKAGE enum CXCommentInlineCommandRenderKind
-clang_InlineCommandComment_getRenderKind(CXComment Comment);
+lfort_InlineCommandComment_getRenderKind(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_InlineCommand AST node.
@@ -3578,7 +3578,7 @@ clang_InlineCommandComment_getRenderKind(CXComment Comment);
  * \returns number of command arguments.
  */
 CINDEX_LINKAGE
-unsigned clang_InlineCommandComment_getNumArgs(CXComment Comment);
+unsigned lfort_InlineCommandComment_getNumArgs(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_InlineCommand AST node.
@@ -3588,7 +3588,7 @@ unsigned clang_InlineCommandComment_getNumArgs(CXComment Comment);
  * \returns text of the specified argument.
  */
 CINDEX_LINKAGE
-CXString clang_InlineCommandComment_getArgText(CXComment Comment,
+CXString lfort_InlineCommandComment_getArgText(CXComment Comment,
                                                unsigned ArgIdx);
 
 /**
@@ -3597,7 +3597,7 @@ CXString clang_InlineCommandComment_getArgText(CXComment Comment,
  *
  * \returns HTML tag name.
  */
-CINDEX_LINKAGE CXString clang_HTMLTagComment_getTagName(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_HTMLTagComment_getTagName(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_HTMLStartTag AST node.
@@ -3605,14 +3605,14 @@ CINDEX_LINKAGE CXString clang_HTMLTagComment_getTagName(CXComment Comment);
  * \returns non-zero if tag is self-closing (for example, &lt;br /&gt;).
  */
 CINDEX_LINKAGE
-unsigned clang_HTMLStartTagComment_isSelfClosing(CXComment Comment);
+unsigned lfort_HTMLStartTagComment_isSelfClosing(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_HTMLStartTag AST node.
  *
  * \returns number of attributes (name-value pairs) attached to the start tag.
  */
-CINDEX_LINKAGE unsigned clang_HTMLStartTag_getNumAttrs(CXComment Comment);
+CINDEX_LINKAGE unsigned lfort_HTMLStartTag_getNumAttrs(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_HTMLStartTag AST node.
@@ -3622,7 +3622,7 @@ CINDEX_LINKAGE unsigned clang_HTMLStartTag_getNumAttrs(CXComment Comment);
  * \returns name of the specified attribute.
  */
 CINDEX_LINKAGE
-CXString clang_HTMLStartTag_getAttrName(CXComment Comment, unsigned AttrIdx);
+CXString lfort_HTMLStartTag_getAttrName(CXComment Comment, unsigned AttrIdx);
 
 /**
  * \param Comment a \c CXComment_HTMLStartTag AST node.
@@ -3632,7 +3632,7 @@ CXString clang_HTMLStartTag_getAttrName(CXComment Comment, unsigned AttrIdx);
  * \returns value of the specified attribute.
  */
 CINDEX_LINKAGE
-CXString clang_HTMLStartTag_getAttrValue(CXComment Comment, unsigned AttrIdx);
+CXString lfort_HTMLStartTag_getAttrValue(CXComment Comment, unsigned AttrIdx);
 
 /**
  * \param Comment a \c CXComment_BlockCommand AST node.
@@ -3640,7 +3640,7 @@ CXString clang_HTMLStartTag_getAttrValue(CXComment Comment, unsigned AttrIdx);
  * \returns name of the block command.
  */
 CINDEX_LINKAGE
-CXString clang_BlockCommandComment_getCommandName(CXComment Comment);
+CXString lfort_BlockCommandComment_getCommandName(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_BlockCommand AST node.
@@ -3648,7 +3648,7 @@ CXString clang_BlockCommandComment_getCommandName(CXComment Comment);
  * \returns number of word-like arguments.
  */
 CINDEX_LINKAGE
-unsigned clang_BlockCommandComment_getNumArgs(CXComment Comment);
+unsigned lfort_BlockCommandComment_getNumArgs(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_BlockCommand AST node.
@@ -3658,7 +3658,7 @@ unsigned clang_BlockCommandComment_getNumArgs(CXComment Comment);
  * \returns text of the specified word-like argument.
  */
 CINDEX_LINKAGE
-CXString clang_BlockCommandComment_getArgText(CXComment Comment,
+CXString lfort_BlockCommandComment_getArgText(CXComment Comment,
                                               unsigned ArgIdx);
 
 /**
@@ -3668,7 +3668,7 @@ CXString clang_BlockCommandComment_getArgText(CXComment Comment,
  * \returns paragraph argument of the block command.
  */
 CINDEX_LINKAGE
-CXComment clang_BlockCommandComment_getParagraph(CXComment Comment);
+CXComment lfort_BlockCommandComment_getParagraph(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_ParamCommand AST node.
@@ -3676,17 +3676,17 @@ CXComment clang_BlockCommandComment_getParagraph(CXComment Comment);
  * \returns parameter name.
  */
 CINDEX_LINKAGE
-CXString clang_ParamCommandComment_getParamName(CXComment Comment);
+CXString lfort_ParamCommandComment_getParamName(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_ParamCommand AST node.
  *
  * \returns non-zero if the parameter that this AST node represents was found
- * in the function prototype and \c clang_ParamCommandComment_getParamIndex
+ * in the function prototype and \c lfort_ParamCommandComment_getParamIndex
  * function will return a meaningful value.
  */
 CINDEX_LINKAGE
-unsigned clang_ParamCommandComment_isParamIndexValid(CXComment Comment);
+unsigned lfort_ParamCommandComment_isParamIndexValid(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_ParamCommand AST node.
@@ -3694,7 +3694,7 @@ unsigned clang_ParamCommandComment_isParamIndexValid(CXComment Comment);
  * \returns zero-based parameter index in function prototype.
  */
 CINDEX_LINKAGE
-unsigned clang_ParamCommandComment_getParamIndex(CXComment Comment);
+unsigned lfort_ParamCommandComment_getParamIndex(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_ParamCommand AST node.
@@ -3703,7 +3703,7 @@ unsigned clang_ParamCommandComment_getParamIndex(CXComment Comment);
  * the comment.
  */
 CINDEX_LINKAGE
-unsigned clang_ParamCommandComment_isDirectionExplicit(CXComment Comment);
+unsigned lfort_ParamCommandComment_isDirectionExplicit(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_ParamCommand AST node.
@@ -3711,7 +3711,7 @@ unsigned clang_ParamCommandComment_isDirectionExplicit(CXComment Comment);
  * \returns parameter passing direction.
  */
 CINDEX_LINKAGE
-enum CXCommentParamPassDirection clang_ParamCommandComment_getDirection(
+enum CXCommentParamPassDirection lfort_ParamCommandComment_getDirection(
                                                             CXComment Comment);
 
 /**
@@ -3720,19 +3720,19 @@ enum CXCommentParamPassDirection clang_ParamCommandComment_getDirection(
  * \returns template parameter name.
  */
 CINDEX_LINKAGE
-CXString clang_TParamCommandComment_getParamName(CXComment Comment);
+CXString lfort_TParamCommandComment_getParamName(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_TParamCommand AST node.
  *
  * \returns non-zero if the parameter that this AST node represents was found
  * in the template parameter list and
- * \c clang_TParamCommandComment_getDepth and
- * \c clang_TParamCommandComment_getIndex functions will return a meaningful
+ * \c lfort_TParamCommandComment_getDepth and
+ * \c lfort_TParamCommandComment_getIndex functions will return a meaningful
  * value.
  */
 CINDEX_LINKAGE
-unsigned clang_TParamCommandComment_isParamPositionValid(CXComment Comment);
+unsigned lfort_TParamCommandComment_isParamPositionValid(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_TParamCommand AST node.
@@ -3748,7 +3748,7 @@ unsigned clang_TParamCommandComment_isParamPositionValid(CXComment Comment);
  * for T nesting depth is 1.
  */
 CINDEX_LINKAGE
-unsigned clang_TParamCommandComment_getDepth(CXComment Comment);
+unsigned lfort_TParamCommandComment_getDepth(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_TParamCommand AST node.
@@ -3769,7 +3769,7 @@ unsigned clang_TParamCommandComment_getDepth(CXComment Comment);
  * at depth 1 T's index is 0.
  */
 CINDEX_LINKAGE
-unsigned clang_TParamCommandComment_getIndex(CXComment Comment, unsigned Depth);
+unsigned lfort_TParamCommandComment_getIndex(CXComment Comment, unsigned Depth);
 
 /**
  * \param Comment a \c CXComment_VerbatimBlockLine AST node.
@@ -3777,14 +3777,14 @@ unsigned clang_TParamCommandComment_getIndex(CXComment Comment, unsigned Depth);
  * \returns text contained in the AST node.
  */
 CINDEX_LINKAGE
-CXString clang_VerbatimBlockLineComment_getText(CXComment Comment);
+CXString lfort_VerbatimBlockLineComment_getText(CXComment Comment);
 
 /**
  * \param Comment a \c CXComment_VerbatimLine AST node.
  *
  * \returns text contained in the AST node.
  */
-CINDEX_LINKAGE CXString clang_VerbatimLineComment_getText(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_VerbatimLineComment_getText(CXComment Comment);
 
 /**
  * \brief Convert an HTML tag AST node to string.
@@ -3794,7 +3794,7 @@ CINDEX_LINKAGE CXString clang_VerbatimLineComment_getText(CXComment Comment);
  *
  * \returns string containing an HTML tag.
  */
-CINDEX_LINKAGE CXString clang_HTMLTagComment_getAsString(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_HTMLTagComment_getAsString(CXComment Comment);
 
 /**
  * \brief Convert a given full parsed comment to an HTML fragment.
@@ -3827,19 +3827,19 @@ CINDEX_LINKAGE CXString clang_HTMLTagComment_getAsString(CXComment Comment);
  *
  * \returns string containing an HTML fragment.
  */
-CINDEX_LINKAGE CXString clang_FullComment_getAsHTML(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_FullComment_getAsHTML(CXComment Comment);
 
 /**
  * \brief Convert a given full parsed comment to an XML document.
  *
  * A Relax NG schema for the XML can be found in comment-xml-schema.rng file
- * inside clang source tree.
+ * inside lfort source tree.
  *
  * \param Comment a \c CXComment_FullComment AST node.
  *
  * \returns string containing an XML document.
  */
-CINDEX_LINKAGE CXString clang_FullComment_getAsXML(CXComment Comment);
+CINDEX_LINKAGE CXString lfort_FullComment_getAsXML(CXComment Comment);
 
 /**
  * @}
@@ -3858,14 +3858,14 @@ CINDEX_LINKAGE CXString clang_FullComment_getAsXML(CXComment Comment);
  * \brief Determine if a C++ member function or member function template is 
  * declared 'static'.
  */
-CINDEX_LINKAGE unsigned clang_CXXMethod_isStatic(CXCursor C);
+CINDEX_LINKAGE unsigned lfort_CXXMethod_isStatic(CXCursor C);
 
 /**
  * \brief Determine if a C++ member function or member function template is
  * explicitly declared 'virtual' or if it overrides a virtual method from
  * one of the base classes.
  */
-CINDEX_LINKAGE unsigned clang_CXXMethod_isVirtual(CXCursor C);
+CINDEX_LINKAGE unsigned lfort_CXXMethod_isVirtual(CXCursor C);
 
 /**
  * \brief Given a cursor that represents a template, determine
@@ -3884,7 +3884,7 @@ CINDEX_LINKAGE unsigned clang_CXXMethod_isVirtual(CXCursor C);
  * by instantiating the template \p C. If \p C is not a template, returns
  * \c CXCursor_NoDeclFound.
  */
-CINDEX_LINKAGE enum CXCursorKind clang_getTemplateCursorKind(CXCursor C);
+CINDEX_LINKAGE enum CXCursorKind lfort_getTemplateCursorKind(CXCursor C);
   
 /**
  * \brief Given a cursor that may represent a specialization or instantiation
@@ -3914,7 +3914,7 @@ CINDEX_LINKAGE enum CXCursorKind clang_getTemplateCursorKind(CXCursor C);
  * template or a member thereof, the template or member that it specializes or
  * from which it was instantiated. Otherwise, returns a NULL cursor.
  */
-CINDEX_LINKAGE CXCursor clang_getSpecializedCursorTemplate(CXCursor C);
+CINDEX_LINKAGE CXCursor lfort_getSpecializedCursorTemplate(CXCursor C);
 
 /**
  * \brief Given a cursor that references something else, return the source range
@@ -3934,7 +3934,7 @@ CINDEX_LINKAGE CXCursor clang_getSpecializedCursorTemplate(CXCursor C);
  * \returns The piece of the name pointed to by the given cursor. If there is no
  * name, or if the PieceIndex is out-of-range, a null-cursor will be returned.
  */
-CINDEX_LINKAGE CXSourceRange clang_getCursorReferenceNameRange(CXCursor C,
+CINDEX_LINKAGE CXSourceRange lfort_getCursorReferenceNameRange(CXCursor C,
                                                 unsigned NameFlags, 
                                                 unsigned PieceIndex);
 
@@ -4019,7 +4019,7 @@ typedef struct {
 /**
  * \brief Determine the kind of the given token.
  */
-CINDEX_LINKAGE CXTokenKind clang_getTokenKind(CXToken);
+CINDEX_LINKAGE CXTokenKind lfort_getTokenKind(CXToken);
 
 /**
  * \brief Determine the spelling of the given token.
@@ -4027,18 +4027,18 @@ CINDEX_LINKAGE CXTokenKind clang_getTokenKind(CXToken);
  * The spelling of a token is the textual representation of that token, e.g.,
  * the text of an identifier or keyword.
  */
-CINDEX_LINKAGE CXString clang_getTokenSpelling(CXTranslationUnit, CXToken);
+CINDEX_LINKAGE CXString lfort_getTokenSpelling(CXTranslationUnit, CXToken);
 
 /**
  * \brief Retrieve the source location of the given token.
  */
-CINDEX_LINKAGE CXSourceLocation clang_getTokenLocation(CXTranslationUnit,
+CINDEX_LINKAGE CXSourceLocation lfort_getTokenLocation(CXTranslationUnit,
                                                        CXToken);
 
 /**
  * \brief Retrieve a source range that covers the given token.
  */
-CINDEX_LINKAGE CXSourceRange clang_getTokenExtent(CXTranslationUnit, CXToken);
+CINDEX_LINKAGE CXSourceRange lfort_getTokenExtent(CXTranslationUnit, CXToken);
 
 /**
  * \brief Tokenize the source code described by the given range into raw
@@ -4051,13 +4051,13 @@ CINDEX_LINKAGE CXSourceRange clang_getTokenExtent(CXTranslationUnit, CXToken);
  *
  * \param Tokens this pointer will be set to point to the array of tokens
  * that occur within the given source range. The returned pointer must be
- * freed with clang_disposeTokens() before the translation unit is destroyed.
+ * freed with lfort_disposeTokens() before the translation unit is destroyed.
  *
  * \param NumTokens will be set to the number of tokens in the \c *Tokens
  * array.
  *
  */
-CINDEX_LINKAGE void clang_tokenize(CXTranslationUnit TU, CXSourceRange Range,
+CINDEX_LINKAGE void lfort_tokenize(CXTranslationUnit TU, CXSourceRange Range,
                                    CXToken **Tokens, unsigned *NumTokens);
 
 /**
@@ -4065,11 +4065,11 @@ CINDEX_LINKAGE void clang_tokenize(CXTranslationUnit TU, CXSourceRange Range,
  * that can be mapped to a specific entity within the abstract syntax tree.
  *
  * This token-annotation routine is equivalent to invoking
- * clang_getCursor() for the source locations of each of the
+ * lfort_getCursor() for the source locations of each of the
  * tokens. The cursors provided are filtered, so that only those
  * cursors that have a direct correspondence to the token are
  * accepted. For example, given a function call \c f(x),
- * clang_getCursor() would provide the following cursors:
+ * lfort_getCursor() would provide the following cursors:
  *
  *   * when the cursor is over the 'f', a DeclRefExpr cursor referring to 'f'.
  *   * when the cursor is over the '(' or the ')', a CallExpr referring to 'f'.
@@ -4090,14 +4090,14 @@ CINDEX_LINKAGE void clang_tokenize(CXTranslationUnit TU, CXSourceRange Range,
  * \param Cursors an array of \p NumTokens cursors, whose contents will be
  * replaced with the cursors corresponding to each token.
  */
-CINDEX_LINKAGE void clang_annotateTokens(CXTranslationUnit TU,
+CINDEX_LINKAGE void lfort_annotateTokens(CXTranslationUnit TU,
                                          CXToken *Tokens, unsigned NumTokens,
                                          CXCursor *Cursors);
 
 /**
  * \brief Free the given set of tokens.
  */
-CINDEX_LINKAGE void clang_disposeTokens(CXTranslationUnit TU,
+CINDEX_LINKAGE void lfort_disposeTokens(CXTranslationUnit TU,
                                         CXToken *Tokens, unsigned NumTokens);
 
 /**
@@ -4114,16 +4114,16 @@ CINDEX_LINKAGE void clang_disposeTokens(CXTranslationUnit TU,
  */
 
 /* for debug/testing */
-CINDEX_LINKAGE CXString clang_getCursorKindSpelling(enum CXCursorKind Kind);
-CINDEX_LINKAGE void clang_getDefinitionSpellingAndExtent(CXCursor,
+CINDEX_LINKAGE CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind);
+CINDEX_LINKAGE void lfort_getDefinitionSpellingAndExtent(CXCursor,
                                           const char **startBuf,
                                           const char **endBuf,
                                           unsigned *startLine,
                                           unsigned *startColumn,
                                           unsigned *endLine,
                                           unsigned *endColumn);
-CINDEX_LINKAGE void clang_enableStackTraces(void);
-CINDEX_LINKAGE void clang_executeOnThread(void (*fn)(void*), void *user_data,
+CINDEX_LINKAGE void lfort_enableStackTraces(void);
+CINDEX_LINKAGE void lfort_executeOnThread(void (*fn)(void*), void *user_data,
                                           unsigned stack_size);
 
 /**
@@ -4194,7 +4194,7 @@ enum CXCompletionChunkKind {
    *
    * The Optional chunk is the only kind of chunk that has a code-completion
    * string for its representation, which is accessible via
-   * \c clang_getCompletionChunkCompletionString(). The code-completion string
+   * \c lfort_getCompletionChunkCompletionString(). The code-completion string
    * describes an additional part of the template that is completely optional.
    * For example, optional chunks can be used to describe the placeholders for
    * arguments that match up with defaulted function parameters, e.g. given:
@@ -4361,7 +4361,7 @@ enum CXCompletionChunkKind {
  * \returns the kind of the chunk at the index \c chunk_number.
  */
 CINDEX_LINKAGE enum CXCompletionChunkKind
-clang_getCompletionChunkKind(CXCompletionString completion_string,
+lfort_getCompletionChunkKind(CXCompletionString completion_string,
                              unsigned chunk_number);
 
 /**
@@ -4375,7 +4375,7 @@ clang_getCompletionChunkKind(CXCompletionString completion_string,
  * \returns the text associated with the chunk at index \c chunk_number.
  */
 CINDEX_LINKAGE CXString
-clang_getCompletionChunkText(CXCompletionString completion_string,
+lfort_getCompletionChunkText(CXCompletionString completion_string,
                              unsigned chunk_number);
 
 /**
@@ -4390,14 +4390,14 @@ clang_getCompletionChunkText(CXCompletionString completion_string,
  * \c chunk_number.
  */
 CINDEX_LINKAGE CXCompletionString
-clang_getCompletionChunkCompletionString(CXCompletionString completion_string,
+lfort_getCompletionChunkCompletionString(CXCompletionString completion_string,
                                          unsigned chunk_number);
 
 /**
  * \brief Retrieve the number of chunks in the given code-completion string.
  */
 CINDEX_LINKAGE unsigned
-clang_getNumCompletionChunks(CXCompletionString completion_string);
+lfort_getNumCompletionChunks(CXCompletionString completion_string);
 
 /**
  * \brief Determine the priority of this code completion.
@@ -4412,7 +4412,7 @@ clang_getNumCompletionChunks(CXCompletionString completion_string);
  * higher-priority (more likely) completions.
  */
 CINDEX_LINKAGE unsigned
-clang_getCompletionPriority(CXCompletionString completion_string);
+lfort_getCompletionPriority(CXCompletionString completion_string);
   
 /**
  * \brief Determine the availability of the entity that this code-completion
@@ -4423,7 +4423,7 @@ clang_getCompletionPriority(CXCompletionString completion_string);
  * \returns The availability of the completion string.
  */
 CINDEX_LINKAGE enum CXAvailabilityKind 
-clang_getCompletionAvailability(CXCompletionString completion_string);
+lfort_getCompletionAvailability(CXCompletionString completion_string);
 
 /**
  * \brief Retrieve the number of annotations associated with the given
@@ -4435,7 +4435,7 @@ clang_getCompletionAvailability(CXCompletionString completion_string);
  * string.
  */
 CINDEX_LINKAGE unsigned
-clang_getCompletionNumAnnotations(CXCompletionString completion_string);
+lfort_getCompletionNumAnnotations(CXCompletionString completion_string);
 
 /**
  * \brief Retrieve the annotation associated with the given completion string.
@@ -4449,7 +4449,7 @@ clang_getCompletionNumAnnotations(CXCompletionString completion_string);
  * \c annotation_number, or a NULL string if that annotation is not available.
  */
 CINDEX_LINKAGE CXString
-clang_getCompletionAnnotation(CXCompletionString completion_string,
+lfort_getCompletionAnnotation(CXCompletionString completion_string,
                               unsigned annotation_number);
 
 /**
@@ -4469,7 +4469,7 @@ clang_getCompletionAnnotation(CXCompletionString completion_string,
  * the completion string represents a method in the NSObject class.
  */
 CINDEX_LINKAGE CXString
-clang_getCompletionParent(CXCompletionString completion_string,
+lfort_getCompletionParent(CXCompletionString completion_string,
                           enum CXCursorKind *kind);
 
 /**
@@ -4477,7 +4477,7 @@ clang_getCompletionParent(CXCompletionString completion_string,
  * that corresponds to the given completion string.
  */
 CINDEX_LINKAGE CXString
-clang_getCompletionBriefComment(CXCompletionString completion_string);
+lfort_getCompletionBriefComment(CXCompletionString completion_string);
 
 /**
  * \brief Retrieve a completion string for an arbitrary declaration or macro
@@ -4489,14 +4489,14 @@ clang_getCompletionBriefComment(CXCompletionString completion_string);
  * definition cursors, or NULL for other kinds of cursors.
  */
 CINDEX_LINKAGE CXCompletionString
-clang_getCursorCompletionString(CXCursor cursor);
+lfort_getCursorCompletionString(CXCursor cursor);
   
 /**
  * \brief Contains the results of code-completion.
  *
  * This data structure contains the results of code completion, as
- * produced by \c clang_codeCompleteAt(). Its contents must be freed by
- * \c clang_disposeCodeCompleteResults.
+ * produced by \c lfort_codeCompleteAt(). Its contents must be freed by
+ * \c lfort_disposeCodeCompleteResults.
  */
 typedef struct {
   /**
@@ -4512,11 +4512,11 @@ typedef struct {
 } CXCodeCompleteResults;
 
 /**
- * \brief Flags that can be passed to \c clang_codeCompleteAt() to
+ * \brief Flags that can be passed to \c lfort_codeCompleteAt() to
  * modify its behavior.
  *
  * The enumerators in this enumeration can be bitwise-OR'd together to
- * provide multiple options to \c clang_codeCompleteAt().
+ * provide multiple options to \c lfort_codeCompleteAt().
  */
 enum CXCodeComplete_Flags {
   /**
@@ -4546,7 +4546,7 @@ enum CXCodeComplete_Flags {
  */
 enum CXCompletionContext {
   /**
-   * \brief The context for completions is unexposed, as only Clang results
+   * \brief The context for completions is unexposed, as only LFort results
    * should be included. (This is equivalent to having no context bits set.)
    */
   CXCompletionContext_Unexposed = 0,
@@ -4671,9 +4671,9 @@ enum CXCompletionContext {
   
 /**
  * \brief Returns a default set of code-completion options that can be
- * passed to\c clang_codeCompleteAt(). 
+ * passed to\c lfort_codeCompleteAt(). 
  */
-CINDEX_LINKAGE unsigned clang_defaultCodeCompleteOptions(void);
+CINDEX_LINKAGE unsigned lfort_defaultCodeCompleteOptions(void);
 
 /**
  * \brief Perform code completion at a given location in a translation unit.
@@ -4681,7 +4681,7 @@ CINDEX_LINKAGE unsigned clang_defaultCodeCompleteOptions(void);
  * This function performs code completion at a particular file, line, and
  * column within source code, providing results that suggest potential
  * code snippets based on the context of the completion. The basic model
- * for code completion is that Clang will parse a complete source file,
+ * for code completion is that LFort will parse a complete source file,
  * performing syntax checking up to the location where code-completion has
  * been requested. At that point, a special code-completion token is passed
  * to the parser, which recognizes this token and determines, based on the
@@ -4735,16 +4735,16 @@ CINDEX_LINKAGE unsigned clang_defaultCodeCompleteOptions(void);
  * \param options Extra options that control the behavior of code
  * completion, expressed as a bitwise OR of the enumerators of the
  * CXCodeComplete_Flags enumeration. The 
- * \c clang_defaultCodeCompleteOptions() function returns a default set
+ * \c lfort_defaultCodeCompleteOptions() function returns a default set
  * of code-completion options.
  *
  * \returns If successful, a new \c CXCodeCompleteResults structure
  * containing code-completion results, which should eventually be
- * freed with \c clang_disposeCodeCompleteResults(). If code
+ * freed with \c lfort_disposeCodeCompleteResults(). If code
  * completion fails, returns NULL.
  */
 CINDEX_LINKAGE
-CXCodeCompleteResults *clang_codeCompleteAt(CXTranslationUnit TU,
+CXCodeCompleteResults *lfort_codeCompleteAt(CXTranslationUnit TU,
                                             const char *complete_filename,
                                             unsigned complete_line,
                                             unsigned complete_column,
@@ -4760,21 +4760,21 @@ CXCodeCompleteResults *clang_codeCompleteAt(CXTranslationUnit TU,
  * \param NumResults The number of results in \p Results.
  */
 CINDEX_LINKAGE
-void clang_sortCodeCompletionResults(CXCompletionResult *Results,
+void lfort_sortCodeCompletionResults(CXCompletionResult *Results,
                                      unsigned NumResults);
   
 /**
  * \brief Free the given set of code-completion results.
  */
 CINDEX_LINKAGE
-void clang_disposeCodeCompleteResults(CXCodeCompleteResults *Results);
+void lfort_disposeCodeCompleteResults(CXCodeCompleteResults *Results);
   
 /**
  * \brief Determine the number of diagnostics produced prior to the
  * location where code completion was performed.
  */
 CINDEX_LINKAGE
-unsigned clang_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *Results);
+unsigned lfort_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *Results);
 
 /**
  * \brief Retrieve a diagnostic associated with the given code completion.
@@ -4783,10 +4783,10 @@ unsigned clang_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *Results);
  * \param Index the zero-based diagnostic number to retrieve.
  *
  * \returns the requested diagnostic. This diagnostic must be freed
- * via a call to \c clang_disposeDiagnostic().
+ * via a call to \c lfort_disposeDiagnostic().
  */
 CINDEX_LINKAGE
-CXDiagnostic clang_codeCompleteGetDiagnostic(CXCodeCompleteResults *Results,
+CXDiagnostic lfort_codeCompleteGetDiagnostic(CXCodeCompleteResults *Results,
                                              unsigned Index);
 
 /**
@@ -4799,7 +4799,7 @@ CXDiagnostic clang_codeCompleteGetDiagnostic(CXCodeCompleteResults *Results,
  * along with the given code completion results.
  */
 CINDEX_LINKAGE
-unsigned long long clang_codeCompleteGetContexts(
+unsigned long long lfort_codeCompleteGetContexts(
                                                 CXCodeCompleteResults *Results);
 
 /**
@@ -4811,15 +4811,15 @@ unsigned long long clang_codeCompleteGetContexts(
  *
  * \param Results the code completion results to query
  *
- * \param IsIncomplete on return, this value will be false if Clang has complete
- * information about the container. If Clang does not have complete
+ * \param IsIncomplete on return, this value will be false if LFort has complete
+ * information about the container. If LFort does not have complete
  * information, this value will be true.
  *
  * \returns the container kind, or CXCursor_InvalidCode if there is not a
  * container
  */
 CINDEX_LINKAGE
-enum CXCursorKind clang_codeCompleteGetContainerKind(
+enum CXCursorKind lfort_codeCompleteGetContainerKind(
                                                  CXCodeCompleteResults *Results,
                                                      unsigned *IsIncomplete);
 
@@ -4833,7 +4833,7 @@ enum CXCursorKind clang_codeCompleteGetContainerKind(
  * \returns the USR for the container
  */
 CINDEX_LINKAGE
-CXString clang_codeCompleteGetContainerUSR(CXCodeCompleteResults *Results);
+CXString lfort_codeCompleteGetContainerUSR(CXCodeCompleteResults *Results);
   
   
 /**
@@ -4848,7 +4848,7 @@ CXString clang_codeCompleteGetContainerUSR(CXCodeCompleteResults *Results);
  * for an Objective-C message send.
  */
 CINDEX_LINKAGE
-CXString clang_codeCompleteGetObjCSelector(CXCodeCompleteResults *Results);
+CXString lfort_codeCompleteGetObjCSelector(CXCodeCompleteResults *Results);
   
 /**
  * @}
@@ -4865,7 +4865,7 @@ CXString clang_codeCompleteGetObjCSelector(CXCodeCompleteResults *Results);
  * \brief Return a version string, suitable for showing to a user, but not
  *        intended to be parsed (the format is not guaranteed to be stable).
  */
-CINDEX_LINKAGE CXString clang_getClangVersion();
+CINDEX_LINKAGE CXString lfort_getLFortVersion();
 
   
 /**
@@ -4874,13 +4874,13 @@ CINDEX_LINKAGE CXString clang_getClangVersion();
  * \param isEnabled Flag to indicate if crash recovery is enabled.  A non-zero
  *        value enables crash recovery, while 0 disables it.
  */
-CINDEX_LINKAGE void clang_toggleCrashRecovery(unsigned isEnabled);
+CINDEX_LINKAGE void lfort_toggleCrashRecovery(unsigned isEnabled);
   
  /**
   * \brief Visitor invoked for each file in a translation unit
-  *        (used with clang_getInclusions()).
+  *        (used with lfort_getInclusions()).
   *
-  * This visitor function will be invoked by clang_getInclusions() for each
+  * This visitor function will be invoked by lfort_getInclusions() for each
   * file included (either at the top-level or by \#include directives) within
   * a translation unit.  The first argument is the file being included, and
   * the second and third arguments provide the inclusion stack.  The
@@ -4898,7 +4898,7 @@ typedef void (*CXInclusionVisitor)(CXFile included_file,
  *   file.  This does not include headers included by the PCH file (unless one
  *   is inspecting the inclusions in the PCH file itself).
  */
-CINDEX_LINKAGE void clang_getInclusions(CXTranslationUnit tu,
+CINDEX_LINKAGE void lfort_getInclusions(CXTranslationUnit tu,
                                         CXInclusionVisitor visitor,
                                         CXClientData client_data);
 
@@ -4922,9 +4922,9 @@ typedef void *CXRemapping;
  * \param path the path that contains metadata about remappings.
  *
  * \returns the requested remapping. This remapping must be freed
- * via a call to \c clang_remap_dispose(). Can return NULL if an error occurred.
+ * via a call to \c lfort_remap_dispose(). Can return NULL if an error occurred.
  */
-CINDEX_LINKAGE CXRemapping clang_getRemappings(const char *path);
+CINDEX_LINKAGE CXRemapping lfort_getRemappings(const char *path);
 
 /**
  * \brief Retrieve a remapping.
@@ -4934,16 +4934,16 @@ CINDEX_LINKAGE CXRemapping clang_getRemappings(const char *path);
  * \param numFiles number of file paths.
  *
  * \returns the requested remapping. This remapping must be freed
- * via a call to \c clang_remap_dispose(). Can return NULL if an error occurred.
+ * via a call to \c lfort_remap_dispose(). Can return NULL if an error occurred.
  */
 CINDEX_LINKAGE
-CXRemapping clang_getRemappingsFromFileList(const char **filePaths,
+CXRemapping lfort_getRemappingsFromFileList(const char **filePaths,
                                             unsigned numFiles);
 
 /**
  * \brief Determine the number of remappings.
  */
-CINDEX_LINKAGE unsigned clang_remap_getNumFiles(CXRemapping);
+CINDEX_LINKAGE unsigned lfort_remap_getNumFiles(CXRemapping);
 
 /**
  * \brief Get the original and the associated filename from the remapping.
@@ -4953,13 +4953,13 @@ CINDEX_LINKAGE unsigned clang_remap_getNumFiles(CXRemapping);
  * \param transformed If non-NULL, will be set to the filename that the original
  * is associated with.
  */
-CINDEX_LINKAGE void clang_remap_getFilenames(CXRemapping, unsigned index,
+CINDEX_LINKAGE void lfort_remap_getFilenames(CXRemapping, unsigned index,
                                      CXString *original, CXString *transformed);
 
 /**
  * \brief Dispose the remapping.
  */
-CINDEX_LINKAGE void clang_remap_dispose(CXRemapping);
+CINDEX_LINKAGE void lfort_remap_dispose(CXRemapping);
 
 /**
  * @}
@@ -4992,7 +4992,7 @@ typedef struct {
  * The CXSourceRange will point inside the file; if the reference is inside
  * a macro (and not a macro argument) the CXSourceRange will be invalid.
  */
-CINDEX_LINKAGE void clang_findReferencesInFile(CXCursor cursor, CXFile file,
+CINDEX_LINKAGE void lfort_findReferencesInFile(CXCursor cursor, CXFile file,
                                                CXCursorAndRangeVisitor visitor);
 
 #ifdef __has_feature
@@ -5002,7 +5002,7 @@ typedef enum CXVisitorResult
     (^CXCursorAndRangeVisitorBlock)(CXCursor, CXSourceRange);
 
 CINDEX_LINKAGE
-void clang_findReferencesInFileWithBlock(CXCursor, CXFile,
+void lfort_findReferencesInFileWithBlock(CXCursor, CXFile,
                                          CXCursorAndRangeVisitorBlock);
 
 #  endif
@@ -5313,8 +5313,8 @@ typedef struct {
 } CXIdxEntityRefInfo;
 
 /**
- * \brief A group of callbacks used by #clang_indexSourceFile and
- * #clang_indexTranslationUnit.
+ * \brief A group of callbacks used by #lfort_indexSourceFile and
+ * #lfort_indexTranslationUnit.
  */
 typedef struct {
   /**
@@ -5366,54 +5366,54 @@ typedef struct {
 
 } IndexerCallbacks;
 
-CINDEX_LINKAGE int clang_index_isEntityObjCContainerKind(CXIdxEntityKind);
+CINDEX_LINKAGE int lfort_index_isEntityObjCContainerKind(CXIdxEntityKind);
 CINDEX_LINKAGE const CXIdxObjCContainerDeclInfo *
-clang_index_getObjCContainerDeclInfo(const CXIdxDeclInfo *);
+lfort_index_getObjCContainerDeclInfo(const CXIdxDeclInfo *);
 
 CINDEX_LINKAGE const CXIdxObjCInterfaceDeclInfo *
-clang_index_getObjCInterfaceDeclInfo(const CXIdxDeclInfo *);
+lfort_index_getObjCInterfaceDeclInfo(const CXIdxDeclInfo *);
 
 CINDEX_LINKAGE
 const CXIdxObjCCategoryDeclInfo *
-clang_index_getObjCCategoryDeclInfo(const CXIdxDeclInfo *);
+lfort_index_getObjCCategoryDeclInfo(const CXIdxDeclInfo *);
 
 CINDEX_LINKAGE const CXIdxObjCProtocolRefListInfo *
-clang_index_getObjCProtocolRefListInfo(const CXIdxDeclInfo *);
+lfort_index_getObjCProtocolRefListInfo(const CXIdxDeclInfo *);
 
 CINDEX_LINKAGE const CXIdxObjCPropertyDeclInfo *
-clang_index_getObjCPropertyDeclInfo(const CXIdxDeclInfo *);
+lfort_index_getObjCPropertyDeclInfo(const CXIdxDeclInfo *);
 
 CINDEX_LINKAGE const CXIdxIBOutletCollectionAttrInfo *
-clang_index_getIBOutletCollectionAttrInfo(const CXIdxAttrInfo *);
+lfort_index_getIBOutletCollectionAttrInfo(const CXIdxAttrInfo *);
 
 CINDEX_LINKAGE const CXIdxCXXClassDeclInfo *
-clang_index_getCXXClassDeclInfo(const CXIdxDeclInfo *);
+lfort_index_getCXXClassDeclInfo(const CXIdxDeclInfo *);
 
 /**
  * \brief For retrieving a custom CXIdxClientContainer attached to a
  * container.
  */
 CINDEX_LINKAGE CXIdxClientContainer
-clang_index_getClientContainer(const CXIdxContainerInfo *);
+lfort_index_getClientContainer(const CXIdxContainerInfo *);
 
 /**
  * \brief For setting a custom CXIdxClientContainer attached to a
  * container.
  */
 CINDEX_LINKAGE void
-clang_index_setClientContainer(const CXIdxContainerInfo *,CXIdxClientContainer);
+lfort_index_setClientContainer(const CXIdxContainerInfo *,CXIdxClientContainer);
 
 /**
  * \brief For retrieving a custom CXIdxClientEntity attached to an entity.
  */
 CINDEX_LINKAGE CXIdxClientEntity
-clang_index_getClientEntity(const CXIdxEntityInfo *);
+lfort_index_getClientEntity(const CXIdxEntityInfo *);
 
 /**
  * \brief For setting a custom CXIdxClientEntity attached to an entity.
  */
 CINDEX_LINKAGE void
-clang_index_setClientEntity(const CXIdxEntityInfo *, CXIdxClientEntity);
+lfort_index_setClientEntity(const CXIdxEntityInfo *, CXIdxClientEntity);
 
 /**
  * \brief An indexing action/session, to be applied to one or multiple
@@ -5427,7 +5427,7 @@ typedef void *CXIndexAction;
  *
  * \param CIdx The index object with which the index action will be associated.
  */
-CINDEX_LINKAGE CXIndexAction clang_IndexAction_create(CXIndex CIdx);
+CINDEX_LINKAGE CXIndexAction lfort_IndexAction_create(CXIndex CIdx);
 
 /**
  * \brief Destroy the given index action.
@@ -5435,7 +5435,7 @@ CINDEX_LINKAGE CXIndexAction clang_IndexAction_create(CXIndex CIdx);
  * The index action must not be destroyed until all of the translation units
  * created within that index action have been destroyed.
  */
-CINDEX_LINKAGE void clang_IndexAction_dispose(CXIndexAction);
+CINDEX_LINKAGE void lfort_IndexAction_dispose(CXIndexAction);
 
 typedef enum {
   /**
@@ -5498,9 +5498,9 @@ typedef enum {
  * \returns If there is a failure from which the there is no recovery, returns
  * non-zero, otherwise returns 0.
  *
- * The rest of the parameters are the same as #clang_parseTranslationUnit.
+ * The rest of the parameters are the same as #lfort_parseTranslationUnit.
  */
-CINDEX_LINKAGE int clang_indexSourceFile(CXIndexAction,
+CINDEX_LINKAGE int lfort_indexSourceFile(CXIndexAction,
                                          CXClientData client_data,
                                          IndexerCallbacks *index_callbacks,
                                          unsigned index_callbacks_size,
@@ -5524,12 +5524,12 @@ CINDEX_LINKAGE int clang_indexSourceFile(CXIndexAction,
  *   -Declaration/reference callbacks invocations
  *   -Diagnostic callback invocations
  *
- * The parameters are the same as #clang_indexSourceFile.
+ * The parameters are the same as #lfort_indexSourceFile.
  * 
  * \returns If there is a failure from which the there is no recovery, returns
  * non-zero, otherwise returns 0.
  */
-CINDEX_LINKAGE int clang_indexTranslationUnit(CXIndexAction,
+CINDEX_LINKAGE int lfort_indexTranslationUnit(CXIndexAction,
                                               CXClientData client_data,
                                               IndexerCallbacks *index_callbacks,
                                               unsigned index_callbacks_size,
@@ -5544,7 +5544,7 @@ CINDEX_LINKAGE int clang_indexTranslationUnit(CXIndexAction,
  * location of the macro expansion and if it refers into a macro argument
  * retrieves the location of the argument.
  */
-CINDEX_LINKAGE void clang_indexLoc_getFileLocation(CXIdxLoc loc,
+CINDEX_LINKAGE void lfort_indexLoc_getFileLocation(CXIdxLoc loc,
                                                    CXIdxClientFile *indexFile,
                                                    CXFile *file,
                                                    unsigned *line,
@@ -5555,7 +5555,7 @@ CINDEX_LINKAGE void clang_indexLoc_getFileLocation(CXIdxLoc loc,
  * \brief Retrieve the CXSourceLocation represented by the given CXIdxLoc.
  */
 CINDEX_LINKAGE
-CXSourceLocation clang_indexLoc_getCXSourceLocation(CXIdxLoc loc);
+CXSourceLocation lfort_indexLoc_getCXSourceLocation(CXIdxLoc loc);
 
 /**
  * @}

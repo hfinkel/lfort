@@ -32,12 +32,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SOURCEMANAGER_H
-#define LLVM_CLANG_SOURCEMANAGER_H
+#ifndef LLVM_LFORT_SOURCEMANAGER_H
+#define LLVM_LFORT_SOURCEMANAGER_H
 
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
@@ -52,7 +52,7 @@
 #include <map>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class DiagnosticsEngine;
 class SourceManager;
@@ -250,9 +250,9 @@ namespace SrcMgr {
     /// bitmangled together.
     uintptr_t Data;
 
-    friend class clang::SourceManager;
-    friend class clang::ASTWriter;
-    friend class clang::ASTReader;
+    friend class lfort::SourceManager;
+    friend class lfort::ASTWriter;
+    friend class lfort::ASTReader;
   public:
     /// \brief Return a FileInfo object.
     static FileInfo get(SourceLocation IL, const ContentCache *Con,
@@ -1606,6 +1606,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

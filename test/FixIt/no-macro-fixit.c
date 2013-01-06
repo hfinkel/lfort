@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -pedantic -fixit -x c %s
+// RUN: %lfort_cc1 -pedantic -fixit -x c %s
 // rdar://9091893
 
 #define va_arg(ap, type)    __builtin_va_arg(ap, type)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -emit-llvm-only %s
+// RUN: %lfort_cc1 -verify -emit-llvm-only %s
 
 // PR7242: Check that this doesn't crash.
 int main(void)

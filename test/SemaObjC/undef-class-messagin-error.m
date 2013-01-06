@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 @interface _Child // expected-note{{'_Child' declared here}}
 + (int) flashCache;

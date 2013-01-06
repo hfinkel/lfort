@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wall -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wall -verify %s
 // expected-no-diagnostics
 template<typename a> struct A {
   template <typename b> struct B {

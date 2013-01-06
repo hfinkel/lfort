@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s| FileCheck %s
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s -target-feature +avx | FileCheck %s -check-prefix=AVX
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s| FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s -target-feature +avx | FileCheck %s -check-prefix=AVX
 #include <stdarg.h>
 
 // CHECK: define signext i8 @f0()

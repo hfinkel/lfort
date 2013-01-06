@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_UNINIT_VALS_H
-#define LLVM_CLANG_UNINIT_VALS_H
+#ifndef LLVM_LFORT_UNINIT_VALS_H
+#define LLVM_LFORT_UNINIT_VALS_H
 
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class AnalysisDeclContext;
 class CFG;

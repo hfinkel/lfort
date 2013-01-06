@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -verify
 
 struct X {
 public __attribute__((unavailable)): // expected-error {{access specifier can only have annotation attributes}}

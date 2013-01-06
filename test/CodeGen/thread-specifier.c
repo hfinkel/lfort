@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-pc-linux-gnu -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i686-pc-linux-gnu -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: @b = external thread_local global
 // CHECK: @d.e = internal thread_local global

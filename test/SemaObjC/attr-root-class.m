@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wattributes -Wobjc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wattributes -Wobjc-root-class %s
 @interface RootClass {} // expected-warning {{class 'RootClass' defined without specifying a base class}} \
                         // expected-note {{add a super class to fix this problem}}
 @end

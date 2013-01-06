@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++11 %s
+// RUN: %lfort_cc1 -verify -std=c++11 %s
 
 namespace N {
   typedef char C;

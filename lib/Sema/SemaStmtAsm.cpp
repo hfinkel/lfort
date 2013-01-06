@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/SmallString.h"
@@ -34,7 +34,7 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 /// CheckAsmLValue - GNU C has an extremely ugly extension whereby they silently
@@ -654,7 +654,7 @@ StmtResult Sema::ActOnMSAsmStmt(SourceLocation AsmLoc, SourceLocation LBraceLoc,
 
     // Need offset of variable.
     if (OpDecls[i].second)
-      OpExpr = BuildUnaryOp(getCurScope(), AsmLoc, clang::UO_AddrOf,
+      OpExpr = BuildUnaryOp(getCurScope(), AsmLoc, lfort::UO_AddrOf,
                             OpExpr.take());
 
     Names[i] = OpDecl->getIdentifier();

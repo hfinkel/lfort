@@ -5,7 +5,7 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_library(clangSema
+add_lfort_library(lfortSema
   AnalysisBasedWarnings.cpp
   AttributeList.cpp
   CodeCompleteConsumer.cpp
@@ -52,27 +52,27 @@ add_clang_library(clangSema
   TargetAttributesSema.cpp
   )
 
-add_dependencies(clangSema
-  ClangARMNeon
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangAttrParsedAttrKinds
-  ClangAttrTemplateInstantiate
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticAST
-  ClangDiagnosticComment
-  ClangDiagnosticCommon
-  ClangDiagnosticParse
-  ClangDiagnosticSema
-  ClangStmtNodes
+add_dependencies(lfortSema
+  LFortARMNeon
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortAttrParsedAttrKinds
+  LFortAttrTemplateInstantiate
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticAST
+  LFortDiagnosticComment
+  LFortDiagnosticCommon
+  LFortDiagnosticParse
+  LFortDiagnosticSema
+  LFortStmtNodes
   )
 
-target_link_libraries(clangSema
-  clangAST
-  clangAnalysis
-  clangBasic
-  clangEdit
-  clangLex
+target_link_libraries(lfortSema
+  lfortAST
+  lfortAnalysis
+  lfortBasic
+  lfortEdit
+  lfortLex
   )

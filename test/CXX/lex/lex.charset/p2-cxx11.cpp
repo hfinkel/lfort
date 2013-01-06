@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++11 %s
+// RUN: %lfort_cc1 -verify -std=c++11 %s
 
 char c00 = '\u0000'; // ok
 char c01 = '\u0001'; // ok

@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort/Frontend/ASTUnit.h"
 #include "CIndexer.h"
 #include "CXLoadedDiagnostic.h"
 #include "CXSourceLocation.h"
 #include "CXString.h"
 #include "CXTranslationUnit.h"
 
-using namespace clang;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxstring;
 
 //===----------------------------------------------------------------------===//
 // Internal predicates on CXSourceLocations.
@@ -37,33 +37,33 @@ static bool isASTUnitSourceLocation(const CXSourceLocation &L) {
 
 extern "C" {
   
-CXSourceLocation clang_getNullLocation() {
+CXSourceLocation lfort_getNullLocation() {
   CXSourceLocation Result = { { 0, 0 }, 0 };
   return Result;
 }
 
-unsigned clang_equalLocations(CXSourceLocation loc1, CXSourceLocation loc2) {
+unsigned lfort_equalLocations(CXSourceLocation loc1, CXSourceLocation loc2) {
   return (loc1.ptr_data[0] == loc2.ptr_data[0] &&
           loc1.ptr_data[1] == loc2.ptr_data[1] &&
           loc1.int_data == loc2.int_data);
 }
 
-CXSourceRange clang_getNullRange() {
+CXSourceRange lfort_getNullRange() {
   CXSourceRange Result = { { 0, 0 }, 0, 0 };
   return Result;
 }
 
-CXSourceRange clang_getRange(CXSourceLocation begin, CXSourceLocation end) {
+CXSourceRange lfort_getRange(CXSourceLocation begin, CXSourceLocation end) {
   if (!isASTUnitSourceLocation(begin)) {
     if (isASTUnitSourceLocation(end))
-      return clang_getNullRange();
+      return lfort_getNullRange();
     CXSourceRange Result = { { begin.ptr_data[0], end.ptr_data[0] }, 0, 0 };
     return Result;
   }
   
   if (begin.ptr_data[0] != end.ptr_data[0] ||
       begin.ptr_data[1] != end.ptr_data[1])
-    return clang_getNullRange();
+    return lfort_getNullRange();
   
   CXSourceRange Result = { { begin.ptr_data[0], begin.ptr_data[1] },
                            begin.int_data, end.int_data };
@@ -71,19 +71,19 @@ CXSourceRange clang_getRange(CXSourceLocation begin, CXSourceLocation end) {
   return Result;
 }
 
-unsigned clang_equalRanges(CXSourceRange range1, CXSourceRange range2) {
+unsigned lfort_equalRanges(CXSourceRange range1, CXSourceRange range2) {
   return range1.ptr_data[0] == range2.ptr_data[0]
     && range1.ptr_data[1] == range2.ptr_data[1]
     && range1.begin_int_data == range2.begin_int_data
     && range1.end_int_data == range2.end_int_data;
 }
 
-int clang_Range_isNull(CXSourceRange range) {
-  return clang_equalRanges(range, clang_getNullRange());
+int lfort_Range_isNull(CXSourceRange range) {
+  return lfort_equalRanges(range, lfort_getNullRange());
 }
   
   
-CXSourceLocation clang_getRangeStart(CXSourceRange range) {
+CXSourceLocation lfort_getRangeStart(CXSourceRange range) {
   // Special decoding for CXSourceLocations for CXLoadedDiagnostics.
   if ((uintptr_t)range.ptr_data[0] & 0x1) {
     CXSourceLocation Result = { { range.ptr_data[0], 0 }, 0 };
@@ -95,7 +95,7 @@ CXSourceLocation clang_getRangeStart(CXSourceRange range) {
   return Result;
 }
 
-CXSourceLocation clang_getRangeEnd(CXSourceRange range) {
+CXSourceLocation lfort_getRangeEnd(CXSourceRange range) {
   // Special decoding for CXSourceLocations for CXLoadedDiagnostics.
   if ((uintptr_t)range.ptr_data[0] & 0x1) {
     CXSourceLocation Result = { { range.ptr_data[1], 0 }, 0 };
@@ -115,38 +115,38 @@ CXSourceLocation clang_getRangeEnd(CXSourceRange range) {
 
 extern "C" {
   
-CXSourceLocation clang_getLocation(CXTranslationUnit tu,
+CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
                                    CXFile file,
                                    unsigned line,
                                    unsigned column) {
   if (!tu || !file)
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
   
-  bool Logging = ::getenv("LIBCLANG_LOGGING");
+  bool Logging = ::getenv("LIBLFORT_LOGGING");
   ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->TUData);
   ASTUnit::ConcurrencyCheck Check(*CXXUnit);
   const FileEntry *File = static_cast<const FileEntry *>(file);
   SourceLocation SLoc = CXXUnit->getLocation(File, line, column);
   if (SLoc.isInvalid()) {
     if (Logging)
-      llvm::errs() << "clang_getLocation(\"" << File->getName() 
+      llvm::errs() << "lfort_getLocation(\"" << File->getName() 
       << "\", " << line << ", " << column << ") = invalid\n";
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
   }
   
   if (Logging)
-    llvm::errs() << "clang_getLocation(\"" << File->getName() 
+    llvm::errs() << "lfort_getLocation(\"" << File->getName() 
     << "\", " << line << ", " << column << ") = " 
     << SLoc.getRawEncoding() << "\n";
   
   return cxloc::translateSourceLocation(CXXUnit->getASTContext(), SLoc);
 }
   
-CXSourceLocation clang_getLocationForOffset(CXTranslationUnit tu,
+CXSourceLocation lfort_getLocationForOffset(CXTranslationUnit tu,
                                             CXFile file,
                                             unsigned offset) {
   if (!tu || !file)
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
   
   ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->TUData);
 
@@ -154,7 +154,7 @@ CXSourceLocation clang_getLocationForOffset(CXTranslationUnit tu,
     = CXXUnit->getLocation(static_cast<const FileEntry *>(file), offset);
 
   if (SLoc.isInvalid())
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
   
   return cxloc::translateSourceLocation(CXXUnit->getASTContext(), SLoc);
 }
@@ -194,7 +194,7 @@ static void createNullLocation(CXString *filename, unsigned *line,
 
 extern "C" {
 
-void clang_getExpansionLocation(CXSourceLocation location,
+void lfort_getExpansionLocation(CXSourceLocation location,
                                 CXFile *file,
                                 unsigned *line,
                                 unsigned *column,
@@ -236,7 +236,7 @@ void clang_getExpansionLocation(CXSourceLocation location,
     *offset = SM.getDecomposedLoc(ExpansionLoc).second;
 }
 
-void clang_getPresumedLocation(CXSourceLocation location,
+void lfort_getPresumedLocation(CXSourceLocation location,
                                CXString *filename,
                                unsigned *line,
                                unsigned *column) {
@@ -266,16 +266,16 @@ void clang_getPresumedLocation(CXSourceLocation location,
   }
 }
 
-void clang_getInstantiationLocation(CXSourceLocation location,
+void lfort_getInstantiationLocation(CXSourceLocation location,
                                     CXFile *file,
                                     unsigned *line,
                                     unsigned *column,
                                     unsigned *offset) {
   // Redirect to new API.
-  clang_getExpansionLocation(location, file, line, column, offset);
+  lfort_getExpansionLocation(location, file, line, column, offset);
 }
 
-void clang_getSpellingLocation(CXSourceLocation location,
+void lfort_getSpellingLocation(CXSourceLocation location,
                                CXFile *file,
                                unsigned *line,
                                unsigned *column,
@@ -313,7 +313,7 @@ void clang_getSpellingLocation(CXSourceLocation location,
     *offset = FileOffset;
 }
 
-void clang_getFileLocation(CXSourceLocation location,
+void lfort_getFileLocation(CXSourceLocation location,
                            CXFile *file,
                            unsigned *line,
                            unsigned *column,

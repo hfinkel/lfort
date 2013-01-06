@@ -349,7 +349,7 @@
             </data>
           </element>
           <optional>
-            <!-- This is index at depth 0.  libclang API can return more
+            <!-- This is index at depth 0.  liblfort API can return more
                  information about position, but we expose only essential
                  information here, since "Parameter" elements are already
                  sorted.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
 
 typedef signed char BOOL;
 @protocol NSObject  - (BOOL)isEqual:(id)object; @end
@@ -11,7 +11,7 @@ typedef signed char BOOL;
 - (Class)class;
 -(id)retain;
 @end
-void clang_analyzer_eval(BOOL);
+void lfort_analyzer_eval(BOOL);
 
 @interface SomeOtherClass : NSObject
 - (int)getZero;
@@ -32,6 +32,6 @@ void clang_analyzer_eval(BOOL);
 + (void) testCastToParent {
   id a = [[self alloc] init];
   SomeOtherClass *o = a;  
-  clang_analyzer_eval([o getZero] == 0); // expected-warning{{FALSE}}
+  lfort_analyzer_eval([o getZero] == 0); // expected-warning{{FALSE}}
 }
 @end

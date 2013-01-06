@@ -13,12 +13,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_PSEUDOCONSTANTANALYSIS
-#define LLVM_CLANG_ANALYSIS_PSEUDOCONSTANTANALYSIS
+#ifndef LLVM_LFORT_ANALYSIS_PSEUDOCONSTANTANALYSIS
+#define LLVM_LFORT_ANALYSIS_PSEUDOCONSTANTANALYSIS
 
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Stmt.h"
 
-namespace clang {
+namespace lfort {
 
 class PseudoConstantAnalysis {
 public:

@@ -6,7 +6,7 @@
 # License. See LICENSE.TXT for details.
 # 
 ##===----------------------------------------------------------------------===##
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 
 TOOLNAME = c-arcmt-test
 
@@ -19,18 +19,18 @@ NO_INSTALL = 1
 # Include this here so we can get the configuration of the targets that have
 # been configured for construction. We have to do this early so we can set up
 # LINK_COMPONENTS before including Makefile.rules
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
 
-# Note that 'USEDLIBS' must include all of the core clang libraries
-# as clang.dll is unavailable on cygming yet.
-USEDLIBS = clang.a \
-	   clangARCMigrate.a \
-	   clangRewriteFrontend.a \
-	   clangRewriteCore.a \
-	   clangFrontend.a clangDriver.a \
-	   clangSerialization.a clangParse.a clangSema.a \
-	   clangAnalysis.a clangEdit.a clangAST.a clangLex.a clangBasic.a
+# Note that 'USEDLIBS' must include all of the core lfort libraries
+# as lfort.dll is unavailable on cygming yet.
+USEDLIBS = lfort.a \
+	   lfortARCMigrate.a \
+	   lfortRewriteFrontend.a \
+	   lfortRewriteCore.a \
+	   lfortFrontend.a lfortDriver.a \
+	   lfortSerialization.a lfortParse.a lfortSema.a \
+	   lfortAnalysis.a lfortEdit.a lfortAST.a lfortLex.a lfortBasic.a
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

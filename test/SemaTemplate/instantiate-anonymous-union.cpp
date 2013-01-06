@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -Wall
+// RUN: %lfort_cc1 -fsyntax-only %s -Wall
 
 template <typename T> class A { struct { }; };
 

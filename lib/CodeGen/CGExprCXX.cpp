@@ -16,11 +16,11 @@
 #include "CGCXXABI.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/Support/CallSite.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 RValue CodeGenFunction::EmitCXXMemberCall(const CXXMethodDecl *MD,

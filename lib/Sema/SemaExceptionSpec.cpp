@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallString.h"
 
-namespace clang {
+namespace lfort {
 
 static const FunctionProtoType *GetUnderlyingFunction(QualType T)
 {
@@ -865,7 +865,7 @@ static CanThrowResult canDynamicCastThrow(const CXXDynamicCastExpr *DC) {
   if (DC->getSubExpr()->isTypeDependent())
     return CT_Dependent;
 
-  return DC->getCastKind() == clang::CK_Dynamic? CT_Can : CT_Cannot;
+  return DC->getCastKind() == lfort::CK_Dynamic? CT_Can : CT_Cannot;
 }
 
 static CanThrowResult canTypeidThrow(Sema &S, const CXXTypeidExpr *DC) {
@@ -1114,11 +1114,11 @@ CanThrowResult Sema::canThrow(const Expr *E) {
 #define LAST_STMT_RANGE(BASE, FIRST, LAST)
 #define EXPR(CLASS, PARENT)
 #define ABSTRACT_STMT(STMT)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   case Expr::NoStmtClass:
     llvm_unreachable("Invalid class for expression");
   }
   llvm_unreachable("Bogus StmtClass");
 }
 
-} // end namespace clang
+} // end namespace lfort

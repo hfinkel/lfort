@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CodeGen/ModuleBuilder.h"
+#include "lfort/CodeGen/ModuleBuilder.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
   class CodeGeneratorImpl : public CodeGenerator {
@@ -119,7 +119,7 @@ namespace {
 
 void CodeGenerator::anchor() { }
 
-CodeGenerator *clang::CreateLLVMCodeGen(DiagnosticsEngine &Diags,
+CodeGenerator *lfort::CreateLLVMCodeGen(DiagnosticsEngine &Diags,
                                         const std::string& ModuleName,
                                         const CodeGenOptions &CGO,
                                         llvm::LLVMContext& C) {

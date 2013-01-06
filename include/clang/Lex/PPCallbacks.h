@@ -12,17 +12,17 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_PPCALLBACKS_H
-#define LLVM_CLANG_LEX_PPCALLBACKS_H
+#ifndef LLVM_LFORT_LEX_PPCALLBACKS_H
+#define LLVM_LFORT_LEX_PPCALLBACKS_H
 
-#include "clang/Basic/DiagnosticIDs.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/DirectoryLookup.h"
-#include "clang/Lex/ModuleLoader.h"
+#include "lfort/Basic/DiagnosticIDs.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Lex/DirectoryLookup.h"
+#include "lfort/Lex/ModuleLoader.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
   class SourceLocation;
   class Token;
   class IdentifierInfo;
@@ -417,6 +417,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

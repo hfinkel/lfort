@@ -1,4 +1,4 @@
-//=== ClangASTNodesEmitter.cpp - Generate Clang AST node tables -*- C++ -*-===//
+//=== LFortASTNodesEmitter.cpp - Generate LFort AST node tables -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// These tablegen backends emit Clang AST node tables
+// These tablegen backends emit LFort AST node tables
 //
 //===----------------------------------------------------------------------===//
 
@@ -19,11 +19,11 @@
 #include <string>
 using namespace llvm;
 
-/// ClangASTNodesEmitter - The top-level class emits .inc files containing
-///  declarations of Clang statements.
+/// LFortASTNodesEmitter - The top-level class emits .inc files containing
+///  declarations of LFort statements.
 ///
 namespace {
-class ClangASTNodesEmitter {
+class LFortASTNodesEmitter {
   // A map from a node to each of its derived nodes.
   typedef std::multimap<Record*, Record*> ChildMap;
   typedef ChildMap::const_iterator ChildIterator;
@@ -53,7 +53,7 @@ class ClangASTNodesEmitter {
   std::pair<Record *, Record *> EmitNode (const ChildMap &Tree, raw_ostream& OS,
                                           Record *Base);
 public:
-  explicit ClangASTNodesEmitter(RecordKeeper &R, const std::string &N,
+  explicit LFortASTNodesEmitter(RecordKeeper &R, const std::string &N,
                                 const std::string &S)
     : Records(R), Root(N, SMLoc(), R), BaseSuffix(S)
     {}
@@ -69,7 +69,7 @@ public:
 
 // Returns the first and last non-abstract subrecords
 // Called recursively to ensure that nodes remain contiguous
-std::pair<Record *, Record *> ClangASTNodesEmitter::EmitNode(
+std::pair<Record *, Record *> LFortASTNodesEmitter::EmitNode(
                                                            const ChildMap &Tree,
                                                            raw_ostream &OS,
                                                            Record *Base) {
@@ -132,7 +132,7 @@ std::pair<Record *, Record *> ClangASTNodesEmitter::EmitNode(
   return std::make_pair(First, Last);
 }
 
-void ClangASTNodesEmitter::run(raw_ostream &OS) {
+void LFortASTNodesEmitter::run(raw_ostream &OS) {
   // Write the preamble
   OS << "#ifndef ABSTRACT_" << macroName(Root.getName()) << "\n";
   OS << "#  define ABSTRACT_" << macroName(Root.getName()) << "(Type) Type\n";
@@ -172,15 +172,15 @@ void ClangASTNodesEmitter::run(raw_ostream &OS) {
   OS << "#undef ABSTRACT_" << macroName(Root.getName()) << "\n";
 }
 
-namespace clang {
-void EmitClangASTNodes(RecordKeeper &RK, raw_ostream &OS,
+namespace lfort {
+void EmitLFortASTNodes(RecordKeeper &RK, raw_ostream &OS,
                        const std::string &N, const std::string &S) {
-  ClangASTNodesEmitter(RK, N, S).run(OS);
+  LFortASTNodesEmitter(RK, N, S).run(OS);
 }
 
-// Emits and addendum to a .inc file to enumerate the clang declaration
+// Emits and addendum to a .inc file to enumerate the lfort declaration
 // contexts.
-void EmitClangDeclContext(RecordKeeper &Records, raw_ostream &OS) {
+void EmitLFortDeclContext(RecordKeeper &Records, raw_ostream &OS) {
   // FIXME: Find a .td file format to allow for this to be represented better.
 
   OS << "#ifndef DECL_CONTEXT\n";
@@ -222,4 +222,4 @@ void EmitClangDeclContext(RecordKeeper &Records, raw_ostream &OS) {
   OS << "#undef DECL_CONTEXT\n";
   OS << "#undef DECL_CONTEXT_BASE\n";
 }
-} // end namespace clang
+} // end namespace lfort

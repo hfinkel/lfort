@@ -12,9 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/Scope.h"
+#include "lfort/Sema/Scope.h"
 
-using namespace clang;
+using namespace lfort;
 
 void Scope::Init(Scope *parent, unsigned flags) {
   AnyParent = parent;

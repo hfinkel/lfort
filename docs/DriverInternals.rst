@@ -8,19 +8,19 @@ Driver Design & Internals
 Introduction
 ============
 
-This document describes the Clang driver. The purpose of this document
+This document describes the LFort driver. The purpose of this document
 is to describe both the motivation and design goals for the driver, as
 well as details of the internal implementation.
 
 Features and Goals
 ==================
 
-The Clang driver is intended to be a production quality compiler driver
-providing access to the Clang compiler and tools, with a command line
+The LFort driver is intended to be a production quality compiler driver
+providing access to the LFort compiler and tools, with a command line
 interface which is compatible with the gcc driver.
 
-Although the driver is part of and driven by the Clang project, it is
-logically a separate tool which shares many of the same goals as Clang:
+Although the driver is part of and driven by the LFort project, it is
+logically a separate tool which shares many of the same goals as LFort:
 
 .. contents:: Features
    :local:
@@ -28,18 +28,18 @@ logically a separate tool which shares many of the same goals as Clang:
 GCC Compatibility
 -----------------
 
-The number one goal of the driver is to ease the adoption of Clang by
-allowing users to drop Clang into a build system which was designed to
+The number one goal of the driver is to ease the adoption of LFort by
+allowing users to drop LFort into a build system which was designed to
 call GCC. Although this makes the driver much more complicated than
 might otherwise be necessary, we decided that being very compatible with
 the gcc command line interface was worth it in order to allow users to
-quickly test clang on their projects.
+quickly test lfort on their projects.
 
 Flexible
 --------
 
 The driver was designed to be flexible and easily accommodate new uses
-as we grow the clang and LLVM infrastructure. As one example, the driver
+as we grow the lfort and LLVM infrastructure. As one example, the driver
 can easily support the introduction of tools which have an integrated
 assembler; something we hope to add to LLVM in the future.
 
@@ -83,7 +83,7 @@ Internals Introduction
 In order to satisfy the stated goals, the driver was designed to
 completely subsume the functionality of the gcc executable; that is, the
 driver should not need to delegate to gcc to perform subtasks. On
-Darwin, this implies that the Clang driver also subsumes the gcc
+Darwin, this implies that the LFort driver also subsumes the gcc
 driver-driver, which is used to implement support for building universal
 images (binaries and object files). This also implies that the driver
 should be able to call the language specific compilers (e.g. cc1)
@@ -137,13 +137,13 @@ The driver functionality is conceptually divided into five stages:
    argument strings. Each Arg itself only needs to contain an index into
    this vector instead of storing its values directly.
 
-   The clang driver can dump the results of this stage using the
+   The lfort driver can dump the results of this stage using the
    ``-ccc-print-options`` flag (which must precede any actual command
    line arguments). For example:
 
    .. code-block:: console
 
-      $ clang -ccc-print-options -Xarch_i386 -fomit-frame-pointer -Wa,-fast -Ifoo -I foo t.c
+      $ lfort -ccc-print-options -Xarch_i386 -fomit-frame-pointer -Wa,-fast -Ifoo -I foo t.c
       Option 0 - Name: "-Xarch_", Values: {"i386", "-fomit-frame-pointer"}
       Option 1 - Name: "-Wa,", Values: {"-fast"}
       Option 2 - Name: "-I", Values: {"foo"}
@@ -171,12 +171,12 @@ The driver functionality is conceptually divided into five stages:
    second is BindArchAction, which conceptually alters the architecture
    to be used for all of its input Actions.
 
-   The clang driver can dump the results of this stage using the
+   The lfort driver can dump the results of this stage using the
    ``-ccc-print-phases`` flag. For example:
 
    .. code-block:: console
 
-      $ clang -ccc-print-phases -x c t.c -x assembler t.s
+      $ lfort -ccc-print-phases -x c t.c -x assembler t.s
       0: input, "t.c", c
       1: preprocessor, {0}, cpp-output
       2: compiler, {1}, assembler
@@ -196,7 +196,7 @@ The driver functionality is conceptually divided into five stages:
 
    .. code-block:: console
 
-      $ clang -ccc-print-phases -c -arch i386 -arch x86_64 t0.c t1.c
+      $ lfort -ccc-print-phases -c -arch i386 -arch x86_64 t0.c t1.c
       0: input, "t0.c", c
       1: preprocessor, {0}, cpp-output
       2: compiler, {1}, assembler
@@ -248,8 +248,8 @@ The driver functionality is conceptually divided into five stages:
 
    .. code-block:: console
 
-      $ clang -ccc-print-bindings -arch i386 -arch ppc t0.c
-      # "i386-apple-darwin9" - "clang", inputs: ["t0.c"], output: "/tmp/cc-Sn4RKF.s"
+      $ lfort -ccc-print-bindings -arch i386 -arch ppc t0.c
+      # "i386-apple-darwin9" - "lfort", inputs: ["t0.c"], output: "/tmp/cc-Sn4RKF.s"
       # "i386-apple-darwin9" - "darwin::Assemble", inputs: ["/tmp/cc-Sn4RKF.s"], output: "/tmp/cc-gvSnbS.o"
       # "i386-apple-darwin9" - "darwin::Link", inputs: ["/tmp/cc-gvSnbS.o"], output: "/tmp/cc-jgHQxi.out"
       # "ppc-apple-darwin9" - "gcc::Compile", inputs: ["t0.c"], output: "/tmp/cc-Q0bTox.s"
@@ -258,7 +258,7 @@ The driver functionality is conceptually divided into five stages:
       # "i386-apple-darwin9" - "darwin::Lipo", inputs: ["/tmp/cc-jgHQxi.out", "/tmp/cc-HHBEBh.out"], output: "a.out"
 
    This shows the tool chain, tool, inputs and outputs which have been
-   bound for this compilation sequence. Here clang is being used to
+   bound for this compilation sequence. Here lfort is being used to
    compile t0.c on the i386 architecture and darwin specific versions of
    the tools are being used to assemble and link the result, but generic
    gcc versions of the tools are being used on PowerPC.
@@ -317,9 +317,9 @@ such as whether the platform uses a driver driver.
 ToolChain Argument Translation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In order to match gcc very closely, the clang driver currently allows
+In order to match gcc very closely, the lfort driver currently allows
 tool chains to perform their own translation of the argument list (into
-a new ArgList data structure). Although this allows the clang driver to
+a new ArgList data structure). Although this allows the lfort driver to
 match gcc easily, it also makes the driver operation much harder to
 understand (since the Tools stop seeing some arguments the user
 provided, and see new ones instead).
@@ -342,7 +342,7 @@ opportunity to choose which arguments to pass on. One downside of this
 infrastructure is that if the user misspells some option, or is confused
 about which options to use, some command line arguments the user really
 cared about may go unused. This problem is particularly important when
-using clang as a compiler, since the clang compiler does not support
+using lfort as a compiler, since the lfort compiler does not support
 anywhere near all the options that gcc does, and we want to make sure
 users know which ones are being used.
 
@@ -361,11 +361,11 @@ Relation to GCC Driver Concepts
 -------------------------------
 
 For those familiar with the gcc driver, this section provides a brief
-overview of how things from the gcc driver map to the clang driver.
+overview of how things from the gcc driver map to the lfort driver.
 
 -  **Driver Driver**
 
-   The driver driver is fully integrated into the clang driver. The
+   The driver driver is fully integrated into the lfort driver. The
    driver simply constructs additional Actions to bind the architecture
    during the *Pipeline* phase. The tool chain specific argument
    translation is responsible for handling ``-Xarch_``.
@@ -376,13 +376,13 @@ overview of how things from the gcc driver map to the clang driver.
    such invocations, and overall there isn't a good reason to abuse
    ``-Xarch_`` to that end in practice.
 
-   The upside is that the clang driver is more efficient and does little
+   The upside is that the lfort driver is more efficient and does little
    extra work to support universal builds. It also provides better error
    reporting and UI consistency.
 
 -  **Specs**
 
-   The clang driver has no direct correspondent for "specs". The
+   The lfort driver has no direct correspondent for "specs". The
    majority of the functionality that is embedded in specs is in the
    Tool specific argument translation routines. The parts of specs which
    control the compilation pipeline are generally part of the *Pipeline*
@@ -394,7 +394,7 @@ overview of how things from the gcc driver map to the clang driver.
    binary roughly corresponds to the information which is embedded
    inside a single ToolChain.
 
-   The clang driver is intended to be portable and support complex
+   The lfort driver is intended to be portable and support complex
    compilation environments. All platform and tool chain specific code
    should be protected behind either abstract or well defined interfaces
    (such as whether the platform supports use as a driver driver).

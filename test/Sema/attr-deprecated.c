@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 int f() __attribute__((deprecated)); // expected-note 2 {{declared here}}
 void g() __attribute__((deprecated));

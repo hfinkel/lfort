@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // <rdar://problem/9142559>: For the purposes of Argument-Dependent

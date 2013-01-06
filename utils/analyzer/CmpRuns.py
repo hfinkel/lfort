@@ -133,10 +133,10 @@ class AnalysisRun:
         self.reports = []
         # Cumulative list of all diagnostics from all the reports.
         self.diagnostics = []
-        self.clang_version = None
+        self.lfort_version = None
     
-    def getClangVersion(self):
-        return self.clang_version
+    def getLFortVersion(self):
+        return self.lfort_version
 
 
 # Backward compatibility API. 
@@ -159,14 +159,14 @@ def loadResultsFromSingleRun(info, deleteEmpty=True):
             p = os.path.join(dirpath, f)
             data = plistlib.readPlist(p)
     
-            # We want to retrieve the clang version even if there are no 
+            # We want to retrieve the lfort version even if there are no 
             # reports. Assume that all reports were created using the same 
-            # clang version (this is always true and is more efficient).
-            if ('clang_version' in data) :
-                if (run.clang_version == None) :
-                    run.clang_version = data.pop('clang_version')
+            # lfort version (this is always true and is more efficient).
+            if ('lfort_version' in data) :
+                if (run.lfort_version == None) :
+                    run.lfort_version = data.pop('lfort_version')
                 else:
-                    data.pop('clang_version')
+                    data.pop('lfort_version')
                 
             # Ignore/delete empty reports.
             if not data['files']:

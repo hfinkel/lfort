@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -fsyntax-only -triple x86_64-apple-darwin9 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -triple x86_64-apple-darwin9 -verify %s
 
 int a[10];
 

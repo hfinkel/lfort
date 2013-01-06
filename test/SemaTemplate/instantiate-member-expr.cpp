@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -pedantic
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -pedantic
 template<typename T>
 struct S {
  S() { }

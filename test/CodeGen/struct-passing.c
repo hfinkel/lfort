@@ -2,7 +2,7 @@
 // correctly according to their attributes and the ABI.
 // SEE: PR3835
 
-// RUN: %clang_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck %s
 
 typedef int T0;
 typedef struct { int a[16]; } T1;

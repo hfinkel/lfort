@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-unreachable-code %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-unreachable-code %s
 
 typedef __attribute__(( ext_vector_type(4) )) int int4;
 

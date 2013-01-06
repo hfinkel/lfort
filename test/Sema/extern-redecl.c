@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // rdar: // 8125274
 static int a16[];  // expected-warning {{tentative array definition assumed to have one element}}

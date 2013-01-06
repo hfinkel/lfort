@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-pc-win32 %s -emit-llvm -fms-compatibility -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-pc-win32 %s -emit-llvm -fms-compatibility -o - | FileCheck %s
 
 struct __declspec(align(16)) S {
   char x;

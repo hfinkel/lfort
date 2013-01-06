@@ -11,23 +11,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/PTHLexer.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemStatCache.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/OnDiskHashTable.h"
-#include "clang/Basic/TokenKinds.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/PTHManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/Token.h"
+#include "lfort/Lex/PTHLexer.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/OnDiskHashTable.h"
+#include "lfort/Basic/TokenKinds.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/PTHManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/Token.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/system_error.h"
-using namespace clang;
-using namespace clang::io;
+using namespace lfort;
+using namespace lfort::io;
 
 #define DISK_TOKEN_SIZE (1+1+2+4+4)
 

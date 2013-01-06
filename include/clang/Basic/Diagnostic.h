@@ -12,12 +12,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTIC_H
-#define LLVM_CLANG_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_DIAGNOSTIC_H
+#define LLVM_LFORT_DIAGNOSTIC_H
 
-#include "clang/Basic/DiagnosticIDs.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/DiagnosticIDs.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -26,7 +26,7 @@
 #include <list>
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class DiagnosticConsumer;
   class DiagnosticBuilder;
   class DiagnosticOptions;
@@ -1330,6 +1330,6 @@ struct TemplateDiffTypes {
 /// attribute.  The character itself will be not be printed.
 const char ToggleHighlight = 127;
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

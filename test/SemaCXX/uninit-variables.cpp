@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wuninitialized -fsyntax-only -fcxx-exceptions %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -Wuninitialized -fsyntax-only -fcxx-exceptions %s -verify
 
 // Stub out types for 'typeid' to work.
 namespace std { class type_info {}; }

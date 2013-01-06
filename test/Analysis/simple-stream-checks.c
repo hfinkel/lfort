@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.unix.SimpleStream -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.unix.SimpleStream -verify %s
 
 #include "Inputs/system-header-simulator-for-simple-stream.h"
 

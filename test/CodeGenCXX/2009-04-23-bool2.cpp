@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null
 // g++.old-deja/g++.jason/bool2.C from gcc testsuite.
 // Crashed before 67975 went in.
 struct F {

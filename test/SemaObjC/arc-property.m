@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fobjc-runtime-has-weak -fsyntax-only -fobjc-arc -fblocks -fobjc-exceptions -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fobjc-runtime-has-weak -fsyntax-only -fobjc-arc -fblocks -fobjc-exceptions -verify -Wno-objc-root-class %s
 // rdar://9309489
 
 @interface MyClass {

@@ -17,8 +17,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemStatCache.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Support/FileSystem.h"
@@ -40,7 +40,7 @@
 #define S_ISFIFO(x) (0)
 #endif
 #endif
-using namespace clang;
+using namespace lfort;
 
 // FIXME: Enhance libsystem to support inode and other fields.
 #include <sys/stat.h>

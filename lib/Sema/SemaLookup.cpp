@@ -11,27 +11,27 @@
 //  Objective-C++.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/Lookup.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclLookups.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/Overload.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaInternal.h"
-#include "clang/Sema/TemplateDeduction.h"
-#include "clang/Sema/TypoCorrection.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclLookups.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/Overload.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/Sema/TemplateDeduction.h"
+#include "lfort/Sema/TypoCorrection.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -48,7 +48,7 @@
 #include <utility>
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 namespace {
@@ -1929,7 +1929,7 @@ addAssociatedClassesAndNamespaces(AssociatedLookup &Result, QualType Ty) {
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define ABSTRACT_TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
       // T is canonical.  We can also ignore dependent types because
       // we don't need to do ADL at the definition point, but if we
       // wanted to implement template export (or if we find some other

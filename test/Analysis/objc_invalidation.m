@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.osx.cocoa.InstanceVariableInvalidation -fobjc-default-synthesize-properties -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.osx.cocoa.InstanceVariableInvalidation -fobjc-default-synthesize-properties -verify %s
 
 @protocol NSObject
 @end

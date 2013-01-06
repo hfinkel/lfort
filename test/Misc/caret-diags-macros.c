@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s 2>&1 | FileCheck %s -strict-whitespace
+// RUN: %lfort_cc1 -fsyntax-only %s 2>&1 | FileCheck %s -strict-whitespace
 
 #define M1(x) x
 #define M2 1;

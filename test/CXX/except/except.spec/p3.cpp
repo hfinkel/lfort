@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
 
 // Exception specification compatibility.
 // We test function pointers, because functions have an extra rule in p4.
@@ -78,7 +78,7 @@ void f17();
 void f17() noexcept(false);
 
 // noexcept(false) is compatible with dynamic specs that throw unless
-// CWG 1073 resolution is accepted. Clang implements it.
+// CWG 1073 resolution is accepted. LFort implements it.
 //extern void (*r18)() throw(int);
 //extern void (*r18)() noexcept(false);
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -std=c++11 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -std=c++11 -emit-llvm -o - | FileCheck %s
 
 // PR10531.
 

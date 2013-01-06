@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple i686-pc-linux-gnu -DTEST_32BIT_X86 -fsyntax-only \
+// RUN: %lfort_cc1 -triple i686-pc-linux-gnu -DTEST_32BIT_X86 -fsyntax-only \
 // RUN:   -verify %s
-// RUN: %clang_cc1 -triple x86_64-pc-linux-gnu -DTEST_64BIT_X86 -fsyntax-only \
+// RUN: %lfort_cc1 -triple x86_64-pc-linux-gnu -DTEST_64BIT_X86 -fsyntax-only \
 // RUN:   -verify %s
 
 typedef int i16_1 __attribute((mode(HI)));

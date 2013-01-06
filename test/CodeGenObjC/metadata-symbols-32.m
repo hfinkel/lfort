@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o %t %s
 // RUNX: llvm-gcc -m32 -emit-llvm -S -o %t %s &&
 
 // RUN: grep '@"\\01L_OBJC_CATEGORY_A_Cat" = internal global .*section "__OBJC,__category,regular,no_dead_strip", align 4' %t
@@ -11,7 +11,7 @@
 // RUN: grep '@"\\01L_OBJC_CLASS_PROTOCOLS_A" = internal global .*section "__OBJC,__cat_cls_meth,regular,no_dead_strip", align 4' %t
 // RUN: grep '@"\\01L_OBJC_CLASS_REFERENCES_[0-9]*" = internal global .*section "__OBJC,__cls_refs,literal_pointers,no_dead_strip", align 4' %t
 
-// Clang's Obj-C 32-bit doesn't emit ivars for the root class.
+// LFort's Obj-C 32-bit doesn't emit ivars for the root class.
 // RUNX: grep '@"\\01L_OBJC_CLASS_VARIABLES_A" = internal global .*section "__OBJC,__class_vars,regular,no_dead_strip", align 4' %t && 
 
 // RUN: grep '@"\\01L_OBJC_INSTANCE_METHODS_A" = internal global .*section "__OBJC,__inst_meth,regular,no_dead_strip", align 4' %t

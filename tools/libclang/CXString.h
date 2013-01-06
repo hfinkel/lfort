@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CXSTRING_H
-#define LLVM_CLANG_CXSTRING_H
+#ifndef LLVM_LFORT_CXSTRING_H
+#define LLVM_LFORT_CXSTRING_H
 
-#include "clang-c/Index.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort-c/Index.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 namespace cxstring {
   
 struct CXStringBuf {

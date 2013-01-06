@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %lfort_cc1 -emit-llvm-only %s
 // PR9178
 
 void abort() __attribute__((__noreturn__));

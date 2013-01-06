@@ -16,12 +16,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FORMAT_H
-#define LLVM_CLANG_FORMAT_H
+#ifndef LLVM_LFORT_FORMAT_H
+#define LLVM_LFORT_FORMAT_H
 
-#include "clang/AST/CanonicalType.h"
+#include "lfort/AST/CanonicalType.h"
 
-namespace clang {
+namespace lfort {
 
 class TargetInfo;
 
@@ -641,5 +641,5 @@ bool ParseScanfString(FormatStringHandler &H,
                       const TargetInfo &Target);
 
 } // end analyze_format_string namespace
-} // end clang namespace
+} // end lfort namespace
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 struct X0 { // expected-note 8{{candidate}}
   X0(int*, float*); // expected-note 4{{candidate}}

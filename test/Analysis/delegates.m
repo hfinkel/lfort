@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,osx.cocoa.RetainCount -analyzer-store=region -Wno-objc-root-class -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,osx.cocoa.RetainCount -analyzer-store=region -Wno-objc-root-class -verify %s
 // expected-no-diagnostics
 
 

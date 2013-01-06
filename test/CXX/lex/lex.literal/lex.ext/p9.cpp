@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 using size_t = decltype(sizeof(int));
 void operator "" _x(const wchar_t *, size_t);

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -emit-llvm < %s | FileCheck %s
+// RUN: %lfort_cc1 -g -emit-llvm < %s | FileCheck %s
 // Two variables with same name in separate scope.
 // Radar 8330217.
 int main() {

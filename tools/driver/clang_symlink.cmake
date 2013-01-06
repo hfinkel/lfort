@@ -3,10 +3,10 @@
 # See PR8397.
 
 if(UNIX)
-  set(CLANGXX_LINK_OR_COPY create_symlink)
-  set(CLANGXX_DESTDIR $ENV{DESTDIR})
+  set(LFORTXX_LINK_OR_COPY create_symlink)
+  set(LFORTXX_DESTDIR $ENV{DESTDIR})
 else()
-  set(CLANGXX_LINK_OR_COPY copy)
+  set(LFORTXX_LINK_OR_COPY copy)
 endif()
 
 # CMAKE_EXECUTABLE_SUFFIX is undefined on cmake scripts. See PR9286.
@@ -16,12 +16,12 @@ else()
   set(EXECUTABLE_SUFFIX "")
 endif()
 
-set(bindir "${CLANGXX_DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/")
-set(clang "clang${EXECUTABLE_SUFFIX}")
-set(clangxx "clang++${EXECUTABLE_SUFFIX}")
+set(bindir "${LFORTXX_DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/")
+set(lfort "lfort${EXECUTABLE_SUFFIX}")
+set(lfortxx "lfort++${EXECUTABLE_SUFFIX}")
 
-message("Creating clang++ executable based on ${clang}")
+message("Creating lfort++ executable based on ${lfort}")
 
 execute_process(
-  COMMAND "${CMAKE_COMMAND}" -E ${CLANGXX_LINK_OR_COPY} "${clang}" "${clangxx}"
+  COMMAND "${CMAKE_COMMAND}" -E ${LFORTXX_LINK_OR_COPY} "${lfort}" "${lfortxx}"
   WORKING_DIRECTORY "${bindir}")

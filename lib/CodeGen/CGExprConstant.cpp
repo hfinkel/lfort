@@ -16,16 +16,16 @@
 #include "CGObjCRuntime.h"
 #include "CGRecordLayout.h"
 #include "CodeGenModule.h"
-#include "clang/AST/APValue.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/Builtins.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/Builtins.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 //===----------------------------------------------------------------------===//
@@ -179,7 +179,7 @@ void ConstStructBuilder::AppendBitField(const FieldDecl *Field,
 
   // Promote the size of FieldValue if necessary
   // FIXME: This should never occur, but currently it can because initializer
-  // constants are cast to bool, and because clang is not enforcing bitfield
+  // constants are cast to bool, and because lfort is not enforcing bitfield
   // width limits.
   if (FieldSize > FieldValue.getBitWidth())
     FieldValue = FieldValue.zext(FieldSize);

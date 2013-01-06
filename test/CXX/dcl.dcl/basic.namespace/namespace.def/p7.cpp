@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 namespace NIL {} // expected-note {{previous definition}}
 inline namespace NIL {} // expected-error {{cannot be reopened as inline}}

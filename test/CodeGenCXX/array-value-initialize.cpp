@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -emit-llvm -o - %s
-// RUN: %clang_cc1 -triple i386-apple-darwin -emit-llvm -o - %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -emit-llvm -o - %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin -emit-llvm -o - %s
 
 // PR5463
 extern "C" int printf(...);

@@ -13,10 +13,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_SPECIFIERS_H
-#define LLVM_CLANG_BASIC_SPECIFIERS_H
+#ifndef LLVM_LFORT_BASIC_SPECIFIERS_H
+#define LLVM_LFORT_BASIC_SPECIFIERS_H
 
-namespace clang {
+namespace lfort {
   /// \brief Specifies the width of a type, e.g., short, long, or long long.
   enum TypeSpecifierWidth {
     TSW_unspecified,
@@ -196,6 +196,6 @@ namespace clang {
     CC_IntelOclBicc // __attribute__((intel_ocl_bicc))
   };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_BASIC_SPECIFIERS_H
+#endif // LLVM_LFORT_BASIC_SPECIFIERS_H

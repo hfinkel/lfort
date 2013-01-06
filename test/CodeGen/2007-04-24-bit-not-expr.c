@@ -1,5 +1,5 @@
 // PR 1346
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 extern bar(void *);
 
 void f(void *cd) {

@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REACHABLECODE_H
-#define LLVM_CLANG_REACHABLECODE_H
+#ifndef LLVM_LFORT_REACHABLECODE_H
+#define LLVM_LFORT_REACHABLECODE_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
 //===----------------------------------------------------------------------===//
 // Forward declarations.
@@ -24,7 +24,7 @@ namespace llvm {
   class BitVector;
 }
 
-namespace clang {
+namespace lfort {
   class AnalysisDeclContext;
   class CFGBlock;
 }
@@ -33,7 +33,7 @@ namespace clang {
 // API.
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
 namespace reachable_code {
 
 class Callback {
@@ -51,6 +51,6 @@ unsigned ScanReachableFromBlock(const CFGBlock *Start,
 
 void FindUnreachableCode(AnalysisDeclContext &AC, Callback &CB);
 
-}} // end namespace clang::reachable_code
+}} // end namespace lfort::reachable_code
 
 #endif

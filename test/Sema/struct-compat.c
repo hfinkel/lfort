@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -fsyntax-only -pedantic -verify
+/* RUN: %lfort_cc1 %s -fsyntax-only -pedantic -verify
  */
 
 extern struct {int a;} x; // expected-note {{previous definition is here}}

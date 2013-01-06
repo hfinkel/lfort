@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 struct A { 
   int a;  // expected-note 4{{member found by ambiguous name lookup}}
   static int b;

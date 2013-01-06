@@ -11,22 +11,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/Initialization.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Designator.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Designator.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include <map>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Sema Initialization Checking
@@ -863,7 +863,7 @@ void InitListChecker::CheckComplexType(const InitializedEntity &Entity,
                                        unsigned &StructuredIndex) {
   assert(Index == 0 && "Index in explicit init list must be zero");
 
-  // As an extension, clang supports complex initializers, which initialize
+  // As an extension, lfort supports complex initializers, which initialize
   // a complex number component-wise.  When an explicit initializer list for
   // a complex number contains two two initializers, this extension kicks in:
   // it exepcts the initializer list to contain two elements convertible to
@@ -1164,7 +1164,7 @@ void InitListChecker::CheckArrayType(const InitializedEntity &Entity,
   }
   if (const VariableArrayType *VAT = dyn_cast<VariableArrayType>(arrayType)) {
     // Check for VLAs; in standard C it would be possible to check this
-    // earlier, but I don't know where clang accepts VLAs (gcc accepts
+    // earlier, but I don't know where lfort accepts VLAs (gcc accepts
     // them in all sorts of strange places).
     if (!VerifyOnly)
       SemaRef.Diag(VAT->getSizeExpr()->getLocStart(),

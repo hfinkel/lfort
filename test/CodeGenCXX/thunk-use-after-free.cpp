@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -O1 %s
+// RUN: %lfort_cc1 -emit-llvm-only -O1 %s
 // This used to crash under asan and valgrind.
 // PR12284
 

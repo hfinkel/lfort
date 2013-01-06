@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: define void @_Z2f0Pc
 void f0(char *p) { }

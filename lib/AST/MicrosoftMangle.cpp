@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/Mangle.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/Basic/ABI.h"
-#include "clang/Basic/DiagnosticOptions.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/Basic/ABI.h"
+#include "lfort/Basic/DiagnosticOptions.h"
 #include <map>
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 
@@ -84,7 +84,7 @@ private:
 #define NON_CANONICAL_TYPE(CLASS, PARENT)
 #define TYPE(CLASS, PARENT) void mangleType(const CLASS##Type *T, \
                                             SourceRange Range);
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 #undef ABSTRACT_TYPE
 #undef NON_CANONICAL_TYPE
 #undef TYPE
@@ -132,7 +132,7 @@ public:
                              raw_ostream &);
   virtual void mangleCXXDtor(const CXXDestructorDecl *D, CXXDtorType Type,
                              raw_ostream &);
-  virtual void mangleReferenceTemporary(const clang::VarDecl *,
+  virtual void mangleReferenceTemporary(const lfort::VarDecl *,
                                         raw_ostream &);
 };
 
@@ -159,7 +159,7 @@ bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   if (D->hasAttr<AsmLabelAttr>())
     return true;
 
-  // Clang's "overloadable" attribute extension to C/C++ implies name mangling
+  // LFort's "overloadable" attribute extension to C/C++ implies name mangling
   // (always) as does passing a C++ member function and a function
   // whose name is not a simple identifier.
   const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
@@ -410,7 +410,7 @@ MicrosoftCXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
     // the A::X<> part is not aliased.
     // That said, from the mangler's perspective we have a structure like this:
     //   namespace[s] -> type[ -> template-parameters]
-    // but from the Clang perspective we have
+    // but from the LFort perspective we have
     //   type [ -> template-parameters]
     //      \-> namespace[s]
     // What we do is we create a new mangler, mangle the same type (without
@@ -879,7 +879,7 @@ void MicrosoftCXXNameMangler::mangleQualifiers(Qualifiers Quals,
   //                       ::= _B <basis> # based function (far?) (pointers only)
   //                       ::= _C <basis> # based method (pointers only)
   //                       ::= _D <basis> # based method (far?) (pointers only)
-  //                       ::= _E # block (Clang)
+  //                       ::= _E # block (LFort)
   // <basis> ::= 0 # __based(void)
   //         ::= 1 # __based(segment)?
   //         ::= 2 <name> # __based(name)
@@ -987,7 +987,7 @@ void MicrosoftCXXNameMangler::mangleType(QualType T, SourceRange Range,
   case Type::CLASS: \
     mangleType(cast<CLASS##Type>(ty), Range); \
     break;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 #undef ABSTRACT_TYPE
 #undef NON_CANONICAL_TYPE
 #undef TYPE
@@ -1046,7 +1046,7 @@ void MicrosoftCXXNameMangler::mangleType(const BuiltinType *T,
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \
   case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
   case BuiltinType::Dependent:
     llvm_unreachable("placeholder types shouldn't get to name mangling");
 
@@ -1712,14 +1712,14 @@ void MicrosoftMangleContext::mangleCXXDtor(const CXXDestructorDecl *D,
   MicrosoftCXXNameMangler mangler(*this, Out);
   mangler.mangle(D);
 }
-void MicrosoftMangleContext::mangleReferenceTemporary(const clang::VarDecl *VD,
+void MicrosoftMangleContext::mangleReferenceTemporary(const lfort::VarDecl *VD,
                                                       raw_ostream &) {
   unsigned DiagID = getDiags().getCustomDiagID(DiagnosticsEngine::Error,
     "cannot mangle this reference temporary yet");
   getDiags().Report(VD->getLocation(), DiagID);
 }
 
-MangleContext *clang::createMicrosoftMangleContext(ASTContext &Context,
+MangleContext *lfort::createMicrosoftMangleContext(ASTContext &Context,
                                                    DiagnosticsEngine &Diags) {
   return new MicrosoftMangleContext(Context, Diags);
 }

@@ -1,5 +1,5 @@
-This is for the LLVM+Clang browser based demo.
-It is supposed to work like the LLVM+GCC demo here: http://llvm.org/demo/ but for the BSD licensed Clang instead.
+This is for the LLVM+LFort browser based demo.
+It is supposed to work like the LLVM+GCC demo here: http://llvm.org/demo/ but for the BSD licensed LFort instead.
 
 Perhaps it could also be used for getting crash information and details on errors....  I'm not sure if this would require some major changes or not to report this info.  Maybe also adding ways that people can use it to test for errors and a way to report such errors would also be good.
 
@@ -12,4 +12,4 @@ Alternatively, you could try a PHP, Python, Ruby, or Lisp mailing list and see i
 
 --
 BTW, once this feature was working, my intention was to link to it from the index.html page in the section entitled:
-Try Clang
+Try LFort

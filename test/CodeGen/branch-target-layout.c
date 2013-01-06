@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -O3 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -O3 -emit-llvm -o - | FileCheck %s
 //
 // PR13214
 // No assumption may be made about the order that a frontend emits branch

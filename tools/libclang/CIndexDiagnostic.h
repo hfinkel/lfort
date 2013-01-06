@@ -7,17 +7,17 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* Implements the diagnostic functions of the Clang C interface.              *|
+|* Implements the diagnostic functions of the LFort C interface.              *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
-#ifndef LLVM_CLANG_CINDEX_DIAGNOSTIC_H
-#define LLVM_CLANG_CINDEX_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_CINDEX_DIAGNOSTIC_H
+#define LLVM_LFORT_CINDEX_DIAGNOSTIC_H
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 #include <vector>
 #include <assert.h>
 
-namespace clang {
+namespace lfort {
 
 class LangOptions;
 class StoredDiagnostic;
@@ -161,6 +161,6 @@ CXDiagnosticSetImpl *lazyCreateDiags(CXTranslationUnit TU,
                                      bool checkIfChanged = false);
 } // end namespace cxdiag
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_CINDEX_DIAGNOSTIC_H
+#endif // LLVM_LFORT_CINDEX_DIAGNOSTIC_H

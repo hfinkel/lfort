@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 %s -verify
 
 // prvalue
 void prvalue() {

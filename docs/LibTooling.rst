@@ -2,39 +2,39 @@
 LibTooling
 ==========
 
-LibTooling is a library to support writing standalone tools based on Clang.
+LibTooling is a library to support writing standalone tools based on LFort.
 This document will provide a basic walkthrough of how to write a tool using
 LibTooling.
 
-For the information on how to setup Clang Tooling for LLVM see
+For the information on how to setup LFort Tooling for LLVM see
 :doc:`HowToSetupToolingForLLVM`
 
 Introduction
 ------------
 
-Tools built with LibTooling, like Clang Plugins, run ``FrontendActions`` over
+Tools built with LibTooling, like LFort Plugins, run ``FrontendActions`` over
 code.
 
 ..  See FIXME for a tutorial on how to write FrontendActions.
 
-In this tutorial, we'll demonstrate the different ways of running Clang's
+In this tutorial, we'll demonstrate the different ways of running LFort's
 ``SyntaxOnlyAction``, which runs a quick syntax check, over a bunch of code.
 
 Parsing a code snippet in memory
 --------------------------------
 
 If you ever wanted to run a ``FrontendAction`` over some sample code, for
-example to unit test parts of the Clang AST, ``runToolOnCode`` is what you
+example to unit test parts of the LFort AST, ``runToolOnCode`` is what you
 looked for.  Let me give you an example:
 
 .. code-block:: c++
 
-  #include "clang/Tooling/Tooling.h"
+  #include "lfort/Tooling/Tooling.h"
 
   TEST(runToolOnCode, CanSyntaxCheckCode) {
     // runToolOnCode returns whether the action was correctly run over the
     // given code.
-    EXPECT_TRUE(runToolOnCode(new clang::SyntaxOnlyAction, "class X {};"));
+    EXPECT_TRUE(runToolOnCode(new lfort::SyntaxOnlyAction, "class X {};"));
   }
 
 Writing a standalone tool
@@ -42,7 +42,7 @@ Writing a standalone tool
 
 Once you unit tested your ``FrontendAction`` to the point where it cannot
 possibly break, it's time to create a standalone tool.  For a standalone tool
-to run clang, it first needs to figure out what command line arguments to use
+to run lfort, it first needs to figure out what command line arguments to use
 for a specified file.  To that end we create a ``CompilationDatabase``.  There
 are different ways to create a compilation database, and we need to support all
 of them depending on command-line options.  There's the ``CommonOptionsParser``
@@ -59,9 +59,9 @@ and automatic location of the compilation database using source files paths.
 
 .. code-block:: c++
 
-  #include "clang/Tooling/CommonOptionsParser.h"
+  #include "lfort/Tooling/CommonOptionsParser.h"
 
-  using namespace clang::tooling;
+  using namespace lfort::tooling;
 
   int main(int argc, const char **argv) {
     // CommonOptionsParser constructor will parse arguments and create a
@@ -72,47 +72,47 @@ and automatic location of the compilation database using source files paths.
     // to retrieve CompilationDatabase and the list of input file paths.
   }
 
-Creating and running a ClangTool
+Creating and running a LFortTool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Once we have a ``CompilationDatabase``, we can create a ``ClangTool`` and run
+Once we have a ``CompilationDatabase``, we can create a ``LFortTool`` and run
 our ``FrontendAction`` over some code.  For example, to run the
 ``SyntaxOnlyAction`` over the files "a.cc" and "b.cc" one would write:
 
 .. code-block:: c++
 
-  // A clang tool can run over a number of sources in the same process...
+  // A lfort tool can run over a number of sources in the same process...
   std::vector<std::string> Sources;
   Sources.push_back("a.cc");
   Sources.push_back("b.cc");
 
   // We hand the CompilationDatabase we created and the sources to run over into
   // the tool constructor.
-  ClangTool Tool(OptionsParser.getCompilations(), Sources);
+  LFortTool Tool(OptionsParser.getCompilations(), Sources);
 
-  // The ClangTool needs a new FrontendAction for each translation unit we run
+  // The LFortTool needs a new FrontendAction for each translation unit we run
   // on.  Thus, it takes a FrontendActionFactory as parameter.  To create a
   // FrontendActionFactory from a given FrontendAction type, we call
-  // newFrontendActionFactory<clang::SyntaxOnlyAction>().
-  int result = Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>());
+  // newFrontendActionFactory<lfort::SyntaxOnlyAction>().
+  int result = Tool.run(newFrontendActionFactory<lfort::SyntaxOnlyAction>());
 
 Putting it together --- the first tool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now we combine the two previous steps into our first real tool.  This example
-tool is also checked into the clang tree at
-``tools/clang-check/ClangCheck.cpp``.
+tool is also checked into the lfort tree at
+``tools/lfort-check/LFortCheck.cpp``.
 
 .. code-block:: c++
 
-  // Declares clang::SyntaxOnlyAction.
-  #include "clang/Frontend/FrontendActions.h"
-  #include "clang/Tooling/CommonOptionsParser.h"
-  #include "clang/Tooling/Tooling.h"
+  // Declares lfort::SyntaxOnlyAction.
+  #include "lfort/Frontend/FrontendActions.h"
+  #include "lfort/Tooling/CommonOptionsParser.h"
+  #include "lfort/Tooling/Tooling.h"
   // Declares llvm::cl::extrahelp.
   #include "llvm/Support/CommandLine.h"
 
-  using namespace clang::tooling;
+  using namespace lfort::tooling;
   using namespace llvm;
 
   // CommonOptionsParser declares HelpMessage with a description of the common
@@ -125,28 +125,28 @@ tool is also checked into the clang tree at
 
   int main(int argc, const char **argv) {
     CommonOptionsParser OptionsParser(argc, argv);
-    ClangTool Tool(OptionsParser.getCompilations(),
+    LFortTool Tool(OptionsParser.getCompilations(),
     OptionsParser.getSourcePathList());
-    return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>());
+    return Tool.run(newFrontendActionFactory<lfort::SyntaxOnlyAction>());
   }
 
 Running the tool on some code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When you check out and build clang, clang-check is already built and available
-to you in bin/clang-check inside your build directory.
+When you check out and build lfort, lfort-check is already built and available
+to you in bin/lfort-check inside your build directory.
 
-You can run clang-check on a file in the llvm repository by specifying all the
+You can run lfort-check on a file in the llvm repository by specifying all the
 needed parameters after a "``--``" separator:
 
 .. code-block:: bash
 
   $ cd /path/to/source/llvm
   $ export BD=/path/to/build/llvm
-  $ $BD/bin/clang-check tools/clang/tools/clang-check/ClangCheck.cpp -- \
-        clang++ -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS \
-        -Itools/clang/include -I$BD/include -Iinclude \
-        -Itools/clang/lib/Headers -c
+  $ $BD/bin/lfort-check tools/lfort/tools/lfort-check/LFortCheck.cpp -- \
+        lfort++ -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS \
+        -Itools/lfort/include -I$BD/include -Iinclude \
+        -Itools/lfort/lib/Headers -c
 
 As an alternative, you can also configure cmake to output a compile command
 database into its build directory:
@@ -158,7 +158,7 @@ database into its build directory:
   $ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 
 This creates a file called ``compile_commands.json`` in the build directory.
-Now you can run :program:`clang-check` over files in the project by specifying
+Now you can run :program:`lfort-check` over files in the project by specifying
 the build path as first argument and some source files as further positional
 arguments:
 
@@ -166,17 +166,17 @@ arguments:
 
   $ cd /path/to/source/llvm
   $ export BD=/path/to/build/llvm
-  $ $BD/bin/clang-check -p $BD tools/clang/tools/clang-check/ClangCheck.cpp
+  $ $BD/bin/lfort-check -p $BD tools/lfort/tools/lfort-check/LFortCheck.cpp
 
 Builtin includes
 ^^^^^^^^^^^^^^^^
 
-Clang tools need their builtin headers and search for them the same way Clang
+LFort tools need their builtin headers and search for them the same way LFort
 does.  Thus, the default location to look for builtin headers is in a path
-``$(dirname /path/to/tool)/../lib/clang/3.3/include`` relative to the tool
+``$(dirname /path/to/tool)/../lib/lfort/3.3/include`` relative to the tool
 binary.  This works out-of-the-box for tools running from llvm's toplevel
-binary directory after building clang-headers, or if the tool is running from
-the binary directory of a clang install next to the clang binary.
+binary directory after building lfort-headers, or if the tool is running from
+the binary directory of a lfort install next to the lfort binary.
 
 Tips: if your tool fails to find ``stddef.h`` or similar headers, call the tool
 with ``-v`` and look at the search paths it looks through.
@@ -185,5 +185,5 @@ Linking
 ^^^^^^^
 
 For a list of libraries to link, look at one of the tools' Makefiles (for
-example `clang-check/Makefile
-<http://llvm.org/viewvc/llvm-project/cfe/trunk/tools/clang-check/Makefile?view=markup>`_).
+example `lfort-check/Makefile
+<http://llvm.org/viewvc/llvm-project/cfe/trunk/tools/lfort-check/Makefile?view=markup>`_).

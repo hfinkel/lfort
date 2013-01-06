@@ -1,4 +1,4 @@
-// RUN: %clang -c -g %s -o /dev/null
+// RUN: %lfort -c -g %s -o /dev/null
 // Radar 8730409
 // XFAIL: win32
 

@@ -1,4 +1,4 @@
-##===- clang/lib/Analysis/Makefile -------------------------*- Makefile -*-===##
+##===- lfort/lib/Analysis/Makefile -------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,8 +11,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangAnalysis
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortAnalysis
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

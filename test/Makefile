@@ -1,5 +1,5 @@
-CLANG_LEVEL := ..
-include $(CLANG_LEVEL)/Makefile
+LFORT_LEVEL := ..
+include $(LFORT_LEVEL)/Makefile
 
 # Test in all immediate subdirectories if unset.
 ifdef TESTSUITE
@@ -23,40 +23,40 @@ endif
 endif
 
 # Make sure any extra test suites can find the main site config.
-LIT_ARGS := --param clang_site_config=$(PROJ_OBJ_DIR)/lit.site.cfg
+LIT_ARGS := --param lfort_site_config=$(PROJ_OBJ_DIR)/lit.site.cfg
 
 ifdef VG
   LIT_ARGS += "--vg"
 endif
 
 all:: lit.site.cfg Unit/lit.site.cfg
-	@ echo '--- Running clang tests for $(TARGET_TRIPLE) ---'
+	@ echo '--- Running lfort tests for $(TARGET_TRIPLE) ---'
 	@ $(PYTHON) $(LLVM_SRC_ROOT)/utils/lit/lit.py \
 	  $(LIT_ARGS) $(TESTARGS) $(TESTDIRS)
 
 FORCE:
 
 lit.site.cfg: FORCE
-	@echo "Making Clang 'lit.site.cfg' file..."
+	@echo "Making LFort 'lit.site.cfg' file..."
 	@$(ECHOPATH) s=@LLVM_SOURCE_DIR@=$(LLVM_SRC_ROOT)=g > lit.tmp
 	@$(ECHOPATH) s=@LLVM_BINARY_DIR@=$(LLVM_OBJ_ROOT)=g >> lit.tmp
 	@$(ECHOPATH) s=@LLVM_TOOLS_DIR@=$(ToolDir)=g >> lit.tmp
 	@$(ECHOPATH) s=@LLVM_LIBS_DIR@=$(LibDir)=g >> lit.tmp
-	@$(ECHOPATH) s=@CLANG_SOURCE_DIR@=$(PROJ_SRC_DIR)/..=g >> lit.tmp
-	@$(ECHOPATH) s=@CLANG_BINARY_DIR@=$(PROJ_OBJ_DIR)/..=g >> lit.tmp
+	@$(ECHOPATH) s=@LFORT_SOURCE_DIR@=$(PROJ_SRC_DIR)/..=g >> lit.tmp
+	@$(ECHOPATH) s=@LFORT_BINARY_DIR@=$(PROJ_OBJ_DIR)/..=g >> lit.tmp
 	@$(ECHOPATH) s=@TARGET_TRIPLE@=$(TARGET_TRIPLE)=g >> lit.tmp
 	@sed -f lit.tmp $(PROJ_SRC_DIR)/lit.site.cfg.in > $@
 	@-rm -f lit.tmp
 
 Unit/lit.site.cfg: FORCE
-	@echo "Making Clang 'Unit/lit.site.cfg' file..."
+	@echo "Making LFort 'Unit/lit.site.cfg' file..."
 	@$(MKDIR) $(dir $@)
 	@$(ECHOPATH) s=@LLVM_SOURCE_DIR@=$(LLVM_SRC_ROOT)=g > unit.tmp
 	@$(ECHOPATH) s=@LLVM_BINARY_DIR@=$(LLVM_OBJ_ROOT)=g >> unit.tmp
 	@$(ECHOPATH) s=@LLVM_TOOLS_DIR@=$(ToolDir)=g >> unit.tmp
 	@$(ECHOPATH) s=@LLVM_LIBS_DIR@=$(LibDir)=g >> unit.tmp
-	@$(ECHOPATH) s=@CLANG_SOURCE_DIR@=$(PROJ_SRC_DIR)/..=g >> unit.tmp
-	@$(ECHOPATH) s=@CLANG_BINARY_DIR@=$(PROJ_OBJ_DIR)/..=g >> unit.tmp
+	@$(ECHOPATH) s=@LFORT_SOURCE_DIR@=$(PROJ_SRC_DIR)/..=g >> unit.tmp
+	@$(ECHOPATH) s=@LFORT_BINARY_DIR@=$(PROJ_OBJ_DIR)/..=g >> unit.tmp
 	@$(ECHOPATH) s=@TARGET_TRIPLE@=$(TARGET_TRIPLE)=g >> unit.tmp
 	@$(ECHOPATH) s=@LLVM_BUILD_MODE@=$(BuildMode)=g >> unit.tmp
 	@$(ECHOPATH) s=@ENABLE_SHARED@=$(ENABLE_SHARED)=g >> unit.tmp

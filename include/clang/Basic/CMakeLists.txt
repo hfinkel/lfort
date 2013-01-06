@@ -1,34 +1,34 @@
-macro(clang_diag_gen component)
-  clang_tablegen(Diagnostic${component}Kinds.inc
-    -gen-clang-diags-defs -clang-component=${component}
+macro(lfort_diag_gen component)
+  lfort_tablegen(Diagnostic${component}Kinds.inc
+    -gen-lfort-diags-defs -lfort-component=${component}
     SOURCE Diagnostic.td
-    TARGET ClangDiagnostic${component})
-endmacro(clang_diag_gen)
+    TARGET LFortDiagnostic${component})
+endmacro(lfort_diag_gen)
 
-clang_diag_gen(Analysis)
-clang_diag_gen(AST)
-clang_diag_gen(Comment)
-clang_diag_gen(Common)
-clang_diag_gen(Driver)
-clang_diag_gen(Frontend)
-clang_diag_gen(Lex)
-clang_diag_gen(Parse)
-clang_diag_gen(Sema)
-clang_diag_gen(Serialization)
-clang_tablegen(DiagnosticGroups.inc -gen-clang-diag-groups
+lfort_diag_gen(Analysis)
+lfort_diag_gen(AST)
+lfort_diag_gen(Comment)
+lfort_diag_gen(Common)
+lfort_diag_gen(Driver)
+lfort_diag_gen(Frontend)
+lfort_diag_gen(Lex)
+lfort_diag_gen(Parse)
+lfort_diag_gen(Sema)
+lfort_diag_gen(Serialization)
+lfort_tablegen(DiagnosticGroups.inc -gen-lfort-diag-groups
   SOURCE Diagnostic.td
-  TARGET ClangDiagnosticGroups)
+  TARGET LFortDiagnosticGroups)
 
-clang_tablegen(DiagnosticIndexName.inc -gen-clang-diags-index-name
+lfort_tablegen(DiagnosticIndexName.inc -gen-lfort-diags-index-name
   SOURCE Diagnostic.td
-  TARGET ClangDiagnosticIndexName)
+  TARGET LFortDiagnosticIndexName)
 
-clang_tablegen(AttrList.inc -gen-clang-attr-list
+lfort_tablegen(AttrList.inc -gen-lfort-attr-list
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE Attr.td
-  TARGET ClangAttrList)
+  TARGET LFortAttrList)
 
 # ARM NEON
-clang_tablegen(arm_neon.inc -gen-arm-neon-sema
+lfort_tablegen(arm_neon.inc -gen-arm-neon-sema
   SOURCE arm_neon.td
-  TARGET ClangARMNeon)
+  TARGET LFortARMNeon)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x c++ -std=c++0x -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -x c++ -std=c++0x -fsyntax-only -verify %s
 
 // This file should be encoded using ISO-8859-1, the string literals should
 // contain the ISO-8859-1 encoding for the code points U+00C0 U+00E9 U+00EE

@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using namespace clang;
+using namespace lfort;
 
 void ASTRecordLayout::Destroy(ASTContext &Ctx) {
   if (FieldOffsets)

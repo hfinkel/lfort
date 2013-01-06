@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck %s
 
 #if __has_feature(has_nothrow_assign)
 int has_nothrow_assign();

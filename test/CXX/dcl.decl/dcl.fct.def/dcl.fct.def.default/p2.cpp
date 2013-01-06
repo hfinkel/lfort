@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify -fcxx-exceptions %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify -fcxx-exceptions %s
 
 // An explicitly-defaulted function may be declared constexpr only if it would
 // have been implicitly declared as constexpr.

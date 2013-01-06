@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 /* GCC is not outputting the static array to the LLVM backend, so bad things
  * happen.  Note that if this is defined static, everything seems fine.

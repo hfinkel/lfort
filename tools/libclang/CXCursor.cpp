@@ -17,18 +17,18 @@
 #include "CXCursor.h"
 #include "CXString.h"
 #include "CXType.h"
-#include "clang-c/Index.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Frontend/ASTUnit.h"
 #include "llvm/Support/ErrorHandling.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxcursor;
 
 CXCursor cxcursor::MakeCXCursorInvalid(CXCursorKind K, CXTranslationUnit TU) {
@@ -798,7 +798,7 @@ CXTranslationUnit cxcursor::getCursorTU(CXCursor Cursor) {
 
 void cxcursor::getOverriddenCursors(CXCursor cursor,
                                     SmallVectorImpl<CXCursor> &overridden) { 
-  assert(clang_isDeclaration(cursor.kind));
+  assert(lfort_isDeclaration(cursor.kind));
   const NamedDecl *D = dyn_cast_or_null<NamedDecl>(getCursorDecl(cursor));
   if (!D)
     return;
@@ -902,26 +902,26 @@ bool cxcursor::operator==(CXCursor X, CXCursor Y) {
 // FIXME: Remove once we can model DeclGroups and their appropriate ranges
 // properly in the ASTs.
 bool cxcursor::isFirstInDeclGroup(CXCursor C) {
-  assert(clang_isDeclaration(C.kind));
+  assert(lfort_isDeclaration(C.kind));
   return ((uintptr_t) (C.data[1])) != 0;
 }
 
 //===----------------------------------------------------------------------===//
-// libclang CXCursor APIs
+// liblfort CXCursor APIs
 //===----------------------------------------------------------------------===//
 
 extern "C" {
 
-int clang_Cursor_isNull(CXCursor cursor) {
-  return clang_equalCursors(cursor, clang_getNullCursor());
+int lfort_Cursor_isNull(CXCursor cursor) {
+  return lfort_equalCursors(cursor, lfort_getNullCursor());
 }
 
-CXTranslationUnit clang_Cursor_getTranslationUnit(CXCursor cursor) {
+CXTranslationUnit lfort_Cursor_getTranslationUnit(CXCursor cursor) {
   return getCursorTU(cursor);
 }
 
-int clang_Cursor_getNumArguments(CXCursor C) {
-  if (clang_isDeclaration(C.kind)) {
+int lfort_Cursor_getNumArguments(CXCursor C) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (const ObjCMethodDecl *MD = dyn_cast_or_null<ObjCMethodDecl>(D))
       return MD->param_size();
@@ -932,8 +932,8 @@ int clang_Cursor_getNumArguments(CXCursor C) {
   return -1;
 }
 
-CXCursor clang_Cursor_getArgument(CXCursor C, unsigned i) {
-  if (clang_isDeclaration(C.kind)) {
+CXCursor lfort_Cursor_getArgument(CXCursor C, unsigned i) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (ObjCMethodDecl *MD = dyn_cast_or_null<ObjCMethodDecl>(D)) {
       if (i < MD->param_size())
@@ -946,7 +946,7 @@ CXCursor clang_Cursor_getArgument(CXCursor C, unsigned i) {
     }
   }
 
-  return clang_getNullCursor();
+  return lfort_getNullCursor();
 }
 
 } // end: extern "C"
@@ -985,22 +985,22 @@ public:
 }
 
 extern "C" {
-CXCursorSet clang_createCXCursorSet() {
+CXCursorSet lfort_createCXCursorSet() {
   return packCXCursorSet(new CXCursorSet_Impl());
 }
 
-void clang_disposeCXCursorSet(CXCursorSet set) {
+void lfort_disposeCXCursorSet(CXCursorSet set) {
   delete unpackCXCursorSet(set);
 }
 
-unsigned clang_CXCursorSet_contains(CXCursorSet set, CXCursor cursor) {
+unsigned lfort_CXCursorSet_contains(CXCursorSet set, CXCursor cursor) {
   CXCursorSet_Impl *setImpl = unpackCXCursorSet(set);
   if (!setImpl)
     return 0;
   return setImpl->find(cursor) == setImpl->end();
 }
 
-unsigned clang_CXCursorSet_insert(CXCursorSet set, CXCursor cursor) {
+unsigned lfort_CXCursorSet_insert(CXCursorSet set, CXCursor cursor) {
   // Do not insert invalid cursors into the set.
   if (cursor.kind >= CXCursor_FirstInvalid &&
       cursor.kind <= CXCursor_LastInvalid)
@@ -1015,9 +1015,9 @@ unsigned clang_CXCursorSet_insert(CXCursorSet set, CXCursor cursor) {
   return flag;
 }
   
-CXCompletionString clang_getCursorCompletionString(CXCursor cursor) {
-  enum CXCursorKind kind = clang_getCursorKind(cursor);
-  if (clang_isDeclaration(kind)) {
+CXCompletionString lfort_getCursorCompletionString(CXCursor cursor) {
+  enum CXCursorKind kind = lfort_getCursorKind(cursor);
+  if (lfort_isDeclaration(kind)) {
     Decl *decl = getCursorDecl(cursor);
     if (NamedDecl *namedDecl = dyn_cast_or_null<NamedDecl>(decl)) {
       ASTUnit *unit = getCursorASTUnit(cursor);
@@ -1072,7 +1072,7 @@ void cxcursor::disposeOverridenCXCursorsPool(void *pool) {
 }
  
 extern "C" {
-void clang_getOverriddenCursors(CXCursor cursor,
+void lfort_getOverriddenCursors(CXCursor cursor,
                                 CXCursor **overridden,
                                 unsigned *num_overridden) {
   if (overridden)
@@ -1085,7 +1085,7 @@ void clang_getOverriddenCursors(CXCursor cursor,
   if (!overridden || !num_overridden || !TU)
     return;
 
-  if (!clang_isDeclaration(cursor.kind))
+  if (!lfort_isDeclaration(cursor.kind))
     return;
     
   OverridenCursorsPool &pool =
@@ -1129,7 +1129,7 @@ void clang_getOverriddenCursors(CXCursor cursor,
   *num_overridden = Vec->size() - 1;
 }
 
-void clang_disposeOverriddenCursors(CXCursor *overridden) {
+void lfort_disposeOverriddenCursors(CXCursor *overridden) {
   if (!overridden)
     return;
   
@@ -1148,9 +1148,9 @@ void clang_disposeOverriddenCursors(CXCursor *overridden) {
   pool.AvailableCursors.push_back(Vec);
 }
 
-int clang_Cursor_isDynamicCall(CXCursor C) {
+int lfort_Cursor_isDynamicCall(CXCursor C) {
   const Expr *E = 0;
-  if (clang_isExpression(C.kind))
+  if (lfort_isExpression(C.kind))
     E = getCursorExpr(C);
   if (!E)
     return 0;
@@ -1173,10 +1173,10 @@ int clang_Cursor_isDynamicCall(CXCursor C) {
   return 0;
 }
 
-CXType clang_Cursor_getReceiverType(CXCursor C) {
+CXType lfort_Cursor_getReceiverType(CXCursor C) {
   CXTranslationUnit TU = cxcursor::getCursorTU(C);
   const Expr *E = 0;
-  if (clang_isExpression(C.kind))
+  if (lfort_isExpression(C.kind))
     E = getCursorExpr(C);
 
   if (const ObjCMessageExpr *MsgE = dyn_cast_or_null<ObjCMessageExpr>(E))

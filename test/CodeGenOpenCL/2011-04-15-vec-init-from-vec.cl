@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o %t
+// RUN: %lfort_cc1 %s -emit-llvm -o %t
 
 typedef __attribute__((ext_vector_type(4)))  unsigned char uchar4;
 typedef __attribute__((ext_vector_type(8))) unsigned char uchar8;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -fsyntax-only -fcxx-exceptions
+// RUN: %lfort_cc1 -std=c++11 %s -fsyntax-only -fcxx-exceptions
 
 template<typename T> struct remove_reference { typedef T type; };
 template<typename T> struct remove_reference<T&> { typedef T type; };

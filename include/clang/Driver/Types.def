@@ -22,7 +22,7 @@
 // be user specified this should be the equivalent -x option.
 
 // The second value is the type id, which will result in a
-// clang::driver::types::TY_XX enum constant.
+// lfort::driver::types::TY_XX enum constant.
 
 // The third value is that id of the type for preprocessed inputs of
 // this type, or INVALID if this type is not preprocessed.

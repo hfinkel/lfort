@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_OPTION_H_
-#define CLANG_DRIVER_OPTION_H_
+#ifndef LFORT_DRIVER_OPTION_H_
+#define LFORT_DRIVER_OPTION_H_
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/OptTable.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/OptTable.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class Arg;
   class ArgList;
@@ -29,8 +29,8 @@ namespace options {
     RenderSeparate   = (1 << 3)
   };
 
-  /// Flags specifically for clang options.
-  enum ClangFlags {
+  /// Flags specifically for lfort options.
+  enum LFortFlags {
     DriverOption     = (1 << 4),
     LinkerInput      = (1 << 5),
     NoArgumentUnused = (1 << 6),
@@ -199,6 +199,6 @@ namespace options {
   };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

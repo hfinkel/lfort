@@ -11,32 +11,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_TREETRANSFORM_H
-#define LLVM_CLANG_SEMA_TREETRANSFORM_H
+#ifndef LLVM_LFORT_SEMA_TREETRANSFORM_H
+#define LLVM_LFORT_SEMA_TREETRANSFORM_H
 
 #include "TypeLocBuilder.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Designator.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Ownership.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/SemaDiagnostic.h"
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Designator.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Ownership.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaDiagnostic.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <algorithm>
 
-namespace clang {
+namespace lfort {
 using namespace sema;
 
 /// \brief A semantic tree transformation that allows one to transform one
@@ -526,7 +526,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT)                                   \
   QualType Transform##CLASS##Type(TypeLocBuilder &TLB, CLASS##TypeLoc T);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
   QualType TransformFunctionProtoType(TypeLocBuilder &TLB,
                                       FunctionProtoTypeLoc TL,
@@ -592,7 +592,7 @@ public:
 #define EXPR(Node, Parent)                        \
   ExprResult Transform##Node(Node *E);
 #define ABSTRACT_STMT(Stmt)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
   /// \brief Build a new pointer type given its pointee type.
   ///
@@ -2548,13 +2548,13 @@ StmtResult TreeTransform<Derived>::TransformStmt(Stmt *S) {
   case Stmt::Node##Class: return getDerived().Transform##Node(cast<Node>(S));
 #define ABSTRACT_STMT(Node)
 #define EXPR(Node, Parent)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
   // Transform expressions by calling TransformExpr.
 #define STMT(Node, Parent)
 #define ABSTRACT_STMT(Stmt)
 #define EXPR(Node, Parent) case Stmt::Node##Class:
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
     {
       ExprResult E = getDerived().TransformExpr(cast<Expr>(S));
       if (E.isInvalid())
@@ -2579,7 +2579,7 @@ ExprResult TreeTransform<Derived>::TransformExpr(Expr *E) {
 #define ABSTRACT_STMT(Stmt)
 #define EXPR(Node, Parent)                                              \
     case Stmt::Node##Class: return getDerived().Transform##Node(cast<Node>(E));
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
 
   return SemaRef.Owned(E);
@@ -3329,7 +3329,7 @@ TreeTransform<Derived>::TransformType(TypeLocBuilder &TLB, TypeLoc T) {
 #define TYPELOC(CLASS, PARENT) \
   case TypeLoc::CLASS: \
     return getDerived().Transform##CLASS##Type(TLB, cast<CLASS##TypeLoc>(T));
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   }
 
   llvm_unreachable("unhandled type loc!");
@@ -6913,7 +6913,7 @@ TreeTransform<Derived>::TransformCXXOperatorCallExpr(CXXOperatorCallExpr *E) {
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
   case OO_##Name:
 #define OVERLOADED_OPERATOR_MULTI(Name,Spelling,Unary,Binary,MemberOnly)
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   case OO_Subscript:
     // Handled below.
     break;
@@ -9347,6 +9347,6 @@ TreeTransform<Derived>::RebuildCXXPseudoDestructorExpr(Expr *Base,
                                             /*TemplateArgs*/ 0);
 }
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_TREETRANSFORM_H
+#endif // LLVM_LFORT_SEMA_TREETRANSFORM_H

@@ -11,12 +11,12 @@
 // that issues warnings based on dataflow-analysis.
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_ANALYSIS_WARNINGS_H
-#define LLVM_CLANG_SEMA_ANALYSIS_WARNINGS_H
+#ifndef LLVM_LFORT_SEMA_ANALYSIS_WARNINGS_H
+#define LLVM_LFORT_SEMA_ANALYSIS_WARNINGS_H
 
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang {
+namespace lfort {
 
 class BlockExpr;
 class Decl;
@@ -97,6 +97,6 @@ public:
   void PrintStats() const;
 };
 
-}} // end namespace clang::sema
+}} // end namespace lfort::sema
 
 #endif

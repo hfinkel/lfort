@@ -11,17 +11,17 @@
 //  context into another context.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_ASTIMPORTER_H
-#define LLVM_CLANG_AST_ASTIMPORTER_H
+#ifndef LLVM_LFORT_AST_ASTIMPORTER_H
+#define LLVM_LFORT_AST_ASTIMPORTER_H
 
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class Decl;
   class DeclContext;
@@ -279,4 +279,4 @@ namespace clang {
   };
 }
 
-#endif // LLVM_CLANG_AST_ASTIMPORTER_H
+#endif // LLVM_LFORT_AST_ASTIMPORTER_H

@@ -12,9 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/ProgramPoint.h"
+#include "lfort/Analysis/ProgramPoint.h"
 
-using namespace clang;
+using namespace lfort;
 
 ProgramPointTag::~ProgramPointTag() {}
 

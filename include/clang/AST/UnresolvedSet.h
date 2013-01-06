@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_UNRESOLVEDSET_H
-#define LLVM_CLANG_AST_UNRESOLVEDSET_H
+#ifndef LLVM_LFORT_AST_UNRESOLVEDSET_H
+#define LLVM_LFORT_AST_UNRESOLVEDSET_H
 
-#include "clang/AST/DeclAccessPair.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/AST/DeclAccessPair.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallVector.h"
 #include <iterator>
 
-namespace clang {
+namespace lfort {
 
 /// The iterator over UnresolvedSets.  Serves as both the const and
 /// non-const iterator.
@@ -184,6 +184,6 @@ template <unsigned InlineCapacity> class UnresolvedSet :
 };
 
   
-} // namespace clang
+} // namespace lfort
 
 #endif

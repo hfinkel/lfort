@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_STMT_ITR_H
-#define LLVM_CLANG_AST_STMT_ITR_H
+#ifndef LLVM_LFORT_AST_STMT_ITR_H
+#define LLVM_LFORT_AST_STMT_ITR_H
 
 #include "llvm/Support/DataTypes.h"
 #include <cassert>
@@ -20,7 +20,7 @@
 #include <iterator>
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 class Stmt;
 class Decl;
@@ -225,6 +225,6 @@ struct ConstStmtRange : std::pair<ConstStmtIterator,ConstStmtIterator> {
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

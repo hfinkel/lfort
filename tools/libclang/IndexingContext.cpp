@@ -10,11 +10,11 @@
 #include "IndexingContext.h"
 #include "CIndexDiagnostic.h"
 #include "CXTranslationUnit.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/Frontend/ASTUnit.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxindex;
 using namespace cxcursor;
 
@@ -96,7 +96,7 @@ AttrListInfo::AttrListInfo(const Decl *D, IndexingContext &IdxCtx)
     IBInfo.IBCollInfo.attrInfo = &IBInfo;
     IBInfo.IBCollInfo.classLoc = IdxCtx.getIndexLoc(IBAttr->getInterfaceLoc());
     IBInfo.IBCollInfo.objcClass = 0;
-    IBInfo.IBCollInfo.classCursor = clang_getNullCursor();
+    IBInfo.IBCollInfo.classCursor = lfort_getNullCursor();
     QualType Ty = IBAttr->getInterface();
     if (const ObjCInterfaceType *InterTy = Ty->getAs<ObjCInterfaceType>()) {
       if (const ObjCInterfaceDecl *InterD = InterTy->getInterface()) {
@@ -432,7 +432,7 @@ bool IndexingContext::handleObjCInterface(const ObjCInterfaceDecl *D) {
 
   CXIdxBaseClassInfo BaseClass;
   EntityInfo BaseEntity;
-  BaseClass.cursor = clang_getNullCursor();
+  BaseClass.cursor = lfort_getNullCursor();
   if (ObjCInterfaceDecl *SuperD = D->getSuperClass()) {
     getEntityInfo(SuperD, BaseEntity, SA);
     SourceLocation SuperLoc = D->getSuperClassLoc();
@@ -519,7 +519,7 @@ bool IndexingContext::handleObjCCategory(const ObjCCategoryDecl *D) {
         MakeCursorObjCClassRef(IFaceD, ClassLoc, CXTU);
   } else {
     CatDInfo.ObjCCatDeclInfo.objcClass = 0;
-    CatDInfo.ObjCCatDeclInfo.classCursor = clang_getNullCursor();
+    CatDInfo.ObjCCatDeclInfo.classCursor = lfort_getNullCursor();
   }
   CatDInfo.ObjCCatDeclInfo.classLoc = getIndexLoc(ClassLoc);
   CatDInfo.ObjCProtoListInfo = ProtInfo.getListInfo();
@@ -549,7 +549,7 @@ bool IndexingContext::handleObjCCategoryImpl(const ObjCCategoryImplDecl *D) {
         MakeCursorObjCClassRef(IFaceD, ClassLoc, CXTU);
   } else {
     CatDInfo.ObjCCatDeclInfo.objcClass = 0;
-    CatDInfo.ObjCCatDeclInfo.classCursor = clang_getNullCursor();
+    CatDInfo.ObjCCatDeclInfo.classCursor = lfort_getNullCursor();
   }
   CatDInfo.ObjCCatDeclInfo.classLoc = getIndexLoc(ClassLoc);
   CatDInfo.ObjCCatDeclInfo.protocols = 0;
@@ -1130,7 +1130,7 @@ CXCursor IndexingContext::getRefCursor(const NamedDecl *D, SourceLocation Loc) {
   if (const VarDecl *Var = dyn_cast<VarDecl>(D))
     return MakeCursorVariableRef(Var, Loc, CXTU);
   
-  return clang_getNullCursor();
+  return lfort_getNullCursor();
 }
 
 bool IndexingContext::shouldIgnoreIfImplicit(const Decl *D) {

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -S -emit-llvm -g -o %t1.ll %s
-// RUN: %clang_cc1 -S -emit-llvm -g -o %t2.ll %s
+// RUN: %lfort_cc1 -S -emit-llvm -g -o %t1.ll %s
+// RUN: %lfort_cc1 -S -emit-llvm -g -o %t2.ll %s
 // RUN: diff %t1.ll %t2.ll
 
 template <int N> struct C {

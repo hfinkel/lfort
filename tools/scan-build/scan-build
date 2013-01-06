@@ -62,7 +62,7 @@ sub DiagCrashes {
   Diag ("The analyzer encountered problems on some source files.\n");
   Diag ("Preprocessed versions of these sources were deposited in '$Dir/failures'.\n");
   Diag ("Please consider submitting a bug report using these files:\n");
-  Diag ("  http://clang-analyzer.llvm.org/filing_bugs.html\n")
+  Diag ("  http://lfort-analyzer.llvm.org/filing_bugs.html\n")
 }
 
 sub DieDiag {
@@ -93,13 +93,13 @@ if (grep /^--help-checkers$/, @ARGV) {
 }
 
 ##----------------------------------------------------------------------------##
-# Declaration of Clang options.  Populated later.
+# Declaration of LFort options.  Populated later.
 ##----------------------------------------------------------------------------##
 
-my $Clang;
-my $ClangSB;
-my $ClangCXX;
-my $ClangVersion;
+my $LFort;
+my $LFortSB;
+my $LFortCXX;
+my $LFortVersion;
 
 ##----------------------------------------------------------------------------##
 # GetHTMLRunDir - Construct an HTML directory name for the current sub-run.
@@ -169,7 +169,7 @@ sub GetHTMLRunDir {
     }
 
     # $Dir does not exist.  It will be automatically created by the 
-    # clang driver.  Set the run number to 1.  
+    # lfort driver.  Set the run number to 1.  
 
     $RunNumber = 1;
   }
@@ -587,7 +587,7 @@ function ToggleDisplay(CheckButton, ClassName) {
 <tr><th>User:</th><td>${UserName}\@${HostName}</td></tr>
 <tr><th>Working Directory:</th><td>${CurrentDir}</td></tr>
 <tr><th>Command Line:</th><td>${CmdArgs}</td></tr>
-<tr><th>Clang Version:</th><td>${ClangVersion}</td></tr>
+<tr><th>LFort Version:</th><td>${LFortVersion}</td></tr>
 <tr><th>Date:</th><td>${Date}</td></tr>
 ENDTEXT
 
@@ -767,9 +767,9 @@ ENDTEXT
         my $prefix = GetPrefix();
         if (defined $prefix) { $srcfile =~ s/^\Q$prefix//; }
         print OUT "<tr><td>$attribute</td><td>$srcfile</td><td><a href=\"failures/$ppfile\">$ppfile</a></td><td><a href=\"failures/$ppfile.stderr.txt\">$ppfile.stderr.txt</a></td></tr>\n";
-        my $ppfile_clang = $ppfile;
-        $ppfile_clang =~ s/[.](.+)$/.clang.$1/;
-        print OUT "  <!-- REPORTPROBLEM src=\"$srcfile\" file=\"failures/$ppfile\" clangfile=\"failures/$ppfile_clang\" stderr=\"failures/$ppfile.stderr.txt\" info=\"failures/$ppfile.info.txt\" -->\n";
+        my $ppfile_lfort = $ppfile;
+        $ppfile_lfort =~ s/[.](.+)$/.lfort.$1/;
+        print OUT "  <!-- REPORTPROBLEM src=\"$srcfile\" file=\"failures/$ppfile\" lfortfile=\"failures/$ppfile_lfort\" stderr=\"failures/$ppfile.stderr.txt\" info=\"failures/$ppfile.info.txt\" -->\n";
       }
       print OUT "</table>\n";
     }
@@ -794,13 +794,13 @@ ENDTEXT
         my $prefix = GetPrefix();
         if (defined $prefix) { $srcfile =~ s/^\Q$prefix//; }
         print OUT "<tr><td>$problem</td><td>$srcfile</td><td><a href=\"failures/$ppfile\">$ppfile</a></td><td><a href=\"failures/$ppfile.stderr.txt\">$ppfile.stderr.txt</a></td></tr>\n";
-        my $ppfile_clang = $ppfile;
-        $ppfile_clang =~ s/[.](.+)$/.clang.$1/;
-        print OUT "  <!-- REPORTPROBLEM src=\"$srcfile\" file=\"failures/$ppfile\" clangfile=\"failures/$ppfile_clang\" stderr=\"failures/$ppfile.stderr.txt\" info=\"failures/$ppfile.info.txt\" -->\n";
+        my $ppfile_lfort = $ppfile;
+        $ppfile_lfort =~ s/[.](.+)$/.lfort.$1/;
+        print OUT "  <!-- REPORTPROBLEM src=\"$srcfile\" file=\"failures/$ppfile\" lfortfile=\"failures/$ppfile_lfort\" stderr=\"failures/$ppfile.stderr.txt\" info=\"failures/$ppfile.info.txt\" -->\n";
       }
       print OUT "</table>\n";
     }    
-    print OUT "<p>Please consider submitting preprocessed files as <a href=\"http://clang-analyzer.llvm.org/filing_bugs.html\">bug reports</a>. <!-- REPORTCRASHES --> </p>\n";
+    print OUT "<p>Please consider submitting preprocessed files as <a href=\"http://lfort-analyzer.llvm.org/filing_bugs.html\">bug reports</a>. <!-- REPORTCRASHES --> </p>\n";
   }
   
   print OUT "</body></html>\n";  
@@ -848,7 +848,7 @@ sub AddIfNotPresent {
 
 sub SetEnv {
   my $Options = shift @_;
-  foreach my $opt ('CC', 'CXX', 'CLANG', 'CLANG_CXX',
+  foreach my $opt ('CC', 'CXX', 'LFORT', 'LFORT_CXX',
                     'CCC_ANALYZER_ANALYSIS', 'CCC_ANALYZER_PLUGINS') {
     die "$opt is undefined\n" if (!defined $opt);
     $ENV{$opt} = $Options->{$opt};
@@ -896,7 +896,7 @@ sub RunXcodebuild {
     }
   }
 
-  # Disable PCH files until clang supports them.
+  # Disable PCH files until lfort supports them.
   AddIfNotPresent($Args,"GCC_PRECOMPILE_PREFIX_HEADER=NO");
   
   # When 'CC' is set, xcodebuild uses it to do all linking, even if we are
@@ -930,7 +930,7 @@ sub RunBuildCommand {
   if ($Cmd =~ /(.*\/?gcc[^\/]*$)/ or 
       $Cmd =~ /(.*\/?cc[^\/]*$)/ or
       $Cmd =~ /(.*\/?llvm-gcc[^\/]*$)/ or
-      $Cmd =~ /(.*\/?clang$)/ or 
+      $Cmd =~ /(.*\/?lfort$)/ or 
       $Cmd =~ /(.*\/?ccc-analyzer[^\/]*$)/) {
 
     if (!($Cmd =~ /ccc-analyzer/) and !defined $ENV{"CCC_CC"}) {
@@ -943,7 +943,7 @@ sub RunBuildCommand {
   elsif ($Cmd =~ /(.*\/?g\+\+[^\/]*$)/ or 
         $Cmd =~ /(.*\/?c\+\+[^\/]*$)/ or
         $Cmd =~ /(.*\/?llvm-g\+\+[^\/]*$)/ or
-        $Cmd =~ /(.*\/?clang\+\+$)/ or
+        $Cmd =~ /(.*\/?lfort\+\+$)/ or
         $Cmd =~ /(.*\/?c\+\+-analyzer[^\/]*$)/) {
     if (!($Cmd =~ /c\+\+-analyzer/) and !defined $ENV{"CCC_CXX"}) {
       $ENV{"CCC_CXX"} = $1;      
@@ -1075,12 +1075,12 @@ ADVANCED OPTIONS:
  
    Generate internal analyzer statistics.
  
- --use-analyzer [Xcode|path to clang] 
- --use-analyzer=[Xcode|path to clang]
+ --use-analyzer [Xcode|path to lfort] 
+ --use-analyzer=[Xcode|path to lfort]
  
-   scan-build uses the 'clang' executable relative to itself for static
+   scan-build uses the 'lfort' executable relative to itself for static
    analysis. One can override this behavior with this option by using the
-   'clang' packaged with Xcode (on OS X) or from the PATH.
+   'lfort' packaged with Xcode (on OS X) or from the PATH.
   
 CONTROLLING CHECKERS:
 
@@ -1092,19 +1092,19 @@ CONTROLLING CHECKERS:
  
 LOADING CHECKERS:
 
- Loading external checkers using the clang plugin interface:
+ Loading external checkers using the lfort plugin interface:
 
  -load-plugin [plugin library]
 ENDTEXT
 
-# Query clang for list of checkers that are enabled.
+# Query lfort for list of checkers that are enabled.
 
-# create a list to load the plugins via the 'Xclang' command line
+# create a list to load the plugins via the 'Xlfort' command line
 # argument
-my @PluginLoadCommandline_xclang;
+my @PluginLoadCommandline_xlfort;
 foreach my $param ( @PluginsToLoad ) {
-  push ( @PluginLoadCommandline_xclang, "-Xclang" );
-  push ( @PluginLoadCommandline_xclang, $param );
+  push ( @PluginLoadCommandline_xlfort, "-Xlfort" );
+  push ( @PluginLoadCommandline_xlfort, $param );
 }
 my %EnabledCheckers;
 foreach my $lang ("c", "objective-c", "objective-c++", "c++") {
@@ -1114,7 +1114,7 @@ foreach my $lang ("c", "objective-c", "objective-c++", "c++") {
     close FROM_CHILD;
     open(STDOUT,">&", \*TO_PARENT);
     open(STDERR,">&", \*TO_PARENT);
-    exec $Clang, ( @PluginLoadCommandline_xclang, '--analyze', '-x', $lang, '-', '-###'); 
+    exec $LFort, ( @PluginLoadCommandline_xlfort, '--analyze', '-x', $lang, '-', '-###'); 
   }
   close(TO_PARENT);
   while(<FROM_CHILD>) {
@@ -1129,15 +1129,15 @@ foreach my $lang ("c", "objective-c", "objective-c++", "c++") {
   close(FROM_CHILD);
 }
 
-# Query clang for complete list of checkers.
-if (defined $Clang && -x $Clang) {
+# Query lfort for complete list of checkers.
+if (defined $LFort && -x $LFort) {
   pipe(FROM_CHILD, TO_PARENT);
   my $pid = fork();
   if ($pid == 0) {
     close FROM_CHILD;
     open(STDOUT,">&", \*TO_PARENT);
     open(STDERR,">&", \*TO_PARENT);
-    exec $Clang, ('-cc1', @PluginsToLoad , '-analyzer-checker-help');
+    exec $LFort, ('-cc1', @PluginsToLoad , '-analyzer-checker-help');
   }
   close(TO_PARENT);
   my $foundCheckers = 0;
@@ -1148,7 +1148,7 @@ if (defined $Clang && -x $Clang) {
     }
   }
   if (!$foundCheckers) {
-    print "  *** Could not query Clang for the list of available checkers.";
+    print "  *** Could not query LFort for the list of available checkers.";
   }
   else {
     print("\nAVAILABLE CHECKERS:\n\n");
@@ -1452,16 +1452,16 @@ if (!@ARGV and $displayHelp == 0) {
   $displayHelp = 1;
 }
 
-# Find 'clang'
+# Find 'lfort'
 if (!defined $AnalyzerDiscoveryMethod) {
-  $Clang = Cwd::realpath("$RealBin/bin/clang");
-  if (!defined $Clang || ! -x $Clang) {
-    $Clang = Cwd::realpath("$RealBin/clang");
+  $LFort = Cwd::realpath("$RealBin/bin/lfort");
+  if (!defined $LFort || ! -x $LFort) {
+    $LFort = Cwd::realpath("$RealBin/lfort");
   }
-  if (!defined $Clang || ! -x $Clang) {
+  if (!defined $LFort || ! -x $LFort) {
     if (!$displayHelp) {
-      DieDiag("error: Cannot find an executable 'clang' relative to scan-build." .
-   	          "  Consider using --use-analyzer to pick a version of 'clang' to use for static analysis.\n");
+      DieDiag("error: Cannot find an executable 'lfort' relative to scan-build." .
+   	          "  Consider using --use-analyzer to pick a version of 'lfort' to use for static analysis.\n");
     }
   }
 } 
@@ -1470,18 +1470,18 @@ else {
 	my $xcrun = `which xcrun`;
     chomp $xcrun;
 	if ($xcrun eq "") {
-  	  DieDiag("Cannot find 'xcrun' to find 'clang' for analysis.\n");
+  	  DieDiag("Cannot find 'xcrun' to find 'lfort' for analysis.\n");
 	}
-    $Clang = `$xcrun -toolchain XcodeDefault -find clang`;
-    chomp $Clang;  
-    if ($Clang eq "") {
-      DieDiag("No 'clang' executable found by 'xcrun'\n"); 
+    $LFort = `$xcrun -toolchain XcodeDefault -find lfort`;
+    chomp $LFort;  
+    if ($LFort eq "") {
+      DieDiag("No 'lfort' executable found by 'xcrun'\n"); 
     }
   }
   else {
-    $Clang = Cwd::realpath($AnalyzerDiscoveryMethod);
-	if (! -x $Clang) {
-   	  DieDiag("Cannot find an executable clang at '$Clang'\n");
+    $LFort = Cwd::realpath($AnalyzerDiscoveryMethod);
+	if (! -x $LFort) {
+   	  DieDiag("Cannot find an executable lfort at '$LFort'\n");
 	}
   }
 }
@@ -1491,10 +1491,10 @@ if ($displayHelp) {
   exit 1;
 }
 
-$ClangCXX = $Clang;
-$ClangCXX =~ s/\-\d+\.\d+$//;
-$ClangCXX .= "++";
-$ClangVersion = HtmlEscape(`$Clang --version`);
+$LFortCXX = $LFort;
+$LFortCXX =~ s/\-\d+\.\d+$//;
+$LFortCXX .= "++";
+$LFortVersion = HtmlEscape(`$LFort --version`);
 
 # Determine where results go.
 $CmdArgs = HtmlEscape(join(' ', map(ShellEscape($_), @ARGV)));
@@ -1519,7 +1519,7 @@ if (!defined $CmdCXX || ! -x $CmdCXX) {
   DieDiag("Executable 'c++-analyzer' does not exist at '$CmdCXX'\n") if(! -x $CmdCXX);
 }
 
-Diag("Using '$Clang' for static analysis\n");
+Diag("Using '$LFort' for static analysis\n");
 
 SetHtmlEnv(\@ARGV, $HtmlDir);
 if ($AnalyzeHeaders) { push @AnalysesToRun,"-analyzer-opt-analyze-headers"; }
@@ -1533,8 +1533,8 @@ my $CCC_ANALYZER_PLUGINS = join ' ',@PluginsToLoad;
 my %Options = (
   'CC' => $Cmd,
   'CXX' => $CmdCXX,
-  'CLANG' => $Clang,
-  'CLANG_CXX' => $ClangCXX,
+  'LFORT' => $LFort,
+  'LFORT_CXX' => $LFortCXX,
   'VERBOSE' => $Verbose,
   'CCC_ANALYZER_ANALYSIS' => $CCC_ANALYZER_ANALYSIS,
   'CCC_ANALYZER_PLUGINS' => $CCC_ANALYZER_PLUGINS,

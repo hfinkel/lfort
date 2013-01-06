@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -w -emit-llvm %s  -o /dev/null
 
 /* These are random tests that I used when working on the GCC frontend 
    originally. */

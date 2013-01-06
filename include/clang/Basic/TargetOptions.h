@@ -8,18 +8,18 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::TargetOptions class.
+/// \brief Defines the lfort::TargetOptions class.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_TARGETOPTIONS_H
-#define LLVM_CLANG_FRONTEND_TARGETOPTIONS_H
+#ifndef LLVM_LFORT_FRONTEND_TARGETOPTIONS_H
+#define LLVM_LFORT_FRONTEND_TARGETOPTIONS_H
 
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Options for controlling the target.
 class TargetOptions : public RefCountedBase<TargetOptions> {
@@ -49,6 +49,6 @@ public:
   std::vector<std::string> Features;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

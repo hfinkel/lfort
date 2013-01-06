@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc -analyzer-store=region -verify -fblocks %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc -analyzer-store=region -verify -fblocks %s
 #include "Inputs/system-header-simulator-objc.h"
 
 typedef __typeof(sizeof(int)) size_t;

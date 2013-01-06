@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown -emit-llvm -o - %s | FileCheck %s
 
 class nsOggCodecState {
   virtual int StartTime() {

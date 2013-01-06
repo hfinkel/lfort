@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/FileSystemStatCache.h"
 #include "llvm/Support/Path.h"
 #include <fcntl.h>
 
@@ -22,7 +22,7 @@
 #else
 #include <io.h>
 #endif
-using namespace clang;
+using namespace lfort;
 
 #if defined(_MSC_VER)
 #define S_ISDIR(s) ((_S_IFDIR & s) !=0)

@@ -1,4 +1,4 @@
-//===--- Refactoring.cpp - Framework for clang refactoring tools ----------===//
+//===--- Refactoring.cpp - Framework for lfort refactoring tools ----------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/Tooling/Refactoring.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
+#include "lfort/Tooling/Refactoring.h"
 #include "llvm/Support/raw_os_ostream.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 static const char * const InvalidLocation = "";
@@ -182,4 +182,4 @@ int RefactoringTool::run(FrontendActionFactory *ActionFactory) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

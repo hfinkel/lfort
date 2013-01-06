@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_GLOBALDECL_H
-#define LLVM_CLANG_AST_GLOBALDECL_H
+#ifndef LLVM_LFORT_AST_GLOBALDECL_H
+#define LLVM_LFORT_AST_GLOBALDECL_H
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Basic/ABI.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Basic/ABI.h"
 
-namespace clang {
+namespace lfort {
 
 /// GlobalDecl - represents a global declaration. This can either be a
 /// CXXConstructorDecl and the constructor type (Base, Complete).
@@ -87,27 +87,27 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 namespace llvm {
   template<class> struct DenseMapInfo;
 
-  template<> struct DenseMapInfo<clang::GlobalDecl> {
-    static inline clang::GlobalDecl getEmptyKey() {
-      return clang::GlobalDecl();
+  template<> struct DenseMapInfo<lfort::GlobalDecl> {
+    static inline lfort::GlobalDecl getEmptyKey() {
+      return lfort::GlobalDecl();
     }
   
-    static inline clang::GlobalDecl getTombstoneKey() {
-      return clang::GlobalDecl::
+    static inline lfort::GlobalDecl getTombstoneKey() {
+      return lfort::GlobalDecl::
         getFromOpaquePtr(reinterpret_cast<void*>(-1));
     }
 
-    static unsigned getHashValue(clang::GlobalDecl GD) {
+    static unsigned getHashValue(lfort::GlobalDecl GD) {
       return DenseMapInfo<void*>::getHashValue(GD.getAsOpaquePtr());
     }
     
-    static bool isEqual(clang::GlobalDecl LHS, 
-                        clang::GlobalDecl RHS) {
+    static bool isEqual(lfort::GlobalDecl LHS, 
+                        lfort::GlobalDecl RHS) {
       return LHS == RHS;
     }
       
@@ -116,7 +116,7 @@ namespace llvm {
   // GlobalDecl isn't *technically* a POD type. However, its copy constructor,
   // copy assignment operator, and destructor are all trivial.
   template <>
-  struct isPodLike<clang::GlobalDecl> {
+  struct isPodLike<lfort::GlobalDecl> {
     static const bool value = true;
   };
 } // end namespace llvm

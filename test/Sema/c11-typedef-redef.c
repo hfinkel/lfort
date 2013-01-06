@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c11 %s -verify
+// RUN: %lfort_cc1 -std=c11 %s -verify
 
 typedef int type;
 typedef type type;

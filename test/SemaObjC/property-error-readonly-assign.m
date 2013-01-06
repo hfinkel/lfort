@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 @interface A
  -(int) x;
@@ -33,11 +33,11 @@ NSRect NSMakeRect();
 @end
 
 @interface NSWindow (Category)
--(void)methodToMakeClangCrash;
+-(void)methodToMakeLFortCrash;
 @end
 
 @implementation NSWindow (Category)
--(void)methodToMakeClangCrash
+-(void)methodToMakeLFortCrash
 {
  self.frame =  NSMakeRect(); // expected-error {{no setter method 'setFrame:' for assignment to property}}
 }

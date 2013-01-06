@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 // A function that is explicitly defaulted shall
 // [...]

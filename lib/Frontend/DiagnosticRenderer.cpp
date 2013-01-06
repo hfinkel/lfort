@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/DiagnosticRenderer.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Edit/Commit.h"
-#include "clang/Edit/EditedSource.h"
-#include "clang/Edit/EditsReceiver.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Frontend/DiagnosticRenderer.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Edit/EditedSource.h"
+#include "lfort/Edit/EditsReceiver.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 /// \brief Retrieve the name of the immediate macro expansion.
 ///

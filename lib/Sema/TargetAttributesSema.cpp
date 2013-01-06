@@ -13,12 +13,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "TargetAttributesSema.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "llvm/ADT/Triple.h"
 
-using namespace clang;
+using namespace lfort;
 
 TargetAttributesSema::~TargetAttributesSema() {}
 bool TargetAttributesSema::ProcessDeclAttribute(Scope *scope, Decl *D,

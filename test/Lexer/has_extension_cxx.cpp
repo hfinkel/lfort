@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck %s
 
 // CHECK: c_static_assert
 #if __has_extension(c_static_assert)

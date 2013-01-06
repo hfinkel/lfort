@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 typedef struct { int foo; } spinlock_t;
 typedef struct wait_queue_head_t { spinlock_t lock; } wait_queue_head_t;

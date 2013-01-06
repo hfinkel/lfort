@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 int sprintf(char * restrict str, const char * restrict format, ...);
 union U{

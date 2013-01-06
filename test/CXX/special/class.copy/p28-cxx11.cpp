@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -std=c++98 %s -fsyntax-only
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++98 %s -fsyntax-only
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 
 // In C++11, we must perform overload resolution to determine which function is
 // called by a defaulted assignment operator, and the selected operator might

@@ -7,19 +7,19 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ..
+LFORT_LEVEL := ..
 
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 
-DIRS := driver libclang c-index-test arcmt-test c-arcmt-test diagtool \
-        clang-check
+DIRS := driver liblfort c-index-test arcmt-test c-arcmt-test diagtool \
+        lfort-check
 
 # Recurse into the extra repository of tools if present.
 OPTIONAL_DIRS := extra
 
-ifeq ($(BUILD_CLANG_ONLY),YES)
-  DIRS := driver libclang c-index-test
+ifeq ($(BUILD_LFORT_ONLY),YES)
+  DIRS := driver liblfort c-index-test
   OPTIONAL_DIRS :=
 endif
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

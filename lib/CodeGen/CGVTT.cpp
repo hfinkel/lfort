@@ -13,9 +13,9 @@
 
 #include "CodeGenModule.h"
 #include "CGCXXABI.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/VTTBuilder.h"
-using namespace clang;
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/VTTBuilder.h"
+using namespace lfort;
 using namespace CodeGen;
 
 static llvm::Constant *

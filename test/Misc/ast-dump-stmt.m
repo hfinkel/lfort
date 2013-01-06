@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wno-unused -fblocks -fobjc-exceptions -ast-dump -ast-dump-filter Test %s | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -Wno-unused -fblocks -fobjc-exceptions -ast-dump -ast-dump-filter Test %s | FileCheck -strict-whitespace %s
 
 void TestBlockExpr(int x) {
   ^{ x; };

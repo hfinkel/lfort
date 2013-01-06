@@ -13,12 +13,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_BASIC_ABI_H
-#define CLANG_BASIC_ABI_H
+#ifndef LFORT_BASIC_ABI_H
+#define LFORT_BASIC_ABI_H
 
 #include "llvm/Support/DataTypes.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief C++ constructor types.
 enum CXXCtorType {
@@ -122,6 +122,6 @@ struct ThunkInfo {
   bool isEmpty() const { return This.isEmpty() && Return.isEmpty(); }
 };  
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // CLANG_BASIC_ABI_H
+#endif // LFORT_BASIC_ABI_H

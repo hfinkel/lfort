@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -Wno-objc-root-class %s
 
 @class I0; // expected-note 2{{forward declaration of class here}}
 
@@ -84,7 +84,7 @@ int foo()
 {
   Foo *f;
   
-  // Both of these crash clang nicely
+  // Both of these crash lfort nicely
   ++f; 	// expected-error {{arithmetic on pointer to interface 'Foo', which is not a constant size for this architecture and platform}}
   --f; 	// expected-error {{arithmetic on pointer to interface 'Foo', which is not a constant size for this architecture and platform}}
 }

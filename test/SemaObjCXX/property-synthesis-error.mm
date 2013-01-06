@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-objc-root-class -fobjc-default-synthesize-properties %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-objc-root-class -fobjc-default-synthesize-properties %s
 // rdar: //8550657
 
 @interface NSArray @end

@@ -8,15 +8,15 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::FileManager interface and associated types.
+/// \brief Defines the lfort::FileManager interface and associated types.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FILEMANAGER_H
-#define LLVM_CLANG_FILEMANAGER_H
+#ifndef LLVM_LFORT_FILEMANAGER_H
+#define LLVM_LFORT_FILEMANAGER_H
 
-#include "clang/Basic/FileSystemOptions.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/FileSystemOptions.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
@@ -37,7 +37,7 @@ class MemoryBuffer;
 namespace sys { class Path; }
 }
 
-namespace clang {
+namespace lfort {
 class FileManager;
 class FileSystemStatCache;
 
@@ -260,6 +260,6 @@ public:
   void PrintStats() const;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

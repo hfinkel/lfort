@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/LambdaMangleContext.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
+#include "lfort/AST/LambdaMangleContext.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
 
-using namespace clang;
+using namespace lfort;
 
 unsigned LambdaMangleContext::getManglingNumber(CXXMethodDecl *CallOperator) {
   const FunctionProtoType *Proto

@@ -14,12 +14,12 @@
 #ifndef DRIVER_ASTCONSUMERS_H
 #define DRIVER_ASTCONSUMERS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
 namespace llvm {
   namespace sys { class Path; }
 }
-namespace clang {
+namespace lfort {
 
 class ASTConsumer;
 class CodeGenOptions;
@@ -31,7 +31,7 @@ class TargetOptions;
 
 // AST pretty-printer: prints out the AST in a format that is close to the
 // original C code.  The output is intended to be in a format such that
-// clang could re-parse the output back into the same AST, but the
+// lfort could re-parse the output back into the same AST, but the
 // implementation is still incomplete.
 ASTConsumer *CreateASTPrinter(raw_ostream *OS, StringRef FilterString);
 
@@ -56,6 +56,6 @@ ASTConsumer *CreateASTViewer();
 // to stderr; this is intended for debugging.
 ASTConsumer *CreateDeclContextPrinter();
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

@@ -6,7 +6,7 @@
 # License. See LICENSE.TXT for details.
 #
 ##===----------------------------------------------------------------------===##
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 
 TOOLNAME = diagtool 
 
@@ -16,11 +16,11 @@ TOOL_NO_EXPORTS := 1
 # Don't install this.
 NO_INSTALL = 1
 
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
-USEDLIBS = clangFrontend.a clangDriver.a clangSerialization.a clangParse.a \
-           clangSema.a clangAnalysis.a clangEdit.a clangAST.a clangLex.a \
-           clangBasic.a
+USEDLIBS = lfortFrontend.a lfortDriver.a lfortSerialization.a lfortParse.a \
+           lfortSema.a lfortAnalysis.a lfortEdit.a lfortAST.a lfortLex.a \
+           lfortBasic.a
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

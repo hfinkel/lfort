@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s | FileCheck %s
 // CHECK: ModuleID
 // CHECK-NOT: zeroinitializer
 // CHECK: define i8* @f

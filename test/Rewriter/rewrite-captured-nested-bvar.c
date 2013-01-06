@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x c -fblocks -fms-extensions -rewrite-objc %s -o %t-rw.cpp
+// RUN: %lfort_cc1 -x c -fblocks -fms-extensions -rewrite-objc %s -o %t-rw.cpp
 // RUN: FileCheck --input-file=%t-rw.cpp %s
 // rdar://9006279
 

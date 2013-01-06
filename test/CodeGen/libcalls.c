@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fmath-errno -emit-llvm -o - %s -triple i386-unknown-unknown | FileCheck -check-prefix YES %s
-// RUN: %clang_cc1 -emit-llvm -o - %s -triple i386-unknown-unknown | FileCheck -check-prefix NO %s
+// RUN: %lfort_cc1 -fmath-errno -emit-llvm -o - %s -triple i386-unknown-unknown | FileCheck -check-prefix YES %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s -triple i386-unknown-unknown | FileCheck -check-prefix NO %s
 
 // CHECK-YES: define void @test_sqrt
 // CHECK-NO: define void @test_sqrt

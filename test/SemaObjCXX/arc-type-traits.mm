@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -verify -std=c++11 %s
 // expected-no-diagnostics
 
 // Check the results of the various type-trait query functions on

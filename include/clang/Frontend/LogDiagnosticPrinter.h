@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_LOG_DIAGNOSTIC_PRINTER_H_
-#define LLVM_CLANG_FRONTEND_LOG_DIAGNOSTIC_PRINTER_H_
+#ifndef LLVM_LFORT_FRONTEND_LOG_DIAGNOSTIC_PRINTER_H_
+#define LLVM_LFORT_FRONTEND_LOG_DIAGNOSTIC_PRINTER_H_
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 class DiagnosticOptions;
 class LangOptions;
 
@@ -74,6 +74,6 @@ public:
   DiagnosticConsumer *clone(DiagnosticsEngine &Diags) const;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

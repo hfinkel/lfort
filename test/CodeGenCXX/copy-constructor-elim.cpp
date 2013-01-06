@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -o %t %s
 // RUN: grep "_ZN1CC1ERK1C" %t | count 0
 // RUN: grep "_ZN1SC1ERK1S" %t | count 0
 

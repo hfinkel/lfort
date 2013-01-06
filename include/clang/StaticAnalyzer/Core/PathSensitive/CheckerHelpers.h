@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_PATHSENSITIVE_CHECKERHELPERS
-#define LLVM_CLANG_GR_PATHSENSITIVE_CHECKERHELPERS
+#ifndef LLVM_LFORT_GR_PATHSENSITIVE_CHECKERHELPERS
+#define LLVM_LFORT_GR_PATHSENSITIVE_CHECKERHELPERS
 
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Stmt.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -38,6 +38,6 @@ template <class T> bool containsStmt(const Stmt *S) {
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

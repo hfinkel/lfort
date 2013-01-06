@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/PartialDiagnostic.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/CrashRecoveryContext.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cctype>
 
-using namespace clang;
+using namespace lfort;
 
 static void DummyArgToStringFn(DiagnosticsEngine::ArgumentKind AK, intptr_t QT,
                                const char *Modifier, unsigned ML,

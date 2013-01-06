@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/RefactoringCallbacks.h"
+#include "lfort/Tooling/RefactoringCallbacks.h"
 #include "RewriterTestContext.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/ASTMatchers/ASTMatchers.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 using namespace ast_matchers;
@@ -97,4 +97,4 @@ TEST(RefactoringCallbacksTest, RemovesEntireIfOnEmptyElse) {
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort

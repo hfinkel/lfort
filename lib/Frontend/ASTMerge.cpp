@@ -6,15 +6,15 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/ASTImporter.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendActions.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/ASTImporter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendActions.h"
 
-using namespace clang;
+using namespace lfort;
 
 ASTConsumer *ASTMergeAction::CreateASTConsumer(CompilerInstance &CI,
                                                StringRef InFile) {

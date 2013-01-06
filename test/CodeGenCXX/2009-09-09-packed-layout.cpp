@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple i386-apple-darwin11 %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm -triple i386-apple-darwin11 %s -o /dev/null
 class X {
  public:
   virtual ~X();

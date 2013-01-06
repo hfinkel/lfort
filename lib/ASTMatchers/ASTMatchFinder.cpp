@@ -16,13 +16,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/RecursiveASTVisitor.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
 #include <set>
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 namespace internal {
 namespace {
@@ -63,7 +63,7 @@ private:
   bool shouldVisitImplicitCode() const { return true; }
   // Disables data recursion. We intercept Traverse* methods in the RAV, which
   // are not triggered during data recursion.
-  bool shouldUseDataRecursionFor(clang::Stmt *S) const { return false; }
+  bool shouldUseDataRecursionFor(lfort::Stmt *S) const { return false; }
 
   template <typename T>
   bool TraverseNode(T *Node, bool (VisitorBase::*traverse)(T*)) {
@@ -238,7 +238,7 @@ public:
   bool shouldVisitImplicitCode() const { return true; }
   // Disables data recursion. We intercept Traverse* methods in the RAV, which
   // are not triggered during data recursion.
-  bool shouldUseDataRecursionFor(clang::Stmt *S) const { return false; }
+  bool shouldUseDataRecursionFor(lfort::Stmt *S) const { return false; }
 
 private:
   // Used for updating the depth during traversal.
@@ -474,7 +474,7 @@ public:
   bool shouldVisitImplicitCode() const { return true; }
   // Disables data recursion. We intercept Traverse* methods in the RAV, which
   // are not triggered during data recursion.
-  bool shouldUseDataRecursionFor(clang::Stmt *S) const { return false; }
+  bool shouldUseDataRecursionFor(lfort::Stmt *S) const { return false; }
 
 private:
   bool matchesAncestorOfRecursively(
@@ -795,4 +795,4 @@ void MatchFinder::registerTestCallbackAfterParsing(
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort

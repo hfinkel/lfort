@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -ffreestanding
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -ffreestanding
 
 #include <stddef.h>
 #include <stdint.h>
@@ -6,7 +6,7 @@
 typedef void (* fp)(void);
 void foo(void);
 
-// PR clang/3377
+// PR lfort/3377
 fp a[(short int)1] = { foo };
 
 int myArray[5] = {1, 2, 3, 4, 5};

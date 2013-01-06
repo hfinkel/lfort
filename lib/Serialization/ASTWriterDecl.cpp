@@ -11,26 +11,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTWriter.h"
+#include "lfort/Serialization/ASTWriter.h"
 #include "ASTCommon.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 using namespace serialization;
 
 //===----------------------------------------------------------------------===//
 // Declaration serialization
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
   class ASTDeclWriter : public DeclVisitor<ASTDeclWriter, void> {
 
     ASTWriter &Writer;

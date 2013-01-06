@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fms-extensions -std=c++11 %s -verify
+// RUN: %lfort_cc1 -fms-extensions -std=c++11 %s -verify
 
 struct Nontemplate {
   typedef int type;

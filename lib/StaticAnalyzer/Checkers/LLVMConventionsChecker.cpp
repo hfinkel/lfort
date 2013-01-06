@@ -8,19 +8,19 @@
 //===----------------------------------------------------------------------===//
 //
 // This defines LLVMConventionsChecker, a bunch of small little checks
-// for checking specific coding conventions in the LLVM/Clang codebase.
+// for checking specific coding conventions in the LLVM/LFort codebase.
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 //===----------------------------------------------------------------------===//
@@ -64,20 +64,20 @@ static bool IsStdString(QualType T) {
   return TD->getName() == "string";
 }
 
-static bool IsClangType(const RecordDecl *RD) {
-  return RD->getName() == "Type" && InNamespace(RD, "clang");
+static bool IsLFortType(const RecordDecl *RD) {
+  return RD->getName() == "Type" && InNamespace(RD, "lfort");
 }
 
-static bool IsClangDecl(const RecordDecl *RD) {
-  return RD->getName() == "Decl" && InNamespace(RD, "clang");
+static bool IsLFortDecl(const RecordDecl *RD) {
+  return RD->getName() == "Decl" && InNamespace(RD, "lfort");
 }
 
-static bool IsClangStmt(const RecordDecl *RD) {
-  return RD->getName() == "Stmt" && InNamespace(RD, "clang");
+static bool IsLFortStmt(const RecordDecl *RD) {
+  return RD->getName() == "Stmt" && InNamespace(RD, "lfort");
 }
 
-static bool IsClangAttr(const RecordDecl *RD) {
-  return RD->getName() == "Attr" && InNamespace(RD, "clang");
+static bool IsLFortAttr(const RecordDecl *RD) {
+  return RD->getName() == "Attr" && InNamespace(RD, "lfort");
 }
 
 static bool IsStdVector(QualType T) {
@@ -184,7 +184,7 @@ void StringRefCheckerVisitor::VisitVarDecl(VarDecl *VD) {
 }
 
 //===----------------------------------------------------------------------===//
-// CHECK: Clang AST nodes should not have fields that can allocate
+// CHECK: LFort AST nodes should not have fields that can allocate
 //   memory.
 //===----------------------------------------------------------------------===//
 
@@ -194,7 +194,7 @@ static bool AllocatesMemory(QualType T) {
 
 // This type checking could be sped up via dynamic programming.
 static bool IsPartOfAST(const CXXRecordDecl *R) {
-  if (IsClangStmt(R) || IsClangType(R) || IsClangDecl(R) || IsClangAttr(R))
+  if (IsLFortStmt(R) || IsLFortType(R) || IsLFortDecl(R) || IsLFortAttr(R))
     return true;
 
   for (CXXRecordDecl::base_class_const_iterator I = R->bases_begin(),

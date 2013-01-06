@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin10 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=none -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin10 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=none -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 class A {
 public:
@@ -218,11 +218,11 @@ void testDynCastToMiddleClass () {
 
   // These didn't always correctly layer base regions.
   B *ptr = dynamic_cast<B*>(&ref);
-  clang_analyzer_eval(ptr != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(ptr != 0); // expected-warning{{TRUE}}
 
   // This is actually statically resolved to be a DerivedToBase cast.
   ptr = dynamic_cast<B*>(&obj);
-  clang_analyzer_eval(ptr != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(ptr != 0); // expected-warning{{TRUE}}
 }
 
 

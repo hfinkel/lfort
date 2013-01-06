@@ -26,13 +26,13 @@ use Text::ParseWords;
 ##===----------------------------------------------------------------------===##
 
 my $Compiler;
-my $Clang;
+my $LFort;
 my $DefaultCCompiler;
 my $DefaultCXXCompiler;
 
 if (`uname -a` =~ m/Darwin/) { 
-  $DefaultCCompiler = 'clang';
-  $DefaultCXXCompiler = 'clang++';
+  $DefaultCCompiler = 'lfort';
+  $DefaultCXXCompiler = 'lfort++';
 } else {
   $DefaultCCompiler = 'gcc';
   $DefaultCXXCompiler = 'g++';
@@ -42,15 +42,15 @@ if ($FindBin::Script =~ /c\+\+-analyzer/) {
   $Compiler = $ENV{'CCC_CXX'};
   if (!defined $Compiler) { $Compiler = $DefaultCXXCompiler; }
   
-  $Clang = $ENV{'CLANG_CXX'};
-  if (!defined $Clang) { $Clang = 'clang++'; }
+  $LFort = $ENV{'LFORT_CXX'};
+  if (!defined $LFort) { $LFort = 'lfort++'; }
 }
 else {
   $Compiler = $ENV{'CCC_CC'};
   if (!defined $Compiler) { $Compiler = $DefaultCCompiler; }
 
-  $Clang = $ENV{'CLANG'};
-  if (!defined $Clang) { $Clang = 'clang'; }
+  $LFort = $ENV{'LFORT'};
+  if (!defined $LFort) { $LFort = 'lfort'; }
 }
 
 ##===----------------------------------------------------------------------===##
@@ -74,7 +74,7 @@ END {
 }
 
 ##----------------------------------------------------------------------------##
-#  Process Clang Crashes.
+#  Process LFort Crashes.
 ##----------------------------------------------------------------------------##
 
 sub GetPPExt {
@@ -91,27 +91,27 @@ my $ParserRejects = "Parser Rejects";
 my $AttributeIgnored = "Attribute Ignored";
 my $OtherError = "Other Error";
 
-sub ProcessClangFailure {
-  my ($Clang, $Lang, $file, $Args, $HtmlDir, $ErrorType, $ofile) = @_;
+sub ProcessLFortFailure {
+  my ($LFort, $Lang, $file, $Args, $HtmlDir, $ErrorType, $ofile) = @_;
   my $Dir = "$HtmlDir/failures";
   mkpath $Dir;
   
-  my $prefix = "clang_crash";
+  my $prefix = "lfort_crash";
   if ($ErrorType eq $ParserRejects) {
-    $prefix = "clang_parser_rejects";
+    $prefix = "lfort_parser_rejects";
   }
   elsif ($ErrorType eq $AttributeIgnored) {
-    $prefix = "clang_attribute_ignored";
+    $prefix = "lfort_attribute_ignored";
   }
   elsif ($ErrorType eq $OtherError) {
-    $prefix = "clang_other_error";
+    $prefix = "lfort_other_error";
   }
 
-  # Generate the preprocessed file with Clang.
+  # Generate the preprocessed file with LFort.
   my ($PPH, $PPFile) = tempfile( $prefix . "_XXXXXX",
                                  SUFFIX => GetPPExt($Lang),
                                  DIR => $Dir);
-  system $Clang, @$Args, "-E", "-o", $PPFile;
+  system $LFort, @$Args, "-E", "-o", $PPFile;
   close ($PPH);
   
   # Create the info file.
@@ -140,7 +140,7 @@ sub GetCCArgs {
     close FROM_CHILD;
     open(STDOUT,">&", \*TO_PARENT);
     open(STDERR,">&", \*TO_PARENT);
-    exec $Clang, "-###", $mode, @$Args;
+    exec $LFort, "-###", $mode, @$Args;
   }  
   close(TO_PARENT);
   my $line;
@@ -152,18 +152,18 @@ sub GetCCArgs {
   waitpid($pid,0);
   close(FROM_CHILD);
   
-  die "could not find clang line\n" if (!defined $line);
+  die "could not find lfort line\n" if (!defined $line);
   # Strip the newline and initial whitspace
   chomp $line;
   $line =~ s/^\s+//;
   my @items = quotewords('\s+', 0, $line);
   my $cmd = shift @items;
-  die "cannot find 'clang' in 'clang' command\n" if (!($cmd =~ /clang/));
+  die "cannot find 'lfort' in 'lfort' command\n" if (!($cmd =~ /lfort/));
   return \@items;
 }
 
 sub Analyze {
-  my ($Clang, $OriginalArgs, $AnalyzeArgs, $Lang, $Output, $Verbose, $HtmlDir,
+  my ($LFort, $OriginalArgs, $AnalyzeArgs, $Lang, $Output, $Verbose, $HtmlDir,
       $file) = @_;
 
   my @Args = @$OriginalArgs;
@@ -181,7 +181,7 @@ sub Analyze {
     @CmdArgsSansAnalyses = @CmdArgs;
   }
   else {
-    $Cmd = $Clang;
+    $Cmd = $LFort;
 
     # Create arguments for doing regular parsing.
     my $SyntaxArgs = GetCCArgs("-fsyntax-only", \@Args);
@@ -195,16 +195,16 @@ sub Analyze {
       push @Args, '-o', $HtmlDir;
     }
     if ($Verbose) {
-      push @Args, "-Xclang", "-analyzer-display-progress";
+      push @Args, "-Xlfort", "-analyzer-display-progress";
     }
 
     foreach my $arg (@$AnalyzeArgs) {
-      push @Args, "-Xclang", $arg;
+      push @Args, "-Xlfort", $arg;
     }
 
     # Display Ubiviz graph?
     if (defined $ENV{'CCC_UBI'}) {   
-      push @Args, "-Xclang", "-analyzer-viz-egraph-ubigraph";
+      push @Args, "-Xlfort", "-analyzer-viz-egraph-ubigraph";
     }
 
     my $AnalysisArgs = GetCCArgs("--analyze", \@Args);
@@ -232,9 +232,9 @@ sub Analyze {
     print STDERR "#SHELL (cd '$dir' && @PrintArgs)\n";
   }
 
-  # Capture the STDERR of clang and send it to a temporary file.
-  # Capture the STDOUT of clang and reroute it to ccc-analyzer's STDERR.
-  # We save the output file in the 'crashes' directory if clang encounters
+  # Capture the STDERR of lfort and send it to a temporary file.
+  # Capture the STDOUT of lfort and reroute it to ccc-analyzer's STDERR.
+  # We save the output file in the 'crashes' directory if lfort encounters
   # any problems with the file.  
   pipe (FROM_CHILD, TO_PARENT);
   my $pid = fork();
@@ -246,7 +246,7 @@ sub Analyze {
   }
 
   close TO_PARENT;
-  my ($ofh, $ofile) = tempfile("clang_output_XXXXXX", DIR => $HtmlDir);
+  my ($ofh, $ofile) = tempfile("lfort_output_XXXXXX", DIR => $HtmlDir);
   
   while (<FROM_CHILD>) {
     print $ofh $_;
@@ -260,16 +260,16 @@ sub Analyze {
 
   # Did the command die because of a signal?
   if ($ReportFailures) {
-    if ($Result & 127 and $Cmd eq $Clang and defined $HtmlDir) {
-      ProcessClangFailure($Clang, $Lang, $file, \@CmdArgsSansAnalyses,
+    if ($Result & 127 and $Cmd eq $LFort and defined $HtmlDir) {
+      ProcessLFortFailure($LFort, $Lang, $file, \@CmdArgsSansAnalyses,
                           $HtmlDir, "Crash", $ofile);
     }
     elsif ($Result) {
       if ($IncludeParserRejects && !($file =~/conftest/)) {
-        ProcessClangFailure($Clang, $Lang, $file, \@CmdArgsSansAnalyses,
+        ProcessLFortFailure($LFort, $Lang, $file, \@CmdArgsSansAnalyses,
                             $HtmlDir, $ParserRejects, $ofile);
       } else {
-        ProcessClangFailure($Clang, $Lang, $file, \@CmdArgsSansAnalyses,
+        ProcessLFortFailure($LFort, $Lang, $file, \@CmdArgsSansAnalyses,
                             $HtmlDir, $OtherError, $ofile);
       }
     }
@@ -279,7 +279,7 @@ sub Analyze {
         my %attributes_not_handled;
 
         # Don't flag warnings about the following attributes that we
-        # know are currently not supported by Clang.
+        # know are currently not supported by LFort.
         $attributes_not_handled{"cdecl"} = 1;
 
         my $ppfile;
@@ -301,7 +301,7 @@ sub Analyze {
           # Add this file to the list of files that contained this attribute.
           # Generate a preprocessed file if we haven't already.
           if (!(defined $ppfile)) {
-            $ppfile = ProcessClangFailure($Clang, $Lang, $file,
+            $ppfile = ProcessLFortFailure($LFort, $Lang, $file,
                                           \@CmdArgsSansAnalyses,
                                           $HtmlDir, $AttributeIgnored, $ofile);
           }
@@ -476,7 +476,7 @@ foreach (my $i = 0; $i < scalar(@ARGV); ++$i) {
   # Specially handle duplicate cases of -arch
   if ($Arg eq "-arch") {
     my $arch = $ARGV[$i+1];
-    # We don't want to process 'ppc' because of Clang's lack of support
+    # We don't want to process 'ppc' because of LFort's lack of support
     # for Altivec (also some #defines won't likely be defined correctly, etc.)
     if (!(defined $DisabledArchs{$arch})) { $ArchsSeen{$arch} = 1; }
     $HadArch = 1;
@@ -686,12 +686,12 @@ if ($Action eq 'compile' or $Action eq 'link') {
         my @NewArgs;
         push @NewArgs, '-arch', $arch;
         push @NewArgs, @CmdArgs;
-        Analyze($Clang, \@NewArgs, \@AnalyzeArgs, $FileLang, $Output,
+        Analyze($LFort, \@NewArgs, \@AnalyzeArgs, $FileLang, $Output,
                 $Verbose, $HtmlDir, $file);
       }
     }
     else {
-      Analyze($Clang, \@CmdArgs, \@AnalyzeArgs, $FileLang, $Output,
+      Analyze($LFort, \@CmdArgs, \@AnalyzeArgs, $FileLang, $Output,
               $Verbose, $HtmlDir, $file);
     }
   }

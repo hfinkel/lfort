@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // PR4103: Make sure we have a location for the error
 class A { 
   float a(int *); // expected-note{{passing argument to parameter here}}

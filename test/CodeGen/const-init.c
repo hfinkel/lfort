@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-pc-linux-gnu -ffreestanding -verify -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-pc-linux-gnu -ffreestanding -verify -emit-llvm -o - %s | FileCheck %s
 
 #include <stdint.h>
 
@@ -10,7 +10,7 @@ char a2[2][5] = { "asdf" };
 // CHECK: @a2 = global [2 x [5 x i8]] {{\[}}[5 x i8] c"asdf\00", [5 x i8] zeroinitializer]
 
 // Double-implicit-conversions of array/functions (not legal C, but
-// clang accepts it for gcc compat).
+// lfort accepts it for gcc compat).
 intptr_t b = a; // expected-warning {{incompatible pointer to integer conversion}}
 int c();
 void *d = c;

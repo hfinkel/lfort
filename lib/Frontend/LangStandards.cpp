@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/LangStandard.h"
+#include "lfort/Frontend/LangStandard.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
-using namespace clang::frontend;
+using namespace lfort;
+using namespace lfort::frontend;
 
 #define LANGSTANDARD(id, name, desc, features) \
   static const LangStandard Lang_##id = { name, desc, features };
-#include "clang/Frontend/LangStandards.def"
+#include "lfort/Frontend/LangStandards.def"
 
 const LangStandard &LangStandard::getLangStandardForKind(Kind K) {
   switch (K) {
@@ -23,7 +23,7 @@ const LangStandard &LangStandard::getLangStandardForKind(Kind K) {
     llvm::report_fatal_error("getLangStandardForKind() on unspecified kind");
 #define LANGSTANDARD(id, name, desc, features) \
     case lang_##id: return Lang_##id;
-#include "clang/Frontend/LangStandards.def"
+#include "lfort/Frontend/LangStandards.def"
   }
   llvm_unreachable("Invalid language kind!");
 }
@@ -32,7 +32,7 @@ const LangStandard *LangStandard::getLangStandardForName(StringRef Name) {
   Kind K = llvm::StringSwitch<Kind>(Name)
 #define LANGSTANDARD(id, name, desc, features) \
     .Case(name, lang_##id)
-#include "clang/Frontend/LangStandards.def"
+#include "lfort/Frontend/LangStandards.def"
     .Default(lang_unspecified);
   if (K == lang_unspecified)
     return 0;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple x86_64-apple-darwin -fobjc-runtime=macosx-fragile-10.5 %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm -triple x86_64-apple-darwin -fobjc-runtime=macosx-fragile-10.5 %s -o /dev/null
 
 @interface A
 @end

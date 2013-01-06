@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -pedantic -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -verify %s
 void f1(int i[static 5]) { // expected-error{{C99}}
 }
 

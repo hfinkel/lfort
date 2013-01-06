@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-store=region -verify %s
 
 struct FPRec {
   void (*my_func)(int * x);  

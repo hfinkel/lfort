@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_BUGTYPE
-#define LLVM_CLANG_ANALYSIS_BUGTYPE
+#ifndef LLVM_LFORT_ANALYSIS_BUGTYPE
+#define LLVM_LFORT_ANALYSIS_BUGTYPE
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/FoldingSet.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -64,5 +64,5 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 #endif

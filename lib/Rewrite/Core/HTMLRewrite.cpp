@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Core/HTMLRewrite.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/TokenConcatenation.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Rewrite/Core/HTMLRewrite.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/TokenConcatenation.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 
 /// HighlightRange - Highlight a range in the source code with the specified

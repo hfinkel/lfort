@@ -7,13 +7,13 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL = ../..
+LFORT_LEVEL = ../..
 TESTNAME = Tooling
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
-USEDLIBS = clangTooling.a clangFrontend.a clangSerialization.a clangDriver.a \
-           clangParse.a clangRewriteCore.a clangRewriteFrontend.a \
-	   clangSema.a clangAnalysis.a clangEdit.a \
-           clangAST.a clangASTMatchers.a clangLex.a clangBasic.a
+USEDLIBS = lfortTooling.a lfortFrontend.a lfortSerialization.a lfortDriver.a \
+           lfortParse.a lfortRewriteCore.a lfortRewriteFrontend.a \
+	   lfortSema.a lfortAnalysis.a lfortEdit.a \
+           lfortAST.a lfortASTMatchers.a lfortLex.a lfortBasic.a
 
-include $(CLANG_LEVEL)/unittests/Makefile
+include $(LFORT_LEVEL)/unittests/Makefile

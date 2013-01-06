@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s 
+// RUN: %lfort_cc1 -fsyntax-only -verify %s 
 namespace Ns {
   int f(); // expected-note{{previous declaration is here}}
 
@@ -82,7 +82,7 @@ namespace a {
   }
 }
 
-// PR clang/3291
+// PR lfort/3291
 namespace a {  
   namespace a {   // A1
     namespace a { // A2
@@ -111,7 +111,7 @@ int Undef::f() {
   return sizeof(Undef);
 }
 
-// PR clang/5667
+// PR lfort/5667
 namespace test1 {
   template <typename T> struct is_class {
     enum { value = 0 };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - -triple=i386-pc-win32 -fms-extensions | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - -triple=i386-pc-win32 -fms-extensions | FileCheck %s
 
 typedef struct _GUID
 {

@@ -15,16 +15,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DEPENDENT_DIAGNOSTIC_H
-#define LLVM_CLANG_AST_DEPENDENT_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_AST_DEPENDENT_DIAGNOSTIC_H
+#define LLVM_LFORT_AST_DEPENDENT_DIAGNOSTIC_H
 
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class CXXRecordDecl;

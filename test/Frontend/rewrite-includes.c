@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -verify -E -frewrite-includes -DFIRST -I %S/Inputs %s -o - | FileCheck -strict-whitespace %s
-// RUN: %clang_cc1 -verify -E -frewrite-includes -P -DFIRST -I %S/Inputs %s -o - | FileCheck -check-prefix=CHECKNL -strict-whitespace %s
+// RUN: %lfort_cc1 -verify -E -frewrite-includes -DFIRST -I %S/Inputs %s -o - | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -verify -E -frewrite-includes -P -DFIRST -I %S/Inputs %s -o - | FileCheck -check-prefix=CHECKNL -strict-whitespace %s
 // STARTCOMPARE
 #define A(a,b) a ## b
 A(1,2)
@@ -27,7 +27,7 @@ A(1,2)
 // CHECK-NEXT: {{^}}#endif /* expanded by -frewrite-includes */{{$}}
 // CHECK-NEXT: {{^}}# 1 "{{.*[/\\]Inputs[/\\]}}rewrite-includes1.h" 1{{$}}
 // CHECK-NEXT: {{^}}#if 0 /* expanded by -frewrite-includes */{{$}}
-// CHECK-NEXT: {{^}}#pragma clang system_header{{$}}
+// CHECK-NEXT: {{^}}#pragma lfort system_header{{$}}
 // CHECK-NEXT: {{^}}#endif /* expanded by -frewrite-includes */{{$}}
 // CHECK-NEXT: {{^}}# 2 "{{.*[/\\]Inputs[/\\]}}rewrite-includes1.h" 3{{$}}
 // CHECK-NEXT: {{^}}included_line1{{$}}
@@ -97,7 +97,7 @@ A(1,2)
 // CHECKNL-NEXT: {{^}}#include "rewrite-includes1.h"{{$}}
 // CHECKNL-NEXT: {{^}}#endif /* expanded by -frewrite-includes */{{$}}
 // CHECKNL-NEXT: {{^}}#if 0 /* expanded by -frewrite-includes */{{$}}
-// CHECKNL-NEXT: {{^}}#pragma clang system_header{{$}}
+// CHECKNL-NEXT: {{^}}#pragma lfort system_header{{$}}
 // CHECKNL-NEXT: {{^}}#endif /* expanded by -frewrite-includes */{{$}}
 // CHECKNL-NEXT: {{^}}included_line1{{$}}
 // CHECKNL-NEXT: {{^}}#if 0 /* expanded by -frewrite-includes */{{$}}

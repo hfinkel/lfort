@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 struct i387_soft_struct {
   long cwd;

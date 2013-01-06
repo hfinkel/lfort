@@ -11,14 +11,14 @@
 //  construction of AST nodes from some external source.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_EXTERNAL_AST_SOURCE_H
-#define LLVM_CLANG_AST_EXTERNAL_AST_SOURCE_H
+#ifndef LLVM_LFORT_AST_EXTERNAL_AST_SOURCE_H
+#define LLVM_LFORT_AST_EXTERNAL_AST_SOURCE_H
 
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclBase.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclBase.h"
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTConsumer;
 class CXXBaseSpecifier;
@@ -528,6 +528,6 @@ typedef LazyOffsetPtr<CXXBaseSpecifier, uint64_t,
                       &ExternalASTSource::GetExternalCXXBaseSpecifiers>
   LazyCXXBaseSpecifiersPtr;
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_AST_EXTERNAL_AST_SOURCE_H
+#endif // LLVM_LFORT_AST_EXTERNAL_AST_SOURCE_H

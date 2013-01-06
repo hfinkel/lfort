@@ -16,22 +16,22 @@
 
 <h1>Source Annotations</h1>
 
-<p>The Clang frontend supports several source-level annotations in the form of
+<p>The LFort frontend supports several source-level annotations in the form of
 <a href="http://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html">GCC-style
-attributes</a> and pragmas that can help make using the Clang Static Analyzer
+attributes</a> and pragmas that can help make using the LFort Static Analyzer
 more useful. These annotations can both help suppress false positives as well as
 enhance the analyzer's ability to find bugs.</p>
 
 <p>This page gives a practical overview of such annotations. For more technical
-specifics regarding Clang-specific annotations please see the Clang's list of <a
-href="http://clang.llvm.org/docs/LanguageExtensions.html">language
-extensions</a>. Details of &quot;standard&quot; GCC attributes (that Clang also
+specifics regarding LFort-specific annotations please see the LFort's list of <a
+href="http://lfort.llvm.org/docs/LanguageExtensions.html">language
+extensions</a>. Details of &quot;standard&quot; GCC attributes (that LFort also
 supports) can be found in the <a href="http://gcc.gnu.org/onlinedocs/gcc/">GCC
 manual</a>, with the majority of the relevant attributes being in the section on
 <a href="http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html">function
 attributes</a>.</p>
 
-<p>Note that attributes that are labeled <b>Clang-specific</b> are not
+<p>Note that attributes that are labeled <b>LFort-specific</b> are not
 recognized by GCC. Their use can be conditioned using preprocessor macros
 (examples included on this page).</p>
 
@@ -84,7 +84,7 @@ details of the syntax of using the 'nonnull' attribute can be found in <a
 href="http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html#index-g_t_0040code_007bnonnull_007d-function-attribute-2263">GCC's
 documentation</a>.</p>
 
-<p>Both the Clang compiler and GCC will flag warnings for simple cases where a
+<p>Both the LFort compiler and GCC will flag warnings for simple cases where a
 null pointer is directly being passed to a function with a 'nonnull' parameter
 (e.g., as a constant). The analyzer extends this checking by using its deeper
 symbolic analysis to track what pointer values are potentially null and then
@@ -130,9 +130,9 @@ functions that deviate from the Cocoa and Core Foundation conventions using the
 attributes described here.</p>
 
 <h4 id="attr_ns_returns_retained">Attribute 'ns_returns_retained'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
-<p>The GCC-style (Clang-specific) attribute 'ns_returns_retained' allows one to
+<p>The GCC-style (LFort-specific) attribute 'ns_returns_retained' allows one to
 annotate an Objective-C method or C function as returning a retained Cocoa
 object that the caller is responsible for releasing (via sending a
 <tt>release</tt> message to the object).</p>
@@ -164,7 +164,7 @@ use 'cf_returns_retained'.</p>
 #import &lt;Foundation/Foundation.h&gt;
 
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef NS_RETURNS_RETAINED
@@ -195,7 +195,7 @@ use 'cf_returns_retained'.</p>
 <img src="images/example_ns_returns_retained.png" alt="example returns retained">
 
 <h4 id="attr_ns_returns_not_retained">Attribute 'ns_returns_not_retained'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
 <p>The 'ns_returns_not_retained' attribute is the complement of '<a
 href="#attr_ns_returns_retained">ns_returns_retained</a>'. Where a function or
@@ -212,7 +212,7 @@ its availability, as it is not available in earlier versions of the analyzer:</p
 <pre class="code_example">
 <span class="command">$ cat test.m</span>
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef NS_RETURNS_NOT_RETAINED
@@ -225,9 +225,9 @@ its availability, as it is not available in earlier versions of the analyzer:</p
 </pre>
 
 <h4 id="attr_cf_returns_retained">Attribute 'cf_returns_retained'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
-<p>The GCC-style (Clang-specific) attribute 'cf_returns_retained' allows one to
+<p>The GCC-style (LFort-specific) attribute 'cf_returns_retained' allows one to
 annotate an Objective-C method or C function as returning a retained Core
 Foundation object that the caller is responsible for releasing. 
 
@@ -272,7 +272,7 @@ $ cat test.m
 #import &lt;Cocoa/Cocoa.h&gt;
 
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef CF_RETURNS_RETAINED
@@ -323,7 +323,7 @@ collection:</p>
 <img src="images/example_cf_returns_retained_gc.png" alt="example returns retained gc">
 
 <h4 id="attr_cf_returns_not_retained">Attribute 'cf_returns_not_retained'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
 <p>The 'cf_returns_not_retained' attribute is the complement of '<a
 href="#attr_cf_returns_retained">cf_returns_retained</a>'. Where a function or
@@ -340,7 +340,7 @@ its availability, as it is not available in earlier versions of the analyzer:</p
 <pre class="code_example">
 <span class="command">$ cat test.m</span>
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef CF_RETURNS_NOT_RETAINED
@@ -353,7 +353,7 @@ its availability, as it is not available in earlier versions of the analyzer:</p
 </pre>
 
 <h4 id="attr_ns_consumed">Attribute 'ns_consumed'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
 <p>The 'ns_consumed' attribute can be placed on a specific parameter in either the declaration of a function or an Objective-C method.
   It indicates to the static analyzer that a <tt>release</tt> message is implicitly sent to the parameter upon
@@ -371,7 +371,7 @@ the <a href="#attr_cf_consumed">cf_consumed</a> attribute instead.</p>
 <pre class="code_example">
 <span class="command">$ cat test.m</span>
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef NS_CONSUMED
@@ -407,7 +407,7 @@ void test_method2() {
 </pre>
 
 <h4 id="attr_cf_consumed">Attribute 'cf_consumed'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
 <p>The 'cf_consumed' attribute is practically identical to <a href="#attr_ns_consumed">ns_consumed</a>.
 The attribute can be placed on a specific parameter in either the declaration of a function or an Objective-C method.
@@ -423,7 +423,7 @@ collection (which is import for Core Foundation types, which are not automatical
 <pre class="code_example">
 <span class="command">$ cat test.m</span>
 #ifndef __has_feature      // Optional.
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef CF_CONSUMED
@@ -459,7 +459,7 @@ void test_method() {
 </pre>
 
 <h4 id="attr_ns_consumes_self">Attribute 'ns_consumes_self'
-(Clang-specific)</h4>
+(LFort-specific)</h4>
 
 <p>The 'ns_consumes_self' attribute can be placed only on an Objective-C method declaration.
   It indicates that the receiver of the message is &quot;consumed&quot; (a single reference count decremented)
@@ -473,7 +473,7 @@ void test_method() {
   
 <pre class="code_example">
 #ifndef __has_feature
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
+#define __has_feature(x) 0 // Compatibility with non-lfort compilers.
 #endif
 
 #ifndef NS_CONSUMES_SELF
@@ -540,8 +540,8 @@ some action that depends on that condition (e.g., dereferencing a pointer).</p>
 
 <p>The analyzer knows about several well-known assertion handlers, but can
 automatically infer if a function should be treated as an assertion handler if
-it is annotated with the 'noreturn' attribute or the (Clang-specific)
-'analyzer_noreturn' attribute. Note that, currently, clang does not support 
+it is annotated with the 'noreturn' attribute or the (LFort-specific)
+'analyzer_noreturn' attribute. Note that, currently, lfort does not support 
 these attributes on Objective-C methods and C++ methods.</p>
 
 <h4 id="attr_noreturn">Attribute 'noreturn'</h4>
@@ -569,9 +569,9 @@ return.</p>
 void __assert_rtn(const char *, const char *, int, const char *) <span class="code_highlight">__attribute__((__noreturn__))</span>;
 </pre>
 
-<h4 id="attr_analyzer_noreturn">Attribute 'analyzer_noreturn' (Clang-specific)</h4>
+<h4 id="attr_analyzer_noreturn">Attribute 'analyzer_noreturn' (LFort-specific)</h4>
 
-<p>The Clang-specific 'analyzer_noreturn' attribute is almost identical to
+<p>The LFort-specific 'analyzer_noreturn' attribute is almost identical to
 'noreturn' except that it is ignored by the compiler for the purposes of code
 generation.</p>
 
@@ -579,21 +579,21 @@ generation.</p>
 <em>can</em> return, but for the purpose of using the analyzer we want to
 pretend that such functions do not return.</p>
 
-<p>Because this attribute is Clang-specific, its use should be conditioned with
+<p>Because this attribute is LFort-specific, its use should be conditioned with
 the use of preprocessor macros.</p>
 
 <p><b>Example</b>
 
 <pre class="code_example">
-#ifndef CLANG_ANALYZER_NORETURN
+#ifndef LFORT_ANALYZER_NORETURN
 #if __has_feature(attribute_analyzer_noreturn)
-<span class="code_highlight">#define CLANG_ANALYZER_NORETURN __attribute__((analyzer_noreturn))</span>
+<span class="code_highlight">#define LFORT_ANALYZER_NORETURN __attribute__((analyzer_noreturn))</span>
 #else
-#define CLANG_ANALYZER_NORETURN
+#define LFORT_ANALYZER_NORETURN
 #endif
 #endif
 
-void my_assert_rtn(const char *, const char *, int, const char *) <span class="code_highlight">CLANG_ANALYZER_NORETURN</span>;
+void my_assert_rtn(const char *, const char *, int, const char *) <span class="code_highlight">LFORT_ANALYZER_NORETURN</span>;
 </pre>
 
 </div>

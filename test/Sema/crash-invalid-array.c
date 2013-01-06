@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -O1 %s -emit-llvm
+// RUN: not %lfort_cc1 -O1 %s -emit-llvm
 // PR6913
 
 #include <stdio.h>

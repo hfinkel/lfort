@@ -1,12 +1,12 @@
-#ifndef LLVM_CLANG_FORMAT_PARSING_H
-#define LLVM_CLANG_FORMAT_PARSING_H
+#ifndef LLVM_LFORT_FORMAT_PARSING_H
+#define LLVM_LFORT_FORMAT_PARSING_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Type.h"
-#include "clang/Analysis/Analyses/FormatString.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Analysis/Analyses/FormatString.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 
 class LangOptions;
 
@@ -69,6 +69,6 @@ public:
 };
   
 } // end analyze_format_string namespace
-} // end clang namespace
+} // end lfort namespace
 
 #endif

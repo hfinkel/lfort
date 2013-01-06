@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
@@ -32,7 +32,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <queue>
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 BugReporterVisitor::~BugReporterVisitor() {}
@@ -156,15 +156,15 @@ static void removeRedundantMsgs(PathPieces &path) {
     path.pop_front();
     
     switch (piece->getKind()) {
-      case clang::ento::PathDiagnosticPiece::Call:
+      case lfort::ento::PathDiagnosticPiece::Call:
         removeRedundantMsgs(cast<PathDiagnosticCallPiece>(piece)->path);
         break;
-      case clang::ento::PathDiagnosticPiece::Macro:
+      case lfort::ento::PathDiagnosticPiece::Macro:
         removeRedundantMsgs(cast<PathDiagnosticMacroPiece>(piece)->subPieces);
         break;
-      case clang::ento::PathDiagnosticPiece::ControlFlow:
+      case lfort::ento::PathDiagnosticPiece::ControlFlow:
         break;
-      case clang::ento::PathDiagnosticPiece::Event: {
+      case lfort::ento::PathDiagnosticPiece::Event: {
         if (i == N-1)
           break;
         

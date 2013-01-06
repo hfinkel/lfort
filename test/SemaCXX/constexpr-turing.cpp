@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++11 %s
+// RUN: %lfort_cc1 -verify -std=c++11 %s
 // expected-no-diagnostics
 
 // A direct proof that constexpr is Turing-complete, once DR1454 is implemented.

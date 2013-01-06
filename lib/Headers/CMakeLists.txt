@@ -41,18 +41,18 @@ set(files
   module.map
   )
 
-set(output_dir ${LLVM_BINARY_DIR}/lib/clang/${CLANG_VERSION}/include)
+set(output_dir ${LLVM_BINARY_DIR}/lib/lfort/${LFORT_VERSION}/include)
 
 # If we are in an IDE that has a configuration directory, we need to
-# create a second copy of the headers so that 'clang' can find them if
+# create a second copy of the headers so that 'lfort' can find them if
 # it's run from the build directory.
 if(MSVC_IDE OR XCODE)
-   set(other_output_dir ${LLVM_BINARY_DIR}/bin/lib/clang/${CLANG_VERSION}/include)
+   set(other_output_dir ${LLVM_BINARY_DIR}/bin/lib/lfort/${LFORT_VERSION}/include)
 endif()
 
 # Generate arm_neon.h
-clang_tablegen(arm_neon.h.inc -gen-arm-neon
-  SOURCE ${CLANG_SOURCE_DIR}/include/clang/Basic/arm_neon.td)
+lfort_tablegen(arm_neon.h.inc -gen-arm-neon
+  SOURCE ${LFORT_SOURCE_DIR}/include/lfort/Basic/arm_neon.td)
 
 set(out_files)
 foreach( f ${files} )
@@ -61,7 +61,7 @@ foreach( f ${files} )
   add_custom_command(OUTPUT ${dst}
     DEPENDS ${src}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${src} ${dst}
-    COMMENT "Copying clang's ${f}...")
+    COMMENT "Copying lfort's ${f}...")
   list(APPEND out_files ${dst})
 
   if(other_output_dir)
@@ -69,7 +69,7 @@ foreach( f ${files} )
     add_custom_command(OUTPUT ${other_dst}
       DEPENDS ${src}
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${src} ${other_dst}
-      COMMENT "Copying clang's ${f}...")    
+      COMMENT "Copying lfort's ${f}...")    
     list(APPEND out_files ${other_dst})
   endif()
 endforeach( f )
@@ -77,7 +77,7 @@ endforeach( f )
 add_custom_command(OUTPUT ${output_dir}/arm_neon.h 
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/arm_neon.h.inc
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/arm_neon.h.inc ${output_dir}/arm_neon.h
-  COMMENT "Copying clang's arm_neon.h...")
+  COMMENT "Copying lfort's arm_neon.h...")
 list(APPEND out_files ${output_dir}/arm_neon.h)
 
 if (other_output_dir)
@@ -85,13 +85,13 @@ if (other_output_dir)
     add_custom_command(OUTPUT ${other_dst}
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/arm_neon.h.inc
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/arm_neon.h.inc ${other_dst}
-      COMMENT "Copying clang's arm_neon.h...")
+      COMMENT "Copying lfort's arm_neon.h...")
     list(APPEND out_files ${other_dst})
 endif ()
 
-add_custom_target(clang-headers ALL DEPENDS ${out_files})
-set_target_properties(clang-headers PROPERTIES FOLDER "Misc")
+add_custom_target(lfort-headers ALL DEPENDS ${out_files})
+set_target_properties(lfort-headers PROPERTIES FOLDER "Misc")
 
 install(FILES ${files} ${output_dir}/arm_neon.h
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION lib${LLVM_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
+  DESTINATION lib${LLVM_LIBDIR_SUFFIX}/lfort/${LFORT_VERSION}/include)

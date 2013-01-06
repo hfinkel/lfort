@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_COREENGINE
-#define LLVM_CLANG_GR_COREENGINE
+#ifndef LLVM_LFORT_GR_COREENGINE
+#define LLVM_LFORT_GR_COREENGINE
 
-#include "clang/AST/Expr.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/WorkList.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/WorkList.h"
 #include "llvm/ADT/OwningPtr.h"
 
-namespace clang {
+namespace lfort {
 
 class ProgramPointTag;
   
@@ -541,6 +541,6 @@ public:
 };
 
 } // end ento namespace
-} // end clang namespace
+} // end lfort namespace
 
 #endif

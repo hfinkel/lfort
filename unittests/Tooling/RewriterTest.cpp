@@ -10,7 +10,7 @@
 #include "RewriterTestContext.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 
 TEST(Rewriter, OverwritesChangedFiles) {
   RewriterTestContext Context;
@@ -34,4 +34,4 @@ TEST(Rewriter, ContinuesOverwritingFilesOnError) {
             Context.getFileContentFromDisk("working.cpp")); 
 }
 
-} // end namespace clang
+} // end namespace lfort

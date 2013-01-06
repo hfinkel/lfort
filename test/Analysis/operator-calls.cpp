@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
-void clang_analyzer_eval(bool);
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
+void lfort_analyzer_eval(bool);
 
 struct X0 { };
 bool operator==(const X0&, const X0&);
@@ -28,7 +28,7 @@ struct IntComparable {
 };
 
 void testMemberOperator(IntComparable B) {
-  clang_analyzer_eval(B == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(B == 0); // expected-warning{{TRUE}}
 }
 
 
@@ -45,7 +45,7 @@ namespace UserDefinedConversions {
   };
 
   void test(const Convertible &obj) {
-    clang_analyzer_eval((int)obj == 42); // expected-warning{{TRUE}}
-    clang_analyzer_eval(obj); // expected-warning{{TRUE}}
+    lfort_analyzer_eval((int)obj == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(obj); // expected-warning{{TRUE}}
   }
 }

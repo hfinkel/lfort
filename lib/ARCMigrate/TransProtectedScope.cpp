@@ -14,9 +14,9 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

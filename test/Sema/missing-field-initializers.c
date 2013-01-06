@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wmissing-field-initializers %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wmissing-field-initializers %s
 
 // This was PR4808.
 

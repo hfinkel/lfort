@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 namespace test1 {
   __attribute__((visibility("hidden")))  __attribute__((aligned)) class A; // expected-warning{{attribute 'visibility' is ignored, place it after "class" to apply attribute to type declaration}} \

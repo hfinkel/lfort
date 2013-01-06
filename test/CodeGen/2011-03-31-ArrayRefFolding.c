@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - -triple i386-apple-darwin %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - -triple i386-apple-darwin %s | FileCheck %s
 // PR9571
 
 struct t {

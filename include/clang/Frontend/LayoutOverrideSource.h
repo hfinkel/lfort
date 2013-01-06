@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_LAYOUTOVERRIDESOURCE_H
-#define LLVM_CLANG_FRONTEND_LAYOUTOVERRIDESOURCE_H
+#ifndef LLVM_LFORT_FRONTEND_LAYOUTOVERRIDESOURCE_H
+#define LLVM_LFORT_FRONTEND_LAYOUTOVERRIDESOURCE_H
 
-#include "clang/AST/ExternalASTSource.h"
+#include "lfort/AST/ExternalASTSource.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
   /// \brief An external AST source that overrides the layout of
   /// a specified set of record types.
   ///

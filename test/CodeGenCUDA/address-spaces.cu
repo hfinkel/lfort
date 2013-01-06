@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - -fcuda-is-device -triple nvptx-unknown-unknown | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - -fcuda-is-device -triple nvptx-unknown-unknown | FileCheck %s
 
 #include "../SemaCUDA/cuda.h"
 

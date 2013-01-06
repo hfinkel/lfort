@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 void f() const; // expected-error {{non-member function cannot have 'const' qualifier}}
 void (*pf)() const; // expected-error {{pointer to function type cannot have 'const' qualifier}}

@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CXTRANSLATIONUNIT_H
-#define LLVM_CLANG_CXTRANSLATIONUNIT_H
+#ifndef LLVM_LFORT_CXTRANSLATIONUNIT_H
+#define LLVM_LFORT_CXTRANSLATIONUNIT_H
 
 extern "C" {
 struct CXTranslationUnitImpl {
@@ -26,7 +26,7 @@ struct CXTranslationUnitImpl {
 };
 }
 
-namespace clang {
+namespace lfort {
   class ASTUnit;
   class CIndexer;
 
@@ -51,6 +51,6 @@ public:
 };
 
 
-}} // end namespace clang::cxtu
+}} // end namespace lfort::cxtu
 
 #endif

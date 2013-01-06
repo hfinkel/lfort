@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=x86_64-unknown-unknown | FileCheck -check-prefix CODE-LP64 %s
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=i386-unknown-unknown | FileCheck -check-prefix CODE-LP32 %s
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=x86_64-unknown-unknown | FileCheck -check-prefix GLOBAL-LP64 %s
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=i386-unknown-unknown | FileCheck -check-prefix GLOBAL-LP32 %s
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=armv7-unknown-unknown | FileCheck -check-prefix GLOBAL-ARM %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=x86_64-unknown-unknown | FileCheck -check-prefix CODE-LP64 %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=i386-unknown-unknown | FileCheck -check-prefix CODE-LP32 %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=x86_64-unknown-unknown | FileCheck -check-prefix GLOBAL-LP64 %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=i386-unknown-unknown | FileCheck -check-prefix GLOBAL-LP32 %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=armv7-unknown-unknown | FileCheck -check-prefix GLOBAL-ARM %s
 
 struct A { int a; void f(); virtual void vf1(); virtual void vf2(); };
 struct B { int b; virtual void g(); };

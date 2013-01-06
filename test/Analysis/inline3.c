@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -verify %s
 // expected-no-diagnostics
 
 // Test when entering f1(), we set the right AnalysisDeclContext to Environment.

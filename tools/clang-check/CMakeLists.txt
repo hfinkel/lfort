@@ -5,15 +5,15 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_executable(clang-check
-  ClangCheck.cpp
+add_lfort_executable(lfort-check
+  LFortCheck.cpp
   )
 
-target_link_libraries(clang-check
-  clangTooling
-  clangBasic
-  clangRewriteFrontend
+target_link_libraries(lfort-check
+  lfortTooling
+  lfortBasic
+  lfortRewriteFrontend
   )
 
-install(TARGETS clang-check
+install(TARGETS lfort-check
   RUNTIME DESTINATION bin)

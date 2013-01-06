@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -verify %s
 // expected-no-diagnostics
 
 int g(int a) {    

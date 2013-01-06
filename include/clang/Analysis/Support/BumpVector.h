@@ -16,8 +16,8 @@
 // refactor this core logic into something common that is shared between
 // the two.  The main thing that is different is the allocation strategy.
 
-#ifndef LLVM_CLANG_BUMP_VECTOR
-#define LLVM_CLANG_BUMP_VECTOR
+#ifndef LLVM_LFORT_BUMP_VECTOR
+#define LLVM_LFORT_BUMP_VECTOR
 
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/Support/Allocator.h"
@@ -27,7 +27,7 @@
 #include <iterator>
 #include <memory>
 
-namespace clang {
+namespace lfort {
   
 class BumpVectorContext {
   llvm::PointerIntPair<llvm::BumpPtrAllocator*, 1> Alloc;
@@ -240,5 +240,5 @@ void BumpVector<T>::grow(BumpVectorContext &C, size_t MinSize) {
   Capacity = Begin+NewCapacity;
 }
 
-} // end: clang namespace
-#endif // end: LLVM_CLANG_BUMP_VECTOR
+} // end: lfort namespace
+#endif // end: LLVM_LFORT_BUMP_VECTOR

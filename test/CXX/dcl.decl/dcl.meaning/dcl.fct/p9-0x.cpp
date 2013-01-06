@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 // FIXME: We should catch the case of tag with an incomplete type here (which
 // will necessarily be ill-formed as a trailing return type for a function

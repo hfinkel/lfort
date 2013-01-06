@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_PLUGINFRONTENDACTION_H
-#define LLVM_CLANG_FRONTEND_PLUGINFRONTENDACTION_H
+#ifndef LLVM_LFORT_FRONTEND_PLUGINFRONTENDACTION_H
+#define LLVM_LFORT_FRONTEND_PLUGINFRONTENDACTION_H
 
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendAction.h"
 #include "llvm/Support/Registry.h"
 
-namespace clang {
+namespace lfort {
 
 /// The frontend plugin registry.
 typedef llvm::Registry<PluginASTAction> FrontendPluginRegistry;
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

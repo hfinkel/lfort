@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -E -dM %s | FileCheck --check-prefix=CHECK-GNU-COMPAT %s
-// RUN: %clang_cc1 -std=c++98 -E -dM %s | FileCheck --check-prefix=CHECK-CONFORMING %s
+// RUN: %lfort_cc1 -E -dM %s | FileCheck --check-prefix=CHECK-GNU-COMPAT %s
+// RUN: %lfort_cc1 -std=c++98 -E -dM %s | FileCheck --check-prefix=CHECK-CONFORMING %s
 #include <stdbool.h>
 #define zzz
 

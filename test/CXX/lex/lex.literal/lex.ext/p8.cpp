@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 using size_t = decltype(sizeof(int));
 constexpr const char *operator "" _id(const char *p, size_t) { return p; }

@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -E %s | grep 'a:Y'
-// RUN: %clang_cc1 -E %s | grep 'b:Y'
-// RUN: %clang_cc1 -E %s | grep 'c:YY'
+// RUN: %lfort_cc1 -E %s | grep 'a:Y'
+// RUN: %lfort_cc1 -E %s | grep 'b:Y'
+// RUN: %lfort_cc1 -E %s | grep 'c:YY'
 
 #define FOO(X) X ## Y
 a:FOO()

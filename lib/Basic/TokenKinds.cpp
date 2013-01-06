@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/TokenKinds.h"
 #include <cassert>
-using namespace clang;
+using namespace lfort;
 
 static const char * const TokNames[] = {
 #define TOK(X) #X,
 #define KEYWORD(X,Y) #X,
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   0
 };
 
@@ -30,7 +30,7 @@ const char *tok::getTokenName(enum TokenKind Kind) {
 const char *tok::getTokenSimpleSpelling(enum TokenKind Kind) {
   switch (Kind) {
 #define PUNCTUATOR(X,Y) case X: return Y;
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   default: break;
   }
 

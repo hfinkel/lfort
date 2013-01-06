@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/IdentifierResolver.h"
-#include "clang/AST/Decl.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Lex/ExternalPreprocessorSource.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Scope.h"
+#include "lfort/Sema/IdentifierResolver.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Lex/ExternalPreprocessorSource.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Scope.h"
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // IdDeclInfoMap class

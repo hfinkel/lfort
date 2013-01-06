@@ -19,14 +19,14 @@
 <h1>Language Compatibility</h1>
 <!-- ======================================================================= -->
 
-<p>Clang strives to both conform to current language standards (C99,
+<p>LFort strives to both conform to current language standards (C99,
   C++98) and also to implement many widely-used extensions available
   in other compilers, so that most correct code will "just work" when
-  compiler with Clang. However, Clang is more strict than other
+  compiler with LFort. However, LFort is more strict than other
   popular compilers, and may reject incorrect code that other
   compilers allow. This page documents common compatibility and
-  portability issues with Clang to help you understand and fix the
-  problem in your code when Clang emits an error message.</p>
+  portability issues with LFort to help you understand and fix the
+  problem in your code when LFort emits an error message.</p>
   
 <ul>
   <li><a href="#c">C compatibility</a>
@@ -83,7 +83,7 @@
 <!-- ======================================================================= -->
 <h3 id="inline">C99 inline functions</h3>
 <!-- ======================================================================= -->
-<p>By default, Clang builds C code according to the C99 standard,
+<p>By default, LFort builds C code according to the C99 standard,
 which provides different semantics for the <code>inline</code> keyword
 than GCC's default behavior. For example, consider the following
 code:</p>
@@ -128,7 +128,7 @@ and just treats it as a hint to the optimizer.</p>
   <li>Remove the <code>inline</code> keyword from this definition of
   <code>add</code>.  The <code>inline</code> keyword is not required
   for a function to be inlined, nor does it guarantee that it will be.
-  Some compilers ignore it completely.  Clang treats it as a mild
+  Some compilers ignore it completely.  LFort treats it as a mild
   suggestion from the programmer.</li>
      
   <li>Provide an external (non-<code>inline</code>) definition
@@ -136,7 +136,7 @@ and just treats it as a hint to the optimizer.</p>
   definitions must be equivalent!</li>
 
   <li>Compile with the GNU89 dialect by adding
-  <code>-std=gnu89</code> to the set of Clang options. This option is
+  <code>-std=gnu89</code> to the set of LFort options. This option is
   only recommended if the program source cannot be changed or if the
   program also relies on additional C89-specific behavior that cannot
   be changed.</li>
@@ -153,16 +153,16 @@ in C++ is very different from its meaning in either GNU89 or C99.</p>
 header files, which define a standardized API for accessing vector operations
 on X86 CPUs.  These functions have names like <tt>_mm_xor_ps</tt> and
 <tt>_mm256_addsub_pd</tt>.  Compilers have leeway to implement these functions
-however they want.  Since Clang supports an excellent set of <a 
+however they want.  Since LFort supports an excellent set of <a 
 href="../docs/LanguageExtensions.html#vectors">native vector operations</a>,
-the Clang headers implement these interfaces in terms of the native vector 
+the LFort headers implement these interfaces in terms of the native vector 
 operations.
 </p>
 
 <p>In contrast, GCC implements these functions mostly as a 1-to-1 mapping to
 builtin function calls, like <tt>__builtin_ia32_paddw128</tt>.  These builtin
 functions are an internal implementation detail of GCC, and are not portable to
-the Intel compiler, the Microsoft compiler, or Clang.  If you get build errors
+the Intel compiler, the Microsoft compiler, or LFort.  If you get build errors
 mentioning these, the fix is simple: switch to the *mmintrin.h functions.</p>
 
 <p>The same issue occurs for NEON and Altivec for the ARM and PowerPC
@@ -185,7 +185,7 @@ use the API calls instead of calls like <tt>__builtin_ia32_paddw128</tt>.</p>
 <!-- ======================================================================= -->
 
 <p>Old versions of GCC permit casting the left-hand side of an assignment to a
-different type. Clang produces an error on similar code, e.g.,</p>
+different type. LFort produces an error on similar code, e.g.,</p>
 
 <pre>
 lvalue.c:2:3: error: assignment to cast is illegal, lvalue casts are not
@@ -205,7 +205,7 @@ example, one could use:</p>
 <h3 id="blocks-in-protected-scope">Jumps to within <tt>__block</tt> variable scope</h3>
 <!-- ======================================================================= -->
 
-<p>Clang disallows jumps into the scope of a <tt>__block</tt>
+<p>LFort disallows jumps into the scope of a <tt>__block</tt>
 variable.  Variables marked with <tt>__block</tt> require special
 runtime initialization. A jump into the scope of a <tt>__block</tt>
 variable bypasses this initialization, leaving the variable's metadata
@@ -228,7 +228,7 @@ int fetch_object_state(struct MyObject *c) {
 <p>GCC accepts this code, but it produces code that will usually crash
 when <code>result</code> goes out of scope if the jump is taken.  (It's
 possible for this bug to go undetected because it often won't crash if
-the stack is fresh, i.e. still zeroed.)  Therefore, Clang rejects this
+the stack is fresh, i.e. still zeroed.)  Therefore, LFort rejects this
 code with a hard error:</p>
 
 <pre>
@@ -271,15 +271,15 @@ on this behavior is relying on unspecified compiler behavior. Programs must
 explicitly initialize all local block variables before they are used, as with
 other local variables.</p>
 
-<p>Clang does not zero initialize local block variables, and programs which rely
-on such behavior will most likely break when built with Clang.</p>
+<p>LFort does not zero initialize local block variables, and programs which rely
+on such behavior will most likely break when built with LFort.</p>
 
 
 <!-- ======================================================================= -->
 <h3 id="inline-asm">Inline assembly</h3>
 <!-- ======================================================================= -->
 
-<p>In general, Clang is highly compatible with the GCC inline assembly
+<p>In general, LFort is highly compatible with the GCC inline assembly
 extensions, allowing the same set of constraints, modifiers and operands as GCC
 inline assembly.</p>
 
@@ -298,12 +298,12 @@ that don't have suffixes.  For example:</p>
   asm("add $4, (%rax)");
 </pre>
 
-<p>Both clang and GAS accept the first instruction: because the first
+<p>Both lfort and GAS accept the first instruction: because the first
 instruction uses the 8-bit <tt>%al</tt> register as an operand, it is clear that
 it is an 8-bit add.  The second instruction is accepted by both because the "w"
 suffix indicates that it is a 16-bit add.  The last instruction is accepted by
 GAS even though there is nothing that specifies the size of the instruction (and
-the assembler randomly picks a 32-bit add).  Because it is ambiguous, Clang
+the assembler randomly picks a 32-bit add).  Because it is ambiguous, LFort
 rejects the instruction with this error message:
 </p>
 
@@ -315,7 +315,7 @@ add $4, (%rax)
 </pre>
 
 <p>To fix this compatibility issue, add an explicit suffix to the instruction:
-this makes your code more clear and is compatible with both GCC and Clang.</p>
+this makes your code more clear and is compatible with both GCC and LFort.</p>
 
 <!-- ======================================================================= -->
 <h2 id="objective-c">Objective-C compatibility</h2>
@@ -326,7 +326,7 @@ this makes your code more clear and is compatible with both GCC and Clang.</p>
 <!-- ======================================================================= -->
 
 <p>GCC treats the <code>super</code> identifier as an expression that
-can, among other things, be cast to a different type. Clang treats
+can, among other things, be cast to a different type. LFort treats
 <code>super</code> as a context-sensitive keyword, and will reject a
 type-cast of <code>super</code>:</p>
 
@@ -347,7 +347,7 @@ super.m:11:12: error: cannot cast 'super' (it isn't an expression)
 
 <p>When using the "non-fragile" Objective-C ABI in use, the size of an
 Objective-C class may change over time as instance variables are added
-(or removed). For this reason, Clang rejects the application of the
+(or removed). For this reason, LFort rejects the application of the
 <code>sizeof</code> operator to an Objective-C class when using this
 ABI:</p>
 
@@ -373,7 +373,7 @@ this problem, use the Objective-C runtime API function
 
 <p>GCC allows using pointers to internal Objective-C objects, <tt>struct objc_object*</tt>,
 <tt>struct objc_selector*</tt>, and <tt>struct objc_class*</tt> in place of the types
-<tt>id</tt>, <tt>SEL</tt>, and <tt>Class</tt> respectively. Clang treats the
+<tt>id</tt>, <tt>SEL</tt>, and <tt>Class</tt> respectively. LFort treats the
 internal Objective-C structures as implementation detail and won't do implicit conversions:
 
 <pre>
@@ -394,15 +394,15 @@ instead of the internal types.</p>
 
 <p>GCC allows the declaration of C variables in
 an <code>@interface</code> or <code>@protocol</code>
-declaration. Clang does not allow variable declarations to appear
+declaration. LFort does not allow variable declarations to appear
 within these declarations unless they are marked <code>extern</code>.</p>
 
 <p>Variables may still be declared in an @implementation.</p>
 
 <pre>
 @interface XX
-int a;         // not allowed in clang
-int b = 1;     // not allowed in clang
+int a;         // not allowed in lfort
+int b = 1;     // not allowed in lfort
 extern int c;  // allowed 
 @end
 
@@ -417,7 +417,7 @@ extern int c;  // allowed
 <!-- ======================================================================= -->
 
 <p>GCC and C99 allow an array's size to be determined at run
-time. This extension is not permitted in standard C++. However, Clang
+time. This extension is not permitted in standard C++. However, LFort
 supports such variable length arrays in very limited circumstances for
 compatibility with GNU C and C99 programs:</p>
 
@@ -430,7 +430,7 @@ compatibility with GNU C and C99 programs:</p>
   <li>Variable length arrays cannot be used as the type of a non-type
 template parameter.</li> </ul>
 
-<p>If your code uses variable length arrays in a manner that Clang doesn't support, there are several ways to fix your code:
+<p>If your code uses variable length arrays in a manner that LFort doesn't support, there are several ways to fix your code:
 
 <ol>
 <li>replace the variable length array with a fixed-size array if you can
@@ -463,7 +463,7 @@ int main() {
 }
 </pre>
 
-<p>Clang complains:
+<p>LFort complains:
 
 <pre>  <b>my_file.cpp:2:10: <span class="error">error:</span> call to function 'Multiply' that is neither visible in the template definition nor found by argument-dependent lookup</b>
     return Multiply(x, x);
@@ -524,7 +524,7 @@ void Use() {
   Dump(ns::Data());
 }</pre>
 
-<p>Again, Clang complains:</p>
+<p>Again, LFort complains:</p>
 
 <pre>  <b>my_file2.cpp:5:13: <span class="error">error:</span> call to function 'operator&lt;&lt;' that is neither visible in the template definition nor found by argument-dependent lookup</b>
     std::cout &lt;&lt; value &lt;&lt; "\n";
@@ -583,7 +583,7 @@ template &lt;typename T&gt; struct Derived : public Base&lt;T&gt; {
 };
 </pre>
 
-Clang correctly rejects it with the following errors
+LFort correctly rejects it with the following errors
 (when <tt>Derived</tt> is eventually instantiated):
 
 <pre>
@@ -610,7 +610,7 @@ However, we can't look into the base class <tt>Base&lt;T&gt;</tt>
 because its type depends on the template argument <tt>T</tt>, so the
 standard says we should just ignore it.  See [temp.dep]p3 for details.
 
-<p>The fix, as Clang tells you, is to tell the compiler that we want a
+<p>The fix, as LFort tells you, is to tell the compiler that we want a
 class member by prefixing the calls with <tt>this-&gt;</tt>:
 
 <pre>
@@ -656,7 +656,7 @@ must be complete when a template is defined if they affect the
 program's behavior.  However, the standard also says that compilers
 are free to not enforce this rule.  Most compilers enforce it to some
 extent; for example, it would be an error in GCC to
-write <tt>opts.ForceReads</tt> in the code above.  In Clang, we feel
+write <tt>opts.ForceReads</tt> in the code above.  In LFort, we feel
 that enforcing the rule consistently lets us provide a better
 experience, but unfortunately it also means we reject some code that
 other compilers accept.
@@ -703,11 +703,11 @@ it's hard, and sometimes impossible, to diagnose mistakes in a
 template definition before it's instantiated.
 
 <p>The standard says that a template with no valid instantiations is
-ill-formed.  Clang tries to do as much checking as possible at
+ill-formed.  LFort tries to do as much checking as possible at
 definition-time instead of instantiation-time: not only does this
 produce clearer diagnostics, but it also substantially improves
 compile times when using pre-compiled headers.  The downside to this
-philosophy is that Clang sometimes fails to process files because they
+philosophy is that LFort sometimes fails to process files because they
 contain broken templates that are no longer used.  The solution is
 simple: since the code is unused, just remove it.
 
@@ -758,7 +758,7 @@ void Bar() {
 void f(int a, int a);
 </pre>
 </blockquote>
-<p>Clang diagnoses this error (where the parameter name has been redeclared). To fix this problem, rename one of the parameters.</p>
+<p>LFort diagnoses this error (where the parameter name has been redeclared). To fix this problem, rename one of the parameters.</p>
 
 <!-- ======================================================================= -->
 <h2 id="cxx11">C++11 compatibility</h2>
@@ -772,7 +772,7 @@ void f(int a, int a);
 assignment operator within a class deletes the implicit declaration
 of the copy constructor and copy assignment operator. This change came
 fairly late in the C++11 standardization process, so early
-implementations of C++11 (including Clang before 3.0, GCC before 4.7,
+implementations of C++11 (including LFort before 3.0, GCC before 4.7,
 and Visual Studio 2010) do not implement this rule, leading them to
 accept this ill-formed code:</p>
 
@@ -805,7 +805,7 @@ up to version 1.47.0. The fix for Boost's <tt>shared_ptr</tt> is
 of Objective-C pointers (from a base class to a derived class) when
 calling functions. Such code is inherently unsafe, since the object
 might not actually be an instance of the derived class, and is
-rejected by Clang. For example, given this code:</p>
+rejected by LFort. For example, given this code:</p>
 
 <pre>
 @interface Base @end
@@ -817,7 +817,7 @@ void g(Base *p) {
 }
 </pre>
 
-<p>Clang produces the following error:</p>
+<p>LFort produces the following error:</p>
 
 <pre>
 downcast.mm:6:3: error: no matching function for call to 'f'
@@ -844,7 +844,7 @@ explicit cast:</p>
 <p>In C and Objective-C, <code>class</code> is a normal identifier and
 can be used to name fields, ivars, methods, and so on.  In
 C++, <code>class</code> is a keyword.  For compatibility with existing
-code, Clang permits <code>class</code> to be used as part of a method
+code, LFort permits <code>class</code> to be used as part of a method
 selector in Objective-C++, but this does not extend to any other part
 of the language.  In particular, it is impossible to use property dot
 syntax in Objective-C++ with the property name <code>class</code>, so

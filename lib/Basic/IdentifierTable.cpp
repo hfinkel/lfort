@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LangOptions.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LangOptions.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/SmallString.h"
@@ -22,7 +22,7 @@
 #include <cctype>
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // IdentifierInfo Implementation
@@ -189,7 +189,7 @@ void IdentifierTable::AddKeywords(const LangOptions &LangOpts) {
   if (LangOpts.ObjC2)          \
     AddObjCKeyword(StringRef(#NAME), tok::objc_##NAME, *this);
 #define TESTING_KEYWORD(NAME, FLAGS)
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
 
   if (LangOpts.ParseUnknownAnytype)
     AddKeyword("__unknown_anytype", tok::kw___unknown_anytype, KEYALL,
@@ -286,11 +286,11 @@ void IdentifierTable::PrintStats() const {
 // SelectorTable Implementation
 //===----------------------------------------------------------------------===//
 
-unsigned llvm::DenseMapInfo<clang::Selector>::getHashValue(clang::Selector S) {
+unsigned llvm::DenseMapInfo<lfort::Selector>::getHashValue(lfort::Selector S) {
   return DenseMapInfo<void*>::getHashValue(S.getAsOpaquePtr());
 }
 
-namespace clang {
+namespace lfort {
 /// MultiKeywordSelector - One of these variable length records is kept for each
 /// selector containing more than one keyword. We use a folding set
 /// to unique aggregate names (keyword selectors in ObjC parlance). Access to
@@ -338,7 +338,7 @@ public:
     Profile(ID, keyword_begin(), getNumArgs());
   }
 };
-} // end namespace clang.
+} // end namespace lfort.
 
 unsigned Selector::getNumArgs() const {
   unsigned IIF = getIdentifierInfoFlag();
@@ -516,7 +516,7 @@ SelectorTable::~SelectorTable() {
   delete &getSelectorTableImpl(Impl);
 }
 
-const char *clang::getOperatorSpelling(OverloadedOperatorKind Operator) {
+const char *lfort::getOperatorSpelling(OverloadedOperatorKind Operator) {
   switch (Operator) {
   case OO_None:
   case NUM_OVERLOADED_OPERATORS:
@@ -524,7 +524,7 @@ const char *clang::getOperatorSpelling(OverloadedOperatorKind Operator) {
 
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
   case OO_##Name: return Spelling;
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   }
 
   llvm_unreachable("Invalid OverloadedOperatorKind!");

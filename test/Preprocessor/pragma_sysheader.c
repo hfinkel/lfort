@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -verify -pedantic %s -fsyntax-only
-// RUN: %clang_cc1 -E %s | FileCheck %s
+// RUN: %lfort_cc1 -verify -pedantic %s -fsyntax-only
+// RUN: %lfort_cc1 -E %s | FileCheck %s
 // expected-no-diagnostics
 // rdar://6899937
 #include "pragma_sysheader.h"

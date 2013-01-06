@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -verify %s
 
 typedef const struct __CFString * CFStringRef;
 typedef const void * CFTypeRef;
@@ -27,10 +27,10 @@ id test0(void) {
 CFStringRef unauditedString(void);
 CFStringRef plusOneString(void) __attribute__((cf_returns_retained));
 
-#pragma clang arc_cf_code_audited begin
+#pragma lfort arc_cf_code_audited begin
 CFStringRef auditedString(void);
 CFStringRef auditedCreateString(void);
-#pragma clang arc_cf_code_audited end
+#pragma lfort arc_cf_code_audited end
 
 void test1(int cond) {
   id x;
@@ -90,11 +90,11 @@ void testCFTaker(CFTaker *taker, id string) {
 void takeCFOrdinaryUnaudited(CFStringRef arg);
 void takeCFVariadicUnaudited(int n, ...);
 void takeCFConsumedUnaudited(CFStringRef __attribute__((cf_consumed)) arg);
-#pragma clang arc_cf_code_audited begin
+#pragma lfort arc_cf_code_audited begin
 void takeCFOrdinaryAudited(CFStringRef arg);
 void takeCFVariadicAudited(int n, ...);
 void takeCFConsumedAudited(CFStringRef __attribute__((cf_consumed)) arg);
-#pragma clang arc_cf_code_audited end
+#pragma lfort arc_cf_code_audited end
 
 void testTakerFunctions(id string) {
   takeCFOrdinaryUnaudited((CFStringRef) string); // expected-error {{cast of Objective-C pointer type 'id' to C pointer type 'CFStringRef'}} expected-note {{use __bridge to}} expected-note {{use CFBridgingRetain call to}}

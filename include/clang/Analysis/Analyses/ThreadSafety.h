@@ -11,19 +11,19 @@
 // A intra-procedural analysis for thread safety (e.g. deadlocks and race
 // conditions), based off of an annotation system.
 //
-// See http://clang.llvm.org/docs/LanguageExtensions.html#threadsafety for more
+// See http://lfort.llvm.org/docs/LanguageExtensions.html#threadsafety for more
 // information.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_THREADSAFETY_H
-#define LLVM_CLANG_THREADSAFETY_H
+#ifndef LLVM_LFORT_THREADSAFETY_H
+#define LLVM_LFORT_THREADSAFETY_H
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 namespace thread_safety {
 
 /// This enum distinguishes between different kinds of operations that may
@@ -164,5 +164,5 @@ void runThreadSafetyAnalysis(AnalysisDeclContext &AC,
 /// of access.
 LockKind getLockKindFromAccessKind(AccessKind AK);
 
-}} // end namespace clang::thread_safety
+}} // end namespace lfort::thread_safety
 #endif

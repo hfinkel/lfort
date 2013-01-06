@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -std=c++11 -fsyntax-only -verify %s
 class X {
   X(const X&);
 

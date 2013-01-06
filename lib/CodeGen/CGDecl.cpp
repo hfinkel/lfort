@@ -15,18 +15,18 @@
 #include "CGDebugInfo.h"
 #include "CGOpenCLRuntime.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Type.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 

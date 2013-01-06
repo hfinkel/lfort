@@ -22,8 +22,8 @@
  *
 \*===----------------------------------------------------------------------===*/
 
-#ifndef __CLANG_STDINT_H
-#define __CLANG_STDINT_H
+#ifndef __LFORT_STDINT_H
+#define __LFORT_STDINT_H
 
 /* If we're hosted, fall back to the system's stdint.h, which might have
  * additional definitions.
@@ -658,4 +658,4 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 #define UINTMAX_C(v) __UINTN_C(__INTMAX_WIDTH__, v)
 
 #endif /* __STDC_HOSTED__ */
-#endif /* __CLANG_STDINT_H */
+#endif /* __LFORT_STDINT_H */

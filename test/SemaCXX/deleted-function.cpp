@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 -fcxx-exceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 -fcxx-exceptions %s
 
 int i = delete; // expected-error {{only functions can have deleted definitions}}
 

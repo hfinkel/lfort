@@ -12,10 +12,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_OPERATOR_KINDS_H
-#define LLVM_CLANG_BASIC_OPERATOR_KINDS_H
+#ifndef LLVM_LFORT_BASIC_OPERATOR_KINDS_H
+#define LLVM_LFORT_BASIC_OPERATOR_KINDS_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief Enumeration specifying the different kinds of C++ overloaded
 /// operators.
@@ -23,7 +23,7 @@ enum OverloadedOperatorKind {
   OO_None,                ///< Not an overloaded operator
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
   OO_##Name,
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   NUM_OVERLOADED_OPERATORS
 };
 
@@ -31,6 +31,6 @@ enum OverloadedOperatorKind {
 /// the preceding "operator" keyword.
 const char *getOperatorSpelling(OverloadedOperatorKind Operator);
   
-} // end namespace clang
+} // end namespace lfort
 
 #endif

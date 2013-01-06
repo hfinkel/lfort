@@ -1,4 +1,4 @@
-// RUN: %clang %s -ffreestanding -Wno-int-to-pointer-cast -fsyntax-only -Xclang -verify -pedantic -fpascal-strings -std=c99
+// RUN: %lfort %s -ffreestanding -Wno-int-to-pointer-cast -fsyntax-only -Xlfort -verify -pedantic -fpascal-strings -std=c99
 
 #include <stdint.h>
 #include <limits.h>

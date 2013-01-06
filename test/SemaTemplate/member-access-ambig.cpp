@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-unused-comparison %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-unused-comparison %s
 
 // PR8439
 class A

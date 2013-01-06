@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGRECORDLAYOUT_H
-#define CLANG_CODEGEN_CGRECORDLAYOUT_H
+#ifndef LFORT_CODEGEN_CGRECORDLAYOUT_H
+#define LFORT_CODEGEN_CGRECORDLAYOUT_H
 
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Decl.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/DerivedTypes.h"
 
@@ -20,7 +20,7 @@ namespace llvm {
   class StructType;
 }
 
-namespace clang {
+namespace lfort {
 namespace CodeGen {
 
 /// \brief Structure with information about how a bitfield should be accessed.
@@ -213,6 +213,6 @@ public:
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

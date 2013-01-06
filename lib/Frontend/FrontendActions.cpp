@@ -7,26 +7,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Frontend/ASTConsumers.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/Pragma.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/Parser.h"
-#include "clang/Serialization/ASTWriter.h"
+#include "lfort/Frontend/FrontendActions.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Frontend/ASTConsumers.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/Pragma.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/Parser.h"
+#include "lfort/Serialization/ASTWriter.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Custom Actions
@@ -106,7 +106,7 @@ bool GeneratePCHAction::ComputeASTConsumerArguments(CompilerInstance &CI,
     return true;
   }
 
-  // We use createOutputFile here because this is exposed via libclang, and we
+  // We use createOutputFile here because this is exposed via liblfort, and we
   // must disable the RemoveFileOnSignal behavior.
   // We use a temporary to avoid race conditions.
   OS = CI.createOutputFile(CI.getFrontendOpts().OutputFile, /*Binary=*/true,
@@ -164,7 +164,7 @@ static void addHeaderInclude(const FileEntry *Header,
 static void collectModuleHeaderIncludes(const LangOptions &LangOpts,
                                         FileManager &FileMgr,
                                         ModuleMap &ModMap,
-                                        clang::Module *Module,
+                                        lfort::Module *Module,
                                         SmallVectorImpl<char> &Includes) {
   // Don't collect any headers for unavailable modules.
   if (!Module->isAvailable())
@@ -212,7 +212,7 @@ static void collectModuleHeaderIncludes(const LangOptions &LangOpts,
   }
   
   // Recurse into submodules.
-  for (clang::Module::submodule_iterator Sub = Module->submodule_begin(),
+  for (lfort::Module::submodule_iterator Sub = Module->submodule_begin(),
                                       SubEnd = Module->submodule_end();
        Sub != SubEnd; ++Sub)
     collectModuleHeaderIncludes(LangOpts, FileMgr, ModMap, *Sub, Includes);
@@ -297,7 +297,7 @@ bool GenerateModuleAction::ComputeASTConsumerArguments(CompilerInstance &CI,
     CI.getFrontendOpts().OutputFile = ModuleFileName.str();
   }
   
-  // We use createOutputFile here because this is exposed via libclang, and we
+  // We use createOutputFile here because this is exposed via liblfort, and we
   // must disable the RemoveFileOnSignal behavior.
   // We use a temporary to avoid race conditions.
   OS = CI.createOutputFile(CI.getFrontendOpts().OutputFile, /*Binary=*/true,

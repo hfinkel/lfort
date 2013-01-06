@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/Options.h"
-#include "clang/Driver/Tool.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Driver/Tool.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
 #include "llvm/Support/Host.h"
-using namespace clang;
+using namespace lfort;
 
 /// createInvocationFromCommandLine - Construct a compiler invocation object for
 /// a command line argument vector.
@@ -29,7 +29,7 @@ using namespace clang;
 /// \return A CompilerInvocation, or 0 if none was built for the given
 /// argument vector.
 CompilerInvocation *
-clang::createInvocationFromCommandLine(ArrayRef<const char *> ArgList,
+lfort::createInvocationFromCommandLine(ArrayRef<const char *> ArgList,
                             IntrusiveRefCntPtr<DiagnosticsEngine> Diags) {
   if (!Diags.getPtr()) {
     // No diagnostics engine was provided, so create our own diagnostics object
@@ -40,14 +40,14 @@ clang::createInvocationFromCommandLine(ArrayRef<const char *> ArgList,
   }
 
   SmallVector<const char *, 16> Args;
-  Args.push_back("<clang>"); // FIXME: Remove dummy argument.
+  Args.push_back("<lfort>"); // FIXME: Remove dummy argument.
   Args.insert(Args.end(), ArgList.begin(), ArgList.end());
 
   // FIXME: Find a cleaner way to force the driver into restricted modes.
   Args.push_back("-fsyntax-only");
 
   // FIXME: We shouldn't have to pass in the path info.
-  driver::Driver TheDriver("clang", llvm::sys::getDefaultTargetTriple(),
+  driver::Driver TheDriver("lfort", llvm::sys::getDefaultTargetTriple(),
                            "a.out", *Diags);
 
   // Don't check that inputs exist, they may have been remapped.
@@ -73,8 +73,8 @@ clang::createInvocationFromCommandLine(ArrayRef<const char *> ArgList,
   }
 
   const driver::Command *Cmd = cast<driver::Command>(*Jobs.begin());
-  if (StringRef(Cmd->getCreator().getName()) != "clang") {
-    Diags->Report(diag::err_fe_expected_clang_command);
+  if (StringRef(Cmd->getCreator().getName()) != "lfort") {
+    Diags->Report(diag::err_fe_expected_lfort_command);
     return 0;
   }
 

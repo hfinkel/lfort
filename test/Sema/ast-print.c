@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -ast-print | FileCheck %s
+// RUN: %lfort_cc1 %s -ast-print | FileCheck %s
 
 typedef void func_typedef();
 func_typedef xxx;

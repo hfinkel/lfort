@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/PrettyDeclStackTrace.h"
-#include "clang/Sema/Scope.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
+#include "lfort/Sema/Scope.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringExtras.h"
-using namespace clang;
+using namespace lfort;
 
 
 /// ParseObjCAtDirectives - Handle parts of the external-declaration production:

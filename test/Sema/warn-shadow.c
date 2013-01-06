@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -fblocks -Wshadow %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -fblocks -Wshadow %s
 
 int i;          // expected-note 3 {{previous declaration is here}}
 

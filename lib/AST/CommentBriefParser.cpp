@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentBriefParser.h"
-#include "clang/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentBriefParser.h"
+#include "lfort/AST/CommentCommandTraits.h"
 #include "llvm/ADT/StringSwitch.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 namespace {
@@ -150,6 +150,6 @@ std::string BriefParser::Parse() {
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 

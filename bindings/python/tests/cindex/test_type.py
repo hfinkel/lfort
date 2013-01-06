@@ -1,8 +1,8 @@
 import gc
 
-from clang.cindex import CursorKind
-from clang.cindex import TranslationUnit
-from clang.cindex import TypeKind
+from lfort.cindex import CursorKind
+from lfort.cindex import TranslationUnit
+from lfort.cindex import TypeKind
 from nose.tools import raises
 from .util import get_cursor
 from .util import get_tu

@@ -13,15 +13,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 QualType CallEvent::getResultType() const {
@@ -848,7 +848,7 @@ RuntimeDefinition ObjCMethodCall::getRuntimeDefinition() const {
         // where the same queries may get issued.  If we are worried about
         // concurrency, or possibly loading/unloading ASTs, etc., we may
         // need to revisit this someday.  In terms of memory, this table
-        // stays around until clang quits, which also may be bad if we
+        // stays around until lfort quits, which also may be bad if we
         // need to release memory.
         typedef std::pair<const ObjCInterfaceDecl*, Selector>
                 PrivateMethodKey;

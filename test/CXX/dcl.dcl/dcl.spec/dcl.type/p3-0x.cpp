@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s -fcxx-exceptions
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s -fcxx-exceptions
 
 using X = struct { // ok
 };

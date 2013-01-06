@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -ast-print %s | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -ast-print %s | FileCheck %s
 
 // FIXME: Print the trailing-return-type properly.
 // CHECK: decltype(nullptr) operator "" _foo(const char *p, decltype(sizeof(int)));

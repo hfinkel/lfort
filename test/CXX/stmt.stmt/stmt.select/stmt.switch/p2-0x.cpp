@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 // expected-no-diagnostics
 
 struct Value {

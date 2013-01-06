@@ -1,5 +1,5 @@
 // Testcase for PR1242
-// RUN: %clang_cc1 -emit-llvm %s -o - | grep datalayout | \
+// RUN: %lfort_cc1 -emit-llvm %s -o - | grep datalayout | \
 // RUN:    not grep {"\[Ee\]-p:\[36\]\[24\]:\[36\]\[24\]"}
 // END.
 

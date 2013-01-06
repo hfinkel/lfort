@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -x objective-c %s.result
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -x objective-c %s.result
 // RUN: arcmt-test --args -triple x86_64-apple-macosx10.7 -fsyntax-only %s > %t
 // RUN: diff %t %s.result
 // DISABLE: mingw32

@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o - %s
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o - %s
-// RUN: %clang_cc1 -fobjc-gc -emit-llvm -o - %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -fobjc-gc -emit-llvm -o - %s
 
 // rdar://6800926
 @interface ITF {

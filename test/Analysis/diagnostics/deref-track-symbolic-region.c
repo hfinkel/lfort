@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=text -verify %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-multi-file %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=text -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-multi-file %s -o - | FileCheck %s
 
 struct S {
   int *x;

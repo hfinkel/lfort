@@ -3,6 +3,6 @@
    them. Ideally, we would eliminate all such cases and move these
    tests elsewhere. */
 
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 unsinged x = 17; // expected-error{{unknown type name 'unsinged'; did you mean 'unsigned'?}}

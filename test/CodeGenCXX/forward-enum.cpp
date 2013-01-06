@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -triple x86_64-apple-darwin11.0.0 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -triple x86_64-apple-darwin11.0.0 -emit-llvm -o - %s | FileCheck %s
 
 enum MyEnum : char;
 void bar(MyEnum value) { }

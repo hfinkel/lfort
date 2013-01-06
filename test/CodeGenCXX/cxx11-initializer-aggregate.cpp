@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -S -emit-llvm -o - %s -triple x86_64-linux-gnu | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -S -emit-llvm -o - %s -triple x86_64-linux-gnu | FileCheck %s
 
 struct A { int a, b; int f(); };
 

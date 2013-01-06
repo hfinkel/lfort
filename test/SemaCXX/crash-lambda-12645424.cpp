@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 %s -verify
 
 // rdar://12645424, crash due to a double-free
 

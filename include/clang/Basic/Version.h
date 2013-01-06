@@ -1,4 +1,4 @@
-//===- Version.h - Clang Version Number -------------------------*- C++ -*-===//
+//===- Version.h - LFort Version Number -------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -9,71 +9,71 @@
 ///
 /// \file
 /// \brief Defines version macros and version-related utility functions
-/// for Clang.
+/// for LFort.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_VERSION_H
-#define LLVM_CLANG_BASIC_VERSION_H
+#ifndef LLVM_LFORT_BASIC_VERSION_H
+#define LLVM_LFORT_BASIC_VERSION_H
 
-#include "clang/Basic/Version.inc"
+#include "lfort/Basic/Version.inc"
 #include "llvm/ADT/StringRef.h"
 
-/// \brief Helper macro for CLANG_VERSION_STRING.
-#define CLANG_MAKE_VERSION_STRING2(X) #X
+/// \brief Helper macro for LFORT_VERSION_STRING.
+#define LFORT_MAKE_VERSION_STRING2(X) #X
 
-#ifdef CLANG_VERSION_PATCHLEVEL
-/// \brief Helper macro for CLANG_VERSION_STRING.
-#define CLANG_MAKE_VERSION_STRING(X,Y,Z) CLANG_MAKE_VERSION_STRING2(X.Y.Z)
+#ifdef LFORT_VERSION_PATCHLEVEL
+/// \brief Helper macro for LFORT_VERSION_STRING.
+#define LFORT_MAKE_VERSION_STRING(X,Y,Z) LFORT_MAKE_VERSION_STRING2(X.Y.Z)
 
-/// \brief A string that describes the Clang version number, e.g., "1.0".
-#define CLANG_VERSION_STRING \
-  CLANG_MAKE_VERSION_STRING(CLANG_VERSION_MAJOR,CLANG_VERSION_MINOR, \
-                            CLANG_VERSION_PATCHLEVEL)
+/// \brief A string that describes the LFort version number, e.g., "1.0".
+#define LFORT_VERSION_STRING \
+  LFORT_MAKE_VERSION_STRING(LFORT_VERSION_MAJOR,LFORT_VERSION_MINOR, \
+                            LFORT_VERSION_PATCHLEVEL)
 #else
-/// \brief Helper macro for CLANG_VERSION_STRING.
-#define CLANG_MAKE_VERSION_STRING(X,Y) CLANG_MAKE_VERSION_STRING2(X.Y)
+/// \brief Helper macro for LFORT_VERSION_STRING.
+#define LFORT_MAKE_VERSION_STRING(X,Y) LFORT_MAKE_VERSION_STRING2(X.Y)
 
-/// \brief A string that describes the Clang version number, e.g., "1.0".
-#define CLANG_VERSION_STRING \
-  CLANG_MAKE_VERSION_STRING(CLANG_VERSION_MAJOR,CLANG_VERSION_MINOR)
+/// \brief A string that describes the LFort version number, e.g., "1.0".
+#define LFORT_VERSION_STRING \
+  LFORT_MAKE_VERSION_STRING(LFORT_VERSION_MAJOR,LFORT_VERSION_MINOR)
 #endif
 
-namespace clang {
+namespace lfort {
   /// \brief Retrieves the repository path (e.g., Subversion path) that
-  /// identifies the particular Clang branch, tag, or trunk from which this
-  /// Clang was built.
-  std::string getClangRepositoryPath();
+  /// identifies the particular LFort branch, tag, or trunk from which this
+  /// LFort was built.
+  std::string getLFortRepositoryPath();
 
   /// \brief Retrieves the repository path from which LLVM was built.
   ///
-  /// This supports LLVM residing in a separate repository from clang.
+  /// This supports LLVM residing in a separate repository from lfort.
   std::string getLLVMRepositoryPath();
 
   /// \brief Retrieves the repository revision number (or identifer) from which
-  /// this Clang was built.
-  std::string getClangRevision();
+  /// this LFort was built.
+  std::string getLFortRevision();
 
   /// \brief Retrieves the repository revision number (or identifer) from which
   /// LLVM was built.
   ///
-  /// If Clang and LLVM are in the same repository, this returns the same
-  /// string as getClangRevision.
+  /// If LFort and LLVM are in the same repository, this returns the same
+  /// string as getLFortRevision.
   std::string getLLVMRevision();
 
   /// \brief Retrieves the full repository version that is an amalgamation of
-  /// the information in getClangRepositoryPath() and getClangRevision().
-  std::string getClangFullRepositoryVersion();
+  /// the information in getLFortRepositoryPath() and getLFortRevision().
+  std::string getLFortFullRepositoryVersion();
 
-  /// \brief Retrieves a string representing the complete clang version,
-  /// which includes the clang version number, the repository version,
+  /// \brief Retrieves a string representing the complete lfort version,
+  /// which includes the lfort version number, the repository version,
   /// and the vendor tag.
-  std::string getClangFullVersion();
+  std::string getLFortFullVersion();
 
-  /// \brief Retrieves a string representing the complete clang version suitable
-  /// for use in the CPP __VERSION__ macro, which includes the clang version
+  /// \brief Retrieves a string representing the complete lfort version suitable
+  /// for use in the CPP __VERSION__ macro, which includes the lfort version
   /// number, the repository version, and the vendor tag.
-  std::string getClangFullCPPVersion();
+  std::string getLFortFullCPPVersion();
 }
 
-#endif // LLVM_CLANG_BASIC_VERSION_H
+#endif // LLVM_LFORT_BASIC_VERSION_H

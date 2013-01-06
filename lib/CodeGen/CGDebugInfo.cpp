@@ -16,16 +16,16 @@
 #include "CGObjCRuntime.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Version.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/IR/Constants.h"
@@ -36,8 +36,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/Support/Dwarf.h"
 #include "llvm/Support/FileSystem.h"
-using namespace clang;
-using namespace clang::CodeGen;
+using namespace lfort;
+using namespace lfort::CodeGen;
 
 CGDebugInfo::CGDebugInfo(CodeGenModule &CGM)
   : CGM(CGM), DBuilder(CGM.getModule()),
@@ -322,7 +322,7 @@ void CGDebugInfo::CreateCompileUnit() {
     LangTag = llvm::dwarf::DW_LANG_C89;
   }
 
-  std::string Producer = getClangFullVersion();
+  std::string Producer = getLFortFullVersion();
 
   // Figure out which version of the ObjC runtime we have.
   unsigned RuntimeVers = 0;
@@ -347,7 +347,7 @@ llvm::DIType CGDebugInfo::CreateType(const BuiltinType *BT) {
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \
   case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
   case BuiltinType::Dependent:
     llvm_unreachable("Unexpected builtin type");
   case BuiltinType::NullPtr:
@@ -798,9 +798,9 @@ llvm::DIType CGDebugInfo::createFieldType(StringRef name,
   }
 
   unsigned flags = 0;
-  if (AS == clang::AS_private)
+  if (AS == lfort::AS_private)
     flags |= llvm::DIDescriptor::FlagPrivate;
-  else if (AS == clang::AS_protected)
+  else if (AS == lfort::AS_protected)
     flags |= llvm::DIDescriptor::FlagProtected;
 
   return DBuilder.createMemberType(scope, name, file, line, sizeInBits,
@@ -1009,9 +1009,9 @@ CGDebugInfo::CreateCXXMemberFunction(const CXXMethodDecl *Method,
   if (Method->isImplicit())
     Flags |= llvm::DIDescriptor::FlagArtificial;
   AccessSpecifier Access = Method->getAccess();
-  if (Access == clang::AS_private)
+  if (Access == lfort::AS_private)
     Flags |= llvm::DIDescriptor::FlagPrivate;
-  else if (Access == clang::AS_protected)
+  else if (Access == lfort::AS_protected)
     Flags |= llvm::DIDescriptor::FlagProtected;
   if (const CXXConstructorDecl *CXXC = dyn_cast<CXXConstructorDecl>(Method)) {
     if (CXXC->isExplicit())
@@ -1114,9 +1114,9 @@ CollectCXXBases(const CXXRecordDecl *RD, llvm::DIFile Unit,
     // BI->isVirtual() and bits when not.
     
     AccessSpecifier Access = BI->getAccessSpecifier();
-    if (Access == clang::AS_private)
+    if (Access == lfort::AS_private)
       BFlags |= llvm::DIDescriptor::FlagPrivate;
-    else if (Access == clang::AS_protected)
+    else if (Access == lfort::AS_protected)
       BFlags |= llvm::DIDescriptor::FlagProtected;
     
     llvm::DIType DTy = 
@@ -1811,7 +1811,7 @@ llvm::DIType CGDebugInfo::CreateTypeNode(QualType Ty, llvm::DIFile Unit) {
 #define ABSTRACT_TYPE(Class, Base)
 #define NON_CANONICAL_TYPE(Class, Base)
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Dependent types cannot show up in debug information");
 
   case Type::ExtVector:
@@ -1983,7 +1983,7 @@ llvm::DIType CGDebugInfo::CreateLimitedTypeNode(QualType Ty,llvm::DIFile Unit) {
 #define ABSTRACT_TYPE(Class, Base)
 #define NON_CANONICAL_TYPE(Class, Base)
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-        #include "clang/AST/TypeNodes.def"
+        #include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Dependent types cannot show up in debug information");
 
   case Type::Record:
@@ -2082,7 +2082,7 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
   FnBeginRegionCount.push_back(LexicalBlockStack.size());
 
   const Decl *D = GD.getDecl();
-  // Function may lack declaration in source code if it is created by Clang
+  // Function may lack declaration in source code if it is created by LFort
   // CodeGen (examples: _GLOBAL__I_a, __cxx_global_array_dtor, thunk).
   bool HasDecl = (D != 0);
   // Use the location of the declaration.

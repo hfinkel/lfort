@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentParser.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/CommentDiagnostic.h"
-#include "clang/AST/CommentSema.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/CommentParser.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentDiagnostic.h"
+#include "lfort/AST/CommentSema.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 /// Re-lexes a sequence of tok::text tokens.
@@ -736,4 +736,4 @@ FullComment *Parser::parseFullComment() {
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Weverything -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Weverything -verify %s
 // rdar://11656982
 /** Normally, a property cannot be both 'readonly' and having a "write" attribute
     (copy/retain/etc.). But, property declaration in primary class and protcols

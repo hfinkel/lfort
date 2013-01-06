@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - -triple=x86_64-apple-macosx10.8.0 -fms-extensions -verify
+// RUN: %lfort_cc1 -emit-llvm %s -o - -triple=x86_64-apple-macosx10.8.0 -fms-extensions -verify
 
 typedef struct _GUID
 {

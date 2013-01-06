@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 
 void foo(int * __restrict myptr1, int * myptr2) {
   // CHECK: noalias

@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PROGRAMSTATE_FWD_H
-#define LLVM_CLANG_PROGRAMSTATE_FWD_H
+#ifndef LLVM_LFORT_PROGRAMSTATE_FWD_H
+#define LLVM_LFORT_PROGRAMSTATE_FWD_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
   class ProgramState;
   class ProgramStateManager;
@@ -23,17 +23,17 @@ namespace ento {
 }
 
 namespace llvm {
-  template <> struct IntrusiveRefCntPtrInfo<const clang::ento::ProgramState> {
-    static void retain(const clang::ento::ProgramState *state) {
-      clang::ento::ProgramStateRetain(state);
+  template <> struct IntrusiveRefCntPtrInfo<const lfort::ento::ProgramState> {
+    static void retain(const lfort::ento::ProgramState *state) {
+      lfort::ento::ProgramStateRetain(state);
     }
-    static void release(const clang::ento::ProgramState *state) {
-      clang::ento::ProgramStateRelease(state);
+    static void release(const lfort::ento::ProgramState *state) {
+      lfort::ento::ProgramStateRelease(state);
     }
   };
 }
 
-namespace clang {
+namespace lfort {
 namespace ento {
   typedef IntrusiveRefCntPtr<const ProgramState> ProgramStateRef;
 }

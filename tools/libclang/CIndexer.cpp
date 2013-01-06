@@ -1,4 +1,4 @@
-//===- CIndex.cpp - Clang-C Source Indexing Library -----------------------===//
+//===- CIndex.cpp - LFort-C Source Indexing Library -----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the Clang-C Source Indexing library.
+// This file implements the LFort-C Source Indexing library.
 //
 //===----------------------------------------------------------------------===//
 
 #include "CIndexer.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Version.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/Support/Compiler.h"
@@ -41,18 +41,18 @@
 #include <dlfcn.h>
 #endif
 
-using namespace clang;
+using namespace lfort;
 
-std::string CIndexer::getClangResourcesPath() {
+std::string CIndexer::getLFortResourcesPath() {
   // Did we already compute the path?
   if (!ResourcesPath.empty())
     return ResourcesPath.str();
   
-  // Find the location where this library lives (libclang.dylib).
+  // Find the location where this library lives (liblfort.dylib).
 #ifdef LLVM_ON_WIN32
   MEMORY_BASIC_INFORMATION mbi;
   char path[MAX_PATH];
-  VirtualQuery((void *)(uintptr_t)clang_createTranslationUnit, &mbi,
+  VirtualQuery((void *)(uintptr_t)lfort_createTranslationUnit, &mbi,
                sizeof(mbi));
   GetModuleFileNameA((HINSTANCE)mbi.AllocationBase, path, MAX_PATH);
 
@@ -66,26 +66,26 @@ std::string CIndexer::getClangResourcesPath() {
 #endif
 #endif
 
-  llvm::sys::Path LibClangPath(path);
-  LibClangPath.eraseComponent();
+  llvm::sys::Path LibLFortPath(path);
+  LibLFortPath.eraseComponent();
 #else
   // This silly cast below avoids a C++ warning.
   Dl_info info;
-  if (dladdr((void *)(uintptr_t)clang_createTranslationUnit, &info) == 0)
+  if (dladdr((void *)(uintptr_t)lfort_createTranslationUnit, &info) == 0)
     llvm_unreachable("Call to dladdr() failed");
   
-  llvm::sys::Path LibClangPath(info.dli_fname);
+  llvm::sys::Path LibLFortPath(info.dli_fname);
   
-  // We now have the CIndex directory, locate clang relative to it.
-  LibClangPath.eraseComponent();
+  // We now have the CIndex directory, locate lfort relative to it.
+  LibLFortPath.eraseComponent();
 #endif
   
-  LibClangPath.appendComponent("clang");
-  LibClangPath.appendComponent(CLANG_VERSION_STRING);
+  LibLFortPath.appendComponent("lfort");
+  LibLFortPath.appendComponent(LFORT_VERSION_STRING);
 
   // Cache our result.
-  ResourcesPath = LibClangPath;
-  return LibClangPath.str();
+  ResourcesPath = LibLFortPath;
+  return LibLFortPath.str();
 }
 
 static llvm::sys::Path GetTemporaryPath() {
@@ -110,7 +110,7 @@ static llvm::sys::Path GetTemporaryPath() {
   return P;
 }
 
-bool clang::RemapFiles(unsigned num_unsaved_files,
+bool lfort::RemapFiles(unsigned num_unsaved_files,
                        struct CXUnsavedFile *unsaved_files,
                        std::vector<std::string> &RemapArgs,
                        std::vector<llvm::sys::Path> &TemporaryFiles) {
@@ -138,9 +138,9 @@ bool clang::RemapFiles(unsigned num_unsaved_files,
     std::string RemapArg = unsaved_files[i].Filename;
     RemapArg += ';';
     RemapArg += SavedFile.str();
-    RemapArgs.push_back("-Xclang");
+    RemapArgs.push_back("-Xlfort");
     RemapArgs.push_back("-remap-file");
-    RemapArgs.push_back("-Xclang");
+    RemapArgs.push_back("-Xlfort");
     RemapArgs.push_back(RemapArg);
     TemporaryFiles.push_back(SavedFile);
   }

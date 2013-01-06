@@ -13,13 +13,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_PRETTY_DECL_STACK_TRACE_H
-#define LLVM_CLANG_SEMA_PRETTY_DECL_STACK_TRACE_H
+#ifndef LLVM_LFORT_SEMA_PRETTY_DECL_STACK_TRACE_H
+#define LLVM_LFORT_SEMA_PRETTY_DECL_STACK_TRACE_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/Support/PrettyStackTrace.h"
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 class Sema;

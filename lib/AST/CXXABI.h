@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_CXXABI_H
-#define LLVM_CLANG_AST_CXXABI_H
+#ifndef LLVM_LFORT_AST_CXXABI_H
+#define LLVM_LFORT_AST_CXXABI_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class MemberPointerType;

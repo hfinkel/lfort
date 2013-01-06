@@ -1,6 +1,6 @@
 // Test with pch.
-// RUN: %clang_cc1 -triple x86_64-apple-darwin9 -emit-pch -o %t.pch %S/external-defs.h
-// RUN: %clang_cc1 -triple x86_64-apple-darwin9 -include-pch %t.pch -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin9 -emit-pch -o %t.pch %S/external-defs.h
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin9 -include-pch %t.pch -emit-llvm -o %t %s
 
 // RUN: grep "@x = common global i32 0" %t | count 1
 // RUN: grep "@z" %t | count 0

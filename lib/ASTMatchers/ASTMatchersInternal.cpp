@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/ASTMatchers/ASTMatchersInternal.h"
+#include "lfort/ASTMatchers/ASTMatchers.h"
+#include "lfort/ASTMatchers/ASTMatchersInternal.h"
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 namespace internal {
 
@@ -84,4 +84,4 @@ BoundNodesTree BoundNodesTreeBuilder::build() const {
 
 } // end namespace internal
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort

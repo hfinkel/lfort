@@ -12,19 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Grammar actions.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int ovl(int); // expected-note 3{{possible target for call}}
 float ovl(float); // expected-note 3{{possible target for call}}

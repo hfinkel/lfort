@@ -5,8 +5,8 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_unittest(ASTMatchersTests
+add_lfort_unittest(ASTMatchersTests
   ASTMatchersTest.cpp)
 
 target_link_libraries(ASTMatchersTests
-  gtest gtest_main clangASTMatchers clangTooling)
+  gtest gtest_main lfortASTMatchers lfortTooling)

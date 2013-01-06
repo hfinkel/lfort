@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // A storage-class-specifier shall not be specified in an explicit
 // specialization (14.7.3) or an explicit instantiation (14.7.2)

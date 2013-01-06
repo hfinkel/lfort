@@ -11,28 +11,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/APValue.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <cstring>
-using namespace clang;
+using namespace lfort;
 
 const CXXRecordDecl *Expr::getBestDynamicClassType() const {
   const Expr *E = ignoreParenBaseCasts();
@@ -209,7 +209,7 @@ SourceLocation Expr::getExprLoc() const {
   case Stmt::type##Class: llvm_unreachable(#type " is not an Expr"); break;
 #define EXPR(type, base) \
   case Stmt::type##Class: return getExprLocImpl<type>(this, &type::getExprLoc);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
   llvm_unreachable("unknown statement kind");
 }
@@ -1566,7 +1566,7 @@ CXXBaseSpecifier **CastExpr::path_buffer() {
   case Stmt::Type##Class: \
     return reinterpret_cast<CXXBaseSpecifier**>(static_cast<Type*>(this)+1);
 #define STMT(Type, Base)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   default:
     llvm_unreachable("non-cast expressions not possible here");
   }
@@ -2703,7 +2703,7 @@ bool Expr::HasSideEffects(const ASTContext &Ctx) const {
   #define ABSTRACT_STMT(Type)
   #define STMT(Type, Base) case Type##Class:
   #define EXPR(Type, Base)
-  #include "clang/AST/StmtNodes.inc"
+  #include "lfort/AST/StmtNodes.inc"
     llvm_unreachable("unexpected Expr kind");
 
   case DependentScopeDeclRefExprClass:

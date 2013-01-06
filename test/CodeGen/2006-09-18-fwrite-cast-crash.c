@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o /dev/null
+// RUN: %lfort_cc1 %s -emit-llvm -o /dev/null
 // PR910
 
 struct l_struct_2E_FILE { char x; };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -verify
 int main ()
 {
 	int i,j;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -fobjc-runtime=gcc %s
+// RUN: %lfort_cc1 -emit-llvm-only -fobjc-runtime=gcc %s
 
 // PR13820
 // REQUIRES: LP64

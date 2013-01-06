@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGCLEANUP_H
-#define CLANG_CODEGEN_CGCLEANUP_H
+#ifndef LFORT_CODEGEN_CGCLEANUP_H
+#define LFORT_CODEGEN_CGCLEANUP_H
 
 /// EHScopeStack is defined in CodeGenFunction.h, but its
 /// implementation is in this file and in CGCleanup.cpp.
@@ -23,7 +23,7 @@ namespace llvm {
   class BasicBlock;
 }
 
-namespace clang {
+namespace lfort {
 namespace CodeGen {
 
 /// A protected scope for zero-cost EH handling.

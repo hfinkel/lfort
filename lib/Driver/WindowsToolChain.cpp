@@ -8,12 +8,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "ToolChains.h"
-#include "clang/Basic/Version.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/Options.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/Options.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/Path.h"
 
@@ -26,9 +26,9 @@
   #include <Windows.h>
 #endif
 
-using namespace clang::driver;
-using namespace clang::driver::toolchains;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort::driver::toolchains;
+using namespace lfort;
 
 Windows::Windows(const Driver &D, const llvm::Triple& Triple)
   : ToolChain(D, Triple) {
@@ -37,7 +37,7 @@ Windows::Windows(const Driver &D, const llvm::Triple& Triple)
 Tool &Windows::SelectTool(const Compilation &C, const JobAction &JA,
                           const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -60,12 +60,12 @@ Tool &Windows::SelectTool(const Compilation &C, const JobAction &JA,
     case Action::AnalyzeJobClass:
     case Action::MigrateJobClass:
     case Action::CompileJobClass:
-      T = new tools::Clang(*this); break;
+      T = new tools::LFort(*this); break;
     case Action::AssembleJobClass:
       if (!UseIntegratedAs && getTriple().getEnvironment() == llvm::Triple::MachO)
         T = new tools::darwin::Assemble(*this);
       else
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       break;
     case Action::LinkJobClass:
       T = new tools::visualstudio::Link(*this); break;
@@ -299,7 +299,7 @@ static bool getVisualStudioDir(std::string &path) {
 
 #endif // _MSC_VER
 
-void Windows::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+void Windows::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                         ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdinc))
     return;
@@ -357,7 +357,7 @@ void Windows::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   addSystemIncludes(DriverArgs, CC1Args, Paths);
 }
 
-void Windows::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Windows::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                            ArgStringList &CC1Args) const {
   // FIXME: There should probably be logic here to find libc++ on Windows.
 }

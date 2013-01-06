@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -fcxx-exceptions -fexceptions -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -fcxx-exceptions -fexceptions -verify %s
 
 void func1(int i) { // expected-note{{previous definition is here}}
   int i; // expected-error{{redefinition of 'i'}}

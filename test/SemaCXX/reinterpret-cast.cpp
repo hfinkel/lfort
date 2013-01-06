@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -ffreestanding -Wundefined-reinterpret-cast -Wno-unused-volatile-lvalue %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -ffreestanding -Wundefined-reinterpret-cast -Wno-unused-volatile-lvalue %s
 
 #include <stdint.h>
 

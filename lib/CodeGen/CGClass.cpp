@@ -14,13 +14,13 @@
 #include "CGBlocks.h"
 #include "CGDebugInfo.h"
 #include "CodeGenFunction.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 static CharUnits 
@@ -1275,7 +1275,7 @@ CodeGenFunction::EmitSynthesizedCXXCopyCtorCall(const CXXConstructorDecl *D,
     return;
   }
   llvm::Value *Callee = CGM.GetAddrOfCXXConstructor(D, 
-                                                    clang::Ctor_Complete);
+                                                    lfort::Ctor_Complete);
   assert(D->isInstance() &&
          "Trying to emit a member call expr on a static method!");
   

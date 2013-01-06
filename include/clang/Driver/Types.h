@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_TYPES_H_
-#define CLANG_DRIVER_TYPES_H_
+#ifndef LFORT_DRIVER_TYPES_H_
+#define LFORT_DRIVER_TYPES_H_
 
-#include "clang/Driver/Phases.h"
+#include "lfort/Driver/Phases.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
 namespace types {
   enum ID {
     TY_INVALID,
 #define TYPE(NAME, ID, PP_TYPE, TEMP_SUFFIX, FLAGS) TY_##ID,
-#include "clang/Driver/Types.def"
+#include "lfort/Driver/Types.def"
 #undef TYPE
     TY_LAST
   };
@@ -56,8 +56,8 @@ namespace types {
   /// types).
   bool canLipoType(ID Id);
 
-  /// isAcceptedByClang - Can clang handle this input type.
-  bool isAcceptedByClang(ID Id);
+  /// isAcceptedByLFort - Can lfort handle this input type.
+  bool isAcceptedByLFort(ID Id);
 
   /// isCXX - Is this a "C++" input (C++ and Obj-C++ sources and headers).
   bool isCXX(ID Id);
@@ -82,11 +82,11 @@ namespace types {
   phases::ID getCompilationPhase(ID Id, unsigned N);
   
   /// lookupCXXTypeForCType - Lookup CXX input type that corresponds to given
-  /// C type (used for clang++ emulation of g++ behaviour)
+  /// C type (used for lfort++ emulation of g++ behaviour)
   ID lookupCXXTypeForCType(ID Id);
 
 } // end namespace types
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

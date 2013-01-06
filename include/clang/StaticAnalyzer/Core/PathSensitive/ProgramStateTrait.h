@@ -15,8 +15,8 @@
 //===----------------------------------------------------------------------===//
 
 
-#ifndef LLVM_CLANG_GR_PROGRAMSTATETRAIT_H
-#define LLVM_CLANG_GR_PROGRAMSTATETRAIT_H
+#ifndef LLVM_LFORT_GR_PROGRAMSTATETRAIT_H
+#define LLVM_LFORT_GR_PROGRAMSTATETRAIT_H
 
 namespace llvm {
   class BumpPtrAllocator;
@@ -26,7 +26,7 @@ namespace llvm {
   template <typename T> class ImmutableListImpl;
 }
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
   template <typename T> struct ProgramStatePartialTrait;
@@ -40,7 +40,7 @@ namespace ento {
       class Name {}; \
       typedef Type Name ## Ty; \
     } \
-    namespace clang { \
+    namespace lfort { \
     namespace ento { \
       template <> \
       struct ProgramStateTrait<Name> \
@@ -98,7 +98,7 @@ namespace ento {
   /// would be treated as a macro argument separator, which is wrong.
   /// This allows the user to specify a map type in a way that the preprocessor
   /// can deal with.
-  #define CLANG_ENTO_PROGRAMSTATE_MAP(Key, Value) llvm::ImmutableMap<Key, Value>
+  #define LFORT_ENTO_PROGRAMSTATE_MAP(Key, Value) llvm::ImmutableMap<Key, Value>
 
 
   // Partial-specialization for ImmutableSet.
@@ -223,6 +223,6 @@ namespace ento {
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

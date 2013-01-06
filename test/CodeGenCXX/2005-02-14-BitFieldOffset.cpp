@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 
 // CHECK-NOT: i32 6
 struct QVectorTypedData {

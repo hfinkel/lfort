@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the clang::ParseAST method.
+//  This file defines the lfort::ParseAST method.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARSE_PARSEAST_H
-#define LLVM_CLANG_PARSE_PARSEAST_H
+#ifndef LLVM_LFORT_PARSE_PARSEAST_H
+#define LLVM_LFORT_PARSE_PARSEAST_H
 
-#include "clang/Basic/LangOptions.h"
+#include "lfort/Basic/LangOptions.h"
 
-namespace clang {
+namespace lfort {
   class Preprocessor;
   class ASTConsumer;
   class ASTContext;
@@ -44,6 +44,6 @@ namespace clang {
   void ParseAST(Sema &S, bool PrintStats = false,
                 bool SkipFunctionBodies = false);
   
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

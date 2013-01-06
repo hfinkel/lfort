@@ -11,22 +11,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/DeclSpec.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseDiagnostic.h" // FIXME: remove this back-dependency!
-#include "clang/Sema/LocInfoType.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/ParseDiagnostic.h" // FIXME: remove this back-dependency!
+#include "lfort/Sema/LocInfoType.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cstring>
-using namespace clang;
+using namespace lfort;
 
 
 static DiagnosticBuilder Diag(DiagnosticsEngine &D, SourceLocation Loc,
@@ -447,12 +447,12 @@ bool DeclSpec::SetStorageClassSpec(Sema &S, SCS SC, SourceLocation Loc,
   // OpenCL v1.1 s6.8g: "The extern, static, auto and register storage-class
   // specifiers are not supported.
   // It seems sensible to prohibit private_extern too
-  // The cl_clang_storage_class_specifiers extension enables support for
+  // The cl_lfort_storage_class_specifiers extension enables support for
   // these storage-class specifiers.
   // OpenCL v1.2 s6.8 changes this to "The auto and register storage-class
   // specifiers are not supported."
   if (S.getLangOpts().OpenCL &&
-      !S.getOpenCLOptions().cl_clang_storage_class_specifiers) {
+      !S.getOpenCLOptions().cl_lfort_storage_class_specifiers) {
     switch (SC) {
     case SCS_extern:
     case SCS_private_extern:

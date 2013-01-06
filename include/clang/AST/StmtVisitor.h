@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_STMTVISITOR_H
-#define LLVM_CLANG_AST_STMTVISITOR_H
+#ifndef LLVM_LFORT_AST_STMTVISITOR_H
+#define LLVM_LFORT_AST_STMTVISITOR_H
 
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
 
-namespace clang {
+namespace lfort {
 
 template <typename T> struct make_ptr       { typedef       T *type; };
 template <typename T> struct make_const_ptr { typedef const T *type; };
@@ -101,7 +101,7 @@ public:
 #define ABSTRACT_STMT(STMT)
 #define STMT(CLASS, PARENT)                              \
     case Stmt::CLASS ## Class: DISPATCH(CLASS, CLASS);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
     }
   }
 
@@ -109,7 +109,7 @@ public:
   // back on VisitExpr or whatever else is the superclass.
 #define STMT(CLASS, PARENT)                                   \
   RetTy Visit ## CLASS(PTR(CLASS) S) { DISPATCH(PARENT, PARENT); }
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
   // If the implementation doesn't implement binary operator methods, fall back
   // on VisitBinaryOperator.
@@ -184,6 +184,6 @@ template<typename ImplClass, typename RetTy=void>
 class ConstStmtVisitor
  : public StmtVisitorBase<make_const_ptr, ImplClass, RetTy> {};
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

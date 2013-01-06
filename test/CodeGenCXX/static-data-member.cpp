@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: @_ZN5test11A1aE = constant i32 10, align 4
 // CHECK: @_ZN5test212_GLOBAL__N_11AIiE1xE = internal global i32 0, align 4

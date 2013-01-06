@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -fblocks -triple i386-apple-darwin9 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -w -fblocks -triple i386-apple-darwin9 -emit-llvm -o %t %s
 // RUN: FileCheck < %t %s
 
 // CHECK: define void @f0(%struct.s0* byval align 4)

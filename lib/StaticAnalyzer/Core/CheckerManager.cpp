@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/AST/DeclBase.h"
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 bool CheckerManager::hasPathSensitiveCheckers() const {

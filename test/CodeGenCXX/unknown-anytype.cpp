@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -funknown-anytype -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -funknown-anytype -emit-llvm -o - %s | FileCheck %s
 
 int test0() {
   extern __unknown_anytype test0_any;

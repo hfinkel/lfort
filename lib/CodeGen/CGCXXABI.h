@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CXXABI_H
-#define CLANG_CODEGEN_CXXABI_H
+#ifndef LFORT_CODEGEN_CXXABI_H
+#define LFORT_CODEGEN_CXXABI_H
 
 #include "CodeGenFunction.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
 namespace llvm {
   class Constant;
@@ -24,7 +24,7 @@ namespace llvm {
   class Value;
 }
 
-namespace clang {
+namespace lfort {
   class CastExpr;
   class CXXConstructorDecl;
   class CXXDestructorDecl;

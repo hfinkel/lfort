@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// The format of this database matches clang/Basic/Builtins.def.
+// The format of this database matches lfort/Basic/Builtins.def.
 
 // FIXME: In GCC, these builtins are defined depending on whether support for
 // MMX/SSE/etc is turned on. We should do this too.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -triple i386-pc-win32 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -w -triple i386-pc-win32 -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: define i64 @f1_1()
 // CHECK: define void @f1_2(i32 %a0.0, i32 %a0.1)

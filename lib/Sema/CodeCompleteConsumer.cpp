@@ -10,14 +10,14 @@
 //  This file implements the CodeCompleteConsumer class.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/CodeCompleteConsumer.h"
-#include "clang-c/Index.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/Sema.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
@@ -26,7 +26,7 @@
 #include <cstring>
 #include <functional>
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Code completion context implementation
@@ -623,7 +623,7 @@ static StringRef getOrderedName(const CodeCompletionResult &R,
   return Saved;
 }
     
-bool clang::operator<(const CodeCompletionResult &X, 
+bool lfort::operator<(const CodeCompletionResult &X, 
                       const CodeCompletionResult &Y) {
   std::string XSaved, YSaved;
   StringRef XStr = getOrderedName(X, XSaved);

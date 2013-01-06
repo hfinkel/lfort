@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 constexpr int x = 1;
 constexpr int id(int x) { return x; }

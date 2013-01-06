@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_FILE_MATCH_TRIE_H
-#define LLVM_CLANG_TOOLING_FILE_MATCH_TRIE_H
+#ifndef LLVM_LFORT_TOOLING_FILE_MATCH_TRIE_H
+#define LLVM_LFORT_TOOLING_FILE_MATCH_TRIE_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 struct PathComparator {
@@ -33,7 +33,7 @@ class FileMatchTrieNode;
 /// \brief A trie to efficiently match against the entries of the compilation
 /// database in order of matching suffix length.
 ///
-/// When a clang tool is supposed to operate on a specific file, we have to
+/// When a lfort tool is supposed to operate on a specific file, we have to
 /// find the corresponding file in the compilation database. Although entries
 /// in the compilation database are keyed by filename, a simple string match
 /// is insufficient because of symlinks. Commonly, a project hierarchy looks
@@ -84,6 +84,6 @@ private:
 
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_FILE_MATCH_TRIE_H
+#endif // LLVM_LFORT_TOOLING_FILE_MATCH_TRIE_H

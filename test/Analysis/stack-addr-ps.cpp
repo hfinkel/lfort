@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-store=region -verify %s
 
 // FIXME: Only the stack-address checking in Sema catches this right now, and
 // the stack analyzer doesn't handle the ImplicitCastExpr (lvalue).

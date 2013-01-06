@@ -11,8 +11,8 @@
 /// \brief Defines facilities for reading and writing on-disk hash tables.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_ON_DISK_HASH_TABLE_H
-#define LLVM_CLANG_BASIC_ON_DISK_HASH_TABLE_H
+#ifndef LLVM_LFORT_BASIC_ON_DISK_HASH_TABLE_H
+#define LLVM_LFORT_BASIC_ON_DISK_HASH_TABLE_H
 
 #include "llvm/Support/Allocator.h"
 #include "llvm/Support/DataTypes.h"
@@ -22,7 +22,7 @@
 #include <cassert>
 #include <cstdlib>
 
-namespace clang {
+namespace lfort {
 
 namespace io {
 
@@ -187,7 +187,7 @@ public:
   }
 
   io::Offset Emit(raw_ostream &out, Info &InfoObj) {
-    using namespace clang::io;
+    using namespace lfort::io;
 
     // Emit the payload of the table.
     for (unsigned i = 0; i < NumBuckets; ++i) {
@@ -479,6 +479,6 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

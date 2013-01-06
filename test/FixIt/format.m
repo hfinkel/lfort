@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -fblocks -verify %s
-// RUN: %clang_cc1 -fdiagnostics-parseable-fixits -fblocks %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -fblocks -verify %s
+// RUN: %lfort_cc1 -fdiagnostics-parseable-fixits -fblocks %s 2>&1 | FileCheck %s
 
 @class NSString;
 extern void NSLog(NSString *, ...);

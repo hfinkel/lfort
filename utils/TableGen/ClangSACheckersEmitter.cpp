@@ -1,4 +1,4 @@
-//=- ClangSACheckersEmitter.cpp - Generate Clang SA checkers tables -*- C++ -*-
+//=- LFortSACheckersEmitter.cpp - Generate LFort SA checkers tables -*- C++ -*-
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This tablegen backend emits Clang Static Analyzer checkers tables.
+// This tablegen backend emits LFort Static Analyzer checkers tables.
 //
 //===----------------------------------------------------------------------===//
 
@@ -93,8 +93,8 @@ static void addPackageToCheckerGroup(const Record *package, const Record *group,
     addPackageToCheckerGroup(*I, group, recordGroupMap);
 }
 
-namespace clang {
-void EmitClangSACheckers(RecordKeeper &Records, raw_ostream &OS) {
+namespace lfort {
+void EmitLFortSACheckers(RecordKeeper &Records, raw_ostream &OS) {
   std::vector<Record*> checkers = Records.getAllDerivedDefinitions("Checker");
   llvm::DenseMap<const Record *, unsigned> checkerRecIndexMap;
   for (unsigned i = 0, e = checkers.size(); i != e; ++i)
@@ -319,4 +319,4 @@ void EmitClangSACheckers(RecordKeeper &Records, raw_ostream &OS) {
   }
   OS << "#endif // GET_CHECKNAME_TABLE\n\n";
 }
-} // end namespace clang
+} // end namespace lfort

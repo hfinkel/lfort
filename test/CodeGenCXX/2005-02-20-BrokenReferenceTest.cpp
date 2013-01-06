@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null
 
 void test(unsigned char *b, int rb) {
   typedef unsigned char imgfoo[10][rb];

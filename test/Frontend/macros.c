@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -DA= -DB=1 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -DA= -DB=1 -verify -fsyntax-only %s
 // expected-no-diagnostics
 
 int a[(B A) == 1 ? 1 : -1];

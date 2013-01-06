@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fms-extensions -ast-dump -ast-dump-filter Test %s | FileCheck -check-prefix CHECK -strict-whitespace %s
+// RUN: %lfort_cc1 -std=c++11 -fms-extensions -ast-dump -ast-dump-filter Test %s | FileCheck -check-prefix CHECK -strict-whitespace %s
 
 class testEnumDecl {
   enum class TestEnumDeclScoped;

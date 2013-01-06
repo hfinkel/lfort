@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SERIALIZATION_LIB_AST_COMMON_H
-#define LLVM_CLANG_SERIALIZATION_LIB_AST_COMMON_H
+#ifndef LLVM_LFORT_SERIALIZATION_LIB_AST_COMMON_H
+#define LLVM_LFORT_SERIALIZATION_LIB_AST_COMMON_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/Serialization/ASTBitCodes.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/Serialization/ASTBitCodes.h"
 
-namespace clang {
+namespace lfort {
 
 namespace serialization {
 
@@ -60,6 +60,6 @@ unsigned ComputeHash(Selector Sel);
 
 } // namespace serialization
 
-} // namespace clang
+} // namespace lfort
 
 #endif

@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/Comment.h"
+#include "lfort/AST/Comment.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 template <typename T> struct make_ptr       { typedef       T *type; };
@@ -32,7 +32,7 @@ public:
 #define ABSTRACT_COMMENT(COMMENT)
 #define COMMENT(CLASS, PARENT) \
     case Comment::CLASS##Kind: DISPATCH(CLASS, CLASS);
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef ABSTRACT_COMMENT
 #undef COMMENT
     }
@@ -43,7 +43,7 @@ public:
 #define ABSTRACT_COMMENT(COMMENT) COMMENT
 #define COMMENT(CLASS, PARENT) \
   RetTy visit ## CLASS(PTR(CLASS) C) { DISPATCH(PARENT, PARENT); }
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef ABSTRACT_COMMENT
 #undef COMMENT
 
@@ -62,5 +62,5 @@ class ConstCommentVisitor :
     public CommentVisitorBase<make_const_ptr, ImplClass, RetTy> {};
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

@@ -11,21 +11,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECL_H
-#define LLVM_CLANG_AST_DECL_H
+#ifndef LLVM_LFORT_AST_DECL_H
+#define LLVM_LFORT_AST_DECL_H
 
-#include "clang/AST/APValue.h"
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/Redeclarable.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/Linkage.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/Redeclarable.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/Linkage.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 struct ASTTemplateArgumentListInfo;
 class CXXTemporary;
 class CompoundStmt;
@@ -711,7 +711,7 @@ struct EvaluatedStmt {
 /// declaration or definition.
 class VarDecl : public DeclaratorDecl, public Redeclarable<VarDecl> {
 public:
-  typedef clang::StorageClass StorageClass;
+  typedef lfort::StorageClass StorageClass;
 
   /// getStorageClassSpecifierString - Return the string used to
   /// specify the storage class \p SC.
@@ -1442,7 +1442,7 @@ private:
 class FunctionDecl : public DeclaratorDecl, public DeclContext,
                      public Redeclarable<FunctionDecl> {
 public:
-  typedef clang::StorageClass StorageClass;
+  typedef lfort::StorageClass StorageClass;
 
   /// \brief The kind of templated function a FunctionDecl can be.
   enum TemplatedKind {
@@ -3358,6 +3358,6 @@ inline bool IsEnumDeclScoped(EnumDecl *ED) {
   return ED->isScoped();
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-//===-- driver.cpp - Clang GCC-Compatible Driver --------------------------===//
+//===-- driver.cpp - LFort GCC-Compatible Driver --------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This is the entry point to the clang driver; it is a thin wrapper
-// for functionality in the Driver clang library.
+// This is the entry point to the lfort driver; it is a thin wrapper
+// for functionality in the Driver lfort library.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Frontend/Utils.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Frontend/Utils.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
@@ -43,8 +43,8 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
 #include <cctype>
-using namespace clang;
-using namespace clang::driver;
+using namespace lfort;
+using namespace lfort::driver;
 
 llvm::sys::Path GetExecutablePath(const char *Argv0, bool CanonicalPrefixes) {
   if (!CanonicalPrefixes)
@@ -270,11 +270,11 @@ static void ParseProgName(SmallVectorImpl<const char *> &ArgVector,
   // If there is a match, the frontend type is updated as necessary (CPP/C++).
   // If there is no match, a second round is done after stripping the last
   // hyphen and everything following it. This allows using something like
-  // "clang++-2.9".
+  // "lfort++-2.9".
 
   // If there is a match in either the first or second round,
   // the function tries to identify a target as prefix. E.g.
-  // "x86_64-linux-clang" as interpreted as suffix "clang" with
+  // "x86_64-linux-lfort" as interpreted as suffix "lfort" with
   // target prefix "x86_64-linux". If such a target prefix is found,
   // is gets added via -target as implicit first argument.
   static const struct {
@@ -282,13 +282,13 @@ static void ParseProgName(SmallVectorImpl<const char *> &ArgVector,
     bool IsCXX;
     bool IsCPP;
   } suffixes [] = {
-    { "clang", false, false },
-    { "clang++", true, false },
-    { "clang-c++", true, false },
-    { "clang-cc", false, false },
-    { "clang-cpp", false, true },
-    { "clang-g++", true, false },
-    { "clang-gcc", false, false },
+    { "lfort", false, false },
+    { "lfort++", true, false },
+    { "lfort-c++", true, false },
+    { "lfort-cc", false, false },
+    { "lfort-cpp", false, true },
+    { "lfort-g++", true, false },
+    { "lfort-gcc", false, false },
     { "cc", false, false },
     { "cpp", false, true },
     { "++", true, false },
@@ -471,8 +471,8 @@ int main(int argc_, const char **argv_) {
     Res = TheDriver.ExecuteCompilation(*C, FailingCommand);
 
   // Force a crash to test the diagnostics.
-  if (::getenv("FORCE_CLANG_DIAGNOSTICS_CRASH")) {
-    Diags.Report(diag::err_drv_force_crash) << "FORCE_CLANG_DIAGNOSTICS_CRASH";
+  if (::getenv("FORCE_LFORT_DIAGNOSTICS_CRASH")) {
+    Diags.Report(diag::err_drv_force_crash) << "FORCE_LFORT_DIAGNOSTICS_CRASH";
     Res = -1;
   }
 

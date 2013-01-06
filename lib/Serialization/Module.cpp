@@ -11,12 +11,12 @@
 //  been loaded from an AST file.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Serialization/Module.h"
+#include "lfort/Serialization/Module.h"
 #include "ASTReaderInternals.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace serialization;
 using namespace reader;
 

@@ -1,4 +1,4 @@
-// RUN: %clang -emit-llvm -S -O0 -g %s -o - | grep DW_TAG_typedef | grep float4
+// RUN: %lfort -emit-llvm -S -O0 -g %s -o - | grep DW_TAG_typedef | grep float4
 typedef float float4 __attribute__((vector_size(16)));
 
 int main(){

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -fobjc-runtime=macosx-10.6.0 -triple x86_64-apple-macosx10.6.0 -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -fobjc-runtime=macosx-10.6.0 -triple x86_64-apple-macosx10.6.0 -o - | FileCheck %s
 // rdar://11858187
 
 @interface I

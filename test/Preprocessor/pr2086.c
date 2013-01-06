@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s
+// RUN: %lfort_cc1 -E %s
 
 #define test
 #include "pr2086.h"

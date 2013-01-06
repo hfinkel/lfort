@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_EXPROBJC_H
-#define LLVM_CLANG_AST_EXPROBJC_H
+#ifndef LLVM_LFORT_AST_EXPROBJC_H
+#define LLVM_LFORT_AST_EXPROBJC_H
 
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/SelectorLocationsKind.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/SelectorLocationsKind.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
   class IdentifierInfo;
   class ASTContext;
 
@@ -1536,6 +1536,6 @@ public:
   }
 };
   
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

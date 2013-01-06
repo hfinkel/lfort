@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wnon-pod-varargs
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -Wnon-pod-varargs
 class X { }; // expected-note {{the implicit copy constructor}} \
              // expected-note{{the implicit default constructor}}
 

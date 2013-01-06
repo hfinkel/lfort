@@ -11,20 +11,20 @@
 // classes.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/TypeOrdering.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/TypeOrdering.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
-namespace clang {
+namespace lfort {
 /// CXXSpecialName - Records the type associated with one of the
 /// "special" kinds of declaration names in C++, e.g., constructors,
 /// destructors, and conversion functions.
@@ -133,7 +133,7 @@ int DeclarationName::compare(DeclarationName LHS, DeclarationName RHS) {
   llvm_unreachable("Invalid DeclarationName Kind!");
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 DeclarationName::NameKind DeclarationName::getNameKind() const {
   switch (getStoredNameKind()) {
@@ -221,7 +221,7 @@ void DeclarationName::printName(raw_ostream &OS) const {
       0,
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       Spelling,
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
     };
     const char *OpName = OperatorNames[getCXXOverloadedOperator()];
     assert(OpName && "not an overloaded operator");

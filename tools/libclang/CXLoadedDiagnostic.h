@@ -11,16 +11,16 @@
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-#ifndef LLVM_CLANG_CINDEX_LOADED_DIAGNOSTIC_H
-#define LLVM_CLANG_CINDEX_LOADED_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_CINDEX_LOADED_DIAGNOSTIC_H
+#define LLVM_LFORT_CINDEX_LOADED_DIAGNOSTIC_H
 
 #include "CIndexDiagnostic.h"
 #include "llvm/ADT/StringRef.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 class CXLoadedDiagnostic : public CXDiagnosticImpl {
 public:
   CXLoadedDiagnostic() : CXDiagnosticImpl(LoadedDiagnosticKind),

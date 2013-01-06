@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -x c++ < %s
+// RUN: %lfort_cc1 -emit-llvm -x c++ < %s
 
 void test0(int x) {
           if (x != 0) return;

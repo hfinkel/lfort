@@ -16,7 +16,7 @@ def Implicit : DiagGroup<"implicit", [
     ImplicitInt
 ]>;
 
-// Empty DiagGroups are recognized by clang but ignored.
+// Empty DiagGroups are recognized by lfort but ignored.
 def : DiagGroup<"abi">;
 def : DiagGroup<"address">;
 def AddressOfTemporary : DiagGroup<"address-of-temporary">;
@@ -90,7 +90,7 @@ def CXX98CompatPedantic : DiagGroup<"c++98-compat-pedantic", [CXX98Compat]>;
 
 def CXX11Narrowing : DiagGroup<"c++11-narrowing">;
 
-// Original name of this warning in Clang
+// Original name of this warning in LFort
 def : DiagGroup<"c++0x-narrowing", [CXX11Narrowing]>;
 
 // Name of this warning in GCC
@@ -288,7 +288,7 @@ def Protocol : DiagGroup<"protocol">;
 def SuperSubClassMismatch : DiagGroup<"super-class-method-mismatch">;
 def OverridingMethodMismatch : DiagGroup<"overriding-method-mismatch">;
 def VariadicMacros : DiagGroup<"variadic-macros">;
-def VectorConversion : DiagGroup<"vector-conversion">;      // clang specific
+def VectorConversion : DiagGroup<"vector-conversion">;      // lfort specific
 def VexingParse : DiagGroup<"vexing-parse">;
 def VLA : DiagGroup<"vla">;
 def VolatileRegisterVar : DiagGroup<"volatile-register-var">;
@@ -428,7 +428,7 @@ def : DiagGroup<"int-conversions",
 def : DiagGroup<"vector-conversions",
                 [VectorConversion]>; // -Wvector-conversions = -Wvector-conversion
 
-// A warning group for warnings that we want to have on by default in clang,
+// A warning group for warnings that we want to have on by default in lfort,
 // but which aren't on by default in GCC.
 def NonGCC : DiagGroup<"non-gcc",
     [SignCompare, Conversion, LiteralRange]>;
@@ -449,7 +449,7 @@ def C99 : DiagGroup<"c99-extensions">;
 
 // A warning group for warnings about GCC extensions.
 def GNU : DiagGroup<"gnu", [GNUDesignator, VLA, ZeroLengthArray]>;
-// A warning group for warnings about code that clang accepts but gcc doesn't.
+// A warning group for warnings about code that lfort accepts but gcc doesn't.
 def GccCompat : DiagGroup<"gcc-compat">;
 
 // A warning group for warnings about Microsoft extensions.

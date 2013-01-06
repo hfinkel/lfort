@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_EXPR_H
-#define LLVM_CLANG_AST_EXPR_H
+#ifndef LLVM_LFORT_AST_EXPR_H
+#define LLVM_LFORT_AST_EXPR_H
 
-#include "clang/AST/APValue.h"
-#include "clang/AST/ASTVector.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclAccessPair.h"
-#include "clang/AST/OperationKinds.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TypeTraits.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/ASTVector.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclAccessPair.h"
+#include "lfort/AST/OperationKinds.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TypeTraits.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallVector.h"
@@ -30,7 +30,7 @@
 #include "llvm/Support/Compiler.h"
 #include <cctype>
 
-namespace clang {
+namespace lfort {
   class APValue;
   class ASTContext;
   class BlockDecl;
@@ -242,7 +242,7 @@ public:
   /// ("pr-values") and so-called expiring values ("x-values"), which
   /// identify specific objects that can be safely cannibalized for
   /// their resources.  This is an unfortunate abuse of terminology on
-  /// the part of the C++ committee.  In Clang, when we say "r-value",
+  /// the part of the C++ committee.  In LFort, when we say "r-value",
   /// we generally mean a pr-value.
   bool isLValue() const { return getValueKind() == VK_LValue; }
   bool isRValue() const { return getValueKind() == VK_RValue; }
@@ -2574,7 +2574,7 @@ public:
 /// classes).
 class CastExpr : public Expr {
 public:
-  typedef clang::CastKind CastKind;
+  typedef lfort::CastKind CastKind;
 
 private:
   Stmt *Op;
@@ -3317,7 +3317,7 @@ public:
 };
 
 
-/// ShuffleVectorExpr - clang-specific builtin-in function
+/// ShuffleVectorExpr - lfort-specific builtin-in function
 /// __builtin_shufflevector.
 /// This AST node represents a operator that does a constant
 /// shuffle, similar to LLVM's shufflevector instruction. It takes
@@ -3844,7 +3844,7 @@ public:
 
   /// @brief Represents a single C99 designator.
   ///
-  /// @todo This class is infuriatingly similar to clang::Designator,
+  /// @todo This class is infuriatingly similar to lfort::Designator,
   /// but minor differences (storing indices vs. storing pointers)
   /// keep us from reusing it. Try harder, later, to rectify these
   /// differences.
@@ -4262,7 +4262,7 @@ public:
 };
 
 //===----------------------------------------------------------------------===//
-// Clang Extensions
+// LFort Extensions
 //===----------------------------------------------------------------------===//
 
 
@@ -4369,7 +4369,7 @@ public:
   child_range children() { return child_range(); }
 };
 
-/// AsTypeExpr - Clang builtin function __builtin_astype [OpenCL 6.2.4.2]
+/// AsTypeExpr - LFort builtin function __builtin_astype [OpenCL 6.2.4.2]
 /// This AST node provides support for reinterpreting a type to another
 /// type of the same size.
 class AsTypeExpr : public Expr { // Should this be an ExplicitCastExpr?
@@ -4561,7 +4561,7 @@ public:
   enum AtomicOp {
 #define BUILTIN(ID, TYPE, ATTRS)
 #define ATOMIC_BUILTIN(ID, TYPE, ATTRS) AO ## ID,
-#include "clang/Basic/Builtins.def"
+#include "lfort/Basic/Builtins.def"
     // Avoid trailing comma
     BI_First = 0
   };
@@ -4644,6 +4644,6 @@ public:
     return child_range(SubExprs, SubExprs+NumSubExprs);
   }
 };
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

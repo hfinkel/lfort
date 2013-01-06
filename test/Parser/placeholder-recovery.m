@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // FIXME: We could do much better with this, if we recognized
 // placeholders somehow. However, we're content with not generating

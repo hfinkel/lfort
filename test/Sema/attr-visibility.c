@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
 
 void test0() __attribute__((visibility("default")));
 void test1() __attribute__((visibility("hidden")));

@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
-#include "clang/AST/Expr.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
+#include "lfort/AST/Expr.h"
 
 // Recursively find any substatements containing macros
-bool clang::ento::containsMacro(const Stmt *S) {
+bool lfort::ento::containsMacro(const Stmt *S) {
   if (S->getLocStart().isMacroID())
     return true;
 
@@ -32,7 +32,7 @@ bool clang::ento::containsMacro(const Stmt *S) {
 }
 
 // Recursively find any substatements containing enum constants
-bool clang::ento::containsEnum(const Stmt *S) {
+bool lfort::ento::containsEnum(const Stmt *S) {
   const DeclRefExpr *DR = dyn_cast<DeclRefExpr>(S);
 
   if (DR && isa<EnumConstantDecl>(DR->getDecl()))
@@ -48,7 +48,7 @@ bool clang::ento::containsEnum(const Stmt *S) {
 }
 
 // Recursively find any substatements containing static vars
-bool clang::ento::containsStaticLocal(const Stmt *S) {
+bool lfort::ento::containsStaticLocal(const Stmt *S) {
   const DeclRefExpr *DR = dyn_cast<DeclRefExpr>(S);
 
   if (DR)
@@ -66,7 +66,7 @@ bool clang::ento::containsStaticLocal(const Stmt *S) {
 }
 
 // Recursively find any substatements containing __builtin_offsetof
-bool clang::ento::containsBuiltinOffsetOf(const Stmt *S) {
+bool lfort::ento::containsBuiltinOffsetOf(const Stmt *S) {
   if (isa<OffsetOfExpr>(S))
     return true;
 

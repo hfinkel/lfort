@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_OPTIONS_H
-#define CLANG_DRIVER_OPTIONS_H
+#ifndef LFORT_DRIVER_OPTIONS_H
+#define LFORT_DRIVER_OPTIONS_H
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class OptTable;
 
@@ -20,7 +20,7 @@ namespace options {
 #define PREFIX(NAME, VALUE)
 #define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, FLAGS, PARAM, \
                HELPTEXT, METAVAR) OPT_##ID,
-#include "clang/Driver/Options.inc"
+#include "lfort/Driver/Options.inc"
     LastOption
 #undef OPTION
 #undef PREFIX

@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_SCOPE_INFO_H
-#define LLVM_CLANG_SEMA_SCOPE_INFO_H
+#ifndef LLVM_LFORT_SEMA_SCOPE_INFO_H
+#define LLVM_LFORT_SEMA_SCOPE_INFO_H
 
-#include "clang/AST/Type.h"
-#include "clang/Basic/PartialDiagnostic.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/PartialDiagnostic.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 class BlockDecl;
@@ -568,6 +568,6 @@ CapturingScopeInfo::addThisCapture(bool isNested, SourceLocation Loc,
 }
 
 } // end namespace sema
-} // end namespace clang
+} // end namespace lfort
 
 #endif

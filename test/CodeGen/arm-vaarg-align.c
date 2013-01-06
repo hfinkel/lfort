@@ -1,6 +1,6 @@
 // REQUIRES: arm-registered-target
-// RUN: %clang_cc1 -triple arm -target-abi aapcs %s -emit-llvm -o - | FileCheck -check-prefix=AAPCS %s
-// RUN: %clang_cc1 -triple arm -target-abi apcs-gnu %s -emit-llvm -o - | FileCheck -check-prefix=APCS-GNU %s
+// RUN: %lfort_cc1 -triple arm -target-abi aapcs %s -emit-llvm -o - | FileCheck -check-prefix=AAPCS %s
+// RUN: %lfort_cc1 -triple arm -target-abi apcs-gnu %s -emit-llvm -o - | FileCheck -check-prefix=APCS-GNU %s
 /* 
  * Check that va_arg accesses stack according to ABI alignment
  * long long and double require 8-byte alignment under AAPCS

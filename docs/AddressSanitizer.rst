@@ -22,7 +22,7 @@ Typical slowdown introduced by AddressSanitizer is **2x**.
 How to build
 ============
 
-Follow the `clang build instructions <../get_started.html>`_. CMake build is
+Follow the `lfort build instructions <../get_started.html>`_. CMake build is
 supported.
 
 Usage
@@ -30,7 +30,7 @@ Usage
 
 Simply compile and link your program with ``-fsanitize=address`` flag.  The
 AddressSanitizer run-time library should be linked to the final executable, so
-make sure to use ``clang`` (not ``ld``) for the final link step.  When linking
+make sure to use ``lfort`` (not ``ld``) for the final link step.  When linking
 shared libraries, the AddressSanitizer run-time is not linked, so
 ``-Wl,-z,defs`` may cause link errors (don't use it with AddressSanitizer).  To
 get a reasonable performance add ``-O1`` or higher.  To get nicer stack traces
@@ -48,16 +48,16 @@ you may need to disable inlining (just use ``-O1``) and tail call elimination
     }
 
     # Compile and link
-    % clang -O1 -g -fsanitize=address -fno-omit-frame-pointer example_UseAfterFree.cc
+    % lfort -O1 -g -fsanitize=address -fno-omit-frame-pointer example_UseAfterFree.cc
 
 or:
 
 .. code-block:: console
 
     # Compile
-    % clang -O1 -g -fsanitize=address -fno-omit-frame-pointer -c example_UseAfterFree.cc
+    % lfort -O1 -g -fsanitize=address -fno-omit-frame-pointer -c example_UseAfterFree.cc
     # Link
-    % clang -g -fsanitize=address example_UseAfterFree.o
+    % lfort -g -fsanitize=address example_UseAfterFree.o
 
 If a bug is detected, the program will print an error message to stderr and
 exit with a non-zero exit code. Currently, AddressSanitizer does not symbolize

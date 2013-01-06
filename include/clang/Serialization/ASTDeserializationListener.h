@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_AST_DESERIALIZATION_LISTENER_H
-#define LLVM_CLANG_FRONTEND_AST_DESERIALIZATION_LISTENER_H
+#ifndef LLVM_LFORT_FRONTEND_AST_DESERIALIZATION_LISTENER_H
+#define LLVM_LFORT_FRONTEND_AST_DESERIALIZATION_LISTENER_H
 
-#include "clang/Serialization/ASTBitCodes.h"
+#include "lfort/Serialization/ASTBitCodes.h"
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 class ASTReader;

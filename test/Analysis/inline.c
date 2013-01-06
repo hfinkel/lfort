@@ -1,12 +1,12 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -verify %s
 
-void clang_analyzer_eval(int);
-void clang_analyzer_checkInlined(int);
+void lfort_analyzer_eval(int);
+void lfort_analyzer_checkInlined(int);
 
 int test1_f1() {
   int y = 1;
   y++;
-  clang_analyzer_checkInlined(1); // expected-warning{{TRUE}}
+  lfort_analyzer_checkInlined(1); // expected-warning{{TRUE}}
   return y;
 }
 
@@ -98,7 +98,7 @@ int test_rdar10977037() {
 // This regressed when CallEvent was first introduced.
 int plus1(int x);
 void test() {
-  clang_analyzer_eval(plus1(2) == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(plus1(2) == 3); // expected-warning{{TRUE}}
 }
 
 int plus1(int x) {
@@ -107,6 +107,6 @@ int plus1(int x) {
 
 
 void never_called_by_anyone() {
-  clang_analyzer_checkInlined(0); // no-warning
+  lfort_analyzer_checkInlined(0); // no-warning
 }
 

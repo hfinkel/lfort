@@ -453,13 +453,13 @@ def err_pp_visibility_non_macro : Error<"no macro named %0">;
 
 def err_pp_arc_cf_code_audited_syntax : Error<"expected 'begin' or 'end'">;
 def err_pp_double_begin_of_arc_cf_code_audited : Error<
-  "already inside '#pragma clang arc_cf_code_audited'">;
+  "already inside '#pragma lfort arc_cf_code_audited'">;
 def err_pp_unmatched_end_of_arc_cf_code_audited : Error<
-  "not currently inside '#pragma clang arc_cf_code_audited'">;
+  "not currently inside '#pragma lfort arc_cf_code_audited'">;
 def err_pp_include_in_arc_cf_code_audited : Error<
-  "cannot #include files inside '#pragma clang arc_cf_code_audited'">;
+  "cannot #include files inside '#pragma lfort arc_cf_code_audited'">;
 def err_pp_eof_in_arc_cf_code_audited : Error<
-  "'#pragma clang arc_cf_code_audited' was not ended within this file">;
+  "'#pragma lfort arc_cf_code_audited' was not ended within this file">;
 
 // Module map parsing
 def err_mmap_unknown_token : Error<"skipping stray token">;

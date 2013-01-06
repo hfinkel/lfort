@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentVisitor.h"
+#include "lfort/AST/CommentVisitor.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 namespace {
@@ -253,5 +253,5 @@ void Comment::dump(llvm::raw_ostream &OS, const CommandTraits *Traits,
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

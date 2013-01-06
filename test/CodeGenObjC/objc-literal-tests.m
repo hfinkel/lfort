@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -x objective-c -triple x86_64-apple-darwin10 -fblocks -emit-llvm %s -o - | FileCheck %s
-// RUN: %clang_cc1 -x objective-c++ -triple x86_64-apple-darwin10 -fblocks -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -x objective-c -triple x86_64-apple-darwin10 -fblocks -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -x objective-c++ -triple x86_64-apple-darwin10 -fblocks -emit-llvm %s -o - | FileCheck %s
 // rdar://10111397
 
 #if __has_feature(objc_bool)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // C++03 [namespace.udecl]p12:
 //   When a using-declaration brings names from a base class into a

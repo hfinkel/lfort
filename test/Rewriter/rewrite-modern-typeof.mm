@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -x objective-c++ -fblocks -fms-extensions -rewrite-objc %s -o %t-rw.cpp
+// RUN: %lfort_cc1 -x objective-c++ -fblocks -fms-extensions -rewrite-objc %s -o %t-rw.cpp
 // RUN: FileCheck -check-prefix LP --input-file=%t-rw.cpp %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-address-of-temporary -Wno-attributes -D"Class=void*" -D"id=void*" -D"SEL=void*" -D"__declspec(X)=" %t-rw.cpp
+// RUN: %lfort_cc1 -fsyntax-only -Wno-address-of-temporary -Wno-attributes -D"Class=void*" -D"id=void*" -D"SEL=void*" -D"__declspec(X)=" %t-rw.cpp
 
 typedef unsigned long size_t;
 extern "C" {

@@ -9,17 +9,17 @@
 //  This file provides types used in the semantic analysis of C++ templates.
 //
 //===----------------------------------------------------------------------===/
-#ifndef LLVM_CLANG_SEMA_TEMPLATE_H
-#define LLVM_CLANG_SEMA_TEMPLATE_H
+#ifndef LLVM_LFORT_SEMA_TEMPLATE_H
+#define LLVM_LFORT_SEMA_TEMPLATE_H
 
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/Sema/Sema.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cassert>
 #include <utility>
 
-namespace clang {
+namespace lfort {
   /// \brief Data structure that captures multiple levels of template argument
   /// lists for use in template instantiation.
   ///
@@ -381,7 +381,7 @@ namespace clang {
 
     // FIXME: Once we get closer to completion, replace these manually-written
     // declarations with automatically-generated ones from
-    // clang/AST/DeclNodes.inc.
+    // lfort/AST/DeclNodes.inc.
     Decl *VisitTranslationUnitDecl(TranslationUnitDecl *D);
     Decl *VisitLabelDecl(LabelDecl *D);
     Decl *VisitNamespaceDecl(NamespaceDecl *D);
@@ -493,4 +493,4 @@ namespace clang {
   };  
 }
 
-#endif // LLVM_CLANG_SEMA_TEMPLATE_H
+#endif // LLVM_LFORT_SEMA_TEMPLATE_H

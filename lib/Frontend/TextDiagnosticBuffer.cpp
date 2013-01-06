@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/TextDiagnosticBuffer.h"
+#include "lfort/Frontend/TextDiagnosticBuffer.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 /// HandleDiagnostic - Store the errors, warnings, and notes that are
 /// reported.

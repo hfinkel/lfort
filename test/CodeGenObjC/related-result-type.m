@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s | FileCheck %s
 
 @interface NSObject
 + (id)alloc;

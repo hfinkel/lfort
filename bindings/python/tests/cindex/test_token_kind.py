@@ -1,4 +1,4 @@
-from clang.cindex import TokenKind
+from lfort.cindex import TokenKind
 from nose.tools import eq_
 from nose.tools import ok_
 from nose.tools import raises

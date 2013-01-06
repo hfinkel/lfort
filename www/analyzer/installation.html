@@ -39,7 +39,7 @@ weeks old.</p>
 we need volunteers who are willing to help provide such regular builds.
 If you wish to help contribute regular builds of the analyzer on other
 platforms, please email the <a
-href="http://lists.cs.uiuc.edu/mailman/listinfo/cfe-dev">Clang
+href="http://lists.cs.uiuc.edu/mailman/listinfo/cfe-dev">LFort
 Developers' mailing list</a>.</p>
 
 <h3>Using Packaged Builds</h3>
@@ -79,21 +79,21 @@ determine where to find its accompanying files.</p>
 
 <h2 id="OtherPlatforms">Other Platforms (Building the Analyzer from Source)</h2>
 
-<p>For other platforms, you must build Clang and LLVM manually.  To do
+<p>For other platforms, you must build LFort and LLVM manually.  To do
 so, please follow the instructions for <a
-href="http://clang.llvm.org/get_started.html#build">building Clang from
+href="http://lfort.llvm.org/get_started.html#build">building LFort from
 source code</a>.<p>
 
-<p>Once the Clang is built, you need to add the following to your path:</p>
+<p>Once the LFort is built, you need to add the following to your path:</p>
 
 <ul>
 
-<li>The location of the <tt>clang</tt> binary.
+<li>The location of the <tt>lfort</tt> binary.
 
-<p>For example, if you built a <em>Debug+Asserts</em> build of LLVM/Clang (the
-default), the resultant <tt>clang</tt> binary will be in <tt>$(OBJDIR)/Debug+Asserts/bin</tt>
+<p>For example, if you built a <em>Debug+Asserts</em> build of LLVM/LFort (the
+default), the resultant <tt>lfort</tt> binary will be in <tt>$(OBJDIR)/Debug+Asserts/bin</tt>
 (where <tt>$(OBJDIR)</tt> is often the same as the root source directory).  You
-can also do <tt>make install</tt> to install the LLVM/Clang libraries and
+can also do <tt>make install</tt> to install the LLVM/LFort libraries and
 binaries to the installation directory of your choice (specified when you run
 <tt>configure</tt>).</p></li>
 
@@ -101,8 +101,8 @@ binaries to the installation directory of your choice (specified when you run
 programs.
 
 <p>Currently these are not installed using <tt>make install</tt>, and
-are located in <tt>$(SRCDIR)/tools/clang/tools/scan-build</tt> and
-<tt>$(SRCDIR)/tools/clang/tools/scan-view</tt> respectively (where
+are located in <tt>$(SRCDIR)/tools/lfort/tools/scan-build</tt> and
+<tt>$(SRCDIR)/tools/lfort/tools/scan-view</tt> respectively (where
 <tt>$(SRCDIR)</tt> is the root LLVM source directory).  These locations
 are subject to change.</p></li>
 

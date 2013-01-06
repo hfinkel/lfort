@@ -7,7 +7,7 @@ extern "C" {
   int memcmp(const void *, const void *, size_t);
   size_t strlen(const char *);
 }
-namespace       clang {
+namespace       lfort {
   class IdentifierInfo;
   class AttributeList {
     enum Kind {
@@ -62,7 +62,7 @@ public:
   }
 };
 }
-namespace clang {
+namespace lfort {
 class IdentifierInfo {
 public:IdentifierInfo();
   const char *getNameStart() const {
@@ -95,7 +95,7 @@ public:
 };
 }
 
-using namespace clang;
+using namespace lfort;
 
 AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
   llvm::StringRef AttrName = Name->getName();
@@ -243,11 +243,11 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: ";" [8:30 - 8:31]
 // CHECK-tokens: Punctuation: "}" [9:1 - 9:2]
 // CHECK-tokens: Keyword: "namespace" [10:1 - 10:10]
-// CHECK-tokens: Identifier: "clang" [10:17 - 10:22] Namespace=clang:10:17 (Definition)
-// CHECK-tokens: Punctuation: "{" [10:23 - 10:24] Namespace=clang:10:17 (Definition)
+// CHECK-tokens: Identifier: "lfort" [10:17 - 10:22] Namespace=lfort:10:17 (Definition)
+// CHECK-tokens: Punctuation: "{" [10:23 - 10:24] Namespace=lfort:10:17 (Definition)
 // CHECK-tokens: Keyword: "class" [11:3 - 11:8] ClassDecl=IdentifierInfo:11:9
 // CHECK-tokens: Identifier: "IdentifierInfo" [11:9 - 11:23] ClassDecl=IdentifierInfo:11:9
-// CHECK-tokens: Punctuation: ";" [11:23 - 11:24] Namespace=clang:10:17 (Definition)
+// CHECK-tokens: Punctuation: ";" [11:23 - 11:24] Namespace=lfort:10:17 (Definition)
 // CHECK-tokens: Keyword: "class" [12:3 - 12:8] ClassDecl=AttributeList:12:9 (Definition)
 // CHECK-tokens: Identifier: "AttributeList" [12:9 - 12:22] ClassDecl=AttributeList:12:9 (Definition)
 // CHECK-tokens: Punctuation: "{" [12:23 - 12:24] ClassDecl=AttributeList:12:9 (Definition)
@@ -398,18 +398,18 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: "}" [32:5 - 32:6] EnumDecl=Kind:13:10 (Definition)
 // CHECK-tokens: Punctuation: ";" [32:6 - 32:7] ClassDecl=AttributeList:12:9 (Definition)
 // CHECK-tokens: Keyword: "static" [33:5 - 33:11] ClassDecl=AttributeList:12:9 (Definition)
-// CHECK-tokens: Identifier: "Kind" [33:12 - 33:16] TypeRef=enum clang::AttributeList::Kind:13:10
+// CHECK-tokens: Identifier: "Kind" [33:12 - 33:16] TypeRef=enum lfort::AttributeList::Kind:13:10
 // CHECK-tokens: Identifier: "getKind" [33:17 - 33:24] CXXMethod=getKind:33:17 (static)
 // CHECK-tokens: Punctuation: "(" [33:24 - 33:25] CXXMethod=getKind:33:17 (static)
 // CHECK-tokens: Keyword: "const" [33:25 - 33:30] CXXMethod=getKind:33:17 (static)
-// CHECK-tokens: Identifier: "IdentifierInfo" [33:31 - 33:45] TypeRef=class clang::IdentifierInfo:66:7
+// CHECK-tokens: Identifier: "IdentifierInfo" [33:31 - 33:45] TypeRef=class lfort::IdentifierInfo:66:7
 // CHECK-tokens: Punctuation: "*" [33:46 - 33:47] ParmDecl=Name:33:48 (Definition)
 // CHECK-tokens: Identifier: "Name" [33:48 - 33:52] ParmDecl=Name:33:48 (Definition)
 // CHECK-tokens: Punctuation: ")" [33:52 - 33:53] CXXMethod=getKind:33:17 (static)
 // CHECK-tokens: Punctuation: ";" [33:53 - 33:54] ClassDecl=AttributeList:12:9 (Definition)
 // CHECK-tokens: Punctuation: "}" [34:3 - 34:4] ClassDecl=AttributeList:12:9 (Definition)
-// CHECK-tokens: Punctuation: ";" [34:4 - 34:5] Namespace=clang:10:17 (Definition)
-// CHECK-tokens: Punctuation: "}" [35:1 - 35:2] Namespace=clang:10:17 (Definition)
+// CHECK-tokens: Punctuation: ";" [34:4 - 34:5] Namespace=lfort:10:17 (Definition)
+// CHECK-tokens: Punctuation: "}" [35:1 - 35:2] Namespace=lfort:10:17 (Definition)
 // CHECK-tokens: Identifier: "size_t" [36:1 - 36:7] TypeRef=size_t:2:25
 // CHECK-tokens: Identifier: "magic_length" [36:8 - 36:20] FunctionDecl=magic_length:36:8
 // CHECK-tokens: Punctuation: "(" [36:20 - 36:21] FunctionDecl=magic_length:36:8
@@ -659,8 +659,8 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: ";" [63:2 - 63:3] Namespace=llvm:37:11 (Definition)
 // CHECK-tokens: Punctuation: "}" [64:1 - 64:2] Namespace=llvm:37:11 (Definition)
 // CHECK-tokens: Keyword: "namespace" [65:1 - 65:10]
-// CHECK-tokens: Identifier: "clang" [65:11 - 65:16] Namespace=clang:65:11 (Definition)
-// CHECK-tokens: Punctuation: "{" [65:17 - 65:18] Namespace=clang:65:11 (Definition)
+// CHECK-tokens: Identifier: "lfort" [65:11 - 65:16] Namespace=lfort:65:11 (Definition)
+// CHECK-tokens: Punctuation: "{" [65:17 - 65:18] Namespace=lfort:65:11 (Definition)
 // CHECK-tokens: Keyword: "class" [66:1 - 66:6] ClassDecl=IdentifierInfo:66:7 (Definition)
 // CHECK-tokens: Identifier: "IdentifierInfo" [66:7 - 66:21] ClassDecl=IdentifierInfo:66:7 (Definition)
 // CHECK-tokens: Punctuation: "{" [66:22 - 66:23] ClassDecl=IdentifierInfo:66:7 (Definition)
@@ -683,7 +683,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: "::" [69:16 - 69:18] TypedefDecl=actualtype:69:54 (Definition)
 // CHECK-tokens: Identifier: "pair" [69:18 - 69:22] TemplateRef=pair:4:44
 // CHECK-tokens: Punctuation: "<" [69:23 - 69:24] TypedefDecl=actualtype:69:54 (Definition)
-// CHECK-tokens: Identifier: "IdentifierInfo" [69:25 - 69:39] TypeRef=class clang::IdentifierInfo:66:7
+// CHECK-tokens: Identifier: "IdentifierInfo" [69:25 - 69:39] TypeRef=class lfort::IdentifierInfo:66:7
 // CHECK-tokens: Punctuation: "," [69:39 - 69:40] TypedefDecl=actualtype:69:54 (Definition)
 // CHECK-tokens: Keyword: "const" [69:41 - 69:46] TypedefDecl=actualtype:69:54 (Definition)
 // CHECK-tokens: Keyword: "char" [69:47 - 69:51] TypedefDecl=actualtype:69:54 (Definition)
@@ -715,7 +715,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: "::" [73:16 - 73:18] TypedefDecl=actualtype:73:54 (Definition)
 // CHECK-tokens: Identifier: "pair" [73:18 - 73:22] TemplateRef=pair:4:44
 // CHECK-tokens: Punctuation: "<" [73:23 - 73:24] TypedefDecl=actualtype:73:54 (Definition)
-// CHECK-tokens: Identifier: "IdentifierInfo" [73:25 - 73:39] TypeRef=class clang::IdentifierInfo:66:7
+// CHECK-tokens: Identifier: "IdentifierInfo" [73:25 - 73:39] TypeRef=class lfort::IdentifierInfo:66:7
 // CHECK-tokens: Punctuation: "," [73:39 - 73:40] TypedefDecl=actualtype:73:54 (Definition)
 // CHECK-tokens: Keyword: "const" [73:41 - 73:46] TypedefDecl=actualtype:73:54 (Definition)
 // CHECK-tokens: Keyword: "char" [73:47 - 73:51] TypedefDecl=actualtype:73:54 (Definition)
@@ -795,8 +795,8 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: ";" [78:56 - 78:57] CompoundStmt=
 // CHECK-tokens: Punctuation: "}" [79:3 - 79:4] CompoundStmt=
 // CHECK-tokens: Punctuation: "}" [80:1 - 80:2] ClassDecl=IdentifierInfo:66:7 (Definition)
-// CHECK-tokens: Punctuation: ";" [80:2 - 80:3] Namespace=clang:65:11 (Definition)
-// CHECK-tokens: Punctuation: "}" [81:1 - 81:2] Namespace=clang:65:11 (Definition)
+// CHECK-tokens: Punctuation: ";" [80:2 - 80:3] Namespace=lfort:65:11 (Definition)
+// CHECK-tokens: Punctuation: "}" [81:1 - 81:2] Namespace=lfort:65:11 (Definition)
 // CHECK-tokens: Keyword: "namespace" [82:1 - 82:10]
 // CHECK-tokens: Identifier: "llvm" [82:11 - 82:15] Namespace=llvm:82:11 (Definition)
 // CHECK-tokens: Punctuation: "{" [82:16 - 82:17] Namespace=llvm:82:11 (Definition)
@@ -890,17 +890,17 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: "}" [96:1 - 96:2] Namespace=llvm:82:11 (Definition)
 // CHECK-tokens: Keyword: "using" [98:1 - 98:6] UsingDirective=:98:17
 // CHECK-tokens: Keyword: "namespace" [98:7 - 98:16] UsingDirective=:98:17
-// CHECK-tokens: Identifier: "clang" [98:17 - 98:22] NamespaceRef=clang:10:17
+// CHECK-tokens: Identifier: "lfort" [98:17 - 98:22] NamespaceRef=lfort:10:17
 // CHECK-tokens: Punctuation: ";" [98:22 - 98:23]
-// CHECK-tokens: Identifier: "AttributeList" [100:1 - 100:14] TypeRef=class clang::AttributeList:12:9
+// CHECK-tokens: Identifier: "AttributeList" [100:1 - 100:14] TypeRef=class lfort::AttributeList:12:9
 // CHECK-tokens: Punctuation: "::" [100:14 - 100:16] CXXMethod=getKind:100:36 (Definition) (static)
-// CHECK-tokens: Identifier: "Kind" [100:16 - 100:20] TypeRef=enum clang::AttributeList::Kind:13:10
-// CHECK-tokens: Identifier: "AttributeList" [100:21 - 100:34] TypeRef=class clang::AttributeList:12:9
+// CHECK-tokens: Identifier: "Kind" [100:16 - 100:20] TypeRef=enum lfort::AttributeList::Kind:13:10
+// CHECK-tokens: Identifier: "AttributeList" [100:21 - 100:34] TypeRef=class lfort::AttributeList:12:9
 // CHECK-tokens: Punctuation: "::" [100:34 - 100:36] CXXMethod=getKind:100:36 (Definition) (static)
 // CHECK-tokens: Identifier: "getKind" [100:36 - 100:43] CXXMethod=getKind:100:36 (Definition) (static)
 // CHECK-tokens: Punctuation: "(" [100:43 - 100:44] CXXMethod=getKind:100:36 (Definition) (static)
 // CHECK-tokens: Keyword: "const" [100:44 - 100:49] CXXMethod=getKind:100:36 (Definition) (static)
-// CHECK-tokens: Identifier: "IdentifierInfo" [100:50 - 100:64] TypeRef=class clang::IdentifierInfo:66:7
+// CHECK-tokens: Identifier: "IdentifierInfo" [100:50 - 100:64] TypeRef=class lfort::IdentifierInfo:66:7
 // CHECK-tokens: Punctuation: "*" [100:65 - 100:66] ParmDecl=Name:100:67 (Definition)
 // CHECK-tokens: Identifier: "Name" [100:67 - 100:71] ParmDecl=Name:100:67 (Definition)
 // CHECK-tokens: Punctuation: ")" [100:71 - 100:72] CXXMethod=getKind:100:36 (Definition) (static)
@@ -955,9 +955,9 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK-tokens: Punctuation: "::" [105:14 - 105:16] CXXFunctionalCastExpr=
 // CHECK-tokens: Identifier: "StringSwitch" [105:16 - 105:28] TemplateRef=StringSwitch:83:47
 // CHECK-tokens: Punctuation: "<" [105:29 - 105:30] CXXFunctionalCastExpr=
-// CHECK-tokens: Identifier: "AttributeList" [105:31 - 105:44] TypeRef=class clang::AttributeList:12:9
+// CHECK-tokens: Identifier: "AttributeList" [105:31 - 105:44] TypeRef=class lfort::AttributeList:12:9
 // CHECK-tokens: Punctuation: "::" [105:44 - 105:46] CXXFunctionalCastExpr=
-// CHECK-tokens: Identifier: "Kind" [105:46 - 105:50] TypeRef=enum clang::AttributeList::Kind:13:10
+// CHECK-tokens: Identifier: "Kind" [105:46 - 105:50] TypeRef=enum lfort::AttributeList::Kind:13:10
 // CHECK-tokens: Punctuation: ">" [105:51 - 105:52] CallExpr=StringSwitch:87:12
 // CHECK-tokens: Punctuation: "(" [105:53 - 105:54] CallExpr=StringSwitch:87:12
 // CHECK-tokens: Identifier: "AttrName" [105:54 - 105:62] DeclRefExpr=AttrName:101:19
@@ -1541,7 +1541,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 8:10: FunctionDecl=strlen:8:10 Extent=[8:3 - 8:30]
 // CHECK: 8:3: TypeRef=size_t:2:25 Extent=[8:3 - 8:9]
 // CHECK: 8:29: ParmDecl=:8:29 (Definition) Extent=[8:17 - 8:30]
-// CHECK: 10:17: Namespace=clang:10:17 (Definition) Extent=[10:1 - 35:2]
+// CHECK: 10:17: Namespace=lfort:10:17 (Definition) Extent=[10:1 - 35:2]
 // CHECK: 11:9: ClassDecl=IdentifierInfo:11:9 Extent=[11:3 - 11:23]
 // CHECK: 12:9: ClassDecl=AttributeList:12:9 (Definition) Extent=[12:3 - 34:4]
 // CHECK: 13:10: EnumDecl=Kind:13:10 (Definition) Extent=[13:5 - 32:6]
@@ -1617,9 +1617,9 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 31:7:  EnumConstantDecl=AT_returns_twice:31:7 (Definition) Extent=[31:7 - 31:23]
 // CHECK: 31:25: EnumConstantDecl=IgnoredAttribute:31:25 (Definition) Extent=[31:25 - 31:41]
 // CHECK: 33:17: CXXMethod=getKind:33:17 (static) Extent=[33:5 - 33:53]
-// CHECK: 33:12: TypeRef=enum clang::AttributeList::Kind:13:10 Extent=[33:12 - 33:16]
+// CHECK: 33:12: TypeRef=enum lfort::AttributeList::Kind:13:10 Extent=[33:12 - 33:16]
 // CHECK: 33:48: ParmDecl=Name:33:48 (Definition) Extent=[33:25 - 33:52]
-// CHECK: 33:31: TypeRef=class clang::IdentifierInfo:66:7 Extent=[33:31 - 33:45]
+// CHECK: 33:31: TypeRef=class lfort::IdentifierInfo:66:7 Extent=[33:31 - 33:45]
 // CHECK: 36:8: FunctionDecl=magic_length:36:8 Extent=[36:1 - 36:35]
 // CHECK: 36:1: TypeRef=size_t:2:25 Extent=[36:1 - 36:7]
 // CHECK: 36:33: ParmDecl=s:36:33 (Definition) Extent=[36:21 - 36:34]
@@ -1765,7 +1765,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 61:43: UnexposedExpr=Length:44:10 Extent=[61:43 - 61:49]
 // CHECK: 61:43: MemberRefExpr=Length:44:10 Extent=[61:43 - 61:49]
 // CHECK: 61:52: DeclRefExpr=Start:60:27 Extent=[61:52 - 61:57]
-// CHECK: 65:11: Namespace=clang:65:11 (Definition) Extent=[65:1 - 81:2]
+// CHECK: 65:11: Namespace=lfort:65:11 (Definition) Extent=[65:1 - 81:2]
 // CHECK: 66:7: ClassDecl=IdentifierInfo:66:7 (Definition) Extent=[66:1 - 80:2]
 // CHECK: 67:1: CXXAccessSpecifier=:67:1 (Definition) Extent=[67:1 - 67:8]
 // CHECK: 67:8: CXXConstructor=IdentifierInfo:67:8 Extent=[67:8 - 67:24]
@@ -1774,7 +1774,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 69:5: DeclStmt= Extent=[69:5 - 69:65]
 // CHECK: 69:54: TypedefDecl=actualtype:69:54 (Definition) Extent=[69:5 - 69:64]
 // CHECK: 69:18: TemplateRef=pair:4:44 Extent=[69:18 - 69:22]
-// CHECK: 69:25: TypeRef=class clang::IdentifierInfo:66:7 Extent=[69:25 - 69:39]
+// CHECK: 69:25: TypeRef=class lfort::IdentifierInfo:66:7 Extent=[69:25 - 69:39]
 // CHECK: 70:5: ReturnStmt= Extent=[70:5 - 70:47]
 // CHECK: 70:41: MemberRefExpr=second:4:55 SingleRefName=[70:41 - 70:47] RefName=[70:41 - 70:47] Extent=[70:12 - 70:47]
 // CHECK: 70:12: ParenExpr= Extent=[70:12 - 70:39]
@@ -1786,7 +1786,7 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 73:5: DeclStmt= Extent=[73:5 - 73:65]
 // CHECK: 73:54: TypedefDecl=actualtype:73:54 (Definition) Extent=[73:5 - 73:64]
 // CHECK: 73:18: TemplateRef=pair:4:44 Extent=[73:18 - 73:22]
-// CHECK: 73:25: TypeRef=class clang::IdentifierInfo:66:7 Extent=[73:25 - 73:39]
+// CHECK: 73:25: TypeRef=class lfort::IdentifierInfo:66:7 Extent=[73:25 - 73:39]
 // CHECK: 74:5: DeclStmt= Extent=[74:5 - 74:61]
 // CHECK: 74:17: VarDecl=p:74:17 (Definition) Extent=[74:5 - 74:60]
 // CHECK: 74:21: BinaryOperator= Extent=[74:21 - 74:60]
@@ -1864,11 +1864,11 @@ AttributeList::Kind AttributeList::getKind(const IdentifierInfo * Name) {
 // CHECK: 93:5: ReturnStmt= Extent=[93:5 - 93:17]
 // CHECK: 93:12: DeclRefExpr=Value:92:23 Extent=[93:12 - 93:17]
 // CHECK: 98:17: UsingDirective=:98:17 Extent=[98:1 - 98:22]
-// CHECK: 98:17: NamespaceRef=clang:10:17 Extent=[98:17 - 98:22]
+// CHECK: 98:17: NamespaceRef=lfort:10:17 Extent=[98:17 - 98:22]
 // CHECK: 100:36: CXXMethod=getKind:100:36 (Definition) (static) Extent=[100:1 - 186:2]
-// CHECK: 100:21: TypeRef=class clang::AttributeList:12:9 Extent=[100:21 - 100:34]
+// CHECK: 100:21: TypeRef=class lfort::AttributeList:12:9 Extent=[100:21 - 100:34]
 // CHECK: 100:67: ParmDecl=Name:100:67 (Definition) Extent=[100:44 - 100:71]
-// CHECK: 100:50: TypeRef=class clang::IdentifierInfo:66:7 Extent=[100:50 - 100:64]
+// CHECK: 100:50: TypeRef=class lfort::IdentifierInfo:66:7 Extent=[100:50 - 100:64]
 // CHECK: 100:73: CompoundStmt= Extent=[100:73 - 186:2]
 // CHECK: 101:3: DeclStmt= Extent=[101:3 - 101:46]
 // CHECK: 101:19: VarDecl=AttrName:101:19 (Definition) Extent=[101:3 - 101:45]

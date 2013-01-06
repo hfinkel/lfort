@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -Wstrict-selector-match -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -Wstrict-selector-match -fsyntax-only -verify %s
 
 @interface Base
 - (id) meth1: (Base *)arg1; 	// expected-note {{using}}

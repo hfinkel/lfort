@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_LIB_DRIVER_TOOLCHAINS_H_
-#define CLANG_LIB_DRIVER_TOOLCHAINS_H_
+#ifndef LFORT_LIB_DRIVER_TOOLCHAINS_H_
+#define LFORT_LIB_DRIVER_TOOLCHAINS_H_
 
 #include "Tools.h"
-#include "clang/Basic/VersionTuple.h"
-#include "clang/Driver/Action.h"
-#include "clang/Driver/ToolChain.h"
+#include "lfort/Basic/VersionTuple.h"
+#include "lfort/Driver/Action.h"
+#include "lfort/Driver/ToolChain.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
 namespace toolchains {
 
@@ -59,7 +59,7 @@ protected:
   };
 
 
-  /// \brief This is a class to find a viable GCC installation for Clang to
+  /// \brief This is a class to find a viable GCC installation for LFort to
   /// use.
   ///
   /// This class tries to find a GCC installation on the system, and report
@@ -184,7 +184,7 @@ public:
   Darwin(const Driver &D, const llvm::Triple& Triple);
   ~Darwin();
 
-  std::string ComputeEffectiveClangTriple(const ArgList &Args,
+  std::string ComputeEffectiveLFortTriple(const ArgList &Args,
                                           types::ID InputType) const;
 
   /// @name Darwin Specific Toolchain API
@@ -343,10 +343,10 @@ public:
   /// }
 };
 
-/// DarwinClang - The Darwin toolchain used by Clang.
-class LLVM_LIBRARY_VISIBILITY DarwinClang : public Darwin {
+/// DarwinLFort - The Darwin toolchain used by LFort.
+class LLVM_LIBRARY_VISIBILITY DarwinLFort : public Darwin {
 public:
-  DarwinClang(const Driver &D, const llvm::Triple& Triple);
+  DarwinLFort(const Driver &D, const llvm::Triple& Triple);
 
   /// @name Darwin ToolChain Implementation
   /// {
@@ -374,7 +374,7 @@ public:
   Darwin_Generic_GCC(const Driver &D, const llvm::Triple& Triple, const ArgList &Args)
     : Generic_GCC(D, Triple, Args) {}
 
-  std::string ComputeEffectiveClangTriple(const ArgList &Args,
+  std::string ComputeEffectiveLFortTriple(const ArgList &Args,
                                           types::ID InputType) const;
 
   virtual bool isPICDefault() const { return false; }
@@ -434,7 +434,7 @@ public:
   virtual Tool &SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const;
 
-  virtual void AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
   virtual void AddCXXStdlibLibArgs(const ArgList &Args,
                                    ArgStringList &CmdArgs) const;
@@ -493,11 +493,11 @@ public:
   virtual Tool &SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const;
 
-  virtual void AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
-  virtual void addClangTargetOptions(const ArgList &DriverArgs,
+  virtual void addLFortTargetOptions(const ArgList &DriverArgs,
                                      ArgStringList &CC1Args) const;
-  virtual void AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
   std::string Linker;
@@ -523,9 +523,9 @@ public:
   virtual Tool &SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const;
 
-  virtual void AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
-  virtual void AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
   virtual CXXStdlibType GetCXXStdlibType(const ArgList &Args) const;
 
@@ -572,15 +572,15 @@ public:
   virtual bool isPICDefault() const;
   virtual bool isPICDefaultForced() const;
 
-  virtual void AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
-  virtual void AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
 };
 
 } // end namespace toolchains
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

@@ -12,14 +12,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_OBJCRUNTIME_H
-#define LLVM_CLANG_OBJCRUNTIME_H
+#ifndef LLVM_LFORT_OBJCRUNTIME_H
+#define LLVM_LFORT_OBJCRUNTIME_H
 
-#include "clang/Basic/VersionTuple.h"
+#include "lfort/Basic/VersionTuple.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief The basic abstraction for the target Objective-C runtime.
 class ObjCRuntime {
@@ -306,6 +306,6 @@ public:
 
 raw_ostream &operator<<(raw_ostream &out, const ObjCRuntime &value);
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

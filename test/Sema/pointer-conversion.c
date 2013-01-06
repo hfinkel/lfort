@@ -1,4 +1,4 @@
-//RUN: %clang_cc1 -fsyntax-only -verify %s
+//RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 char * c;
 char const ** c2 = &c; // expected-warning {{discards qualifiers in nested pointer types}}

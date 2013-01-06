@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 // expected-no-diagnostics
 
 // If the name declared in the explicit instantiation is an

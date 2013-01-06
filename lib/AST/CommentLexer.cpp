@@ -1,10 +1,10 @@
-#include "clang/AST/CommentLexer.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/Basic/ConvertUTF.h"
+#include "lfort/AST/CommentLexer.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/Basic/ConvertUTF.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 void Token::dump(const Lexer &L, const SourceManager &SM) const {
@@ -29,7 +29,7 @@ bool isHTMLHexCharacterReferenceCharacter(char C) {
          (C >= 'A' && C <= 'F');
 }
 
-#include "clang/AST/CommentHTMLTags.inc"
+#include "lfort/AST/CommentHTMLTags.inc"
 
 } // unnamed namespace
 
@@ -832,5 +832,5 @@ StringRef Lexer::getSpelling(const Token &Tok,
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

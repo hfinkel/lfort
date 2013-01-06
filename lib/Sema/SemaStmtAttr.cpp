@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TargetAttributesSema.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/StringExtras.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 static Attr *handleFallThroughAttr(Sema &S, Stmt *St, const AttributeList &A,

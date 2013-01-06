@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Core/TokenRewriter.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/ScratchBuffer.h"
-using namespace clang;
+#include "lfort/Rewrite/Core/TokenRewriter.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/ScratchBuffer.h"
+using namespace lfort;
 
 TokenRewriter::TokenRewriter(FileID FID, SourceManager &SM,
                              const LangOptions &LangOpts) {

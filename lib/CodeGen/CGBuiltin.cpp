@@ -15,14 +15,14 @@
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/Basic/TargetBuiltins.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Basic/TargetBuiltins.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Intrinsics.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 using namespace llvm;
 
@@ -869,7 +869,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   case Builtin::BI__sync_fetch_and_xor_16:
     return EmitBinaryAtomic(*this, llvm::AtomicRMWInst::Xor, E);
 
-  // Clang extensions: not overloaded yet.
+  // LFort extensions: not overloaded yet.
   case Builtin::BI__sync_fetch_and_min:
     return EmitBinaryAtomic(*this, llvm::AtomicRMWInst::Min, E);
   case Builtin::BI__sync_fetch_and_max:

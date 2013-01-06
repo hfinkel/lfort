@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s -std=c++11
+// RUN: %lfort_cc1 -verify %s -std=c++11
 
 // A function that is explicitly defaulted shall
 struct A {

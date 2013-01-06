@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -pedantic
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -pedantic
 // expected-no-diagnostics
 
-// This file tests the clang extension which allows initializing the components
+// This file tests the lfort extension which allows initializing the components
 // of a complex number individually using an initialization list. Basically,
 // if you have an explicit init list for a complex number that contains two
 // initializers, this extension kicks in to turn it into component-wise

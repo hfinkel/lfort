@@ -1,4 +1,4 @@
-//===--- Tooling.h - Framework for standalone Clang tools -------*- C++ -*-===//
+//===--- Tooling.h - Framework for standalone LFort tools -------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file implements functions to run clang tools standalone instead
+//  This file implements functions to run lfort tools standalone instead
 //  of running them as a plugin.
 //
-//  A ClangTool is initialized with a CompilationDatabase and a set of files
+//  A LFortTool is initialized with a CompilationDatabase and a set of files
 //  to run over. The tool will then run a user-specified FrontendAction over
 //  all TUs in which the given files are compiled.
 //
@@ -21,27 +21,27 @@
 //  multiple FrontendActions over code can use ToolInvocation.
 //
 //  Example tools:
-//  - running clang -fsyntax-only over source code from an editor to get
+//  - running lfort -fsyntax-only over source code from an editor to get
 //    fast syntax checks
 //  - running match/replace tools over C++ code
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_TOOLING_H
-#define LLVM_CLANG_TOOLING_TOOLING_H
+#ifndef LLVM_LFORT_TOOLING_TOOLING_H
+#define LLVM_LFORT_TOOLING_TOOLING_H
 
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/Util.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Tooling/ArgumentsAdjusters.h"
-#include "clang/Tooling/CompilationDatabase.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/Util.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Tooling/ArgumentsAdjusters.h"
+#include "lfort/Tooling/CompilationDatabase.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/Twine.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 namespace driver {
 class Compilation;
@@ -53,24 +53,24 @@ class FrontendAction;
 
 namespace tooling {
 
-/// \brief Interface to generate clang::FrontendActions.
+/// \brief Interface to generate lfort::FrontendActions.
 class FrontendActionFactory {
 public:
   virtual ~FrontendActionFactory();
 
-  /// \brief Returns a new clang::FrontendAction.
+  /// \brief Returns a new lfort::FrontendAction.
   ///
   /// The caller takes ownership of the returned action.
-  virtual clang::FrontendAction *create() = 0;
+  virtual lfort::FrontendAction *create() = 0;
 };
 
 /// \brief Returns a new FrontendActionFactory for a given type.
 ///
-/// T must extend clang::FrontendAction.
+/// T must extend lfort::FrontendAction.
 ///
 /// Example:
 /// FrontendActionFactory *Factory =
-///   newFrontendActionFactory<clang::SyntaxOnlyAction>();
+///   newFrontendActionFactory<lfort::SyntaxOnlyAction>();
 template <typename T>
 FrontendActionFactory *newFrontendActionFactory();
 
@@ -89,7 +89,7 @@ public:
 ///
 /// Example:
 /// struct ProvidesASTConsumers {
-///   clang::ASTConsumer *newASTConsumer();
+///   lfort::ASTConsumer *newASTConsumer();
 /// } Factory;
 /// FrontendActionFactory *FactoryAdapter =
 ///   newFrontendActionFactory(&Factory);
@@ -104,7 +104,7 @@ inline FrontendActionFactory *newFrontendActionFactory(
 /// \param FileName The file name which 'Code' will be mapped as.
 ///
 /// \return - True if 'ToolAction' was successfully executed.
-bool runToolOnCode(clang::FrontendAction *ToolAction, const Twine &Code,
+bool runToolOnCode(lfort::FrontendAction *ToolAction, const Twine &Code,
                    const Twine &FileName = "input.cc");
 
 /// \brief Runs (and deletes) the tool on 'Code' with the -fsyntax-only flag and
@@ -116,19 +116,19 @@ bool runToolOnCode(clang::FrontendAction *ToolAction, const Twine &Code,
 /// \param FileName The file name which 'Code' will be mapped as.
 ///
 /// \return - True if 'ToolAction' was successfully executed.
-bool runToolOnCodeWithArgs(clang::FrontendAction *ToolAction, const Twine &Code,
+bool runToolOnCodeWithArgs(lfort::FrontendAction *ToolAction, const Twine &Code,
                            const std::vector<std::string> &Args,
                            const Twine &FileName = "input.cc");
 
-/// \brief Utility to run a FrontendAction in a single clang invocation.
+/// \brief Utility to run a FrontendAction in a single lfort invocation.
 class ToolInvocation {
  public:
   /// \brief Create a tool invocation.
   ///
-  /// \param CommandLine The command line arguments to clang. Note that clang
+  /// \param CommandLine The command line arguments to lfort. Note that lfort
   /// uses its binary name (CommandLine[0]) to locate its builtin headers.
   /// Callers have to ensure that they are installed in a compatible location
-  /// (see clang driver implementation) or mapped in via mapVirtualFile.
+  /// (see lfort driver implementation) or mapped in via mapVirtualFile.
   /// \param ToolAction The action to be executed. Class takes ownership.
   /// \param Files The FileManager used for the execution. Class does not take
   /// ownership.
@@ -141,7 +141,7 @@ class ToolInvocation {
   /// \param Content A null terminated buffer of the file's content.
   void mapVirtualFile(StringRef FilePath, StringRef Content);
 
-  /// \brief Run the clang invocation.
+  /// \brief Run the lfort invocation.
   ///
   /// \returns True if there were no errors during execution.
   bool run();
@@ -150,9 +150,9 @@ class ToolInvocation {
   void addFileMappingsTo(SourceManager &SourceManager);
 
   bool runInvocation(const char *BinaryName,
-                     clang::driver::Compilation *Compilation,
-                     clang::CompilerInvocation *Invocation,
-                     const clang::driver::ArgStringList &CC1Args);
+                     lfort::driver::Compilation *Compilation,
+                     lfort::CompilerInvocation *Invocation,
+                     const lfort::driver::ArgStringList &CC1Args);
 
   std::vector<std::string> CommandLine;
   llvm::OwningPtr<FrontendAction> ToolAction;
@@ -164,19 +164,19 @@ class ToolInvocation {
 /// \brief Utility to run a FrontendAction over a set of files.
 ///
 /// This class is written to be usable for command line utilities.
-/// By default the class uses ClangSyntaxOnlyAdjuster to modify
+/// By default the class uses LFortSyntaxOnlyAdjuster to modify
 /// command line arguments before the arguments are used to run
 /// a frontend action. One could install another command line
 /// arguments adjuster by call setArgumentsAdjuster() method.
-class ClangTool {
+class LFortTool {
  public:
-  /// \brief Constructs a clang tool to run over a list of files.
+  /// \brief Constructs a lfort tool to run over a list of files.
   ///
   /// \param Compilations The CompilationDatabase which contains the compile
   ///        command lines for the given source paths.
   /// \param SourcePaths The source files to run over. If a source files is
   ///        not found in Compilations, it is skipped.
-  ClangTool(const CompilationDatabase &Compilations,
+  LFortTool(const CompilationDatabase &Compilations,
             ArrayRef<std::string> SourcePaths);
 
   /// \brief Map a virtual file to be used while running the tool.
@@ -217,7 +217,7 @@ template <typename T>
 FrontendActionFactory *newFrontendActionFactory() {
   class SimpleFrontendActionFactory : public FrontendActionFactory {
   public:
-    virtual clang::FrontendAction *create() { return new T; }
+    virtual lfort::FrontendAction *create() { return new T; }
   };
 
   return new SimpleFrontendActionFactory;
@@ -232,18 +232,18 @@ inline FrontendActionFactory *newFrontendActionFactory(
                                           EndOfSourceFileCallback *EndCallback)
       : ConsumerFactory(ConsumerFactory), EndCallback(EndCallback) {}
 
-    virtual clang::FrontendAction *create() {
+    virtual lfort::FrontendAction *create() {
       return new ConsumerFactoryAdaptor(ConsumerFactory, EndCallback);
     }
 
   private:
-    class ConsumerFactoryAdaptor : public clang::ASTFrontendAction {
+    class ConsumerFactoryAdaptor : public lfort::ASTFrontendAction {
     public:
       ConsumerFactoryAdaptor(FactoryT *ConsumerFactory,
                              EndOfSourceFileCallback *EndCallback)
         : ConsumerFactory(ConsumerFactory), EndCallback(EndCallback) {}
 
-      clang::ASTConsumer *CreateASTConsumer(clang::CompilerInstance &,
+      lfort::ASTConsumer *CreateASTConsumer(lfort::CompilerInstance &,
                                             llvm::StringRef) {
         return ConsumerFactory->newASTConsumer();
       }
@@ -252,7 +252,7 @@ inline FrontendActionFactory *newFrontendActionFactory(
       virtual void EndSourceFileAction() {
         if (EndCallback != NULL)
           EndCallback->run();
-        clang::ASTFrontendAction::EndSourceFileAction();
+        lfort::ASTFrontendAction::EndSourceFileAction();
       }
 
     private:
@@ -283,6 +283,6 @@ inline FrontendActionFactory *newFrontendActionFactory(
 std::string getAbsolutePath(StringRef File);
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_TOOLING_H
+#endif // LLVM_LFORT_TOOLING_TOOLING_H

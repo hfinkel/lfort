@@ -1,4 +1,4 @@
-// RUN: %clang -fverbose-asm -g -S -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort -fverbose-asm -g -S -emit-llvm %s -o - | FileCheck %s
 @class ForwardObjcClass;
 ForwardObjcClass *ptr = 0;
 

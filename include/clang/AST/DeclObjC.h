@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLOBJC_H
-#define LLVM_CLANG_AST_DECLOBJC_H
+#ifndef LLVM_LFORT_AST_DECLOBJC_H
+#define LLVM_LFORT_AST_DECLOBJC_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/SelectorLocationsKind.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/SelectorLocationsKind.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 class Expr;
 class Stmt;
 class FunctionDecl;
@@ -2030,5 +2030,5 @@ public:
   friend class ASTDeclReader;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 #endif

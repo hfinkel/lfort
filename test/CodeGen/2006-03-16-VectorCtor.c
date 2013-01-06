@@ -1,5 +1,5 @@
 // Test that basic generic vector support works
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 typedef int v4si __attribute__ ((__vector_size__ (16)));
 void test(v4si *P, v4si *Q, float X) {

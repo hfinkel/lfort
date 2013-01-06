@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=debug.DumpTraversal -analyzer-max-loop 4 -std=c++11 %s | FileCheck -check-prefix=DFS %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=debug.DumpTraversal -analyzer-max-loop 4 -std=c++11 %s | FileCheck -check-prefix=DFS %s
 
 int a();
 int b();

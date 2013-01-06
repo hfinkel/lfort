@@ -8,17 +8,17 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::MacroBuilder utility class.
+/// \brief Defines the lfort::MacroBuilder utility class.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_MACROBUILDER_H
-#define LLVM_CLANG_BASIC_MACROBUILDER_H
+#ifndef LLVM_LFORT_BASIC_MACROBUILDER_H
+#define LLVM_LFORT_BASIC_MACROBUILDER_H
 
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 
 class MacroBuilder {
   raw_ostream &Out;
@@ -42,6 +42,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

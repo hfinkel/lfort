@@ -1,6 +1,6 @@
 // silly workaround expected-note {{marked unavailable here}}
-// RUN: %clang_cc1 -fobjc-arc -isystem %S/Inputs %s -DNO_USE
-// RUN: %clang_cc1 -fobjc-arc -isystem %S/Inputs %s -verify
+// RUN: %lfort_cc1 -fobjc-arc -isystem %S/Inputs %s -DNO_USE
+// RUN: %lfort_cc1 -fobjc-arc -isystem %S/Inputs %s -verify
 
 // another silly workaround expected-note {{marked unavailable here}}
 #include <arc-system-header.h>

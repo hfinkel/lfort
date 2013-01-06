@@ -1,6 +1,6 @@
 // Test that gcc-toolchain option is working correctly
 //
-// RUN: %clangxx -no-canonical-prefixes %s -### -o %t 2>&1 \
+// RUN: %lfortxx -no-canonical-prefixes %s -### -o %t 2>&1 \
 // RUN:     -target i386-unknown-linux \
 // RUN:     -gcc-toolchain %S/Inputs/ubuntu_11.04_multiarch_tree/usr \
 // RUN:   | FileCheck %s

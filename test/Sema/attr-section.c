@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -triple x86_64-apple-darwin9 %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -triple x86_64-apple-darwin9 %s
 
 int x __attribute__((section(
    42)));  // expected-error {{argument to section attribute was not a string literal}}

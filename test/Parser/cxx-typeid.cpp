@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // FIXME: This should really include <typeinfo>, but we don't have that yet.
 namespace std {

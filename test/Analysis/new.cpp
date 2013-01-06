@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-store region -std=c++11 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-store region -std=c++11 -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 typedef __typeof__(sizeof(int)) size_t;
 extern "C" void *malloc(size_t);
@@ -16,7 +16,7 @@ void testImplicitlyDeclaredGlobalNew() {
   ::operator delete(x);
 
   // Check that the new/delete did not invalidate someGlobal;
-  clang_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
 }
 
 
@@ -29,11 +29,11 @@ inline void* operator new(size_t, void* __p) throw()
 void *testPlacementNew() {
   int *x = (int *)malloc(sizeof(int));
   *x = 1;
-  clang_analyzer_eval(*x == 1); // expected-warning{{TRUE}};
+  lfort_analyzer_eval(*x == 1); // expected-warning{{TRUE}};
 
   void *y = new (x) int;
-  clang_analyzer_eval(x == y); // expected-warning{{TRUE}};
-  clang_analyzer_eval(*x == 1); // expected-warning{{UNKNOWN}};
+  lfort_analyzer_eval(x == y); // expected-warning{{TRUE}};
+  lfort_analyzer_eval(*x == 1); // expected-warning{{UNKNOWN}};
 
   return y;
 }
@@ -41,10 +41,10 @@ void *testPlacementNew() {
 void *operator new(size_t, size_t, int *);
 void *testCustomNew() {
   int x[1] = {1};
-  clang_analyzer_eval(*x == 1); // expected-warning{{TRUE}};
+  lfort_analyzer_eval(*x == 1); // expected-warning{{TRUE}};
 
   void *y = new (0, x) int;
-  clang_analyzer_eval(*x == 1); // expected-warning{{UNKNOWN}};
+  lfort_analyzer_eval(*x == 1); // expected-warning{{UNKNOWN}};
 
   return y; // no-warning
 }
@@ -61,16 +61,16 @@ void *testCustomNewMalloc() {
 
 void testScalarInitialization() {
   int *n = new int(3);
-  clang_analyzer_eval(*n == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*n == 3); // expected-warning{{TRUE}}
 
   new (n) int();
-  clang_analyzer_eval(*n == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*n == 0); // expected-warning{{TRUE}}
 
   new (n) int{3};
-  clang_analyzer_eval(*n == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*n == 3); // expected-warning{{TRUE}}
 
   new (n) int{};
-  clang_analyzer_eval(*n == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*n == 0); // expected-warning{{TRUE}}
 }
 
 

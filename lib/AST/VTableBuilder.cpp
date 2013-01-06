@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/VTableBuilder.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/VTableBuilder.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 
 #define DUMP_OVERRIDERS 0
 

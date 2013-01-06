@@ -8,18 +8,18 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::TargetInfo interface.
+/// \brief Defines the lfort::TargetInfo interface.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_TARGETINFO_H
-#define LLVM_CLANG_BASIC_TARGETINFO_H
+#ifndef LLVM_LFORT_BASIC_TARGETINFO_H
+#define LLVM_LFORT_BASIC_TARGETINFO_H
 
-#include "clang/Basic/AddressSpaces.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Basic/VersionTuple.h"
+#include "lfort/Basic/AddressSpaces.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Basic/VersionTuple.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
@@ -34,7 +34,7 @@ namespace llvm {
 struct fltSemantics;
 }
 
-namespace clang {
+namespace lfort {
 class DiagnosticsEngine;
 class LangOptions;
 class MacroBuilder;
@@ -799,6 +799,6 @@ protected:
                                      TargetInfo::ConstraintInfo &info) const= 0;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

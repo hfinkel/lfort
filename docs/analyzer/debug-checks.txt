@@ -31,7 +31,7 @@ These checkers will print out information about the analyzer state in the form o
 ExprInspection checks
 ---------------------
 
-- void clang_analyzer_eval(bool);
+- void lfort_analyzer_eval(bool);
 
 Prints TRUE if the argument is known to have a non-zero value,
        FALSE if the argument is known to have a zero or null value, and
@@ -44,12 +44,12 @@ information, making it difficult to write proper -verify directives.
 In C, the argument can be typed as 'int' or as '_Bool'.
 
 Example usage:
-  clang_analyzer_eval(x); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(x); // expected-warning{{UNKNOWN}}
   if (!x) return;
-  clang_analyzer_eval(x); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x); // expected-warning{{TRUE}}
 
 
-- void clang_analyzer_checkInlined(bool);
+- void lfort_analyzer_checkInlined(bool);
 
 If a call occurs within an inlined function, prints TRUE or FALSE according to
 the value of its argument. If a call occurs outside an inlined function,
@@ -69,15 +69,15 @@ In C, the argument can be typed as 'int' or as '_Bool'.
 
 Example usage:
   int inlined() {
-    clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+    lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
     return 42;
   }
 
   void topLevel() {
-    clang_analyzer_checkInlined(false); // no-warning (not inlined)
+    lfort_analyzer_checkInlined(false); // no-warning (not inlined)
     int value = inlined();
     // This assertion will not be valid if the previous call was not inlined.
-    clang_analyzer_eval(value == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(value == 42); // expected-warning{{TRUE}}
   }
 
 

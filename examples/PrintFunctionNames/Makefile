@@ -7,7 +7,7 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 LIBRARYNAME = PrintFunctionNames
 
 # If we don't need RTTI or EH, there's no reason to export anything
@@ -21,7 +21,7 @@ endif
 LINK_LIBS_IN_SHARED = 0
 SHARED_LIBRARY = 1
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 ifeq ($(OS),Darwin)
   LDFLAGS=-Wl,-undefined,dynamic_lookup

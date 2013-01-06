@@ -1,4 +1,4 @@
-// RUN: %clang -target x86_64-apple-darwin9 \
+// RUN: %lfort -target x86_64-apple-darwin9 \
 // RUN:   -fsyntax-only -fno-exceptions %s
 
 void f1() {

@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-inline-max-stack-depth=3 -analyzer-config ipa-always-inline-size=3 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-inline-max-stack-depth=3 -analyzer-config ipa-always-inline-size=3 -verify %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 int nested5() {
   if (5 < 3)
     return 0;
@@ -23,7 +23,7 @@ int nested1() {
 }
 
 void testNested() {
-  clang_analyzer_eval(nested1() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(nested1() == 0); // expected-warning{{TRUE}}
 }
 
 // Make sure we terminate a recursive path.

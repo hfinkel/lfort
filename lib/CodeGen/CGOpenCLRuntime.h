@@ -13,14 +13,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_OPENCLRUNTIME_H
-#define CLANG_CODEGEN_OPENCLRUNTIME_H
+#ifndef LFORT_CODEGEN_OPENCLRUNTIME_H
+#define LFORT_CODEGEN_OPENCLRUNTIME_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
 
-namespace clang {
+namespace lfort {
 
 class VarDecl;
 

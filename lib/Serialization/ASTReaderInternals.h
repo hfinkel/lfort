@@ -10,17 +10,17 @@
 //  This file provides internal definitions used in the AST reader.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SERIALIZATION_ASTREADER_INTERNALS_H
-#define LLVM_CLANG_SERIALIZATION_ASTREADER_INTERNALS_H
+#ifndef LLVM_LFORT_SERIALIZATION_ASTREADER_INTERNALS_H
+#define LLVM_LFORT_SERIALIZATION_ASTREADER_INTERNALS_H
 
 #include "ASTReaderInternals.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/Basic/OnDiskHashTable.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/Basic/OnDiskHashTable.h"
 #include "llvm/Support/Endian.h"
 #include <sys/stat.h>
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 class ASTReader;
 class HeaderSearch;
@@ -235,9 +235,9 @@ public:
 typedef OnDiskChainedHashTable<HeaderFileInfoTrait>
   HeaderFileInfoLookupTable;
   
-} // end namespace clang::serialization::reader
-} // end namespace clang::serialization
-} // end namespace clang
+} // end namespace lfort::serialization::reader
+} // end namespace lfort::serialization
+} // end namespace lfort
 
 
 #endif

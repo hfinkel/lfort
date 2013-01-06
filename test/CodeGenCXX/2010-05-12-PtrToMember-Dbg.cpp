@@ -1,4 +1,4 @@
-//RUN: %clang_cc1 -emit-llvm -g -o - %s | FileCheck %s
+//RUN: %lfort_cc1 -emit-llvm -g -o - %s | FileCheck %s
 //CHECK: DW_TAG_auto_variable
 class Foo
 {

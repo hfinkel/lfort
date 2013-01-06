@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 typedef struct _zend_module_entry zend_module_entry;
 struct _zend_module_entry {

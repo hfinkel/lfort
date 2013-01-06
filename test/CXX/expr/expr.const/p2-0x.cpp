@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -pedantic -verify -fcxx-exceptions %s -fconstexpr-depth 128 -triple i686-pc-linux-gnu
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -pedantic -verify -fcxx-exceptions %s -fconstexpr-depth 128 -triple i686-pc-linux-gnu
 
 // A conditional-expression is a core constant expression unless it involves one
 // of the following as a potentially evaluated subexpression [...]:
@@ -275,7 +275,7 @@ namespace UndefinedBehavior {
 
 // - a lambda-expression (5.1.2);
 struct Lambda {
-  // FIXME: clang crashes when trying to parse this! Revisit this check once
+  // FIXME: lfort crashes when trying to parse this! Revisit this check once
   // lambdas are fully implemented.
   //int n : []{ return 1; }();
 };

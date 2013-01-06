@@ -5,23 +5,23 @@ Precompiled Header and Modules Internals
 .. contents::
    :local:
 
-This document describes the design and implementation of Clang's precompiled
+This document describes the design and implementation of LFort's precompiled
 headers (PCH) and modules.  If you are interested in the end-user view, please
 see the :ref:`User's Manual <usersmanual-precompiled-headers>`.
 
-Using Precompiled Headers with ``clang``
+Using Precompiled Headers with ``lfort``
 ----------------------------------------
 
-The Clang compiler frontend, ``clang -cc1``, supports two command line options
+The LFort compiler frontend, ``lfort -cc1``, supports two command line options
 for generating and using PCH files.
 
-To generate PCH files using ``clang -cc1``, use the option :option:`-emit-pch`:
+To generate PCH files using ``lfort -cc1``, use the option :option:`-emit-pch`:
 
 .. code-block:: bash
 
-  $ clang -cc1 test.h -emit-pch -o test.h.pch
+  $ lfort -cc1 test.h -emit-pch -o test.h.pch
 
-This option is transparently used by ``clang`` when generating PCH files.  The
+This option is transparently used by ``lfort`` when generating PCH files.  The
 resulting PCH file contains the serialized form of the compiler's internal
 representation after it has completed parsing and semantic analysis.  The PCH
 file can then be used as a prefix header with the :option:`-include-pch`
@@ -29,7 +29,7 @@ option:
 
 .. code-block:: bash
 
-  $ clang -cc1 -include-pch test.h.pch test.c -o test.s
+  $ lfort -cc1 -include-pch test.h.pch test.c -o test.s
 
 Design Philosophy
 -----------------
@@ -56,7 +56,7 @@ A precompiled header implementation improves performance when:
   important on multi-core systems, because PCH file generation serializes the
   build when all compilations require the PCH file to be up-to-date.
 
-Modules, as implemented in Clang, use the same mechanisms as precompiled
+Modules, as implemented in LFort, use the same mechanisms as precompiled
 headers to save a serialized AST file (one per module) and use those AST
 modules.  From an implementation standpoint, modules are a generalization of
 precompiled headers, lifting a number of restrictions placed on precompiled
@@ -65,15 +65,15 @@ be included at the beginning of the translation unit.  The extensions to the
 AST file format required for modules are discussed in the section on
 :ref:`modules <pchinternals-modules>`.
 
-Clang's AST files are designed with a compact on-disk representation, which
+LFort's AST files are designed with a compact on-disk representation, which
 minimizes both creation time and the time required to initially load the AST
-file.  The AST file itself contains a serialized representation of Clang's
+file.  The AST file itself contains a serialized representation of LFort's
 abstract syntax trees and supporting data structures, stored using the same
 compressed bitstream as `LLVM's bitcode file format
 <http://llvm.org/docs/BitCodeFormat.html>`_.
 
-Clang's AST files are loaded "lazily" from disk.  When an AST file is initially
-loaded, Clang reads only a small amount of data from the AST file to establish
+LFort's AST files are loaded "lazily" from disk.  When an AST file is initially
+loaded, LFort reads only a small amount of data from the AST file to establish
 where certain important data structures are stored.  The amount of data read in
 this initial load is independent of the size of the AST file, such that a
 larger AST file does not lead to longer AST load times.  The actual header data
@@ -84,7 +84,7 @@ With this approach, the cost of using an AST file for a translation unit is
 proportional to the amount of code actually used from the AST file, rather than
 being proportional to the size of the AST file itself.
 
-When given the :option:`-print-stats` option, Clang produces statistics
+When given the :option:`-print-stats` option, LFort produces statistics
 describing how much of the AST file was actually loaded from disk.  For a
 simple "Hello, World!" program that includes the Apple ``Cocoa.h`` header
 (which is built as a precompiled header), this option illustrates how little of
@@ -114,7 +114,7 @@ AST file implementation can be improved by making more of the implementation
 lazy.
 
 Precompiled headers can be chained.  When you create a PCH while including an
-existing PCH, Clang can create the new PCH by referencing the original file and
+existing PCH, LFort can create the new PCH by referencing the original file and
 only writing the new data to the new file.  For example, you could create a PCH
 out of all the headers that are very commonly used throughout your project, and
 then create a PCH for every single source file in the project that includes the
@@ -126,8 +126,8 @@ section <pchinternals-chained>`.
 AST File Contents
 -----------------
 
-Clang's AST files are organized into several different blocks, each of which
-contains the serialized representation of a part of Clang's internal
+LFort's AST files are organized into several different blocks, each of which
+contains the serialized representation of a part of LFort's internal
 representation.  Each of the blocks corresponds to either a block or a record
 within `LLVM's bitstream format <http://llvm.org/docs/BitCodeFormat.html>`_.
 The contents of each of these logical blocks are described below.
@@ -193,9 +193,9 @@ match anyway.
 Source Manager Block
 ^^^^^^^^^^^^^^^^^^^^
 
-The source manager block contains the serialized representation of Clang's
+The source manager block contains the serialized representation of LFort's
 :ref:`SourceManager <SourceManager>` class, which handles the mapping from
-source locations (as represented in Clang's abstract syntax tree) into actual
+source locations (as represented in LFort's abstract syntax tree) into actual
 column/line positions within a source file or macro instantiation.  The AST
 file's representation of the source manager also includes information about all
 of the headers that were (transitively) included when building the AST file.
@@ -203,7 +203,7 @@ of the headers that were (transitively) included when building the AST file.
 The bulk of the source manager block is dedicated to information about the
 various files, buffers, and macro instantiations into which a source location
 can refer.  Each of these is referenced by a numeric "file ID", which is a
-unique number (allocated starting at 1) stored in the source location.  Clang
+unique number (allocated starting at 1) stored in the source location.  LFort
 serializes the information for each kind of file ID, along with an index that
 maps file IDs to the position within the AST file where the information about
 that file ID is stored.  The data associated with a file ID is loaded only when
@@ -214,7 +214,7 @@ The source manager block also contains information about all of the headers
 that were included when building the AST file.  This includes information about
 the controlling macro for the header (e.g., when the preprocessor identified
 that the contents of the header dependent on a macro like
-``LLVM_CLANG_SOURCEMANAGER_H``) along with a cached version of the results of
+``LLVM_LFORT_SOURCEMANAGER_H``) along with a cached version of the results of
 the ``stat()`` system calls performed when building the AST file.  The latter
 is particularly useful in reducing system time when searching for include
 files.
@@ -238,7 +238,7 @@ Types Block
 ^^^^^^^^^^^
 
 The types block contains the serialized representation of all of the types
-referenced in the translation unit.  Each Clang type node (``PointerType``,
+referenced in the translation unit.  Each LFort type node (``PointerType``,
 ``FunctionProtoType``, etc.) has a corresponding record type in the AST file.
 When types are deserialized from the AST file, the data within the record is
 used to reconstruct the appropriate type node using the AST context.
@@ -253,7 +253,7 @@ the types block where the serialized representation of that type resides,
 enabling lazy deserialization of types.  When a type is referenced from within
 the AST file, that reference is encoded using the type ID shifted left by 3
 bits.  The lower three bits are used to represent the ``const``, ``volatile``,
-and ``restrict`` qualifiers, as in Clang's :ref:`QualType <QualType>` class.
+and ``restrict`` qualifiers, as in LFort's :ref:`QualType <QualType>` class.
 
 .. _pchinternals-decls:
 
@@ -261,7 +261,7 @@ Declarations Block
 ^^^^^^^^^^^^^^^^^^
 
 The declarations block contains the serialized representation of all of the
-declarations referenced in the translation unit.  Each Clang declaration node
+declarations referenced in the translation unit.  Each LFort declaration node
 (``VarDecl``, ``FunctionDecl``, etc.) has a corresponding record type in the
 AST file.  When declarations are deserialized from the AST file, the data
 within the record is used to build and populate a new instance of the
@@ -270,21 +270,21 @@ numeric ID that is used to refer to that declaration within the AST file.  In
 addition, a lookup table provides a mapping from that numeric ID to the offset
 within the precompiled header where that declaration is described.
 
-Declarations in Clang's abstract syntax trees are stored hierarchically.  At
+Declarations in LFort's abstract syntax trees are stored hierarchically.  At
 the top of the hierarchy is the translation unit (``TranslationUnitDecl``),
 which contains all of the declarations in the translation unit but is not
 actually written as a specific declaration node.  Its child declarations (such
 as functions or struct types) may also contain other declarations inside them,
-and so on.  Within Clang, each declaration is stored within a :ref:`declaration
+and so on.  Within LFort, each declaration is stored within a :ref:`declaration
 context <DeclContext>`, as represented by the ``DeclContext`` class.
 Declaration contexts provide the mechanism to perform name lookup within a
 given declaration (e.g., find the member named ``x`` in a structure) and
 iterate over the declarations stored within a context (e.g., iterate over all
 of the fields of a structure for structure layout).
 
-In Clang's AST file format, deserializing a declaration that is a
+In LFort's AST file format, deserializing a declaration that is a
 ``DeclContext`` is a separate operation from deserializing all of the
-declarations stored within that declaration context.  Therefore, Clang will
+declarations stored within that declaration context.  Therefore, LFort will
 deserialize the translation unit declaration without deserializing the
 declarations within that translation unit.  When required, the declarations
 stored within a declaration context will be deserialized.  There are two
@@ -293,7 +293,7 @@ correspond to the name-lookup and iteration behavior described above:
 
 * When the front end performs name lookup to find a name ``x`` within a given
   declaration context (for example, during semantic analysis of the expression
-  ``p->x``, where ``p``'s type is defined in the precompiled header), Clang
+  ``p->x``, where ``p``'s type is defined in the precompiled header), LFort
   refers to an on-disk hash table that maps from the names within that
   declaration context to the declaration IDs that represent each visible
   declaration with that name.  The actual declarations will then be
@@ -319,7 +319,7 @@ immediately following the declaration or type that owns the statement or
 expression.  For example, the statement representing the body of a function
 will be stored directly following the declaration of the function.
 
-As with types and declarations, each statement and expression kind in Clang's
+As with types and declarations, each statement and expression kind in LFort's
 abstract syntax tree (``ForStmt``, ``CallExpr``, etc.) has a corresponding
 record type in the AST file, which contains the serialized representation of
 that statement or expression.  Each substatement or subexpression within an
@@ -344,7 +344,7 @@ expression ``3 - 4 + 5`` would be represented as follows:
 |       ``STOP``        |
 +-----------------------+
 
-When reading this representation, Clang evaluates each expression record it
+When reading this representation, LFort evaluates each expression record it
 encounters, builds the appropriate abstract syntax tree node, and then pushes
 that expression on to a stack.  When a record contains *N* subexpressions ---
 ``BinaryOperator`` has two of them --- those expressions are popped from the
@@ -373,7 +373,7 @@ serialized representation contains:
 
 When an AST file is loaded, the AST file reader mechanism introduces itself
 into the identifier table as an external lookup source.  Thus, when the user
-program refers to an identifier that has not yet been seen, Clang will perform
+program refers to an identifier that has not yet been seen, LFort will perform
 a lookup into the identifier table.  If an identifier is found, its contents
 (macro definitions, flags, top-level declarations, etc.) will be deserialized,
 at which point the corresponding ``IdentifierInfo`` structure will have the
@@ -398,8 +398,8 @@ selector (which is required for semantic analysis in Objective-C) and also
 stores all of the selectors used by entities within the AST file.  The design
 of the method pool is similar to that of the :ref:`identifier table
 <pchinternals-ident-table>`: the first time a particular selector is formed
-during the compilation of the program, Clang will search in the on-disk hash
-table of selectors; if found, Clang will read the Objective-C methods
+during the compilation of the program, LFort will search in the on-disk hash
+table of selectors; if found, LFort will read the Objective-C methods
 associated with that selector into the appropriate front-end data structure
 (``Sema::InstanceMethodPool`` and ``Sema::FactoryMethodPool`` for instance and
 class methods, respectively).
@@ -414,15 +414,15 @@ AST Reader Integration Points
 -----------------------------
 
 The "lazy" deserialization behavior of AST files requires their integration
-into several completely different submodules of Clang.  For example, lazily
+into several completely different submodules of LFort.  For example, lazily
 deserializing the declarations during name lookup requires that the name-lookup
 routines be able to query the AST file to find entities stored there.
 
-For each Clang data structure that requires direct interaction with the AST
+For each LFort data structure that requires direct interaction with the AST
 reader logic, there is an abstract class that provides the interface between
 the two modules.  The ``ASTReader`` class, which handles the loading of an AST
 file, inherits from all of these abstract classes to provide lazy
-deserialization of Clang's data structures.  ``ASTReader`` implements the
+deserialization of LFort's data structures.  ``ASTReader`` implements the
 following abstract classes:
 
 ``StatSysCallCache``
@@ -470,7 +470,7 @@ depends on), reparsing of that source file can use the precompiled preamble and
 start parsing after the ``#include``\ s, so parsing time is proportional to the
 size of the source file (rather than all of its includes).  However, the
 compilation of that translation unit may already use a precompiled header: in
-this case, Clang will create the precompiled preamble as a chained precompiled
+this case, LFort will create the precompiled preamble as a chained precompiled
 header that refers to the original precompiled header.  This drastically
 reduces the time needed to serialize the precompiled preamble for use in
 reparsing.
@@ -498,7 +498,7 @@ Numbering of IDs
   an ID number, which AST file actually contains the entity.
 
 Name lookup
-  When writing a chained precompiled header, Clang attempts to write only
+  When writing a chained precompiled header, LFort attempts to write only
   information that has changed from the precompiled header on which it is
   based.  This changes the lookup algorithm for the various tables, such as the
   :ref:`identifier table <pchinternals-ident-table>`: the search starts at the
@@ -560,7 +560,7 @@ Name Visibility
   so that they are not part of the public interface of the module and are not
   visible to its clients.  The AST reader maintains a "visible" bit on various
   AST nodes (declarations, macros, etc.) to indicate whether that particular
-  AST node is currently visible; the various name lookup mechanisms in Clang
+  AST node is currently visible; the various name lookup mechanisms in LFort
   inspect the visible bit to determine whether that entity, which is still in
   the AST (because other, visible AST nodes may depend on it), can actually be
   found by name lookup.  When a new (sub)module is imported, it may make

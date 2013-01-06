@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - 
+// RUN: %lfort_cc1 %s -emit-llvm -o - 
 
 typedef float __m128 __attribute__((__vector_size__(16)));
 typedef long long __v2di __attribute__((__vector_size__(16)));

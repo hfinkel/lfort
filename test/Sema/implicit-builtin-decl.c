@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 void f() {
   int *ptr = malloc(sizeof(int) * 10); // expected-warning{{implicitly declaring library function 'malloc' with type}} \
   // expected-note{{please include the header <stdlib.h> or explicitly provide a declaration for 'malloc'}} \

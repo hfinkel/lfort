@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // <rdar://problem/7605289>
 @implementation Unknown (Blarg) // expected-error{{cannot find interface declaration for 'Unknown'}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wno-unused-value -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-unused-value -verify -std=c++11 %s
 
 enum E { e };
 

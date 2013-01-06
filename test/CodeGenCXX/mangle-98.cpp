@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - -triple=x86_64-apple-darwin9 -std=c++98 | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - -triple=x86_64-apple-darwin9 -std=c++98 | FileCheck %s
 
 template <bool B> struct S3 {};
 

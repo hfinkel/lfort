@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_COMMENT_PARSER_H
-#define LLVM_CLANG_AST_COMMENT_PARSER_H
+#ifndef LLVM_LFORT_AST_COMMENT_PARSER_H
+#define LLVM_LFORT_AST_COMMENT_PARSER_H
 
-#include "clang/AST/Comment.h"
-#include "clang/AST/CommentLexer.h"
-#include "clang/AST/CommentSema.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/AST/CommentLexer.h"
+#include "lfort/AST/CommentSema.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/Support/Allocator.h"
 
-namespace clang {
+namespace lfort {
 class SourceManager;
 
 namespace comments {
@@ -118,7 +118,7 @@ public:
 };
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

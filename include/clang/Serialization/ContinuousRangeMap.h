@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SERIALIZATION_CONTINUOUS_RANGE_MAP_H
-#define LLVM_CLANG_SERIALIZATION_CONTINUOUS_RANGE_MAP_H
+#ifndef LLVM_LFORT_SERIALIZATION_CONTINUOUS_RANGE_MAP_H
+#define LLVM_LFORT_SERIALIZATION_CONTINUOUS_RANGE_MAP_H
 
 #include "llvm/ADT/SmallVector.h"
 #include <algorithm>
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 /// \brief A map from continuous integer ranges to some value, with a very
 /// specialized interface.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - -triple i386-linux-gnu %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - -triple i386-linux-gnu %s | FileCheck %s
 
 // This checks that the global won't be marked as common. 
 // (It shouldn't because it's being initialized).

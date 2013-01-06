@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 < %s -emit-llvm
+// RUN: %lfort_cc1 < %s -emit-llvm
 struct test {
   int a;
 };

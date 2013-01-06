@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -emit-llvm %s -o %t
 
 // From GCC PR19331
 struct SysParams

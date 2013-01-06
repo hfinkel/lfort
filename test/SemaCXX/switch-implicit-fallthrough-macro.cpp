@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough -DCOMMAND_LINE_FALLTHROUGH=[[clang::fallthrough]] %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough -DCOMMAND_LINE_FALLTHROUGH=[[lfort::fallthrough]] %s
 
 int fallthrough_compatibility_macro_from_command_line(int n) {
   switch (n) {
@@ -10,9 +10,9 @@ int fallthrough_compatibility_macro_from_command_line(int n) {
   return n;
 }
 
-#ifdef __clang__
+#ifdef __lfort__
 #if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
-#define COMPATIBILITY_FALLTHROUGH   [ [ /* test */  clang /* test */ \
+#define COMPATIBILITY_FALLTHROUGH   [ [ /* test */  lfort /* test */ \
     ::  fallthrough  ]  ]    // testing whitespace and comments in macro definition
 #endif
 #endif
@@ -32,17 +32,17 @@ int fallthrough_compatibility_macro_from_source(int n) {
 }
 
 // Deeper macro substitution
-#define M1 [[clang::fallthrough]]
-#ifdef __clang__
+#define M1 [[lfort::fallthrough]]
+#ifdef __lfort__
 #define M2 M1
 #else
 #define M2
 #endif
 
-#define WRONG_MACRO1 clang::fallthrough
-#define WRONG_MACRO2 [[clang::fallthrough]
-#define WRONG_MACRO3 [[clang::fall through]]
-#define WRONG_MACRO4 [[clang::fallthrough]]]
+#define WRONG_MACRO1 lfort::fallthrough
+#define WRONG_MACRO2 [[lfort::fallthrough]
+#define WRONG_MACRO3 [[lfort::fall through]]
+#define WRONG_MACRO4 [[lfort::fallthrough]]]
 
 int fallthrough_compatibility_macro_in_macro(int n) {
   switch (n) {
@@ -64,17 +64,17 @@ int fallthrough_compatibility_macro_undefined(int n) {
   switch (n) {
     case 0:
       n = n * 20;
-    case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       ;
   }
-#define TOO_LATE [[clang::fallthrough]]
+#define TOO_LATE [[lfort::fallthrough]]
   return n;
 }
 #undef TOO_LATE
 
 #define MACRO_WITH_HISTORY 11111111
 #undef MACRO_WITH_HISTORY
-#define MACRO_WITH_HISTORY [[clang::fallthrough]]
+#define MACRO_WITH_HISTORY [[lfort::fallthrough]]
 #undef MACRO_WITH_HISTORY
 #define MACRO_WITH_HISTORY 2222222
 
@@ -83,9 +83,9 @@ int fallthrough_compatibility_macro_history(int n) {
     case 0:
       n = n * 20;
 #undef MACRO_WITH_HISTORY
-    case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       ;
-#define MACRO_WITH_HISTORY [[clang::fallthrough]]
+#define MACRO_WITH_HISTORY [[lfort::fallthrough]]
   }
   return n;
 }
@@ -93,7 +93,7 @@ int fallthrough_compatibility_macro_history(int n) {
 #undef MACRO_WITH_HISTORY
 #define MACRO_WITH_HISTORY 11111111
 #undef MACRO_WITH_HISTORY
-#define MACRO_WITH_HISTORY [[clang::fallthrough]]
+#define MACRO_WITH_HISTORY [[lfort::fallthrough]]
 #undef MACRO_WITH_HISTORY
 #define MACRO_WITH_HISTORY 2222222
 #undef MACRO_WITH_HISTORY
@@ -102,7 +102,7 @@ int fallthrough_compatibility_macro_history2(int n) {
   switch (n) {
     case 0:
       n = n * 20;
-#define MACRO_WITH_HISTORY [[clang::fallthrough]]
+#define MACRO_WITH_HISTORY [[lfort::fallthrough]]
     case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert 'MACRO_WITH_HISTORY;' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       ;
 #undef MACRO_WITH_HISTORY
@@ -120,7 +120,7 @@ int fallthrough_compatibility_macro_history_template(int n) {
   switch (N * n) {
     case 0:
       n = n * 20;
-#define MACRO_WITH_HISTORY2 [[clang::fallthrough]]
+#define MACRO_WITH_HISTORY2 [[lfort::fallthrough]]
     case 1: // expected-warning{{unannotated fall-through between switch labels}} expected-note{{insert 'MACRO_WITH_HISTORY2;' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       ;
 #undef MACRO_WITH_HISTORY2

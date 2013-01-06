@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemOptions.h"
-#include "clang/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemOptions.h"
+#include "lfort/Basic/FileSystemStatCache.h"
 #include "gtest/gtest.h"
 
 using namespace llvm;
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

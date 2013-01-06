@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_CORE_CHECKERMANAGER_H
-#define LLVM_CLANG_SA_CORE_CHECKERMANAGER_H
+#ifndef LLVM_LFORT_SA_CORE_CHECKERMANAGER_H
+#define LLVM_LFORT_SA_CORE_CHECKERMANAGER_H
 
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class Decl;
   class Stmt;
   class CallExpr;
@@ -610,29 +610,29 @@ private:
 
 } // end ento namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 namespace llvm {
   /// Define DenseMapInfo so that CachedStmtCheckersKey can be used as key
   /// in DenseMap and DenseSets.
   template <>
-  struct DenseMapInfo<clang::ento::CheckerManager::CachedStmtCheckersKey> {
-    static inline clang::ento::CheckerManager::CachedStmtCheckersKey
+  struct DenseMapInfo<lfort::ento::CheckerManager::CachedStmtCheckersKey> {
+    static inline lfort::ento::CheckerManager::CachedStmtCheckersKey
         getEmptyKey() {
-      return clang::ento::CheckerManager::CachedStmtCheckersKey();
+      return lfort::ento::CheckerManager::CachedStmtCheckersKey();
     }
-    static inline clang::ento::CheckerManager::CachedStmtCheckersKey
+    static inline lfort::ento::CheckerManager::CachedStmtCheckersKey
         getTombstoneKey() {
-      return clang::ento::CheckerManager::CachedStmtCheckersKey::getSentinel();
+      return lfort::ento::CheckerManager::CachedStmtCheckersKey::getSentinel();
     }
 
     static unsigned
-        getHashValue(clang::ento::CheckerManager::CachedStmtCheckersKey S) {
+        getHashValue(lfort::ento::CheckerManager::CachedStmtCheckersKey S) {
       return S.getHashValue();
     }
 
-    static bool isEqual(clang::ento::CheckerManager::CachedStmtCheckersKey LHS,
-                       clang::ento::CheckerManager::CachedStmtCheckersKey RHS) {
+    static bool isEqual(lfort::ento::CheckerManager::CachedStmtCheckersKey LHS,
+                       lfort::ento::CheckerManager::CachedStmtCheckersKey RHS) {
       return LHS == RHS;
     }
   };

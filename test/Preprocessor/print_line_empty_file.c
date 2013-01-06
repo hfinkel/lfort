@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s | FileCheck %s
+// RUN: %lfort_cc1 -E %s | FileCheck %s
 
 #line 21 ""
 int foo() { return 42; }

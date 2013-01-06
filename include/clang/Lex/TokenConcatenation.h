@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_LEX_TOKEN_CONCATENATION_H
-#define CLANG_LEX_TOKEN_CONCATENATION_H
+#ifndef LFORT_LEX_TOKEN_CONCATENATION_H
+#define LFORT_LEX_TOKEN_CONCATENATION_H
 
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/TokenKinds.h"
 
-namespace clang {
+namespace lfort {
   class Preprocessor;
   class Token;
 
@@ -67,6 +67,6 @@ namespace clang {
     /// is literally 'L', 'u', 'U', or 'u8'.
     bool IsIdentifierStringPrefix(const Token &Tok) const;
   };
-  } // end clang namespace
+  } // end lfort namespace
 
 #endif

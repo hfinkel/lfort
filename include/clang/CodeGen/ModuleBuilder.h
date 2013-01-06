@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CODEGEN_MODULEBUILDER_H
-#define LLVM_CLANG_CODEGEN_MODULEBUILDER_H
+#ifndef LLVM_LFORT_CODEGEN_MODULEBUILDER_H
+#define LLVM_LFORT_CODEGEN_MODULEBUILDER_H
 
-#include "clang/AST/ASTConsumer.h"
+#include "lfort/AST/ASTConsumer.h"
 #include <string>
 
 namespace llvm {
@@ -22,7 +22,7 @@ namespace llvm {
   class Module;
 }
 
-namespace clang {
+namespace lfort {
   class DiagnosticsEngine;
   class LangOptions;
   class CodeGenOptions;

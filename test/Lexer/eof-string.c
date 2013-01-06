@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 // vim: set binary noeol:
 
 // This file intentionally ends without a \n on the last line.  Make sure your

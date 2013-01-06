@@ -16,14 +16,14 @@
 #include "CGObjCRuntime.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/DeclObjC.h"
+#include "lfort/AST/DeclObjC.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Module.h"
 #include <algorithm>
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CGBlockInfo::CGBlockInfo(const BlockDecl *block, StringRef name)

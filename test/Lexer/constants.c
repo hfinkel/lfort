@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic -trigraphs %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic -trigraphs %s
 
 int x = 000000080;  // expected-error {{invalid digit}}
 
@@ -32,12 +32,12 @@ int m3 = '\\\
 ';
 
 
-#pragma clang diagnostic ignored "-Wmultichar"
+#pragma lfort diagnostic ignored "-Wmultichar"
 
 int d = 'df'; // no warning.
 int e = 'abcd';  // still warn: expected-warning {{multi-character character constant}}
 
-#pragma clang diagnostic ignored "-Wfour-char-constants"
+#pragma lfort diagnostic ignored "-Wfour-char-constants"
 
 int f = 'abcd';  // ignored.
 

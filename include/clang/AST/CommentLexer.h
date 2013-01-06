@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_COMMENT_LEXER_H
-#define LLVM_CLANG_AST_COMMENT_LEXER_H
+#ifndef LLVM_LFORT_AST_COMMENT_LEXER_H
+#define LLVM_LFORT_AST_COMMENT_LEXER_H
 
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Allocator.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 class Lexer;
@@ -357,7 +357,7 @@ public:
 };
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

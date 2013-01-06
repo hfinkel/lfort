@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -Wno-return-type -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -Wno-return-type -fsyntax-only -verify
 // expected-no-diagnostics
 
 int t14() {

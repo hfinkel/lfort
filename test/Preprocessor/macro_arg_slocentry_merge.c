@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -fsyntax-only %s 2>&1 | FileCheck %s
+// RUN: not %lfort_cc1 -fsyntax-only %s 2>&1 | FileCheck %s
 
 #include "macro_arg_slocentry_merge.h"
 

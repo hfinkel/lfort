@@ -1,7 +1,7 @@
 // RUN: cp %s %t
-// RUN: %clang_cc1 -pedantic -Wall -fixit %t
-// RUN: %clang_cc1 -fsyntax-only -pedantic -Wall -Werror %t
-// RUN: %clang_cc1 -E -o - %t | FileCheck %s
+// RUN: %lfort_cc1 -pedantic -Wall -fixit %t
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -Wall -Werror %t
+// RUN: %lfort_cc1 -E -o - %t | FileCheck %s
 
 /* This is a test of the various code modification hints that are
    provided as part of warning or extension diagnostics. All of the
@@ -35,10 +35,10 @@ void test() {
   printf("%0-f", 1.23); // - flag should stay
 
   // Positional arguments
-#pragma clang diagnostic push // Don't warn about using positional arguments.
-#pragma clang diagnostic ignored "-Wformat-non-iso"
+#pragma lfort diagnostic push // Don't warn about using positional arguments.
+#pragma lfort diagnostic ignored "-Wformat-non-iso"
   printf("%1$f:%2$.*3$f:%4$.*3$f\n", 1, 2, 3, 4);
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
   // Precision
   printf("%10.5d", 1l); // (bug 7394)
@@ -49,10 +49,10 @@ void test() {
 
   // Bad length modifiers
   printf("%hhs", "foo");
-#pragma clang diagnostic push // Don't warn about using positional arguments.
-#pragma clang diagnostic ignored "-Wformat-non-iso"
+#pragma lfort diagnostic push // Don't warn about using positional arguments.
+#pragma lfort diagnostic ignored "-Wformat-non-iso"
   printf("%1$zp", (void *)0);
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
   // Preserve the original formatting for unsigned integers.
   unsigned long val = 42;

@@ -85,7 +85,7 @@ def HelpHidden : OptionFlag;
 // NoForward - The option should not be implicitly forwarded to other tools.
 def NoForward : OptionFlag;
 
-// CC1Option - This option should be accepted by clang -cc1.
+// CC1Option - This option should be accepted by lfort -cc1.
 def CC1Option : OptionFlag;
 
 // NoDriverOption - This option should not be accepted by the driver.

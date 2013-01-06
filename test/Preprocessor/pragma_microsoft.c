@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -fms-extensions
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -fms-extensions
 
 // rdar://6495941
 

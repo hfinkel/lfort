@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_BASESUBOBJECT_H
-#define LLVM_CLANG_AST_BASESUBOBJECT_H
+#ifndef LLVM_LFORT_AST_BASESUBOBJECT_H
+#define LLVM_LFORT_AST_BASESUBOBJECT_H
 
-#include "clang/AST/CharUnits.h"
+#include "lfort/AST/CharUnits.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Support/DataTypes.h"
 #include "llvm/Support/type_traits.h"
 
-namespace clang {
+namespace lfort {
   class CXXRecordDecl;
 
 // BaseSubobject - Uniquely identifies a direct or indirect base class. 
@@ -48,37 +48,37 @@ public:
  }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 namespace llvm {
 
-template<> struct DenseMapInfo<clang::BaseSubobject> {
-  static clang::BaseSubobject getEmptyKey() {
-    return clang::BaseSubobject(
-      DenseMapInfo<const clang::CXXRecordDecl *>::getEmptyKey(),
-      clang::CharUnits::fromQuantity(DenseMapInfo<int64_t>::getEmptyKey()));
+template<> struct DenseMapInfo<lfort::BaseSubobject> {
+  static lfort::BaseSubobject getEmptyKey() {
+    return lfort::BaseSubobject(
+      DenseMapInfo<const lfort::CXXRecordDecl *>::getEmptyKey(),
+      lfort::CharUnits::fromQuantity(DenseMapInfo<int64_t>::getEmptyKey()));
   }
 
-  static clang::BaseSubobject getTombstoneKey() {
-    return clang::BaseSubobject(
-      DenseMapInfo<const clang::CXXRecordDecl *>::getTombstoneKey(),
-      clang::CharUnits::fromQuantity(DenseMapInfo<int64_t>::getTombstoneKey()));
+  static lfort::BaseSubobject getTombstoneKey() {
+    return lfort::BaseSubobject(
+      DenseMapInfo<const lfort::CXXRecordDecl *>::getTombstoneKey(),
+      lfort::CharUnits::fromQuantity(DenseMapInfo<int64_t>::getTombstoneKey()));
   }
 
-  static unsigned getHashValue(const clang::BaseSubobject &Base) {
-    typedef std::pair<const clang::CXXRecordDecl *, clang::CharUnits> PairTy;
+  static unsigned getHashValue(const lfort::BaseSubobject &Base) {
+    typedef std::pair<const lfort::CXXRecordDecl *, lfort::CharUnits> PairTy;
     return DenseMapInfo<PairTy>::getHashValue(PairTy(Base.getBase(),
                                                      Base.getBaseOffset()));
   }
 
-  static bool isEqual(const clang::BaseSubobject &LHS, 
-                      const clang::BaseSubobject &RHS) {
+  static bool isEqual(const lfort::BaseSubobject &LHS, 
+                      const lfort::BaseSubobject &RHS) {
     return LHS == RHS;
   }
 };
 
 // It's OK to treat BaseSubobject as a POD type.
-template <> struct isPodLike<clang::BaseSubobject> {
+template <> struct isPodLike<lfort::BaseSubobject> {
   static const bool value = true;
 };
 

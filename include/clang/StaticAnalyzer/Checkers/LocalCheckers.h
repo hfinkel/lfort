@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_LOCALCHECKERS_H
-#define LLVM_CLANG_GR_LOCALCHECKERS_H
+#ifndef LLVM_LFORT_GR_LOCALCHECKERS_H
+#define LLVM_LFORT_GR_LOCALCHECKERS_H
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 class ExprEngine;
@@ -23,6 +23,6 @@ class ExprEngine;
 void RegisterCallInliner(ExprEngine &Eng);
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort
 
 #endif

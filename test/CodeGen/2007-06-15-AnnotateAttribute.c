@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | grep llvm.global.annotations
-// RUN: %clang_cc1 -emit-llvm %s -o - | grep llvm.var.annotation | count 3
+// RUN: %lfort_cc1 -emit-llvm %s -o - | grep llvm.global.annotations
+// RUN: %lfort_cc1 -emit-llvm %s -o - | grep llvm.var.annotation | count 3
 
 /* Global variable with attribute */
 int X __attribute__((annotate("GlobalValAnnotation")));

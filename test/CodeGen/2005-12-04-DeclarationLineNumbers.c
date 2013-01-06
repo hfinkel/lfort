@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -g -o - | grep DW_TAG_compile_unit | count 1
+// RUN: %lfort_cc1 %s -emit-llvm -g -o - | grep DW_TAG_compile_unit | count 1
 // PR664: ensure that line #'s are emitted for declarations
 
 

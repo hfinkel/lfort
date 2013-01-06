@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -verify %s
 
 typedef unsigned int size_t;
 @protocol P @end

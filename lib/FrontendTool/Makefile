@@ -1,4 +1,4 @@
-##===- clang/lib/FrontendTool/Makefile ---------------------*- Makefile -*-===##
+##===- lfort/lib/FrontendTool/Makefile ---------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,22 +7,22 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangFrontendTool
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortFrontendTool
 
-include $(CLANG_LEVEL)/Makefile
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/Makefile
+include $(LFORT_LEVEL)/../../Makefile.config
 
-ifeq ($(ENABLE_CLANG_ARCMT),1)
-  CXX.Flags += -DCLANG_ENABLE_ARCMT
+ifeq ($(ENABLE_LFORT_ARCMT),1)
+  CXX.Flags += -DLFORT_ENABLE_ARCMT
 endif
 
-ifeq ($(ENABLE_CLANG_REWRITER),1)
-  CXX.Flags += -DCLANG_ENABLE_REWRITER
+ifeq ($(ENABLE_LFORT_REWRITER),1)
+  CXX.Flags += -DLFORT_ENABLE_REWRITER
 endif
 
-ifeq ($(ENABLE_CLANG_STATIC_ANALYZER),1)
-  CXX.Flags += -DCLANG_ENABLE_STATIC_ANALYZER
+ifeq ($(ENABLE_LFORT_STATIC_ANALYZER),1)
+  CXX.Flags += -DLFORT_ENABLE_STATIC_ANALYZER
 endif
 
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s -std=c++11 -fcxx-exceptions
+// RUN: %lfort_cc1 -verify %s -std=c++11 -fcxx-exceptions
 
 // Tests for parsing of type-specifier-seq
 

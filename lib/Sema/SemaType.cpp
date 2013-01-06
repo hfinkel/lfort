@@ -11,28 +11,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/TypeLocVisitor.h"
-#include "clang/Basic/OpenCL.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/Template.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/TypeLocVisitor.h"
+#include "lfort/Basic/OpenCL.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/Template.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 /// isOmittedBlockReturnType - Return true if this declarator is missing a
 /// return type because this is a omitted return type on a block literal.

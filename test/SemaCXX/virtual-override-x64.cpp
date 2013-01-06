@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple=x86_64-pc-unknown -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple=x86_64-pc-unknown -fsyntax-only -verify %s
 
 // Non-x86 targets ignore the calling conventions by default (but will warn
 // when one is encountered), so we want to make sure the virtual overrides

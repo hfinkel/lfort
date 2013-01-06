@@ -8,20 +8,20 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::driver::Arg class for parsed arguments.
+/// \brief Defines the lfort::driver::Arg class for parsed arguments.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_ARG_H_
-#define CLANG_DRIVER_ARG_H_
+#ifndef LFORT_DRIVER_ARG_H_
+#define LFORT_DRIVER_ARG_H_
 
 #include "Util.h"
-#include "clang/Driver/Option.h"
+#include "lfort/Driver/Option.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class ArgList;
 
@@ -128,6 +128,6 @@ namespace driver {
   };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

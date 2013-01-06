@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOKEN_H
-#define LLVM_CLANG_TOKEN_H
+#ifndef LLVM_LFORT_TOKEN_H
+#define LLVM_LFORT_TOKEN_H
 
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/TemplateKinds.h"
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/TemplateKinds.h"
+#include "lfort/Basic/TokenKinds.h"
 #include <cstdlib>
 
-namespace clang {
+namespace lfort {
 
 class IdentifierInfo;
 
@@ -278,11 +278,11 @@ struct PPConditionalInfo {
   bool FoundElse;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 namespace llvm {
   template <>
-  struct isPodLike<clang::Token> { static const bool value = true; };
+  struct isPodLike<lfort::Token> { static const bool value = true; };
 }  // end namespace llvm
 
 #endif

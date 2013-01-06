@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_OPERATION_KINDS_H
-#define LLVM_CLANG_AST_OPERATION_KINDS_H
+#ifndef LLVM_LFORT_AST_OPERATION_KINDS_H
+#define LLVM_LFORT_AST_OPERATION_KINDS_H
 
-namespace clang {
+namespace lfort {
   
 /// CastKind - The kind of operation required for a conversion.
 enum CastKind {

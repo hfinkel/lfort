@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o /dev/null
+// RUN: %lfort_cc1 %s -emit-llvm -o /dev/null
 // <rdar://problem/7096460>
 typedef void (*Func) ();
 typedef long long m64 __attribute__((__vector_size__(8), __may_alias__));

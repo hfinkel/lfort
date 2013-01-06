@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
-// RUN: %clang_cc1 -fno-inline -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -fno-inline -emit-llvm %s -o - | FileCheck %s
 
 // CHECK-NOT: foo
 

@@ -13,10 +13,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/DeclarationName.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/DeclarationName.h"
 
-using namespace clang;
+using namespace lfort;
 
 ExternalASTSource::~ExternalASTSource() { }
 

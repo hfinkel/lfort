@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - | grep llvm.global_ctors
+// RUN: %lfort_cc1 %s -emit-llvm -o - | grep llvm.global_ctors
 int __attribute__((constructor)) foo(void) {
   return 0;
 }

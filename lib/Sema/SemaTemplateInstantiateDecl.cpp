@@ -9,21 +9,21 @@
 //  This file implements C++ template instantiation for declarations.
 //
 //===----------------------------------------------------------------------===/
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/DependentDiagnostic.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/PrettyDeclStackTrace.h"
-#include "clang/Sema/Template.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/DependentDiagnostic.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
+#include "lfort/Sema/Template.h"
 
-using namespace clang;
+using namespace lfort;
 
 bool TemplateDeclInstantiator::SubstQualifier(const DeclaratorDecl *OldDecl,
                                               DeclaratorDecl *NewDecl) {
@@ -58,7 +58,7 @@ bool TemplateDeclInstantiator::SubstQualifier(const TagDecl *OldDecl,
 }
 
 // Include attribute instantiation code.
-#include "clang/Sema/AttrTemplateInstantiate.inc"
+#include "lfort/Sema/AttrTemplateInstantiate.inc"
 
 void Sema::InstantiateAttrs(const MultiLevelTemplateArgumentList &TemplateArgs,
                             const Decl *Tmpl, Decl *New,
@@ -515,7 +515,7 @@ Decl *TemplateDeclInstantiator::VisitFriendDecl(FriendDecl *D) {
     TypeSourceInfo *InstTy;
     // If this is an unsupported friend, don't bother substituting template
     // arguments into it. The actual type referred to won't be used by any
-    // parts of Clang, and may not be valid for instantiating. Just use the
+    // parts of LFort, and may not be valid for instantiating. Just use the
     // same info for the instantiated friend.
     if (D->isUnsupportedFriend()) {
       InstTy = Ty;

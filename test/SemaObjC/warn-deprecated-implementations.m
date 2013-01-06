@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdeprecated-implementations -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdeprecated-implementations -verify -Wno-objc-root-class %s
 // rdar://8973810
 // rdar://12717705
 

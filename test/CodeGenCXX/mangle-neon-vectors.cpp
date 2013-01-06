@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - | FileCheck %s
 
 typedef float float32_t;
 typedef signed char poly8_t;

@@ -3,12 +3,12 @@ set( LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_executable(c-arcmt-test
+add_lfort_executable(c-arcmt-test
   c-arcmt-test.c
   )
 
 target_link_libraries(c-arcmt-test
-  libclang
+  liblfort
   )
 
 set_target_properties(c-arcmt-test

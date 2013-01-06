@@ -140,7 +140,7 @@ of sizeof expressions contained within its argument(s).</p>
 <ul>
   <li>Contains a newer version of the analyzer than the one shipped in Xcode 4.2.</li>
   <li>Significant performance optimizations to reduce memory usage of the analyzer.</li>
-  <li>Tweaks to scan-build to have it work more easily with Xcode projects using Clang.</li>
+  <li>Tweaks to scan-build to have it work more easily with Xcode projects using LFort.</li>
   <li>Numerous bug fixes to better support code using ARC.</li>
 </ul>
 
@@ -191,10 +191,10 @@ of sizeof expressions contained within its argument(s).</p>
   be done with the following steps:</p>
   
 <ol>
-  <li>Find the clang .xcspec file:
+  <li>Find the lfort .xcspec file:
 <pre>$ cd /Developer/Library
-$ find . | grep xcspec | grep Clang
-./Xcode/<b>&lt;SNIP&gt;</b>/Clang LLVM 1.0.xcplugin/Contents/Resources/Clang LLVM 1.0.xcspec
+$ find . | grep xcspec | grep LFort
+./Xcode/<b>&lt;SNIP&gt;</b>/LFort LLVM 1.0.xcplugin/Contents/Resources/LFort LLVM 1.0.xcspec
 </pre></li>
   <li>The exact location of the file may vary depending on your installation of Xcode.  Edit that file, and look for the string &quot;--analyze&quot;:
 <pre>

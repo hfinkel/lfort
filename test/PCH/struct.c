@@ -1,9 +1,9 @@
 // Test this without pch.
-// RUN: %clang_cc1 -include %S/struct.h -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -include %S/struct.h -fsyntax-only -verify %s
 
 // Test with pch.
-// RUN: %clang_cc1 -emit-pch -o %t %S/struct.h
-// RUN: %clang_cc1 -include-pch %t -fsyntax-only -verify %s 
+// RUN: %lfort_cc1 -emit-pch -o %t %S/struct.h
+// RUN: %lfort_cc1 -include-pch %t -fsyntax-only -verify %s 
 
 struct Point *p1;
 

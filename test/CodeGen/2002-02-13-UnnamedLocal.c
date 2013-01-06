@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 /* Testcase for a problem where GCC allocated xqic to a register,
  * and did not have a VAR_DECL that explained the stack slot to LLVM.

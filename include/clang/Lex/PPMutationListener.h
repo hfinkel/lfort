@@ -10,12 +10,12 @@
 //  This file defines the PPMutationListener interface.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LEX_PPTMUTATIONLISTENER_H
-#define LLVM_CLANG_LEX_PPTMUTATIONLISTENER_H
+#ifndef LLVM_LFORT_LEX_PPTMUTATIONLISTENER_H
+#define LLVM_LFORT_LEX_PPTMUTATIONLISTENER_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
 
 class MacroInfo;
 
@@ -38,6 +38,6 @@ public:
   virtual void UndefinedMacro(MacroInfo *MI) { }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

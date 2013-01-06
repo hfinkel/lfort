@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify -std=c++11 %s
 
 void foo(int i) {
 

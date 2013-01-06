@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s
 // PR1083
 
 int svc_register (void (*dispatch) (int));

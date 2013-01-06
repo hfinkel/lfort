@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wstring-conversion -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wstring-conversion -verify %s
 
 // Warn on cases where a string literal is converted into a bool.
 // An exception is made for this in logical operators.

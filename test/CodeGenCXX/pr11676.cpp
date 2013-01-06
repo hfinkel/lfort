@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -std=c++11 -emit-llvm-only
+// RUN: %lfort_cc1 %s -std=c++11 -emit-llvm-only
 // CHECK that we don't crash.
 
 // PR11676's example is ill-formed:

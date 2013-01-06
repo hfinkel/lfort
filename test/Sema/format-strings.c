@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wformat-nonliteral -isystem %S/Inputs %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wformat-nonliteral -isystem %S/Inputs -fno-signed-char %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wformat-nonliteral -isystem %S/Inputs %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wformat-nonliteral -isystem %S/Inputs -fno-signed-char %s
 
 #define __need_wint_t
 #include <stdarg.h>
@@ -439,10 +439,10 @@ void check_char(unsigned char x, signed char y) {
 // Test suppression of individual warnings.
 
 void test_suppress_invalid_specifier() {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-invalid-specifier"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wformat-invalid-specifier"
   printf("%@", 12); // no-warning
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 }
 
 // Make sure warnings are on for next test.

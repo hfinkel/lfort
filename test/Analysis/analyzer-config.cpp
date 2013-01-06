@@ -1,4 +1,4 @@
-// RUN: %clang --analyze %s -o /dev/null -Xclang -analyzer-checker=debug.ConfigDumper > %t 2>&1
+// RUN: %lfort --analyze %s -o /dev/null -Xlfort -analyzer-checker=debug.ConfigDumper > %t 2>&1
 // RUN: FileCheck --input-file=%t %s
 
 void bar() {}

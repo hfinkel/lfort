@@ -22,7 +22,7 @@
 relies on a set of checkers to implement the logic for detecting and 
 constructing bug reports. This page provides hints and guidelines for anyone 
 who is interested in implementing their own checker. The static analyzer is a 
-part of the Clang project, so consult <a href="http://clang.llvm.org/hacking.html">Hacking on Clang</a> 
+part of the LFort project, so consult <a href="http://lfort.llvm.org/hacking.html">Hacking on LFort</a> 
 and <a href="http://llvm.org/docs/ProgrammersManual.html">LLVM Programmer's Manual</a>
 for general developer guidelines and information. </p>
 
@@ -42,36 +42,36 @@ for general developer guidelines and information. </p>
 <h2 id=start>Getting Started</h2>
   <ul>
     <li>To check out the source code and build the project, follow steps 1-4 of 
-    the <a href="http://clang.llvm.org/get_started.html">Clang Getting Started</a> 
+    the <a href="http://lfort.llvm.org/get_started.html">LFort Getting Started</a> 
   page.</li>
 
-    <li>The analyzer source code is located under the Clang source tree:
+    <li>The analyzer source code is located under the LFort source tree:
     <br><tt>
-    $ <b>cd llvm/tools/clang</b>
+    $ <b>cd llvm/tools/lfort</b>
     </tt>
-    <br>See: <tt>include/clang/StaticAnalyzer</tt>, <tt>lib/StaticAnalyzer</tt>,
+    <br>See: <tt>include/lfort/StaticAnalyzer</tt>, <tt>lib/StaticAnalyzer</tt>,
      <tt>test/Analysis</tt>.</li>
 
-    <li>The analyzer regression tests can be executed from the Clang's build 
+    <li>The analyzer regression tests can be executed from the LFort's build 
     directory:
     <br><tt>
-    $ <b>cd ../../../; cd build/tools/clang; TESTDIRS=Analysis make test</b>
+    $ <b>cd ../../../; cd build/tools/lfort; TESTDIRS=Analysis make test</b>
     </tt></li>
     
     <li>Analyze a file with the specified checker:
     <br><tt>
-    $ <b>clang -cc1 -analyze -analyzer-checker=core.DivideZero test.c</b>
+    $ <b>lfort -cc1 -analyze -analyzer-checker=core.DivideZero test.c</b>
     </tt></li>
 
     <li>List the available checkers:
     <br><tt>
-    $ <b>clang -cc1 -analyzer-checker-help</b>
+    $ <b>lfort -cc1 -analyzer-checker-help</b>
     </tt></li>
 
     <li>See the analyzer help for different output formats, fine tuning, and 
     debug options:
     <br><tt>
-    $ <b>clang -cc1 -help | grep "analyzer"</b>
+    $ <b>lfort -cc1 -help | grep "analyzer"</b>
     </tt></li>
 
   </ul>
@@ -82,19 +82,19 @@ for general developer guidelines and information. </p>
   the values of all the expressions in the program based on the input symbols  
   and the path. The execution is path sensitive and every possible path through 
   the program is explored. The explored execution traces are represented with 
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1ExplodedGraph.html">ExplodedGraph</a> object.
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1ExplodedGraph.html">ExplodedGraph</a> object.
   Each node of the graph is 
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1ExplodedNode.html">ExplodedNode</a>, 
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1ExplodedNode.html">ExplodedNode</a>, 
   which consists of a <tt>ProgramPoint</tt> and a <tt>ProgramState</tt>.
   <p>
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ProgramPoint.html">ProgramPoint</a> 
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ProgramPoint.html">ProgramPoint</a> 
   represents the corresponding location in the program (or the CFG graph). 
   <tt>ProgramPoint</tt> is also used to record additional information on 
   when/how the state was added. For example, <tt>PostPurgeDeadSymbolsKind</tt> 
   kind means that the state is the result of purging dead symbols - the 
   analyzer's equivalent of garbage collection. 
   <p>
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1ProgramState.html">ProgramState</a> 
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1ProgramState.html">ProgramState</a> 
   represents abstract state of the program. It consists of:
   <ul>
     <li><tt>Environment</tt> - a mapping from source code expressions to symbolic 
@@ -115,26 +115,26 @@ for general developer guidelines and information. </p>
   <tt>ExplodedGraph</tt>. 
   
   <h3>Representing Values</h3>
-  During symbolic execution, <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1SVal.html">SVal</a> 
+  During symbolic execution, <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1SVal.html">SVal</a> 
   objects are used to represent the semantic evaluation of expressions. They can 
   represent things like concrete integers, symbolic values, or memory locations 
   (which are memory regions). They are a discriminated union of "values", 
   symbolic and otherwise.
   <p>
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1SymExpr.html">SymExpr</a> (symbol) 
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1SymExpr.html">SymExpr</a> (symbol) 
   is meant to represent abstract, but named, symbolic value. 
   Symbolic values can have constraints associated with them. Symbols represent 
   an actual (immutable) value. We might not know what its specific value is, but 
   we can associate constraints with that value as we analyze a path. 
   <p>
   
-  <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1MemRegion.html">MemRegion</a> is similar to a symbol.  
+  <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1MemRegion.html">MemRegion</a> is similar to a symbol.  
   It is used to provide a lexicon of how to describe abstract memory. Regions can 
   layer on top of other regions, providing a layered approach to representing memory. 
   For example, a struct object on the stack might be represented by a <tt>VarRegion</tt>, 
   but a <tt>FieldRegion</tt> which is a subregion of the <tt>VarRegion</tt> could 
   be used to represent the memory associated with a specific field of that object.
-  So how do we represent symbolic memory regions? That's what <a href="http://clang.llvm.org/doxygen/classclang_1_1ento_1_1SymbolicRegion.html">SymbolicRegion</a> 
+  So how do we represent symbolic memory regions? That's what <a href="http://lfort.llvm.org/doxygen/classlfort_1_1ento_1_1SymbolicRegion.html">SymbolicRegion</a> 
   is for.  It is a <tt>MemRegion</tt> that has an associated symbol. Since the 
   symbol is unique and has a unique name; that symbol names the region.
   <p>
@@ -197,18 +197,18 @@ values (e.g., the number 1).
     solver to model symbolic execution.</li>
     
     <li>Consult the <a
-    href="http://llvm.org/bugs/buglist.cgi?query_format=advanced&amp;bug_status=NEW&amp;bug_status=REOPENED&amp;version=trunk&amp;component=Static%20Analyzer&amp;product=clang">Bugzilla database</a> 
+    href="http://llvm.org/bugs/buglist.cgi?query_format=advanced&amp;bug_status=NEW&amp;bug_status=REOPENED&amp;version=trunk&amp;component=Static%20Analyzer&amp;product=lfort">Bugzilla database</a> 
     to get some ideas for new checkers and consider starting with improving/fixing  
     bugs in the existing checkers.</li>
   </ul>
 
 <h2 id=registration>Checker Registration</h2>
-  All checker implementation files are located in <tt>clang/lib/StaticAnalyzer/Checkers</tt> 
+  All checker implementation files are located in <tt>lfort/lib/StaticAnalyzer/Checkers</tt> 
   folder. Follow the steps below to register a new checker with the analyzer.
 <ol>
   <li>Create a new checker implementation file, for example <tt>./lib/StaticAnalyzer/Checkers/NewChecker.cpp</tt>
 <pre class="code_example">
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {
@@ -241,7 +241,7 @@ def NewChecker : Checker<"NewChecker">,
 <tt>./lib/StaticAnalyzer/Checkers/CMakeLists.txt</tt>.
 
 <li>Compile and see your checker in the list of available checkers by running:<br>
-<tt><b>$clang -cc1 -analyzer-checker-help</b></tt>
+<tt><b>$lfort -cc1 -analyzer-checker-help</b></tt>
 </ol>
    
 
@@ -249,7 +249,7 @@ def NewChecker : Checker<"NewChecker">,
   There are two main decisions you need to make:
   <ul>
     <li> Which events the checker should be tracking. 
-    See <a href="http://clang.llvm.org/doxygen/classento_1_1CheckerDocumentation.html">CheckerDocumentation</a> 
+    See <a href="http://lfort.llvm.org/doxygen/classento_1_1CheckerDocumentation.html">CheckerDocumentation</a> 
     for the list of available checker callbacks.</li>
     <li> What data you want to store as part of the checker-specific program 
     state. Try to minimize the checker state as much as possible. </li>
@@ -259,16 +259,16 @@ def NewChecker : Checker<"NewChecker">,
 
 <h2 id=ast>AST Visitors</h2>
   Some checks might not require path-sensitivity to be effective. Simple AST walk 
-  might be sufficient. If that is the case, consider implementing a Clang 
+  might be sufficient. If that is the case, consider implementing a LFort 
   compiler warning. On the other hand, a check might not be acceptable as a compiler 
   warning; for example, because of a relatively high false positive rate. In this 
   situation, AST callbacks <tt><b>checkASTDecl</b></tt> and 
   <tt><b>checkASTCodeBody</b></tt> are your best friends. 
 
 <h2 id=testing>Testing</h2>
-  Every patch should be well tested with Clang regression tests. The checker tests 
-  live in <tt>clang/test/Analysis</tt> folder. To run all of the analyzer tests, 
-  execute the following from the <tt>clang</tt> build directory:
+  Every patch should be well tested with LFort regression tests. The checker tests 
+  live in <tt>lfort/test/Analysis</tt> folder. To run all of the analyzer tests, 
+  execute the following from the <tt>lfort</tt> build directory:
     <pre class="code">
     $ <b>TESTDIRS=Analysis make test</b>
     </pre>
@@ -279,25 +279,25 @@ def NewChecker : Checker<"NewChecker">,
 While investigating a checker-related issue, instruct the analyzer to only 
 execute a single checker:
 <br><tt>
-$ <b>clang -cc1 -analyze -analyzer-checker=osx.KeychainAPI test.c</b>
+$ <b>lfort -cc1 -analyze -analyzer-checker=osx.KeychainAPI test.c</b>
 </tt>
 </li>
 <li>
 To dump AST:
 <br><tt>
-$ <b>clang -cc1 -ast-dump test.c</b>
+$ <b>lfort -cc1 -ast-dump test.c</b>
 </tt>
 </li>
 <li>
 To view/dump CFG use <tt>debug.ViewCFG</tt> or <tt>debug.DumpCFG</tt> checkers:
 <br><tt>
-$ <b>clang -cc1 -analyze -analyzer-checker=debug.ViewCFG test.c</b>
+$ <b>lfort -cc1 -analyze -analyzer-checker=debug.ViewCFG test.c</b>
 </tt> 
 </li>
 <li>
 To see all available debug checkers:
 <br><tt>
-$ <b>clang -cc1 -analyzer-checker-help | grep "debug"</b>
+$ <b>lfort -cc1 -analyzer-checker-help | grep "debug"</b>
 </tt>
 </li>
 <li>
@@ -305,13 +305,13 @@ To see which function is failing while processing a large file use
 <tt>-analyzer-display-progress</tt> option.
 </li>
 <li>
-While debugging execute <tt>clang -cc1 -analyze -analyzer-checker=core</tt> 
-instead of <tt>clang --analyze</tt>, as the later would call the compiler 
+While debugging execute <tt>lfort -cc1 -analyze -analyzer-checker=core</tt> 
+instead of <tt>lfort --analyze</tt>, as the later would call the compiler 
 in a separate process.
 </li>
 <li>
 To view <tt>ExplodedGraph</tt> (the state graph explored by the analyzer) while 
-debugging, goto a frame that has <tt>clang::ento::ExprEngine</tt> object and 
+debugging, goto a frame that has <tt>lfort::ento::ExprEngine</tt> object and 
 execute:
 <br><tt> 
 (gdb) <b>p ViewGraph(0)</b>
@@ -324,7 +324,7 @@ To see the <tt>ProgramState</tt> while debugging use the following command.
 </tt> 
 </li>
 <li>
-To see <tt>clang::Expr</tt> while debugging use the following command. If you 
+To see <tt>lfort::Expr</tt> while debugging use the following command. If you 
 pass in a SourceManager object, it will also dump the corresponding line in the 
 source code.
 <br><tt>

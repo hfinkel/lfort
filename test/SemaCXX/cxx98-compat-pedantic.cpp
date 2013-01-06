@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -Wc++98-compat-pedantic -verify %s
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -Wc++98-compat -Werror %s
-// RUN: %clang_cc1 -fsyntax-only -std=c++98 -Werror %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -Wc++98-compat-pedantic -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -Wc++98-compat -Werror %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++98 -Werror %s
 
 // -Wc++98-compat-pedantic warns on C++11 features which we accept without a
 // warning in C++98 mode.

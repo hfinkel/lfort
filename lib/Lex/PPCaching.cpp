@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
-using namespace clang;
+#include "lfort/Lex/Preprocessor.h"
+using namespace lfort;
 
 /// EnableBacktrackAtThisPos - From the point that this method is called, and
 /// until CommitBacktrackedTokens() or Backtrack() is called, the Preprocessor

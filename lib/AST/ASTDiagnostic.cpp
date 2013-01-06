@@ -10,17 +10,17 @@
 // This file implements a diagnostic formatting hook for AST elements.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/Type.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/Type.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 
 // Returns a desugared version of the QualType, and marks ShouldAKA as true
 // whenever we remove significant sugar from the type.
@@ -90,7 +90,7 @@ Underlying = CTy->desugar(); \
 } \
 break; \
 }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
 
     // If it wasn't sugared, we're done.
@@ -233,7 +233,7 @@ static bool FormatTemplateTypeDiff(ASTContext &Context, QualType FromType,
                                    bool PrintFromType, bool ElideType,
                                    bool ShowColors, std::string &S);
 
-void clang::FormatASTNodeDiagnosticArgument(
+void lfort::FormatASTNodeDiagnosticArgument(
     DiagnosticsEngine::ArgumentKind Kind,
     intptr_t Val,
     const char *Modifier,

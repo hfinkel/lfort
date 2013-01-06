@@ -7,9 +7,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 APSIntType::RangeTestResultKind

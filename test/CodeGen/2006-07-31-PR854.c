@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-linux-gnu -w %s -emit-llvm -o -
+// RUN: %lfort_cc1 -triple i686-linux-gnu -w %s -emit-llvm -o -
 
 // PR854
   struct kernel_symbol {

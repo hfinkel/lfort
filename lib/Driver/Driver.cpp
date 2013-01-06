@@ -1,4 +1,4 @@
-//===--- Driver.cpp - Clang GCC Compatible Driver -------------------------===//
+//===--- Driver.cpp - LFort GCC Compatible Driver -------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Driver.h"
+#include "lfort/Driver/Driver.h"
 #include "InputInfo.h"
 #include "ToolChains.h"
-#include "clang/Basic/Version.h"
-#include "clang/Driver/Action.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Job.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
-#include "clang/Driver/Tool.h"
-#include "clang/Driver/ToolChain.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Driver/Action.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Job.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Driver/Tool.h"
+#include "lfort/Driver/ToolChain.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringSet.h"
@@ -35,20 +35,20 @@
 
 // FIXME: It would prevent to include llvm-config.h
 // if it were included before system_error.h.
-#include "clang/Config/config.h"
+#include "lfort/Config/config.h"
 
-using namespace clang::driver;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort;
 
-Driver::Driver(StringRef ClangExecutable,
+Driver::Driver(StringRef LFortExecutable,
                StringRef DefaultTargetTriple,
                StringRef DefaultImageName,
                DiagnosticsEngine &Diags)
   : Opts(createDriverOptTable()), Diags(Diags),
-    ClangExecutable(ClangExecutable), SysRoot(DEFAULT_SYSROOT),
+    LFortExecutable(LFortExecutable), SysRoot(DEFAULT_SYSROOT),
     UseStdLib(true), DefaultTargetTriple(DefaultTargetTriple),
     DefaultImageName(DefaultImageName),
-    DriverTitle("clang LLVM compiler"),
+    DriverTitle("lfort LLVM compiler"),
     CCPrintOptionsFilename(0), CCPrintHeadersFilename(0),
     CCLogDiagnosticsFilename(0), CCCIsCXX(false),
     CCCIsCPP(false),CCCEcho(false), CCCPrintBindings(false),
@@ -56,16 +56,16 @@ Driver::Driver(StringRef ClangExecutable,
     CCGenDiagnostics(false), CCCGenericGCCName(""), CheckInputsExist(true),
     CCCUsePCH(true), SuppressMissingInputWarning(false) {
 
-  Name = llvm::sys::path::stem(ClangExecutable);
-  Dir  = llvm::sys::path::parent_path(ClangExecutable);
+  Name = llvm::sys::path::stem(LFortExecutable);
+  Dir  = llvm::sys::path::parent_path(LFortExecutable);
 
   // Compute the path to the resource directory.
-  StringRef ClangResourceDir(CLANG_RESOURCE_DIR);
+  StringRef LFortResourceDir(LFORT_RESOURCE_DIR);
   SmallString<128> P(Dir);
-  if (ClangResourceDir != "")
-    llvm::sys::path::append(P, ClangResourceDir);
+  if (LFortResourceDir != "")
+    llvm::sys::path::append(P, LFortResourceDir);
   else
-    llvm::sys::path::append(P, "..", "lib", "clang", CLANG_VERSION_STRING);
+    llvm::sys::path::append(P, "..", "lib", "lfort", LFORT_VERSION_STRING);
   ResourceDir = P.str();
 }
 
@@ -86,7 +86,7 @@ InputArgList *Driver::ParseArgStrings(ArrayRef<const char *> ArgList) {
 
   // Check for missing argument error.
   if (MissingArgCount)
-    Diag(clang::diag::err_drv_missing_argument)
+    Diag(lfort::diag::err_drv_missing_argument)
       << Args->getArgString(MissingArgIndex) << MissingArgCount;
 
   // Check for unsupported options.
@@ -94,14 +94,14 @@ InputArgList *Driver::ParseArgStrings(ArrayRef<const char *> ArgList) {
        it != ie; ++it) {
     Arg *A = *it;
     if (A->getOption().hasFlag(options::Unsupported)) {
-      Diag(clang::diag::err_drv_unsupported_opt) << A->getAsString(*Args);
+      Diag(lfort::diag::err_drv_unsupported_opt) << A->getAsString(*Args);
       continue;
     }
 
     // Warn about -mcpu= without an argument.
     if (A->getOption().matches(options::OPT_mcpu_EQ) &&
         A->containsValue("")) {
-      Diag(clang::diag::warn_drv_empty_joined_argument) <<
+      Diag(lfort::diag::warn_drv_empty_joined_argument) <<
         A->getAsString(*Args);
     }
   }
@@ -331,7 +331,7 @@ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
   return C;
 }
 
-// When clang crashes, produce diagnostic information including the fully
+// When lfort crashes, produce diagnostic information including the fully
 // preprocessed source file(s).  Request that the developer attach the
 // diagnostic information to a bug report.
 void Driver::generateCompilationDiagnostics(Compilation &C,
@@ -346,7 +346,7 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
   // Print the version of the compiler.
   PrintVersion(C, llvm::errs());
 
-  Diag(clang::diag::note_drv_command_failed_diag_msg)
+  Diag(lfort::diag::note_drv_command_failed_diag_msg)
     << "PLEASE submit a bug report to " BUG_REPORT_URL " and include the "
     "crash backtrace, preprocessed source, and associated run script.";
 
@@ -361,7 +361,7 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
   if (FailingCommand)
     C.PrintDiagnosticJob(OS, *FailingCommand);
   else
-    // Crash triggered by FORCE_CLANG_DIAGNOSTICS_CRASH, which doesn't have an
+    // Crash triggered by FORCE_LFORT_DIAGNOSTICS_CRASH, which doesn't have an
     // associated FailingCommand, so just pass all jobs.
     C.PrintDiagnosticJob(OS, C.getJobs());
   OS.flush();
@@ -382,7 +382,7 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
 
     // Ignore input from stdin or any inputs that cannot be preprocessed.
     if (!strcmp(it->second->getValue(), "-")) {
-      Diag(clang::diag::note_drv_command_failed_diag_msg)
+      Diag(lfort::diag::note_drv_command_failed_diag_msg)
         << "Error generating preprocessed source(s) - ignoring input from stdin"
         ".";
       IgnoreInput = true;
@@ -410,14 +410,14 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
     }
   }
   if (ArchNames.size() > 1) {
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "Error generating preprocessed source(s) - cannot generate "
       "preprocessed source with multiple -arch options.";
     return;
   }
 
   if (Inputs.empty()) {
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "Error generating preprocessed source(s) - no preprocessable inputs.";
     return;
   }
@@ -434,7 +434,7 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
 
   // If there were errors building the compilation, quit now.
   if (Trap.hasErrorOccurred()) {
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "Error generating preprocessed source(s).";
     return;
   }
@@ -445,14 +445,14 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
 
   // If the command succeeded, we are done.
   if (Res == 0) {
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "\n********************\n\n"
       "PLEASE ATTACH THE FOLLOWING FILES TO THE BUG REPORT:\n"
       "Preprocessed source(s) and associated run script(s) are located at:";
     ArgStringList Files = C.getTempFiles();
     for (ArgStringList::const_iterator it = Files.begin(), ie = Files.end();
          it != ie; ++it) {
-      Diag(clang::diag::note_drv_command_failed_diag_msg) << *it;
+      Diag(lfort::diag::note_drv_command_failed_diag_msg) << *it;
 
       std::string Err;
       std::string Script = StringRef(*it).rsplit('.').first;
@@ -461,7 +461,7 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
                                     llvm::raw_fd_ostream::F_Excl |
                                     llvm::raw_fd_ostream::F_Binary);
       if (!Err.empty()) {
-        Diag(clang::diag::note_drv_command_failed_diag_msg)
+        Diag(lfort::diag::note_drv_command_failed_diag_msg)
           << "Error generating run script: " + Script + " " + Err;
       } else {
         // Append the new filename with correct preprocessed suffix.
@@ -478,17 +478,17 @@ void Driver::generateCompilationDiagnostics(Compilation &C,
         I = Cmd.rfind(" ", I) + 1;
         Cmd.replace(I, E - I, NewFilename.data(), NewFilename.size());
         ScriptOS << Cmd;
-        Diag(clang::diag::note_drv_command_failed_diag_msg) << Script;
+        Diag(lfort::diag::note_drv_command_failed_diag_msg) << Script;
       }
     }
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "\n\n********************";
   } else {
     // Failure, remove preprocessed files.
     if (!C.getArgs().hasArg(options::OPT_save_temps))
       C.CleanupFileList(C.getTempFiles(), true);
 
-    Diag(clang::diag::note_drv_command_failed_diag_msg)
+    Diag(lfort::diag::note_drv_command_failed_diag_msg)
       << "Error generating preprocessed source(s).";
   }
 }
@@ -535,10 +535,10 @@ int Driver::ExecuteCompilation(const Compilation &C,
   if (!FailingCommand->getCreator().hasGoodDiagnostics() || Res != 1) {
     // FIXME: See FIXME above regarding result code interpretation.
     if (Res < 0)
-      Diag(clang::diag::err_drv_command_signalled)
+      Diag(lfort::diag::err_drv_command_signalled)
         << FailingTool.getShortName();
     else
-      Diag(clang::diag::err_drv_command_failed)
+      Diag(lfort::diag::err_drv_command_failed)
         << FailingTool.getShortName() << Res;
   }
 
@@ -572,7 +572,7 @@ void Driver::PrintHelp(bool ShowHidden) const {
 void Driver::PrintVersion(const Compilation &C, raw_ostream &OS) const {
   // FIXME: The following handlers should use a callback mechanism, we don't
   // know what the client would like to do.
-  OS << getClangFullVersion() << '\n';
+  OS << getLFortFullVersion() << '\n';
   const ToolChain &TC = C.getDefaultToolChain();
   OS << "Target: " << TC.getTripleString() << '\n';
 
@@ -605,7 +605,7 @@ bool Driver::HandleImmediateArgs(const Compilation &C) {
     // return an answer which matches our definition of __VERSION__.
     //
     // If we want to return a more correct answer some day, then we should
-    // introduce a non-pedantically GCC compatible mode to Clang in which we
+    // introduce a non-pedantically GCC compatible mode to LFort in which we
     // provide sensible definitions for -dumpversion, __VERSION__, etc.
     llvm::outs() << "4.2.1\n";
     return false;
@@ -794,7 +794,7 @@ void Driver::BuildUniversalActions(const ToolChain &TC,
       llvm::Triple::ArchType Arch =
         tools::darwin::getArchTypeForDarwinArchName(A->getValue());
       if (Arch == llvm::Triple::UnknownArch) {
-        Diag(clang::diag::err_drv_invalid_arch_name)
+        Diag(lfort::diag::err_drv_invalid_arch_name)
           << A->getAsString(Args);
         continue;
       }
@@ -817,7 +817,7 @@ void Driver::BuildUniversalActions(const ToolChain &TC,
     // No recovery needed, the point of this is just to prevent
     // overwriting the same files.
     if (const Arg *A = Args.getLastArg(options::OPT_save_temps))
-      Diag(clang::diag::err_drv_invalid_opt_with_multiple_archs)
+      Diag(lfort::diag::err_drv_invalid_opt_with_multiple_archs)
         << A->getAsString(Args);
   }
 
@@ -836,7 +836,7 @@ void Driver::BuildUniversalActions(const ToolChain &TC,
     // -save-temps. Compatibility wins for now.
 
     if (Archs.size() > 1 && !types::canLipoType(Act->getType()))
-      Diag(clang::diag::err_drv_invalid_output_with_multiple_archs)
+      Diag(lfort::diag::err_drv_invalid_output_with_multiple_archs)
         << types::getTypeName(Act->getType());
 
     ActionList Inputs;
@@ -913,7 +913,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
           // Otherwise emit an error but still use a valid type to avoid
           // spurious errors (e.g., no inputs).
           if (!Args.hasArgNoClaim(options::OPT_E) && !CCCIsCPP)
-            Diag(clang::diag::err_drv_unknown_stdin_type);
+            Diag(lfort::diag::err_drv_unknown_stdin_type);
           Ty = types::TY_C;
         } else {
           // Otherwise lookup by extension.
@@ -930,14 +930,14 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
               Ty = types::TY_Object;
           }
 
-          // If the driver is invoked as C++ compiler (like clang++ or c++) it
+          // If the driver is invoked as C++ compiler (like lfort++ or c++) it
           // should autodetect some input files as C++ for g++ compatibility.
           if (CCCIsCXX) {
             types::ID OldTy = Ty;
             Ty = types::lookupCXXTypeForCType(Ty);
 
             if (Ty != OldTy)
-              Diag(clang::diag::warn_drv_treating_input_as_cxx)
+              Diag(lfort::diag::warn_drv_treating_input_as_cxx)
                 << getTypeName(OldTy) << getTypeName(Ty);
           }
         }
@@ -972,7 +972,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
 
         bool exists = false;
         if (llvm::sys::fs::exists(Path.c_str(), exists) || !exists)
-          Diag(clang::diag::err_drv_no_such_file) << Path.str();
+          Diag(lfort::diag::err_drv_no_such_file) << Path.str();
         else
           Inputs.push_back(std::make_pair(Ty, A));
       } else
@@ -992,7 +992,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
       // options. Its not clear why we shouldn't just revert to unknown; but
       // this isn't very important, we might as well be bug compatible.
       if (!InputType) {
-        Diag(clang::diag::err_drv_unknown_language) << A->getValue();
+        Diag(lfort::diag::err_drv_unknown_language) << A->getValue();
         InputType = types::TY_Object;
       }
     }
@@ -1012,7 +1012,7 @@ void Driver::BuildActions(const ToolChain &TC, const DerivedArgList &Args,
   llvm::PrettyStackTraceString CrashInfo("Building compilation actions");
 
   if (!SuppressMissingInputWarning && Inputs.empty()) {
-    Diag(clang::diag::err_drv_no_input_files);
+    Diag(lfort::diag::err_drv_no_input_files);
     return;
   }
 
@@ -1022,7 +1022,7 @@ void Driver::BuildActions(const ToolChain &TC, const DerivedArgList &Args,
   // Reject -Z* at the top level, these options should never have been exposed
   // by gcc.
   if (Arg *A = Args.getLastArg(options::OPT_Z_Joined))
-    Diag(clang::diag::err_drv_use_of_Z_option) << A->getAsString(Args);
+    Diag(lfort::diag::err_drv_use_of_Z_option) << A->getAsString(Args);
 
   // Construct the actions to perform.
   ActionList LinkerInputs;
@@ -1048,7 +1048,7 @@ void Driver::BuildActions(const ToolChain &TC, const DerivedArgList &Args,
       // Special case when final phase determined by binary name, rather than
       // by a command-line argument with a corresponding Arg.
       if (CCCIsCPP)
-        Diag(clang::diag::warn_drv_input_file_unused_by_cpp)
+        Diag(lfort::diag::warn_drv_input_file_unused_by_cpp)
           << InputArg->getAsString(Args)
           << getPhaseName(InitialPhase);
       // Special case '-E' warning on a previously preprocessed file to make
@@ -1056,12 +1056,12 @@ void Driver::BuildActions(const ToolChain &TC, const DerivedArgList &Args,
       else if (InitialPhase == phases::Compile &&
                FinalPhase == phases::Preprocess &&
                getPreprocessedType(InputType) == types::TY_INVALID)
-        Diag(clang::diag::warn_drv_preprocessed_input_file_unused)
+        Diag(lfort::diag::warn_drv_preprocessed_input_file_unused)
           << InputArg->getAsString(Args)
           << !!FinalPhaseArg
           << FinalPhaseArg ? FinalPhaseArg->getOption().getName() : "";
       else
-        Diag(clang::diag::warn_drv_input_file_unused)
+        Diag(lfort::diag::warn_drv_input_file_unused)
           << InputArg->getAsString(Args)
           << getPhaseName(InitialPhase)
           << !!FinalPhaseArg
@@ -1197,7 +1197,7 @@ void Driver::BuildJobs(Compilation &C) const {
         ++NumOutputs;
 
     if (NumOutputs > 1) {
-      Diag(clang::diag::err_drv_output_argument_with_multiple_files);
+      Diag(lfort::diag::err_drv_output_argument_with_multiple_files);
       FinalOutput = 0;
     }
   }
@@ -1266,7 +1266,7 @@ void Driver::BuildJobs(Compilation &C) const {
           continue;
       }
 
-      Diag(clang::diag::warn_drv_unused_argument)
+      Diag(lfort::diag::warn_drv_unused_argument)
         << A->getAsString(C.getArgs());
     }
   }
@@ -1595,7 +1595,7 @@ std::string Driver::GetTemporaryPath(StringRef Prefix, const char *Suffix)
   llvm::sys::Path P(TmpDir);
   P.appendComponent(Prefix);
   if (P.makeUnique(false, &Error)) {
-    Diag(clang::diag::err_unable_to_make_temp) << Error;
+    Diag(lfort::diag::err_unable_to_make_temp) << Error;
     return "";
   }
 
@@ -1681,7 +1681,7 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
           Target.getArch() == llvm::Triple::x86_64 ||
           Target.getArch() == llvm::Triple::arm ||
           Target.getArch() == llvm::Triple::thumb)
-        TC = new toolchains::DarwinClang(*this, Target);
+        TC = new toolchains::DarwinLFort(*this, Target);
       else
         TC = new toolchains::Darwin_Generic_GCC(*this, Target, Args);
       break;
@@ -1731,15 +1731,15 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
   return *TC;
 }
 
-bool Driver::ShouldUseClangCompiler(const Compilation &C, const JobAction &JA,
+bool Driver::ShouldUseLFortCompiler(const Compilation &C, const JobAction &JA,
                                     const llvm::Triple &Triple) const {
-  // Check if user requested no clang, or clang doesn't understand this type (we
+  // Check if user requested no lfort, or lfort doesn't understand this type (we
   // only handle single inputs for now).
   if (JA.size() != 1 ||
-      !types::isAcceptedByClang((*JA.begin())->getType()))
+      !types::isAcceptedByLFort((*JA.begin())->getType()))
     return false;
 
-  // Otherwise make sure this is an action clang understands.
+  // Otherwise make sure this is an action lfort understands.
   if (!isa<PreprocessJobAction>(JA) && !isa<PrecompileJobAction>(JA) &&
       !isa<CompileJobAction>(JA))
     return false;

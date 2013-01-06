@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -pedantic
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -pedantic
 // Check that we don't crash trying to emit warnings in a potentially-evaluated
 // sizeof or typeof.  (This test needs to be in a separate file because we use
 // a different codepath when we have already emitted an error.)

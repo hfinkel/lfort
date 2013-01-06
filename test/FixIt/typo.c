@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -fsyntax-only -fixit -x c %t
-// RUN: %clang_cc1 -fsyntax-only -pedantic -Werror -x c %t
+// RUN: not %lfort_cc1 -fsyntax-only -fixit -x c %t
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -Werror -x c %t
 // RUN: grep "Rectangle" %t
 struct Point {
   float x, y;

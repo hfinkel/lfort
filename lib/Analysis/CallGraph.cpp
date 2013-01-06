@@ -12,15 +12,15 @@
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "CallGraph"
 
-#include "clang/Analysis/CallGraph.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/Analysis/CallGraph.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/PostOrderIterator.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/GraphWriter.h"
 
-using namespace clang;
+using namespace lfort;
 
 STATISTIC(NumObjCCallEdges, "Number of Objective-C method call edges");
 STATISTIC(NumBlockCallEdges, "Number of block call edges");
@@ -174,8 +174,8 @@ void CallGraph::print(raw_ostream &OS) const {
 
   // We are going to print the graph in reverse post order, partially, to make
   // sure the output is deterministic.
-  llvm::ReversePostOrderTraversal<const clang::CallGraph*> RPOT(this);
-  for (llvm::ReversePostOrderTraversal<const clang::CallGraph*>::rpo_iterator
+  llvm::ReversePostOrderTraversal<const lfort::CallGraph*> RPOT(this);
+  for (llvm::ReversePostOrderTraversal<const lfort::CallGraph*>::rpo_iterator
          I = RPOT.begin(), E = RPOT.end(); I != E; ++I) {
     const CallGraphNode *N = *I;
 

@@ -11,29 +11,29 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/Overload.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/TypeOrdering.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/SemaInternal.h"
-#include "clang/Sema/Template.h"
-#include "clang/Sema/TemplateDeduction.h"
+#include "lfort/Sema/Overload.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/TypeOrdering.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/Sema/Template.h"
+#include "lfort/Sema/TemplateDeduction.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallString.h"
 #include <algorithm>
 
-namespace clang {
+namespace lfort {
 using namespace sema;
 
 /// A convenience routine for creating a decayed reference to a
@@ -1211,7 +1211,7 @@ Sema::TryImplicitConversion(Expr *From, QualType ToType,
                             bool InOverloadResolution,
                             bool CStyle,
                             bool AllowObjCWritebackConversion) {
-  return clang::TryImplicitConversion(*this, From, ToType, 
+  return lfort::TryImplicitConversion(*this, From, ToType, 
                                       SuppressUserConversions, AllowExplicit,
                                       InOverloadResolution, CStyle, 
                                       AllowObjCWritebackConversion);
@@ -1241,7 +1241,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
     = getLangOpts().ObjCAutoRefCount && 
       (Action == AA_Passing || Action == AA_Sending);
 
-  ICS = clang::TryImplicitConversion(*this, From, ToType,
+  ICS = lfort::TryImplicitConversion(*this, From, ToType,
                                      /*SuppressUserConversions=*/false,
                                      AllowExplicit,
                                      /*InOverloadResolution=*/false,
@@ -1513,7 +1513,7 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
     SCS.Second = ICK_Floating_Promotion;
     FromType = ToType.getUnqualifiedType();
   } else if (S.IsComplexPromotion(FromType, ToType)) {
-    // Complex promotion (Clang extension)
+    // Complex promotion (LFort extension)
     SCS.Second = ICK_Complex_Promotion;
     FromType = ToType.getUnqualifiedType();
   } else if (ToType->isBooleanType() &&
@@ -1570,7 +1570,7 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
     FromType = ToType.getUnqualifiedType();
   } else if (!S.getLangOpts().CPlusPlus &&
              S.Context.typesAreCompatible(ToType, FromType)) {
-    // Compatible conversions (Clang extension for C function overloading)
+    // Compatible conversions (LFort extension for C function overloading)
     SCS.Second = ICK_Compatible_Conversion;
     FromType = ToType.getUnqualifiedType();
   } else if (S.IsNoReturnConversion(FromType, ToType, FromType)) {
@@ -3557,7 +3557,7 @@ CompareStandardConversionSequences(Sema &S,
   //    f(a);
   // }
   // Here, MSVC will call f(int) instead of generating a compile error
-  // as clang will do in standard mode.
+  // as lfort will do in standard mode.
   if (S.getLangOpts().MicrosoftMode &&
       SCS1.Second == ICK_Integral_Conversion &&
       SCS2.Second == ICK_Floating_Integral && 
@@ -11560,4 +11560,4 @@ ExprResult Sema::FixOverloadedFunctionReference(ExprResult E,
   return Owned(FixOverloadedFunctionReference((Expr *)E.get(), Found, Fn));
 }
 
-} // end namespace clang
+} // end namespace lfort

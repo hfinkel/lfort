@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
 
 // Dynamic specifications: valid types.
 

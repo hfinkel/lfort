@@ -11,21 +11,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TargetAttributesSema.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Lookup.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Lookup.h"
 #include "llvm/ADT/StringExtras.h"
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 /// These constants match the enumerated choices of

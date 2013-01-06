@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -O3 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -O3 -emit-llvm -o - %s
 // PR954, PR911
 
 extern void foo();

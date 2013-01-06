@@ -16,17 +16,17 @@
 #include "CGCXXABI.h"
 #include "CGDebugInfo.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Operator.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CodeGenFunction::CodeGenFunction(CodeGenModule &cgm, bool suppressNewContext)
@@ -82,7 +82,7 @@ bool CodeGenFunction::hasAggregateLLVMType(QualType type) {
 #define NON_CANONICAL_TYPE(name, parent) case Type::name:
 #define DEPENDENT_TYPE(name, parent) case Type::name:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(name, parent) case Type::name:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("non-canonical or dependent type in IR-generation");
 
   case Type::Builtin:
@@ -1002,11 +1002,11 @@ llvm::Value *CodeGenFunction::emitArrayLength(const ArrayType *origArrayType,
       dyn_cast<llvm::ArrayType>(llvmArrayType->getElementType());
     arrayType = getContext().getAsArrayType(arrayType->getElementType());
     assert((!llvmArrayType || arrayType) &&
-           "LLVM and Clang types are out-of-synch");
+           "LLVM and LFort types are out-of-synch");
   }
 
   if (arrayType) {
-    // From this point onwards, the Clang array type has been emitted
+    // From this point onwards, the LFort array type has been emitted
     // as some other type (probably a packed struct). Compute the array
     // size, and just emit the 'begin' expression as a bitcast.
     while (arrayType) {
@@ -1086,7 +1086,7 @@ void CodeGenFunction::EmitVariablyModifiedType(QualType type) {
 #define NON_CANONICAL_TYPE(Class, Base)
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
       llvm_unreachable("unexpected dependent type!");
 
     // These types are never variably-modified.

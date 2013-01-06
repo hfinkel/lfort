@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/STLExtras.h"
 #include <memory>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // TemplateParameterList Implementation

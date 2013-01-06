@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 class Base { // expected-error {{cannot define the implicit default assignment operator for 'Base', because non-static reference member 'ref' can't use default assignment operator}} \
   // expected-warning{{class 'Base' does not declare any constructor to initialize its non-modifiable members}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -Werror -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1  -fsyntax-only -Werror -verify -Wno-objc-root-class %s
 // expected-no-diagnostics
 // rdar://10387088
 
@@ -8,7 +8,7 @@
 
 @implementation MyClass
 - (void)someMethod {
-    [self privateMethod];  // clang already does not warn here
+    [self privateMethod];  // lfort already does not warn here
 }
 
 int bar(MyClass * myObject) {

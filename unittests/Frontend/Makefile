@@ -7,15 +7,15 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL = ../..
+LFORT_LEVEL = ../..
 TESTNAME = Frontend
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
-USEDLIBS = clangFrontendTool.a clangFrontend.a clangDriver.a \
-           clangSerialization.a clangCodeGen.a clangParse.a clangSema.a \
-           clangStaticAnalyzerCheckers.a clangStaticAnalyzerCore.a \
-           clangARCMigrate.a clangRewriteCore.a \
-		   clangRewriteFrontend.a clangEdit.a \
-           clangAnalysis.a clangAST.a clangLex.a clangBasic.a
+USEDLIBS = lfortFrontendTool.a lfortFrontend.a lfortDriver.a \
+           lfortSerialization.a lfortCodeGen.a lfortParse.a lfortSema.a \
+           lfortStaticAnalyzerCheckers.a lfortStaticAnalyzerCore.a \
+           lfortARCMigrate.a lfortRewriteCore.a \
+		   lfortRewriteFrontend.a lfortEdit.a \
+           lfortAnalysis.a lfortAST.a lfortLex.a lfortBasic.a
 
-include $(CLANG_LEVEL)/unittests/Makefile
+include $(LFORT_LEVEL)/unittests/Makefile

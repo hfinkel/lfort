@@ -1,6 +1,6 @@
 /* c-arcmt-test.c */
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,22 +15,22 @@ static int print_remappings(const char *path) {
   CXString origFname;
   CXString transFname;
 
-  remap = clang_getRemappings(path);
+  remap = lfort_getRemappings(path);
   if (!remap)
     return 1;
 
-  N = clang_remap_getNumFiles(remap);
+  N = lfort_remap_getNumFiles(remap);
   for (i = 0; i != N; ++i) {
-    clang_remap_getFilenames(remap, i, &origFname, &transFname);
+    lfort_remap_getFilenames(remap, i, &origFname, &transFname);
 
-    fprintf(stdout, "%s\n", clang_getCString(origFname));
-    fprintf(stdout, "%s\n", clang_getCString(transFname));
+    fprintf(stdout, "%s\n", lfort_getCString(origFname));
+    fprintf(stdout, "%s\n", lfort_getCString(transFname));
 
-    clang_disposeString(origFname);
-    clang_disposeString(transFname);
+    lfort_disposeString(origFname);
+    lfort_disposeString(transFname);
   }
 
-  clang_remap_dispose(remap);
+  lfort_remap_dispose(remap);
   return 0;
 }
 
@@ -40,22 +40,22 @@ static int print_remappings_filelist(const char **files, unsigned numFiles) {
   CXString origFname;
   CXString transFname;
 
-  remap = clang_getRemappingsFromFileList(files, numFiles);
+  remap = lfort_getRemappingsFromFileList(files, numFiles);
   if (!remap)
     return 1;
 
-  N = clang_remap_getNumFiles(remap);
+  N = lfort_remap_getNumFiles(remap);
   for (i = 0; i != N; ++i) {
-    clang_remap_getFilenames(remap, i, &origFname, &transFname);
+    lfort_remap_getFilenames(remap, i, &origFname, &transFname);
 
-    fprintf(stdout, "%s\n", clang_getCString(origFname));
-    fprintf(stdout, "%s\n", clang_getCString(transFname));
+    fprintf(stdout, "%s\n", lfort_getCString(origFname));
+    fprintf(stdout, "%s\n", lfort_getCString(transFname));
 
-    clang_disposeString(origFname);
-    clang_disposeString(transFname);
+    lfort_disposeString(origFname);
+    lfort_disposeString(transFname);
   }
 
-  clang_remap_dispose(remap);
+  lfort_remap_dispose(remap);
   return 0;
 }
 
@@ -72,7 +72,7 @@ static void print_usage(void) {
 /***/
 
 int carcmttest_main(int argc, const char **argv) {
-  clang_enableStackTraces();
+  lfort_enableStackTraces();
   if (argc == 3 && strncmp(argv[1], "-mt-migrate-directory", 21) == 0)
     return print_remappings(argv[2]);
 
@@ -106,11 +106,11 @@ int main(int argc, const char **argv) {
   thread_info client_data;
 
 #if defined(_WIN32)
-  if (getenv("LIBCLANG_LOGGING") == NULL)
-    putenv("LIBCLANG_LOGGING=1");
+  if (getenv("LIBLFORT_LOGGING") == NULL)
+    putenv("LIBLFORT_LOGGING=1");
   _setmode( _fileno(stdout), _O_BINARY );
 #else
-  setenv("LIBCLANG_LOGGING", "1", /*overwrite=*/0);
+  setenv("LIBLFORT_LOGGING", "1", /*overwrite=*/0);
 #endif
 
   if (getenv("CINDEXTEST_NOTHREADS"))
@@ -118,6 +118,6 @@ int main(int argc, const char **argv) {
 
   client_data.argc = argc;
   client_data.argv = argv;
-  clang_executeOnThread(thread_runner, &client_data, 0);
+  lfort_executeOnThread(thread_runner, &client_data, 0);
   return client_data.result;
 }

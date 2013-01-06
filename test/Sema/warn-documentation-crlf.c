@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdocumentation %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdocumentation %s
 // The run line does not have '-verify' because we were crashing while printing
 // the diagnostic.
 

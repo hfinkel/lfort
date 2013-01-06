@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10.0.0 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10.0.0 -emit-llvm -o - %s | FileCheck %s
 
 struct X { int i; float f; };
 struct Y { X x; };

@@ -1,4 +1,4 @@
-//===-- ConvertUTFWrapper.cpp - Wrap ConvertUTF.h with clang data types -----===
+//===-- ConvertUTFWrapper.cpp - Wrap ConvertUTF.h with lfort data types -----===
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
 
 bool ConvertUTF8toWide(unsigned WideCharWidth, llvm::StringRef Source,
                        char *&ResultPtr, const UTF8 *&ErrorPtr) {
@@ -73,4 +73,4 @@ bool ConvertCodePointToUTF8(unsigned Source, char *&ResultPtr) {
   return true;
 }
 
-} // end namespace clang
+} // end namespace lfort

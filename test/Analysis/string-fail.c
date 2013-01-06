@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
-// RUN: %clang_cc1 -analyze -DUSE_BUILTINS -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -DUSE_BUILTINS -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
 // XFAIL: *
 
 // This file is for tests that may eventually go into string.c, or may be
@@ -32,7 +32,7 @@
 #define NULL 0
 typedef typeof(sizeof(int)) size_t;
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 //===----------------------------------------------------------------------===
 // strnlen()
@@ -44,7 +44,7 @@ size_t strnlen(const char *s, size_t maxlen);
 void strnlen_liveness(const char *x) {
   if (strnlen(x, 10) < 5)
     return;
-  clang_analyzer_eval(strnlen(x, 10) < 5); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(strnlen(x, 10) < 5); // expected-warning{{FALSE}}
 }
 
 void strnlen_subregion() {
@@ -58,13 +58,13 @@ void strnlen_subregion() {
   z.b[0] = 5;
   size_t b = strnlen(z.a, 10);
   if (a == 0)
-    clang_analyzer_eval(b == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 0); // expected-warning{{TRUE}}
 
   use_two_stringsn(&z);
 
   size_t c = strnlen(z.a, 10);
   if (a == 0)
-    clang_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
 }
 
 extern void use_stringn(char *);
@@ -72,13 +72,13 @@ void strnlen_argument(char *x) {
   size_t a = strnlen(x, 10);
   size_t b = strnlen(x, 10);
   if (a == 0)
-    clang_analyzer_eval(b == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 0); // expected-warning{{TRUE}}
 
   use_stringn(x);
 
   size_t c = strnlen(x, 10);
   if (a == 0)
-    clang_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
 }
 
 extern char global_strn[];
@@ -86,14 +86,14 @@ void strnlen_global() {
   size_t a = strnlen(global_strn, 10);
   size_t b = strnlen(global_strn, 10);
   if (a == 0)
-    clang_analyzer_eval(b == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 0); // expected-warning{{TRUE}}
 
   // Call a function with unknown effects, which should invalidate globals.
   use_stringn(0);
 
   size_t c = strnlen(global_strn, 10);
   if (a == 0)
-    clang_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
 }
 
 void strnlen_indirect(char *x) {
@@ -102,12 +102,12 @@ void strnlen_indirect(char *x) {
   char **p2 = &p;
   size_t b = strnlen(x, 10);
   if (a == 0)
-    clang_analyzer_eval(b == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 0); // expected-warning{{TRUE}}
 
   extern void use_stringn_ptr(char*const*);
   use_stringn_ptr(p2);
 
   size_t c = strnlen(x, 10);
   if (a == 0)
-    clang_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(c == 0); // expected-warning{{UNKNOWN}}
 }

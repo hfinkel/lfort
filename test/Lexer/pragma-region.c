@@ -6,7 +6,7 @@
 // #pragma region optional name
 // #pragma endregion optional comment
 //
-// RUN: %clang_cc1 -fsyntax-only -verify -Wall -fms-extensions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wall -fms-extensions %s
 
 #pragma region
 /* inner space */

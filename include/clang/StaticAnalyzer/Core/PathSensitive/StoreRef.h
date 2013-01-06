@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_STOREREF_H
-#define LLVM_CLANG_GR_STOREREF_H
+#ifndef LLVM_LFORT_GR_STOREREF_H
+#define LLVM_LFORT_GR_STOREREF_H
 
 #include <cassert>
 
-namespace clang {
+namespace lfort {
 namespace ento {
   
 /// Store - This opaque type encapsulates an immutable mapping from

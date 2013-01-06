@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -Wduplicate-enum
-// RUN: %clang_cc1 %s -x c++ -fsyntax-only -verify -Wduplicate-enum
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -Wduplicate-enum
+// RUN: %lfort_cc1 %s -x c++ -fsyntax-only -verify -Wduplicate-enum
 enum A {
   A1 = 0,  // expected-note {{element A1 also has value 0}}
   A2 = -1,

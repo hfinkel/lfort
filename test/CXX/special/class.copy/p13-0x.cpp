@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 // If the implicitly-defined constructor would satisfy the requirements of a
 // constexpr constructor, the implicitly-defined constructor is constexpr.

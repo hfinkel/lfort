@@ -15,7 +15,7 @@
 //
 //  Example:
 //  int main(int argc, char **argv) {
-//    ClangTool Tool(argc, argv);
+//    LFortTool Tool(argc, argv);
 //    MatchFinder Finder;
 //    ReplaceStmtWithText Callback("integer", "42");
 //    Finder.AddMatcher(id("integer", expression(integerLiteral())), Callback);
@@ -26,13 +26,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_REFACTORING_CALLBACKS_H
-#define LLVM_CLANG_TOOLING_REFACTORING_CALLBACKS_H
+#ifndef LLVM_LFORT_TOOLING_REFACTORING_CALLBACKS_H
+#define LLVM_LFORT_TOOLING_REFACTORING_CALLBACKS_H
 
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Tooling/Refactoring.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/Tooling/Refactoring.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 /// \brief Base class for RefactoringCallbacks.
@@ -85,6 +85,6 @@ private:
 };
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_REFACTORING_CALLBACKS_H
+#endif // LLVM_LFORT_TOOLING_REFACTORING_CALLBACKS_H

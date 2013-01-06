@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdangling-field -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdangling-field -verify %s
 
 struct X {
   X(int);

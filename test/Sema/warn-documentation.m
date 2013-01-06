@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fblocks -Wno-objc-root-class -Wdocumentation -Wdocumentation-pedantic -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fblocks -Wno-objc-root-class -Wdocumentation -Wdocumentation-pedantic -verify %s
 
 @class NSString;
 

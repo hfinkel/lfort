@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c1x -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c1x -fsyntax-only -verify %s
 
 _Static_assert("foo", "string is nonzero"); // expected-error {{static_assert expression is not an integral constant expression}}
 

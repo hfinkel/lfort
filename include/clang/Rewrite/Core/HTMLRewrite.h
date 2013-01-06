@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_HTMLREWRITER_H
-#define LLVM_CLANG_HTMLREWRITER_H
+#ifndef LLVM_LFORT_HTMLREWRITER_H
+#define LLVM_LFORT_HTMLREWRITER_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class Rewriter;
 class RewriteBuffer;
@@ -76,6 +76,6 @@ namespace html {
   void HighlightMacros(Rewriter &R, FileID FID, const Preprocessor &PP);
 
 } // end html namespace
-} // end clang namespace
+} // end lfort namespace
 
 #endif

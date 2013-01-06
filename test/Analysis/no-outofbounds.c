@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,alpha.unix,alpha.security.ArrayBound -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,alpha.unix,alpha.security.ArrayBound -analyzer-store=region -verify %s
 
 //===----------------------------------------------------------------------===//
 // This file tests cases where we should not flag out-of-bounds warnings.

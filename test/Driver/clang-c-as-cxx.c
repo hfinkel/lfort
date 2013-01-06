@@ -1,4 +1,4 @@
-// RUN: %clangxx -### %s 2>&1 | FileCheck %s
+// RUN: %lfortxx -### %s 2>&1 | FileCheck %s
 //
 // PR5803
 //

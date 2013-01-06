@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 // The nested-name-specifier of a qualified declarator-id shall not begin with a decltype-specifier.
 class foo {

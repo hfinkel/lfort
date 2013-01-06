@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c1x -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c1x -fsyntax-only -verify %s
 
 void foo(void) {
   _Generic; // expected-error {{expected '('}}

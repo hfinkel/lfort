@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s -verify
+// RUN: %lfort_cc1 -emit-llvm-only %s -verify
 // expected-no-diagnostics
 // PR5882
 

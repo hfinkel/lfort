@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify -x c++ %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify -x c++ %s
 
 // This file is encoded using ISO-8859-1
 

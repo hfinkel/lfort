@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_PHASES_H_
-#define CLANG_DRIVER_PHASES_H_
+#ifndef LFORT_DRIVER_PHASES_H_
+#define LFORT_DRIVER_PHASES_H_
 
-namespace clang {
+namespace lfort {
 namespace driver {
 namespace phases {
   /// ID - Ordered values for successive stages in the
@@ -27,6 +27,6 @@ namespace phases {
 
 } // end namespace phases
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

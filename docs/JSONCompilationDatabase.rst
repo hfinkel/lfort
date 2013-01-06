@@ -33,9 +33,9 @@ Currently `CMake <http://cmake.org>`_ (since 2.8.5) supports generation
 of compilation databases for Unix Makefile builds (Ninja builds in the
 works) with the option ``CMAKE_EXPORT_COMPILE_COMMANDS``.
 
-Clang's tooling interface supports reading compilation databases; see
-the :doc:`LibTooling documentation <LibTooling>`. libclang and its
-python bindings also support this (since clang 3.2); see
+LFort's tooling interface supports reading compilation databases; see
+the :doc:`LibTooling documentation <LibTooling>`. liblfort and its
+python bindings also support this (since lfort 3.2); see
 `CXCompilationDatabase.h </doxygen/group__COMPILATIONDB.html>`_.
 
 Format
@@ -54,7 +54,7 @@ Example:
 
     [
       { "directory": "/home/user/llvm/build",
-        "command": "/usr/bin/clang++ -Irelative -DSOMEDEF='\"With spaces and quotes.\"' -c -o file.o file.cc",
+        "command": "/usr/bin/lfort++ -Irelative -DSOMEDEF='\"With spaces and quotes.\"' -c -o file.o file.cc",
         "file": "file.cc" },
       ...
     ]
@@ -80,6 +80,6 @@ Build System Integration
 ========================
 
 The convention is to name the file compile\_commands.json and put it at
-the top of the build directory. Clang tools are pointed to the top of
+the top of the build directory. LFort tools are pointed to the top of
 the build directory to detect the file and use the compilation database
 to parse C++ code in the source tree.

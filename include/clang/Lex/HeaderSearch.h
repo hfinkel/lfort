@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_HEADERSEARCH_H
-#define LLVM_CLANG_LEX_HEADERSEARCH_H
+#ifndef LLVM_LFORT_LEX_HEADERSEARCH_H
+#define LLVM_LFORT_LEX_HEADERSEARCH_H
 
-#include "clang/Lex/DirectoryLookup.h"
-#include "clang/Lex/ModuleMap.h"
+#include "lfort/Lex/DirectoryLookup.h"
+#include "lfort/Lex/ModuleMap.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
@@ -24,7 +24,7 @@
 #include "llvm/Support/Allocator.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   
 class DiagnosticsEngine;  
 class ExternalIdentifierLookup;
@@ -582,6 +582,6 @@ private:
   HeaderFileInfo &getFileInfo(const FileEntry *FE);
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

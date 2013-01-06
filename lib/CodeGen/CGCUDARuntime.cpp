@@ -16,10 +16,10 @@
 #include "CGCUDARuntime.h"
 #include "CGCall.h"
 #include "CodeGenFunction.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/ExprCXX.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/ExprCXX.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CGCUDARuntime::~CGCUDARuntime() {}

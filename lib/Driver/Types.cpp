@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Types.h"
+#include "lfort/Driver/Types.h"
 #include "llvm/ADT/StringSwitch.h"
 #include <cassert>
 #include <string.h>
 
-using namespace clang::driver;
-using namespace clang::driver::types;
+using namespace lfort::driver;
+using namespace lfort::driver::types;
 
 struct TypeInfo {
   const char *Name;
@@ -25,7 +25,7 @@ struct TypeInfo {
 static const TypeInfo TypeInfos[] = {
 #define TYPE(NAME, ID, PP_TYPE, TEMP_SUFFIX, FLAGS) \
   { NAME, FLAGS, TEMP_SUFFIX, TY_##PP_TYPE, },
-#include "clang/Driver/Types.def"
+#include "lfort/Driver/Types.def"
 #undef TYPE
 };
 static const unsigned numTypes = sizeof(TypeInfos) / sizeof(TypeInfos[0]);
@@ -70,7 +70,7 @@ bool types::canLipoType(ID Id) {
           Id == TY_LTO_BC);
 }
 
-bool types::isAcceptedByClang(ID Id) {
+bool types::isAcceptedByLFort(ID Id) {
   switch (Id) {
   default:
     return false;

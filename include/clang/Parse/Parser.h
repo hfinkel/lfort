@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARSE_PARSER_H
-#define LLVM_CLANG_PARSE_PARSER_H
+#ifndef LLVM_LFORT_PARSE_PARSER_H
+#define LLVM_LFORT_PARSE_PARSER_H
 
-#include "clang/Basic/OperatorPrecedence.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/Basic/OperatorPrecedence.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Sema.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Compiler.h"
@@ -27,7 +27,7 @@
 #include "llvm/Support/SaveAndRestore.h"
 #include <stack>
 
-namespace clang {
+namespace lfort {
   class PragmaHandler;
   class Scope;
   class BalancedDelimiterTracker;
@@ -213,11 +213,11 @@ public:
 
   typedef SmallVector<TemplateParameterList *, 4> TemplateParameterLists;
 
-  typedef clang::ExprResult        ExprResult;
-  typedef clang::StmtResult        StmtResult;
-  typedef clang::BaseResult        BaseResult;
-  typedef clang::MemInitResult     MemInitResult;
-  typedef clang::TypeResult        TypeResult;
+  typedef lfort::ExprResult        ExprResult;
+  typedef lfort::StmtResult        StmtResult;
+  typedef lfort::BaseResult        BaseResult;
+  typedef lfort::MemInitResult     MemInitResult;
+  typedef lfort::TypeResult        TypeResult;
 
   typedef Expr *ExprArg;
   typedef llvm::MutableArrayRef<Stmt*> MultiStmtArg;
@@ -1398,7 +1398,7 @@ private:
   ExprResult ParseInitializerWithPotentialDesignator();
 
   //===--------------------------------------------------------------------===//
-  // clang Expressions
+  // lfort Expressions
 
   ExprResult ParseBlockLiteralExpression();  // ^{...}
 
@@ -2187,6 +2187,6 @@ private:
   virtual void CodeCompleteNaturalLanguage();
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

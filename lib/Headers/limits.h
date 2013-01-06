@@ -22,8 +22,8 @@
  *
 \*===----------------------------------------------------------------------===*/
 
-#ifndef __CLANG_LIMITS_H
-#define __CLANG_LIMITS_H
+#ifndef __LFORT_LIMITS_H
+#define __LFORT_LIMITS_H
 
 /* The system's limits.h may, in turn, try to #include_next GCC's limits.h.
    Avert this #include_next madness. */
@@ -114,4 +114,4 @@
 #define ULONG_LONG_MAX (__LONG_LONG_MAX__*2ULL+1ULL)
 #endif
 
-#endif /* __CLANG_LIMITS_H */
+#endif /* __LFORT_LIMITS_H */

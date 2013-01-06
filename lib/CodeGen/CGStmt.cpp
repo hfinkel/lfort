@@ -15,14 +15,14 @@
 #include "CGDebugInfo.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/PrettyStackTrace.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/PrettyStackTrace.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/IR/Intrinsics.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 //===----------------------------------------------------------------------===//
@@ -91,7 +91,7 @@ void CodeGenFunction::EmitStmt(const Stmt *S) {
 #define ABSTRACT_STMT(Op)
 #define EXPR(Type, Base) \
   case Stmt::Type##Class:
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   {
     // Remember the block we came in on.
     llvm::BasicBlock *incoming = Builder.GetInsertBlock();

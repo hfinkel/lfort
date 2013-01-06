@@ -1,7 +1,7 @@
 # This file provides common utility functions for the test suite.
 
-from clang.cindex import Cursor
-from clang.cindex import TranslationUnit
+from lfort.cindex import Cursor
+from lfort.cindex import TranslationUnit
 
 def get_tu(source, lang='c', all_warnings=False):
     """Obtain a translation unit from source and language.

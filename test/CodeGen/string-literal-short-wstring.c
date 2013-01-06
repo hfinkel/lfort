@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x c++ -emit-llvm -fshort-wchar %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -x c++ -emit-llvm -fshort-wchar %s -o - | FileCheck %s
 // Runs in c++ mode so that wchar_t is available.
 
 int main() {

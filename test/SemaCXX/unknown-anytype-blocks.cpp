@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -funknown-anytype -fblocks -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -funknown-anytype -fblocks -fsyntax-only -verify -std=c++11 %s
 
 namespace test1 {
   __unknown_anytype (^foo)();

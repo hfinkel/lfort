@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wall -fblocks %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wall -fblocks %s
 
 // PR9463
 double *end;

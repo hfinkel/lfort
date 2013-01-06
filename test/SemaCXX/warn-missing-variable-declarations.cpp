@@ -1,4 +1,4 @@
-// RUN: %clang -Wmissing-variable-declarations -fsyntax-only -Xclang -verify %s
+// RUN: %lfort -Wmissing-variable-declarations -fsyntax-only -Xlfort -verify %s
 
 // Variable declarations that should trigger a warning.
 int vbad1; // expected-warning{{no previous extern declaration for non-static variable 'vbad1'}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -std=c++11 -g %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -std=c++11 -g %s -o - | FileCheck %s
 // CHECK: metadata !"_ZN1A3fooEiS_3$_0", {{.*}} [protected]
 // CHECK: ""{{.*}}DW_TAG_arg_variable
 // CHECK: ""{{.*}}DW_TAG_arg_variable

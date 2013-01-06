@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_TYPELOCBUILDER_H
-#define LLVM_CLANG_SEMA_TYPELOCBUILDER_H
+#ifndef LLVM_LFORT_SEMA_TYPELOCBUILDER_H
+#define LLVM_LFORT_SEMA_TYPELOCBUILDER_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/TypeLoc.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/TypeLoc.h"
 
-namespace clang {
+namespace lfort {
 
 class TypeLocBuilder {
   enum { InlineCapacity = 8 * sizeof(SourceLocation) };

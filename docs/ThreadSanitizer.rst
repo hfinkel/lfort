@@ -12,7 +12,7 @@ ThreadSanitizer is about **5x-10x**.
 How to build
 ------------
 
-Follow the `Clang build instructions <../get_started.html>`_.  CMake build is
+Follow the `LFort build instructions <../get_started.html>`_.  CMake build is
 supported.
 
 Supported Platforms
@@ -48,7 +48,7 @@ Example:
     return Global;
   }
 
-  $ clang -fsanitize=thread -g -O1 tiny_race.c -fPIE -pie
+  $ lfort -fsanitize=thread -g -O1 tiny_race.c -fPIE -pie
 
 If a bug is detected, the program will print an error message to stderr.
 Currently, ThreadSanitizer symbolizes its output using an external

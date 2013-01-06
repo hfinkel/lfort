@@ -12,14 +12,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PreprocessorLexer_H
-#define LLVM_CLANG_PreprocessorLexer_H
+#ifndef LLVM_LFORT_PreprocessorLexer_H
+#define LLVM_LFORT_PreprocessorLexer_H
 
-#include "clang/Lex/MultipleIncludeOpt.h"
-#include "clang/Lex/Token.h"
+#include "lfort/Lex/MultipleIncludeOpt.h"
+#include "lfort/Lex/Token.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class FileEntry;
 class Preprocessor;
@@ -178,6 +178,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

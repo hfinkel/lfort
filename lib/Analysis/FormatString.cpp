@@ -13,17 +13,17 @@
 //===----------------------------------------------------------------------===//
 
 #include "FormatStringParsing.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using clang::analyze_format_string::ArgType;
-using clang::analyze_format_string::FormatStringHandler;
-using clang::analyze_format_string::FormatSpecifier;
-using clang::analyze_format_string::LengthModifier;
-using clang::analyze_format_string::OptionalAmount;
-using clang::analyze_format_string::PositionContext;
-using clang::analyze_format_string::ConversionSpecifier;
-using namespace clang;
+using lfort::analyze_format_string::ArgType;
+using lfort::analyze_format_string::FormatStringHandler;
+using lfort::analyze_format_string::FormatSpecifier;
+using lfort::analyze_format_string::LengthModifier;
+using lfort::analyze_format_string::OptionalAmount;
+using lfort::analyze_format_string::PositionContext;
+using lfort::analyze_format_string::ConversionSpecifier;
+using namespace lfort;
 
 // Key function to FormatStringHandler.
 FormatStringHandler::~FormatStringHandler() {}
@@ -34,7 +34,7 @@ FormatStringHandler::~FormatStringHandler() {}
 //===----------------------------------------------------------------------===//
 
 OptionalAmount
-clang::analyze_format_string::ParseAmount(const char *&Beg, const char *E) {
+lfort::analyze_format_string::ParseAmount(const char *&Beg, const char *E) {
   const char *I = Beg;
   UpdateOnReturn <const char*> UpdateBeg(Beg, I);
 
@@ -60,7 +60,7 @@ clang::analyze_format_string::ParseAmount(const char *&Beg, const char *E) {
 }
 
 OptionalAmount
-clang::analyze_format_string::ParseNonPositionAmount(const char *&Beg,
+lfort::analyze_format_string::ParseNonPositionAmount(const char *&Beg,
                                                      const char *E,
                                                      unsigned &argIndex) {
   if (*Beg == '*') {
@@ -72,7 +72,7 @@ clang::analyze_format_string::ParseNonPositionAmount(const char *&Beg,
 }
 
 OptionalAmount
-clang::analyze_format_string::ParsePositionAmount(FormatStringHandler &H,
+lfort::analyze_format_string::ParsePositionAmount(FormatStringHandler &H,
                                                   const char *Start,
                                                   const char *&Beg,
                                                   const char *E,
@@ -119,7 +119,7 @@ clang::analyze_format_string::ParsePositionAmount(FormatStringHandler &H,
 
 
 bool
-clang::analyze_format_string::ParseFieldWidth(FormatStringHandler &H,
+lfort::analyze_format_string::ParseFieldWidth(FormatStringHandler &H,
                                               FormatSpecifier &CS,
                                               const char *Start,
                                               const char *&Beg, const char *E,
@@ -141,7 +141,7 @@ clang::analyze_format_string::ParseFieldWidth(FormatStringHandler &H,
 }
 
 bool
-clang::analyze_format_string::ParseArgPosition(FormatStringHandler &H,
+lfort::analyze_format_string::ParseArgPosition(FormatStringHandler &H,
                                                FormatSpecifier &FS,
                                                const char *Start,
                                                const char *&Beg,
@@ -178,7 +178,7 @@ clang::analyze_format_string::ParseArgPosition(FormatStringHandler &H,
 }
 
 bool
-clang::analyze_format_string::ParseLengthModifier(FormatSpecifier &FS,
+lfort::analyze_format_string::ParseLengthModifier(FormatSpecifier &FS,
                                                   const char *&I,
                                                   const char *E,
                                                   const LangOptions &LO,

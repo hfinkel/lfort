@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Werror -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -Werror -verify -Wno-objc-root-class %s
 // expected-no-diagnostics
 
 @interface MyClass {

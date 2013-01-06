@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -std=c++11
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -std=c++11
 
 // Implicitly-defined default constructors are constexpr if the implicit
 // definition would be.

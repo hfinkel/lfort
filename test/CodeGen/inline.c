@@ -1,5 +1,5 @@
 // RUN: echo "GNU89 tests:"
-// RUN: %clang %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=gnu89 | FileCheck %s --check-prefix=CHECK1
+// RUN: %lfort %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=gnu89 | FileCheck %s --check-prefix=CHECK1
 // CHECK1: define i32 @foo()
 // CHECK1: define i32 @bar()
 // CHECK1: define void @unreferenced1()
@@ -21,7 +21,7 @@
 // CHECK1: define available_externally i32 @ei()
 
 // RUN: echo "C99 tests:"
-// RUN: %clang %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=gnu99 | FileCheck %s --check-prefix=CHECK2
+// RUN: %lfort %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=gnu99 | FileCheck %s --check-prefix=CHECK2
 // CHECK2: define i32 @ei()
 // CHECK2: define i32 @bar()
 // CHECK2-NOT: unreferenced1
@@ -43,7 +43,7 @@
 // CHECK2: define available_externally i32 @foo()
 
 // RUN: echo "C++ tests:"
-// RUN: %clang -x c++ %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=c++98 | FileCheck %s --check-prefix=CHECK3
+// RUN: %lfort -x c++ %s -target i386-unknown-unknown -O1 -emit-llvm -S -o - -std=c++98 | FileCheck %s --check-prefix=CHECK3
 // CHECK3: define i32 @_Z3barv()
 // CHECK3: define linkonce_odr i32 @_Z3foov()
 // CHECK3-NOT: unreferenced
@@ -105,7 +105,7 @@ __inline int test6() { return 0; }
 extern int test6();
 
 
-// No PR#, but this once crashed clang in C99 mode due to buggy extern inline
+// No PR#, but this once crashed lfort in C99 mode due to buggy extern inline
 // redeclaration detection.
 void test7() { }
 void test7();

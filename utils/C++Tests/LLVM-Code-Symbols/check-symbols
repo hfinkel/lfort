@@ -24,29 +24,29 @@ def normalize_nm(data):
 
 def main():
     import sys
-    clang = sys.argv[1]
+    lfort = sys.argv[1]
     flags = sys.argv[2:]
 
     # FIXME: Relax to include undefined symbols.
     nm_args = ["llvm-nm", "-extern-only", "-defined-only"]
 
     llvmgcc_args = ["llvm-gcc"] + flags + ["-emit-llvm","-c","-o","-"]
-    clang_args = [clang] + flags + ["-emit-llvm","-c","-o","-"]
+    lfort_args = [lfort] + flags + ["-emit-llvm","-c","-o","-"]
 
     llvmgcc_nm = capture_2(llvmgcc_args, nm_args)
-    clang_nm = capture_2(clang_args, nm_args)
+    lfort_nm = capture_2(lfort_args, nm_args)
 
     llvmgcc_nm = normalize_nm(llvmgcc_nm)
-    clang_nm = normalize_nm(clang_nm)
+    lfort_nm = normalize_nm(lfort_nm)
 
-    if llvmgcc_nm == clang_nm:
+    if llvmgcc_nm == lfort_nm:
         sys.exit(0)
 
     print ' '.join(llvmgcc_args), '|', ' '.join(nm_args)
-    print ' '.join(clang_args), '|', ' '.join(nm_args)
-    for line in difflib.unified_diff(llvmgcc_nm, clang_nm,
+    print ' '.join(lfort_args), '|', ' '.join(nm_args)
+    for line in difflib.unified_diff(llvmgcc_nm, lfort_nm,
                                      fromfile="llvm-gcc symbols",
-                                     tofile="clang symbols"):
+                                     tofile="lfort symbols"):
         print line
     sys.exit(1)
 

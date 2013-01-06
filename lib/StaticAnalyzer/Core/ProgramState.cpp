@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SubEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/TaintManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SubEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/TaintManager.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
-namespace clang { namespace  ento {
+namespace lfort { namespace  ento {
 /// Increments the number of times this state is referenced.
 
 void ProgramStateRetain(const ProgramState *state) {
@@ -708,7 +708,7 @@ bool ProgramState::isTainted(SymbolRef Sym, TaintTagType Kind) const {
 /// The GDM component containing the dynamic type info. This is a map from a
 /// symbol to its most likely type.
 REGISTER_TRAIT_WITH_PROGRAMSTATE(DynamicTypeMap,
-                                 CLANG_ENTO_PROGRAMSTATE_MAP(const MemRegion *,
+                                 LFORT_ENTO_PROGRAMSTATE_MAP(const MemRegion *,
                                                              DynamicTypeInfo))
 
 DynamicTypeInfo ProgramState::getDynamicTypeInfo(const MemRegion *Reg) const {

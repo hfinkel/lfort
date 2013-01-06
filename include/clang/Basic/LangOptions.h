@@ -8,20 +8,20 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::LangOptions interface.
+/// \brief Defines the lfort::LangOptions interface.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LANGOPTIONS_H
-#define LLVM_CLANG_LANGOPTIONS_H
+#ifndef LLVM_LFORT_LANGOPTIONS_H
+#define LLVM_LFORT_LANGOPTIONS_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/ObjCRuntime.h"
-#include "clang/Basic/Visibility.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/ObjCRuntime.h"
+#include "lfort/Basic/Visibility.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 /// Bitfields of LangOptions, split out from LangOptions in order to ensure that
 /// this large collection of bitfields is a trivial class type.
@@ -30,7 +30,7 @@ public:
   // Define simple language options (with no accessors).
 #define LANGOPT(Name, Bits, Default, Description) unsigned Name : Bits;
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description)
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
 
 protected:
   // Define language options of enumeration type. These are private, and will
@@ -38,14 +38,14 @@ protected:
 #define LANGOPT(Name, Bits, Default, Description)
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description) \
   unsigned Name : Bits;
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
 };
 
 /// \brief Keeps track of the various options that can be
 /// enabled, which controls the dialect of C or C++ that is accepted.
 class LangOptions : public RefCountedBase<LangOptions>, public LangOptionsBase {
 public:
-  typedef clang::Visibility Visibility;
+  typedef lfort::Visibility Visibility;
   
   enum GCMode { NonGC, GCOnly, HybridGC };
   enum StackProtectorMode { SSPOff, SSPOn, SSPReq };
@@ -57,7 +57,7 @@ public:
   };
 
 public:
-  clang::ObjCRuntime ObjCRuntime;
+  lfort::ObjCRuntime ObjCRuntime;
 
   std::string ObjCConstantStringClass;
   
@@ -77,7 +77,7 @@ public:
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description) \
   Type get##Name() const { return static_cast<Type>(Name); } \
   void set##Name(Type Value) { Name = static_cast<unsigned>(Value); }  
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
   
   bool isSignedOverflowDefined() const {
     return getSignedOverflowBehavior() == SOB_Defined;
@@ -103,11 +103,11 @@ public:
 class OpenCLOptions {
 public:
 #define OPENCLEXT(nm)  unsigned nm : 1;
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
 
   OpenCLOptions() {
 #define OPENCLEXT(nm)   nm = 0;
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
   }
 };
 
@@ -122,6 +122,6 @@ enum TranslationUnitKind {
   TU_Module
 };
   
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

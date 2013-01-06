@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fobjc-gc -emit-llvm -g -o - %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fobjc-gc -emit-llvm -g -o - %s
 // Check that this doesn't crash when compiled with debugging on.
 @class Foo;
 typedef struct Bar *BarRef;

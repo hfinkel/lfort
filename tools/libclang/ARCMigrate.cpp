@@ -1,4 +1,4 @@
-//===- ARCMigrate.cpp - Clang-C ARC Migration Library ---------------------===//
+//===- ARCMigrate.cpp - LFort-C ARC Migration Library ---------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the main API hooks in the Clang-C ARC Migration library.
+// This file implements the main API hooks in the LFort-C ARC Migration library.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 #include "CXString.h"
-#include "clang/ARCMigrate/ARCMT.h"
-#include "clang/Frontend/TextDiagnosticBuffer.h"
+#include "lfort/ARCMigrate/ARCMT.h"
+#include "lfort/Frontend/TextDiagnosticBuffer.h"
 #include "llvm/Support/FileSystem.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 namespace {
@@ -29,17 +29,17 @@ struct Remap {
 } // anonymous namespace.
 
 //===----------------------------------------------------------------------===//
-// libClang public APIs.
+// libLFort public APIs.
 //===----------------------------------------------------------------------===//
 
 extern "C" {
 
-CXRemapping clang_getRemappings(const char *migrate_dir_path) {
-  bool Logging = ::getenv("LIBCLANG_LOGGING");
+CXRemapping lfort_getRemappings(const char *migrate_dir_path) {
+  bool Logging = ::getenv("LIBLFORT_LOGGING");
 
   if (!migrate_dir_path) {
     if (Logging)
-      llvm::errs() << "clang_getRemappings was called with NULL parameter\n";
+      llvm::errs() << "lfort_getRemappings was called with NULL parameter\n";
     return 0;
   }
 
@@ -47,7 +47,7 @@ CXRemapping clang_getRemappings(const char *migrate_dir_path) {
   llvm::sys::fs::exists(migrate_dir_path, exists);
   if (!exists) {
     if (Logging) {
-      llvm::errs() << "Error by clang_getRemappings(\"" << migrate_dir_path
+      llvm::errs() << "Error by lfort_getRemappings(\"" << migrate_dir_path
                    << "\")\n";
       llvm::errs() << "\"" << migrate_dir_path << "\" does not exist\n";
     }
@@ -61,7 +61,7 @@ CXRemapping clang_getRemappings(const char *migrate_dir_path) {
 
   if (err) {
     if (Logging) {
-      llvm::errs() << "Error by clang_getRemappings(\"" << migrate_dir_path
+      llvm::errs() << "Error by lfort_getRemappings(\"" << migrate_dir_path
                    << "\")\n";
       for (TextDiagnosticBuffer::const_iterator
              I = diagBuffer.err_begin(), E = diagBuffer.err_end(); I != E; ++I)
@@ -73,22 +73,22 @@ CXRemapping clang_getRemappings(const char *migrate_dir_path) {
   return remap.take();
 }
 
-CXRemapping clang_getRemappingsFromFileList(const char **filePaths,
+CXRemapping lfort_getRemappingsFromFileList(const char **filePaths,
                                             unsigned numFiles) {
-  bool Logging = ::getenv("LIBCLANG_LOGGING");
+  bool Logging = ::getenv("LIBLFORT_LOGGING");
 
   OwningPtr<Remap> remap(new Remap());
 
   if (numFiles == 0) {
     if (Logging)
-      llvm::errs() << "clang_getRemappingsFromFileList was called with "
+      llvm::errs() << "lfort_getRemappingsFromFileList was called with "
                       "numFiles=0\n";
     return remap.take();
   }
 
   if (!filePaths) {
     if (Logging)
-      llvm::errs() << "clang_getRemappingsFromFileList was called with "
+      llvm::errs() << "lfort_getRemappingsFromFileList was called with "
                       "NULL filePaths\n";
     return 0;
   }
@@ -103,7 +103,7 @@ CXRemapping clang_getRemappingsFromFileList(const char **filePaths,
 
   if (err) {
     if (Logging) {
-      llvm::errs() << "Error by clang_getRemappingsFromFileList\n";
+      llvm::errs() << "Error by lfort_getRemappingsFromFileList\n";
       for (TextDiagnosticBuffer::const_iterator
              I = diagBuffer.err_begin(), E = diagBuffer.err_end(); I != E; ++I)
         llvm::errs() << I->second << '\n';
@@ -114,12 +114,12 @@ CXRemapping clang_getRemappingsFromFileList(const char **filePaths,
   return remap.take();
 }
 
-unsigned clang_remap_getNumFiles(CXRemapping map) {
+unsigned lfort_remap_getNumFiles(CXRemapping map) {
   return static_cast<Remap *>(map)->Vec.size();
   
 }
 
-void clang_remap_getFilenames(CXRemapping map, unsigned index,
+void lfort_remap_getFilenames(CXRemapping map, unsigned index,
                               CXString *original, CXString *transformed) {
   if (original)
     *original = cxstring::createCXString(
@@ -131,7 +131,7 @@ void clang_remap_getFilenames(CXRemapping map, unsigned index,
                                   /*DupString =*/ true);
 }
 
-void clang_remap_dispose(CXRemapping map) {
+void lfort_remap_dispose(CXRemapping map) {
   delete static_cast<Remap *>(map);
 }
 

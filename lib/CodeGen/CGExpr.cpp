@@ -19,16 +19,16 @@
 #include "CGRecordLayout.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/Hashing.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/MDBuilder.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 //===--------------------------------------------------------------------===//

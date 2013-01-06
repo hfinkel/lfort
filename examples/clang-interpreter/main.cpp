@@ -1,4 +1,4 @@
-//===-- examples/clang-interpreter/main.cpp - Clang C Interpreter Example -===//
+//===-- examples/lfort-interpreter/main.cpp - LFort C Interpreter Example -===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CodeGen/CodeGenAction.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/Tool.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/CodeGen/CodeGenAction.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/Tool.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
@@ -26,8 +26,8 @@
 #include "llvm/Support/Path.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
-using namespace clang::driver;
+using namespace lfort;
+using namespace lfort::driver;
 
 // This function isn't referenced outside its translation unit, but it
 // can't use the "static" keyword because its address is used for
@@ -76,7 +76,7 @@ int main(int argc, const char **argv, char * const *envp) {
   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
   Driver TheDriver(Path.str(), llvm::sys::getDefaultTargetTriple(),
                    "a.out", Diags);
-  TheDriver.setTitle("clang interpreter");
+  TheDriver.setTitle("lfort interpreter");
 
   // FIXME: This is a hack to try to force the driver to do something we can
   // recognize. We need to extend the driver library to support this use model
@@ -101,12 +101,12 @@ int main(int argc, const char **argv, char * const *envp) {
   }
 
   const driver::Command *Cmd = cast<driver::Command>(*Jobs.begin());
-  if (llvm::StringRef(Cmd->getCreator().getName()) != "clang") {
-    Diags.Report(diag::err_fe_expected_clang_command);
+  if (llvm::StringRef(Cmd->getCreator().getName()) != "lfort") {
+    Diags.Report(diag::err_fe_expected_lfort_command);
     return 1;
   }
 
-  // Initialize a compiler invocation object from the clang (-cc1) arguments.
+  // Initialize a compiler invocation object from the lfort (-cc1) arguments.
   const driver::ArgStringList &CCArgs = Cmd->getArguments();
   OwningPtr<CompilerInvocation> CI(new CompilerInvocation);
   CompilerInvocation::CreateFromArgs(*CI,
@@ -117,7 +117,7 @@ int main(int argc, const char **argv, char * const *envp) {
 
   // Show the invocation, with -v.
   if (CI->getHeaderSearchOpts().Verbose) {
-    llvm::errs() << "clang invocation:\n";
+    llvm::errs() << "lfort invocation:\n";
     C->PrintJob(llvm::errs(), C->getJobs(), "\n", true);
     llvm::errs() << "\n";
   }
@@ -125,23 +125,23 @@ int main(int argc, const char **argv, char * const *envp) {
   // FIXME: This is copied from cc1_main.cpp; simplify and eliminate.
 
   // Create a compiler instance to handle the actual work.
-  CompilerInstance Clang;
-  Clang.setInvocation(CI.take());
+  CompilerInstance LFort;
+  LFort.setInvocation(CI.take());
 
   // Create the compilers actual diagnostics engine.
-  Clang.createDiagnostics(int(CCArgs.size()),const_cast<char**>(CCArgs.data()));
-  if (!Clang.hasDiagnostics())
+  LFort.createDiagnostics(int(CCArgs.size()),const_cast<char**>(CCArgs.data()));
+  if (!LFort.hasDiagnostics())
     return 1;
 
   // Infer the builtin include path if unspecified.
-  if (Clang.getHeaderSearchOpts().UseBuiltinIncludes &&
-      Clang.getHeaderSearchOpts().ResourceDir.empty())
-    Clang.getHeaderSearchOpts().ResourceDir =
+  if (LFort.getHeaderSearchOpts().UseBuiltinIncludes &&
+      LFort.getHeaderSearchOpts().ResourceDir.empty())
+    LFort.getHeaderSearchOpts().ResourceDir =
       CompilerInvocation::GetResourcesPath(argv[0], MainAddr);
 
   // Create and execute the frontend to generate an LLVM bitcode module.
   OwningPtr<CodeGenAction> Act(new EmitLLVMOnlyAction());
-  if (!Clang.ExecuteAction(*Act))
+  if (!LFort.ExecuteAction(*Act))
     return 1;
 
   int Res = 255;

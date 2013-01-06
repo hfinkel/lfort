@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdocumentation -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wdocumentation -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdocumentation -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdocumentation -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 
 // expected-warning@+1 {{parameter 'ZZZZZZZZZZ' not found in the function declaration}} expected-note@+1 {{did you mean 'a'?}}
 /// \param ZZZZZZZZZZ Blah blah.

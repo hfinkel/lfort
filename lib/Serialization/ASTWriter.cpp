@@ -11,35 +11,35 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTWriter.h"
+#include "lfort/Serialization/ASTWriter.h"
 #include "ASTCommon.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLocVisitor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemStatCache.h"
-#include "clang/Basic/OnDiskHashTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/SourceManagerInternals.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Basic/Version.h"
-#include "clang/Basic/VersionTuple.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/PreprocessingRecord.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/PreprocessorOptions.h"
-#include "clang/Sema/IdentifierResolver.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLocVisitor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/OnDiskHashTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/SourceManagerInternals.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Basic/VersionTuple.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/PreprocessingRecord.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/PreprocessorOptions.h"
+#include "lfort/Sema/IdentifierResolver.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/StringExtras.h"
@@ -51,8 +51,8 @@
 #include <cstdio>
 #include <string.h>
 #include <utility>
-using namespace clang;
-using namespace clang::serialization;
+using namespace lfort;
+using namespace lfort::serialization;
 
 template <typename T, typename Allocator>
 static StringRef data(const std::vector<T, Allocator> &v) {
@@ -89,7 +89,7 @@ namespace {
 
 #define TYPE(Class, Base) void Visit##Class##Type(const Class##Type *T);
 #define ABSTRACT_TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   };
 }
 
@@ -417,7 +417,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
     void Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
   void VisitArrayTypeLoc(ArrayTypeLoc TyLoc);
   void VisitFunctionTypeLoc(FunctionTypeLoc TyLoc);
@@ -1002,8 +1002,8 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
   MetadataAbbrev->Add(BitCodeAbbrevOp(METADATA));
   MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // Major
   MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // Minor
-  MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // Clang maj.
-  MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // Clang min.
+  MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // LFort maj.
+  MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 16)); // LFort min.
   MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 1)); // Relocatable
   MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 1)); // Errors
   MetadataAbbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Blob)); // SVN branch/tag
@@ -1011,12 +1011,12 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
   Record.push_back(METADATA);
   Record.push_back(VERSION_MAJOR);
   Record.push_back(VERSION_MINOR);
-  Record.push_back(CLANG_VERSION_MAJOR);
-  Record.push_back(CLANG_VERSION_MINOR);
+  Record.push_back(LFORT_VERSION_MAJOR);
+  Record.push_back(LFORT_VERSION_MINOR);
   Record.push_back(!isysroot.empty());
   Record.push_back(ASTHasCompilerErrors);
   Stream.EmitRecordWithBlob(MetadataAbbrevCode, Record,
-                            getClangFullRepositoryVersion());
+                            getLFortFullRepositoryVersion());
 
   // Imports
   if (Chain) {
@@ -1047,7 +1047,7 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
   Record.push_back(LangOpts.Name);
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description) \
   Record.push_back(static_cast<unsigned>(LangOpts.get##Name()));
-#include "clang/Basic/LangOptions.def"  
+#include "lfort/Basic/LangOptions.def"  
 
   Record.push_back((unsigned) LangOpts.ObjCRuntime.getKind());
   AddVersionTuple(LangOpts.ObjCRuntime.getVersion(), Record);
@@ -1082,7 +1082,7 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
 #define DIAGOPT(Name, Bits, Default) Record.push_back(DiagOpts.Name);
 #define ENUM_DIAGOPT(Name, Type, Bits, Default) \
   Record.push_back(static_cast<unsigned>(DiagOpts.get##Name()));
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
   Record.push_back(DiagOpts.Warnings.size());
   for (unsigned I = 0, N = DiagOpts.Warnings.size(); I != N; ++I)
     AddString(DiagOpts.Warnings[I], Record);
@@ -1311,9 +1311,9 @@ public:
     EmitKeyDataLength(raw_ostream& Out, const char *path,
                       data_type_ref Data) {
     unsigned StrLen = strlen(path);
-    clang::io::Emit16(Out, StrLen);
+    lfort::io::Emit16(Out, StrLen);
     unsigned DataLen = 4 + 4 + 2 + 8 + 8;
-    clang::io::Emit8(Out, DataLen);
+    lfort::io::Emit8(Out, DataLen);
     return std::make_pair(StrLen + 1, DataLen);
   }
 
@@ -1323,7 +1323,7 @@ public:
 
   void EmitData(raw_ostream &Out, key_type_ref,
                 data_type_ref Data, unsigned DataLen) {
-    using namespace clang::io;
+    using namespace lfort::io;
     uint64_t Start = Out.tell(); (void)Start;
 
     Emit32(Out, (uint32_t) Data.st_ino);
@@ -1428,9 +1428,9 @@ namespace {
     EmitKeyDataLength(raw_ostream& Out, const char *path,
                       data_type_ref Data) {
       unsigned StrLen = strlen(path);
-      clang::io::Emit16(Out, StrLen);
+      lfort::io::Emit16(Out, StrLen);
       unsigned DataLen = 1 + 2 + 4 + 4;
-      clang::io::Emit8(Out, DataLen);
+      lfort::io::Emit8(Out, DataLen);
       return std::make_pair(StrLen + 1, DataLen);
     }
     
@@ -1440,7 +1440,7 @@ namespace {
     
     void EmitData(raw_ostream &Out, key_type_ref,
                   data_type_ref Data, unsigned DataLen) {
-      using namespace clang::io;
+      using namespace lfort::io;
       uint64_t Start = Out.tell(); (void)Start;
       
       unsigned char Flags = (Data.isImport << 5)
@@ -1527,7 +1527,7 @@ void ASTWriter::WriteHeaderSearch(const HeaderSearch &HS, StringRef isysroot) {
   {
     llvm::raw_svector_ostream Out(TableData);
     // Make sure that no bucket is at offset 0
-    clang::io::Emit32(Out, 0);
+    lfort::io::Emit32(Out, 0);
     BucketOffset = Generator.Emit(Out, GeneratorTrait);
   }
 
@@ -2338,7 +2338,7 @@ void ASTWriter::WriteType(QualType T) {
 #define TYPE(Class, Base) \
     case Type::Class: W.Visit##Class##Type(cast<Class##Type>(T)); break;
 #define ABSTRACT_TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 
@@ -2478,7 +2478,7 @@ public:
     EmitKeyDataLength(raw_ostream& Out, Selector Sel,
                       data_type_ref Methods) {
     unsigned KeyLen = 2 + (Sel.getNumArgs()? Sel.getNumArgs() * 4 : 4);
-    clang::io::Emit16(Out, KeyLen);
+    lfort::io::Emit16(Out, KeyLen);
     unsigned DataLen = 4 + 2 + 2; // 2 bytes for each of the method counts
     for (const ObjCMethodList *Method = &Methods.Instance; Method;
          Method = Method->Next)
@@ -2488,7 +2488,7 @@ public:
          Method = Method->Next)
       if (Method->Method)
         DataLen += 4;
-    clang::io::Emit16(Out, DataLen);
+    lfort::io::Emit16(Out, DataLen);
     return std::make_pair(KeyLen, DataLen);
   }
 
@@ -2497,18 +2497,18 @@ public:
     assert((Start >> 32) == 0 && "Selector key offset too large");
     Writer.SetSelectorOffset(Sel, Start);
     unsigned N = Sel.getNumArgs();
-    clang::io::Emit16(Out, N);
+    lfort::io::Emit16(Out, N);
     if (N == 0)
       N = 1;
     for (unsigned I = 0; I != N; ++I)
-      clang::io::Emit32(Out,
+      lfort::io::Emit32(Out,
                     Writer.getIdentifierRef(Sel.getIdentifierInfoForSlot(I)));
   }
 
   void EmitData(raw_ostream& Out, key_type_ref,
                 data_type_ref Methods, unsigned DataLen) {
     uint64_t Start = Out.tell(); (void)Start;
-    clang::io::Emit32(Out, Methods.ID);
+    lfort::io::Emit32(Out, Methods.ID);
     unsigned NumInstanceMethods = 0;
     for (const ObjCMethodList *Method = &Methods.Instance; Method;
          Method = Method->Next)
@@ -2521,16 +2521,16 @@ public:
       if (Method->Method)
         ++NumFactoryMethods;
 
-    clang::io::Emit16(Out, NumInstanceMethods);
-    clang::io::Emit16(Out, NumFactoryMethods);
+    lfort::io::Emit16(Out, NumInstanceMethods);
+    lfort::io::Emit16(Out, NumFactoryMethods);
     for (const ObjCMethodList *Method = &Methods.Instance; Method;
          Method = Method->Next)
       if (Method->Method)
-        clang::io::Emit32(Out, Writer.getDeclID(Method->Method));
+        lfort::io::Emit32(Out, Writer.getDeclID(Method->Method));
     for (const ObjCMethodList *Method = &Methods.Factory; Method;
          Method = Method->Next)
       if (Method->Method)
-        clang::io::Emit32(Out, Writer.getDeclID(Method->Method));
+        lfort::io::Emit32(Out, Writer.getDeclID(Method->Method));
 
     assert(Out.tell() - Start == DataLen && "Data length is wrong");
   }
@@ -2602,7 +2602,7 @@ void ASTWriter::WriteSelectors(Sema &SemaRef) {
       ASTMethodPoolTrait Trait(*this);
       llvm::raw_svector_ostream Out(MethodPool);
       // Make sure that no bucket is at offset 0
-      clang::io::Emit32(Out, 0);
+      lfort::io::Emit32(Out, 0);
       BucketOffset = Generator.Emit(Out, Trait);
     }
 
@@ -2733,11 +2733,11 @@ public:
            D != DEnd; ++D)
         DataLen += sizeof(DeclID);
     }
-    clang::io::Emit16(Out, DataLen);
+    lfort::io::Emit16(Out, DataLen);
     // We emit the key length after the data length so that every
     // string is preceded by a 16-bit length. This matches the PTH
     // format for storing identifiers.
-    clang::io::Emit16(Out, KeyLen);
+    lfort::io::Emit16(Out, KeyLen);
     return std::make_pair(KeyLen, DataLen);
   }
 
@@ -2753,14 +2753,14 @@ public:
                 IdentID ID, unsigned) {
     MacroInfo *Macro = 0;
     if (!isInterestingIdentifier(II, Macro)) {
-      clang::io::Emit32(Out, ID << 1);
+      lfort::io::Emit32(Out, ID << 1);
       return;
     }
 
-    clang::io::Emit32(Out, (ID << 1) | 0x01);
+    lfort::io::Emit32(Out, (ID << 1) | 0x01);
     uint32_t Bits = (uint32_t)II->getObjCOrBuiltinID();
     assert((Bits & 0xffff) == Bits && "ObjCOrBuiltinID too big for ASTReader.");
-    clang::io::Emit16(Out, Bits);
+    lfort::io::Emit16(Out, Bits);
     Bits = 0;
     bool HadMacroDefinition = hadMacroDefinition(II, Macro);
     Bits = (Bits << 1) | unsigned(HadMacroDefinition);
@@ -2768,16 +2768,16 @@ public:
     Bits = (Bits << 1) | unsigned(II->isPoisoned());
     Bits = (Bits << 1) | unsigned(II->hasRevertedTokenIDToIdentifier());
     Bits = (Bits << 1) | unsigned(II->isCPlusPlusOperatorKeyword());
-    clang::io::Emit16(Out, Bits);
+    lfort::io::Emit16(Out, Bits);
 
     if (HadMacroDefinition) {
       // Write all of the macro IDs associated with this identifier.
       for (MacroInfo *M = Macro; M; M = M->getPreviousDefinition()) {
         if (MacroID ID = Writer.getMacroRef(M))
-          clang::io::Emit32(Out, ID);
+          lfort::io::Emit32(Out, ID);
       }
 
-      clang::io::Emit32(Out, 0);
+      lfort::io::Emit32(Out, 0);
     }
 
     // Emit the declaration IDs in reverse order, because the
@@ -2791,7 +2791,7 @@ public:
     for (SmallVector<Decl *, 16>::reverse_iterator D = Decls.rbegin(),
                                                 DEnd = Decls.rend();
          D != DEnd; ++D)
-      clang::io::Emit32(Out, Writer.getDeclID(*D));
+      lfort::io::Emit32(Out, Writer.getDeclID(*D));
   }
 };
 } // end anonymous namespace
@@ -2842,7 +2842,7 @@ void ASTWriter::WriteIdentifierTable(Preprocessor &PP,
       ASTIdentifierTableTrait Trait(*this, PP, IdResolver, IsModule);
       llvm::raw_svector_ostream Out(IdentifierTable);
       // Make sure that no bucket is at offset 0
-      clang::io::Emit32(Out, 0);
+      lfort::io::Emit32(Out, 0);
       BucketOffset = Generator.Emit(Out, Trait);
     }
 
@@ -2944,17 +2944,17 @@ public:
     case DeclarationName::CXXUsingDirective:
       break;
     }
-    clang::io::Emit16(Out, KeyLen);
+    lfort::io::Emit16(Out, KeyLen);
 
     // 2 bytes for num of decls and 4 for each DeclID.
     unsigned DataLen = 2 + 4 * Lookup.size();
-    clang::io::Emit16(Out, DataLen);
+    lfort::io::Emit16(Out, DataLen);
 
     return std::make_pair(KeyLen, DataLen);
   }
 
   void EmitKey(raw_ostream& Out, DeclarationName Name, unsigned) {
-    using namespace clang::io;
+    using namespace lfort::io;
 
     Emit8(Out, Name.getNameKind());
     switch (Name.getNameKind()) {
@@ -2987,10 +2987,10 @@ public:
   void EmitData(raw_ostream& Out, key_type_ref,
                 data_type Lookup, unsigned DataLen) {
     uint64_t Start = Out.tell(); (void)Start;
-    clang::io::Emit16(Out, Lookup.size());
+    lfort::io::Emit16(Out, Lookup.size());
     for (DeclContext::lookup_iterator I = Lookup.begin(), E = Lookup.end();
          I != E; ++I)
-      clang::io::Emit32(Out, Writer.GetDeclRef(*I));
+      lfort::io::Emit32(Out, Writer.GetDeclRef(*I));
 
     assert(Out.tell() - Start == DataLen && "Data length is wrong");
   }
@@ -3070,7 +3070,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
   {
     llvm::raw_svector_ostream Out(LookupTable);
     // Make sure that no bucket is at offset 0
-    clang::io::Emit32(Out, 0);
+    lfort::io::Emit32(Out, 0);
     BucketOffset = Generator.Emit(Out, Trait);
   }
 
@@ -3117,7 +3117,7 @@ void ASTWriter::WriteDeclContextVisibleUpdate(const DeclContext *DC) {
   {
     llvm::raw_svector_ostream Out(LookupTable);
     // Make sure that no bucket is at offset 0
-    clang::io::Emit32(Out, 0);
+    lfort::io::Emit32(Out, 0);
     BucketOffset = Generator.Emit(Out, Trait);
   }
 
@@ -3144,7 +3144,7 @@ void ASTWriter::WriteOpenCLExtensions(Sema &SemaRef) {
   const OpenCLOptions &Opts = SemaRef.getOpenCLOptions();
   RecordData Record;
 #define OPENCLEXT(nm)  Record.push_back(Opts.nm);
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
   Stream.EmitRecord(OPENCL_EXTENSIONS, Record);
 }
 
@@ -3299,7 +3299,7 @@ void ASTWriter::WriteAttributes(ArrayRef<const Attr*> Attrs,
     Record.push_back(A->getKind()); // FIXME: stable encoding, target attrs
     AddSourceRange(A->getRange(), Record);
 
-#include "clang/Serialization/AttrPCHWrite.inc"
+#include "lfort/Serialization/AttrPCHWrite.inc"
 
   }
 }
@@ -3569,7 +3569,7 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
   RecordData Record;
   Stream.EnterSubblock(AST_BLOCK_ID, 5);
 
-  // This is so that older clang versions, before the introduction
+  // This is so that older lfort versions, before the introduction
   // of the control block, can read and reject the newer PCH format.
   Record.clear();
   Record.push_back(VERSION_MAJOR);

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 struct S {
   typedef struct A {} A; // expected-note {{previous definition is here}}

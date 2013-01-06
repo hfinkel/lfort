@@ -12,20 +12,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/FormatString.h"
+#include "lfort/Analysis/Analyses/FormatString.h"
 #include "FormatStringParsing.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using clang::analyze_format_string::ArgType;
-using clang::analyze_format_string::FormatStringHandler;
-using clang::analyze_format_string::LengthModifier;
-using clang::analyze_format_string::OptionalAmount;
-using clang::analyze_format_string::ConversionSpecifier;
-using clang::analyze_printf::PrintfSpecifier;
+using lfort::analyze_format_string::ArgType;
+using lfort::analyze_format_string::FormatStringHandler;
+using lfort::analyze_format_string::LengthModifier;
+using lfort::analyze_format_string::OptionalAmount;
+using lfort::analyze_format_string::ConversionSpecifier;
+using lfort::analyze_printf::PrintfSpecifier;
 
-using namespace clang;
+using namespace lfort;
 
-typedef clang::analyze_format_string::SpecifierResult<PrintfSpecifier>
+typedef lfort::analyze_format_string::SpecifierResult<PrintfSpecifier>
         PrintfSpecifierResult;
 
 //===----------------------------------------------------------------------===//
@@ -56,8 +56,8 @@ static PrintfSpecifierResult ParsePrintfSpecifier(FormatStringHandler &H,
                                                   const LangOptions &LO,
                                                   const TargetInfo &Target) {
 
-  using namespace clang::analyze_format_string;
-  using namespace clang::analyze_printf;
+  using namespace lfort::analyze_format_string;
+  using namespace lfort::analyze_printf;
 
   const char *I = Beg;
   const char *Start = 0;
@@ -224,7 +224,7 @@ static PrintfSpecifierResult ParsePrintfSpecifier(FormatStringHandler &H,
   return PrintfSpecifierResult(Start, FS);
 }
 
-bool clang::analyze_format_string::ParsePrintfString(FormatStringHandler &H,
+bool lfort::analyze_format_string::ParsePrintfString(FormatStringHandler &H,
                                                      const char *I,
                                                      const char *E,
                                                      const LangOptions &LO,
@@ -457,7 +457,7 @@ bool PrintfSpecifier::fixType(QualType QT, const LangOptions &LangOpt,
 #define FLOATING_TYPE(Id, SingletonId)
 #define BUILTIN_TYPE(Id, SingletonId) \
   case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
     // Misc other stuff which doesn't make sense here.
     return false;
 

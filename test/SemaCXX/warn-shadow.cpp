@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -Wshadow %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -Wshadow %s
 
 namespace {
   int i; // expected-note {{previous declaration is here}}

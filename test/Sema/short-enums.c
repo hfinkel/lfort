@@ -1,5 +1,5 @@
-// RUN: not %clang_cc1 -fsyntax-only %s -verify
-// RUN: %clang_cc1 -fshort-enums -fsyntax-only %s -verify
+// RUN: not %lfort_cc1 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -fshort-enums -fsyntax-only %s -verify
 // expected-no-diagnostics
 
 enum x { A };

@@ -17,13 +17,13 @@
 #include "CGRecordLayout.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -37,7 +37,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 namespace {
@@ -200,9 +200,9 @@ public:
     return ExternalProtocolPtrTy;
   }
   
-  // SuperCTy - clang type for struct objc_super.
+  // SuperCTy - lfort type for struct objc_super.
   QualType SuperCTy;
-  // SuperPtrCTy - clang type for struct objc_super *.
+  // SuperPtrCTy - lfort type for struct objc_super *.
   QualType SuperPtrCTy;
 
   /// SuperTy - LLVM type for struct objc_super.
@@ -646,12 +646,12 @@ public:
   //   SEL name;
   // };
   llvm::StructType *MessageRefTy;
-  // MessageRefCTy - clang type for struct _message_ref_t
+  // MessageRefCTy - lfort type for struct _message_ref_t
   QualType MessageRefCTy;
 
   // MessageRefPtrTy - LLVM for struct _message_ref_t*
   llvm::Type *MessageRefPtrTy;
-  // MessageRefCPtrTy - clang type for struct _message_ref_t*
+  // MessageRefCPtrTy - lfort type for struct _message_ref_t*
   QualType MessageRefCPtrTy;
 
   // MessengerTy - Type of the messenger (shown as IMP above)
@@ -5395,7 +5395,7 @@ ObjCNonFragileABITypesHelper::ObjCNonFragileABITypesHelper(CodeGen::CodeGenModul
   //   SEL name;
   // };
 
-  // First the clang type for struct _message_ref_t
+  // First the lfort type for struct _message_ref_t
   RecordDecl *RD = RecordDecl::Create(Ctx, TTK_Struct,
                                       Ctx.getTranslationUnitDecl(),
                                       SourceLocation(), SourceLocation(),

@@ -15,11 +15,11 @@
 #include "CGCleanup.h"
 #include "CGObjCRuntime.h"
 #include "TargetInfo.h"
-#include "clang/AST/StmtCXX.h"
+#include "lfort/AST/StmtCXX.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/Support/CallSite.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 static llvm::Constant *getAllocateExceptionFn(CodeGenFunction &CGF) {

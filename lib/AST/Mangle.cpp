@@ -10,15 +10,15 @@
 // Implements generic name mangling support for blocks and Objective-C.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/Mangle.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/Basic/ABI.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/Basic/ABI.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
@@ -29,7 +29,7 @@
 #include <cxxabi.h>
 #endif
 
-using namespace clang;
+using namespace lfort;
 
 // FIXME: For blocks we currently mimic GCC's mangling scheme, which leaves
 // much to be desired. Come up with a better mangling scheme.

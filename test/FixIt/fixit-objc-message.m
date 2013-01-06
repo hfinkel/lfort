@@ -1,12 +1,12 @@
 // Objective-C recovery
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -pedantic -Wall -fixit -x objective-c %t
-// RUN: %clang_cc1 -fsyntax-only -pedantic -Wall -Werror -x objective-c %t
+// RUN: not %lfort_cc1 -pedantic -Wall -fixit -x objective-c %t
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -Wall -Werror -x objective-c %t
 
 // Objective-C++ recovery
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -pedantic -Wall -fixit -x objective-c++ %t
-// RUN: %clang_cc1 -fsyntax-only -pedantic -Wall -Werror -x objective-c++ %t
+// RUN: not %lfort_cc1 -pedantic -Wall -fixit -x objective-c++ %t
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -Wall -Werror -x objective-c++ %t
 
 @interface A
 - (int)method1:(int)x second:(float)y;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-dump %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -ast-dump %s 2>&1 | FileCheck %s
 
 // CHECK: example0
 void example0() {

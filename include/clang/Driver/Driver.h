@@ -1,4 +1,4 @@
-//===--- Driver.h - Clang GCC Compatible Driver -----------------*- C++ -*-===//
+//===--- Driver.h - LFort GCC Compatible Driver -----------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_DRIVER_H_
-#define CLANG_DRIVER_DRIVER_H_
+#ifndef LFORT_DRIVER_DRIVER_H_
+#define LFORT_DRIVER_DRIVER_H_
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Driver/Phases.h"
-#include "clang/Driver/Types.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Driver/Phases.h"
+#include "lfort/Driver/Types.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/Triple.h"
@@ -26,7 +26,7 @@
 namespace llvm {
   template<typename T> class ArrayRef;
 }
-namespace clang {
+namespace lfort {
 namespace driver {
   class Action;
   class Arg;
@@ -62,10 +62,10 @@ public:
   /// command line.
   std::string Dir;
 
-  /// The original path to the clang executable.
-  std::string ClangExecutable;
+  /// The original path to the lfort executable.
+  std::string LFortExecutable;
 
-  /// The path to the installed clang directory, if any.
+  /// The path to the installed lfort directory, if any.
   std::string InstalledDir;
 
   /// The path to the compiler resource directory.
@@ -173,7 +173,7 @@ private:
     const;
 
 public:
-  Driver(StringRef _ClangExecutable,
+  Driver(StringRef _LFortExecutable,
          StringRef _DefaultTargetTriple,
          StringRef _DefaultImageName,
          DiagnosticsEngine &_Diags);
@@ -197,12 +197,12 @@ public:
   const std::string &getTitle() { return DriverTitle; }
   void setTitle(std::string Value) { DriverTitle = Value; }
 
-  /// \brief Get the path to the main clang executable.
-  const char *getClangProgramPath() const {
-    return ClangExecutable.c_str();
+  /// \brief Get the path to the main lfort executable.
+  const char *getLFortProgramPath() const {
+    return LFortExecutable.c_str();
   }
 
-  /// \brief Get the path to where the clang executable was installed.
+  /// \brief Get the path to where the lfort executable was installed.
   const char *getInstalledDir() const {
     if (!InstalledDir.empty())
       return InstalledDir.c_str();
@@ -360,9 +360,9 @@ public:
   /// GCC goes to extra lengths here to be a bit more robust.
   std::string GetTemporaryPath(StringRef Prefix, const char *Suffix) const;
 
-  /// ShouldUseClangCompiler - Should the clang compiler be used to
+  /// ShouldUseLFortCompiler - Should the lfort compiler be used to
   /// handle this action.
-  bool ShouldUseClangCompiler(const Compilation &C, const JobAction &JA,
+  bool ShouldUseLFortCompiler(const Compilation &C, const JobAction &JA,
                               const llvm::Triple &ArchName) const;
 
   bool IsUsingLTO(const ArgList &Args) const;
@@ -391,6 +391,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

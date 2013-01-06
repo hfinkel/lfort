@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -mrtd -triple i386-unknown-freebsd9.0 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -mrtd -triple i386-unknown-freebsd9.0 -emit-llvm -o - %s | FileCheck %s
 
 void baz(int arg);
 

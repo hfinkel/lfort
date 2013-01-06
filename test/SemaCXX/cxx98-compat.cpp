@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -Wc++98-compat -verify %s
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -Wc++98-compat -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 %s
 
 namespace std {
   struct type_info;

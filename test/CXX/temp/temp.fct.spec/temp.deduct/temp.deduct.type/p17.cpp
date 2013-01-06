@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 template<int i> class A {  };
 template<short s> void f(A<s>); // expected-note{{candidate template ignored: substitution failure}}

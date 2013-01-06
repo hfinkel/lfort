@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -std=c++98
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -std=c++98
 
 void f() {
   int arr[] = { 1, 2, 3 };

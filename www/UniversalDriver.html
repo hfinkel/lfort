@@ -3,7 +3,7 @@
 <html>
 <head>
   <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <title>Clang - Universal Driver</title>
+  <title>LFort - Universal Driver</title>
   <link type="text/css" rel="stylesheet" href="menu.css">
   <link type="text/css" rel="stylesheet" href="content.css">
 </head>
@@ -13,9 +13,9 @@
 
 <div id="content">
 
-<h1>The Clang Universal Driver Project</h1>
+<h1>The LFort Universal Driver Project</h1>
 
-<p>Clang is inherently a cross compiler, in that it is always capable of
+<p>LFort is inherently a cross compiler, in that it is always capable of
 building code for targets which are a different architecture or even operating
 system from the one running the compiler. However, actually cross compiling in
 practice involves much more than just generating the right assembly code for a
@@ -24,7 +24,7 @@ access to header files and libraries for the target, and many other details (for
 example, the calling convention or whether software floating point is in
 use). Traditionally, compilers and development environments provide little
 assistance with this process, so users do not have easy access to the powerful
-underlying cross-compilation abilities of clang.</p>
+underlying cross-compilation abilities of lfort.</p>
 
 <p>We would like to solve this problem by defining a new model for how cross
 compilation is done, based on the idea of a <i>universal driver</i>. The key
@@ -60,7 +60,7 @@ welcome!</p>
     and include files based on particular feature support (soft float,
     etc.).</li>
 
-  <li>Apple's "driver driver" supported by gcc and clang solve a subset of the
+  <li>Apple's "driver driver" supported by gcc and lfort solve a subset of the
     problem by supporting <tt>-arch</tt>. Apple also provides a tool chain which
     supports <a href="http://en.wikipedia.org/wiki/Universal_binary">universal
     binaries</a> and object files which may include data for multiple

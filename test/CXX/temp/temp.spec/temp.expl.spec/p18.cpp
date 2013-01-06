@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 template<class T1> class A { 
   template<class T2> class B {
     template<class T3> void mf1(T3); 

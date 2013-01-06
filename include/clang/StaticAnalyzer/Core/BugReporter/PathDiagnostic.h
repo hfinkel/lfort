@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PATH_DIAGNOSTIC_H
-#define LLVM_CLANG_PATH_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_PATH_DIAGNOSTIC_H
+#define LLVM_LFORT_PATH_DIAGNOSTIC_H
 
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/Optional.h"
@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class AnalysisDeclContext;
 class BinaryOperator;
@@ -759,6 +759,6 @@ public:
 
 } // end GR namespace
 
-} //end clang namespace
+} //end lfort namespace
 
 #endif

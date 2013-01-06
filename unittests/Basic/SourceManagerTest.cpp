@@ -7,24 +7,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/PreprocessorOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/PreprocessorOptions.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Config/config.h"
 #include "gtest/gtest.h"
 
 using namespace llvm;
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

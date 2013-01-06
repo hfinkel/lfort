@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++98 %s
+// RUN: %lfort_cc1 -verify -std=c++98 %s
 
 char c00 = '\u0000'; // expected-error {{universal character name refers to a control character}}
 char c01 = '\u0001'; // expected-error {{universal character name refers to a control character}}

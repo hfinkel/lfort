@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s | FileCheck %s
+// RUN: %lfort_cc1 -E %s | FileCheck %s
 #define hash_hash # ## # 
 #define mkstr(a) # a 
 #define in_between(a) mkstr(a) 

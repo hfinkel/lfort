@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -verify %s
 
 @interface I
 + new; // expected-note {{method 'new' is used for the forward class}}

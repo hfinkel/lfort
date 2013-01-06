@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_SYMMGR_H
-#define LLVM_CLANG_GR_SYMMGR_H
+#ifndef LLVM_LFORT_GR_SYMMGR_H
+#define LLVM_LFORT_GR_SYMMGR_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/FoldingSet.h"
@@ -29,7 +29,7 @@ namespace llvm {
 class BumpPtrAllocator;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class StackFrameContext;
 
@@ -662,11 +662,11 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 namespace llvm {
 static inline raw_ostream &operator<<(raw_ostream &os,
-                                      const clang::ento::SymExpr *SE) {
+                                      const lfort::ento::SymExpr *SE) {
   SE->dumpToStream(os);
   return os;
 }

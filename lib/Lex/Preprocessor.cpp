@@ -25,28 +25,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "MacroArgs.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/ExternalPreprocessorSource.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Lex/Pragma.h"
-#include "clang/Lex/PreprocessingRecord.h"
-#include "clang/Lex/PreprocessorOptions.h"
-#include "clang/Lex/ScratchBuffer.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/ExternalPreprocessorSource.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/Pragma.h"
+#include "lfort/Lex/PreprocessingRecord.h"
+#include "lfort/Lex/PreprocessorOptions.h"
+#include "lfort/Lex/ScratchBuffer.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Capacity.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 ExternalPreprocessorSource::~ExternalPreprocessorSource() { }

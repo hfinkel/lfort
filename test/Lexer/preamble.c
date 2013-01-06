@@ -19,7 +19,7 @@ int foo();
 // changes to the preamble part of this file must be mirrored in
 // Inputs/preamble.txt, since we diff against it.
 
-// RUN: %clang_cc1 -print-preamble %s > %t
+// RUN: %lfort_cc1 -print-preamble %s > %t
 // RUN: echo END. >> %t
 // RUN: FileCheck < %t %s
 

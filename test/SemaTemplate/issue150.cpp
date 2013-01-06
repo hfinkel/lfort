@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // Core issue 150: Template template parameters and default arguments

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=i686-linux-gnu -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple=i686-linux-gnu -emit-llvm -o - | FileCheck %s
 
 struct S {
   mutable int n;

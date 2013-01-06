@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/PreprocessorLexer.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/Preprocessor.h"
-using namespace clang;
+#include "lfort/Lex/PreprocessorLexer.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
+using namespace lfort;
 
 void PreprocessorLexer::anchor() { }
 

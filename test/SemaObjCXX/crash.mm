@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify 
+// RUN: %lfort_cc1 -fsyntax-only %s -verify 
 
 // <rdar://problem/11286701>
 namespace std {

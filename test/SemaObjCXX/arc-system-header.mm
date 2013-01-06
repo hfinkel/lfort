@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fobjc-arc -isystem %S/Inputs %s -verify
+// RUN: %lfort_cc1 -fobjc-arc -isystem %S/Inputs %s -verify
 
 #include <arc-system-header.h>
 

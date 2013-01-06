@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CODEGEN_CODE_GEN_ACTION_H
-#define LLVM_CLANG_CODEGEN_CODE_GEN_ACTION_H
+#ifndef LLVM_LFORT_CODEGEN_CODE_GEN_ACTION_H
+#define LLVM_LFORT_CODEGEN_CODE_GEN_ACTION_H
 
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendAction.h"
 #include "llvm/ADT/OwningPtr.h"
 
 namespace llvm {
@@ -18,7 +18,7 @@ namespace llvm {
   class Module;
 }
 
-namespace clang {
+namespace lfort {
 class BackendConsumer;
 
 class CodeGenAction : public ASTFrontendAction {

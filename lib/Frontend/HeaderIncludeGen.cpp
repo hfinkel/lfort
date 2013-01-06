@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
 class HeaderIncludesCallback : public PPCallbacks {
@@ -45,7 +45,7 @@ public:
 };
 }
 
-void clang::AttachHeaderIncludeGen(Preprocessor &PP, bool ShowAllHeaders,
+void lfort::AttachHeaderIncludeGen(Preprocessor &PP, bool ShowAllHeaders,
                                    StringRef OutputPath, bool ShowDepth) {
   raw_ostream *OutputFile = &llvm::errs();
   bool OwnsOutputFile = false;
@@ -57,7 +57,7 @@ void clang::AttachHeaderIncludeGen(Preprocessor &PP, bool ShowAllHeaders,
       OutputPath.str().c_str(), Error, llvm::raw_fd_ostream::F_Append);
     if (!Error.empty()) {
       PP.getDiagnostics().Report(
-        clang::diag::warn_fe_cc_print_header_failure) << Error;
+        lfort::diag::warn_fe_cc_print_header_failure) << Error;
       delete OS;
     } else {
       OS->SetUnbuffered();

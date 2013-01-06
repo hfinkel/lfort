@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ARCMIGRATE_ARCMT_ACTION_H
-#define LLVM_CLANG_ARCMIGRATE_ARCMT_ACTION_H
+#ifndef LLVM_LFORT_ARCMIGRATE_ARCMT_ACTION_H
+#define LLVM_LFORT_ARCMIGRATE_ARCMT_ACTION_H
 
-#include "clang/ARCMigrate/FileRemapper.h"
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/ARCMigrate/FileRemapper.h"
+#include "lfort/Frontend/FrontendAction.h"
 #include "llvm/ADT/OwningPtr.h"
 
-namespace clang {
+namespace lfort {
 namespace arcmt {
 
 class CheckAction : public WrapperFrontendAction {

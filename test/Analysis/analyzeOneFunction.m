@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyze-function="myMethodWithY:withX:" -analyzer-checker=core,osx.cocoa.RetainCount -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyze-function="myMethodWithY:withX:" -analyzer-checker=core,osx.cocoa.RetainCount -analyzer-store=region -verify %s
 
 typedef signed char BOOL;
 typedef unsigned int NSUInteger;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 // Make sure we don't run off the end of the stream when parsing a deferred
 // initializer.

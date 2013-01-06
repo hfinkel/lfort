@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null -g
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null -g
 // This crashes if we try to emit debug info for TEMPLATE_DECL members.
 template <class T> class K2PtrVectorBase {};
 template <class T> class K2Vector {};

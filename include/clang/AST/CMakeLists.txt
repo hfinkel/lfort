@@ -1,34 +1,34 @@
-clang_tablegen(Attrs.inc -gen-clang-attr-classes
+lfort_tablegen(Attrs.inc -gen-lfort-attr-classes
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrClasses)
+  TARGET LFortAttrClasses)
 
-clang_tablegen(AttrImpl.inc -gen-clang-attr-impl
+lfort_tablegen(AttrImpl.inc -gen-lfort-attr-impl
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrImpl)
+  TARGET LFortAttrImpl)
 
-clang_tablegen(StmtNodes.inc -gen-clang-stmt-nodes
+lfort_tablegen(StmtNodes.inc -gen-lfort-stmt-nodes
   SOURCE ../Basic/StmtNodes.td
-  TARGET ClangStmtNodes)
+  TARGET LFortStmtNodes)
 
-clang_tablegen(DeclNodes.inc -gen-clang-decl-nodes
+lfort_tablegen(DeclNodes.inc -gen-lfort-decl-nodes
   SOURCE ../Basic/DeclNodes.td
-  TARGET ClangDeclNodes)
+  TARGET LFortDeclNodes)
 
-clang_tablegen(CommentNodes.inc -gen-clang-comment-nodes
+lfort_tablegen(CommentNodes.inc -gen-lfort-comment-nodes
   SOURCE ../Basic/CommentNodes.td
-  TARGET ClangCommentNodes)
+  TARGET LFortCommentNodes)
 
-clang_tablegen(CommentHTMLTags.inc -gen-clang-comment-html-tags
+lfort_tablegen(CommentHTMLTags.inc -gen-lfort-comment-html-tags
   SOURCE CommentHTMLTags.td
-  TARGET ClangCommentHTMLTags)
+  TARGET LFortCommentHTMLTags)
 
-clang_tablegen(CommentHTMLTagsProperties.inc -gen-clang-comment-html-tags-properties
+lfort_tablegen(CommentHTMLTagsProperties.inc -gen-lfort-comment-html-tags-properties
   SOURCE CommentHTMLTags.td
-  TARGET ClangCommentHTMLTagsProperties)
+  TARGET LFortCommentHTMLTagsProperties)
 
-clang_tablegen(CommentCommandInfo.inc -gen-clang-comment-command-info
+lfort_tablegen(CommentCommandInfo.inc -gen-lfort-comment-command-info
   SOURCE CommentCommands.td
-  TARGET ClangCommentCommandInfo)
+  TARGET LFortCommentCommandInfo)
 

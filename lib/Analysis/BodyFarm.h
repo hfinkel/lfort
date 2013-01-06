@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_BODYFARM_H
-#define LLVM_CLANG_ANALYSIS_BODYFARM_H
+#ifndef LLVM_LFORT_ANALYSIS_BODYFARM_H
+#define LLVM_LFORT_ANALYSIS_BODYFARM_H
 
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/Optional.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class Decl;

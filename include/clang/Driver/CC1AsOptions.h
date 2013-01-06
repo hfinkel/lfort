@@ -1,4 +1,4 @@
-//===--- CC1AsOptions.h - Clang Assembler Options Table ---------*- C++ -*-===//
+//===--- CC1AsOptions.h - LFort Assembler Options Table ---------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_CC1ASOPTIONS_H
-#define CLANG_DRIVER_CC1ASOPTIONS_H
+#ifndef LFORT_DRIVER_CC1ASOPTIONS_H
+#define LFORT_DRIVER_CC1ASOPTIONS_H
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class OptTable;
 
@@ -20,7 +20,7 @@ namespace cc1asoptions {
 #define PREFIX(NAME, VALUE)
 #define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, FLAGS, PARAM, \
                HELPTEXT, METAVAR) OPT_##ID,
-#include "clang/Driver/CC1AsOptions.inc"
+#include "lfort/Driver/CC1AsOptions.inc"
     LastOption
 #undef OPTION
 #undef PREFIX

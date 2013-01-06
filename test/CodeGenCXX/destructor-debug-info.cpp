@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -S -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -g -S -emit-llvm %s -o - | FileCheck %s
 
 class A { int a; };
 class B {

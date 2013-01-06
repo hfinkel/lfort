@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -std=c++11
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -std=c++11
 // expected-no-diagnostics
 
 // 13.3.3.2 Ranking implicit conversion sequences

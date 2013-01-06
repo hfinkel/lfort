@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wreturn-type -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -Wreturn-type -fsyntax-only -std=c++11 -verify %s
 
 class A {
 public:

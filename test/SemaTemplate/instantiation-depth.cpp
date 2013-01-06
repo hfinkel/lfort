@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -ftemplate-depth 5 -ftemplate-backtrace-limit 4 %s
-// RUN: %clang -fsyntax-only -Xclang -verify -ftemplate-depth-5 -ftemplate-backtrace-limit=4 %s
-// RUN: %clang -fsyntax-only -Xclang -verify -ftemplate-depth=5 -ftemplate-backtrace-limit=4 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -ftemplate-depth 5 -ftemplate-backtrace-limit 4 %s
+// RUN: %lfort -fsyntax-only -Xlfort -verify -ftemplate-depth-5 -ftemplate-backtrace-limit=4 %s
+// RUN: %lfort -fsyntax-only -Xlfort -verify -ftemplate-depth=5 -ftemplate-backtrace-limit=4 %s
 
 #ifndef NOEXCEPT
 
@@ -16,7 +16,7 @@ void test() {
 
 #else
 
-// RUN: %clang_cc1 -fsyntax-only -verify -ftemplate-depth 5 -ftemplate-backtrace-limit 4 -std=c++11 -DNOEXCEPT %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -ftemplate-depth 5 -ftemplate-backtrace-limit 4 -std=c++11 -DNOEXCEPT %s
 
 template<typename T> struct S {
   S() noexcept(noexcept(T()));

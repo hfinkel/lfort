@@ -7,24 +7,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/FrontendActions.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/Parser.h"
-#include "clang/Rewrite/Frontend/ASTConsumers.h"
-#include "clang/Rewrite/Frontend/FixItRewriter.h"
-#include "clang/Rewrite/Frontend/Rewriters.h"
+#include "lfort/Rewrite/Frontend/FrontendActions.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendActions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/Parser.h"
+#include "lfort/Rewrite/Frontend/ASTConsumers.h"
+#include "lfort/Rewrite/Frontend/FixItRewriter.h"
+#include "lfort/Rewrite/Frontend/Rewriters.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // AST Consumer Actions

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused -Wunused-member-function -Wno-c++11-extensions -std=c++98 %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused -Wunused-member-function -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused -Wunused-member-function -Wno-c++11-extensions -std=c++98 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused -Wunused-member-function -std=c++11 %s
 
 static void f1(); // expected-warning{{unused}}
 

@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGDEBUGINFO_H
-#define CLANG_CODEGEN_CGDEBUGINFO_H
+#ifndef LFORT_CODEGEN_CGDEBUGINFO_H
+#define LFORT_CODEGEN_CGDEBUGINFO_H
 
 #include "CGBuilder.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/DIBuilder.h"
 #include "llvm/DebugInfo.h"
@@ -28,7 +28,7 @@ namespace llvm {
   class MDNode;
 }
 
-namespace clang {
+namespace lfort {
   class CXXMethodDecl;
   class VarDecl;
   class ObjCInterfaceDecl;
@@ -324,7 +324,7 @@ private:
   unsigned getColumnNumber(SourceLocation Loc);
 };
 } // namespace CodeGen
-} // namespace clang
+} // namespace lfort
 
 
 #endif

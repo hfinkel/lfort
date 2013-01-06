@@ -16,7 +16,7 @@
 
 void f(int *ip, float *fp) {
   if (M12(ip, fp)) { }
-  // RUN: %clang_cc1 -fsyntax-only -fmacro-backtrace-limit 5 %s 2>&1 \
+  // RUN: %lfort_cc1 -fsyntax-only -fmacro-backtrace-limit 5 %s 2>&1 \
   // RUN:   | FileCheck %s -check-prefix=CHECK-LIMIT
   // CHECK-LIMIT: macro-backtrace.c:18:7: warning: comparison of distinct pointer types ('int *' and 'float *')
   // CHECK-LIMIT: if (M12(ip, fp)) { }
@@ -32,7 +32,7 @@ void f(int *ip, float *fp) {
   // CHECK-LIMIT: macro-backtrace.c:4:23: note: expanded from macro 'M1'
   // CHECK-LIMIT: #define M1(A, B) ((A) < (B))
 
-  // RUN: %clang_cc1 -fsyntax-only -fno-caret-diagnostics %s 2>&1 \
+  // RUN: %lfort_cc1 -fsyntax-only -fno-caret-diagnostics %s 2>&1 \
   // RUN:   | FileCheck %s -check-prefix=CHECK-NO-CARETS
   // CHECK-NO-CARETS: macro-backtrace.c:18:7: warning: comparison of distinct pointer types ('int *' and 'float *')
   // CHECK-NO-CARETS-NEXT: macro-backtrace.c:15:19: note: expanded from macro 'M12'
@@ -45,7 +45,7 @@ void f(int *ip, float *fp) {
 
   // Check that the expansion notes respect the same formatting options as
   // other diagnostics.
-  // RUN: %clang_cc1 -fsyntax-only -fdiagnostics-format vi %s 2>&1 \
+  // RUN: %lfort_cc1 -fsyntax-only -fdiagnostics-format vi %s 2>&1 \
   // RUN:   | FileCheck %s -check-prefix=CHECK-NOTE-FORMAT
   // CHECK-NOTE-FORMAT: macro-backtrace.c +18:7: warning:
   // CHECK-NOTE-FORMAT: macro-backtrace.c +15:19: note:

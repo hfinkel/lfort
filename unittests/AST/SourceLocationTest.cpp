@@ -16,18 +16,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/ASTMatchers/ASTMatchers.h"
+#include "lfort/Tooling/Tooling.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 
-using clang::tooling::newFrontendActionFactory;
-using clang::tooling::runToolOnCodeWithArgs;
-using clang::tooling::FrontendActionFactory;
+using lfort::tooling::newFrontendActionFactory;
+using lfort::tooling::runToolOnCodeWithArgs;
+using lfort::tooling::FrontendActionFactory;
 
 enum Language { Lang_C, Lang_C89, Lang_CXX };
 
@@ -286,4 +286,4 @@ TEST(CXXConstructorDecl, NoRetFunTypeLocRange) {
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort

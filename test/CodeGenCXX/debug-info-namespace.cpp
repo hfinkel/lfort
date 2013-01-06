@@ -1,4 +1,4 @@
-// RUN: %clang  -g -S -fverbose-asm %s -o - | FileCheck %s
+// RUN: %lfort  -g -S -fverbose-asm %s -o - | FileCheck %s
 
 // CHECK: TAG_namespace
 namespace A {

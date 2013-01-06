@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -S -masm-verbose -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -g -S -masm-verbose -o - %s | FileCheck %s
 
 // CHECK: abbrev_begin:
 // CHECK: DW_AT_accessibility

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wunused-private-field -Wused-but-marked-unused -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -Wunused-private-field -Wused-but-marked-unused -verify -std=c++11 %s
 
 class NotFullyDefined {
  public:

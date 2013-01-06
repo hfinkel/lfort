@@ -6,12 +6,12 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SA_CORE_DYNAMICTYPEINFO_H
-#define LLVM_CLANG_SA_CORE_DYNAMICTYPEINFO_H
+#ifndef LLVM_LFORT_SA_CORE_DYNAMICTYPEINFO_H
+#define LLVM_LFORT_SA_CORE_DYNAMICTYPEINFO_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// \brief Stores the currently inferred strictest bound on the runtime type
@@ -47,6 +47,6 @@ public:
 };
 
 } // end ento
-} // end clang
+} // end lfort
 
 #endif

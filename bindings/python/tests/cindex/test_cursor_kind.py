@@ -1,4 +1,4 @@
-from clang.cindex import CursorKind
+from lfort.cindex import CursorKind
 
 def test_name():
     assert CursorKind.UNEXPOSED_DECL.name is 'UNEXPOSED_DECL'

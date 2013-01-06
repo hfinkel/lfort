@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTICPARSE_H
-#define LLVM_CLANG_DIAGNOSTICPARSE_H
+#ifndef LLVM_LFORT_DIAGNOSTICPARSE_H
+#define LLVM_LFORT_DIAGNOSTICPARSE_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define PARSESTART
-#include "clang/Basic/DiagnosticParseKinds.inc"
+#include "lfort/Basic/DiagnosticParseKinds.inc"
 #undef DIAG
       NUM_BUILTIN_PARSE_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

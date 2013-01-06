@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TAINTMANAGER_H
-#define LLVM_CLANG_TAINTMANAGER_H
+#ifndef LLVM_LFORT_TAINTMANAGER_H
+#define LLVM_LFORT_TAINTMANAGER_H
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/TaintTag.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/TaintTag.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// The GDM component containing the tainted root symbols. We lazily infer the

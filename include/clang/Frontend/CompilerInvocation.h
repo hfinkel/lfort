@@ -7,29 +7,29 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_COMPILERINVOCATION_H_
-#define LLVM_CLANG_FRONTEND_COMPILERINVOCATION_H_
+#ifndef LLVM_LFORT_FRONTEND_COMPILERINVOCATION_H_
+#define LLVM_LFORT_FRONTEND_COMPILERINVOCATION_H_
 
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileSystemOptions.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Frontend/CodeGenOptions.h"
-#include "clang/Frontend/DependencyOutputOptions.h"
-#include "clang/Frontend/FrontendOptions.h"
-#include "clang/Frontend/LangStandard.h"
-#include "clang/Frontend/MigratorOptions.h"
-#include "clang/Frontend/PreprocessorOutputOptions.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/PreprocessorOptions.h"
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileSystemOptions.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Frontend/CodeGenOptions.h"
+#include "lfort/Frontend/DependencyOutputOptions.h"
+#include "lfort/Frontend/FrontendOptions.h"
+#include "lfort/Frontend/LangStandard.h"
+#include "lfort/Frontend/MigratorOptions.h"
+#include "lfort/Frontend/PreprocessorOutputOptions.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/PreprocessorOptions.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class CompilerInvocation;
 class DiagnosticsEngine;
@@ -203,6 +203,6 @@ public:
   /// @}
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

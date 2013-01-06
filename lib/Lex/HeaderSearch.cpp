@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Lex/HeaderMap.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Lex/HeaderMap.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Capacity.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include <cstdio>
-using namespace clang;
+using namespace lfort;
 
 const IdentifierInfo *
 HeaderFileInfo::getControllingMacro(ExternalIdentifierLookup *External) {

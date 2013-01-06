@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -fdiagnostics-parseable-fixits -x c++ %s 2> %t
+// RUN: not %lfort_cc1 -fdiagnostics-parseable-fixits -x c++ %s 2> %t
 // RUN: FileCheck %s < %t
 // PR5941
 // END.

@@ -1,4 +1,4 @@
-/*===-- clang-c/CXCompilationDatabase.h - Compilation database  ---*- C -*-===*\
+/*===-- lfort-c/CXCompilationDatabase.h - Compilation database  ---*- C -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -8,15 +8,15 @@
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
 |* This header provides a public inferface to use CompilationDatabase without *|
-|* the full Clang C++ API.                                                    *|
+|* the full LFort C++ API.                                                    *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-#ifndef CLANG_CXCOMPILATIONDATABASE_H
-#define CLANG_CXCOMPILATIONDATABASE_H
+#ifndef LFORT_CXCOMPILATIONDATABASE_H
+#define LFORT_CXCOMPILATIONDATABASE_H
 
-#include "clang-c/Platform.h"
-#include "clang-c/CXString.h"
+#include "lfort-c/Platform.h"
+#include "lfort-c/CXString.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +33,7 @@ extern "C" {
  * project. For each file in the database, it can be queried for the working
  * directory or the command line used for the compiler invocation.
  *
- * Must be freed by \c clang_CompilationDatabase_dispose
+ * Must be freed by \c lfort_CompilationDatabase_dispose
  */
 typedef void * CXCompilationDatabase;
 
@@ -44,7 +44,7 @@ typedef void * CXCompilationDatabase;
  * return several commands, as the file may have been compiled with
  * different options in different places of the project. This choice of compile
  * commands is wrapped in this opaque data structure. It must be freed by
- * \c clang_CompileCommands_dispose.
+ * \c lfort_CompileCommands_dispose.
  */
 typedef void * CXCompileCommands;
 
@@ -74,63 +74,63 @@ typedef enum  {
  * buildDir. For example, CMake can output a compile_commands.json which can
  * be used to build the database.
  *
- * It must be freed by \c clang_CompilationDatabase_dispose.
+ * It must be freed by \c lfort_CompilationDatabase_dispose.
  */
 CINDEX_LINKAGE CXCompilationDatabase
-clang_CompilationDatabase_fromDirectory(const char *BuildDir,
+lfort_CompilationDatabase_fromDirectory(const char *BuildDir,
                                         CXCompilationDatabase_Error *ErrorCode);
 
 /**
  * \brief Free the given compilation database
  */
 CINDEX_LINKAGE void
-clang_CompilationDatabase_dispose(CXCompilationDatabase);
+lfort_CompilationDatabase_dispose(CXCompilationDatabase);
 
 /**
  * \brief Find the compile commands used for a file. The compile commands
- * must be freed by \c clang_CompileCommands_dispose.
+ * must be freed by \c lfort_CompileCommands_dispose.
  */
 CINDEX_LINKAGE CXCompileCommands
-clang_CompilationDatabase_getCompileCommands(CXCompilationDatabase,
+lfort_CompilationDatabase_getCompileCommands(CXCompilationDatabase,
                                              const char *CompleteFileName);
 
 /**
  * \brief Get all the compile commands in the given compilation database.
  */
 CINDEX_LINKAGE CXCompileCommands
-clang_CompilationDatabase_getAllCompileCommands(CXCompilationDatabase);
+lfort_CompilationDatabase_getAllCompileCommands(CXCompilationDatabase);
 
 /**
  * \brief Free the given CompileCommands
  */
-CINDEX_LINKAGE void clang_CompileCommands_dispose(CXCompileCommands);
+CINDEX_LINKAGE void lfort_CompileCommands_dispose(CXCompileCommands);
 
 /**
  * \brief Get the number of CompileCommand we have for a file
  */
 CINDEX_LINKAGE unsigned
-clang_CompileCommands_getSize(CXCompileCommands);
+lfort_CompileCommands_getSize(CXCompileCommands);
 
 /**
  * \brief Get the I'th CompileCommand for a file
  *
- * Note : 0 <= i < clang_CompileCommands_getSize(CXCompileCommands)
+ * Note : 0 <= i < lfort_CompileCommands_getSize(CXCompileCommands)
  */
 CINDEX_LINKAGE CXCompileCommand
-clang_CompileCommands_getCommand(CXCompileCommands, unsigned I);
+lfort_CompileCommands_getCommand(CXCompileCommands, unsigned I);
 
 /**
  * \brief Get the working directory where the CompileCommand was executed from
  */
 CINDEX_LINKAGE CXString
-clang_CompileCommand_getDirectory(CXCompileCommand);
+lfort_CompileCommand_getDirectory(CXCompileCommand);
 
 /**
  * \brief Get the number of arguments in the compiler invocation.
  *
  */
 CINDEX_LINKAGE unsigned
-clang_CompileCommand_getNumArgs(CXCompileCommand);
+lfort_CompileCommand_getNumArgs(CXCompileCommand);
 
 /**
  * \brief Get the I'th argument value in the compiler invocations
@@ -139,7 +139,7 @@ clang_CompileCommand_getNumArgs(CXCompileCommand);
  *  - argument 0 is the compiler executable
  */
 CINDEX_LINKAGE CXString
-clang_CompileCommand_getArg(CXCompileCommand, unsigned I);
+lfort_CompileCommand_getArg(CXCompileCommand, unsigned I);
 
 /**
  * @}

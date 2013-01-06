@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGBLOCKS_H
-#define CLANG_CODEGEN_CGBLOCKS_H
+#ifndef LFORT_CODEGEN_CGBLOCKS_H
+#define LFORT_CODEGEN_CGBLOCKS_H
 
 #include "CGBuilder.h"
 #include "CGCall.h"
 #include "CGValue.h"
 #include "CodeGenFunction.h"
 #include "CodeGenTypes.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/IR/Module.h"
 
 namespace llvm {
@@ -39,7 +39,7 @@ namespace llvm {
   class LLVMContext;
 }
 
-namespace clang {
+namespace lfort {
 
 namespace CodeGen {
 
@@ -251,6 +251,6 @@ public:
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

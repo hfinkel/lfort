@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store region -std=c++11 -fexceptions -fcxx-exceptions -verify -DEXCEPTIONS %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store region -std=c++11 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store region -std=c++11 -fexceptions -fcxx-exceptions -verify -DEXCEPTIONS %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store region -std=c++11 -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 typedef __typeof__(sizeof(int)) size_t;
 extern "C" void *malloc(size_t);
@@ -29,11 +29,11 @@ struct ExplicitThrow {
 };
 
 void testNew() {
-  clang_analyzer_eval(new NoThrow); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(new NoExcept); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new NoThrow); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new NoExcept); // expected-warning{{UNKNOWN}}
 
-  clang_analyzer_eval(new DefaultThrow);
-  clang_analyzer_eval(new ExplicitThrow);
+  lfort_analyzer_eval(new DefaultThrow);
+  lfort_analyzer_eval(new ExplicitThrow);
 #ifdef EXCEPTIONS
   // expected-warning@-3 {{TRUE}}
   // expected-warning@-3 {{TRUE}}
@@ -44,10 +44,10 @@ void testNew() {
 }
 
 void testNewArray() {
-  clang_analyzer_eval(new NoThrow[2]);
-  clang_analyzer_eval(new NoExcept[2]);
-  clang_analyzer_eval(new DefaultThrow[2]);
-  clang_analyzer_eval(new ExplicitThrow[2]);
+  lfort_analyzer_eval(new NoThrow[2]);
+  lfort_analyzer_eval(new NoExcept[2]);
+  lfort_analyzer_eval(new DefaultThrow[2]);
+  lfort_analyzer_eval(new ExplicitThrow[2]);
 #ifdef EXCEPTIONS
   // expected-warning@-5 {{TRUE}}
   // expected-warning@-5 {{TRUE}}
@@ -64,8 +64,8 @@ void testNewArray() {
 extern void *operator new[](size_t, int) noexcept;
 
 void testNewArrayNoThrow() {
-  clang_analyzer_eval(new (1) NoThrow[2]); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(new (1) NoExcept[2]); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(new (1) DefaultThrow[2]); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(new (1) ExplicitThrow[2]); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new (1) NoThrow[2]); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new (1) NoExcept[2]); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new (1) DefaultThrow[2]); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(new (1) ExplicitThrow[2]); // expected-warning{{UNKNOWN}}
 }

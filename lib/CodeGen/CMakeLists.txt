@@ -8,7 +8,7 @@ set(LLVM_LINK_COMPONENTS
   vectorize
   )
 
-add_clang_library(clangCodeGen
+add_lfort_library(lfortCodeGen
   BackendUtil.cpp
   CGBlocks.cpp
   CGBuiltin.cpp
@@ -50,19 +50,19 @@ add_clang_library(clangCodeGen
   TargetInfo.cpp
   )
 
-add_dependencies(clangCodeGen
-  ClangARMNeon
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangStmtNodes
+add_dependencies(lfortCodeGen
+  LFortARMNeon
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortStmtNodes
   )
 
-target_link_libraries(clangCodeGen
-  clangBasic
-  clangAST
-  clangFrontend
+target_link_libraries(lfortCodeGen
+  lfortBasic
+  lfortAST
+  lfortFrontend
   )

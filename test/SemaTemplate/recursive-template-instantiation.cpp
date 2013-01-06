@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 template<typename T> void f(T* t) { // expected-note{{failed template argument deduction}}
   f(*t); // expected-error{{no matching function}}\

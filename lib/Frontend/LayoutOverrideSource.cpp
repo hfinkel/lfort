@@ -6,14 +6,14 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Frontend/LayoutOverrideSource.h"
-#include "clang/AST/Decl.h"
+#include "lfort/Frontend/LayoutOverrideSource.h"
+#include "lfort/AST/Decl.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cctype>
 #include <fstream>
 #include <string>
 
-using namespace clang;
+using namespace lfort;
 
 /// \brief Parse a simple identifier.
 static std::string parseName(StringRef S) {

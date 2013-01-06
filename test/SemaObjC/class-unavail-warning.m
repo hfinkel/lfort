@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -verify %s
 // rdar://9092208
 
 __attribute__((unavailable("not available")))

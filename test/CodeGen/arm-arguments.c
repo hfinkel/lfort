@@ -1,6 +1,6 @@
 // REQUIRES: arm-registered-target
-// RUN: %clang_cc1 -triple armv7-apple-darwin9 -target-abi apcs-gnu -emit-llvm -w -o - %s | FileCheck -check-prefix=APCS-GNU %s
-// RUN: %clang_cc1 -triple armv7-apple-darwin9 -target-abi aapcs -emit-llvm -w -o - %s | FileCheck -check-prefix=AAPCS %s
+// RUN: %lfort_cc1 -triple armv7-apple-darwin9 -target-abi apcs-gnu -emit-llvm -w -o - %s | FileCheck -check-prefix=APCS-GNU %s
+// RUN: %lfort_cc1 -triple armv7-apple-darwin9 -target-abi aapcs -emit-llvm -w -o - %s | FileCheck -check-prefix=AAPCS %s
 
 // APCS-GNU: define signext i8 @f0()
 // AAPCS: define arm_aapcscc signext i8 @f0()

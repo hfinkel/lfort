@@ -24,10 +24,10 @@ guessing_cc=0
 
 if [[ -z "$CC" ]]; then
     guessing_cc=1
-    if [[ -x $(dirname $0)/clang ]]; then
-	CC=$(dirname $0)/clang
-    elif [[ ! -z $(which clang) ]]; then
-	CC=$(which clang)
+    if [[ -x $(dirname $0)/lfort ]]; then
+	CC=$(dirname $0)/lfort
+    elif [[ ! -z $(which lfort) ]]; then
+	CC=$(which lfort)
     else
 	echo -n 'Error: could not find an appropriate compiler'
 	echo ' to generate build commands.' 1>&2
@@ -37,10 +37,10 @@ if [[ -z "$CC" ]]; then
 fi
 
 if [[ -z "$CXX" ]]; then
-    if [[ -x $(dirname $0)/clang++ ]]; then
-	CXX=$(dirname $0)/clang++
-    elif [[ ! -z $(which clang++) ]]; then
-	CXX=$(which clang++)
+    if [[ -x $(dirname $0)/lfort++ ]]; then
+	CXX=$(dirname $0)/lfort++
+    elif [[ ! -z $(which lfort++) ]]; then
+	CXX=$(which lfort++)
     else
 	CXX=$CC
     fi

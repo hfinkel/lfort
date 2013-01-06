@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_SCOPE_H
-#define LLVM_CLANG_SEMA_SCOPE_H
+#ifndef LLVM_LFORT_SEMA_SCOPE_H
+#define LLVM_LFORT_SEMA_SCOPE_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 class UsingDirectiveDecl;
@@ -328,6 +328,6 @@ public:
   void Init(Scope *parent, unsigned flags);
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

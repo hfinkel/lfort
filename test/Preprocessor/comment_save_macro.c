@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -E -C %s | FileCheck -check-prefix=CHECK-C -strict-whitespace %s
+// RUN: %lfort_cc1 -E -C %s | FileCheck -check-prefix=CHECK-C -strict-whitespace %s
 // CHECK-C: boo bork bar // zot
 
-// RUN: %clang_cc1 -E -CC %s | FileCheck -check-prefix=CHECK-CC -strict-whitespace %s
+// RUN: %lfort_cc1 -E -CC %s | FileCheck -check-prefix=CHECK-CC -strict-whitespace %s
 // CHECK-CC: boo bork /* blah*/ bar // zot
 
-// RUN: %clang_cc1 -E %s | FileCheck -check-prefix=CHECK -strict-whitespace %s
+// RUN: %lfort_cc1 -E %s | FileCheck -check-prefix=CHECK -strict-whitespace %s
 // CHECK: boo bork bar
 
 

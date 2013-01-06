@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/PPCallbacks.h"
+#include "lfort/Lex/PPCallbacks.h"
 
-using namespace clang;
+using namespace lfort;
 
 void PPChainedCallbacks::anchor() { }

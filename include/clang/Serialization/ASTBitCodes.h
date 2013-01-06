@@ -7,25 +7,25 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This header defines Bitcode enum values for Clang serialized AST files.
+// This header defines Bitcode enum values for LFort serialized AST files.
 //
 // The enum values defined in this file should be considered permanent.  If
 // new features are added, they should have values added at the end of the
 // respective lists.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_FRONTEND_PCHBITCODES_H
-#define LLVM_CLANG_FRONTEND_PCHBITCODES_H
+#ifndef LLVM_LFORT_FRONTEND_PCHBITCODES_H
+#define LLVM_LFORT_FRONTEND_PCHBITCODES_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Bitcode/BitCodes.h"
 #include "llvm/Support/DataTypes.h"
 
-namespace clang {
+namespace lfort {
   namespace serialization {
     /// \brief AST file major version number supported by this version of
-    /// Clang.
+    /// LFort.
     ///
     /// Whenever the AST file format changes in a way that makes it
     /// incompatible with previous versions (such that a reader
@@ -38,7 +38,7 @@ namespace clang {
     const unsigned VERSION_MAJOR = 5;
 
     /// \brief AST file minor version number supported by this version of
-    /// Clang.
+    /// LFort.
     ///
     /// Whenever the AST format changes in a way that is still
     /// compatible with previous versions (such that a reader designed
@@ -323,7 +323,7 @@ namespace clang {
       /// NULL-terminated string that corresponds to that identifier.
       IDENTIFIER_OFFSET = 3,
 
-      /// \brief This is so that older clang versions, before the introduction
+      /// \brief This is so that older lfort versions, before the introduction
       /// of the control block, can read and reject the newer PCH format.
       /// *DON"T CHANGE THIS NUMBER*.
       METADATA_OLD_FORMAT = 4,
@@ -1362,6 +1362,6 @@ namespace clang {
 
     /// @}
   }
-} // end namespace clang
+} // end namespace lfort
 
 #endif

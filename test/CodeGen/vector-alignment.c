@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -w -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
 // rdar://11759609
 
 // At or below target max alignment with no aligned attribute should align based

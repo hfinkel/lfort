@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Edit/Rewriters.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/NSAPI.h"
-#include "clang/Edit/Commit.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Edit/Rewriters.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/NSAPI.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Lex/Lexer.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace edit;
 
 static bool checkForLiteralCreation(const ObjCMessageExpr *Msg,

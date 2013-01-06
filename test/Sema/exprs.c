@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -pedantic -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -pedantic -fsyntax-only
 
 // PR 8876 - don't warn about trivially unreachable null derefs.  Note that
 // we put this here because the reachability analysis only kicks in for

@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Options.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
 
-using namespace clang::driver;
-using namespace clang::driver::options;
+using namespace lfort::driver;
+using namespace lfort::driver::options;
 
 #define PREFIX(NAME, VALUE) const char *const NAME[] = VALUE;
 #define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, FLAGS, PARAM, \
                HELPTEXT, METAVAR)
-#include "clang/Driver/Options.inc"
+#include "lfort/Driver/Options.inc"
 #undef OPTION
 #undef PREFIX
 
@@ -27,7 +27,7 @@ static const OptTable::Info InfoTable[] = {
                HELPTEXT, METAVAR)   \
   { PREFIX, NAME, HELPTEXT, METAVAR, OPT_##ID, Option::KIND##Class, PARAM, \
     FLAGS, OPT_##GROUP, OPT_##ALIAS },
-#include "clang/Driver/Options.inc"
+#include "lfort/Driver/Options.inc"
 };
 
 namespace {
@@ -40,6 +40,6 @@ public:
 
 }
 
-OptTable *clang::driver::createDriverOptTable() {
+OptTable *lfort::driver::createDriverOptTable() {
   return new DriverOptTable();
 }

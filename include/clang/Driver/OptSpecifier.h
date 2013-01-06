@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_OPTSPECIFIER_H
-#define CLANG_DRIVER_OPTSPECIFIER_H
+#ifndef LFORT_DRIVER_OPTSPECIFIER_H
+#define LFORT_DRIVER_OPTSPECIFIER_H
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class Option;
 

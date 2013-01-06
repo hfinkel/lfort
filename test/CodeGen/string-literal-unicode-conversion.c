@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=C %s
-// RUN: %clang_cc1 -x c++ -std=c++0x -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=CPP0X %s
-// RUN: %clang_cc1 -x c++ -std=c++0x -fshort-wchar -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=SHORTWCHAR %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=C %s
+// RUN: %lfort_cc1 -x c++ -std=c++0x -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=CPP0X %s
+// RUN: %lfort_cc1 -x c++ -std=c++0x -fshort-wchar -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck -check-prefix=SHORTWCHAR %s
 
 // This file contains a mix of ISO-8859-1 and UTF-8 encoded data.
 // the literal assigned to 'aa' should be the ISO-8859-1 encoding for the code

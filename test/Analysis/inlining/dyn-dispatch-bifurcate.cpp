@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 class A {
 public:
@@ -8,12 +8,12 @@ public:
 };
 
 void testBifurcation(A *a) {
-  clang_analyzer_eval(a->get() == 0); // expected-warning{{TRUE}} expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(a->get() == 0); // expected-warning{{TRUE}} expected-warning{{UNKNOWN}}
 }
 
 void testKnown() {
   A a;
-  clang_analyzer_eval(a.get() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a.get() == 0); // expected-warning{{TRUE}}
 }
 
 
@@ -28,6 +28,6 @@ namespace ReinterpretDisruptsDynamicTypeInfo {
   void test(Parent *a) {
     Child *b = reinterpret_cast<Child *>(a);
     if (!b) return;
-    clang_analyzer_eval(b->foo() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(b->foo() == 42); // expected-warning{{UNKNOWN}}
   }
 }

@@ -1,4 +1,4 @@
-##===- clang/lib/Tooling/Makefile ---------------------------*- Makefile -*-===##
+##===- lfort/lib/Tooling/Makefile ---------------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,7 +7,7 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangTooling
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortTooling
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

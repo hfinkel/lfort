@@ -10,31 +10,31 @@
 //===----------------------------------------------------------------------===/
 
 #include "TreeTransform.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/TypeVisitor.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/SemaInternal.h"
-#include "clang/Sema/Template.h"
-#include "clang/Sema/TemplateDeduction.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/TypeVisitor.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/Sema/Template.h"
+#include "lfort/Sema/TemplateDeduction.h"
 #include "llvm/ADT/SmallBitVector.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 // Exported for use by Parser.
 SourceRange
-clang::getTemplateParamsRange(TemplateParameterList const * const *Ps,
+lfort::getTemplateParamsRange(TemplateParameterList const * const *Ps,
                               unsigned N) {
   if (!N) return SourceRange();
   return SourceRange(Ps[0]->getTemplateLoc(), Ps[N-1]->getRAngleLoc());
@@ -3307,7 +3307,7 @@ namespace {
     bool Visit##Class##Type(const Class##Type *) { return false; }
 #define NON_CANONICAL_TYPE(Class, Parent) \
     bool Visit##Class##Type(const Class##Type *) { return false; }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
     bool VisitTagDecl(const TagDecl *Tag);
     bool VisitNestedNameSpecifier(NestedNameSpecifier *NNS);

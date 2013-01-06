@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// Example clang plugin which simply prints the names of all the top-level decls
+// Example lfort plugin which simply prints the names of all the top-level decls
 // in the input file.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/FrontendPluginRegistry.h"
-#include "clang/AST/AST.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendPluginRegistry.h"
+#include "lfort/AST/AST.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/Frontend/CompilerInstance.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

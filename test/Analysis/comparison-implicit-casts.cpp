@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-constraints=range -triple i386-apple-darwin9 -verify %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-constraints=range -triple x86_64-apple-darwin9 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-constraints=range -triple i386-apple-darwin9 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.cstring,debug.ExprInspection -analyzer-constraints=range -triple x86_64-apple-darwin9 -verify %s
 
 // This file runs in C++ mode so that the comparison type is 'bool', not 'int'.
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 typedef typeof(sizeof(int)) size_t;
 
 // PR12206/12510 - When SimpleSValBuilder figures out that a symbol is fully
@@ -19,7 +19,7 @@ void PR12206(int x) {
   size_t comparisonSize = sizeof(1 == 1);
 
   // Sanity check. This test is useless if size_t isn't bigger than bool.
-  clang_analyzer_eval(sizeof(size_t) > comparisonSize); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(sizeof(size_t) > comparisonSize); // expected-warning{{TRUE}}
 
   // Build a SymIntExpr, dependent on x.
   int local = x - 1;
@@ -37,12 +37,12 @@ void PR12206(int x) {
   // turning the symbol into a ConcreteInt, rather than ExprEngine.
 
   // Test relational operators.
-  clang_analyzer_eval((local + 1) >= 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(2 <= (local + 1)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((local + 1) >= 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(2 <= (local + 1)); // expected-warning{{TRUE}}
 
   // Test equality operators.
-  clang_analyzer_eval((local + 1) != 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(1 != (local + 1)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((local + 1) != 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(1 != (local + 1)); // expected-warning{{TRUE}}
 }
 
 void PR12206_truncation(signed char x) {
@@ -61,12 +61,12 @@ void PR12206_truncation(signed char x) {
   signed int value = 1 + (1 << 8);
 
   // Test relational operators.
-  clang_analyzer_eval((local + 1) < value); // expected-warning{{TRUE}}
-  clang_analyzer_eval(value > (local + 1)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((local + 1) < value); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(value > (local + 1)); // expected-warning{{TRUE}}
 
   // Test equality operators.
-  clang_analyzer_eval((local + 1) != value); // expected-warning{{TRUE}}
-  clang_analyzer_eval(value != (local + 1)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((local + 1) != value); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(value != (local + 1)); // expected-warning{{TRUE}}
 }
 
 // This test is insurance in case we significantly change how SymExprs are
@@ -76,7 +76,7 @@ void PR12206_strlen(const char *x) {
   size_t comparisonSize = sizeof(1 == 1);
 
   // Sanity check. This test is useless if size_t isn't bigger than bool.
-  clang_analyzer_eval(sizeof(size_t) > comparisonSize); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(sizeof(size_t) > comparisonSize); // expected-warning{{TRUE}}
 
   // Create a value that requires more bits to store than a comparison result.
   size_t value = 1UL;
@@ -87,10 +87,10 @@ void PR12206_strlen(const char *x) {
   if (strlen(x) != value) return;
 
   // Test relational operators.
-  clang_analyzer_eval(strlen(x) >= 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(2 <= strlen(x)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(strlen(x) >= 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(2 <= strlen(x)); // expected-warning{{TRUE}}
 
   // Test equality operators.
-  clang_analyzer_eval(strlen(x) != 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(1 != strlen(x)); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(strlen(x) != 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(1 != strlen(x)); // expected-warning{{TRUE}}
 }

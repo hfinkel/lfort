@@ -10,7 +10,7 @@
 #===------------------------------------------------------------------------===#
 
 """
-A simple command line tool for dumping a source file using the Clang Index
+A simple command line tool for dumping a source file using the LFort Index
 Library.
 """
 
@@ -54,14 +54,14 @@ def get_info(node, depth=0):
              'children' : children }
 
 def main():
-    from clang.cindex import Index
+    from lfort.cindex import Index
     from pprint import pprint
 
     from optparse import OptionParser, OptionGroup
 
     global opts
 
-    parser = OptionParser("usage: %prog [options] {filename} [clang-args*]")
+    parser = OptionParser("usage: %prog [options] {filename} [lfort-args*]")
     parser.add_option("", "--show-ids", dest="showIDs",
                       help="Don't compute cursor IDs (very slow)",
                       default=False)

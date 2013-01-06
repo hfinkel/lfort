@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -verify -std=c++11 %s
 struct A { };
 struct B { };
 struct C { };

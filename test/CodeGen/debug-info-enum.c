@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -emit-llvm -g %s -o %t
+// RUN: %lfort_cc1  -emit-llvm -g %s -o %t
 // RUN: grep DW_TAG_enumeration_type %t
 // Radar 8195980
 

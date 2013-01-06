@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 @interface Super @end
 Super s1; // expected-error{{interface type cannot be statically allocated}}

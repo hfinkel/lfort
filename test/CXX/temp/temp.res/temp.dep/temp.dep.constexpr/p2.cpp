@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++98 -verify %s
+// RUN: %lfort_cc1 -std=c++98 -verify %s
 
 template<int n> struct S;
 

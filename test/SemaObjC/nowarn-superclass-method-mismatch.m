@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -Wsuper-class-method-mismatch -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -Wsuper-class-method-mismatch -verify %s
 // expected-no-diagnostics
 // rdar://11793793
 

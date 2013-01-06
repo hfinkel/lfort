@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LIBCLANG_CURSORVISITOR_H
-#define LLVM_CLANG_LIBCLANG_CURSORVISITOR_H
+#ifndef LLVM_LFORT_LIBLFORT_CURSORVISITOR_H
+#define LLVM_LFORT_LIBLFORT_CURSORVISITOR_H
 
 #include "CXCursor.h"
 #include "CXTranslationUnit.h"
 #include "Index_Internal.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/TypeLocVisitor.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/TypeLocVisitor.h"
 
-namespace clang {
+namespace lfort {
   class PreprocessingRecord;
   class ASTUnit;
 
@@ -127,13 +127,13 @@ private:
       : Parent(Parent), StmtParent(StmtParent), OldParent(Parent)
     {
       Parent = NewParent;
-      if (clang_isDeclaration(Parent.kind))
+      if (lfort_isDeclaration(Parent.kind))
         StmtParent = getCursorDecl(Parent);
     }
 
     ~SetParentRAII() {
       Parent = OldParent;
-      if (clang_isDeclaration(Parent.kind))
+      if (lfort_isDeclaration(Parent.kind))
         StmtParent = getCursorDecl(Parent);
     }
   };
@@ -248,7 +248,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
   bool Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
   bool VisitTagTypeLoc(TagTypeLoc TL);
   bool VisitArrayTypeLoc(ArrayTypeLoc TL);

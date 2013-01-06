@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLFRIEND_H
-#define LLVM_CLANG_AST_DECLFRIEND_H
+#ifndef LLVM_LFORT_AST_DECLFRIEND_H
+#define LLVM_LFORT_AST_DECLFRIEND_H
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclTemplate.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclTemplate.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 /// FriendDecl - Represents the declaration of a friend entity,
 /// which can be a function, a type, or a templated function or type.

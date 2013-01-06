@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -E -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-OBJC-MODULES %s
-// RUN: %clang_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-NO-OBJC-MODULES %s
-// RUN: %clang_cc1 -E -x c -fmodules %s -o - | FileCheck --check-prefix=CHECK-NO-OBJC-MODULES %s
+// RUN: %lfort_cc1 -E -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-OBJC-MODULES %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-NO-OBJC-MODULES %s
+// RUN: %lfort_cc1 -E -x c -fmodules %s -o - | FileCheck --check-prefix=CHECK-NO-OBJC-MODULES %s
 
-// RUN: %clang_cc1 -E -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-MODULES %s
-// RUN: %clang_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-NO-MODULES %s
-// RUN: %clang_cc1 -E -x c -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-MODULES %s
+// RUN: %lfort_cc1 -E -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-MODULES %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-NO-MODULES %s
+// RUN: %lfort_cc1 -E -x c -fmodules %s -o - | FileCheck --check-prefix=CHECK-HAS-MODULES %s
 
 #if __has_feature(modules)
 int has_modules();

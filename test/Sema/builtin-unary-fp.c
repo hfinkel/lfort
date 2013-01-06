@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -pedantic
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -pedantic
 void check(int);
 void a() {
   check(__builtin_isfinite(1.0f));

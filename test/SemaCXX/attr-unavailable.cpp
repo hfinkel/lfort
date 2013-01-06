@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int &foo(int); // expected-note {{candidate}}
 double &foo(double); // expected-note {{candidate}}

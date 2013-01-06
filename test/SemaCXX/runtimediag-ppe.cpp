@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // Make sure diagnostics that we don't print based on runtime control
 // flow are delayed correctly in cases where we can't immediately tell whether

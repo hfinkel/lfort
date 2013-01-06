@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -O2 -o -
+// RUN: %lfort_cc1 %s -emit-llvm -O2 -o -
 // PR3028
 
 int g_187;

@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_WEAK_H
-#define LLVM_CLANG_SEMA_WEAK_H
+#ifndef LLVM_LFORT_SEMA_WEAK_H
+#define LLVM_LFORT_SEMA_WEAK_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
 
 class IdentifierInfo;
 
@@ -41,6 +41,6 @@ public:
   bool operator!=(WeakInfo RHS) const { return !(*this == RHS); }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_WEAK_H
+#endif // LLVM_LFORT_SEMA_WEAK_H

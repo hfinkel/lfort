@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -std=c++11 -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -E -std=c++11 -o - %s | FileCheck %s
 
 #define id(x) x
 id("s")_x // CHECK: "s" _x

@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // NULL is rdefined in stddef.h
 #define NULL ((void*) 0)
 
-// These are headers bundled with Clang.
+// These are headers bundled with LFort.
 #include <stdarg.h>
 #include <stddef.h>
 

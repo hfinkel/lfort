@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_HEADERSEARCHOPTIONS_H
-#define LLVM_CLANG_LEX_HEADERSEARCHOPTIONS_H
+#ifndef LLVM_LFORT_LEX_HEADERSEARCHOPTIONS_H
+#define LLVM_LFORT_LEX_HEADERSEARCHOPTIONS_H
 
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringRef.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 namespace frontend {
   /// IncludeDirGroup - Identifiers the group a include entry belongs to, which
@@ -142,6 +142,6 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

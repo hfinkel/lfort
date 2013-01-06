@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 void SymExpr::anchor() { }

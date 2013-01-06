@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -triple i386-linux -pedantic -fcxx-exceptions -fexceptions %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -triple i386-linux -pedantic -fcxx-exceptions -fexceptions %s
 
 const char const *x10; // expected-warning {{duplicate 'const' declaration specifier}}
 

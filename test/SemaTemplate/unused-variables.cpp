@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wunused -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wunused -verify %s
 
 struct X0 {
   ~X0();

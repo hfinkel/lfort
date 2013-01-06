@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdynamic-class-memaccess -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdynamic-class-memaccess -verify %s
 
 extern "C" void *memset(void *, int, unsigned);
 extern "C" void *memmove(void *s1, const void *s2, unsigned n);

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=i686-apple-darwin10 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple=i686-apple-darwin10 -emit-llvm -o - | FileCheck %s
 
 struct Base {
   virtual ~Base();

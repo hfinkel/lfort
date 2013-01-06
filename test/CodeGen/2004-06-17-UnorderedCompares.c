@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -std=c99 %s -emit-llvm -o - | grep -v llvm.isunordered | not grep call
+// RUN: %lfort_cc1  -std=c99 %s -emit-llvm -o - | grep -v llvm.isunordered | not grep call
 
 _Bool A, B, C, D, E, F;
 void TestF(float X, float Y) {

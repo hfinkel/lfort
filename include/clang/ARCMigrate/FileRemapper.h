@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ARCMIGRATE_FILEREMAPPER_H
-#define LLVM_CLANG_ARCMIGRATE_FILEREMAPPER_H
+#ifndef LLVM_LFORT_ARCMIGRATE_FILEREMAPPER_H
+#define LLVM_LFORT_ARCMIGRATE_FILEREMAPPER_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/PointerUnion.h"
@@ -20,7 +20,7 @@ namespace llvm {
   class MemoryBuffer;
 }
 
-namespace clang {
+namespace lfort {
   class FileManager;
   class FileEntry;
   class DiagnosticsEngine;
@@ -75,6 +75,6 @@ private:
 
 } // end namespace arcmt
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

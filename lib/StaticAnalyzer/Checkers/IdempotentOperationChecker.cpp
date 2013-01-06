@@ -42,19 +42,19 @@
 // - Finer grained false positive control (levels)
 // - Handling ~0 values
 
-#include "ClangSACheckers.h"
-#include "clang/AST/Stmt.h"
-#include "clang/Analysis/Analyses/CFGReachabilityAnalysis.h"
-#include "clang/Analysis/Analyses/PseudoConstantAnalysis.h"
-#include "clang/Analysis/CFGStmtMap.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CoreEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/Analysis/Analyses/CFGReachabilityAnalysis.h"
+#include "lfort/Analysis/Analyses/PseudoConstantAnalysis.h"
+#include "lfort/Analysis/CFGStmtMap.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CoreEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallSet.h"
@@ -62,7 +62,7 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=gnu99 %s -emit-llvm -o - | grep ".*alloca.*align 16"
+// RUN: %lfort_cc1 -std=gnu99 %s -emit-llvm -o - | grep ".*alloca.*align 16"
 
 void adr(char *);
 

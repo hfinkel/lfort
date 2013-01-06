@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaConsumer.h"
+#include "lfort/Sema/SemaConsumer.h"
 
-using namespace clang;
+using namespace lfort;
 
 void SemaConsumer::anchor() { }

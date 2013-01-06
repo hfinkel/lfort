@@ -12,12 +12,12 @@
 //===----------------------------------------------------------------------===//
 
 
-#ifndef LLVM_CLANG_AST_BRIEF_COMMENT_PARSER_H
-#define LLVM_CLANG_AST_BRIEF_COMMENT_PARSER_H
+#ifndef LLVM_LFORT_AST_BRIEF_COMMENT_PARSER_H
+#define LLVM_LFORT_AST_BRIEF_COMMENT_PARSER_H
 
-#include "clang/AST/CommentLexer.h"
+#include "lfort/AST/CommentLexer.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 /// A very simple comment parser that extracts "a brief description".
@@ -49,7 +49,7 @@ public:
 };
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

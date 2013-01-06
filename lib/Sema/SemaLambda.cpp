@@ -10,15 +10,15 @@
 //  This file implements semantic analysis for C++ lambda expressions.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/DeclSpec.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/SemaInternal.h"
-using namespace clang;
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+using namespace lfort;
 using namespace sema;
 
 CXXRecordDecl *Sema::createLambdaClosureType(SourceRange IntroducerRange,

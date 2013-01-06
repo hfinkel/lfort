@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=alpha.core.FixedAddr,alpha.core.PointerArithm,alpha.core.PointerSub,debug.ExprInspection -analyzer-store=region -verify -triple x86_64-apple-darwin9 %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=alpha.core.FixedAddr,alpha.core.PointerArithm,alpha.core.PointerSub,debug.ExprInspection -analyzer-store=region -verify -triple i686-apple-darwin9 %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=alpha.core.FixedAddr,alpha.core.PointerArithm,alpha.core.PointerSub,debug.ExprInspection -analyzer-store=region -verify -triple x86_64-apple-darwin9 %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=alpha.core.FixedAddr,alpha.core.PointerArithm,alpha.core.PointerSub,debug.ExprInspection -analyzer-store=region -verify -triple i686-apple-darwin9 %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 void f1() {
   int a[10];
@@ -66,48 +66,48 @@ void f6(int *p, int *q) {
 void null_operand(int *a) {
 start:
   // LHS is a label, RHS is NULL
-  clang_analyzer_eval(&&start != 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&&start >= 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&&start > 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval((&&start - 0) != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&&start != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&&start >= 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&&start > 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((&&start - 0) != 0); // expected-warning{{TRUE}}
 
   // LHS is a non-symbolic value, RHS is NULL
-  clang_analyzer_eval(&a != 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a >= 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a > 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval((&a - 0) != 0); // expected-warning{{TRUE}} expected-warning{{Pointer arithmetic done on non-array variables}}
+  lfort_analyzer_eval(&a != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a >= 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a > 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((&a - 0) != 0); // expected-warning{{TRUE}} expected-warning{{Pointer arithmetic done on non-array variables}}
 
   // LHS is NULL, RHS is non-symbolic
   // The same code is used for labels and non-symbolic values.
-  clang_analyzer_eval(0 != &a); // expected-warning{{TRUE}}
-  clang_analyzer_eval(0 <= &a); // expected-warning{{TRUE}}
-  clang_analyzer_eval(0 < &a); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(0 != &a); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(0 <= &a); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(0 < &a); // expected-warning{{TRUE}}
 
   // LHS is a symbolic value, RHS is NULL
-  clang_analyzer_eval(a != 0); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(a >= 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a <= 0); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval((a - 0) != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(a != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(a >= 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a <= 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval((a - 0) != 0); // expected-warning{{UNKNOWN}}
 
   // LHS is NULL, RHS is a symbolic value
-  clang_analyzer_eval(0 != a); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(0 <= a); // expected-warning{{TRUE}}
-  clang_analyzer_eval(0 < a); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(0 != a); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(0 <= a); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(0 < a); // expected-warning{{UNKNOWN}}
 }
 
 void const_locs() {
   char *a = (char*)0x1000;
   char *b = (char*)0x1100;
 start:
-  clang_analyzer_eval(a != b); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a < b); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a <= b); // expected-warning{{TRUE}}
-  clang_analyzer_eval((b-a) == 0x100); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a != b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a < b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a <= b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((b-a) == 0x100); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(&&start == a); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(a == &&start); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(&a == (char**)a); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval((char**)a == &a); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&&start == a); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(a == &&start); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a == (char**)a); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval((char**)a == &a); // expected-warning{{UNKNOWN}}
 }
 
 void array_matching_types() {
@@ -115,10 +115,10 @@ void array_matching_types() {
   int *a = &array[2];
   int *b = &array[5];
 
-  clang_analyzer_eval(a != b); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a < b); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a <= b); // expected-warning{{TRUE}}
-  clang_analyzer_eval((b-a) != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a != b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a < b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a <= b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((b-a) != 0); // expected-warning{{TRUE}}
 }
 
 // This takes a different code path than array_matching_types()
@@ -127,22 +127,22 @@ void array_different_types() {
   int *a = &array[2];
   char *b = (char*)&array[5];
 
-  clang_analyzer_eval(a != b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
-  clang_analyzer_eval(a < b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
-  clang_analyzer_eval(a <= b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
+  lfort_analyzer_eval(a != b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
+  lfort_analyzer_eval(a < b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
+  lfort_analyzer_eval(a <= b); // expected-warning{{TRUE}} expected-warning{{comparison of distinct pointer types}}
 }
 
 struct test { int x; int y; };
 void struct_fields() {
   struct test a, b;
 
-  clang_analyzer_eval(&a.x != &a.y); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a.x < &a.y); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a.x <= &a.y); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a.x != &a.y); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a.x < &a.y); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a.x <= &a.y); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(&a.x != &b.x); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a.x > &b.x); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(&a.x >= &b.x); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a.x != &b.x); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a.x > &b.x); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a.x >= &b.x); // expected-warning{{UNKNOWN}}
 }
 
 void mixed_region_types() {
@@ -150,17 +150,17 @@ void mixed_region_types() {
   int array[2];
   void *a = &array, *b = &s;
 
-  clang_analyzer_eval(&a != &b); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a > &b); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(&a >= &b); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a != &b); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a > &b); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a >= &b); // expected-warning{{UNKNOWN}}
 }
 
 void symbolic_region(int *p) {
   int a;
 
-  clang_analyzer_eval(&a != p); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&a > p); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(&a >= p); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a != p); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&a > p); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(&a >= p); // expected-warning{{UNKNOWN}}
 }
 
 void PR7527 (int *p) {

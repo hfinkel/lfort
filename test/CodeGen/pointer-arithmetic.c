@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -S %s -o -
+// RUN: %lfort_cc1 -S %s -o -
 
 typedef int Int;
 

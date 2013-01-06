@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -verify %s
 
-void clang_analyzer_eval(int);
-#define CHECK(expr) if (!(expr)) return; clang_analyzer_eval(expr)
+void lfort_analyzer_eval(int);
+#define CHECK(expr) if (!(expr)) return; lfort_analyzer_eval(expr)
 
 void testPersistentConstraints(int x, int y) {
   // Sanity check

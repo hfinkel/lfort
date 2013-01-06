@@ -11,12 +11,12 @@
 //  of what occurred during preprocessing.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LEX_PREPROCESSINGRECORD_H
-#define LLVM_CLANG_LEX_PREPROCESSINGRECORD_H
+#ifndef LLVM_LFORT_LEX_PREPROCESSINGRECORD_H
+#define LLVM_LFORT_LEX_PREPROCESSINGRECORD_H
 
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/PPCallbacks.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Lex/PPCallbacks.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/SmallVector.h"
@@ -24,20 +24,20 @@
 #include "llvm/Support/Compiler.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class IdentifierInfo;
   class PreprocessingRecord;
 }
 
-/// \brief Allocates memory within a Clang preprocessing record.
-void* operator new(size_t bytes, clang::PreprocessingRecord& PR,
+/// \brief Allocates memory within a LFort preprocessing record.
+void* operator new(size_t bytes, lfort::PreprocessingRecord& PR,
                    unsigned alignment = 8) throw();
 
-/// \brief Frees memory allocated in a Clang preprocessing record.
-void operator delete(void* ptr, clang::PreprocessingRecord& PR,
+/// \brief Frees memory allocated in a LFort preprocessing record.
+void operator delete(void* ptr, lfort::PreprocessingRecord& PR,
                      unsigned) throw();
 
-namespace clang {
+namespace lfort {
   class MacroDefinition;
   class FileEntry;
 
@@ -203,7 +203,7 @@ namespace clang {
       Import,
       /// \brief A GNU \c \#include_next directive.
       IncludeNext,
-      /// \brief A Clang \c \#__include_macros directive.
+      /// \brief A LFort \c \#__include_macros directive.
       IncludeMacros
     };
 
@@ -592,16 +592,16 @@ namespace clang {
     friend class ASTReader;
     friend class ASTWriter;
   };
-} // end namespace clang
+} // end namespace lfort
 
-inline void* operator new(size_t bytes, clang::PreprocessingRecord& PR,
+inline void* operator new(size_t bytes, lfort::PreprocessingRecord& PR,
                           unsigned alignment) throw() {
   return PR.Allocate(bytes, alignment);
 }
 
-inline void operator delete(void* ptr, clang::PreprocessingRecord& PR,
+inline void operator delete(void* ptr, lfort::PreprocessingRecord& PR,
                             unsigned) throw() {
   PR.Deallocate(ptr);
 }
 
-#endif // LLVM_CLANG_LEX_PREPROCESSINGRECORD_H
+#endif // LLVM_LFORT_LEX_PREPROCESSINGRECORD_H

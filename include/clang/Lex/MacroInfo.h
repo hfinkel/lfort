@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_MACROINFO_H
-#define LLVM_CLANG_MACROINFO_H
+#ifndef LLVM_LFORT_MACROINFO_H
+#define LLVM_LFORT_MACROINFO_H
 
-#include "clang/Lex/Token.h"
+#include "lfort/Lex/Token.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Allocator.h"
 #include <cassert>
 
-namespace clang {
+namespace lfort {
   class Preprocessor;
 
 /// MacroInfo - Each identifier that is \#define'd has an instance of this class
@@ -361,6 +361,6 @@ private:
   unsigned getDefinitionLengthSlow(SourceManager &SM) const;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

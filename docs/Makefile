@@ -7,7 +7,7 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ..
+LFORT_LEVEL := ..
 DIRS       := tools
 
 ifdef BUILD_FOR_WEBSITE
@@ -22,7 +22,7 @@ $(PROJ_OBJ_DIR)/doxygen.cfg: doxygen.cfg.in
 	  -e 's/@abs_builddir@/./g' > $@
 endif
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 HTML       := $(wildcard $(PROJ_SRC_DIR)/*.html) \
               $(wildcard $(PROJ_SRC_DIR)/*.css)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -emit-llvm -o - -verify %s
+// RUN: %lfort_cc1 -std=c++11 -emit-llvm -o - -verify %s
 
 namespace std {
   typedef decltype(sizeof(int)) size_t;

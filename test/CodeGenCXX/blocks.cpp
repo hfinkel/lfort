@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fblocks -triple x86_64-apple-darwin -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -fblocks -triple x86_64-apple-darwin -emit-llvm -o - | FileCheck %s
 
 namespace test0 {
   // CHECK: define void @_ZN5test04testEi(

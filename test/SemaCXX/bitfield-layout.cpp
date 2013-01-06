@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -triple=x86_64-apple-darwin10
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -triple=x86_64-apple-darwin10
 
 #define CHECK_SIZE(name, size) extern int name##1[sizeof(name) == size ? 1 : -1];
 #define CHECK_ALIGN(name, size) extern int name##2[__alignof(name) == size ? 1 : -1];

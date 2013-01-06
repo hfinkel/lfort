@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_ATTRLIST_H
-#define LLVM_CLANG_SEMA_ATTRLIST_H
+#ifndef LLVM_LFORT_SEMA_ATTRLIST_H
+#define LLVM_LFORT_SEMA_ATTRLIST_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/VersionTuple.h"
-#include "clang/Sema/Ownership.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/VersionTuple.h"
+#include "lfort/Sema/Ownership.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Allocator.h"
 #include <cassert>
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class IdentifierInfo;
   class Expr;
@@ -210,7 +210,7 @@ private:
 public:
   enum Kind {           
     #define PARSED_ATTR(NAME) AT_##NAME,
-    #include "clang/Sema/AttrParsedAttrList.inc"
+    #include "lfort/Sema/AttrParsedAttrList.inc"
     #undef PARSED_ATTR
     IgnoredAttribute,
     UnknownAttribute
@@ -646,6 +646,6 @@ private:
   AttributeList *list;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

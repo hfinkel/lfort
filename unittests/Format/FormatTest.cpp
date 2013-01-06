@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Format/Format.h"
+#include "lfort/Format/Format.h"
 #include "../Tooling/RewriterTestContext.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Lex/Lexer.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace format {
 
 class FormatTest : public ::testing::Test {
@@ -980,4 +980,4 @@ TEST_F(FormatTest, FormatForObjectiveCMethodDecls) {
 }
 
 }  // end namespace tooling
-}  // end namespace clang
+}  // end namespace lfort

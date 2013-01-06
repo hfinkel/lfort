@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 // Note: most of the 'nodebug' tests are in attr-nodebug.c.
 
 // expected-no-diagnostics

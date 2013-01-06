@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/NSAPI.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
+#include "lfort/AST/NSAPI.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
 
-using namespace clang;
+using namespace lfort;
 
 NSAPI::NSAPI(ASTContext &ctx)
   : Ctx(ctx), ClassIds(), BOOLId(0), NSIntegerId(0), NSUIntegerId(0),

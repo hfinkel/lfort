@@ -13,20 +13,20 @@
 
 #include "CXLoadedDiagnostic.h"
 #include "CXString.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Frontend/SerializedDiagnosticPrinter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Frontend/SerializedDiagnosticPrinter.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/ADT/Optional.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Bitcode/BitstreamReader.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include <assert.h>
 
-using namespace clang;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxstring;
 
 //===----------------------------------------------------------------------===//
 // Extend CXDiagnosticSetImpl which contains strings for diagnostics.
@@ -391,7 +391,7 @@ StreamResult DiagLoader::readToNextRecordOrBlock(llvm::BitstreamCursor &Stream,
 }
 
 LoadResult DiagLoader::readMetaBlock(llvm::BitstreamCursor &Stream) {
-  if (Stream.EnterSubBlock(clang::serialized_diags::BLOCK_META)) {
+  if (Stream.EnterSubBlock(lfort::serialized_diags::BLOCK_META)) {
     reportInvalidFile("Malformed metadata block");
     return Failure;
   }
@@ -534,7 +534,7 @@ LoadResult DiagLoader::readRange(CXLoadedDiagnosticSetImpl &TopDiags,
   
   CXSourceLocation startLoc = makeLocation(Start);
   CXSourceLocation endLoc = makeLocation(End);
-  SR = clang_getRange(startLoc, endLoc);
+  SR = lfort_getRange(startLoc, endLoc);
   return Success;  
 }
 
@@ -542,7 +542,7 @@ LoadResult DiagLoader::readDiagnosticBlock(llvm::BitstreamCursor &Stream,
                                            CXDiagnosticSetImpl &Diags,
                                            CXLoadedDiagnosticSetImpl &TopDiags){
 
-  if (Stream.EnterSubBlock(clang::serialized_diags::BLOCK_DIAG)) {
+  if (Stream.EnterSubBlock(lfort::serialized_diags::BLOCK_DIAG)) {
     reportInvalidFile("malformed diagnostic block");
     return Failure;
   }
@@ -663,7 +663,7 @@ LoadResult DiagLoader::readDiagnosticBlock(llvm::BitstreamCursor &Stream,
 }
 
 extern "C" {
-CXDiagnosticSet clang_loadDiagnostics(const char *file,
+CXDiagnosticSet lfort_loadDiagnostics(const char *file,
                                       enum CXLoadDiag_Error *error,
                                       CXString *errorString) {
   DiagLoader L(error, errorString);

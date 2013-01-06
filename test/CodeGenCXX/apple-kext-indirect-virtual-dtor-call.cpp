@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fapple-kext -fno-rtti -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fapple-kext -fno-rtti -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: define void @_ZN2B1D0Ev
 // CHECK: [[T1:%.*]] = load void (%struct.B1*)** getelementptr inbounds (void (%struct.B1*)** bitcast ([5 x i8*]* @_ZTV2B1 to void (%struct.B1*)**), i64 2)

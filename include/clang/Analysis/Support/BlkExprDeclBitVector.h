@@ -14,15 +14,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STMTDECLBVDVAL_H
-#define LLVM_CLANG_STMTDECLBVDVAL_H
+#ifndef LLVM_LFORT_STMTDECLBVDVAL_H
+#define LLVM_LFORT_STMTDECLBVDVAL_H
 
-#include "clang/AST/Decl.h" // for Decl* -> NamedDecl* conversion
-#include "clang/Analysis/CFG.h"
+#include "lfort/AST/Decl.h" // for Decl* -> NamedDecl* conversion
+#include "lfort/Analysis/CFG.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang {
+namespace lfort {
 
   class Stmt;
   class ASTContext;
@@ -302,6 +302,6 @@ struct StmtDeclBitVector_Types {
   struct Intersect { void operator()(ValTy& Dst, ValTy& Src) { Dst &= Src; } };
 
 };
-} // end namespace clang
+} // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // In addition, if class T has a user-declared constructor (12.1),
 // every non-static data member of class T shall have a name different

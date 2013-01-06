@@ -1,11 +1,11 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++0x -triple x86_64-pc-linux-gnu -ffreestanding %s
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++0x -triple x86_64-pc-linux-gnu -ffreestanding -fshort-wchar %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++0x -triple x86_64-pc-linux-gnu -ffreestanding %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++0x -triple x86_64-pc-linux-gnu -ffreestanding -fshort-wchar %s
 // expected-no-diagnostics
 
 #include <stdint.h>
 
 // In theory, the promoted types vary by platform; however, in reality they
-// are quite consistent across all platforms where clang runs.
+// are quite consistent across all platforms where lfort runs.
 
 extern int promoted_wchar;
 extern decltype(+L'a') promoted_wchar;

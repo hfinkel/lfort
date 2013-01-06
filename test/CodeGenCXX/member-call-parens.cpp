@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -verify %s
+// RUN: %lfort_cc1 -emit-llvm-only -verify %s
 // expected-no-diagnostics
 
 struct A { int a(); };

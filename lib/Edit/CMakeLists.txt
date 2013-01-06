@@ -1,20 +1,20 @@
-add_clang_library(clangEdit
+add_lfort_library(lfortEdit
   Commit.cpp
   EditedSource.cpp
   RewriteObjCFoundationAPI.cpp
   )
 
-add_dependencies(clangEdit
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
+add_dependencies(lfortEdit
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
   )
 
-target_link_libraries(clangEdit
-  clangBasic
-  clangAST
-  clangLex
+target_link_libraries(lfortEdit
+  lfortBasic
+  lfortAST
+  lfortLex
   )

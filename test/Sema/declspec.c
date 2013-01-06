@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 typedef char T[4];
 
 T foo(int n, int m) {  }  // expected-error {{cannot return array type}}

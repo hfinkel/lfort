@@ -1,4 +1,4 @@
-from clang.cindex import *
+from lfort.cindex import *
 import os
 
 kInputsDir = os.path.join(os.path.dirname(__file__), 'INPUTS')

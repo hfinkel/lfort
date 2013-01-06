@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o %t1
+// RUN: %lfort_cc1 %s -emit-llvm -o %t1
 // RUN: FileCheck --check-prefix=FOO %s < %t1
 // RUN: FileCheck --check-prefix=A %s < %t1
 // RUN: FileCheck --check-prefix=BAR %s < %t1

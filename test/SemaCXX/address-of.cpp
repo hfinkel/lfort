@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
-// PR clang/3175
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
+// PR lfort/3175
 
 void bar(int*);
 
@@ -30,7 +30,7 @@ void test2() {
   (void)&N; // expected-error{{address expression must be an lvalue or a function designator}}
 }
 
-// PR clang/3222
+// PR lfort/3222
 void xpto();
 void (*xyz)(void) = &xpto;
 

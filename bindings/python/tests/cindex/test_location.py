@@ -1,7 +1,7 @@
-from clang.cindex import Cursor
-from clang.cindex import File
-from clang.cindex import SourceLocation
-from clang.cindex import SourceRange
+from lfort.cindex import Cursor
+from lfort.cindex import File
+from lfort.cindex import SourceLocation
+from lfort.cindex import SourceRange
 from .util import get_cursor
 from .util import get_tu
 

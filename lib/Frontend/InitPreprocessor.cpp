@@ -7,27 +7,27 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the clang::InitializePreprocessor function.
+// This file implements the lfort::InitializePreprocessor function.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/MacroBuilder.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/Version.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/FrontendOptions.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/PreprocessorOptions.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/MacroBuilder.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/FrontendOptions.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/PreprocessorOptions.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
-using namespace clang;
+using namespace lfort;
 
 // Append a #define line to Buf for Macro.  Macro should be of the form XXX,
 // in which case we emit "#define XXX 1" or "XXX=Y z W" in which case we emit
@@ -330,19 +330,19 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
                                        MacroBuilder &Builder) {
   // Compiler version introspection macros.
   Builder.defineMacro("__llvm__");  // LLVM Backend
-  Builder.defineMacro("__clang__"); // Clang Frontend
+  Builder.defineMacro("__lfort__"); // LFort Frontend
 #define TOSTR2(X) #X
 #define TOSTR(X) TOSTR2(X)
-  Builder.defineMacro("__clang_major__", TOSTR(CLANG_VERSION_MAJOR));
-  Builder.defineMacro("__clang_minor__", TOSTR(CLANG_VERSION_MINOR));
-#ifdef CLANG_VERSION_PATCHLEVEL
-  Builder.defineMacro("__clang_patchlevel__", TOSTR(CLANG_VERSION_PATCHLEVEL));
+  Builder.defineMacro("__lfort_major__", TOSTR(LFORT_VERSION_MAJOR));
+  Builder.defineMacro("__lfort_minor__", TOSTR(LFORT_VERSION_MINOR));
+#ifdef LFORT_VERSION_PATCHLEVEL
+  Builder.defineMacro("__lfort_patchlevel__", TOSTR(LFORT_VERSION_PATCHLEVEL));
 #else
-  Builder.defineMacro("__clang_patchlevel__", "0");
+  Builder.defineMacro("__lfort_patchlevel__", "0");
 #endif
-  Builder.defineMacro("__clang_version__", 
-                      "\"" CLANG_VERSION_STRING " "
-                      + getClangFullRepositoryVersion() + "\"");
+  Builder.defineMacro("__lfort_version__", 
+                      "\"" LFORT_VERSION_STRING " "
+                      + getLFortFullRepositoryVersion() + "\"");
 #undef TOSTR
 #undef TOSTR2
   if (!LangOpts.MicrosoftMode) {
@@ -369,7 +369,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
   // checks that it is necessary to report 4.2.1 (the base GCC version we claim
   // compatibility with) first.
   Builder.defineMacro("__VERSION__", "\"4.2.1 Compatible " + 
-                      Twine(getClangFullCPPVersion()) + "\"");
+                      Twine(getLFortFullCPPVersion()) + "\"");
 
   // Initialize language-specific preprocessor defines.
 
@@ -627,7 +627,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
 
   // Define a macro that exists only when using the static analyzer.
   if (FEOpts.ProgramAction == frontend::RunAnalysis)
-    Builder.defineMacro("__clang_analyzer__");
+    Builder.defineMacro("__lfort_analyzer__");
 
   if (LangOpts.FastRelaxedMath)
     Builder.defineMacro("__FAST_RELAXED_MATH__");
@@ -710,7 +710,7 @@ static void InitializeFileRemapping(DiagnosticsEngine &Diags,
 /// InitializePreprocessor - Initialize the preprocessor getting it and the
 /// environment ready to process a single file. This returns true on error.
 ///
-void clang::InitializePreprocessor(Preprocessor &PP,
+void lfort::InitializePreprocessor(Preprocessor &PP,
                                    const PreprocessorOptions &InitOpts,
                                    const HeaderSearchOptions &HSOpts,
                                    const FrontendOptions &FEOpts) {

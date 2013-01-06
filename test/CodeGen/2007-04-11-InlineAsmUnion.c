@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 union U { int x; float p; };
 void foo() {

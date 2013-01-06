@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/CFG.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -27,7 +27,7 @@
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/SaveAndRestore.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

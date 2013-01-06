@@ -12,17 +12,17 @@
 // to be freed using a call to SecKeychainItemFreeContent.
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "LFortSACheckers.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {
@@ -506,7 +506,7 @@ MacOSKeychainAPIChecker::getAllocationSite(const ExplodedNode *N,
   ProgramPoint P = AllocNode->getLocation();
   if (CallExitEnd *Exit = dyn_cast<CallExitEnd>(&P))
     return Exit->getCalleeContext()->getCallSite();
-  if (clang::PostStmt *PS = dyn_cast<clang::PostStmt>(&P))
+  if (lfort::PostStmt *PS = dyn_cast<lfort::PostStmt>(&P))
     return PS->getStmt();
   return 0;
 }

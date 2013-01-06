@@ -1,4 +1,4 @@
-from clang.cindex import Index, File
+from lfort.cindex import Index, File
 
 def test_file():
   index = Index.create()

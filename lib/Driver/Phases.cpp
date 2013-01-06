@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Phases.h"
+#include "lfort/Driver/Phases.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cassert>
 
-using namespace clang::driver;
+using namespace lfort::driver;
 
 const char *phases::getPhaseName(ID Id) {
   switch (Id) {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic -std=c++11 %s
 
 extern "C" {
 extern int scanf(const char *restrict, ...);

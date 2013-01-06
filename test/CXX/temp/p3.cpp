@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 template<typename T> struct S {
   static int a, b;

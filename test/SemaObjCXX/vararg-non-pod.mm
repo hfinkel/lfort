@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wno-error=non-pod-varargs
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -Wno-error=non-pod-varargs
 
 extern char version[];
 

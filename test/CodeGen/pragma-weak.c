@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-pc-linux-gnu -emit-llvm %s -o - -verify | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-pc-linux-gnu -emit-llvm %s -o - -verify | FileCheck %s
 
 // CHECK: @weakvar = weak global
 // CHECK: @__weakvar_alias = common global
@@ -169,7 +169,7 @@ void PR14046f() {
 ///////////// TODO: stuff that still doesn't work
 
 // due to the fact that disparate TopLevelDecls cannot affect each other
-// (due to clang's Parser and ASTConsumer behavior, and quite reasonable)
+// (due to lfort's Parser and ASTConsumer behavior, and quite reasonable)
 // #pragma weak must appear before or within the same TopLevelDecl as it
 // references.
 void yyy(void){}

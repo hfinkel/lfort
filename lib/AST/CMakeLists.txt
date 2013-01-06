@@ -1,6 +1,6 @@
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangAST
+add_lfort_library(lfortAST
   APValue.cpp
   ASTConsumer.cpp
   ASTContext.cpp
@@ -59,24 +59,24 @@ add_clang_library(clangAST
   VTTBuilder.cpp
   )
 
-add_dependencies(clangAST
-  ClangARMNeon
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrImpl
-  ClangCommentCommandInfo
-  ClangCommentNodes
-  ClangCommentHTMLTags
-  ClangCommentHTMLTagsProperties
-  ClangDeclNodes
-  ClangDiagnosticAST
-  ClangDiagnosticComment
-  ClangDiagnosticCommon
-  ClangDiagnosticSema
-  ClangStmtNodes
+add_dependencies(lfortAST
+  LFortARMNeon
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrImpl
+  LFortCommentCommandInfo
+  LFortCommentNodes
+  LFortCommentHTMLTags
+  LFortCommentHTMLTagsProperties
+  LFortDeclNodes
+  LFortDiagnosticAST
+  LFortDiagnosticComment
+  LFortDiagnosticCommon
+  LFortDiagnosticSema
+  LFortStmtNodes
   )
 
-target_link_libraries(clangAST
-  clangBasic
-  clangLex
+target_link_libraries(lfortAST
+  lfortBasic
+  lfortLex
   )

@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_TYPEVISITOR_H
-#define LLVM_CLANG_AST_TYPEVISITOR_H
+#ifndef LLVM_LFORT_AST_TYPEVISITOR_H
+#define LLVM_LFORT_AST_TYPEVISITOR_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 
-namespace clang {
+namespace lfort {
 
 #define DISPATCH(CLASS) \
   return static_cast<ImplClass*>(this)-> \
@@ -30,7 +30,7 @@ public:
     switch (T->getTypeClass()) {
 #define ABSTRACT_TYPE(CLASS, PARENT)
 #define TYPE(CLASS, PARENT) case Type::CLASS: DISPATCH(CLASS##Type);
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
     llvm_unreachable("Unknown type class!");
   }
@@ -40,7 +40,7 @@ public:
 #define TYPE(CLASS, PARENT) RetTy Visit##CLASS##Type(const CLASS##Type *T) { \
   DISPATCH(PARENT);                                                          \
 }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   // Base case, ignore it. :)
   RetTy VisitType(const Type*) { return RetTy(); }
@@ -48,6 +48,6 @@ public:
 
 #undef DISPATCH
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

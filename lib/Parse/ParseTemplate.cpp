@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-using namespace clang;
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+using namespace lfort;
 
 /// \brief Parse a template declaration, explicit instantiation, or
 /// explicit specialization.

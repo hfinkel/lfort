@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/TokenLexer.h"
+#include "lfort/Lex/TokenLexer.h"
 #include "MacroArgs.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
+using namespace lfort;
 
 
 /// Create a TokenLexer for the specified macro with the specified actual

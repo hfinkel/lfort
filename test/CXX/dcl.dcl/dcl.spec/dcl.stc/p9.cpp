@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 struct S; // expected-note 2{{forward declaration of 'S'}}
 extern S a;

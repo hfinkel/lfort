@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -pedantic -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -pedantic -fsyntax-only
 
 __constant int ci = 1;
 

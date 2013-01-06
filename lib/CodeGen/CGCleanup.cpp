@@ -20,7 +20,7 @@
 #include "CodeGenFunction.h"
 #include "CGCleanup.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 bool DominatingValue<RValue>::saved_type::needsSaving(RValue rv) {

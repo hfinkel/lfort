@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -fblocks -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -fblocks -o - | FileCheck %s
 // rdar://5865221
 
 // These will be inlined by the optimizers provided the block descriptors

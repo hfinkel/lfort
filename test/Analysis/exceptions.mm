@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -fexceptions -fobjc-exceptions -fcxx-exceptions -analyzer-checker=core,unix.Malloc,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -analyze -fexceptions -fobjc-exceptions -fcxx-exceptions -analyzer-checker=core,unix.Malloc,debug.ExprInspection -verify %s
 
-void clang_analyzer_checkInlined(bool);
+void lfort_analyzer_checkInlined(bool);
 
 typedef typeof(sizeof(int)) size_t;
 void *malloc(size_t);
@@ -9,7 +9,7 @@ void free(void *);
 
 id getException();
 void inlinedObjC() {
-  clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+  lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
   @throw getException();
 }
 
@@ -23,7 +23,7 @@ int testObjC() {
 
 
 void inlinedCXX() {
-  clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+  lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
   throw -1;
 }
 

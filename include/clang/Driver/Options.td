@@ -1,4 +1,4 @@
-//===--- Options.td - Options for clang -----------------------------------===//
+//===--- Options.td - Options for lfort -----------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the options accepted by clang.
+//  This file defines the options accepted by lfort.
 //
 //===----------------------------------------------------------------------===//
 
@@ -31,11 +31,11 @@ def X_Group               : OptionGroup<"<X group>">;
 def a_Group               : OptionGroup<"<a group>">;
 def d_Group               : OptionGroup<"<d group>">;
 def f_Group               : OptionGroup<"<f group>">, Group<CompileOnly_Group>;
-def f_clang_Group         : OptionGroup<"<f (clang-only) group>">, Group<CompileOnly_Group>;
+def f_lfort_Group         : OptionGroup<"<f (lfort-only) group>">, Group<CompileOnly_Group>;
 def g_Group               : OptionGroup<"<g group>">;
 def g_flags_Group         : OptionGroup<"<g flags group>">;
 def i_Group               : OptionGroup<"<i group>">, Group<CompileOnly_Group>;
-def clang_i_Group         : OptionGroup<"<clang i group>">, Group<i_Group>;
+def lfort_i_Group         : OptionGroup<"<lfort i group>">, Group<i_Group>;
 def m_Group               : OptionGroup<"<m group>">, Group<CompileOnly_Group>;
 def m_x86_Features_Group  : OptionGroup<"<m x86 features group>">, Group<m_Group>;
 def m_hexagon_Features_Group  : OptionGroup<"<m hexagon features group>">, Group<m_Group>;
@@ -48,18 +48,18 @@ def pedantic_Group        : OptionGroup<"<pedantic group>">,
   Group<CompileOnly_Group>;
 def reserved_lib_Group   : OptionGroup<"<reserved libs group>">;
 
-// Temporary groups for clang options which we know we don't support,
+// Temporary groups for lfort options which we know we don't support,
 // but don't want to verbosely warn the user about.
-def clang_ignored_f_Group : OptionGroup<"<clang ignored f group>">,
+def lfort_ignored_f_Group : OptionGroup<"<lfort ignored f group>">,
   Group<f_Group>;
-def clang_ignored_m_Group : OptionGroup<"<clang ignored m group>">,
+def lfort_ignored_m_Group : OptionGroup<"<lfort ignored m group>">,
   Group<m_Group>;
 
 /////////
 // Options
 
 // The internal option ID must be a valid C++ identifier and results in a
-// clang::driver::options::OPT_XX enum constant for XX.
+// lfort::driver::options::OPT_XX enum constant for XX.
 //
 // We want to unambiguously be able to refer to options from the driver source
 // code, for this reason the option name is mangled into an ID. This mangling
@@ -77,10 +77,10 @@ def clang_ignored_m_Group : OptionGroup<"<clang ignored m group>">,
 
 // Developer Driver Options
 
-def ccc_Group : OptionGroup<"<clang internal options>">;
-def ccc_driver_Group : OptionGroup<"<clang driver internal options>">,
+def ccc_Group : OptionGroup<"<lfort internal options>">;
+def ccc_driver_Group : OptionGroup<"<lfort driver internal options>">,
   Group<ccc_Group>, HelpText<"DRIVER OPTIONS">;
-def ccc_debug_Group : OptionGroup<"<clang debug/development internal options>">,
+def ccc_debug_Group : OptionGroup<"<lfort debug/development internal options>">,
   Group<ccc_Group>, HelpText<"DEBUG/DEVELOPMENT OPTIONS">;
 
 class CCCDriverOpt : Group<ccc_driver_Group>, Flags<[DriverOption, HelpHidden]>;
@@ -91,8 +91,8 @@ def ccc_echo : Flag<["-"], "ccc-echo">, CCCDriverOpt,
 def ccc_gcc_name : Separate<["-"], "ccc-gcc-name">, CCCDriverOpt,
   HelpText<"Name for native GCC compiler">,
   MetaVarName<"<gcc-path>">;
-def ccc_clang_archs : Separate<["-"], "ccc-clang-archs">, CCCDriverOpt,
-  HelpText<"Comma separate list of architectures to use the clang compiler for">,
+def ccc_lfort_archs : Separate<["-"], "ccc-lfort-archs">, CCCDriverOpt,
+  HelpText<"Comma separate list of architectures to use the lfort compiler for">,
   MetaVarName<"<arch-list>">;
 def ccc_pch_is_pch : Flag<["-"], "ccc-pch-is-pch">, CCCDriverOpt,
   HelpText<"Use lazy PCH for precompiled headers">;
@@ -222,8 +222,8 @@ def Xanalyzer : Separate<["-"], "Xanalyzer">,
 def Xarch__ : JoinedAndSeparate<["-"], "Xarch_">, Flags<[DriverOption]>;
 def Xassembler : Separate<["-"], "Xassembler">,
   HelpText<"Pass <arg> to the assembler">, MetaVarName<"<arg>">;
-def Xclang : Separate<["-"], "Xclang">,
-  HelpText<"Pass <arg> to the clang compiler">, MetaVarName<"<arg>">,
+def Xlfort : Separate<["-"], "Xlfort">,
+  HelpText<"Pass <arg> to the lfort compiler">, MetaVarName<"<arg>">,
   Flags<[NoForward]>;
 def Xlinker : Separate<["-"], "Xlinker">, Flags<[LinkerInput, RenderAsInput]>,
   HelpText<"Pass <arg> to the linker">, MetaVarName<"<arg>">;
@@ -250,9 +250,9 @@ def client__name : JoinedOrSeparate<["-"], "client_name">;
 def combine : Flag<["-", "--"], "combine">, Flags<[DriverOption, Unsupported]>;
 def compatibility__version : JoinedOrSeparate<["-"], "compatibility_version">;
 def coverage : Flag<["-", "--"], "coverage">;
-def cpp_precomp : Flag<["-"], "cpp-precomp">, Group<clang_ignored_f_Group>;
+def cpp_precomp : Flag<["-"], "cpp-precomp">, Group<lfort_ignored_f_Group>;
 def current__version : JoinedOrSeparate<["-"], "current_version">;
-def cxx_isystem : JoinedOrSeparate<["-"], "cxx-isystem">, Group<clang_i_Group>,
+def cxx_isystem : JoinedOrSeparate<["-"], "cxx-isystem">, Group<lfort_i_Group>,
   HelpText<"Add directory to the C++ SYSTEM include search path">, Flags<[CC1Option]>,
   MetaVarName<"<directory>">;
 def c : Flag<["-"], "c">, Flags<[DriverOption]>,
@@ -278,7 +278,7 @@ def dynamic : Flag<["-"], "dynamic">, Flags<[NoArgumentUnused]>;
 def d_Flag : Flag<["-"], "d">, Group<d_Group>;
 def d_Joined : Joined<["-"], "d">, Group<d_Group>;
 def emit_ast : Flag<["-"], "emit-ast">,
-  HelpText<"Emit Clang AST files for source inputs">;
+  HelpText<"Emit LFort AST files for source inputs">;
 def emit_llvm : Flag<["-"], "emit-llvm">, Flags<[CC1Option]>, Group<Action_Group>,
   HelpText<"Use the LLVM representation for assembler and object files">;
 def exported__symbols__list : Separate<["-"], "exported_symbols_list">;
@@ -333,18 +333,18 @@ def fconstant_string_class_EQ : Joined<["-"], "fconstant-string-class=">, Group<
 def fconstexpr_depth_EQ : Joined<["-"], "fconstexpr-depth=">, Group<f_Group>;
 def fconstexpr_backtrace_limit_EQ : Joined<["-"], "fconstexpr-backtrace-limit=">,
                                     Group<f_Group>;
-def fno_crash_diagnostics : Flag<["-"], "fno-crash-diagnostics">, Group<f_clang_Group>, Flags<[NoArgumentUnused]>;
+def fno_crash_diagnostics : Flag<["-"], "fno-crash-diagnostics">, Group<f_lfort_Group>, Flags<[NoArgumentUnused]>;
 def fcreate_profile : Flag<["-"], "fcreate-profile">, Group<f_Group>;
 def fcxx_exceptions: Flag<["-"], "fcxx-exceptions">, Group<f_Group>,
   HelpText<"Enable C++ exceptions">, Flags<[CC1Option]>;
 def fcxx_modules : Flag <["-"], "fcxx-modules">, Group<f_Group>, Flags<[NoForward]>;
 def fdebug_pass_arguments : Flag<["-"], "fdebug-pass-arguments">, Group<f_Group>;
 def fdebug_pass_structure : Flag<["-"], "fdebug-pass-structure">, Group<f_Group>;
-def fdiagnostics_fixit_info : Flag<["-"], "fdiagnostics-fixit-info">, Group<f_clang_Group>;
-def fdiagnostics_parseable_fixits : Flag<["-"], "fdiagnostics-parseable-fixits">, Group<f_clang_Group>,
+def fdiagnostics_fixit_info : Flag<["-"], "fdiagnostics-fixit-info">, Group<f_lfort_Group>;
+def fdiagnostics_parseable_fixits : Flag<["-"], "fdiagnostics-parseable-fixits">, Group<f_lfort_Group>,
     Flags<[CC1Option]>, HelpText<"Print fix-its in machine parseable form">;
 def fdiagnostics_print_source_range_info : Flag<["-"], "fdiagnostics-print-source-range-info">,
-    Group<f_clang_Group>,  Flags<[CC1Option]>,
+    Group<f_lfort_Group>,  Flags<[CC1Option]>,
     HelpText<"Print source range spans in numeric form">;
 def fdiagnostics_show_option : Flag<["-"], "fdiagnostics-show-option">, Group<f_Group>,
     Flags<[CC1Option]>, HelpText<"Print option name with mappable diagnostics">;
@@ -352,8 +352,8 @@ def fdiagnostics_show_name : Flag<["-"], "fdiagnostics-show-name">, Group<f_Grou
     Flags<[CC1Option]>, HelpText<"Print diagnostic name">;
 def fdiagnostics_show_note_include_stack : Flag<["-"], "fdiagnostics-show-note-include-stack">,
     Group<f_Group>,  Flags<[CC1Option]>, HelpText<"Display include stacks for diagnostic notes">;
-def fdiagnostics_format_EQ : Joined<["-"], "fdiagnostics-format=">, Group<f_clang_Group>;
-def fdiagnostics_show_category_EQ : Joined<["-"], "fdiagnostics-show-category=">, Group<f_clang_Group>;
+def fdiagnostics_format_EQ : Joined<["-"], "fdiagnostics-format=">, Group<f_lfort_Group>;
+def fdiagnostics_show_category_EQ : Joined<["-"], "fdiagnostics-show-category=">, Group<f_lfort_Group>;
 def fdiagnostics_show_template_tree : Flag<["-"], "fdiagnostics-show-template-tree">,
     Group<f_Group>, Flags<[CC1Option]>,
     HelpText<"Print a template comparison tree for differing templates">;
@@ -386,28 +386,28 @@ def fmath_errno : Flag<["-"], "fmath-errno">, Group<f_Group>, Flags<[CC1Option]>
 def fno_math_errno : Flag<["-"], "fno-math-errno">, Group<f_Group>;
 def fsignaling_math : Flag<["-"], "fsignaling-math">, Group<f_Group>;
 def fno_signaling_math : Flag<["-"], "fno-signaling-math">, Group<f_Group>;
-def fsanitize_EQ : CommaJoined<["-"], "fsanitize=">, Group<f_clang_Group>,
+def fsanitize_EQ : CommaJoined<["-"], "fsanitize=">, Group<f_lfort_Group>,
                    Flags<[CC1Option]>, MetaVarName<"<check>">,
                    HelpText<"Enable runtime instrumentation for bug detection: "
                             "address (memory errors) | thread (race detection) | "
                             "undefined (miscellaneous undefined behavior)">;
-def fno_sanitize_EQ : CommaJoined<["-"], "fno-sanitize=">, Group<f_clang_Group>;
+def fno_sanitize_EQ : CommaJoined<["-"], "fno-sanitize=">, Group<f_lfort_Group>;
 def fsanitize_blacklist : Joined<["-"], "fsanitize-blacklist=">,
-                          Group<f_clang_Group>, Flags<[CC1Option]>,
+                          Group<f_lfort_Group>, Flags<[CC1Option]>,
                           HelpText<"Path to blacklist file for sanitizers">;
 def fno_sanitize_blacklist : Flag<["-"], "fno-sanitize-blacklist">,
-                             Group<f_clang_Group>,
+                             Group<f_lfort_Group>,
                              HelpText<"Don't use blacklist file for sanitizers">;
 def fsanitize_memory_track_origins : Flag<["-"], "fsanitize-memory-track-origins">,
-                                     Group<f_clang_Group>, Flags<[CC1Option]>,
+                                     Group<f_lfort_Group>, Flags<[CC1Option]>,
                                      HelpText<"Enable origins tracking in MemorySanitizer">;
 def fno_sanitize_memory_track_origins : Flag<["-"], "fno-sanitize-memory-track-origins">,
-                                        Group<f_clang_Group>,
+                                        Group<f_lfort_Group>,
                                         HelpText<"Disable origins tracking in MemorySanitizer">;
 def fsanitize_recover : Flag<["-"], "fsanitize-recover">,
-                        Group<f_clang_Group>;
+                        Group<f_lfort_Group>;
 def fno_sanitize_recover : Flag<["-"], "fno-sanitize-recover">,
-                           Group<f_clang_Group>, Flags<[CC1Option]>,
+                           Group<f_lfort_Group>, Flags<[CC1Option]>,
                            HelpText<"Disable sanitizer check recovery">;
 def funsafe_math_optimizations : Flag<["-"], "funsafe-math-optimizations">,
   Group<f_Group>;
@@ -453,11 +453,11 @@ def fgnu_runtime : Flag<["-"], "fgnu-runtime">, Group<f_Group>,
 def fheinous_gnu_extensions : Flag<["-"], "fheinous-gnu-extensions">, Flags<[CC1Option]>;
 def filelist : Separate<["-"], "filelist">, Flags<[LinkerInput]>;
 def findirect_virtual_calls : Flag<["-"], "findirect-virtual-calls">, Alias<fapple_kext>;
-def finline_functions : Flag<["-"], "finline-functions">, Group<clang_ignored_f_Group>;
-def finline : Flag<["-"], "finline">, Group<clang_ignored_f_Group>;
+def finline_functions : Flag<["-"], "finline-functions">, Group<lfort_ignored_f_Group>;
+def finline : Flag<["-"], "finline">, Group<lfort_ignored_f_Group>;
 def finstrument_functions : Flag<["-"], "finstrument-functions">, Group<f_Group>, Flags<[CC1Option]>,
   HelpText<"Generate calls to instrument function entry and exit">;
-def fkeep_inline_functions : Flag<["-"], "fkeep-inline-functions">, Group<clang_ignored_f_Group>;
+def fkeep_inline_functions : Flag<["-"], "fkeep-inline-functions">, Group<lfort_ignored_f_Group>;
 def flat__namespace : Flag<["-"], "flat_namespace">;
 def flax_vector_conversions : Flag<["-"], "flax-vector-conversions">, Group<f_Group>;
 def flimit_debug_info : Flag<["-"], "flimit-debug-info">, Group<f_Group>, Flags<[CC1Option]>,
@@ -528,9 +528,9 @@ def fno_elide_constructors : Flag<["-"], "fno-elide-constructors">, Group<f_Grou
 def fno_eliminate_unused_debug_symbols : Flag<["-"], "fno-eliminate-unused-debug-symbols">, Group<f_Group>;
 def fno_exceptions : Flag<["-"], "fno-exceptions">, Group<f_Group>;
 def fno_gnu_keywords : Flag<["-"], "fno-gnu-keywords">, Group<f_Group>, Flags<[CC1Option]>;
-def fno_inline_functions : Flag<["-"], "fno-inline-functions">, Group<f_clang_Group>, Flags<[CC1Option]>;
-def fno_inline : Flag<["-"], "fno-inline">, Group<f_clang_Group>, Flags<[CC1Option]>;
-def fno_keep_inline_functions : Flag<["-"], "fno-keep-inline-functions">, Group<clang_ignored_f_Group>;
+def fno_inline_functions : Flag<["-"], "fno-inline-functions">, Group<f_lfort_Group>, Flags<[CC1Option]>;
+def fno_inline : Flag<["-"], "fno-inline">, Group<f_lfort_Group>, Flags<[CC1Option]>;
+def fno_keep_inline_functions : Flag<["-"], "fno-keep-inline-functions">, Group<lfort_ignored_f_Group>;
 def fno_lax_vector_conversions : Flag<["-"], "fno-lax-vector-conversions">, Group<f_Group>,
   HelpText<"Disallow implicit conversions between vectors with a different number of elements or different element types">, Flags<[CC1Option]>;
 def fno_limit_debug_info : Flag<["-"], "fno-limit-debug-info">, Group<f_Group>, Flags<[CC1Option]>,
@@ -579,8 +579,8 @@ def fno_objc_arc : Flag<["-"], "fno-objc-arc">, Group<f_Group>;
 def fobjc_arc_exceptions : Flag<["-"], "fobjc-arc-exceptions">, Group<f_Group>, Flags<[CC1Option]>,
   HelpText<"Use EH-safe code when synthesizing retains and releases in -fobjc-arc">;
 def fno_objc_arc_exceptions : Flag<["-"], "fno-objc-arc-exceptions">, Group<f_Group>;
-def fobjc_atdefs : Flag<["-"], "fobjc-atdefs">, Group<clang_ignored_f_Group>;
-def fobjc_call_cxx_cdtors : Flag<["-"], "fobjc-call-cxx-cdtors">, Group<clang_ignored_f_Group>;
+def fobjc_atdefs : Flag<["-"], "fobjc-atdefs">, Group<lfort_ignored_f_Group>;
+def fobjc_call_cxx_cdtors : Flag<["-"], "fobjc-call-cxx-cdtors">, Group<lfort_ignored_f_Group>;
 def fobjc_exceptions: Flag<["-"], "fobjc-exceptions">, Group<f_Group>,
   HelpText<"Enable Objective-C exceptions">, Flags<[CC1Option]>;
 
@@ -589,7 +589,7 @@ def fobjc_gc_only : Flag<["-"], "fobjc-gc-only">, Group<f_Group>, Flags<[CC1Opti
 def fobjc_gc : Flag<["-"], "fobjc-gc">, Group<f_Group>, Flags<[CC1Option]>,
   HelpText<"Enable Objective-C garbage collection">;
 def fobjc_legacy_dispatch : Flag<["-"], "fobjc-legacy-dispatch">, Group<f_Group>;
-def fobjc_new_property : Flag<["-"], "fobjc-new-property">, Group<clang_ignored_f_Group>;
+def fobjc_new_property : Flag<["-"], "fobjc-new-property">, Group<lfort_ignored_f_Group>;
 def fobjc_infer_related_result_type : Flag<["-"], "fobjc-infer-related-result-type">, 
                                       Group<f_Group>;
 def fno_objc_infer_related_result_type : Flag<["-"],
@@ -631,12 +631,12 @@ def fno_pie : Flag<["-"], "fno-pie">, Group<f_Group>;
 def fprofile_arcs : Flag<["-"], "fprofile-arcs">, Group<f_Group>;
 def fprofile_generate : Flag<["-"], "fprofile-generate">, Group<f_Group>;
 def framework : Separate<["-"], "framework">, Flags<[LinkerInput]>;
-def frandom_seed_EQ : Joined<["-"], "frandom-seed=">, Group<clang_ignored_f_Group>;
+def frandom_seed_EQ : Joined<["-"], "frandom-seed=">, Group<lfort_ignored_f_Group>;
 def frtti : Flag<["-"], "frtti">, Group<f_Group>;
-def fsched_interblock : Flag<["-"], "fsched-interblock">, Group<clang_ignored_f_Group>;
+def fsched_interblock : Flag<["-"], "fsched-interblock">, Group<lfort_ignored_f_Group>;
 def fshort_enums : Flag<["-"], "fshort-enums">, Group<f_Group>, Flags<[CC1Option]>,
   HelpText<"Allocate to an enum type only as many bytes as it needs for the declared range of possible values">;
-def freorder_blocks : Flag<["-"], "freorder-blocks">, Group<clang_ignored_f_Group>;
+def freorder_blocks : Flag<["-"], "freorder-blocks">, Group<lfort_ignored_f_Group>;
 def fshort_wchar : Flag<["-"], "fshort-wchar">, Group<f_Group>, Flags<[CC1Option]>,
   HelpText<"Force wchar_t to be a short unsigned int">;
 def fshow_overloads_EQ : Joined<["-"], "fshow-overloads=">, Group<f_Group>, Flags<[CC1Option]>,
@@ -677,10 +677,10 @@ def Wlarge_by_value_copy_def : Flag<["-"], "Wlarge-by-value-copy">,
 def Wlarge_by_value_copy_EQ : Joined<["-"], "Wlarge-by-value-copy=">, Flags<[CC1Option]>;
 
 // Just silence warnings about -Wlarger-than,  -Wframe-larger-than for now.
-def Wlarger_than : Separate<["-"], "Wlarger-than">, Group<clang_ignored_f_Group>;
+def Wlarger_than : Separate<["-"], "Wlarger-than">, Group<lfort_ignored_f_Group>;
 def Wlarger_than_EQ : Joined<["-"], "Wlarger-than=">, Alias<Wlarger_than>;
 def Wlarger_than_ : Joined<["-"], "Wlarger-than-">, Alias<Wlarger_than>;
-def Wframe_larger_than : Separate<["-"], "Wframe-larger-than">, Group<clang_ignored_f_Group>;
+def Wframe_larger_than : Separate<["-"], "Wframe-larger-than">, Group<lfort_ignored_f_Group>;
 def Wframe_larger_than_EQ : Joined<["-"], "Wframe-larger-than=">, Alias<Wframe_larger_than>;
 
 def fterminated_vtables : Flag<["-"], "fterminated-vtables">, Alias<fapple_kext>;
@@ -753,34 +753,34 @@ def help : Flag<["-", "--"], "help">, Flags<[CC1Option]>,
   HelpText<"Display available options">;
 def index_header_map : Flag<["-"], "index-header-map">, Flags<[CC1Option]>,
   HelpText<"Make the next included directory (-I or -F) an indexer header map">;
-def idirafter : JoinedOrSeparate<["-"], "idirafter">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def idirafter : JoinedOrSeparate<["-"], "idirafter">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Add directory to AFTER include search path">;
-def iframework : JoinedOrSeparate<["-"], "iframework">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def iframework : JoinedOrSeparate<["-"], "iframework">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Add directory to SYSTEM framework search path">;
-def imacros : JoinedOrSeparate<["-", "--"], "imacros">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def imacros : JoinedOrSeparate<["-", "--"], "imacros">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Include macros from file before parsing">, MetaVarName<"<file>">;
 def image__base : Separate<["-"], "image_base">;
-def include_ : JoinedOrSeparate<["-", "--"], "include">, Group<clang_i_Group>, EnumName<"include">,
+def include_ : JoinedOrSeparate<["-", "--"], "include">, Group<lfort_i_Group>, EnumName<"include">,
     MetaVarName<"<file>">, HelpText<"Include file before parsing">, Flags<[CC1Option]>;
-def include_pch : Separate<["-"], "include-pch">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def include_pch : Separate<["-"], "include-pch">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Include precompiled header file">, MetaVarName<"<file>">;
 def init : Separate<["-"], "init">;
 def install__name : Separate<["-"], "install_name">;
 def integrated_as : Flag<["-"], "integrated-as">, Flags<[DriverOption]>;
-def iprefix : JoinedOrSeparate<["-"], "iprefix">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def iprefix : JoinedOrSeparate<["-"], "iprefix">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Set the -iwithprefix/-iwithprefixbefore prefix">, MetaVarName<"<dir>">;
-def iquote : JoinedOrSeparate<["-"], "iquote">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def iquote : JoinedOrSeparate<["-"], "iquote">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Add directory to QUOTE include search path">, MetaVarName<"<directory>">;
-def isysroot : JoinedOrSeparate<["-"], "isysroot">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def isysroot : JoinedOrSeparate<["-"], "isysroot">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Set the system root directory (usually /)">, MetaVarName<"<dir>">;
-def isystem : JoinedOrSeparate<["-"], "isystem">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def isystem : JoinedOrSeparate<["-"], "isystem">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Add directory to SYSTEM include search path">, MetaVarName<"<directory>">;
-def iwithprefixbefore : JoinedOrSeparate<["-"], "iwithprefixbefore">, Group<clang_i_Group>,
+def iwithprefixbefore : JoinedOrSeparate<["-"], "iwithprefixbefore">, Group<lfort_i_Group>,
   HelpText<"Set directory to include search path with prefix">, MetaVarName<"<dir>">,
   Flags<[CC1Option]>;
-def iwithprefix : JoinedOrSeparate<["-"], "iwithprefix">, Group<clang_i_Group>, Flags<[CC1Option]>,
+def iwithprefix : JoinedOrSeparate<["-"], "iwithprefix">, Group<lfort_i_Group>, Flags<[CC1Option]>,
   HelpText<"Set directory to SYSTEM include search path with prefix">, MetaVarName<"<dir>">;
-def iwithsysroot : JoinedOrSeparate<["-"], "iwithsysroot">, Group<clang_i_Group>,
+def iwithsysroot : JoinedOrSeparate<["-"], "iwithsysroot">, Group<lfort_i_Group>,
   HelpText<"Add directory to SYSTEM include search path, "
            "absolute paths are relative to -isysroot">, MetaVarName<"<directory>">,
   Flags<[CC1Option]>;
@@ -799,10 +799,10 @@ def mabi_EQ : Joined<["-"], "mabi=">, Group<m_Group>;
 def march_EQ : Joined<["-"], "march=">, Group<m_Group>;
 def maltivec : Flag<["-"], "maltivec">, Alias<faltivec>;
 def mcmodel_EQ : Joined<["-"], "mcmodel=">, Group<m_Group>;
-def mconstant_cfstrings : Flag<["-"], "mconstant-cfstrings">, Group<clang_ignored_m_Group>;
+def mconstant_cfstrings : Flag<["-"], "mconstant-cfstrings">, Group<lfort_ignored_m_Group>;
 def mcpu_EQ : Joined<["-"], "mcpu=">, Group<m_Group>;
 def mdynamic_no_pic : Joined<["-"], "mdynamic-no-pic">, Group<m_Group>;
-def mfix_and_continue : Flag<["-"], "mfix-and-continue">, Group<clang_ignored_m_Group>;
+def mfix_and_continue : Flag<["-"], "mfix-and-continue">, Group<lfort_ignored_m_Group>;
 def mfloat_abi_EQ : Joined<["-"], "mfloat-abi=">, Group<m_Group>;
 def mfpmath_EQ : Joined<["-"], "mfpmath=">, Group<m_Group>;
 def mfpu_EQ : Joined<["-"], "mfpu=">, Group<m_Group>;
@@ -928,7 +928,7 @@ def m_Separate : Separate<["-"], "m">, Group<m_Group>;
 def m_Joined : Joined<["-"], "m">, Group<m_Group>;
 def no_canonical_prefixes : Flag<["-"], "no-canonical-prefixes">, Flags<[HelpHidden]>,
   HelpText<"Use relative instead of canonical paths">;
-def no_cpp_precomp : Flag<["-"], "no-cpp-precomp">, Group<clang_ignored_f_Group>;
+def no_cpp_precomp : Flag<["-"], "no-cpp-precomp">, Group<lfort_ignored_f_Group>;
 def no_integrated_as : Flag<["-"], "no-integrated-as">, Flags<[DriverOption]>;
 def no_integrated_cpp : Flag<["-", "--"], "no-integrated-cpp">, Flags<[DriverOption]>;
 def no_pedantic : Flag<["-", "--"], "no-pedantic">, Group<pedantic_Group>;

@@ -21,16 +21,16 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/PrettyStackTrace.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/TypoCorrection.h"
+#include "lfort/Basic/PrettyStackTrace.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/TypoCorrection.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
-using namespace clang;
+using namespace lfort;
 
 /// \brief Simple precedence-based parser for binary/ternary operators.
 ///
@@ -518,7 +518,7 @@ class CastExpressionIdValidator : public CorrectionCandidateCallback {
 /// [G++]   unary-type-trait '(' type-id ')'
 /// [G++]   binary-type-trait '(' type-id ',' type-id ')'           [TODO]
 /// [EMBT]  array-type-trait '(' type-id ',' integer ')'
-/// [clang] '^' block-literal
+/// [lfort] '^' block-literal
 ///
 ///       constant: [C99 6.4.4]
 ///         integer-constant
@@ -594,7 +594,7 @@ class CastExpressionIdValidator : public CorrectionCandidateCallback {
 ///                   '__is_trivial'
 ///                   '__is_union'
 ///
-/// [Clang] unary-type-trait:
+/// [LFort] unary-type-trait:
 ///                   '__trivially_copyable'
 ///
 ///       binary-type-trait:
@@ -2344,8 +2344,8 @@ bool Parser::ParseExpressionList(SmallVectorImpl<Expr*> &Exprs,
 /// ParseBlockId - Parse a block-id, which roughly looks like int (int x).
 ///
 /// \verbatim
-/// [clang] block-id:
-/// [clang]   specifier-qualifier-list block-declarator
+/// [lfort] block-id:
+/// [lfort]   specifier-qualifier-list block-declarator
 /// \endverbatim
 void Parser::ParseBlockId(SourceLocation CaretLoc) {
   if (Tok.is(tok::code_completion)) {
@@ -2375,10 +2375,10 @@ void Parser::ParseBlockId(SourceLocation CaretLoc) {
 ///
 /// \verbatim
 ///         block-literal:
-/// [clang]   '^' block-args[opt] compound-statement
-/// [clang]   '^' block-id compound-statement
-/// [clang] block-args:
-/// [clang]   '(' parameter-list ')'
+/// [lfort]   '^' block-args[opt] compound-statement
+/// [lfort]   '^' block-id compound-statement
+/// [lfort] block-args:
+/// [lfort]   '(' parameter-list ')'
 /// \endverbatim
 ExprResult Parser::ParseBlockLiteralExpression() {
   assert(Tok.is(tok::caret) && "block literal starts with ^");

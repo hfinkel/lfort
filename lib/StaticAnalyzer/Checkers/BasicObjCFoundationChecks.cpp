@@ -13,27 +13,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

@@ -1,5 +1,5 @@
 // RUN: rm -rf %t
-// RUN: %clang_cc1 -x objective-c++ -fmodules -fmodule-cache-path %t -I %S/Inputs %s -verify
+// RUN: %lfort_cc1 -x objective-c++ -fmodules -fmodule-cache-path %t -I %S/Inputs %s -verify
 
 // Importing modules which add declarations to a pre-existing non-imported
 // overload set does not currently work.

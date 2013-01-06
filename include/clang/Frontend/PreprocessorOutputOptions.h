@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_PREPROCESSOROUTPUTOPTIONS_H
-#define LLVM_CLANG_FRONTEND_PREPROCESSOROUTPUTOPTIONS_H
+#ifndef LLVM_LFORT_FRONTEND_PREPROCESSOROUTPUTOPTIONS_H
+#define LLVM_LFORT_FRONTEND_PREPROCESSOROUTPUTOPTIONS_H
 
-namespace clang {
+namespace lfort {
 
 /// PreprocessorOutputOptions - Options for controlling the C preprocessor
 /// output (e.g., -E).
@@ -34,6 +34,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

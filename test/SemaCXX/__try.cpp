@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fborland-extensions -fcxx-exceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fborland-extensions -fcxx-exceptions %s
 // expected-no-diagnostics
 
 // This test is from http://docwiki.embarcadero.com/RADStudio/en/Try

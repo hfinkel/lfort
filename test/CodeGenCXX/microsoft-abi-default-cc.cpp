@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck -check-prefix GCABI %s
-// RUN: %clang_cc1 -emit-llvm %s -o - -DMS_ABI -cxx-abi microsoft -triple=i386-pc-win32 | FileCheck -check-prefix MSABI %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck -check-prefix GCABI %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - -DMS_ABI -cxx-abi microsoft -triple=i386-pc-win32 | FileCheck -check-prefix MSABI %s
 
 #ifdef MS_ABI
 # define METHOD_CC __thiscall

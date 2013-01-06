@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wparentheses -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wparentheses -verify %s
 
 struct A {
   int foo();
@@ -110,10 +110,10 @@ void test() {
                    // expected-note {{use '=' to turn this equality comparison into an assignment}} \
                    // expected-note {{remove extraneous parentheses around the comparison to silence this warning}}
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wparentheses-equality"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wparentheses-equality"
   if ((x == 5)) {} // no-warning
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
   if ((5 == x)) {}
 

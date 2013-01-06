@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -fblocks
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -fblocks
 // expected-no-diagnostics
 
 int printf(const char *, ...);

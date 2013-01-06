@@ -9,26 +9,26 @@
 //
 /// \file
 ///
-/// \brief Defines a utility class for use of clang-format in libclang
+/// \brief Defines a utility class for use of lfort-format in liblfort
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SIMPLE_FORM_CONTEXT_H
-#define LLVM_CLANG_SIMPLE_FORM_CONTEXT_H
+#ifndef LLVM_LFORT_SIMPLE_FORM_CONTEXT_H
+#define LLVM_LFORT_SIMPLE_FORM_CONTEXT_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 
-/// \brief A small class to be used by libclang clients to format
+/// \brief A small class to be used by liblfort clients to format
 /// a declaration string in memory. This object is instantiated once
 /// and used each time a formatting is needed.
 class SimpleFormatContext {
@@ -70,6 +70,6 @@ public:
   Rewriter Rewrite;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

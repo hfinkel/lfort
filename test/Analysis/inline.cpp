@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining -verify %s
 
-void clang_analyzer_eval(bool);
-void clang_analyzer_checkInlined(bool);
+void lfort_analyzer_eval(bool);
+void lfort_analyzer_checkInlined(bool);
 
 typedef __typeof__(sizeof(int)) size_t;
 extern "C" void *malloc(size_t);
@@ -20,12 +20,12 @@ public:
 };
 
 void test(A &a) {
-  clang_analyzer_eval(a.getZero() == 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(a.getNum() == 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(a.getZero() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(a.getNum() == 0); // expected-warning{{UNKNOWN}}
 
   A copy(a);
-  clang_analyzer_eval(copy.getZero() == 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(copy.getNum() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(copy.getZero() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(copy.getNum() == 0); // expected-warning{{TRUE}}
 }
 
 
@@ -51,7 +51,7 @@ void testPathSensitivity(int x) {
   }
 
   // This should be true on both branches.
-  clang_analyzer_eval(ptr->getNum() == x); // expected-warning {{TRUE}}
+  lfort_analyzer_eval(ptr->getNum() == x); // expected-warning {{TRUE}}
 }
 
 
@@ -67,7 +67,7 @@ namespace PureVirtualParent {
   class Child : public Parent {
   public:
     virtual int pureVirtual() const {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       return 42;
     }
   };
@@ -75,8 +75,8 @@ namespace PureVirtualParent {
   void testVirtual() {
     Child x;
 
-    clang_analyzer_eval(x.pureVirtual() == 42); // expected-warning{{TRUE}}
-    clang_analyzer_eval(x.callVirtual() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x.pureVirtual() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(x.callVirtual() == 42); // expected-warning{{TRUE}}
   }
 }
 
@@ -91,7 +91,7 @@ namespace PR13569 {
 
   public:
     int interface() const {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       return impl();
     }
   };
@@ -99,7 +99,7 @@ namespace PR13569 {
   class Child : public Parent {
   protected:
     virtual int impl() const {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       return m_parent + m_child;
     }
 
@@ -139,7 +139,7 @@ namespace PR13569_virtual {
 
   public:
     int interface() const {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       return impl();
     }
   };
@@ -147,7 +147,7 @@ namespace PR13569_virtual {
   class Child : virtual public Parent {
   protected:
     virtual int impl() const {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       return m_parent + m_child;
     }
 
@@ -210,8 +210,8 @@ namespace DefaultArgs {
   }
 
   void testFunction() {
-    clang_analyzer_eval(takesDefaultArgs(1) == -1); // expected-warning{{TRUE}}
-    clang_analyzer_eval(takesDefaultArgs() == -42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(takesDefaultArgs(1) == -1); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(takesDefaultArgs() == -42); // expected-warning{{TRUE}}
   }
 
   class Secret {
@@ -224,17 +224,17 @@ namespace DefaultArgs {
 
   void testMethod() {
     Secret obj;
-    clang_analyzer_eval(obj.get(1) == 1); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(obj.get(1) == 1); // expected-warning{{TRUE}}
 
     // FIXME: Should be 'TRUE'. See PR13673 or <rdar://problem/11720796>.
-    clang_analyzer_eval(obj.get() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(obj.get() == 42); // expected-warning{{UNKNOWN}}
 
     // FIXME: Even if we constrain the variable, we still have a problem.
     // See PR13385 or <rdar://problem/12156507>.
     if (Secret::value != 42)
       return;
-    clang_analyzer_eval(Secret::value == 42); // expected-warning{{TRUE}}
-    clang_analyzer_eval(obj.get() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(Secret::value == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(obj.get() == 42); // expected-warning{{UNKNOWN}}
   }
 }
 
@@ -247,24 +247,24 @@ namespace OperatorNew {
       // We don't want this constructor to be inlined unless we can actually
       // use the proper region for operator new.
       // See PR12014 and <rdar://problem/12180598>.
-      clang_analyzer_checkInlined(false); // no-warning
+      lfort_analyzer_checkInlined(false); // no-warning
     }
   };
 
   void test() {
     IntWrapper *obj = new IntWrapper(42);
     // should be TRUE
-    clang_analyzer_eval(obj->value == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(obj->value == 42); // expected-warning{{UNKNOWN}}
   }
 
   void testPlacement() {
     IntWrapper *obj = static_cast<IntWrapper *>(malloc(sizeof(IntWrapper)));
     IntWrapper *alias = new (obj) IntWrapper(42);
 
-    clang_analyzer_eval(alias == obj); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(alias == obj); // expected-warning{{TRUE}}
 
     // should be TRUE
-    clang_analyzer_eval(obj->value == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(obj->value == 42); // expected-warning{{UNKNOWN}}
   }
 }
 
@@ -293,36 +293,36 @@ namespace VirtualWithSisterCasts {
 
   void testDowncast(Parent *b) {
     A *a = (A *)(void *)b;
-    clang_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
 
     a->x = 42;
-    clang_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
   }
 
   void testRelated(B *b) {
     A *a = (A *)(void *)b;
-    clang_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
 
     a->x = 42;
-    clang_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
   }
 
   void testUnrelated(Unrelated *b) {
     A *a = (A *)(void *)b;
-    clang_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(a->foo() == 42); // expected-warning{{UNKNOWN}}
 
     a->x = 42;
-    clang_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(a->x == 42); // expected-warning{{TRUE}}
   }
 
   void testCastViaNew(B *b) {
     Grandchild *g = new (b) Grandchild();
     // FIXME: We actually now have perfect type info because of 'new'.
     // This should be TRUE.
-    clang_analyzer_eval(g->foo() == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(g->foo() == 42); // expected-warning{{UNKNOWN}}
 
     g->x = 42;
-    clang_analyzer_eval(g->x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(g->x == 42); // expected-warning{{TRUE}}
   }
 }
 
@@ -330,14 +330,14 @@ namespace VirtualWithSisterCasts {
 namespace QualifiedCalls {
   void test(One *object) {
     // This uses the One class from the top of the file.
-    clang_analyzer_eval(object->getNum() == 1); // expected-warning{{UNKNOWN}}
-    clang_analyzer_eval(object->One::getNum() == 1); // expected-warning{{TRUE}}
-    clang_analyzer_eval(object->A::getNum() == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(object->getNum() == 1); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(object->One::getNum() == 1); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(object->A::getNum() == 0); // expected-warning{{TRUE}}
 
     // getZero is non-virtual.
-    clang_analyzer_eval(object->getZero() == 0); // expected-warning{{TRUE}}
-    clang_analyzer_eval(object->One::getZero() == 0); // expected-warning{{TRUE}}
-    clang_analyzer_eval(object->A::getZero() == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(object->getZero() == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(object->One::getZero() == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(object->A::getZero() == 0); // expected-warning{{TRUE}}
 }
 }
 
@@ -364,6 +364,6 @@ namespace rdar12409977  {
     // caused a crash because the return value had the wrong type. When we then
     // go to layer a CXXBaseObjectRegion on it, the base isn't a direct base of
     // the object region and we get an assertion failure.
-    clang_analyzer_eval(obj.getThis()->x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(obj.getThis()->x == 42); // expected-warning{{TRUE}}
   }
 }

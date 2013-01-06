@@ -11,9 +11,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/PostOrderCFGView.h"
+#include "lfort/Analysis/Analyses/PostOrderCFGView.h"
 
-using namespace clang;
+using namespace lfort;
 
 void PostOrderCFGView::anchor() { }
 

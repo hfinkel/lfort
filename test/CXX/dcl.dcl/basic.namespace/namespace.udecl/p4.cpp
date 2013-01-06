@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // C++03 [namespace.udecl]p4:
 //   A using-declaration used as a member-declaration shall refer to a

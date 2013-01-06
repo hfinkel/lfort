@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/HeaderMap.h"
-#include "clang/Basic/FileManager.h"
+#include "lfort/Lex/HeaderMap.h"
+#include "lfort/Basic/FileManager.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/DataTypes.h"
@@ -20,7 +20,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include <cctype>
 #include <cstdio>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Data Structures and Manifest Constants
@@ -33,7 +33,7 @@ enum {
   HMAP_EmptyBucketKey = 0
 };
 
-namespace clang {
+namespace lfort {
 struct HMapBucket {
   uint32_t Key;          // Offset (into strings) of key.
 
@@ -52,7 +52,7 @@ struct HMapHeader {
   // An array of 'NumBuckets' HMapBucket objects follows this header.
   // Strings follow the buckets, at StringsOffset.
 };
-} // end namespace clang.
+} // end namespace lfort.
 
 /// HashHMapKey - This is the 'well known' hash function required by the file
 /// format, used to look up keys in the hash table.  The hash table uses simple

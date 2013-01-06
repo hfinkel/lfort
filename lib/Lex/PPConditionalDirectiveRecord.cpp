@@ -11,10 +11,10 @@
 //  a record of conditional directive regions.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Lex/PPConditionalDirectiveRecord.h"
+#include "lfort/Lex/PPConditionalDirectiveRecord.h"
 #include "llvm/Support/Capacity.h"
 
-using namespace clang;
+using namespace lfort;
 
 PPConditionalDirectiveRecord::PPConditionalDirectiveRecord(SourceManager &SM)
   : SourceMgr(SM) {

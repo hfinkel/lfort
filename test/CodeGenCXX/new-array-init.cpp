@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -triple i386-unknown-unknown %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -triple i386-unknown-unknown %s -emit-llvm -o - | FileCheck %s
 
 // CHECK: define void @_Z2fni
 void fn(int n) {

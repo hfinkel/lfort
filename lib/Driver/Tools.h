@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_LIB_DRIVER_TOOLS_H_
-#define CLANG_LIB_DRIVER_TOOLS_H_
+#ifndef LFORT_LIB_DRIVER_TOOLS_H_
+#define LFORT_LIB_DRIVER_TOOLS_H_
 
-#include "clang/Driver/Tool.h"
-#include "clang/Driver/Types.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Driver/Tool.h"
+#include "lfort/Driver/Types.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
   class ObjCRuntime;
 
 namespace driver {
@@ -28,8 +28,8 @@ namespace toolchains {
 
 namespace tools {
 
-  /// \brief Clang compiler tool.
-  class LLVM_LIBRARY_VISIBILITY Clang : public Tool {
+  /// \brief LFort compiler tool.
+  class LLVM_LIBRARY_VISIBILITY LFort : public Tool {
   public:
     static const char *getBaseInputName(const ArgList &Args,
                                         const InputInfoList &Inputs);
@@ -60,7 +60,7 @@ namespace tools {
                                    RewriteKind rewrite) const;
 
   public:
-    Clang(const ToolChain &TC) : Tool("clang", "clang frontend", TC) {}
+    LFort(const ToolChain &TC) : Tool("lfort", "lfort frontend", TC) {}
 
     virtual bool hasGoodDiagnostics() const { return true; }
     virtual bool hasIntegratedAssembler() const { return true; }
@@ -73,12 +73,12 @@ namespace tools {
                               const char *LinkingOutput) const;
   };
 
-  /// \brief Clang integrated assembler tool.
-  class LLVM_LIBRARY_VISIBILITY ClangAs : public Tool {
+  /// \brief LFort integrated assembler tool.
+  class LLVM_LIBRARY_VISIBILITY LFortAs : public Tool {
     void AddARMTargetArgs(const ArgList &Args, ArgStringList &CmdArgs) const;
   public:
-    ClangAs(const ToolChain &TC) : Tool("clang::as",
-                                        "clang integrated assembler", TC) {}
+    LFortAs(const ToolChain &TC) : Tool("lfort::as",
+                                        "lfort integrated assembler", TC) {}
 
     virtual bool hasGoodDiagnostics() const { return true; }
     virtual bool hasIntegratedAssembler() const { return false; }
@@ -173,7 +173,7 @@ namespace gcc {
 
 namespace hexagon {
   // For Hexagon, we do not need to instantiate tools for PreProcess, PreCompile and Compile.
-  // We simply use "clang -cc1" for those actions.
+  // We simply use "lfort -cc1" for those actions.
   class LLVM_LIBRARY_VISIBILITY Assemble : public Tool {
   public:
     Assemble(const ToolChain &TC) : Tool("hexagon::Assemble",
@@ -592,6 +592,6 @@ namespace visualstudio {
 
 } // end namespace toolchains
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
-#endif // CLANG_LIB_DRIVER_TOOLS_H_
+#endif // LFORT_LIB_DRIVER_TOOLS_H_

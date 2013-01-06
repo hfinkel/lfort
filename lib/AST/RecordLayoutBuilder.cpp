@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/Support/CrashRecoveryContext.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/MathExtras.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 
@@ -539,7 +539,7 @@ typedef llvm::SmallPtrSet<const CXXRecordDecl*, 4> ClassSetTy;
 class RecordLayoutBuilder {
 protected:
   // FIXME: Remove this and make the appropriate fields public.
-  friend class clang::ASTContext;
+  friend class lfort::ASTContext;
 
   const ASTContext &Context;
 

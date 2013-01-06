@@ -1,4 +1,4 @@
-//===--- ClangCheckers.h - Provides builtin checkers ------------*- C++ -*-===//
+//===--- LFortCheckers.h - Provides builtin checkers ------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Checkers/ClangCheckers.h"
-#include "clang/StaticAnalyzer/Core/CheckerRegistry.h"
+#include "lfort/StaticAnalyzer/Checkers/LFortCheckers.h"
+#include "lfort/StaticAnalyzer/Core/CheckerRegistry.h"
 
 // FIXME: This is only necessary as long as there are checker registration
 // functions that do additional work besides mgr.registerChecker<CLASS>().
@@ -18,9 +18,9 @@
 // - ObjCAtSyncChecker
 // It's probably worth including this information in Checkers.td to minimize
 // boilerplate code.
-#include "ClangSACheckers.h"
+#include "LFortSACheckers.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 void ento::registerBuiltinCheckers(CheckerRegistry &registry) {

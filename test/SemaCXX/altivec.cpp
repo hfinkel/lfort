@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -faltivec -fno-lax-vector-conversions -triple powerpc-unknown-unknown -fcxx-exceptions -verify %s
+// RUN: %lfort_cc1 -faltivec -fno-lax-vector-conversions -triple powerpc-unknown-unknown -fcxx-exceptions -verify %s
 
 typedef int V4i __attribute__((vector_size(16)));
 

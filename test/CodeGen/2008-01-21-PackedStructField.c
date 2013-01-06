@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 struct X { long double b; unsigned char c; double __attribute__((packed)) d; };
 struct X x = { 3.0L, 5, 3.0 };

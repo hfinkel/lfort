@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple=x86_64-pc-linux-gnu -Wover-aligned -verify %s
+// RUN: %lfort_cc1 -triple=x86_64-pc-linux-gnu -Wover-aligned -verify %s
 // expected-no-diagnostics
 
 // This test verifies that we don't warn when the global operator new is

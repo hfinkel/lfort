@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Token.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Token.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 static struct StmtClassNameTable {
   const char *Name;
@@ -42,7 +42,7 @@ static StmtClassNameTable &getStmtInfoTableEntry(Stmt::StmtClass E) {
 #define STMT(CLASS, PARENT) \
   StmtClassInfo[(unsigned)Stmt::CLASS##Class].Name = #CLASS;    \
   StmtClassInfo[(unsigned)Stmt::CLASS##Class].Size = sizeof(CLASS);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
   return StmtClassInfo[E];
 }
@@ -174,7 +174,7 @@ static inline void check_implementations() {
   ASSERT_IMPLEMENTS_children(type); \
   ASSERT_IMPLEMENTS_getLocStart(type); \
   ASSERT_IMPLEMENTS_getLocEnd(type);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 }
 
 Stmt::child_range Stmt::children() {
@@ -184,7 +184,7 @@ Stmt::child_range Stmt::children() {
 #define STMT(type, base) \
   case Stmt::type##Class: \
     return static_cast<type*>(this)->children();
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
   llvm_unreachable("unknown statement kind!");
 }
@@ -221,7 +221,7 @@ SourceRange Stmt::getSourceRange() const {
 #define STMT(type, base) \
   case Stmt::type##Class: \
     return getSourceRangeImpl<type>(this, &type::getSourceRange);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
   llvm_unreachable("unknown statement kind!");
 }
@@ -234,7 +234,7 @@ SourceLocation Stmt::getLocStart() const {
 #define STMT(type, base) \
   case Stmt::type##Class: \
     return static_cast<const type*>(this)->getLocStart();
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
   llvm_unreachable("unknown statement kind");
 }
@@ -246,7 +246,7 @@ SourceLocation Stmt::getLocEnd() const {
 #define STMT(type, base) \
   case Stmt::type##Class: \
     return static_cast<const type*>(this)->getLocEnd();
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   }
   llvm_unreachable("unknown statement kind");
 }

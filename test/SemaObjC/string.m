@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
-// RUN: %clang_cc1 %s -verify -fsyntax-only -DDECLAREIT
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -DDECLAREIT
 
 // a declaration of NSConstantString is not required.
 #ifdef DECLAREIT

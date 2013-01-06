@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REWRITER_H
-#define LLVM_CLANG_REWRITER_H
+#ifndef LLVM_LFORT_REWRITER_H
+#define LLVM_LFORT_REWRITER_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Rewrite/Core/DeltaTree.h"
-#include "clang/Rewrite/Core/RewriteRope.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Rewrite/Core/DeltaTree.h"
+#include "lfort/Rewrite/Core/RewriteRope.h"
 #include "llvm/ADT/StringRef.h"
 #include <cstring>
 #include <map>
 #include <string>
 
-namespace clang {
+namespace lfort {
   class LangOptions;
   class Rewriter;
   class SourceManager;
@@ -290,6 +290,6 @@ private:
   unsigned getLocationOffsetAndFileID(SourceLocation Loc, FileID &FID) const;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

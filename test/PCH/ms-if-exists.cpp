@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -x c++ -fms-extensions -fsyntax-only -emit-pch -o %t %s
-// RUN: %clang_cc1 -x c++ -fms-extensions -fsyntax-only -include-pch %t %s -verify
+// RUN: %lfort_cc1 -x c++ -fms-extensions -fsyntax-only -emit-pch -o %t %s
+// RUN: %lfort_cc1 -x c++ -fms-extensions -fsyntax-only -include-pch %t %s -verify
 
 #ifndef HEADER
 #define HEADER

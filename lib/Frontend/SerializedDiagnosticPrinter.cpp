@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/SerializedDiagnosticPrinter.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Version.h"
-#include "clang/Frontend/DiagnosticRenderer.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Frontend/SerializedDiagnosticPrinter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Frontend/DiagnosticRenderer.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/raw_ostream.h"
 #include <vector>
 
-using namespace clang;
-using namespace clang::serialized_diags;
+using namespace lfort;
+using namespace lfort::serialized_diags;
 
 namespace {
   
@@ -238,14 +238,14 @@ private:
 };
 } // end anonymous namespace
 
-namespace clang {
+namespace lfort {
 namespace serialized_diags {
 DiagnosticConsumer *create(llvm::raw_ostream *OS,
                            DiagnosticOptions *diags) {
   return new SDiagsWriter(OS, diags);
 }
 } // end namespace serialized_diags
-} // end namespace clang
+} // end namespace lfort
 
 //===----------------------------------------------------------------------===//
 // Serialization methods.
@@ -597,7 +597,7 @@ SDiagsRenderer::emitDiagnosticMessage(SourceLocation Loc,
                                       PresumedLoc PLoc,
                                       DiagnosticsEngine::Level Level,
                                       StringRef Message,
-                                      ArrayRef<clang::CharSourceRange> Ranges,
+                                      ArrayRef<lfort::CharSourceRange> Ranges,
                                       const SourceManager *SM,
                                       DiagOrStoredDiag D) {
   Writer.EmitDiagnosticMessage(Loc, PLoc, Level, Message, SM, D);

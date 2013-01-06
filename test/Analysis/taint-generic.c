@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -analyze -analyzer-checker=alpha.security.taint,core,alpha.security.ArrayBoundV2 -Wno-format-security -verify %s
+// RUN: %lfort_cc1  -analyze -analyzer-checker=alpha.security.taint,core,alpha.security.ArrayBoundV2 -Wno-format-security -verify %s
 
 int scanf(const char *restrict format, ...);
 int getchar(void);

@@ -11,15 +11,15 @@
 //  a record of conditional directive regions.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LEX_PPCONDITIONALDIRECTIVERECORD_H
-#define LLVM_CLANG_LEX_PPCONDITIONALDIRECTIVERECORD_H
+#ifndef LLVM_LFORT_LEX_PPCONDITIONALDIRECTIVERECORD_H
+#define LLVM_LFORT_LEX_PPCONDITIONALDIRECTIVERECORD_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/PPCallbacks.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Lex/PPCallbacks.h"
 #include "llvm/ADT/SmallVector.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   
 /// \brief Records preprocessor conditional directive regions and allows
 /// querying in which region source locations belong to.
@@ -97,6 +97,6 @@ private:
   virtual void Endif(SourceLocation Loc, SourceLocation IfLoc);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_LEX_PPCONDITIONALDIRECTIVERECORD_H
+#endif // LLVM_LFORT_LEX_PPCONDITIONALDIRECTIVERECORD_H

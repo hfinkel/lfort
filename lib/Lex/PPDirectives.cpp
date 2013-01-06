@@ -12,19 +12,19 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Lex/Pragma.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/Pragma.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Utility Methods for Preprocessor Directive Handling.
@@ -1571,7 +1571,7 @@ void Preprocessor::HandleIncludeNextDirective(SourceLocation HashLoc,
 /// HandleMicrosoftImportDirective - Implements \#import for Microsoft Mode
 void Preprocessor::HandleMicrosoftImportDirective(Token &Tok) {
   // The Microsoft #import directive takes a type library and generates header
-  // files from it, and includes those.  This is beyond the scope of what clang
+  // files from it, and includes those.  This is beyond the scope of what lfort
   // does, so we ignore it and error out.  However, #import can optionally have
   // trailing attributes that span multiple lines.  We're going to eat those
   // so we can continue processing from there.

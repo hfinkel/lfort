@@ -12,20 +12,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLCXX_H
-#define LLVM_CLANG_AST_DECLCXX_H
+#ifndef LLVM_LFORT_AST_DECLCXX_H
+#define LLVM_LFORT_AST_DECLCXX_H
 
-#include "clang/AST/ASTUnresolvedSet.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TypeLoc.h"
+#include "lfort/AST/ASTUnresolvedSet.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TypeLoc.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 class ClassTemplateDecl;
 class ClassTemplateSpecializationDecl;
@@ -66,30 +66,30 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 namespace llvm {
   /// Implement simplify_type for AnyFunctionDecl, so that we can dyn_cast from
   /// AnyFunctionDecl to any function or function template declaration.
-  template<> struct simplify_type<const ::clang::AnyFunctionDecl> {
-    typedef ::clang::NamedDecl* SimpleType;
-    static SimpleType getSimplifiedValue(const ::clang::AnyFunctionDecl &Val) {
+  template<> struct simplify_type<const ::lfort::AnyFunctionDecl> {
+    typedef ::lfort::NamedDecl* SimpleType;
+    static SimpleType getSimplifiedValue(const ::lfort::AnyFunctionDecl &Val) {
       return Val;
     }
   };
-  template<> struct simplify_type< ::clang::AnyFunctionDecl>
-  : public simplify_type<const ::clang::AnyFunctionDecl> {};
+  template<> struct simplify_type< ::lfort::AnyFunctionDecl>
+  : public simplify_type<const ::lfort::AnyFunctionDecl> {};
 
   // Provide PointerLikeTypeTraits for non-cvr pointers.
   template<>
-  class PointerLikeTypeTraits< ::clang::AnyFunctionDecl> {
+  class PointerLikeTypeTraits< ::lfort::AnyFunctionDecl> {
   public:
-    static inline void *getAsVoidPointer(::clang::AnyFunctionDecl F) {
+    static inline void *getAsVoidPointer(::lfort::AnyFunctionDecl F) {
       return F.get();
     }
-    static inline ::clang::AnyFunctionDecl getFromVoidPointer(void *P) {
-      return ::clang::AnyFunctionDecl::getFromNamedDecl(
-                                      static_cast< ::clang::NamedDecl*>(P));
+    static inline ::lfort::AnyFunctionDecl getFromVoidPointer(void *P) {
+      return ::lfort::AnyFunctionDecl::getFromNamedDecl(
+                                      static_cast< ::lfort::NamedDecl*>(P));
     }
 
     enum { NumLowBitsAvailable = 2 };
@@ -97,7 +97,7 @@ namespace llvm {
 
 } // end namespace llvm
 
-namespace clang {
+namespace lfort {
 
 /// @brief Represents an access specifier followed by colon ':'.
 ///
@@ -2988,6 +2988,6 @@ const DiagnosticBuilder &operator<<(const DiagnosticBuilder &DB,
 const PartialDiagnostic &operator<<(const PartialDiagnostic &DB,
                                     AccessSpecifier AS);
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

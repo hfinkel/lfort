@@ -1,5 +1,5 @@
-// RUN: %clang -fsyntax-only -target i686-pc-win32 %s
-// RUN: %clang -fsyntax-only -target i386-mingw32 %s
+// RUN: %lfort -fsyntax-only -target i686-pc-win32 %s
+// RUN: %lfort -fsyntax-only -target i386-mingw32 %s
 
 // Something in MSVC's headers (pulled in e.g. by <crtdefs.h>) defines __null
 // to something, mimick that.

@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 extern int funcInt(int);
 extern float funcFloat(float);
 extern double funcDouble(double);
-// figure out why "char *" doesn't work (with gcc, nothing to do with clang)
+// figure out why "char *" doesn't work (with gcc, nothing to do with lfort)
 //extern void funcCharPtr(char *);
 
 #define func(expr) \

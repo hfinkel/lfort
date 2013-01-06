@@ -1,5 +1,5 @@
 // REQUIRES: arm-registered-target
-// RUN: %clang_cc1 -triple armv7---eabi -target-abi aapcs -mfloat-abi hard -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple armv7---eabi -target-abi aapcs -mfloat-abi hard -emit-llvm %s -o - | FileCheck %s
 
 typedef long long int64_t;
 typedef unsigned int uint32_t;

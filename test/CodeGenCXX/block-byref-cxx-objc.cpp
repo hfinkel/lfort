@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -fblocks | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -fblocks | FileCheck %s
 // rdar://8594790
 
 struct A {

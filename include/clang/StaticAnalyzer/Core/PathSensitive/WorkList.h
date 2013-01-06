@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_WORKLIST
-#define LLVM_CLANG_GR_WORKLIST
+#ifndef LLVM_LFORT_GR_WORKLIST
+#define LLVM_LFORT_GR_WORKLIST
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
 #include <cstddef>
 
-namespace clang {
+namespace lfort {
   
 class CFGBlock;
 
@@ -97,6 +97,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

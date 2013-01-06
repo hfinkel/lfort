@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManagerInternals.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManagerInternals.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -28,7 +28,7 @@
 #include <string>
 #include <sys/stat.h>
 
-using namespace clang;
+using namespace lfort;
 using namespace SrcMgr;
 using llvm::MemoryBuffer;
 
@@ -491,7 +491,7 @@ const SrcMgr::SLocEntry &SourceManager::loadSLocEntry(unsigned Index,
       *Invalid = true;
     // If the file of the SLocEntry changed we could still have loaded it.
     if (!SLocEntryLoaded[Index]) {
-      // Try to recover; create a SLocEntry so the rest of clang can handle it.
+      // Try to recover; create a SLocEntry so the rest of lfort can handle it.
       LoadedSLocEntryTable[Index] = SLocEntry::get(0,
                                  FileInfo::get(SourceLocation(),
                                                getFakeContentCacheForRecovery(),

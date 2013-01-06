@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -g %s -o -
+// RUN: %lfort_cc1 -emit-llvm -g %s -o -
 struct TEST2
 {
   int subid:32;

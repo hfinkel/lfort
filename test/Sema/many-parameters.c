@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c99 %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 %s
 
 // This test simply tests that the compiler does not crash.  An optimization
 // in ParmVarDecls means that functions with fewer than 256 parameters use a fast path,

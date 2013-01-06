@@ -1,7 +1,7 @@
 // RUN: cp %s %t
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -pedantic -Wall -fixit %t
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -pedantic -Wall -Werror %t
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -E -o - %t | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -pedantic -Wall -fixit %t
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -pedantic -Wall -Werror %t
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -E -o - %t | FileCheck %s
 
 /* This is a test of the various code modification hints that are
    provided as part of warning or extension diagnostics. All of the

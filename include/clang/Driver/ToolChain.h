@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_TOOLCHAIN_H_
-#define CLANG_DRIVER_TOOLCHAIN_H_
+#ifndef LFORT_DRIVER_TOOLCHAIN_H_
+#define LFORT_DRIVER_TOOLCHAIN_H_
 
-#include "clang/Driver/Types.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Driver/Types.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Support/Path.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
   class ObjCRuntime;
 
 namespace driver {
@@ -193,7 +193,7 @@ public:
   /// Complain if this tool chain doesn't support Objective-C ARC.
   virtual void CheckObjCARC() const {}
 
-  /// UseDwarfDebugFlags - Embed the compile options to clang into the Dwarf
+  /// UseDwarfDebugFlags - Embed the compile options to lfort into the Dwarf
   /// compile unit information.
   virtual bool UseDwarfDebugFlags() const { return false; }
 
@@ -205,12 +205,12 @@ public:
   virtual std::string ComputeLLVMTriple(const ArgList &Args,
                                  types::ID InputType = types::TY_INVALID) const;
 
-  /// ComputeEffectiveClangTriple - Return the Clang triple to use for this
+  /// ComputeEffectiveLFortTriple - Return the LFort triple to use for this
   /// target, which may take into account the command line arguments. For
   /// example, on Darwin the -mmacosx-version-min= command line argument (which
   /// sets the deployment target) determines the version in the triple passed to
-  /// Clang.
-  virtual std::string ComputeEffectiveClangTriple(const ArgList &Args,
+  /// LFort.
+  virtual std::string ComputeEffectiveLFortTriple(const ArgList &Args,
                                  types::ID InputType = types::TY_INVALID) const;
 
   /// getDefaultObjCRuntime - Return the default Objective-C runtime
@@ -226,15 +226,15 @@ public:
   /// FIXME: this really belongs on some sort of DeploymentTarget abstraction
   virtual bool hasBlocksRuntime() const { return true; }
 
-  /// \brief Add the clang cc1 arguments for system include paths.
+  /// \brief Add the lfort cc1 arguments for system include paths.
   ///
   /// This routine is responsible for adding the necessary cc1 arguments to
   /// include headers from standard system header directories.
-  virtual void AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const;
 
   /// \brief Add options that need to be passed to cc1 for this target.
-  virtual void addClangTargetOptions(const ArgList &DriverArgs,
+  virtual void addLFortTargetOptions(const ArgList &DriverArgs,
                                      ArgStringList &CC1Args) const;
 
   // GetRuntimeLibType - Determine the runtime library type to use with the
@@ -245,9 +245,9 @@ public:
   // given compilation arguments.
   virtual CXXStdlibType GetCXXStdlibType(const ArgList &Args) const;
 
-  /// AddClangCXXStdlibIncludeArgs - Add the clang -cc1 level arguments to set
+  /// AddLFortCXXStdlibIncludeArgs - Add the lfort -cc1 level arguments to set
   /// the include paths to use for the given C++ standard library type.
-  virtual void AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+  virtual void AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                             ArgStringList &CC1Args) const;
 
   /// AddCXXStdlibLibArgs - Add the system specific linker arguments to use
@@ -269,6 +269,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

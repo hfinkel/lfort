@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple i686-pc-linux-gnu -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -triple i686-pc-linux-gnu -o - %s | FileCheck %s
 
 // This check logically is attached to 'template int S<int>::i;' below.
 // CHECK: @_ZN1SIiE1iE = weak_odr global i32

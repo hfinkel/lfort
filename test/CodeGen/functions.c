@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple i386-unknown-unknown -emit-llvm -o - -verify | FileCheck %s
+// RUN: %lfort_cc1 %s -triple i386-unknown-unknown -emit-llvm -o - -verify | FileCheck %s
 
 int g();
 

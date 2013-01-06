@@ -11,40 +11,40 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TypeLocBuilder.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/CommentDiagnostic.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/HeaderSearch.h" // FIXME: Sema shouldn't depend on Lex
-#include "clang/Lex/ModuleLoader.h" // FIXME: Sema shouldn't depend on Lex
-#include "clang/Lex/Preprocessor.h" // FIXME: Sema shouldn't depend on Lex
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/CXXFieldCollector.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/CommentDiagnostic.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/HeaderSearch.h" // FIXME: Sema shouldn't depend on Lex
+#include "lfort/Lex/ModuleLoader.h" // FIXME: Sema shouldn't depend on Lex
+#include "lfort/Lex/Preprocessor.h" // FIXME: Sema shouldn't depend on Lex
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/CXXFieldCollector.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Triple.h"
 #include <algorithm>
 #include <cstring>
 #include <functional>
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 Sema::DeclGroupPtrTy Sema::ConvertDeclToDeclGroup(Decl *Ptr, Decl *OwnedType) {
@@ -6026,7 +6026,7 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   if (NewFD->getLinkage() == ExternalLinkage && !DC->isRecord())
     AddPushedVisibilityAttribute(NewFD);
 
-  // If there's a #pragma clang arc_cf_code_audited in scope, consider
+  // If there's a #pragma lfort arc_cf_code_audited in scope, consider
   // marking the function.
   AddCFAuditedAttribute(NewFD);
 

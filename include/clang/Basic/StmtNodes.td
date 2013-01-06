@@ -157,7 +157,7 @@ def ObjCBridgedCastExpr : DStmt<ExplicitCastExpr>;
 // CUDA Expressions.
 def CUDAKernelCallExpr : DStmt<CallExpr>;
 
-// Clang Extensions.
+// LFort Extensions.
 def ShuffleVectorExpr : DStmt<Expr>;
 def BlockExpr : DStmt<Expr>;
 def OpaqueValueExpr : DStmt<Expr>;

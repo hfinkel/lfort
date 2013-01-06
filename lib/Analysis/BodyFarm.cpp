@@ -13,13 +13,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "BodyFarm.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
 #include "llvm/ADT/StringSwitch.h"
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Helper creation functions for constructing faux ASTs.

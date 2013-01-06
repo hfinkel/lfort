@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wduplicate-method-match -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wduplicate-method-match -fsyntax-only -verify %s
 
 @interface SUPER
 - (int) meth;

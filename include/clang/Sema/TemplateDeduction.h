@@ -10,14 +10,14 @@
 // routines.
 //
 //===----------------------------------------------------------------------===/
-#ifndef LLVM_CLANG_SEMA_TEMPLATE_DEDUCTION_H
-#define LLVM_CLANG_SEMA_TEMPLATE_DEDUCTION_H
+#ifndef LLVM_LFORT_SEMA_TEMPLATE_DEDUCTION_H
+#define LLVM_LFORT_SEMA_TEMPLATE_DEDUCTION_H
 
-#include "clang/AST/DeclTemplate.h"
-#include "clang/Basic/PartialDiagnostic.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/Basic/PartialDiagnostic.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class TemplateArgumentList;
 

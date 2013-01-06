@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++98 -Wc++11-compat -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++98 -Wc++11-compat -verify %s
 
 namespace N {
   template<typename T> void f(T) {} // expected-note 2{{here}}

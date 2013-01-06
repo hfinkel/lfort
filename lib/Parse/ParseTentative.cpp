@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/ParsedTemplate.h"
-using namespace clang;
+#include "lfort/Parse/Parser.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/ParsedTemplate.h"
+using namespace lfort;
 
 /// isCXXDeclarationStatement - C++-specialized function that disambiguates
 /// between a declaration or an expression statement, when parsing function
@@ -224,7 +224,7 @@ Parser::TPResult Parser::TryParseInitDeclaratorList() {
       // EDG parses the initializer completely, which is the proper behavior
       // for this case.
       //
-      // At present, Clang follows MSVC and g++, since the parser does not have
+      // At present, LFort follows MSVC and g++, since the parser does not have
       // the ability to parse an expression fully without recording the
       // results of that parse.
       // Also allow 'in' after on objective-c declaration as in: 

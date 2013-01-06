@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 //
 // The whole point of this test is to verify certain diagnostics work in the
 // absence of namespace 'std'.

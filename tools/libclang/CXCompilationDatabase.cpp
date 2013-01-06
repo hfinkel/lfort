@@ -1,16 +1,16 @@
-#include "clang-c/CXCompilationDatabase.h"
+#include "lfort-c/CXCompilationDatabase.h"
 #include "CXString.h"
-#include "clang/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/CompilationDatabase.h"
 
-using namespace clang;
-using namespace clang::tooling;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::tooling;
+using namespace lfort::cxstring;
 
 extern "C" {
 
 // FIXME: do something more usefull with the error message
 CXCompilationDatabase
-clang_CompilationDatabase_fromDirectory(const char *BuildDir,
+lfort_CompilationDatabase_fromDirectory(const char *BuildDir,
                                         CXCompilationDatabase_Error *ErrorCode)
 {
   std::string ErrorMsg;
@@ -20,7 +20,7 @@ clang_CompilationDatabase_fromDirectory(const char *BuildDir,
                                                                    ErrorMsg);
 
   if (!db) {
-    fprintf(stderr, "LIBCLANG TOOLING ERROR: %s\n", ErrorMsg.c_str());
+    fprintf(stderr, "LIBLFORT TOOLING ERROR: %s\n", ErrorMsg.c_str());
     Err = CXCompilationDatabase_CanNotLoadDatabase;
   }
 
@@ -31,7 +31,7 @@ clang_CompilationDatabase_fromDirectory(const char *BuildDir,
 }
 
 void
-clang_CompilationDatabase_dispose(CXCompilationDatabase CDb)
+lfort_CompilationDatabase_dispose(CXCompilationDatabase CDb)
 {
   delete static_cast<CompilationDatabase *>(CDb);
 }
@@ -46,7 +46,7 @@ struct AllocatedCXCompileCommands
 };
 
 CXCompileCommands
-clang_CompilationDatabase_getCompileCommands(CXCompilationDatabase CDb,
+lfort_CompilationDatabase_getCompileCommands(CXCompilationDatabase CDb,
                                              const char *CompleteFileName)
 {
   if (CompilationDatabase *db = static_cast<CompilationDatabase *>(CDb)) {
@@ -60,7 +60,7 @@ clang_CompilationDatabase_getCompileCommands(CXCompilationDatabase CDb,
 }
 
 CXCompileCommands
-clang_CompilationDatabase_getAllCompileCommands(CXCompilationDatabase CDb) {
+lfort_CompilationDatabase_getAllCompileCommands(CXCompilationDatabase CDb) {
   if (CompilationDatabase *db = static_cast<CompilationDatabase *>(CDb)) {
     const std::vector<CompileCommand> CCmd(db->getAllCompileCommands());
     if (!CCmd.empty())
@@ -71,13 +71,13 @@ clang_CompilationDatabase_getAllCompileCommands(CXCompilationDatabase CDb) {
 }
 
 void
-clang_CompileCommands_dispose(CXCompileCommands Cmds)
+lfort_CompileCommands_dispose(CXCompileCommands Cmds)
 {
   delete static_cast<AllocatedCXCompileCommands *>(Cmds);
 }
 
 unsigned
-clang_CompileCommands_getSize(CXCompileCommands Cmds)
+lfort_CompileCommands_getSize(CXCompileCommands Cmds)
 {
   if (!Cmds)
     return 0;
@@ -89,7 +89,7 @@ clang_CompileCommands_getSize(CXCompileCommands Cmds)
 }
 
 CXCompileCommand
-clang_CompileCommands_getCommand(CXCompileCommands Cmds, unsigned I)
+lfort_CompileCommands_getCommand(CXCompileCommands Cmds, unsigned I)
 {
   if (!Cmds)
     return 0;
@@ -104,7 +104,7 @@ clang_CompileCommands_getCommand(CXCompileCommands Cmds, unsigned I)
 }
 
 CXString
-clang_CompileCommand_getDirectory(CXCompileCommand CCmd)
+lfort_CompileCommand_getDirectory(CXCompileCommand CCmd)
 {
   if (!CCmd)
     return createCXString((const char*)NULL);
@@ -114,7 +114,7 @@ clang_CompileCommand_getDirectory(CXCompileCommand CCmd)
 }
 
 unsigned
-clang_CompileCommand_getNumArgs(CXCompileCommand CCmd)
+lfort_CompileCommand_getNumArgs(CXCompileCommand CCmd)
 {
   if (!CCmd)
     return 0;
@@ -123,7 +123,7 @@ clang_CompileCommand_getNumArgs(CXCompileCommand CCmd)
 }
 
 CXString
-clang_CompileCommand_getArg(CXCompileCommand CCmd, unsigned Arg)
+lfort_CompileCommand_getArg(CXCompileCommand CCmd, unsigned Arg)
 {
   if (!CCmd)
     return createCXString((const char*)NULL);

@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_LOOKUP_H
-#define LLVM_CLANG_SEMA_LOOKUP_H
+#ifndef LLVM_LFORT_SEMA_LOOKUP_H
+#define LLVM_LFORT_SEMA_LOOKUP_H
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/Sema/Sema.h"
 
-namespace clang {
+namespace lfort {
 
 /// @brief Represents the results of name lookup.
 ///

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -pedantic -fsyntax-only -cl-std=CL1.2
+// RUN: %lfort_cc1 %s -verify -pedantic -fsyntax-only -cl-std=CL1.2
 
 static int A;
 

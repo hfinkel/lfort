@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TypeLocBuilder.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Template.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Template.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 /// \brief Find the current instantiation that associated with the given type.
 static CXXRecordDecl *getCurrentInstantiationOf(QualType T,

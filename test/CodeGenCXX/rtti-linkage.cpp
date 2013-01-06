@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -I%S -triple=x86_64-apple-darwin10 -fhidden-weak-vtables -emit-llvm -o - | FileCheck %s
-// RUN: %clang_cc1 %s -I%S -triple=x86_64-apple-darwin10 -fvisibility hidden -fhidden-weak-vtables -emit-llvm -o - | FileCheck -check-prefix=CHECK-WITH-HIDDEN %s
+// RUN: %lfort_cc1 %s -I%S -triple=x86_64-apple-darwin10 -fhidden-weak-vtables -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -I%S -triple=x86_64-apple-darwin10 -fvisibility hidden -fhidden-weak-vtables -emit-llvm -o - | FileCheck -check-prefix=CHECK-WITH-HIDDEN %s
 
 #include <typeinfo>
 

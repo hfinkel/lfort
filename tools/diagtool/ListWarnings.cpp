@@ -14,9 +14,9 @@
 
 #include "DiagTool.h"
 #include "DiagnosticNames.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/Basic/AllDiagnostics.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/Basic/AllDiagnostics.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/Format.h"
 
@@ -24,7 +24,7 @@ DEF_DIAGTOOL("list-warnings",
              "List warnings and their corresponding flags",
              ListWarnings)
   
-using namespace clang;
+using namespace lfort;
 using namespace diagtool;
 
 namespace {

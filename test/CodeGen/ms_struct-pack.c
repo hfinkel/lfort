@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only  -triple i386-apple-darwin9 %s
+// RUN: %lfort_cc1 -emit-llvm-only  -triple i386-apple-darwin9 %s
 // rdar://8823265
 
 #pragma pack(1)

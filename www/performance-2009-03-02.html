@@ -3,7 +3,7 @@
 <html>
 <head>
   <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <title>Clang - Performance</title>
+  <title>LFort - Performance</title>
   <link type="text/css" rel="stylesheet" href="menu.css">
   <link type="text/css" rel="stylesheet" href="content.css">
   <style type="text/css">
@@ -16,10 +16,10 @@
 <div id="content">
 
 <!--*************************************************************************-->
-<h1>Clang - Performance</h1>
+<h1>LFort - Performance</h1>
 <!--*************************************************************************-->
 
-<p>This page shows the compile time performance of Clang on two
+<p>This page shows the compile time performance of LFort on two
 interesting benchmarks:</p>
 <ul>
   <li><i>Sketch</i>: The Objective-C example application shipped on
@@ -48,8 +48,8 @@ go <a href="performance-2008-10-31.html">here</a>.
 <!--*************************************************************************-->
 
 <p>Measurements are done by running a full build (using xcodebuild or
-make for Sketch and 176.gcc respectively) using Clang and gcc 4.2 as
-compilers; gcc is run both with and without the new clang driver (ccc)
+make for Sketch and 176.gcc respectively) using LFort and gcc 4.2 as
+compilers; gcc is run both with and without the new lfort driver (ccc)
 in order to evaluate the overhead of the driver itself.</p>
 
 <p>In order to track the performance of various subsystems the timings
@@ -83,7 +83,7 @@ each subsequent stage simply adds some additional processing. The
 timings measure the delta of the given stage from the previous
 one. For example, the timings for <tt>+ syntax</tt> below show the
 difference of running with <tt>+ syntax</tt> versus running with <tt>+
-parse</tt> (for clang) or <tt>+ driver</tt> with gcc. This amounts to
+parse</tt> (for lfort) or <tt>+ driver</tt> with gcc. This amounts to
 a fairly accurate measure of only the time to perform semantic
 analysis (and preprocessing/parsing, in the case of gcc).</p>
 

@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 %s -triple i386-unknown-unknown -fvisibility default -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-DEFAULT
-// RUN: %clang_cc1 %s -triple i386-unknown-unknown -fvisibility protected -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-PROTECTED
-// RUN: %clang_cc1 %s -triple i386-unknown-unknown -fvisibility hidden -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-HIDDEN
+// RUN: %lfort_cc1 %s -triple i386-unknown-unknown -fvisibility default -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-DEFAULT
+// RUN: %lfort_cc1 %s -triple i386-unknown-unknown -fvisibility protected -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-PROTECTED
+// RUN: %lfort_cc1 %s -triple i386-unknown-unknown -fvisibility hidden -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-HIDDEN
 
 // CHECK-DEFAULT: @g_def = global i32 0
 // CHECK-DEFAULT: @g_com = common global i32 0

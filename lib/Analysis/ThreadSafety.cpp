@@ -10,24 +10,24 @@
 // A intra-procedural analysis for thread safety (e.g. deadlocks and race
 // conditions), based off of an annotation system.
 //
-// See http://clang.llvm.org/docs/LanguageExtensions.html#threadsafety for more
+// See http://lfort.llvm.org/docs/LanguageExtensions.html#threadsafety for more
 // information.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/ThreadSafety.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/Analyses/PostOrderCFGView.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/CFGStmtMap.h"
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Analysis/Analyses/ThreadSafety.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/Analyses/PostOrderCFGView.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/CFGStmtMap.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/ImmutableMap.h"
@@ -39,7 +39,7 @@
 #include <utility>
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 using namespace thread_safety;
 
 // Key method definition
@@ -48,7 +48,7 @@ ThreadSafetyHandler::~ThreadSafetyHandler() {}
 namespace {
 
 /// SExpr implements a simple expression language that is used to store,
-/// compare, and pretty-print C++ expressions.  Unlike a clang Expr, a SExpr
+/// compare, and pretty-print C++ expressions.  Unlike a lfort Expr, a SExpr
 /// does not capture surface syntax, and it does not distinguish between
 /// C++ concepts, like pointers and references, that have no real semantic
 /// differences.  This simplicity allows SExprs to be meaningfully compared,
@@ -543,7 +543,7 @@ private:
   }
 
 public:
-  explicit SExpr(clang::Decl::EmptyShell e) { NodeVec.clear(); }
+  explicit SExpr(lfort::Decl::EmptyShell e) { NodeVec.clear(); }
 
   /// \param MutexExp The original mutex expression within an attribute
   /// \param DeclExp An expression involving the Decl on which the attribute
@@ -1853,7 +1853,7 @@ void BuildLockset::checkAccess(const Expr *Exp, AccessKind AK) {
 
   if (const UnaryOperator *UO = dyn_cast<UnaryOperator>(Exp)) {
     // For dereferences
-    if (UO->getOpcode() == clang::UO_Deref)
+    if (UO->getOpcode() == lfort::UO_Deref)
       checkPtAccess(UO->getSubExpr(), AK);
     return;
   }
@@ -2029,10 +2029,10 @@ void BuildLockset::handleCall(Expr *Exp, const NamedDecl *D, VarDecl *VD) {
 /// VisitCastExpr.
 void BuildLockset::VisitUnaryOperator(UnaryOperator *UO) {
   switch (UO->getOpcode()) {
-    case clang::UO_PostDec:
-    case clang::UO_PostInc:
-    case clang::UO_PreDec:
-    case clang::UO_PreInc: {
+    case lfort::UO_PostDec:
+    case lfort::UO_PostInc:
+    case lfort::UO_PreDec:
+    case lfort::UO_PreInc: {
       checkAccess(UO->getSubExpr(), AK_Written);
       break;
     }
@@ -2494,7 +2494,7 @@ void ThreadSafetyAnalyzer::runAnalysis(AnalysisDeclContext &AC) {
 } // end anonymous namespace
 
 
-namespace clang {
+namespace lfort {
 namespace thread_safety {
 
 /// \brief Check a function's CFG for thread-safety violations.
@@ -2520,4 +2520,4 @@ LockKind getLockKindFromAccessKind(AccessKind AK) {
   llvm_unreachable("Unknown AccessKind");
 }
 
-}} // end namespace clang::thread_safety
+}} // end namespace lfort::thread_safety

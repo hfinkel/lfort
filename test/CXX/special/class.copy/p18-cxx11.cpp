@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 // expected-no-diagnostics
 
 // C++98 [class.copy]p10 / C++11 [class.copy]p18.

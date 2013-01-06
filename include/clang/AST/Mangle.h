@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MANGLE_H
-#define LLVM_CLANG_AST_MANGLE_H
+#ifndef LLVM_LFORT_AST_MANGLE_H
+#define LLVM_LFORT_AST_MANGLE_H
 
-#include "clang/AST/Type.h"
-#include "clang/Basic/ABI.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/ABI.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class BlockDecl;
   class CXXConstructorDecl;

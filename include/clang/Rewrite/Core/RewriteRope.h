@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REWRITEROPE_H
-#define LLVM_CLANG_REWRITEROPE_H
+#ifndef LLVM_LFORT_REWRITEROPE_H
+#define LLVM_LFORT_REWRITEROPE_H
 
 #include "llvm/Support/Compiler.h"
 #include <cassert>
@@ -20,7 +20,7 @@
 #include <cstring>
 #include <iterator>
 
-namespace clang {
+namespace lfort {
   //===--------------------------------------------------------------------===//
   // RopeRefCountString Class
   //===--------------------------------------------------------------------===//
@@ -233,6 +233,6 @@ private:
   RopePiece MakeRopeString(const char *Start, const char *End);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

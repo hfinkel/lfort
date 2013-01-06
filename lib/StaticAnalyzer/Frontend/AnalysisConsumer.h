@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_ANALYSISCONSUMER_H
-#define LLVM_CLANG_GR_ANALYSISCONSUMER_H
+#ifndef LLVM_LFORT_GR_ANALYSISCONSUMER_H
+#define LLVM_LFORT_GR_ANALYSISCONSUMER_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class ASTConsumer;
 class Preprocessor;
@@ -38,6 +38,6 @@ ASTConsumer* CreateAnalysisConsumer(const Preprocessor &pp,
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

@@ -11,18 +11,18 @@
 //  a C++ nested-name-specifier.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLoc.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLoc.h"
 #include "llvm/Support/AlignOf.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cassert>
 
-using namespace clang;
+using namespace lfort;
 
 NestedNameSpecifier *
 NestedNameSpecifier::FindOrInsert(const ASTContext &Context,

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wformat-nonliteral -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wformat-nonliteral -pedantic %s
 
 #include <stdarg.h>
 

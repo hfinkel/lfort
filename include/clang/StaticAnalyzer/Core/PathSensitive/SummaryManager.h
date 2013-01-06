@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_SUMMARY
-#define LLVM_CLANG_GR_SUMMARY
+#ifndef LLVM_LFORT_GR_SUMMARY
+#define LLVM_LFORT_GR_SUMMARY
 
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/Support/Allocator.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -42,7 +42,7 @@ class SummaryKey {
   
 };
 
-} // end namespace clang::summMgr
+} // end namespace lfort::summMgr
   
 class SummaryManagerImpl {
   
@@ -56,6 +56,6 @@ class SummaryManager : SummaryManagerImpl {
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

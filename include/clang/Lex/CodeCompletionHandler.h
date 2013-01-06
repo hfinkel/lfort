@@ -11,10 +11,10 @@
 //  code-completion callbacks for the preprocessor.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LEX_CODECOMPLETIONHANDLER_H
-#define LLVM_CLANG_LEX_CODECOMPLETIONHANDLER_H
+#ifndef LLVM_LFORT_LEX_CODECOMPLETIONHANDLER_H
+#define LLVM_LFORT_LEX_CODECOMPLETIONHANDLER_H
 
-namespace clang {
+namespace lfort {
 
 class IdentifierInfo;
 class MacroInfo;
@@ -68,4 +68,4 @@ public:
   
 }
 
-#endif // LLVM_CLANG_LEX_CODECOMPLETIONHANDLER_H
+#endif // LLVM_LFORT_LEX_CODECOMPLETIONHANDLER_H

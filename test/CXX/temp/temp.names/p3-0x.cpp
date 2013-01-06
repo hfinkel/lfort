@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 
 template<int i> class X { /* ... */ };
 X< 1>2 > x1; // expected-error{{expected unqualified-id}}

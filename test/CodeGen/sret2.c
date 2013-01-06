@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -O0 -o - | grep sret | count 2
+// RUN: %lfort_cc1 %s -emit-llvm -O0 -o - | grep sret | count 2
 
 struct abc {
  long a;

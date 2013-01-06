@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-win32 -emit-llvm -fms-extensions < %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i686-win32 -emit-llvm -fms-extensions < %s | FileCheck %s
 
 void bar() {
 }

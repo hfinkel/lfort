@@ -10,19 +10,19 @@
 //  This file defines the code-completion semantic actions.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Overload.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Overload.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SmallBitVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -34,7 +34,7 @@
 #include <map>
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 namespace {
@@ -576,7 +576,7 @@ bool ResultBuilder::CheckHiddenResult(Result &R, DeclContext *CurContext,
 
 /// \brief A simplified classification of types used to determine whether two
 /// types are "similar enough" when adjusting priorities.
-SimplifiedTypeClass clang::getSimplifiedTypeClass(CanQualType T) {
+SimplifiedTypeClass lfort::getSimplifiedTypeClass(CanQualType T) {
   switch (T->getTypeClass()) {
   case Type::Builtin:
     switch (cast<BuiltinType>(T)->getKind()) {
@@ -645,7 +645,7 @@ SimplifiedTypeClass clang::getSimplifiedTypeClass(CanQualType T) {
 
 /// \brief Get the type that a given expression will have if this declaration
 /// is used as an expression in its "typical" code-completion form.
-QualType clang::getDeclUsageType(ASTContext &C, NamedDecl *ND) {
+QualType lfort::getDeclUsageType(ASTContext &C, NamedDecl *ND) {
   ND = cast<NamedDecl>(ND->getUnderlyingDecl());
   
   if (TypeDecl *Type = dyn_cast<TypeDecl>(ND))
@@ -2402,7 +2402,7 @@ static void AddTypedNameChunk(ASTContext &Context, const PrintingPolicy &Policy,
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
       case OO_##Name: OperatorName = "operator" Spelling; break;
 #define OVERLOADED_OPERATOR_MULTI(Name,Spelling,Unary,Binary,MemberOnly)
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
           
       case OO_New:          OperatorName = "operator new"; break;
       case OO_Delete:       OperatorName = "operator delete"; break;
@@ -2804,7 +2804,7 @@ CodeCompleteConsumer::OverloadCandidate::CreateSignatureString(
   return Result.TakeString();
 }
 
-unsigned clang::getMacroUsagePriority(StringRef MacroName, 
+unsigned lfort::getMacroUsagePriority(StringRef MacroName, 
                                       const LangOptions &LangOpts,
                                       bool PreferredTypeIsPointer) {
   unsigned Priority = CCP_Macro;
@@ -2828,7 +2828,7 @@ unsigned clang::getMacroUsagePriority(StringRef MacroName,
   return Priority;
 }
 
-CXCursorKind clang::getCursorKindForDecl(Decl *D) {
+CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
   if (!D)
     return CXCursor_UnexposedDecl;
   
@@ -4137,7 +4137,7 @@ void Sema::CodeCompleteOperatorName(Scope *S) {
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly)      \
   if (std::strcmp(Spelling, "?"))                                                  \
     Results.AddResult(Result(Spelling));
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   
   // Add any type names visible from the current scope
   Results.allowNestedNameSpecifiers();
@@ -7138,7 +7138,7 @@ void Sema::CodeCompletePreprocessorDirective(bool InConditional) {
   Results.AddResult(Builder.TakeString());
 
   // Note: #ident and #sccs are such crazy anachronisms that we don't provide
-  // completions for them. And __include_macros is a Clang-internal extension
+  // completions for them. And __include_macros is a LFort-internal extension
   // that we don't want to encourage anyone to use.
 
   // FIXME: we don't support #assert or #unassert, so don't suggest them.

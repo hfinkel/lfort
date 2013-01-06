@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 __attribute ((unavailable))
 @protocol FwProto; // expected-note{{marked unavailable}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++11 %s
+// RUN: %lfort_cc1 -verify -std=c++11 %s
 
 // Unlike in C++98, C++11 allows unions to have static data members.
 

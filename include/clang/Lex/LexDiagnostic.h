@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTICLEX_H
-#define LLVM_CLANG_DIAGNOSTICLEX_H
+#ifndef LLVM_LFORT_DIAGNOSTICLEX_H
+#define LLVM_LFORT_DIAGNOSTICLEX_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define LEXSTART
-#include "clang/Basic/DiagnosticLexKinds.inc"
+#include "lfort/Basic/DiagnosticLexKinds.inc"
 #undef DIAG
       NUM_BUILTIN_LEX_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

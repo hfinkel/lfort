@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 void f0a(void) {
    inline void f1(); // expected-error {{inline declaration of 'f1' not allowed in block scope}}

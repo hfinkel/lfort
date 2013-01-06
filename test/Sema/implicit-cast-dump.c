@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-dump %s | FileCheck %s
+// RUN: %lfort_cc1 -ast-dump %s | FileCheck %s
 
 void foo1(void*);
 void foo2(void* const);

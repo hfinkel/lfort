@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 struct A { };
 A::A (enum { e1 }) {} // expected-error{{can not be defined in a parameter}} \

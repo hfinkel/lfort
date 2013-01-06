@@ -4,4 +4,4 @@
 //
 // REQUIRES: crash-recovery
 
-#pragma clang __debug crash
+#pragma lfort __debug crash

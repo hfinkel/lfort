@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10  -Wuninitialized -fblocks -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10  -Wuninitialized -fblocks -verify %s 
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10  -Wuninitialized -fblocks -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10  -Wuninitialized -fblocks -verify %s 
 
 // rdar://10817031
 

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -std=gnu89 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=gnu89 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 #if __STDC_VERSION__ >= 199901
 #define GNU_INLINE __attribute((__gnu_inline__))

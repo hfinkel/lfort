@@ -16,14 +16,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "clang/Format/Format.h"
+#include "lfort/Format/Format.h"
 #include "UnwrappedLineParser.h"
-#include "clang/Basic/OperatorPrecedence.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Basic/OperatorPrecedence.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 namespace format {
 
 // FIXME: Move somewhere sane.
@@ -1168,4 +1168,4 @@ tooling::Replacements reformat(const FormatStyle &Style, Lexer &Lex,
 }
 
 }  // namespace format
-}  // namespace clang
+}  // namespace lfort

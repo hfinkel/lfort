@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_EXPRCXX_H
-#define LLVM_CLANG_AST_EXPRCXX_H
+#ifndef LLVM_LFORT_AST_EXPRCXX_H
+#define LLVM_LFORT_AST_EXPRCXX_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/UnresolvedSet.h"
-#include "clang/Basic/ExpressionTraits.h"
-#include "clang/Basic/Lambda.h"
-#include "clang/Basic/TypeTraits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/UnresolvedSet.h"
+#include "lfort/Basic/ExpressionTraits.h"
+#include "lfort/Basic/Lambda.h"
+#include "lfort/Basic/TypeTraits.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 class CXXConstructorDecl;
 class CXXDestructorDecl;
@@ -3725,6 +3725,6 @@ public:
   child_range children() { return child_range(&Temporary, &Temporary + 1); }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

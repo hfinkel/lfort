@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -ffreestanding -triple=arm-none-none %s | FileCheck -check-prefix ARM %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=arm-none-none %s | FileCheck -check-prefix ARM %s
 //
 // ARM:typedef signed long long int int64_t;
 // ARM:typedef unsigned long long int uint64_t;
@@ -106,7 +106,7 @@
 // ARM:UINTMAX_C_(0) 0ULL
 //
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=i386-none-none %s | FileCheck -check-prefix I386 %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=i386-none-none %s | FileCheck -check-prefix I386 %s
 //
 // I386:typedef signed long long int int64_t;
 // I386:typedef unsigned long long int uint64_t;
@@ -213,7 +213,7 @@
 // I386:INTMAX_C_(0) 0LL
 // I386:UINTMAX_C_(0) 0ULL
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=msp430-none-none %s | FileCheck -check-prefix MSP430 %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=msp430-none-none %s | FileCheck -check-prefix MSP430 %s
 //
 // MSP430:typedef signed long int int32_t;
 // MSP430:typedef unsigned long int uint32_t;
@@ -313,7 +313,7 @@
 // MSP430:INTMAX_C_(0) 0L
 // MSP430:UINTMAX_C_(0) 0UL
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=powerpc64-none-none %s | FileCheck -check-prefix PPC64 %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=powerpc64-none-none %s | FileCheck -check-prefix PPC64 %s
 //
 // PPC64:typedef signed long int int64_t;
 // PPC64:typedef unsigned long int uint64_t;
@@ -420,7 +420,7 @@
 // PPC64:INTMAX_C_(0) 0L
 // PPC64:UINTMAX_C_(0) 0UL
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=powerpc-none-none %s | FileCheck -check-prefix PPC %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=powerpc-none-none %s | FileCheck -check-prefix PPC %s
 //
 //
 // PPC:typedef signed long long int int64_t;
@@ -528,7 +528,7 @@
 // PPC:INTMAX_C_(0) 0LL
 // PPC:UINTMAX_C_(0) 0ULL
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=sparc-none-none %s | FileCheck -check-prefix SPARC %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=sparc-none-none %s | FileCheck -check-prefix SPARC %s
 //
 // SPARC:typedef signed long long int int64_t;
 // SPARC:typedef unsigned long long int uint64_t;
@@ -635,7 +635,7 @@
 // SPARC:INTMAX_C_(0) 0LL
 // SPARC:UINTMAX_C_(0) 0ULL
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=tce-none-none %s | FileCheck -check-prefix TCE %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=tce-none-none %s | FileCheck -check-prefix TCE %s
 //
 // TCE:typedef signed int int32_t;
 // TCE:typedef unsigned int uint32_t;
@@ -735,7 +735,7 @@
 // TCE:INTMAX_C_(0) 0
 // TCE:UINTMAX_C_(0) 0U
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=x86_64-none-none %s | FileCheck -check-prefix X86_64 %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=x86_64-none-none %s | FileCheck -check-prefix X86_64 %s
 //
 //
 // X86_64:typedef signed long int int64_t;
@@ -844,13 +844,13 @@
 // X86_64:UINTMAX_C_(0) 0UL
 //
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=x86_64-pc-linux-gnu %s | FileCheck -check-prefix X86_64_LINUX %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=x86_64-pc-linux-gnu %s | FileCheck -check-prefix X86_64_LINUX %s
 //
 // X86_64_LINUX:WINT_MIN_ 0U
 // X86_64_LINUX:WINT_MAX_ 4294967295U
 //
 //
-// RUN: %clang_cc1 -E -ffreestanding -triple=i386-mingw32 %s | FileCheck -check-prefix I386_MINGW32 %s
+// RUN: %lfort_cc1 -E -ffreestanding -triple=i386-mingw32 %s | FileCheck -check-prefix I386_MINGW32 %s
 //
 // I386_MINGW32:WCHAR_MAX_ 65535U
 // I386_MINGW32:WCHAR_MIN_ 0U
@@ -862,7 +862,7 @@
 // the identifiers used in the operations (int, uint, _t, INT, UINT, _MIN,
 // _MAX, and _C(v)) are themselves macros.
 //
-// RUN: %clang_cc1 -E -ffreestanding -U__UINTMAX_TYPE__ -U__INTMAX_TYPE__ -Dint=a -Duint=b -D_t=c -DINT=d -DUINT=e -D_MIN=f -D_MAX=g '-D_C(v)=h' -triple=i386-none-none %s | FileCheck -check-prefix JOIN %s
+// RUN: %lfort_cc1 -E -ffreestanding -U__UINTMAX_TYPE__ -U__INTMAX_TYPE__ -Dint=a -Duint=b -D_t=c -DINT=d -DUINT=e -D_MIN=f -D_MAX=g '-D_C(v)=h' -triple=i386-none-none %s | FileCheck -check-prefix JOIN %s
 // JOIN:typedef int32_t intptr_t;
 // JOIN:typedef uint32_t uintptr_t;
 // JOIN:typedef __INTMAX_TYPE__ intmax_t;

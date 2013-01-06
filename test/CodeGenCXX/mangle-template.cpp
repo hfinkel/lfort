@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s | FileCheck %s
 namespace test1 {
 int x;
 template <int& D> class T { };

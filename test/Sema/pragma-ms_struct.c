@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin9 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin9 %s
 
 #pragma ms_struct on
 

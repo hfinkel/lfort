@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Comment.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 const char *Comment::getCommentKindName() const {
@@ -25,7 +25,7 @@ const char *Comment::getCommentKindName() const {
 #define COMMENT(CLASS, PARENT) \
   case CLASS##Kind: \
     return #CLASS;
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef COMMENT
 #undef ABSTRACT_COMMENT
   }
@@ -68,7 +68,7 @@ static inline void CheckCommentASTNodes() {
 #define COMMENT(CLASS, PARENT) \
   ASSERT_IMPLEMENTS_child_begin(&CLASS::child_begin); \
   ASSERT_IMPLEMENTS_child_begin(&CLASS::child_end);
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef COMMENT
 #undef ABSTRACT_COMMENT
 }
@@ -84,7 +84,7 @@ Comment::child_iterator Comment::child_begin() const {
 #define COMMENT(CLASS, PARENT) \
   case CLASS##Kind: \
     return static_cast<const CLASS *>(this)->child_begin();
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef COMMENT
 #undef ABSTRACT_COMMENT
   }
@@ -98,7 +98,7 @@ Comment::child_iterator Comment::child_end() const {
 #define COMMENT(CLASS, PARENT) \
   case CLASS##Kind: \
     return static_cast<const CLASS *>(this)->child_end();
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
 #undef COMMENT
 #undef ABSTRACT_COMMENT
   }
@@ -325,5 +325,5 @@ StringRef TParamCommandComment::getParamName(const FullComment *FC) const {
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

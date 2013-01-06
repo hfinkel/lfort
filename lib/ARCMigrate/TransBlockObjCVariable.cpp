@@ -27,11 +27,11 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/Basic/SourceManager.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

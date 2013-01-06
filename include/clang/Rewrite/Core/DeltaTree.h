@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_REWRITE_DELTATREE_H
-#define CLANG_REWRITE_DELTATREE_H
+#ifndef LFORT_REWRITE_DELTATREE_H
+#define LFORT_REWRITE_DELTATREE_H
 
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
   /// DeltaTree - a multiway search tree (BTree) structure with some fancy
   /// features.  B-Trees are generally more memory and cache efficient than
@@ -45,6 +45,6 @@ namespace clang {
     /// into the current DeltaTree at offset FileIndex.
     void AddDelta(unsigned FileIndex, int Delta);
   };
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

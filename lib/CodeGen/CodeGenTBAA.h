@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CODEGENTBAA_H
-#define CLANG_CODEGEN_CODEGENTBAA_H
+#ifndef LFORT_CODEGEN_CODEGENTBAA_H
+#define LFORT_CODEGEN_CODEGENTBAA_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/MDBuilder.h"
 
@@ -24,7 +24,7 @@ namespace llvm {
   class MDNode;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class CodeGenOptions;
   class LangOptions;
@@ -46,10 +46,10 @@ class CodeGenTBAA {
   // MDHelper - Helper for creating metadata.
   llvm::MDBuilder MDHelper;
 
-  /// MetadataCache - This maps clang::Types to llvm::MDNodes describing them.
+  /// MetadataCache - This maps lfort::Types to llvm::MDNodes describing them.
   llvm::DenseMap<const Type *, llvm::MDNode *> MetadataCache;
 
-  /// StructMetadataCache - This maps clang::Types to llvm::MDNodes describing
+  /// StructMetadataCache - This maps lfort::Types to llvm::MDNodes describing
   /// them for struct assignments.
   llvm::DenseMap<const Type *, llvm::MDNode *> StructMetadataCache;
 
@@ -92,6 +92,6 @@ public:
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

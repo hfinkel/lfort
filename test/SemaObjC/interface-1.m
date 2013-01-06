@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -fobjc-runtime=macosx-fragile-10.5 %s -fsyntax-only -verify
 // rdar://5957506
 
 @interface NSWhatever :

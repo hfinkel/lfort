@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Pragma.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/Pragma.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/Support/CrashRecoveryContext.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 // Out-of-line destructor to provide a home for the class.
 PragmaHandler::~PragmaHandler() {
@@ -168,7 +168,7 @@ void Preprocessor::Handle_Pragma(Token &Tok) {
   //
   //     #define EMPTY(x)
   //     #define INACTIVE(x) EMPTY(x)
-  //     INACTIVE(_Pragma("clang diagnostic ignored \"-Wconversion\""))
+  //     INACTIVE(_Pragma("lfort diagnostic ignored \"-Wconversion\""))
 
   LexingFor_PragmaRAII _PragmaLexing(*this, InMacroArgPreExpansion, Tok);
 
@@ -965,9 +965,9 @@ struct PragmaDebugHandler : public PragmaHandler {
       Crasher.setKind(tok::annot_pragma_parser_crash);
       PP.EnterToken(Crasher);
     } else if (II->isStr("llvm_fatal_error")) {
-      llvm::report_fatal_error("#pragma clang __debug llvm_fatal_error");
+      llvm::report_fatal_error("#pragma lfort __debug llvm_fatal_error");
     } else if (II->isStr("llvm_unreachable")) {
-      llvm_unreachable("#pragma clang __debug llvm_unreachable");
+      llvm_unreachable("#pragma lfort __debug llvm_unreachable");
     } else if (II->isStr("overflow_stack")) {
       DebugOverflowStack();
     } else if (II->isStr("handle_crash")) {
@@ -1150,7 +1150,7 @@ struct PragmaSTDC_UnknownHandler : public PragmaHandler {
 };
 
 /// PragmaARCCFCodeAuditedHandler - 
-///   \#pragma clang arc_cf_code_audited begin/end
+///   \#pragma lfort arc_cf_code_audited begin/end
 struct PragmaARCCFCodeAuditedHandler : public PragmaHandler {
   PragmaARCCFCodeAuditedHandler() : PragmaHandler("arc_cf_code_audited") {}
   virtual void HandlePragma(Preprocessor &PP, PragmaIntroducerKind Introducer,
@@ -1243,13 +1243,13 @@ void Preprocessor::RegisterBuiltinPragmas() {
   AddPragmaHandler("GCC", new PragmaSystemHeaderHandler());
   AddPragmaHandler("GCC", new PragmaDependencyHandler());
   AddPragmaHandler("GCC", new PragmaDiagnosticHandler("GCC"));
-  // #pragma clang ...
-  AddPragmaHandler("clang", new PragmaPoisonHandler());
-  AddPragmaHandler("clang", new PragmaSystemHeaderHandler());
-  AddPragmaHandler("clang", new PragmaDebugHandler());
-  AddPragmaHandler("clang", new PragmaDependencyHandler());
-  AddPragmaHandler("clang", new PragmaDiagnosticHandler("clang"));
-  AddPragmaHandler("clang", new PragmaARCCFCodeAuditedHandler());
+  // #pragma lfort ...
+  AddPragmaHandler("lfort", new PragmaPoisonHandler());
+  AddPragmaHandler("lfort", new PragmaSystemHeaderHandler());
+  AddPragmaHandler("lfort", new PragmaDebugHandler());
+  AddPragmaHandler("lfort", new PragmaDependencyHandler());
+  AddPragmaHandler("lfort", new PragmaDiagnosticHandler("lfort"));
+  AddPragmaHandler("lfort", new PragmaARCCFCodeAuditedHandler());
 
   AddPragmaHandler("STDC", new PragmaSTDC_FENV_ACCESSHandler());
   AddPragmaHandler("STDC", new PragmaSTDC_CX_LIMITED_RANGEHandler());

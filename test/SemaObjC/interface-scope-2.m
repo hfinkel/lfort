@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-apple-darwin9 -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-apple-darwin9 -Wno-objc-root-class %s
 // expected-no-diagnostics
 // FIXME: must also compile as Objective-C++ 
 

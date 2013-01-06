@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_RAW_COMMENT_LIST_H
-#define LLVM_CLANG_AST_RAW_COMMENT_LIST_H
+#ifndef LLVM_LFORT_AST_RAW_COMMENT_LIST_H
+#define LLVM_LFORT_AST_RAW_COMMENT_LIST_H
 
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/ArrayRef.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class ASTReader;
@@ -204,7 +204,7 @@ private:
   friend class ASTReader;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

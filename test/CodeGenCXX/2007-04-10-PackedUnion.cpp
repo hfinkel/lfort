@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null
 extern "C" {
 
 #pragma pack(push, 2)

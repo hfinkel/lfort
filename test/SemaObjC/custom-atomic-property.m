@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -Wcustom-atomic-properties -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1  -fsyntax-only -Wcustom-atomic-properties -verify -Wno-objc-root-class %s
 
 @interface Foo
 @property (assign) Foo *myProp; // expected-note {{property declared here}} expected-note {{property declared here}}

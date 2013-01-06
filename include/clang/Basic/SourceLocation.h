@@ -8,14 +8,14 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::SourceLocation class and associated facilities.
+/// \brief Defines the lfort::SourceLocation class and associated facilities.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SOURCELOCATION_H
-#define LLVM_CLANG_SOURCELOCATION_H
+#ifndef LLVM_LFORT_SOURCELOCATION_H
+#define LLVM_LFORT_SOURCELOCATION_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/PointerLikeTypeTraits.h"
 #include <cassert>
@@ -29,7 +29,7 @@ namespace llvm {
   template <typename T> struct isPodLike;
 }
 
-namespace clang {
+namespace lfort {
 
 class SourceManager;
 
@@ -398,43 +398,43 @@ public:
 };
 
 
-}  // end namespace clang
+}  // end namespace lfort
 
 namespace llvm {
   /// Define DenseMapInfo so that FileID's can be used as keys in DenseMap and
   /// DenseSets.
   template <>
-  struct DenseMapInfo<clang::FileID> {
-    static inline clang::FileID getEmptyKey() {
-      return clang::FileID();
+  struct DenseMapInfo<lfort::FileID> {
+    static inline lfort::FileID getEmptyKey() {
+      return lfort::FileID();
     }
-    static inline clang::FileID getTombstoneKey() {
-      return clang::FileID::getSentinel();
+    static inline lfort::FileID getTombstoneKey() {
+      return lfort::FileID::getSentinel();
     }
 
-    static unsigned getHashValue(clang::FileID S) {
+    static unsigned getHashValue(lfort::FileID S) {
       return S.getHashValue();
     }
 
-    static bool isEqual(clang::FileID LHS, clang::FileID RHS) {
+    static bool isEqual(lfort::FileID LHS, lfort::FileID RHS) {
       return LHS == RHS;
     }
   };
   
   template <>
-  struct isPodLike<clang::SourceLocation> { static const bool value = true; };
+  struct isPodLike<lfort::SourceLocation> { static const bool value = true; };
   template <>
-  struct isPodLike<clang::FileID> { static const bool value = true; };
+  struct isPodLike<lfort::FileID> { static const bool value = true; };
 
   // Teach SmallPtrSet how to handle SourceLocation.
   template<>
-  class PointerLikeTypeTraits<clang::SourceLocation> {
+  class PointerLikeTypeTraits<lfort::SourceLocation> {
   public:
-    static inline void *getAsVoidPointer(clang::SourceLocation L) {
+    static inline void *getAsVoidPointer(lfort::SourceLocation L) {
       return L.getPtrEncoding();
     }
-    static inline clang::SourceLocation getFromVoidPointer(void *P) {
-      return clang::SourceLocation::getFromRawEncoding((unsigned)(uintptr_t)P);
+    static inline lfort::SourceLocation getFromVoidPointer(void *P) {
+      return lfort::SourceLocation::getFromRawEncoding((unsigned)(uintptr_t)P);
     }
     enum { NumLowBitsAvailable = 0 };
   };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple arm-unknown-unknown -target-abi apcs-gnu -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple arm-unknown-unknown -target-abi apcs-gnu -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 struct s0 { double f0; int f1; };

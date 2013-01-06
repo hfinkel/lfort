@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
 // C++ [expr.const]p1:
 //   In several places, C++ requires expressions that evaluate to an integral
 //   or enumeration constant: as array bounds, as case expressions, as

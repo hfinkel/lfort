@@ -12,10 +12,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EXPRESSIONTRAITS_H
-#define LLVM_CLANG_EXPRESSIONTRAITS_H
+#ifndef LLVM_LFORT_EXPRESSIONTRAITS_H
+#define LLVM_LFORT_EXPRESSIONTRAITS_H
 
-namespace clang {
+namespace lfort {
 
   enum ExpressionTrait {
     ET_IsLValueExpr,

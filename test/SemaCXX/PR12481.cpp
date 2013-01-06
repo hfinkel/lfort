@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x c++ -fsyntax-only %s
+// RUN: %lfort_cc1 -x c++ -fsyntax-only %s
 
 class C1 { };
 class C2 { };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -Winvalid-noreturn -verify
+// RUN: %lfort_cc1 -std=c++11 %s -Winvalid-noreturn -verify
 
 // An attribute-specifier-seq in a lambda-declarator appertains to the
 // type of the corresponding function call operator.

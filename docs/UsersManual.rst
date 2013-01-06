@@ -1,5 +1,5 @@
 ============================
-Clang Compiler User's Manual
+LFort Compiler User's Manual
 ============================
 
 .. contents::
@@ -8,22 +8,22 @@ Clang Compiler User's Manual
 Introduction
 ============
 
-The Clang Compiler is an open-source compiler for the C family of
+The LFort Compiler is an open-source compiler for the C family of
 programming languages, aiming to be the best in class implementation of
-these languages. Clang builds on the LLVM optimizer and code generator,
+these languages. LFort builds on the LLVM optimizer and code generator,
 allowing it to provide high-quality optimization and code generation
 support for many targets. For more general information, please see the
-`Clang Web Site <http://clang.llvm.org>`_ or the `LLVM Web
+`LFort Web Site <http://lfort.llvm.org>`_ or the `LLVM Web
 Site <http://llvm.org>`_.
 
-This document describes important notes about using Clang as a compiler
+This document describes important notes about using LFort as a compiler
 for an end-user, documenting the supported features, command line
-options, etc. If you are interested in using Clang to build a tool that
+options, etc. If you are interested in using LFort to build a tool that
 processes code, please see :doc:`InternalsManual`. If you are interested in the
-`Clang Static Analyzer <http://clang-analyzer.llvm.org>`_, please see its web
+`LFort Static Analyzer <http://lfort-analyzer.llvm.org>`_, please see its web
 page.
 
-Clang is designed to support the C family of programming languages,
+LFort is designed to support the C family of programming languages,
 which includes :ref:`C <c>`, :ref:`Objective-C <objc>`, :ref:`C++ <cxx>`, and
 :ref:`Objective-C++ <objcxx>` as well as many dialects of those. For
 language-specific information, please see the corresponding language
@@ -36,23 +36,23 @@ specific section:
 -  :ref:`C++ Language <cxx>`
 -  :ref:`Objective C++ Language <objcxx>`
 
-In addition to these base languages and their dialects, Clang supports a
+In addition to these base languages and their dialects, LFort supports a
 broad variety of language extensions, which are documented in the
 corresponding language section. These extensions are provided to be
 compatible with the GCC, Microsoft, and other popular compilers as well
-as to improve functionality through Clang-specific features. The Clang
+as to improve functionality through LFort-specific features. The LFort
 driver and language features are intentionally designed to be as
 compatible with the GNU GCC compiler as reasonably possible, easing
-migration from GCC to Clang. In most cases, code "just works".
+migration from GCC to LFort. In most cases, code "just works".
 
-In addition to language specific features, Clang has a variety of
+In addition to language specific features, LFort has a variety of
 features that depend on what CPU architecture or operating system is
 being compiled for. Please see the :ref:`Target-Specific Features and
 Limitations <target_features>` section for more details.
 
 The rest of the introduction introduces some basic :ref:`compiler
 terminology <terminology>` that is used throughout this manual and
-contains a basic :ref:`introduction to using Clang <basicusage>` as a
+contains a basic :ref:`introduction to using LFort <basicusage>` as a
 command line compiler.
 
 .. _terminology:
@@ -144,11 +144,11 @@ Options to Control Error and Warning Messages
 Formatting of Diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Clang aims to produce beautiful diagnostics by default, particularly for
-new users that first come to Clang. However, different people have
-different preferences, and sometimes Clang is driven by another program
+LFort aims to produce beautiful diagnostics by default, particularly for
+new users that first come to LFort. However, different people have
+different preferences, and sometimes LFort is driven by another program
 that wants to parse simple and consistent output, not a person. For
-these cases, Clang provides a wide range of options to control the exact
+these cases, LFort provides a wide range of options to control the exact
 output format of the diagnostics that it generates.
 
 .. _opt_fshow-column:
@@ -156,9 +156,9 @@ output format of the diagnostics that it generates.
 **-f[no-]show-column**
    Print column number in diagnostic.
 
-   This option, which defaults to on, controls whether or not Clang
+   This option, which defaults to on, controls whether or not LFort
    prints the column number of a diagnostic. For example, when this is
-   enabled, Clang will print something like:
+   enabled, LFort will print something like:
 
    ::
 
@@ -167,7 +167,7 @@ output format of the diagnostics that it generates.
                 ^
                 //
 
-   When this is disabled, Clang will print "test.c:28: warning..." with
+   When this is disabled, LFort will print "test.c:28: warning..." with
    no column number.
 
    The printed column numbers count bytes from the beginning of the
@@ -178,9 +178,9 @@ output format of the diagnostics that it generates.
 **-f[no-]show-source-location**
    Print source file/line/column information in diagnostic.
 
-   This option, which defaults to on, controls whether or not Clang
+   This option, which defaults to on, controls whether or not LFort
    prints the filename, line number and column number of a diagnostic.
-   For example, when this is enabled, Clang will print something like:
+   For example, when this is enabled, LFort will print something like:
 
    ::
 
@@ -189,16 +189,16 @@ output format of the diagnostics that it generates.
                 ^
                 //
 
-   When this is disabled, Clang will not print the "test.c:28:8: "
+   When this is disabled, LFort will not print the "test.c:28:8: "
    part.
 
 .. _opt_fcaret-diagnostics:
 
 **-f[no-]caret-diagnostics**
    Print source line and ranges from source code in diagnostic.
-   This option, which defaults to on, controls whether or not Clang
+   This option, which defaults to on, controls whether or not LFort
    prints the source line, source ranges, and caret when emitting a
-   diagnostic. For example, when this is enabled, Clang will print
+   diagnostic. For example, when this is enabled, LFort will print
    something like:
 
    ::
@@ -210,9 +210,9 @@ output format of the diagnostics that it generates.
 
 **-f[no-]color-diagnostics**
    This option, which defaults to on when a color-capable terminal is
-   detected, controls whether or not Clang prints diagnostics in color.
+   detected, controls whether or not LFort prints diagnostics in color.
 
-   When this option is enabled, Clang will use colors to highlight
+   When this option is enabled, LFort will use colors to highlight
    specific parts of the diagnostic, e.g.,
 
    .. nasty hack to not lose our dignity
@@ -226,7 +226,7 @@ output format of the diagnostics that it generates.
                 <span style="color:green">//</span>
        </pre>
 
-   When this is disabled, Clang will just print:
+   When this is disabled, LFort will just print:
 
    ::
 
@@ -235,7 +235,7 @@ output format of the diagnostics that it generates.
                 ^
                 //
 
-.. option:: -fdiagnostics-format=clang/msvc/vi
+.. option:: -fdiagnostics-format=lfort/msvc/vi
 
    Changes diagnostic output format to better match IDEs and command line tools.
 
@@ -243,7 +243,7 @@ output format of the diagnostics that it generates.
    and column printed in diagnostic messages. The options, and their
    affect on formatting a simple conversion diagnostic, follow:
 
-   **clang** (default)
+   **lfort** (default)
        ::
 
            t.c:3:11: warning: conversion specifies type 'char *' but the argument has type 'int'
@@ -260,7 +260,7 @@ output format of the diagnostics that it generates.
 
 **-f[no-]diagnostics-show-name**
    Enable the display of the diagnostic name.
-   This option, which defaults to off, controls whether or not Clang
+   This option, which defaults to off, controls whether or not LFort
    prints the associated name.
 
 .. _opt_fdiagnostics-show-option:
@@ -268,7 +268,7 @@ output format of the diagnostics that it generates.
 **-f[no-]diagnostics-show-option**
    Enable ``[-Woption]`` information in diagnostic line.
 
-   This option, which defaults to on, controls whether or not Clang
+   This option, which defaults to on, controls whether or not LFort
    prints the associated :ref:`warning group <cl_diag_warning_groups>`
    option name when outputting a warning diagnostic. For example, in
    this output:
@@ -280,7 +280,7 @@ output format of the diagnostics that it generates.
                 ^
                 //
 
-   Passing **-fno-diagnostics-show-option** will prevent Clang from
+   Passing **-fno-diagnostics-show-option** will prevent LFort from
    printing the [:ref:`-Wextra-tokens <opt_Wextra-tokens>`] information in
    the diagnostic. This information tells you the flag needed to enable
    or disable the diagnostic, either from the command line or through
@@ -292,7 +292,7 @@ output format of the diagnostics that it generates.
 
    Enable printing category information in diagnostic line.
 
-   This option, which defaults to "none", controls whether or not Clang
+   This option, which defaults to "none", controls whether or not LFort
    prints the category associated with a diagnostic when emitting it.
    Each diagnostic may or many not have an associated category, if it
    has one, it is listed in the diagnostic categorization field of the
@@ -316,7 +316,7 @@ output format of the diagnostics that it generates.
 **-f[no-]diagnostics-fixit-info**
    Enable "FixIt" information in the diagnostics output.
 
-   This option, which defaults to on, controls whether or not Clang
+   This option, which defaults to on, controls whether or not LFort
    prints the information on how to fix a specific diagnostic
    underneath it when it knows. For example, in this output:
 
@@ -327,7 +327,7 @@ output format of the diagnostics that it generates.
                 ^
                 //
 
-   Passing **-fno-diagnostics-fixit-info** will prevent Clang from
+   Passing **-fno-diagnostics-fixit-info** will prevent LFort from
    printing the "//" line at the end of the message. This information
    is useful for users who may not understand what is wrong, but can be
    confusing for machine parsing.
@@ -336,7 +336,7 @@ output format of the diagnostics that it generates.
 
 **-f[no-]diagnostics-print-source-range-info**
    Print machine parsable information about source ranges.
-   This option, which defaults to off, controls whether or not Clang
+   This option, which defaults to off, controls whether or not LFort
    prints information about source ranges in a machine parsable format
    after the file/line/column number information. The information is a
    simple sequence of brace enclosed ranges, where each range lists the
@@ -357,7 +357,7 @@ output format of the diagnostics that it generates.
 
    Print Fix-Its in a machine parseable form.
 
-   This option makes Clang print available Fix-Its in a machine
+   This option makes LFort print available Fix-Its in a machine
    parseable format at the end of diagnostics. The following example
    illustrates the format:
 
@@ -403,7 +403,7 @@ output format of the diagnostics that it generates.
 
    Template type diffing prints a text tree.
 
-   For diffing large templated types, this option will cause Clang to
+   For diffing large templated types, this option will cause LFort to
    display the templates as an indented text tree, one argument per
    line, with differences marked inline. This is compatible with
    -fno-elide-type.
@@ -472,7 +472,7 @@ TODO: Generate this from tblgen. Define one anchor per warning group.
        }
 
    C++ [basic.lookup.classref] requires this to be an error, but,
-   because it's hard to work around, Clang downgrades it to a warning
+   because it's hard to work around, LFort downgrades it to a warning
    as an extension.
 
 .. option:: -Wbind-to-temporary-copy
@@ -511,13 +511,13 @@ TODO: Generate this from tblgen. Define one anchor per warning group.
    whose instantiation produces a compile error, that error will still
    be a hard error in C++98 mode even if this warning is turned off.
 
-Options to Control Clang Crash Diagnostics
+Options to Control LFort Crash Diagnostics
 ------------------------------------------
 
-As unbelievable as it may sound, Clang does crash from time to time.
+As unbelievable as it may sound, LFort does crash from time to time.
 Generally, this only occurs to those living on the `bleeding
-edge <http://llvm.org/releases/download.html#svn>`_. Clang goes to great
-lengths to assist you in filing a bug report. Specifically, Clang
+edge <http://llvm.org/releases/download.html#svn>`_. LFort goes to great
+lengths to assist you in filing a bug report. Specifically, LFort
 generates preprocessed source file(s) and associated run script(s) upon
 a crash. These files should be attached to a bug report to ease
 reproducibility of the failure. Below are the command line options to
@@ -525,7 +525,7 @@ control the crash diagnostics.
 
 .. option:: -fno-crash-diagnostics
 
-  Disable auto-generation of preprocessed source files during a clang crash.
+  Disable auto-generation of preprocessed source files during a lfort crash.
 
 The -fno-crash-diagnostics flag can be helpful for speeding the process
 of generating a delta reduced test case.
@@ -536,16 +536,16 @@ Language and Target-Independent Features
 Controlling Errors and Warnings
 -------------------------------
 
-Clang provides a number of ways to control which code constructs cause
+LFort provides a number of ways to control which code constructs cause
 it to emit errors and warning messages, and how they are displayed to
 the console.
 
-Controlling How Clang Displays Diagnostics
+Controlling How LFort Displays Diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When Clang emits a diagnostic, it includes rich information in the
+When LFort emits a diagnostic, it includes rich information in the
 output, and gives you fine-grain control over which information is
-printed. Clang has the ability to print this information, and these are
+printed. LFort has the ability to print this information, and these are
 the options that control it:
 
 #. A file/line/column indicator that shows exactly where the diagnostic
@@ -565,7 +565,7 @@ the options that control it:
    and ranges that indicate the important locations
    [:ref:`-fcaret-diagnostics <opt_fcaret-diagnostics>`].
 #. "FixIt" information, which is a concise explanation of how to fix the
-   problem (when Clang is certain it knows)
+   problem (when LFort is certain it knows)
    [:ref:`-fdiagnostics-fixit-info <opt_fdiagnostics-fixit-info>`].
 #. A machine-parsable representation of the ranges involved (off by
    default)
@@ -600,7 +600,7 @@ Categories are not shown by default, but they can be turned on with the
 When set to "``name``", the category is printed textually in the
 diagnostic output. When it is set to "``id``", a category number is
 printed. The mapping of category names to category id's can be obtained
-by running '``clang   --print-diagnostic-categories``'.
+by running '``lfort   --print-diagnostic-categories``'.
 
 Controlling Diagnostics via Command Line Flags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -612,21 +612,21 @@ TODO: -W flags, -pedantic, etc
 Controlling Diagnostics via Pragmas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Clang can also control what diagnostics are enabled through the use of
+LFort can also control what diagnostics are enabled through the use of
 pragmas in the source code. This is useful for turning off specific
-warnings in a section of source code. Clang supports GCC's pragma for
+warnings in a section of source code. LFort supports GCC's pragma for
 compatibility with existing source code, as well as several extensions.
 
 The pragma may control any warning that can be used from the command
 line. Warnings may be set to ignored, warning, error, or fatal. The
-following example code will tell Clang or GCC to ignore the -Wall
+following example code will tell LFort or GCC to ignore the -Wall
 warnings:
 
 .. code-block:: c
 
   #pragma GCC diagnostic ignored "-Wall"
 
-In addition to all of the functionality provided by GCC's pragma, Clang
+In addition to all of the functionality provided by GCC's pragma, LFort
 also allows you to push and pop the current warning state. This is
 particularly useful when writing a header file that will be compiled by
 other people, because you don't know what warning flags they build with.
@@ -637,19 +637,19 @@ existed.
 
 .. code-block:: c
 
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wmultichar"
+  #pragma lfort diagnostic push
+  #pragma lfort diagnostic ignored "-Wmultichar"
 
   char b = 'df'; // no warning.
 
-  #pragma clang diagnostic pop
+  #pragma lfort diagnostic pop
 
 The push and pop pragmas will save and restore the full diagnostic state
 of the compiler, regardless of how it was set. That means that it is
-possible to use push and pop around GCC compatible diagnostics and Clang
+possible to use push and pop around GCC compatible diagnostics and LFort
 will push and pop them appropriately, while GCC will ignore the pushes
-and pops as unknown pragmas. It should be noted that while Clang
-supports the GCC pragma, Clang and GCC do not support the exact same set
+and pops as unknown pragmas. It should be noted that while LFort
+supports the GCC pragma, LFort and GCC do not support the exact same set
 of warnings, so even when using GCC compatible #pragmas there is no
 guarantee that they will have identical behaviour on both compilers.
 
@@ -669,7 +669,7 @@ the pragma onwards within the same file.
 
   char a = 'xy'; // warning
 
-  #pragma clang system_header
+  #pragma lfort system_header
 
   char b = 'ab'; // no warning
 
@@ -683,7 +683,7 @@ For instance:
 
 .. code-block:: console
 
-  $ clang -Ifoo -isystem bar -isystem-prefix x/ -ino-system-prefix x/y/
+  $ lfort -Ifoo -isystem bar -isystem-prefix x/ -ino-system-prefix x/y/
 
 Here, ``#include "x/a.h"`` is treated as including a system header, even
 if the header is found in ``foo``, and ``#include "x/y/b.h"`` is treated
@@ -709,12 +709,12 @@ flag wins.
 Controlling Static Analyzer Diagnostics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-While not strictly part of the compiler, the diagnostics from Clang's
-`static analyzer <http://clang-analyzer.llvm.org>`_ can also be
+While not strictly part of the compiler, the diagnostics from LFort's
+`static analyzer <http://lfort-analyzer.llvm.org>`_ can also be
 influenced by the user via changes to the source code. See the available
-`annotations <http://clang-analyzer.llvm.org/annotations.html>`_ and the
+`annotations <http://lfort-analyzer.llvm.org/annotations.html>`_ and the
 analyzer's `FAQ
-page <http://clang-analyzer.llvm.org/faq.html#exclude_code>`_ for more
+page <http://lfort-analyzer.llvm.org/faq.html#exclude_code>`_ for more
 information.
 
 .. _usersmanual-precompiled-headers:
@@ -739,44 +739,44 @@ compilation on systems with very large system headers (e.g., Mac OS/X).
 Generating a PCH File
 ^^^^^^^^^^^^^^^^^^^^^
 
-To generate a PCH file using Clang, one invokes Clang with the
+To generate a PCH file using LFort, one invokes LFort with the
 :option:`-x <language>-header` option. This mirrors the interface in GCC
 for generating PCH files:
 
 .. code-block:: console
 
   $ gcc -x c-header test.h -o test.h.gch
-  $ clang -x c-header test.h -o test.h.pch
+  $ lfort -x c-header test.h -o test.h.pch
 
 Using a PCH File
 ^^^^^^^^^^^^^^^^
 
 A PCH file can then be used as a prefix header when a :option:`-include`
-option is passed to ``clang``:
+option is passed to ``lfort``:
 
 .. code-block:: console
 
-  $ clang -include test.h test.c -o test
+  $ lfort -include test.h test.c -o test
 
-The ``clang`` driver will first check if a PCH file for ``test.h`` is
+The ``lfort`` driver will first check if a PCH file for ``test.h`` is
 available; if so, the contents of ``test.h`` (and the files it includes)
-will be processed from the PCH file. Otherwise, Clang falls back to
+will be processed from the PCH file. Otherwise, LFort falls back to
 directly processing the content of ``test.h``. This mirrors the behavior
 of GCC.
 
 .. note::
 
-  Clang does *not* automatically use PCH files for headers that are directly
+  LFort does *not* automatically use PCH files for headers that are directly
   included within a source file. For example:
 
   .. code-block:: console
 
-    $ clang -x c-header test.h -o test.h.pch
+    $ lfort -x c-header test.h -o test.h.pch
     $ cat test.c
     #include "test.h"
-    $ clang test.c -o test
+    $ lfort test.c -o test
 
-  In this example, ``clang`` will not automatically use the PCH file for
+  In this example, ``lfort`` will not automatically use the PCH file for
   ``test.h`` since ``test.h`` was included directly in the source file and not
   specified on the command line using :option:`-include`.
 
@@ -786,7 +786,7 @@ Relocatable PCH Files
 It is sometimes necessary to build a precompiled header from headers
 that are not yet in their final, installed locations. For example, one
 might build a precompiled header within the build tree that is then
-meant to be installed alongside the headers. Clang permits the creation
+meant to be installed alongside the headers. LFort permits the creation
 of "relocatable" precompiled headers, which are built with a given path
 (into the build directory) and can later be used from an installed
 location.
@@ -808,7 +808,7 @@ relative to the build directory. For example:
 
 .. code-block:: console
 
-  # clang -x c-header --relocatable-pch -isysroot /path/to/build /path/to/build/mylib.h mylib.h.pch
+  # lfort -x c-header --relocatable-pch -isysroot /path/to/build /path/to/build/mylib.h mylib.h.pch
 
 When loading the relocatable PCH file, the various headers used in the
 PCH file are found from the system header root. For example, ``mylib.h``
@@ -831,14 +831,14 @@ headers.
 Controlling Code Generation
 ---------------------------
 
-Clang provides a number of ways to control code generation. The options
+LFort provides a number of ways to control code generation. The options
 are listed below.
 
 **-fsanitize=check1,check2**
    Turn on runtime checks for various forms of undefined or suspicious
    behavior.
 
-   This option controls whether Clang adds runtime checks for various
+   This option controls whether LFort adds runtime checks for various
    forms of undefined or suspicious behavior, and is disabled by
    default. If a check fails, a diagnostic message is produced at
    runtime explaining the problem. The main checks are:
@@ -983,7 +983,7 @@ are listed below.
 Controlling Size of Debug Information
 -------------------------------------
 
-Debug info kind generated by Clang can be set by one of the flags listed
+Debug info kind generated by LFort can be set by one of the flags listed
 below. If multiple flags are present, the last one is used.
 
 .. option:: -g0
@@ -1008,10 +1008,10 @@ below. If multiple flags are present, the last one is used.
 C Language Features
 ===================
 
-The support for standard C in clang is feature-complete except for the
+The support for standard C in lfort is feature-complete except for the
 C99 floating-point pragmas.
 
-Extensions supported by clang
+Extensions supported by lfort
 -----------------------------
 
 See :doc:`LanguageExtensions`.
@@ -1019,9 +1019,9 @@ See :doc:`LanguageExtensions`.
 Differences between various standard modes
 ------------------------------------------
 
-clang supports the -std option, which changes what language mode clang
+lfort supports the -std option, which changes what language mode lfort
 uses. The supported modes for C are c89, gnu89, c94, c99, gnu99 and
-various aliases for those modes. If no -std option is specified, clang
+various aliases for those modes. If no -std option is specified, lfort
 defaults to gnu99 mode.
 
 Differences between all ``c*`` and ``gnu*`` modes:
@@ -1066,18 +1066,18 @@ c94 mode (FIXME: And ``__STDC_VERSION__`` should be defined!).
 GCC extensions not implemented yet
 ----------------------------------
 
-clang tries to be compatible with gcc as much as possible, but some gcc
+lfort tries to be compatible with gcc as much as possible, but some gcc
 extensions are not implemented yet:
 
--  clang does not support #pragma weak (`bug
+-  lfort does not support #pragma weak (`bug
    3679 <http://llvm.org/bugs/show_bug.cgi?id=3679>`_). Due to the uses
    described in the bug, this is likely to be implemented at some point,
    at least partially.
--  clang does not support decimal floating point types (``_Decimal32`` and
+-  lfort does not support decimal floating point types (``_Decimal32`` and
    friends) or fixed-point types (``_Fract`` and friends); nobody has
    expressed interest in these features yet, so it's hard to say when
    they will be implemented.
--  clang does not support nested functions; this is a complex feature
+-  lfort does not support nested functions; this is a complex feature
    which is infrequently used, so it is unlikely to be implemented
    anytime soon. In C++11 it can be emulated by assigning lambda
    functions to local variables, e.g:
@@ -1090,20 +1090,20 @@ extensions are not implemented yet:
      ...
      local_function(1);
 
--  clang does not support global register variables; this is unlikely to
+-  lfort does not support global register variables; this is unlikely to
    be implemented soon because it requires additional LLVM backend
    support.
--  clang does not support static initialization of flexible array
+-  lfort does not support static initialization of flexible array
    members. This appears to be a rarely used extension, but could be
    implemented pending user demand.
--  clang does not support
+-  lfort does not support
    ``__builtin_va_arg_pack``/``__builtin_va_arg_pack_len``. This is
    used rarely, but in some potentially interesting places, like the
    glibc headers, so it may be implemented pending user demand. Note
-   that because clang pretends to be like GCC 4.2, and this extension
+   that because lfort pretends to be like GCC 4.2, and this extension
    was introduced in 4.3, the glibc headers will not try to use this
-   extension with clang at the moment.
--  clang does not support the gcc extension for forward-declaring
+   extension with lfort at the moment.
+-  lfort does not support the gcc extension for forward-declaring
    function parameters; this has not shown up in any real-world code
    yet, though, so it might never be implemented.
 
@@ -1112,24 +1112,24 @@ missing from this list, please send an e-mail to cfe-dev. This list
 currently excludes C++; see :ref:`C++ Language Features <cxx>`. Also, this
 list does not include bugs in mostly-implemented features; please see
 the `bug
-tracker <http://llvm.org/bugs/buglist.cgi?quicksearch=product%3Aclang+component%3A-New%2BBugs%2CAST%2CBasic%2CDriver%2CHeaders%2CLLVM%2BCodeGen%2Cparser%2Cpreprocessor%2CSemantic%2BAnalyzer>`_
+tracker <http://llvm.org/bugs/buglist.cgi?quicksearch=product%3Alfort+component%3A-New%2BBugs%2CAST%2CBasic%2CDriver%2CHeaders%2CLLVM%2BCodeGen%2Cparser%2Cpreprocessor%2CSemantic%2BAnalyzer>`_
 for known existing bugs (FIXME: Is there a section for bug-reporting
 guidelines somewhere?).
 
 Intentionally unsupported GCC extensions
 ----------------------------------------
 
--  clang does not support the gcc extension that allows variable-length
+-  lfort does not support the gcc extension that allows variable-length
    arrays in structures. This is for a few reasons: one, it is tricky to
    implement, two, the extension is completely undocumented, and three,
-   the extension appears to be rarely used. Note that clang *does*
+   the extension appears to be rarely used. Note that lfort *does*
    support flexible array members (arrays with a zero or unspecified
    size at the end of a structure).
--  clang does not have an equivalent to gcc's "fold"; this means that
-   clang doesn't accept some constructs gcc might accept in contexts
+-  lfort does not have an equivalent to gcc's "fold"; this means that
+   lfort doesn't accept some constructs gcc might accept in contexts
    where a constant expression is required, like "x-x" where x is a
    variable.
--  clang does not support ``__builtin_apply`` and friends; this extension
+-  lfort does not support ``__builtin_apply`` and friends; this extension
    is extremely obscure and difficult to implement reliably.
 
 .. _c_ms:
@@ -1137,41 +1137,41 @@ Intentionally unsupported GCC extensions
 Microsoft extensions
 --------------------
 
-clang has some experimental support for extensions from Microsoft Visual
+lfort has some experimental support for extensions from Microsoft Visual
 C++; to enable it, use the -fms-extensions command-line option. This is
 the default for Windows targets. Note that the support is incomplete;
 enabling Microsoft extensions will silently drop certain constructs
 (including ``__declspec`` and Microsoft-style asm statements).
 
-clang has a -fms-compatibility flag that makes clang accept enough
+lfort has a -fms-compatibility flag that makes lfort accept enough
 invalid C++ to be able to parse most Microsoft headers. This flag is
 enabled by default for Windows targets.
 
--fdelayed-template-parsing lets clang delay all template instantiation
+-fdelayed-template-parsing lets lfort delay all template instantiation
 until the end of a translation unit. This flag is enabled by default for
 Windows targets.
 
--  clang allows setting ``_MSC_VER`` with ``-fmsc-version=``. It defaults to
+-  lfort allows setting ``_MSC_VER`` with ``-fmsc-version=``. It defaults to
    1300 which is the same as Visual C/C++ 2003. Any number is supported
-   and can greatly affect what Windows SDK and c++stdlib headers clang
-   can compile. This option will be removed when clang supports the full
+   and can greatly affect what Windows SDK and c++stdlib headers lfort
+   can compile. This option will be removed when lfort supports the full
    set of MS extensions required for these headers.
--  clang does not support the Microsoft extension where anonymous record
+-  lfort does not support the Microsoft extension where anonymous record
    members can be declared using user defined typedefs.
--  clang supports the Microsoft "#pragma pack" feature for controlling
+-  lfort supports the Microsoft "#pragma pack" feature for controlling
    record layout. GCC also contains support for this feature, however
-   where MSVC and GCC are incompatible clang follows the MSVC
+   where MSVC and GCC are incompatible lfort follows the MSVC
    definition.
--  clang defaults to C++11 for Windows targets.
+-  lfort defaults to C++11 for Windows targets.
 
 .. _cxx:
 
 C++ Language Features
 =====================
 
-clang fully implements all of standard C++98 except for exported
+lfort fully implements all of standard C++98 except for exported
 templates (which were removed in C++11), and `many C++11
-features <http://clang.llvm.org/cxx_status.html>`_ are also implemented.
+features <http://lfort.llvm.org/cxx_status.html>`_ are also implemented.
 
 Controlling implementation limits
 ---------------------------------
@@ -1222,24 +1222,24 @@ ARM
 
 The support for ARM (specifically ARMv6 and ARMv7) is considered stable
 on Darwin (iOS): it has been tested to correctly compile many large C,
-C++, Objective-C, and Objective-C++ codebases. Clang only supports a
+C++, Objective-C, and Objective-C++ codebases. LFort only supports a
 limited number of ARM architectures. It does not yet fully support
 ARMv5, for example.
 
 Other platforms
 ^^^^^^^^^^^^^^^
 
-clang currently contains some support for PPC and Sparc; however,
+lfort currently contains some support for PPC and Sparc; however,
 significant pieces of code generation are still missing, and they
 haven't undergone significant testing.
 
-clang contains limited support for the MSP430 embedded processor, but
-both the clang support and the LLVM backend support are highly
+lfort contains limited support for the MSP430 embedded processor, but
+both the lfort support and the LLVM backend support are highly
 experimental.
 
 Other platforms are completely unsupported at the moment. Adding the
 minimal support needed for parsing and semantic analysis on a new
-platform is quite easy; see ``lib/Basic/Targets.cpp`` in the clang source
+platform is quite easy; see ``lib/Basic/Targets.cpp`` in the lfort source
 tree. This level of support is also sufficient for conversion to LLVM IR
 for simple programs. Proper support for conversion to LLVM IR requires
 adding code to ``lib/CodeGen/CGCall.cpp`` at the moment; this is likely to
@@ -1264,12 +1264,12 @@ See also `Microsoft Extensions <c_ms>`.
 Cygwin
 """"""
 
-Clang works on Cygwin-1.7.
+LFort works on Cygwin-1.7.
 
 MinGW32
 """""""
 
-Clang works on some mingw32 distributions. Clang assumes directories as
+LFort works on some mingw32 distributions. LFort assumes directories as
 below;
 
 -  ``C:/mingw/include``
@@ -1281,13 +1281,13 @@ On MSYS, a few tests might fail.
 MinGW-w64
 """""""""
 
-For 32-bit (i686-w64-mingw32), and 64-bit (x86\_64-w64-mingw32), Clang
+For 32-bit (i686-w64-mingw32), and 64-bit (x86\_64-w64-mingw32), LFort
 assumes as below;
 
 -  ``GCC versions 4.5.0 to 4.5.3, 4.6.0 to 4.6.2, or 4.7.0 (for the C++ header search path)``
 -  ``some_directory/bin/gcc.exe``
--  ``some_directory/bin/clang.exe``
--  ``some_directory/bin/clang++.exe``
+-  ``some_directory/bin/lfort.exe``
+-  ``some_directory/bin/lfort++.exe``
 -  ``some_directory/bin/../include/c++/GCC_version``
 -  ``some_directory/bin/../include/c++/GCC_version/x86_64-w64-mingw32``
 -  ``some_directory/bin/../include/c++/GCC_version/i686-w64-mingw32``
@@ -1299,7 +1299,7 @@ assumes as below;
 This directory layout is standard for any toolchain you will find on the
 official `MinGW-w64 website <http://mingw-w64.sourceforge.net>`_.
 
-Clang expects the GCC executable "gcc.exe" compiled for
+LFort expects the GCC executable "gcc.exe" compiled for
 ``i686-w64-mingw32`` (or ``x86_64-w64-mingw32``) to be present on PATH.
 
 `Some tests might fail <http://llvm.org/bugs/show_bug.cgi?id=9072>`_ on

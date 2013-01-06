@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s 
+// RUN: %lfort_cc1 -verify %s 
 
 typedef __attribute__(( ext_vector_type(4) ))  float float4;
 typedef __attribute__(( ext_vector_type(4) ))  int int4;

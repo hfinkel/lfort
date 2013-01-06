@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -O1 -o - %s | grep icmp
+// RUN: %lfort_cc1 -emit-llvm -O1 -o - %s | grep icmp
 // PR1678
 extern void B (void);
 static __typeof(B) A __attribute__ ((__weakref__("B")));

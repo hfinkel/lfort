@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fblocks -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fblocks -verify %s
 // rdar://10597832
 
 typedef const void *CFTypeRef;
@@ -36,7 +36,7 @@ void fixits() {
   CFTypeRef cf1 = (CFTypeRef)CreateSomething();
 }
 
-#pragma clang diagnostic ignored "-Warc-bridge-casts-disallowed-in-nonarc"
+#pragma lfort diagnostic ignored "-Warc-bridge-casts-disallowed-in-nonarc"
 
 void to_cf_ignored(id obj) {
   CFTypeRef cf1 = (__bridge_retained CFTypeRef)CreateSomething(); // no-warning

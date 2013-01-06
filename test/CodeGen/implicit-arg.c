@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -emit-llvm -O0 -o -
-// RUN: %clang_cc1 %s -emit-llvm -O1 -o -
+// RUN: %lfort_cc1 %s -emit-llvm -O0 -o -
+// RUN: %lfort_cc1 %s -emit-llvm -O1 -o -
 // rdar://6518089
 
 static int bar();

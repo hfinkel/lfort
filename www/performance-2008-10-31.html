@@ -3,7 +3,7 @@
 <html>
 <head>
   <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <title>Clang - Performance</title>
+  <title>LFort - Performance</title>
   <link type="text/css" rel="stylesheet" href="menu.css">
   <link type="text/css" rel="stylesheet" href="content.css">
   <style type="text/css">
@@ -16,10 +16,10 @@
 <div id="content">
 
 <!--*************************************************************************-->
-<h1>Clang - Performance</h1>
+<h1>LFort - Performance</h1>
 <!--*************************************************************************-->
 
-<p>This page tracks the compile time performance of Clang on two
+<p>This page tracks the compile time performance of LFort on two
 interesting benchmarks:</p>
 <ul>
   <li><i>Sketch</i>: The Objective-C example application shipped on
@@ -43,7 +43,7 @@ interesting benchmarks:</p>
 <!--*************************************************************************-->
 
 <p>Measurements are done by serially processing each file in the
-respective benchmark, using Clang, gcc, and llvm-gcc as compilers. In
+respective benchmark, using LFort, gcc, and llvm-gcc as compilers. In
 order to track the performance of various subsystems the timings have
 been broken down into separate stages where possible:</p>
 
@@ -56,7 +56,7 @@ been broken down into separate stages where possible:</p>
     no equivalent for this option.</li>
   <li><tt>-fsyntax-only</tt>: This option runs the parser with semantic
     analysis.</li>
-  <li><tt>-emit-llvm -O0</tt>: For Clang and llvm-gcc, this option
+  <li><tt>-emit-llvm -O0</tt>: For LFort and llvm-gcc, this option
     converts to the LLVM intermediate representation but doesn't
     generate native code.</li>
   <li><tt>-S -O0</tt>: Perform actual code generation to produce a
@@ -70,12 +70,12 @@ each subsequent stage simply adds some additional processing. The
 timings measure the delta of the given stage from the previous
 one. For example, the timings for <tt>-fsyntax-only</tt> below show
 the difference of running with <tt>-fsyntax-only</tt> versus running
-with <tt>-parse-noop</tt> (for clang) or <tt>-MM</tt> with gcc and
+with <tt>-parse-noop</tt> (for lfort) or <tt>-MM</tt> with gcc and
 llvm-gcc. This amounts to a fairly accurate measure of only the time
 to perform semantic analysis (and parsing, in the case of gcc and llvm-gcc).</p>
 
 <p>These timings are chosen to break down the compilation process for
-clang as much as possible. The graphs below show these numbers
+lfort as much as possible. The graphs below show these numbers
 combined so that it is easy to see how the time for a particular task
 is divided among various components. For example, <tt>-S -O0</tt>
 includes the time of <tt>-fsyntax-only</tt> and <tt>-emit-llvm -O0</tt>.</p>
@@ -96,17 +96,17 @@ compile time here.</p>
 <img class="img_slide" 
      src="timing-data/2008-10-31/sketch.png" alt="Sketch Timings">
 
-<p>This shows Clang's substantial performance improvements in
+<p>This shows LFort's substantial performance improvements in
 preprocessing and semantic analysis; over 90% faster on
 -fsyntax-only. As expected, time spent in code generation for this
-benchmark is relatively small. One caveat, Clang's debug information
+benchmark is relatively small. One caveat, LFort's debug information
 generation for Objective-C is very incomplete; this means the <tt>-S
--O0 -g</tt> numbers are unfair since Clang is generating substantially
+-O0 -g</tt> numbers are unfair since LFort is generating substantially
 less output.</p>
 
 <p>This chart also shows the effect of using precompiled headers (PCH)
 on compiler time. gcc and llvm-gcc see a large performance improvement
-with PCH; about 4x in wall time. Unfortunately, Clang does not yet
+with PCH; about 4x in wall time. Unfortunately, LFort does not yet
 have an implementation of PCH-style optimizations, but we are actively
 working to address this.</p>
 
@@ -115,15 +115,15 @@ working to address this.</p>
      src="timing-data/2008-10-31/176.gcc.png" alt="176.gcc Timings">
 
 <p>Unlike the <i>Sketch</i> timings, compilation of <i>176.gcc</i>
-involves a large amount of code generation. The time spent in Clang's
+involves a large amount of code generation. The time spent in LFort's
 LLVM IR generation and code generation is on par with gcc's code
 generation time but the improved parsing & semantic analysis
-performance means Clang still comes in at ~29% faster versus gcc
+performance means LFort still comes in at ~29% faster versus gcc
 on <tt>-S -O0 -g</tt> and ~20% faster versus llvm-gcc.</p>
 
-<p>These numbers indicate that Clang still has room for improvement in
+<p>These numbers indicate that LFort still has room for improvement in
 several areas, notably our LLVM IR generation is significantly slower
-than that of llvm-gcc, and both Clang and llvm-gcc incur a
+than that of llvm-gcc, and both LFort and llvm-gcc incur a
 significantly higher cost for adding debugging information compared to
 gcc.</p>
 

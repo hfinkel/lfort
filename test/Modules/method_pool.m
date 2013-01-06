@@ -1,5 +1,5 @@
 // RUN: rm -rf %t
-// RUN: %clang_cc1 -fmodule-cache-path %t -fmodules -I %S/Inputs %s -verify
+// RUN: %lfort_cc1 -fmodule-cache-path %t -fmodules -I %S/Inputs %s -verify
 
 @import MethodPoolA;
 

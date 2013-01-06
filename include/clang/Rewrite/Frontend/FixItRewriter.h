@@ -12,15 +12,15 @@
 // then forwards any diagnostics to the adapted diagnostic client.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_REWRITE_FIX_IT_REWRITER_H
-#define LLVM_CLANG_REWRITE_FIX_IT_REWRITER_H
+#ifndef LLVM_LFORT_REWRITE_FIX_IT_REWRITER_H
+#define LLVM_LFORT_REWRITE_FIX_IT_REWRITER_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Edit/EditedSource.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Edit/EditedSource.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 
-namespace clang {
+namespace lfort {
 
 class SourceManager;
 class FileEntry;
@@ -127,4 +127,4 @@ public:
 
 }
 
-#endif // LLVM_CLANG_REWRITE_FIX_IT_REWRITER_H
+#endif // LLVM_LFORT_REWRITE_FIX_IT_REWRITER_H

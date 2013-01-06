@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-darwin-apple -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-darwin-apple -emit-llvm -o - %s | FileCheck %s
 // rdar://9609649
 
 __private_extern__ const int I;

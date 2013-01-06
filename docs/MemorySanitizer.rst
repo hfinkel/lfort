@@ -16,7 +16,7 @@ Typical slowdown introduced by MemorySanitizer is **3x**.
 How to build
 ============
 
-Follow the `clang build instructions <../get_started.html>`_. CMake
+Follow the `lfort build instructions <../get_started.html>`_. CMake
 build is supported.
 
 Usage
@@ -24,7 +24,7 @@ Usage
 
 Simply compile and link your program with ``-fsanitize=memory`` flag.
 The MemorySanitizer run-time library should be linked to the final
-executable, so make sure to use ``clang`` (not ``ld``) for the final
+executable, so make sure to use ``lfort`` (not ``ld``) for the final
 link step. When linking shared libraries, the MemorySanitizer run-time
 is not linked, so ``-Wl,-z,defs`` may cause link errors (don't use it
 with MemorySanitizer). To get a reasonable performance add ``-O1`` or
@@ -46,7 +46,7 @@ to disable inlining (just use ``-O1``) and tail call elimination
       return 0;
     }
 
-    % clang -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer -g -O2 umr.cc
+    % lfort -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer -g -O2 umr.cc
 
 If a bug is detected, the program will print an error message to
 stderr and exit with a non-zero exit code. Currently, MemorySanitizer
@@ -85,12 +85,12 @@ Origin Tracking
 
 MemorySanitizer can track origins of unitialized values, similar to
 Valgrind's --track-origins option. This feature is enabled by
-``-fsanitize-memory-track-origins`` Clang option. With the code from
+``-fsanitize-memory-track-origins`` LFort option. With the code from
 the example above,
 
 .. code-block:: console
 
-    % clang -fsanitize=memory -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer -g -O2 umr.cc
+    % lfort -fsanitize=memory -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer -g -O2 umr.cc
     % ./a.out 2>log
     % projects/compiler-rt/lib/asan/scripts/asan_symbolize.py / < log | c++filt
     ==14425==  WARNING: MemorySanitizer: UMR (uninitialized-memory-read)
@@ -120,7 +120,7 @@ make it easier, MemorySanitizer runtime library includes 70+
 interceptors for the most common libc functions. They make it possible
 to run MemorySanitizer-instrumented programs linked with
 uninstrumented libc. For example, the authors were able to bootstrap
-MemorySanitizer-instrumented Clang compiler by linking it with
+MemorySanitizer-instrumented LFort compiler by linking it with
 self-built instrumented libcxx (as a replacement for libstdc++).
 
 In the case when rebuilding all program dependencies with
@@ -156,7 +156,7 @@ Current Status
 ==============
 
 MemorySanitizer is an experimental tool. It is known to work on large
-real-world programs, like Clang/LLVM itself.
+real-world programs, like LFort/LLVM itself.
 
 More Information
 ================

@@ -11,10 +11,10 @@
 #include "CXCursor.h"
 #include "CXSourceLocation.h"
 #include "CXTranslationUnit.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Frontend/ASTUnit.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxcursor;
 
 static void getTopOverriddenMethods(CXTranslationUnit TU,
@@ -143,8 +143,8 @@ static SourceLocation getFileSpellingLoc(SourceManager &SM,
 static enum CXChildVisitResult findFileIdRefVisit(CXCursor cursor,
                                                   CXCursor parent,
                                                   CXClientData client_data) {
-  CXCursor declCursor = clang_getCursorReferenced(cursor);
-  if (!clang_isDeclaration(declCursor.kind))
+  CXCursor declCursor = lfort_getCursorReferenced(cursor);
+  if (!lfort_isDeclaration(declCursor.kind))
     return CXChildVisit_Recurse;
 
   Decl *D = cxcursor::getCursorDecl(declCursor);
@@ -162,7 +162,7 @@ static enum CXChildVisitResult findFileIdRefVisit(CXCursor cursor,
          cxcursor::getSelectorIdentifierIndex(cursor) == -1)
       return CXChildVisit_Recurse;
 
-    if (clang_isExpression(cursor.kind)) {
+    if (lfort_isExpression(cursor.kind)) {
       if (cursor.kind == CXCursor_DeclRefExpr ||
           cursor.kind == CXCursor_MemberRefExpr) {
         // continue..
@@ -176,7 +176,7 @@ static enum CXChildVisitResult findFileIdRefVisit(CXCursor cursor,
     }
 
     SourceLocation
-      Loc = cxloc::translateSourceLocation(clang_getCursorLocation(cursor));
+      Loc = cxloc::translateSourceLocation(lfort_getCursorLocation(cursor));
     SourceLocation SelIdLoc = cxcursor::getSelectorIdentifierLoc(cursor);
     if (SelIdLoc.isValid())
       Loc = SelIdLoc;
@@ -210,7 +210,7 @@ static enum CXChildVisitResult findFileIdRefVisit(CXCursor cursor,
 static void findIdRefsInFile(CXTranslationUnit TU, CXCursor declCursor,
                            const FileEntry *File,
                            CXCursorAndRangeVisitor Visitor) {
-  assert(clang_isDeclaration(declCursor.kind));
+  assert(lfort_isDeclaration(declCursor.kind));
   ASTUnit *Unit = static_cast<ASTUnit*>(TU->TUData);
   SourceManager &SM = Unit->getSourceManager();
 
@@ -224,7 +224,7 @@ static void findIdRefsInFile(CXTranslationUnit TU, CXCursor declCursor,
                               Visitor);
 
   if (DeclContext *DC = Dcl->getParentFunctionOrMethod()) {
-    clang_visitChildren(cxcursor::MakeCXCursor(cast<Decl>(DC), TU),
+    lfort_visitChildren(cxcursor::MakeCXCursor(cast<Decl>(DC), TU),
                         findFileIdRefVisit, &data);
     return;
   }
@@ -275,7 +275,7 @@ static enum CXChildVisitResult findFileMacroRefVisit(CXCursor cursor,
     return CXChildVisit_Continue;
 
   SourceLocation
-    Loc = cxloc::translateSourceLocation(clang_getCursorLocation(cursor));
+    Loc = cxloc::translateSourceLocation(lfort_getCursorLocation(cursor));
 
   ASTContext &Ctx = data->getASTContext();
   SourceManager &SM = Ctx.getSourceManager();
@@ -334,33 +334,33 @@ static void findMacroRefsInFile(CXTranslationUnit TU, CXCursor Cursor,
 
 
 //===----------------------------------------------------------------------===//
-// libclang public APIs.
+// liblfort public APIs.
 //===----------------------------------------------------------------------===//
 
 extern "C" {
 
-void clang_findReferencesInFile(CXCursor cursor, CXFile file,
+void lfort_findReferencesInFile(CXCursor cursor, CXFile file,
                                 CXCursorAndRangeVisitor visitor) {
-  bool Logging = ::getenv("LIBCLANG_LOGGING");
+  bool Logging = ::getenv("LIBLFORT_LOGGING");
 
-  if (clang_Cursor_isNull(cursor)) {
+  if (lfort_Cursor_isNull(cursor)) {
     if (Logging)
-      llvm::errs() << "clang_findReferencesInFile: Null cursor\n";
+      llvm::errs() << "lfort_findReferencesInFile: Null cursor\n";
     return;
   }
   if (cursor.kind == CXCursor_NoDeclFound) {
     if (Logging)
-      llvm::errs() << "clang_findReferencesInFile: Got CXCursor_NoDeclFound\n";
+      llvm::errs() << "lfort_findReferencesInFile: Got CXCursor_NoDeclFound\n";
     return;
   }
   if (!file) {
     if (Logging)
-      llvm::errs() << "clang_findReferencesInFile: Null file\n";
+      llvm::errs() << "lfort_findReferencesInFile: Null file\n";
     return;
   }
   if (!visitor.visit) {
     if (Logging)
-      llvm::errs() << "clang_findReferencesInFile: Null visitor\n";
+      llvm::errs() << "lfort_findReferencesInFile: Null visitor\n";
     return;
   }
 
@@ -388,11 +388,11 @@ void clang_findReferencesInFile(CXCursor cursor, CXFile file,
   // we are actually interested in the type declaration.
   cursor = cxcursor::getTypeRefCursor(cursor);
 
-  CXCursor refCursor = clang_getCursorReferenced(cursor);
+  CXCursor refCursor = lfort_getCursorReferenced(cursor);
 
-  if (!clang_isDeclaration(refCursor.kind)) {
+  if (!lfort_isDeclaration(refCursor.kind)) {
     if (Logging)
-      llvm::errs() << "clang_findReferencesInFile: cursor is not referencing a "
+      llvm::errs() << "lfort_findReferencesInFile: cursor is not referencing a "
                       "declaration\n";
     return;
   }
@@ -410,12 +410,12 @@ static enum CXVisitorResult _visitCursorAndRange(void *context,
   return INVOKE_BLOCK2(block, cursor, range);
 }
 
-void clang_findReferencesInFileWithBlock(CXCursor cursor,
+void lfort_findReferencesInFileWithBlock(CXCursor cursor,
                                          CXFile file,
                                          CXCursorAndRangeVisitorBlock block) {
   CXCursorAndRangeVisitor visitor = { block,
                                       block ? _visitCursorAndRange : 0 };
-  return clang_findReferencesInFile(cursor, file, visitor);
+  return lfort_findReferencesInFile(cursor, file, visitor);
 }
 
 } // end: extern "C"

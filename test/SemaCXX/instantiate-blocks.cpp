@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fblocks -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -verify %s
 // rdar: // 6182276
 
 template <typename T, typename T1> void foo(T t, T1 r)

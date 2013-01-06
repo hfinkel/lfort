@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
 
 // Deallocation functions are implicitly noexcept.
 // Thus, explicit specs aren't allowed to conflict.

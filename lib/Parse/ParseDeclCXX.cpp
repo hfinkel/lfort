@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/PrettyDeclStackTrace.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
+using namespace lfort;
 
 /// ParseNamespace - We know that the current token is a namespace keyword. This
 /// may either be a top level namespace or a block-level namespace alias. If
@@ -1127,7 +1127,7 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
        Tok.is(tok::kw___is_void))) {
     // GNU libstdc++ 4.2 and libc++ use certain intrinsic names as the
     // name of struct templates, but some are keywords in GCC >= 4.3
-    // and Clang. Therefore, when we see the token sequence "struct
+    // and LFort. Therefore, when we see the token sequence "struct
     // X", make X into a normal identifier rather than a keyword, to
     // allow libstdc++ 4.2 and libc++ to work properly.
     Tok.getIdentifierInfo()->RevertTokenIDToIdentifier();
@@ -1491,7 +1491,7 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
                                        DS.getModulePrivateSpecLoc(),
                                        TParams, Owned, IsDependent,
                                        SourceLocation(), false,
-                                       clang::TypeResult());
+                                       lfort::TypeResult());
 
     // If ActOnTag said the type was dependent, try again with the
     // less common call.

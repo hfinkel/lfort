@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 // rdar://7589850
 
 // CHECK-NOT: __ustring

@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

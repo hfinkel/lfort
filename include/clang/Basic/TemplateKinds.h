@@ -8,13 +8,13 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::TemplateNameKind enum.
+/// \brief Defines the lfort::TemplateNameKind enum.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_TEMPLATEKINDS_H
-#define LLVM_CLANG_TEMPLATEKINDS_H
+#ifndef LLVM_LFORT_TEMPLATEKINDS_H
+#define LLVM_LFORT_TEMPLATEKINDS_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief Specifies the kind of template name that an identifier refers to.
 enum TemplateNameKind {

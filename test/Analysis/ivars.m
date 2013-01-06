@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store=region -fblocks -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-store=region -fblocks -verify -Wno-objc-root-class %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 @interface Root {
 @public
@@ -12,10 +12,10 @@ void clang_analyzer_eval(int);
 
 void testInvalidation(Root *obj) {
   int savedID = obj->uniqueID;
-  clang_analyzer_eval(savedID == obj->uniqueID); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(savedID == obj->uniqueID); // expected-warning{{TRUE}}
 
   [obj refreshID];
-  clang_analyzer_eval(savedID == obj->uniqueID); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(savedID == obj->uniqueID); // expected-warning{{UNKNOWN}}
 }
 
 
@@ -25,10 +25,10 @@ void testInvalidation(Root *obj) {
 @implementation Child
 - (void)testSuperInvalidation {
   int savedID = self->uniqueID;
-  clang_analyzer_eval(savedID == self->uniqueID); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(savedID == self->uniqueID); // expected-warning{{TRUE}}
 
   [super refreshID];
-  clang_analyzer_eval(savedID == self->uniqueID); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(savedID == self->uniqueID); // expected-warning{{UNKNOWN}}
 }
 @end
 
@@ -58,32 +58,32 @@ struct S makeS();
     d = 4;
   }
 
-  clang_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(s.b == 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.b == 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(d == 4); // expected-warning{{TRUE}}
 
   d = 0;
 
-  clang_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(s.b == 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(d == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.b == 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(d == 0); // expected-warning{{TRUE}}
 
   d = 4;
   s = makeS();
 
-  clang_analyzer_eval(s.a == 1); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(s.b == 2); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.a == 1); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(s.b == 2); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(d == 4); // expected-warning{{TRUE}}
 
   s.a = 1;
 
-  clang_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(s.b == 2); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.b == 2); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(d == 4); // expected-warning{{TRUE}}
 }
 
 + (void)testMultipleIvarInvalidation:(int)useConstraints
@@ -101,32 +101,32 @@ struct S makeS();
     obj->d = 4;
   }
 
-  clang_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->s.b == 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.b == 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
 
   obj->d = 0;
 
-  clang_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->s.b == 2); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->d == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.b == 2); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->d == 0); // expected-warning{{TRUE}}
 
   obj->d = 4;
   obj->s = makeS();
 
-  clang_analyzer_eval(obj->s.a == 1); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(obj->s.b == 2); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.a == 1); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(obj->s.b == 2); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
 
   obj->s.a = 1;
 
-  clang_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->s.b == 2); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
-  clang_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.a == 1); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->s.b == 2); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(obj->c == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj->d == 4); // expected-warning{{TRUE}}
 }
 
 @end

@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/TokenConcatenation.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/TokenConcatenation.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cctype>
-using namespace clang;
+using namespace lfort;
 
 
 /// IsStringPrefix - Return true if Str is a string prefix.

@@ -36,7 +36,7 @@ web browser.</p>
 It works by overriding the <tt>CC</tt> and <tt>CXX</tt> environment variables to
 (hopefully) change your build to use a &quot;fake&quot; compiler instead of the
 one that would normally build your project. This fake compiler executes either 
-<tt>clang</tt> or <tt>gcc</tt> (depending on the platform) to compile your 
+<tt>lfort</tt> or <tt>gcc</tt> (depending on the platform) to compile your 
 code and then executes the static analyzer to analyze your code.</p>
 
 <p>This &quot;poor man's interposition&quot; works amazingly well in many cases
@@ -76,7 +76,7 @@ aforementioned hack fails to work.</p>
 <p>The <tt>scan-build</tt> command can be used to analyze an entire project by
 essentially interposing on a project's build process. This means that to run the
 analyzer using <tt>scan-build</tt>, you will use <tt>scan-build</tt> to analyze
-the source files compiled by <tt>gcc</tt>/<tt>clang</tt> during a project build. 
+the source files compiled by <tt>gcc</tt>/<tt>lfort</tt> during a project build. 
 This means that any files that are not compiled will also not be analyzed.</p>
 
 <h3 id="scanbuild_basicusage">Basic Usage</h3>
@@ -217,7 +217,7 @@ $ scan-build make
 <tt>scan-build</tt> temporarily setting the environment variable <tt>CC</tt> to
 <tt>ccc-analyzer</tt>. The program <tt>ccc-analyzer</tt> acts like a fake
 compiler, forwarding its command line arguments over to the compiler to perform
-regular compilation and <tt>clang</tt> to perform static analysis.</p>
+regular compilation and <tt>lfort</tt> to perform static analysis.</p>
 
 <p>Running <tt>configure</tt> typically generates makefiles that have hardwired
 paths to the compiler, and by running <tt>configure</tt> through
@@ -257,7 +257,7 @@ most cases will not actually analyze the configure tests run by
 
 <p>Under the hood, <tt>ccc-analyzer</tt> directly invokes <tt>gcc</tt> to
 compile the actual code in addition to running the analyzer (which occurs by it
-calling <tt>clang</tt>). <tt>ccc-analyzer</tt> tries to correctly forward all
+calling <tt>lfort</tt>). <tt>ccc-analyzer</tt> tries to correctly forward all
 the arguments over to <tt>gcc</tt>, but this may not work perfectly (please
 report bugs of this kind).
  -->
@@ -274,7 +274,7 @@ steps they need to take (e.g., setup code signing).</p>
 
 <p>The absolute easiest way to analyze iPhone projects is to use the <a
 href="http://developer.apple.com/mac/library/featuredarticles/StaticAnalysis/index.html"><i>Build
-and Analyze</i> feature in Xcode 3.2</a> (which is based on the Clang Static
+and Analyze</i> feature in Xcode 3.2</a> (which is based on the LFort Static
 Analyzer). There a user can analyze their project with the click of a button
 without most of the setup described later.</p>
 
@@ -314,16 +314,16 @@ $ scan-build xcodebuild -configuration Debug -sdk iphonesimulator3.0
 <h3>Gotcha: using the right compiler</h3>
 
 <p>Recall that <b>scan-build</b> analyzes your project by using a compiler to
-compile the project and <tt>clang</tt> to analyze your project. The script uses 
+compile the project and <tt>lfort</tt> to analyze your project. The script uses 
 simple heuristics to determine which compiler should be used (it defaults to 
-<tt>clang</tt> on Darwin and <tt>gcc</tt> on other platforms). When analyzing
+<tt>lfort</tt> on Darwin and <tt>gcc</tt> on other platforms). When analyzing
 iPhone projects, <b>scan-build</b> may pick the wrong compiler than the one
 Xcode would use to build your project. For example, this could be because 
 multiple versions of a compiler may be installed on your system, especially if 
 you are developing for the iPhone.</p>
 
 <p>When compiling your application to run on the simulator, it is important that <b>scan-build</b>
-finds the correct version of <tt>gcc/clang</tt>. Otherwise, you may see strange build
+finds the correct version of <tt>gcc/lfort</tt>. Otherwise, you may see strange build
 errors that only happen when you run <tt>scan-build</tt>.
 
 <p><b>scan-build</b> provides the <tt>--use-cc</tt> and <tt>--use-c++</tt>

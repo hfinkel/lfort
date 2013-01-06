@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining  -analyzer-config c++-inlining=destructors -Wno-null-dereference -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining  -analyzer-config c++-inlining=destructors -Wno-null-dereference -verify %s
 
-void clang_analyzer_eval(bool);
-void clang_analyzer_checkInlined(bool);
+void lfort_analyzer_eval(bool);
+void lfort_analyzer_checkInlined(bool);
 
 class A {
 public:
@@ -142,18 +142,18 @@ void testArrayInvalidation() {
     // There should be no undefined value warnings here.
     // Eventually these should be TRUE as well, but right now
     // we can't handle array constructors.
-    clang_analyzer_eval(arr[0].x == 0); // expected-warning{{UNKNOWN}}
-    clang_analyzer_eval(arr[1].x == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(arr[0].x == 0); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(arr[1].x == 0); // expected-warning{{UNKNOWN}}
 
     arr[0].x = &i;
     arr[1].x = &j;
-    clang_analyzer_eval(*arr[0].x == 42); // expected-warning{{TRUE}}
-    clang_analyzer_eval(*arr[1].x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(*arr[0].x == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(*arr[1].x == 42); // expected-warning{{TRUE}}
   }
 
   // The destructors should have invalidated i and j.
-  clang_analyzer_eval(i == 42); // expected-warning{{UNKNOWN}}
-  clang_analyzer_eval(j == 42); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(i == 42); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(j == 42); // expected-warning{{UNKNOWN}}
 }
 
 
@@ -212,20 +212,20 @@ namespace DestructorVirtualCalls {
     // New scope for the C object.
     {
       C obj;
-      clang_analyzer_eval(obj.get() == 3); // expected-warning{{TRUE}}
+      lfort_analyzer_eval(obj.get() == 3); // expected-warning{{TRUE}}
 
       // Sanity check for devirtualization.
       A *base = &obj;
-      clang_analyzer_eval(base->get() == 3); // expected-warning{{TRUE}}
+      lfort_analyzer_eval(base->get() == 3); // expected-warning{{TRUE}}
 
       obj.out1 = &a;
       obj.out2 = &b;
       obj.out3 = &c;
     }
 
-    clang_analyzer_eval(a == 1); // expected-warning{{TRUE}}
-    clang_analyzer_eval(b == 2); // expected-warning{{TRUE}}
-    clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(a == 1); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 2); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
   }
 }
 
@@ -234,7 +234,7 @@ namespace DestructorsShouldNotAffectReturnValues {
   class Dtor {
   public:
     ~Dtor() {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
     }
   };
 
@@ -256,14 +256,14 @@ namespace MultipleInheritanceVirtualDtors {
   class VirtualDtor {
   protected:
     virtual ~VirtualDtor() {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
     }
   };
 
   class NonVirtualDtor {
   protected:
     ~NonVirtualDtor() {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
     }
   };
 
@@ -286,14 +286,14 @@ namespace ExplicitDestructorCall {
   class VirtualDtor {
   public:
     virtual ~VirtualDtor() {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
     }
   };
   
   class Subclass : public VirtualDtor {
   public:
     virtual ~Subclass() {
-      clang_analyzer_checkInlined(false); // no-warning
+      lfort_analyzer_checkInlined(false); // no-warning
     }
   };
   
@@ -314,17 +314,17 @@ namespace MultidimensionalArrays {
       // There should be no undefined value warnings here.
       // Eventually these should be TRUE as well, but right now
       // we can't handle array constructors.
-      clang_analyzer_eval(arr[0][0].x == 0); // expected-warning{{UNKNOWN}}
-      clang_analyzer_eval(arr[1][1].x == 0); // expected-warning{{UNKNOWN}}
+      lfort_analyzer_eval(arr[0][0].x == 0); // expected-warning{{UNKNOWN}}
+      lfort_analyzer_eval(arr[1][1].x == 0); // expected-warning{{UNKNOWN}}
 
       arr[0][0].x = &i;
       arr[1][1].x = &j;
-      clang_analyzer_eval(*arr[0][0].x == 42); // expected-warning{{TRUE}}
-      clang_analyzer_eval(*arr[1][1].x == 42); // expected-warning{{TRUE}}
+      lfort_analyzer_eval(*arr[0][0].x == 42); // expected-warning{{TRUE}}
+      lfort_analyzer_eval(*arr[1][1].x == 42); // expected-warning{{TRUE}}
     }
 
     // The destructors should have invalidated i and j.
-    clang_analyzer_eval(i == 42); // expected-warning{{UNKNOWN}}
-    clang_analyzer_eval(j == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(i == 42); // expected-warning{{UNKNOWN}}
+    lfort_analyzer_eval(j == 42); // expected-warning{{UNKNOWN}}
   }
 }

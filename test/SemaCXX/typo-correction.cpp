@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-c++11-extensions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-c++11-extensions %s
 
 struct errc {
   int v_;
@@ -20,7 +20,7 @@ public:
     // even though the first declaration of make_error_condition has not
     // yet been encountered. This was a bug in the first version of the type
     // name typo correction patch that wasn't noticed until building LLVM with
-    // Clang failed.
+    // LFort failed.
     *this = make_error_condition(_e);
   }
 

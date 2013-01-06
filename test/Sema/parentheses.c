@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -Wparentheses -fsyntax-only -verify %s
-// RUN: %clang_cc1 -Wparentheses -fixit %s -o - | %clang_cc1 -Wparentheses -Werror -
+// RUN: %lfort_cc1 -Wparentheses -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wparentheses -fixit %s -o - | %lfort_cc1 -Wparentheses -Werror -
 
 // Test the various warnings under -Wparentheses
 void if_assign(void) {
@@ -69,5 +69,5 @@ void conditional_op(int x, int y, _Bool b) {
   (void)(x % 2 ? 1 : 2); // no warning
 }
 
-// RUN: %clang_cc1 -fsyntax-only -Wparentheses -Werror -fdiagnostics-show-option %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -Wparentheses -Werror -fdiagnostics-show-option %s 2>&1 | FileCheck %s
 // CHECK: error: using the result of an assignment as a condition without parentheses [-Werror,-Wparentheses]

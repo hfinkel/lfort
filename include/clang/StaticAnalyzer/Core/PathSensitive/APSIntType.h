@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_CORE_APSINTTYPE_H
-#define LLVM_CLANG_SA_CORE_APSINTTYPE_H
+#ifndef LLVM_LFORT_SA_CORE_APSINTTYPE_H
+#define LLVM_LFORT_SA_CORE_APSINTTYPE_H
 
 #include "llvm/ADT/APSInt.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// \brief A record of the "type" of an APSInt, used for conversions.
@@ -105,6 +105,6 @@ public:
 };
     
 } // end ento namespace
-} // end clang namespace
+} // end lfort namespace
 
 #endif

@@ -1,4 +1,4 @@
-//===-- CompilerInstance.h - Clang Compiler Instance ------------*- C++ -*-===//
+//===-- CompilerInstance.h - LFort Compiler Instance ------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_COMPILERINSTANCE_H_
-#define LLVM_CLANG_FRONTEND_COMPILERINSTANCE_H_
+#ifndef LLVM_LFORT_FRONTEND_COMPILERINSTANCE_H_
+#define LLVM_LFORT_FRONTEND_COMPILERINSTANCE_H_
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Lex/ModuleLoader.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Lex/ModuleLoader.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -29,7 +29,7 @@ class raw_fd_ostream;
 class Timer;
 }
 
-namespace clang {
+namespace lfort {
 class ASTContext;
 class ASTConsumer;
 class ASTReader;
@@ -46,7 +46,7 @@ class Sema;
 class SourceManager;
 class TargetInfo;
 
-/// CompilerInstance - Helper class for managing a single instance of the Clang
+/// CompilerInstance - Helper class for managing a single instance of the LFort
 /// compiler.
 ///
 /// The CompilerInstance serves two purposes:
@@ -54,7 +54,7 @@ class TargetInfo;
 ///      for example the preprocessor, the target information, and the AST
 ///      context.
 ///  (2) It provides utility routines for constructing and manipulating the
-///      common Clang objects.
+///      common LFort objects.
 ///
 /// The compiler instance generally owns the instance of all the objects that it
 /// manages. However, clients can still share objects by manually setting the
@@ -651,6 +651,6 @@ public:
                                       bool IsInclusionDirective);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

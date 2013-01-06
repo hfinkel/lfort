@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/JSONCompilationDatabase.h"
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/CompilationDatabasePluginRegistry.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/Tooling/JSONCompilationDatabase.h"
+#include "lfort/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/CompilationDatabasePluginRegistry.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/system_error.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 namespace {
@@ -315,4 +315,4 @@ bool JSONCompilationDatabase::parse(std::string &ErrorMessage) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

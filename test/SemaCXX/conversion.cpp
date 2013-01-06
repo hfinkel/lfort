@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wconversion -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wconversion %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wconversion -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wconversion %s 2>&1 | FileCheck %s
 
 #include <stddef.h>
 

@@ -172,7 +172,7 @@ BENIGN_LANGOPT(RetainCommentsFromSystemHeaders, 1, 0, "retain documentation comm
 /// Runtime sanitizers.
 #define SANITIZER(NAME, ID) \
 BENIGN_LANGOPT(Sanitize##ID, 1, 0, NAME " sanitizer")
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
 
 #undef LANGOPT
 #undef VALUE_LANGOPT

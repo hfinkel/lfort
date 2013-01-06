@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/SubEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SubEngine.h"
 
-using namespace clang::ento;
+using namespace lfort::ento;
 
 void SubEngine::anchor() { }

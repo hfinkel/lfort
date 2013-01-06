@@ -13,13 +13,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_ARGUMENTSADJUSTERS_H
-#define LLVM_CLANG_TOOLING_ARGUMENTSADJUSTERS_H
+#ifndef LLVM_LFORT_TOOLING_ARGUMENTSADJUSTERS_H
+#define LLVM_LFORT_TOOLING_ARGUMENTSADJUSTERS_H
 
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 namespace tooling {
 
@@ -48,12 +48,12 @@ public:
 ///
 /// This class implements ArgumentsAdjuster interface and converts input
 /// command line arguments to the "syntax check only" variant.
-class ClangSyntaxOnlyAdjuster : public ArgumentsAdjuster {
+class LFortSyntaxOnlyAdjuster : public ArgumentsAdjuster {
   virtual CommandLineArguments Adjust(const CommandLineArguments &Args);
 };
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_ARGUMENTSADJUSTERS_H
+#endif // LLVM_LFORT_TOOLING_ARGUMENTSADJUSTERS_H
 

@@ -21,20 +21,20 @@
 #include "CodeGenFunction.h"
 #include "CodeGenTBAA.h"
 #include "TargetInfo.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Mangle.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/IR/CallingConv.h"
@@ -45,7 +45,7 @@
 #include "llvm/Support/CallSite.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Target/Mangler.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 static const char AnnotationSection[] = "llvm.metadata";
@@ -2784,7 +2784,7 @@ static void EmitGlobalDeclMetadata(CodeGenModule &CGM,
                                    llvm::GlobalValue *Addr) {
   if (!GlobalMetadata)
     GlobalMetadata =
-      CGM.getModule().getOrInsertNamedMetadata("clang.global.decl.ptrs");
+      CGM.getModule().getOrInsertNamedMetadata("lfort.global.decl.ptrs");
 
   // TODO: should we report variant information for ctors/dtors?
   llvm::Value *Ops[] = {
@@ -2800,7 +2800,7 @@ static void EmitGlobalDeclMetadata(CodeGenModule &CGM,
 ///
 /// Since there's currently no way to associate an MDNode directly
 /// with an llvm::GlobalValue, we create a global named metadata
-/// with the name 'clang.global.decl.ptrs'.
+/// with the name 'lfort.global.decl.ptrs'.
 void CodeGenModule::EmitDeclMetadata() {
   llvm::NamedMDNode *GlobalMetadata = 0;
 
@@ -2821,7 +2821,7 @@ void CodeGenFunction::EmitDeclMetadata() {
   llvm::LLVMContext &Context = getLLVMContext();
 
   // Find the unique metadata ID for this name.
-  unsigned DeclPtrKind = Context.getMDKindID("clang.decl.ptr");
+  unsigned DeclPtrKind = Context.getMDKindID("lfort.decl.ptr");
 
   llvm::NamedMDNode *GlobalMetadata = 0;
 

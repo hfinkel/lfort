@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 char *foo(float);
 
 void test_foo_1(float fv, double dv, float _Complex fc, double _Complex dc) {

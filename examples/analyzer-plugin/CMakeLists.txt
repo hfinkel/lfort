@@ -2,19 +2,19 @@ set(MODULE TRUE)
 
 set( LLVM_LINK_COMPONENTS support mc)
 
-add_clang_library(SampleAnalyzerPlugin MainCallChecker.cpp)
+add_lfort_library(SampleAnalyzerPlugin MainCallChecker.cpp)
 
 add_dependencies(SampleAnalyzerPlugin
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
   )
 
 target_link_libraries(SampleAnalyzerPlugin
-  clangStaticAnalyzerCore
+  lfortStaticAnalyzerCore
   )
 
 set_target_properties(SampleAnalyzerPlugin

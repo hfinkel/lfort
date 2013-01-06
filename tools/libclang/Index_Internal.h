@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_LIBCLANG_INDEX_INTERNAL_H
-#define LLVM_LIBCLANG_INDEX_INTERNAL_H
+#ifndef LLVM_LIBLFORT_INDEX_INTERNAL_H
+#define LLVM_LIBLFORT_INDEX_INTERNAL_H
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 
 #ifndef __has_feature
 #define __has_feature(x) 0

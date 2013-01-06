@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -E -Wdisabled-macro-expansion -verify
+// RUN: %lfort_cc1 %s -E -Wdisabled-macro-expansion -verify
 
 #define p p
 

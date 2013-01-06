@@ -9,24 +9,24 @@
 ///
 /// \file
 /// \brief Enumerates target-specific builtins in their own namespaces within
-/// namespace ::clang.
+/// namespace ::lfort.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_TARGET_BUILTINS_H
-#define LLVM_CLANG_BASIC_TARGET_BUILTINS_H
+#ifndef LLVM_LFORT_BASIC_TARGET_BUILTINS_H
+#define LLVM_LFORT_BASIC_TARGET_BUILTINS_H
 
-#include "clang/Basic/Builtins.h"
+#include "lfort/Basic/Builtins.h"
 #undef PPC
 
-namespace clang {
+namespace lfort {
 
   /// \brief ARM builtins
   namespace ARM {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsARM.def"
+#include "lfort/Basic/BuiltinsARM.def"
         LastTSBuiltin
     };
   }
@@ -34,9 +34,9 @@ namespace clang {
   /// \brief PPC builtins
   namespace PPC {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsPPC.def"
+#include "lfort/Basic/BuiltinsPPC.def"
         LastTSBuiltin
     };
   }
@@ -44,9 +44,9 @@ namespace clang {
   /// \brief NVPTX builtins
   namespace NVPTX {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsNVPTX.def"
+#include "lfort/Basic/BuiltinsNVPTX.def"
         LastTSBuiltin
     };
   }
@@ -55,9 +55,9 @@ namespace clang {
   /// \brief X86 builtins
   namespace X86 {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsX86.def"
+#include "lfort/Basic/BuiltinsX86.def"
         LastTSBuiltin
     };
   }
@@ -105,9 +105,9 @@ namespace clang {
   /// \brief Hexagon builtins
   namespace Hexagon {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsHexagon.def"
+#include "lfort/Basic/BuiltinsHexagon.def"
         LastTSBuiltin
     };
   }
@@ -115,12 +115,12 @@ namespace clang {
   /// \brief MIPS builtins
   namespace Mips {
     enum {
-        LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
+        LastTIBuiltin = lfort::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsMips.def"
+#include "lfort/Basic/BuiltinsMips.def"
         LastTSBuiltin
     };
   }
-} // end namespace clang.
+} // end namespace lfort.
 
 #endif

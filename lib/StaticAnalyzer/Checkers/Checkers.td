@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-include "clang/StaticAnalyzer/Checkers/CheckerBase.td"
+include "lfort/StaticAnalyzer/Checkers/CheckerBase.td"
 
 //===----------------------------------------------------------------------===//
 // Packages.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wmissing-noreturn -Wreturn-type
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -Wmissing-noreturn -Wreturn-type
 void f() __attribute__((noreturn));
 
 template<typename T> void g(T) {

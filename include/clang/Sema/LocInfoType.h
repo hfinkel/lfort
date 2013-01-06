@@ -11,12 +11,12 @@
 // source-location information.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_LOCINFOTYPE_H
-#define LLVM_CLANG_SEMA_LOCINFOTYPE_H
+#ifndef LLVM_LFORT_SEMA_LOCINFOTYPE_H
+#define LLVM_LFORT_SEMA_LOCINFOTYPE_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 
-namespace clang {
+namespace lfort {
 
 class TypeSourceInfo;
 
@@ -57,6 +57,6 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_LOCINFOTYPE_H
+#endif // LLVM_LFORT_SEMA_LOCINFOTYPE_H

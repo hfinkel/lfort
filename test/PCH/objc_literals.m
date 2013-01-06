@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -emit-pch -o %t %s
-// RUN: %clang_cc1 -include-pch %t -verify %s
-// RUN: %clang_cc1 -include-pch %t -ast-print %s | FileCheck -check-prefix=PRINT %s
-// RUN: %clang_cc1 -include-pch %t -emit-llvm -o - %s | FileCheck -check-prefix=IR %s
+// RUN: %lfort_cc1 -emit-pch -o %t %s
+// RUN: %lfort_cc1 -include-pch %t -verify %s
+// RUN: %lfort_cc1 -include-pch %t -ast-print %s | FileCheck -check-prefix=PRINT %s
+// RUN: %lfort_cc1 -include-pch %t -emit-llvm -o - %s | FileCheck -check-prefix=IR %s
 
 // expected-no-diagnostics
 

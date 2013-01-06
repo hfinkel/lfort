@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ARCMIGRATE_ARCMT_H
-#define LLVM_CLANG_ARCMIGRATE_ARCMT_H
+#ifndef LLVM_LFORT_ARCMIGRATE_ARCMT_H
+#define LLVM_LFORT_ARCMIGRATE_ARCMT_H
 
-#include "clang/ARCMigrate/FileRemapper.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Frontend/CompilerInvocation.h"
+#include "lfort/ARCMigrate/FileRemapper.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Frontend/CompilerInvocation.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class DiagnosticConsumer;
 
@@ -118,6 +118,6 @@ public:
 
 } // end namespace arcmt
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -E -verify
+// RUN: %lfort_cc1 %s -E -verify
 
 #define INTMAX_MIN (-9223372036854775807LL -1)
 

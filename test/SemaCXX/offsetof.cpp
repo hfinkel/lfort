@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10.0.0 -fsyntax-only -verify %s -Winvalid-offsetof
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10.0.0 -fsyntax-only -verify %s -Winvalid-offsetof
 
 struct NonPOD {
   virtual void f();

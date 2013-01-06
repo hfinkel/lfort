@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fexceptions -fcxx-exceptions -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // This is the "let the user shoot himself in the foot" clause.

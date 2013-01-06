@@ -97,7 +97,7 @@ class CompileInfo:
                 ln.startswith('Configured with: ') or
                 ln.startswith('Thread model: ') or
                 ln.startswith('gcc version') or
-                ln.startswith('clang version')):
+                ln.startswith('lfort version')):
                 pass
             elif ln.strip().startswith('"'):
                 self.commands.append(list(splitArgs(ln)))
@@ -121,7 +121,7 @@ def main():
 
     args = sys.argv[1:]
     driverA = os.getenv('DRIVER_A') or 'gcc'
-    driverB = os.getenv('DRIVER_B') or 'clang'
+    driverB = os.getenv('DRIVER_B') or 'lfort'
 
     infoA = captureDriverInfo(driverA, args)
     infoB = captureDriverInfo(driverB, args)

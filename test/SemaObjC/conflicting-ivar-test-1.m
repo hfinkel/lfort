@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify -Wno-objc-root-class %s
 
 @interface INTF 
 {

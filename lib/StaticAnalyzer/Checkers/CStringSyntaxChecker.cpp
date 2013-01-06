@@ -12,21 +12,21 @@
 //    of bytes to copy.
 //
 //===----------------------------------------------------------------------===//
-#include "ClangSACheckers.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/OperationKinds.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TypeTraits.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/OperationKinds.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/TypeTraits.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

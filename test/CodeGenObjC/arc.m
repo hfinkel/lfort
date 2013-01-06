@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -O2 -disable-llvm-optzns -o - %s | FileCheck %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -o - %s | FileCheck -check-prefix=CHECK-GLOBALS %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -O2 -disable-llvm-optzns -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -o - %s | FileCheck -check-prefix=CHECK-GLOBALS %s
 
 // CHECK: define void @test0
 void test0(id x) {
@@ -219,7 +219,7 @@ void test6() {
   // CHECK-NEXT: [[CALL:%.*]] = call i8* @test6_helper()
   // CHECK-NEXT: store i8* [[CALL]], i8** [[X]]
   // CHECK-NEXT: [[T1:%.*]] = load i8** [[X]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: ret void
   id x = test6_helper();
 }
@@ -233,7 +233,7 @@ void test7() {
   // CHECK-NEXT: [[T1:%.*]] = call i8* @objc_retain(i8* [[T0]]) nounwind
   // CHECK-NEXT: call void @test7_helper(i8* [[T1]])
   // CHECK-NEXT: [[T1:%.*]] = load i8** [[X]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: ret void
   id x;
   test7_helper(x);
@@ -260,11 +260,11 @@ void test9() {
 
   // CHECK-NEXT: [[T1:%.*]] = load i8** [[X]]
   // CHECK-NEXT: store i8* null, i8** [[X]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
 
   // CHECK-NEXT: [[T1:%.*]] = load i8** [[X]]
   // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind
-  // CHECK-NOT:  clang.imprecise_release
+  // CHECK-NOT:  lfort.imprecise_release
 
   // CHECK-NEXT: ret void
 }
@@ -314,7 +314,7 @@ void test11(id (*f)(void) __attribute__((ns_returns_retained))) {
   // CHECK-NEXT: [[T1:%.*]] = call i8* [[T0]]()
   // CHECK-NEXT: store i8* [[T1]], i8** [[X]], align
   // CHECK-NEXT: [[T3:%.*]] = load i8** [[X]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T3]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T3]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: ret void
   id x = f();
 }
@@ -343,7 +343,7 @@ void test12(void) {
   // CHECK-NEXT: store i8* [[T2]], i8** [[Y]], align
 
   // CHECK-NEXT: [[T4:%.*]] = load i8** [[Y]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T4]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T4]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: call void @objc_destroyWeak(i8** [[X]])
   // CHECK-NEXT: ret void
 }
@@ -473,7 +473,7 @@ void test19() {
   // CHECK:      [[AFTER:%.*]] = phi i8** [ [[END]], {{%.*}} ], [ [[NEXT:%.*]], {{%.*}} ]
   // CHECK-NEXT: [[CUR:%.*]] = getelementptr inbounds i8** [[AFTER]], i64 -1
   // CHECK-NEXT: [[T0:%.*]] = load i8** [[CUR]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: [[EQ:%.*]] = icmp eq i8** [[CUR]], [[BEGIN]]
   // CHECK-NEXT: br i1 [[EQ]],
 
@@ -512,7 +512,7 @@ void test20(unsigned n) {
   // CHECK:      [[AFTER:%.*]] = phi i8** [ [[END]], {{%.*}} ], [ [[CUR:%.*]], {{%.*}} ]
   // CHECK-NEXT: [[CUR:%.*]] = getelementptr inbounds i8** [[AFTER]], i64 -1
   // CHECK-NEXT: [[T0:%.*]] = load i8** [[CUR]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: [[EQ:%.*]] = icmp eq i8** [[CUR]], [[VLA]]
   // CHECK-NEXT: br i1 [[EQ]],
 
@@ -558,7 +558,7 @@ void test21(unsigned n) {
   // CHECK:      [[AFTER:%.*]] = phi i8** [ [[END]], {{%.*}} ], [ [[CUR:%.*]], {{%.*}} ]
   // CHECK-NEXT: [[CUR:%.*]] = getelementptr inbounds i8** [[AFTER]], i64 -1
   // CHECK-NEXT: [[T0:%.*]] = load i8** [[CUR]]
-  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: [[EQ:%.*]] = icmp eq i8** [[CUR]], [[BEGIN]]
   // CHECK-NEXT: br i1 [[EQ]],
 
@@ -716,7 +716,7 @@ static id _test29_allocator = 0;
 // Cleanup.
 // CHECK-NEXT: [[T0:%.*]] = load [[TEST29]]** [[SELF]]
 // CHECK-NEXT: [[T1:%.*]] = bitcast [[TEST29]]* [[T0]] to i8*
-// CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+// CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
 
 // Return.
 // CHECK-NEXT: ret i8* [[RET]]
@@ -769,11 +769,11 @@ static id _test29_allocator = 0;
 
 // Cleanup.
 // CHECK-NEXT: [[T0:%.*]] = load i8** [[ALLOCATOR]]
-// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
 
 // CHECK-NEXT: [[T0:%.*]] = load [[TEST29]]** [[SELF]]
 // CHECK-NEXT: [[T1:%.*]] = bitcast [[TEST29]]* [[T0]] to i8*
-// CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+// CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
 
 // Return.
 // CHECK-NEXT: ret i8* [[RET]]
@@ -1328,7 +1328,7 @@ void test58a(void) {
   // CHECK-NEXT: store i8* [[T6]], i8**
   // CHECK-NEXT: [[T0:%.*]] = load [[TEST58]]**
   // CHECK-NEXT: [[T1:%.*]] = bitcast [[TEST58]]* [[T0]] to i8*
-  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !clang.imprecise_release
+  // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind, !lfort.imprecise_release
   // CHECK-NEXT: ret void
   Test58 *ptr = test58_helper();
   char *c = [(ptr) interior];
@@ -1349,7 +1349,7 @@ void test58b(void) {
   // CHECK-NEXT: [[T0:%.*]] = load [[TEST58]]**
   // CHECK-NEXT: [[T1:%.*]] = bitcast [[TEST58]]* [[T0]] to i8*
   // CHECK-NEXT: call void @objc_release(i8* [[T1]]) nounwind
-  // CHECK-NOT:  clang.imprecise_release
+  // CHECK-NOT:  lfort.imprecise_release
   // CHECK-NEXT: ret void
   __attribute__((objc_precise_lifetime)) Test58 *ptr = test58_helper();
   char *c = [ptr interior];

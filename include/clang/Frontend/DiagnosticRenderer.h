@@ -13,16 +13,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_DIAGNOSTIC_RENDERER_H_
-#define LLVM_CLANG_FRONTEND_DIAGNOSTIC_RENDERER_H_
+#ifndef LLVM_LFORT_FRONTEND_DIAGNOSTIC_RENDERER_H_
+#define LLVM_LFORT_FRONTEND_DIAGNOSTIC_RENDERER_H_
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/PointerUnion.h"
 
-namespace clang {
+namespace lfort {
 
 class DiagnosticOptions;
 class LangOptions;
@@ -175,5 +175,5 @@ public:
   virtual void emitNote(SourceLocation Loc, StringRef Message,
                         const SourceManager *SM) = 0;
 };
-} // end clang namespace
+} // end lfort namespace
 #endif

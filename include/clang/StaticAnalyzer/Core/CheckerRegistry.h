@@ -7,30 +7,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STATICANALYZER_CORE_CHECKERREGISTRY_H
-#define LLVM_CLANG_STATICANALYZER_CORE_CHECKERREGISTRY_H
+#ifndef LLVM_LFORT_STATICANALYZER_CORE_CHECKERREGISTRY_H
+#define LLVM_LFORT_STATICANALYZER_CORE_CHECKERREGISTRY_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
 #include <vector>
 
 // FIXME: move this information to an HTML file in docs/.
 // At the very least, a checker plugin is a dynamic library that exports
-// clang_analyzerAPIVersionString. This should be defined as follows:
+// lfort_analyzerAPIVersionString. This should be defined as follows:
 //
 //   extern "C"
-//   const char clang_analyzerAPIVersionString[] =
-//     CLANG_ANALYZER_API_VERSION_STRING;
+//   const char lfort_analyzerAPIVersionString[] =
+//     LFORT_ANALYZER_API_VERSION_STRING;
 //
 // This is used to check whether the current version of the analyzer is known to
 // be incompatible with a plugin. Plugins with incompatible version strings,
 // or without a version string at all, will not be loaded.
 //
 // To add a custom checker to the analyzer, the plugin must also define the
-// function clang_registerCheckers. For example:
+// function lfort_registerCheckers. For example:
 //
 //    extern "C"
-//    void clang_registerCheckers (CheckerRegistry &registry) {
+//    void lfort_registerCheckers (CheckerRegistry &registry) {
 //      registry.addChecker<MainCallChecker>("example.MainCallChecker",
 //        "Disallows calls to functions called main");
 //    }
@@ -41,7 +41,7 @@
 // The second method argument is a short human-readable description of the
 // checker.
 //
-// The clang_registerCheckers function may add any number of checkers to the
+// The lfort_registerCheckers function may add any number of checkers to the
 // registry. If any checkers require additional initialization, use the three-
 // argument form of CheckerRegistry::addChecker.
 // 
@@ -49,22 +49,22 @@
 // the argument to the -load option in the cc1 frontend. You can then enable
 // your custom checker using the -analyzer-checker:
 //
-//   clang -cc1 -load </path/to/plugin.dylib> -analyze
+//   lfort -cc1 -load </path/to/plugin.dylib> -analyze
 //     -analyzer-checker=<example.MainCallChecker>
 //
 // For a complete working example, see examples/analyzer-plugin.
 
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
-#ifndef CLANG_ANALYZER_API_VERSION_STRING
-// FIXME: The Clang version string is not particularly granular;
+#ifndef LFORT_ANALYZER_API_VERSION_STRING
+// FIXME: The LFort version string is not particularly granular;
 // the analyzer infrastructure can change a lot between releases.
 // Unfortunately, this string has to be statically embedded in each plugin,
 // so we can't just use the functions defined in Version.h.
-#include "clang/Basic/Version.h"
-#define CLANG_ANALYZER_API_VERSION_STRING CLANG_VERSION_STRING
+#include "lfort/Basic/Version.h"
+#define LFORT_ANALYZER_API_VERSION_STRING LFORT_VERSION_STRING
 #endif
 
 class CheckerOptInfo;
@@ -129,6 +129,6 @@ private:
 };
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort
 
 #endif

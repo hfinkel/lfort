@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/Module.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/Module.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // ASTDumper Visitor

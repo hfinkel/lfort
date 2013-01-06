@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %lfort_cc1 -fsyntax-only %s
 
 typedef struct foo T0;
 typedef const struct foo T1;

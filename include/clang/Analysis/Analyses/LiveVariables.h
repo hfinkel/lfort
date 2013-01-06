@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LIVEVARIABLES_H
-#define LLVM_CLANG_LIVEVARIABLES_H
+#ifndef LLVM_LFORT_LIVEVARIABLES_H
+#define LLVM_LFORT_LIVEVARIABLES_H
 
-#include "clang/AST/Decl.h"
-#include "clang/Analysis/AnalysisContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Analysis/AnalysisContext.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/ImmutableSet.h"
 
-namespace clang {
+namespace lfort {
 
 class CFG;
 class CFGBlock;
@@ -115,6 +115,6 @@ public:
   static const void *getTag();
 };
   
-} // end namespace clang
+} // end namespace lfort
 
 #endif

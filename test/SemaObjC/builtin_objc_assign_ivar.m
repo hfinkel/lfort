@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x objective-c %s -fsyntax-only -verify
+// RUN: %lfort_cc1 -x objective-c %s -fsyntax-only -verify
 // expected-no-diagnostics
 // rdar://9362887
 

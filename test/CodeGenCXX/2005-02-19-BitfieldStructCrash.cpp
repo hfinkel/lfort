@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o -
+// RUN: %lfort_cc1 -emit-llvm %s -o -
 
 struct QChar {unsigned short X; QChar(unsigned short); } ;
 

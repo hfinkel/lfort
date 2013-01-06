@@ -1,5 +1,5 @@
-// REQUIRES: clang-driver
-// RUN: %clang -### -c -save-temps -integrated-as -g %s 2>&1 \
+// REQUIRES: lfort-driver
+// RUN: %lfort -### -c -save-temps -integrated-as -g %s 2>&1 \
 // RUN:   | FileCheck %s
 
 // CHECK: main-file-name

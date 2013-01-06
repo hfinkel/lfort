@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x objective-c -emit-llvm -g < %s | grep  subprogram | grep "i32 9"
+// RUN: %lfort_cc1 -x objective-c -emit-llvm -g < %s | grep  subprogram | grep "i32 9"
 // Test to check that subprogram start location.
 
 @interface Foo

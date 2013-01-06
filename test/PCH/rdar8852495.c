@@ -1,9 +1,9 @@
 // Test this without pch.
-// RUN: %clang_cc1 %s -include %s -verify -fsyntax-only -Wno-sign-compare -Wtautological-compare
+// RUN: %lfort_cc1 %s -include %s -verify -fsyntax-only -Wno-sign-compare -Wtautological-compare
 
 // Test with pch.
-// RUN: %clang_cc1 %s -emit-pch -o %t -Wsign-compare -Wtautological-compare
-// RUN: %clang_cc1 %s -include-pch %t -verify -fsyntax-only -Wno-sign-compare -Wtautological-compare
+// RUN: %lfort_cc1 %s -emit-pch -o %t -Wsign-compare -Wtautological-compare
+// RUN: %lfort_cc1 %s -include-pch %t -verify -fsyntax-only -Wno-sign-compare -Wtautological-compare
 
 // expected-no-diagnostics
 
@@ -13,7 +13,7 @@
 #ifndef HEADER
 #define HEADER
 
-#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma lfort diagnostic ignored "-Wtautological-compare"
 
 #else
 

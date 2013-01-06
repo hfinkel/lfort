@@ -3,30 +3,30 @@ Tutorial for building tools using LibTooling and LibASTMatchers
 ===============================================================
 
 This document is intended to show how to build a useful source-to-source
-translation tool based on Clang's `LibTooling <LibTooling.html>`_. It is
-explicitly aimed at people who are new to Clang, so all you should need
+translation tool based on LFort's `LibTooling <LibTooling.html>`_. It is
+explicitly aimed at people who are new to LFort, so all you should need
 is a working knowledge of C++ and the command line.
 
 In order to work on the compiler, you need some basic knowledge of the
 abstract syntax tree (AST). To this end, the reader is incouraged to
-skim the :doc:`Introduction to the Clang
-AST <IntroductionToTheClangAST>`
+skim the :doc:`Introduction to the LFort
+AST <IntroductionToTheLFortAST>`
 
-Step 0: Obtaining Clang
+Step 0: Obtaining LFort
 =======================
 
-As Clang is part of the LLVM project, you'll need to download LLVM's
-source code first. Both Clang and LLVM are maintained as Subversion
+As LFort is part of the LLVM project, you'll need to download LLVM's
+source code first. Both LFort and LLVM are maintained as Subversion
 repositories, but we'll be accessing them through the git mirror. For
 further information, see the `getting started
 guide <http://llvm.org/docs/GettingStarted.html>`_.
 
 ::
 
-      mkdir ~/clang-llvm && cd ~/clang-llvm
+      mkdir ~/lfort-llvm && cd ~/lfort-llvm
       git clone http://llvm.org/git/llvm.git
       cd llvm/tools
-      git clone http://llvm.org/git/clang.git
+      git clone http://llvm.org/git/lfort.git
 
 Next you need to obtain the CMake build system and Ninja build tool. You
 may already have CMake installed, but current binary versions of CMake
@@ -34,14 +34,14 @@ aren't built with Ninja support.
 
 ::
 
-      cd ~/clang-llvm
+      cd ~/lfort-llvm
       git clone https://github.com/martine/ninja.git
       cd ninja
       git checkout release
       ./bootstrap.py
       sudo cp ninja /usr/bin/
 
-      cd ~/clang-llvm
+      cd ~/lfort-llvm
       git clone git://cmake.org/stage/cmake.git
       cd cmake
       git checkout next
@@ -49,54 +49,54 @@ aren't built with Ninja support.
       make
       sudo make install
 
-Okay. Now we'll build Clang!
+Okay. Now we'll build LFort!
 
 ::
 
-      cd ~/clang-llvm
+      cd ~/lfort-llvm
       mkdir build && cd build
       cmake -G Ninja ../llvm -DLLVM_BUILD_TESTS=ON  # Enable tests; default is off.
       ninja
       ninja check       # Test LLVM only.
-      ninja clang-test  # Test Clang only.
+      ninja lfort-test  # Test LFort only.
       ninja install
 
 And we're live.
 
 All of the tests should pass, though there is a (very) small chance that
-you can catch LLVM and Clang out of sync. Running ``'git svn rebase'``
-in both the llvm and clang directories should fix any problems.
+you can catch LLVM and LFort out of sync. Running ``'git svn rebase'``
+in both the llvm and lfort directories should fix any problems.
 
-Finally, we want to set Clang as its own compiler.
+Finally, we want to set LFort as its own compiler.
 
 ::
 
-      cd ~/clang-llvm/build
+      cd ~/lfort-llvm/build
       ccmake ../llvm
 
-The second command will bring up a GUI for configuring Clang. You need
+The second command will bring up a GUI for configuring LFort. You need
 to set the entry for ``CMAKE_CXX_COMPILER``. Press ``'t'`` to turn on
 advanced mode. Scroll down to ``CMAKE_CXX_COMPILER``, and set it to
-``/usr/bin/clang++``, or wherever you installed it. Press ``'c'`` to
+``/usr/bin/lfort++``, or wherever you installed it. Press ``'c'`` to
 configure, then ``'g'`` to generate CMake's files.
 
 Finally, run ninja one last time, and you're done.
 
-Step 1: Create a ClangTool
+Step 1: Create a LFortTool
 ==========================
 
 Now that we have enough background knowledge, it's time to create the
-simplest productive ClangTool in existence: a syntax checker. While this
-already exists as ``clang-check``, it's important to understand what's
+simplest productive LFortTool in existence: a syntax checker. While this
+already exists as ``lfort-check``, it's important to understand what's
 going on.
 
 First, we'll need to create a new directory for our tool and tell CMake
-that it exists. As this is not going to be a core clang tool, it will
+that it exists. As this is not going to be a core lfort tool, it will
 live in the ``tools/extra`` repository.
 
 ::
 
-      cd ~/clang-llvm/llvm/tools/clang
+      cd ~/lfort-llvm/llvm/tools/lfort
       mkdir tools/extra/loop-convert
       echo 'add_subdirectory(loop-convert)' >> tools/extra/CMakeLists.txt
       vim tools/extra/loop-convert/CMakeLists.txt
@@ -106,15 +106,15 @@ CMakeLists.txt should have the following contents:
 ::
 
       set(LLVM_LINK_COMPONENTS support)
-      set(LLVM_USED_LIBS clangTooling clangBasic clangAST)
+      set(LLVM_USED_LIBS lfortTooling lfortBasic lfortAST)
 
-      add_clang_executable(loop-convert
+      add_lfort_executable(loop-convert
         LoopConvert.cpp
         )
       target_link_libraries(loop-convert
-        clangTooling
-        clangBasic
-        clangASTMatchers
+        lfortTooling
+        lfortBasic
+        lfortASTMatchers
         )
 
 With that done, Ninja will be able to compile our tool. Let's give it
@@ -125,14 +125,14 @@ documentation <LibTooling.html>`_.
 
 ::
 
-      // Declares clang::SyntaxOnlyAction.
-      #include "clang/Frontend/FrontendActions.h"
-      #include "clang/Tooling/CommonOptionsParser.h"
-      #include "clang/Tooling/Tooling.h"
+      // Declares lfort::SyntaxOnlyAction.
+      #include "lfort/Frontend/FrontendActions.h"
+      #include "lfort/Tooling/CommonOptionsParser.h"
+      #include "lfort/Tooling/Tooling.h"
       // Declares llvm::cl::extrahelp.
       #include "llvm/Support/CommandLine.h"
 
-      using namespace clang::tooling;
+      using namespace lfort::tooling;
       using namespace llvm;
 
       // CommonOptionsParser declares HelpMessage with a description of the common
@@ -145,9 +145,9 @@ documentation <LibTooling.html>`_.
 
       int main(int argc, const char **argv) {
         CommonOptionsParser OptionsParser(argc, argv);
-        ClangTool Tool(OptionsParser.getCompilations(),
+        LFortTool Tool(OptionsParser.getCompilations(),
                        OptionsParser.getSourcePathList());
-        return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>());
+        return Tool.run(newFrontendActionFactory<lfort::SyntaxOnlyAction>());
       }
 
 And that's it! You can compile our new tool by running ninja from the
@@ -155,11 +155,11 @@ And that's it! You can compile our new tool by running ninja from the
 
 ::
 
-      cd ~/clang-llvm/build
+      cd ~/lfort-llvm/build
       ninja
 
 You should now be able to run the syntax checker, which is located in
-``~/clang-llvm/build/bin``, on any source file. Try it!
+``~/lfort-llvm/build/bin``, on any source file. Try it!
 
 ::
 
@@ -174,7 +174,7 @@ right now.
 Intermezzo: Learn AST matcher basics
 ====================================
 
-Clang recently introduced the :doc:`ASTMatcher
+LFort recently introduced the :doc:`ASTMatcher
 library <LibASTMatchers>` to provide a simple, powerful, and
 concise way to describe specific patterns in the AST. Implemented as a
 DSL powered by macros and templates (see
@@ -256,7 +256,7 @@ as we will want to do something with it:
 Once you have defined your matchers, you will need to add a little more
 scaffolding in order to run them. Matchers are paired with a
 ``MatchCallback`` and registered with a ``MatchFinder`` object, then run
-from a ``ClangTool``. More code!
+from a ``LFortTool``. More code!
 
 Add the following to ``LoopConvert.cpp``:
 
@@ -269,7 +269,7 @@ Add the following to ``LoopConvert.cpp``:
       class LoopPrinter : public MatchFinder::MatchCallback {
       public :
         virtual void run(const MatchFinder::MatchResult &Result) {
-        if (const ForStmt *FS = Result.Nodes.getNodeAs<clang::ForStmt>("forLoop"))
+        if (const ForStmt *FS = Result.Nodes.getNodeAs<lfort::ForStmt>("forLoop"))
           FS->dump();
       };
 
@@ -279,7 +279,7 @@ And change ``main()`` to:
 
       int main(int argc, const char **argv) {
         CommonOptionsParser OptionsParser(argc, argv);
-        ClangTool Tool(OptionsParser.getCompilations(),
+        LFortTool Tool(OptionsParser.getCompilations(),
                        OptionsParser.getSourcePathList());
 
         LoopPrinter Printer;
@@ -295,7 +295,7 @@ handiwork:
 
 ::
 
-      cd ~/clang-llvm/llvm/llvm_build/
+      cd ~/lfort-llvm/llvm/llvm_build/
       ninja loop-convert
       vim ~/test-files/simple-loops.cc
       bin/loop-convert ~/test-files/simple-loops.cc
@@ -335,7 +335,7 @@ the increment step be a unary increment like this:
 
       hasIncrement(unaryOperator(hasOperatorName("++")))
 
-Specifying what is incremented introduces another quirk of Clang's AST:
+Specifying what is incremented introduces another quirk of LFort's AST:
 Usages of variables are represented as ``DeclRefExpr``'s ("declaration
 reference expressions") because they are expressions which refer to
 variable declarations. To find a ``unaryOperator`` that refers to a
@@ -444,7 +444,7 @@ previous step.
 
 The ``MatchFinder::run()`` callback takes a
 ``MatchFinder::MatchResult&`` as its parameter. We're most interested in
-its ``Context`` and ``Nodes`` members. Clang uses the ``ASTContext``
+its ``Context`` and ``Nodes`` members. LFort uses the ``ASTContext``
 class to represent contextual information about the AST, as the name
 implies, though the most functionally important detail is that several
 operations require an ``ASTContext*`` parameter. More immediately useful
@@ -458,7 +458,7 @@ In ``LoopActions.cpp``:
 
 ::
 
-      #include "clang/AST/ASTContext.h"
+      #include "lfort/AST/ASTContext.h"
 
       void LoopPrinter::run(const MatchFinder::MatchResult &Result) {
         ASTContext *Context = Result.Context;
@@ -492,7 +492,7 @@ For now, we will just print a message explaining that we found a loop.
 The next section will deal with recursively traversing the AST to
 discover all changes needed.
 
-As a side note, here is the implementation of ``areSameVariable``. Clang
+As a side note, here is the implementation of ``areSameVariable``. LFort
 associates a ``VarDecl`` with each variable to represent the variable's
 declaration. Since the "canonical" form of each declaration is unique by
 address, all we need to do is make sure neither ``ValueDecl`` (base
@@ -506,7 +506,7 @@ class of ``VarDecl``) is ``NULL`` and compare the canonical Decls.
       }
 
 It's not as trivial to test if two expressions are the same, though
-Clang has already done the hard work for us by providing a way to
+LFort has already done the hard work for us by providing a way to
 canonicalize expressions:
 
 ::

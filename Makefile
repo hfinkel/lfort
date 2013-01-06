@@ -7,13 +7,13 @@
 #
 ##===----------------------------------------------------------------------===##
 
-# If CLANG_LEVEL is not set, then we are the top-level Makefile. Otherwise, we
+# If LFORT_LEVEL is not set, then we are the top-level Makefile. Otherwise, we
 # are being included from a subdirectory makefile.
 
-ifndef CLANG_LEVEL
+ifndef LFORT_LEVEL
 
 IS_TOP_LEVEL := 1
-CLANG_LEVEL := .
+LFORT_LEVEL := .
 DIRS := utils/TableGen include lib tools runtime docs unittests
 
 PARALLEL_DIRS :=
@@ -27,16 +27,16 @@ ifeq ($(MAKECMDGOALS),libs-only)
   DIRS := $(filter-out tools docs, $(DIRS))
   OPTIONAL_DIRS :=
 endif
-ifeq ($(BUILD_CLANG_ONLY),YES)
+ifeq ($(BUILD_LFORT_ONLY),YES)
   DIRS := $(filter-out docs unittests, $(DIRS))
   OPTIONAL_DIRS :=
 endif
 
 ###
-# Common Makefile code, shared by all Clang Makefiles.
+# Common Makefile code, shared by all LFort Makefiles.
 
 # Set LLVM source root level.
-LEVEL := $(CLANG_LEVEL)/../..
+LEVEL := $(LFORT_LEVEL)/../..
 
 # Include LLVM common makefile.
 include $(LEVEL)/Makefile.common
@@ -45,37 +45,37 @@ ifneq ($(ENABLE_DOCS),1)
   DIRS := $(filter-out docs, $(DIRS))
 endif
 
-# Set common Clang build flags.
-CPP.Flags += -I$(PROJ_SRC_DIR)/$(CLANG_LEVEL)/include -I$(PROJ_OBJ_DIR)/$(CLANG_LEVEL)/include
-ifdef CLANG_VENDOR
-CPP.Flags += -DCLANG_VENDOR='"$(CLANG_VENDOR) "'
+# Set common LFort build flags.
+CPP.Flags += -I$(PROJ_SRC_DIR)/$(LFORT_LEVEL)/include -I$(PROJ_OBJ_DIR)/$(LFORT_LEVEL)/include
+ifdef LFORT_VENDOR
+CPP.Flags += -DLFORT_VENDOR='"$(LFORT_VENDOR) "'
 endif
-ifdef CLANG_REPOSITORY_STRING
-CPP.Flags += -DCLANG_REPOSITORY_STRING='"$(CLANG_REPOSITORY_STRING)"'
+ifdef LFORT_REPOSITORY_STRING
+CPP.Flags += -DLFORT_REPOSITORY_STRING='"$(LFORT_REPOSITORY_STRING)"'
 endif
 
 # Disable -fstrict-aliasing. Darwin disables it by default (and LLVM doesn't
-# work with it enabled with GCC), Clang/llvm-gcc don't support it yet, and newer
+# work with it enabled with GCC), LFort/llvm-gcc don't support it yet, and newer
 # GCC's have false positive warnings with it on Linux (which prove a pain to
 # fix). For example:
 #   http://gcc.gnu.org/PR41874
 #   http://gcc.gnu.org/PR41838
 #
-# We can revisit this when LLVM/Clang support it.
+# We can revisit this when LLVM/LFort support it.
 CXX.Flags += -fno-strict-aliasing
 
-# Set up Clang's tblgen.
-ifndef CLANG_TBLGEN
+# Set up LFort's tblgen.
+ifndef LFORT_TBLGEN
   ifeq ($(LLVM_CROSS_COMPILING),1)
-    CLANG_TBLGEN := $(BuildLLVMToolDir)/clang-tblgen$(BUILD_EXEEXT)
+    LFORT_TBLGEN := $(BuildLLVMToolDir)/lfort-tblgen$(BUILD_EXEEXT)
   else
-    CLANG_TBLGEN := $(LLVMToolDir)/clang-tblgen$(EXEEXT)
+    LFORT_TBLGEN := $(LLVMToolDir)/lfort-tblgen$(EXEEXT)
   endif
 endif
-ClangTableGen = $(CLANG_TBLGEN) $(TableGen.Flags)
+LFortTableGen = $(LFORT_TBLGEN) $(TableGen.Flags)
 
 ###
-# Clang Top Level specific stuff.
+# LFort Top Level specific stuff.
 
 ifeq ($(IS_TOP_LEVEL),1)
 

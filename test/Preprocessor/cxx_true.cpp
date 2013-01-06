@@ -1,7 +1,7 @@
-/* RUN: %clang_cc1 -E %s -x c++ | grep block_1
-   RUN: %clang_cc1 -E %s -x c++ | not grep block_2
-   RUN: %clang_cc1 -E %s -x c | not grep block
-   RUN: %clang_cc1 -E %s -x c++ -verify -Wundef
+/* RUN: %lfort_cc1 -E %s -x c++ | grep block_1
+   RUN: %lfort_cc1 -E %s -x c++ | not grep block_2
+   RUN: %lfort_cc1 -E %s -x c | not grep block
+   RUN: %lfort_cc1 -E %s -x c++ -verify -Wundef
 */
 // expected-no-diagnostics
 

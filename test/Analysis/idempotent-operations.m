@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-store=region -analyzer-constraints=range -fblocks -analyzer-opt-analyze-nested-blocks -analyzer-checker=alpha.deadcode.IdempotentOperations,osx.cocoa.RetainCount -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-store=region -analyzer-constraints=range -fblocks -analyzer-opt-analyze-nested-blocks -analyzer-checker=alpha.deadcode.IdempotentOperations,osx.cocoa.RetainCount -verify %s
 // expected-no-diagnostics
 
 typedef signed char BOOL;

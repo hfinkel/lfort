@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 struct S {
    S (S);  // expected-error {{copy constructor must pass its first argument by reference}}

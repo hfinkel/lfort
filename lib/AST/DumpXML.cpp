@@ -16,31 +16,31 @@
 
 // Only pay for this in code size in assertions-enabled builds.
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/TemplateName.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/TypeLocVisitor.h"
-#include "clang/AST/TypeVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/TypeLocVisitor.h"
+#include "lfort/AST/TypeVisitor.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 
 #ifndef NDEBUG
 
@@ -74,7 +74,7 @@ template <class Impl> struct XMLDeclVisitor {
         DISPATCH(dispatch##DERIVED##DeclAsContext, DERIVED##Decl); \
         break;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
     }
   }
 
@@ -94,7 +94,7 @@ template <class Impl> struct XMLDeclVisitor {
     DISPATCH(visit##DERIVED##DeclAsContext, DERIVED##Decl); \
   } \
   void visit##DERIVED##DeclAsContext(DERIVED##Decl *D) {}
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
 
   void dispatchDeclAttrs(Decl *D) {
     DISPATCH(visitDeclAttrs, Decl);
@@ -127,7 +127,7 @@ template <class Impl> struct XMLTypeVisitor {
         DISPATCH(dispatch##DERIVED##TypeChildren, DERIVED##Type); \
         break;
 #define ABSTRACT_TYPE(DERIVED, BASE)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 
@@ -142,7 +142,7 @@ template <class Impl> struct XMLTypeVisitor {
     DISPATCH(visit##DERIVED##TypeChildren, DERIVED##Type); \
   } \
   void visit##DERIVED##TypeChildren(DERIVED##Type *T) {}
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   void dispatchTypeAttrs(Type *T) {
     DISPATCH(visitTypeAttrs, Type);
@@ -161,7 +161,7 @@ static StringRef getTypeKindName(Type *T) {
   switch (T->getTypeClass()) {
 #define TYPE(DERIVED, BASE) case Type::DERIVED: return #DERIVED "Type";
 #define ABSTRACT_TYPE(DERIVED, BASE)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
 
   llvm_unreachable("unknown type kind!");

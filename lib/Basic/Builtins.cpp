@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/SmallVector.h"
-using namespace clang;
+using namespace lfort;
 
 static const Builtin::Info BuiltinInfo[] = {
   { "not a builtin function", 0, 0, 0, ALL_LANGUAGES },
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER, BUILTIN_LANG) { #ID, TYPE, ATTRS, HEADER,\
                                                             BUILTIN_LANG },
-#include "clang/Basic/Builtins.def"
+#include "lfort/Basic/Builtins.def"
 };
 
 const Builtin::Info &Builtin::Context::GetRecord(unsigned ID) const {
@@ -53,7 +53,7 @@ void Builtin::Context::InitializeBuiltins(IdentifierTable &Table,
   for (unsigned i = Builtin::NotBuiltin+1; i != Builtin::FirstTSBuiltin; ++i)
     if (!LangOpts.NoBuiltin || !strchr(BuiltinInfo[i].Attributes, 'f')) {
       if (LangOpts.ObjC1 || 
-          BuiltinInfo[i].builtin_lang != clang::OBJC_LANG)
+          BuiltinInfo[i].builtin_lang != lfort::OBJC_LANG)
         Table.get(BuiltinInfo[i].Name).setBuiltinID(i);
     }
 

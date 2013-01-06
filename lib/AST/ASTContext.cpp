@@ -11,25 +11,25 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
+#include "lfort/AST/ASTContext.h"
 #include "CXXABI.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Comment.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/Mangle.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/Capacity.h"
@@ -37,7 +37,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <map>
 
-using namespace clang;
+using namespace lfort;
 
 unsigned ASTContext::NumImplicitDefaultConstructors;
 unsigned ASTContext::NumImplicitDefaultConstructorsDeclared;
@@ -691,7 +691,7 @@ void ASTContext::PrintStats() const {
   unsigned counts[] = {
 #define TYPE(Name, Parent) 0,
 #define ABSTRACT_TYPE(Name, Parent)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     0 // Extra
   };
 
@@ -709,7 +709,7 @@ void ASTContext::PrintStats() const {
   TotalBytes += counts[Idx] * sizeof(Name##Type);                       \
   ++Idx;
 #define ABSTRACT_TYPE(Name, Parent)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   llvm::errs() << "Total bytes = " << TotalBytes << "\n";
 
@@ -1292,7 +1292,7 @@ ASTContext::getTypeInfoImpl(const Type *T) const {
 #define ABSTRACT_TYPE(Class, Base)
 #define NON_CANONICAL_TYPE(Class, Base)
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Should not see dependent types");
 
   case Type::FunctionNoProto:
@@ -2191,7 +2191,7 @@ QualType ASTContext::getVariableArrayDecayedType(QualType type) const {
 #define TYPE(Class, Base)
 #define ABSTRACT_TYPE(Class, Base)
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("didn't desugar past all non-canonical types?");
 
   // These types should never be variably-modified.
@@ -4866,7 +4866,7 @@ static char getObjCEncodingForPrimitiveKind(const ASTContext *C,
 #define BUILTIN_TYPE(KIND, ID)
 #define PLACEHOLDER_TYPE(KIND, ID) \
     case BuiltinType::KIND:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
       llvm_unreachable("invalid builtin type for @encode");
     }
 }
@@ -5264,7 +5264,7 @@ void ASTContext::getObjCEncodingForTypeImpl(QualType T, std::string& S,
   case Type::KIND:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(KIND, BASE) \
   case Type::KIND:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("@encode for dependent type!");
   }
   llvm_unreachable("bad type kind!");
@@ -6796,7 +6796,7 @@ QualType ASTContext::mergeTypes(QualType LHS, QualType RHS,
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Non-canonical and dependent types shouldn't get here");
 
   case Type::LValueReference:

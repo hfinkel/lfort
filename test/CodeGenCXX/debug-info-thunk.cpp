@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -g -S -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -g -S -emit-llvm -o - | FileCheck %s
 
 struct A {
   virtual void f();

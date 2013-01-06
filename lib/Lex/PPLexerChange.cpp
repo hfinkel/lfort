@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/MacroInfo.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/PathV2.h"
-using namespace clang;
+using namespace lfort;
 
 PPCallbacks::~PPCallbacks() {}
 

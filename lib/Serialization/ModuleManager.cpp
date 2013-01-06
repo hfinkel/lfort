@@ -11,7 +11,7 @@
 //  modules for the ASTReader.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Serialization/ModuleManager.h"
+#include "lfort/Serialization/ModuleManager.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
@@ -20,7 +20,7 @@
 #include "llvm/Support/GraphWriter.h"
 #endif
 
-using namespace clang;
+using namespace lfort;
 using namespace serialization;
 
 ModuleFile *ModuleManager::lookup(StringRef Name) {

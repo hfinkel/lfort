@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -Os -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1  -Os -emit-llvm %s -o /dev/null
 // PR1641
 
 struct A {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 int foo(int);
 
 namespace N {
@@ -77,7 +77,7 @@ class Crash {
 };
 // This out-of-line definition was fine...
 void Crash::cart(int count) const {} // expected-error {{out-of-line definition of 'cart' does not match any declaration in 'Crash'}}
-// ...while this one crashed clang
+// ...while this one crashed lfort
 void Crash::chart(int count) const {} // expected-error {{out-of-line definition of 'chart' does not match any declaration in 'Crash'}}
 
 class TestConst {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin10 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin10 -fsyntax-only -verify %s
 
 int a __attribute__((force_align_arg_pointer)); // expected-warning{{attribute only applies to functions}}
 

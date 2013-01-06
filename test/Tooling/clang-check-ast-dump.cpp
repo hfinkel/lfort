@@ -1,4 +1,4 @@
-// RUN: clang-check -ast-dump "%s" -- 2>&1 | FileCheck %s
+// RUN: lfort-check -ast-dump "%s" -- 2>&1 | FileCheck %s
 // CHECK: (NamespaceDecl{{.*}}test_namespace
 // CHECK-NEXT: (CXXRecordDecl{{.*}}TheClass
 // CHECK: (CXXMethodDecl{{.*}}theMethod
@@ -7,7 +7,7 @@
 // CHECK-NEXT:   (ReturnStmt
 // CHECK-NEXT:     (BinaryOperator
 //
-// RUN: clang-check -ast-dump -ast-dump-filter test_namespace::TheClass::theMethod "%s" -- 2>&1 | FileCheck -check-prefix CHECK-FILTER %s
+// RUN: lfort-check -ast-dump -ast-dump-filter test_namespace::TheClass::theMethod "%s" -- 2>&1 | FileCheck -check-prefix CHECK-FILTER %s
 // CHECK-FILTER-NOT: NamespaceDecl
 // CHECK-FILTER-NOT: CXXRecordDecl
 // CHECK-FILTER: {{^}}Dumping test_namespace::TheClass::theMethod
@@ -17,23 +17,23 @@
 // CHECK-FILTER-NEXT:   (ReturnStmt
 // CHECK-FILTER-NEXT:     (BinaryOperator
 //
-// RUN: clang-check -ast-print "%s" -- 2>&1 | FileCheck -check-prefix CHECK-PRINT %s
+// RUN: lfort-check -ast-print "%s" -- 2>&1 | FileCheck -check-prefix CHECK-PRINT %s
 // CHECK-PRINT: namespace test_namespace
 // CHECK-PRINT: class TheClass
 // CHECK-PRINT: int theMethod(int x)
 //
-// RUN: clang-check -ast-list "%s" -- 2>&1 | FileCheck -check-prefix CHECK-LIST %s
+// RUN: lfort-check -ast-list "%s" -- 2>&1 | FileCheck -check-prefix CHECK-LIST %s
 // CHECK-LIST: test_namespace
 // CHECK-LIST-NEXT: test_namespace::TheClass
 // CHECK-LIST-NEXT: test_namespace::TheClass::theMethod
 // CHECK-LIST-NEXT: x
 //
-// RUN: clang-check -ast-dump -ast-dump-filter test_namespace::TheClass::n "%s" -- 2>&1 | FileCheck -check-prefix CHECK-ATTR %s
+// RUN: lfort-check -ast-dump -ast-dump-filter test_namespace::TheClass::n "%s" -- 2>&1 | FileCheck -check-prefix CHECK-ATTR %s
 // CHECK-ATTR: test_namespace
 // CHECK-ATTR-NEXT: (FieldDecl{{.*}}n
 // FIXME: attribute dumping not implemented yet
 //
-// RUN: clang-check -ast-dump -ast-dump-filter test_namespace::AfterNullNode "%s" -- 2>&1 | FileCheck -check-prefix CHECK-AFTER-NULL %s
+// RUN: lfort-check -ast-dump -ast-dump-filter test_namespace::AfterNullNode "%s" -- 2>&1 | FileCheck -check-prefix CHECK-AFTER-NULL %s
 // CHECK-AFTER-NULL: class AfterNullNode
 
 namespace test_namespace {

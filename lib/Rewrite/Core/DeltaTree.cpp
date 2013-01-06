@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Core/DeltaTree.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Rewrite/Core/DeltaTree.h"
+#include "lfort/Basic/LLVM.h"
 #include <cstdio>
 #include <cstring>
-using namespace clang;
+using namespace lfort;
 
 /// The DeltaTree class is a multiway search tree (BTree) structure with some
 /// fancy features.  B-Trees are generally more memory and cache efficient

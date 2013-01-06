@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -fblocks -triple i386-apple-darwin9 -target-cpu yonah -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -w -fblocks -triple i386-apple-darwin9 -target-cpu yonah -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: define signext i8 @f0()
 char f0(void) {
@@ -246,9 +246,9 @@ v4i32 f55(v4i32 arg) { return arg+arg; }
 // CHECK: <4 x double> {{[^ ]*}}, %struct.s56_6* byval align 4 %{{[^ ]*}})
 // CHECK: }
 //
-// <rdar://problem/7964854> [i386] clang misaligns long double in structures
+// <rdar://problem/7964854> [i386] lfort misaligns long double in structures
 // when passed byval
-// <rdar://problem/8431367> clang misaligns parameters on stack
+// <rdar://problem/8431367> lfort misaligns parameters on stack
 typedef int __attribute__((vector_size (8))) t56_v2i;
 typedef double __attribute__((vector_size (8))) t56_v1d;
 typedef int __attribute__((vector_size (16))) t56_v4i;

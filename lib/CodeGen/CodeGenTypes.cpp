@@ -17,15 +17,15 @@
 #include "CGOpenCLRuntime.h"
 #include "CGRecordLayout.h"
 #include "TargetInfo.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/RecordLayout.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/RecordLayout.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Module.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CodeGenTypes::CodeGenTypes(CodeGenModule &CGM)
@@ -304,7 +304,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Non-canonical or dependent types aren't possible.");
 
   case Type::Builtin: {
@@ -381,7 +381,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \
     case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
       llvm_unreachable("Unexpected placeholder builtin type!");
     }
     break;
@@ -589,7 +589,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
 
 /// ConvertRecordDeclType - Lay out a tagged decl type like struct or union.
 llvm::StructType *CodeGenTypes::ConvertRecordDeclType(const RecordDecl *RD) {
-  // TagDecl's are not necessarily unique, instead use the (clang)
+  // TagDecl's are not necessarily unique, instead use the (lfort)
   // type connected to the decl.
   const Type *Key = Context.getTagDeclType(RD).getTypePtr();
 

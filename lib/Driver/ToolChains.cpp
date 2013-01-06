@@ -9,16 +9,16 @@
 
 #include "ToolChains.h"
 #include "SanitizerArgs.h"
-#include "clang/Basic/ObjCRuntime.h"
-#include "clang/Basic/Version.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
+#include "lfort/Basic/ObjCRuntime.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
@@ -32,13 +32,13 @@
 
 // FIXME: This needs to be listed last until we fix the broken include guards
 // in these files and the LLVM config.h files.
-#include "clang/Config/config.h" // for GCC_INSTALL_PREFIX
+#include "lfort/Config/config.h" // for GCC_INSTALL_PREFIX
 
 #include <cstdlib> // ::getenv
 
-using namespace clang::driver;
-using namespace clang::driver::toolchains;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort::driver::toolchains;
+using namespace lfort;
 
 /// Darwin - Darwin tool chain for i386 and x86_64.
 
@@ -154,7 +154,7 @@ Darwin::~Darwin() {
     delete it->second;
 }
 
-std::string Darwin::ComputeEffectiveClangTriple(const ArgList &Args,
+std::string Darwin::ComputeEffectiveLFortTriple(const ArgList &Args,
                                                 types::ID InputType) const {
   llvm::Triple Triple(ComputeLLVMTriple(Args, InputType));
 
@@ -177,8 +177,8 @@ Tool &Darwin::SelectTool(const Compilation &C, const JobAction &JA,
                          const ActionList &Inputs) const {
   Action::ActionClass Key = JA.getKind();
 
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple())) {
-    // FIXME: This seems like a hacky way to choose clang frontend.
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple())) {
+    // FIXME: This seems like a hacky way to choose lfort frontend.
     Key = Action::AnalyzeJobClass;
   }
 
@@ -197,10 +197,10 @@ Tool &Darwin::SelectTool(const Compilation &C, const JobAction &JA,
     case Action::MigrateJobClass:
     case Action::PrecompileJobClass:
     case Action::CompileJobClass:
-      T = new tools::Clang(*this); break;
+      T = new tools::LFort(*this); break;
     case Action::AssembleJobClass: {
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::darwin::Assemble(*this);
       break;
@@ -220,7 +220,7 @@ Tool &Darwin::SelectTool(const Compilation &C, const JobAction &JA,
 }
 
 
-DarwinClang::DarwinClang(const Driver &D, const llvm::Triple& Triple)
+DarwinLFort::DarwinLFort(const Driver &D, const llvm::Triple& Triple)
   : Darwin(D, Triple)
 {
   getProgramPaths().push_back(getDriver().getInstalledDir());
@@ -233,12 +233,12 @@ DarwinClang::DarwinClang(const Driver &D, const llvm::Triple& Triple)
     getProgramPaths().push_back(getDriver().Dir);
 }
 
-void DarwinClang::AddLinkARCArgs(const ArgList &Args,
+void DarwinLFort::AddLinkARCArgs(const ArgList &Args,
                                  ArgStringList &CmdArgs) const {
 
   CmdArgs.push_back("-force_load");
-  llvm::sys::Path P(getDriver().ClangExecutable);
-  P.eraseComponent(); // 'clang'
+  llvm::sys::Path P(getDriver().LFortExecutable);
+  P.eraseComponent(); // 'lfort'
   P.eraseComponent(); // 'bin'
   P.appendComponent("lib");
   P.appendComponent("arc");
@@ -256,7 +256,7 @@ void DarwinClang::AddLinkARCArgs(const ArgList &Args,
   CmdArgs.push_back(Args.MakeArgString(s));
 }
 
-void DarwinClang::AddLinkRuntimeLib(const ArgList &Args,
+void DarwinLFort::AddLinkRuntimeLib(const ArgList &Args,
                                     ArgStringList &CmdArgs,
                                     const char *DarwinStaticLib,
                                     bool AlwaysLink) const {
@@ -273,7 +273,7 @@ void DarwinClang::AddLinkRuntimeLib(const ArgList &Args,
     CmdArgs.push_back(Args.MakeArgString(P.str()));
 }
 
-void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
+void DarwinLFort::AddLinkRuntimeLibArgs(const ArgList &Args,
                                         ArgStringList &CmdArgs) const {
   // Darwin only supports the compiler-rt based runtime libraries.
   switch (GetRuntimeLibType(Args)) {
@@ -308,9 +308,9 @@ void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
       Args.hasArg(options::OPT_coverage)) {
     // Select the appropriate runtime library for the target.
     if (isTargetIPhoneOS()) {
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.profile_ios.a");
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.profile_ios.a");
     } else {
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.profile_osx.a");
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.profile_osx.a");
     }
   }
 
@@ -322,10 +322,10 @@ void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
         Args.hasArg(options::OPT_bundle)) {
       // Assume the binary will provide the Ubsan runtime.
     } else if (isTargetIPhoneOS()) {
-      getDriver().Diag(diag::err_drv_clang_unsupported_per_platform)
+      getDriver().Diag(diag::err_drv_lfort_unsupported_per_platform)
         << "-fsanitize=undefined";
     } else {
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.ubsan_osx.a", true);
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.ubsan_osx.a", true);
 
       // The Ubsan runtime library requires C++.
       AddCXXStdlibLibArgs(Args, CmdArgs);
@@ -339,10 +339,10 @@ void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
         Args.hasArg(options::OPT_bundle)) {
       // Assume the binary will provide the ASan runtime.
     } else if (isTargetIPhoneOS()) {
-      getDriver().Diag(diag::err_drv_clang_unsupported_per_platform)
+      getDriver().Diag(diag::err_drv_lfort_unsupported_per_platform)
         << "-fsanitize=address";
     } else {
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.asan_osx.a", true);
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.asan_osx.a", true);
 
       // The ASAN runtime library requires C++ and CoreFoundation.
       AddCXXStdlibLibArgs(Args, CmdArgs);
@@ -364,7 +364,7 @@ void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
       CmdArgs.push_back("-lgcc_s.1");
 
     // We currently always need a static runtime library for iOS.
-    AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.ios.a");
+    AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.ios.a");
   } else {
     // The dynamic runtime library was merged with libSystem for 10.6 and
     // beyond; only 10.4 and 10.5 need an additional runtime library.
@@ -382,11 +382,11 @@ void DarwinClang::AddLinkRuntimeLibArgs(const ArgList &Args,
     // libSystem. Therefore, we still must provide a runtime library just for
     // the tiny tiny handful of projects that *might* use that symbol.
     if (isMacosxVersionLT(10, 5)) {
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.10.4.a");
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.10.4.a");
     } else {
       if (getTriple().getArch() == llvm::Triple::x86)
-        AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.eprintf.a");
-      AddLinkRuntimeLib(Args, CmdArgs, "libclang_rt.osx.a");
+        AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.eprintf.a");
+      AddLinkRuntimeLib(Args, CmdArgs, "liblfort_rt.osx.a");
     }
   }
 }
@@ -401,7 +401,7 @@ void Darwin::AddDeploymentTarget(DerivedArgList &Args) const {
     // Warn if the path does not exist.
     bool Exists;
     if (llvm::sys::fs::exists(A->getValue(), Exists) || !Exists)
-      getDriver().Diag(clang::diag::warn_missing_sysroot) << A->getValue();
+      getDriver().Diag(lfort::diag::warn_missing_sysroot) << A->getValue();
   } else {
     if (char *env = ::getenv("SDKROOT")) {
       // We only use this value as the default if it is an absolute path and
@@ -544,7 +544,7 @@ void Darwin::AddDeploymentTarget(DerivedArgList &Args) const {
   setTarget(/*IsIPhoneOS=*/ !OSXVersion, Major, Minor, Micro, IsIOSSim);
 }
 
-void DarwinClang::AddCXXStdlibLibArgs(const ArgList &Args,
+void DarwinLFort::AddCXXStdlibLibArgs(const ArgList &Args,
                                       ArgStringList &CmdArgs) const {
   CXXStdlibType Type = GetCXXStdlibType(Args);
 
@@ -593,7 +593,7 @@ void DarwinClang::AddCXXStdlibLibArgs(const ArgList &Args,
   }
 }
 
-void DarwinClang::AddCCKextLibArgs(const ArgList &Args,
+void DarwinLFort::AddCCKextLibArgs(const ArgList &Args,
                                    ArgStringList &CmdArgs) const {
 
   // For Darwin platforms, use the compiler-rt-based support library
@@ -607,9 +607,9 @@ void DarwinClang::AddCCKextLibArgs(const ArgList &Args,
   // Use the newer cc_kext for iOS ARM after 6.0.
   if (!isTargetIPhoneOS() || isTargetIOSSimulator() ||
       !isIPhoneOSVersionLT(6, 0)) {
-    P.appendComponent("libclang_rt.cc_kext.a");
+    P.appendComponent("liblfort_rt.cc_kext.a");
   } else {
-    P.appendComponent("libclang_rt.cc_kext_ios5.a");
+    P.appendComponent("liblfort_rt.cc_kext_ios5.a");
   }
 
   // For now, allow missing resource libraries to support developers who may
@@ -866,7 +866,7 @@ DerivedArgList *Darwin::TranslateArgs(const DerivedArgList &Args,
       where = "iOS 5.0";
 
     if (where != StringRef()) {
-      getDriver().Diag(clang::diag::err_drv_invalid_libcxx_deployment)
+      getDriver().Diag(lfort::diag::err_drv_invalid_libcxx_deployment)
         << where;
     }
   }
@@ -915,7 +915,7 @@ void Darwin::CheckObjCARC() const {
 }
 
 std::string
-Darwin_Generic_GCC::ComputeEffectiveClangTriple(const ArgList &Args,
+Darwin_Generic_GCC::ComputeEffectiveLFortTriple(const ArgList &Args,
                                                 types::ID InputType) const {
   return ComputeLLVMTriple(Args, InputType);
 }
@@ -1368,7 +1368,7 @@ Tool &Generic_GCC::SelectTool(const Compilation &C,
                               const JobAction &JA,
                               const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1385,7 +1385,7 @@ Tool &Generic_GCC::SelectTool(const Compilation &C,
       T = new tools::gcc::Precompile(*this); break;
     case Action::AnalyzeJobClass:
     case Action::MigrateJobClass:
-      T = new tools::Clang(*this); break;
+      T = new tools::LFort(*this); break;
     case Action::CompileJobClass:
       T = new tools::gcc::Compile(*this); break;
     case Action::AssembleJobClass:
@@ -1543,7 +1543,7 @@ Tool &Hexagon_TC::SelectTool(const Compilation &C,
   //     Key = JA.getKind ();
   //     else
 
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1559,7 +1559,7 @@ Tool &Hexagon_TC::SelectTool(const Compilation &C,
     case Action::BindArchClass:
       assert(0 && "Invalid tool kind.");
     case Action::AnalyzeJobClass:
-      T = new tools::Clang(*this); break;
+      T = new tools::LFort(*this); break;
     case Action::AssembleJobClass:
       T = new tools::hexagon::Assemble(*this); break;
     case Action::LinkJobClass:
@@ -1572,7 +1572,7 @@ Tool &Hexagon_TC::SelectTool(const Compilation &C,
   return *T;
 }
 
-void Hexagon_TC::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+void Hexagon_TC::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                            ArgStringList &CC1Args) const {
   const Driver &D = getDriver();
 
@@ -1589,7 +1589,7 @@ void Hexagon_TC::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   addExternCSystemInclude(DriverArgs, CC1Args, GnuDir + "/hexagon/include");
 }
 
-void Hexagon_TC::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Hexagon_TC::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                               ArgStringList &CC1Args) const {
 
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
@@ -1700,7 +1700,7 @@ Tool &TCEToolChain::SelectTool(const Compilation &C,
     case Action::PreprocessJobClass:
       T = new tools::gcc::Preprocess(*this); break;
     case Action::AnalyzeJobClass:
-      T = new tools::Clang(*this); break;
+      T = new tools::LFort(*this); break;
     default:
      llvm_unreachable("Unsupported action for TCE target.");
     }
@@ -1719,7 +1719,7 @@ OpenBSD::OpenBSD(const Driver &D, const llvm::Triple& Triple, const ArgList &Arg
 Tool &OpenBSD::SelectTool(const Compilation &C, const JobAction &JA,
                           const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1733,7 +1733,7 @@ Tool &OpenBSD::SelectTool(const Compilation &C, const JobAction &JA,
     switch (Key) {
     case Action::AssembleJobClass: {
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::openbsd::Assemble(*this);
       break;
@@ -1759,7 +1759,7 @@ Bitrig::Bitrig(const Driver &D, const llvm::Triple& Triple, const ArgList &Args)
 Tool &Bitrig::SelectTool(const Compilation &C, const JobAction &JA,
                          const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1773,7 +1773,7 @@ Tool &Bitrig::SelectTool(const Compilation &C, const JobAction &JA,
     switch (Key) {
     case Action::AssembleJobClass: {
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::bitrig::Assemble(*this);
       break;
@@ -1788,7 +1788,7 @@ Tool &Bitrig::SelectTool(const Compilation &C, const JobAction &JA,
   return *T;
 }
 
-void Bitrig::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Bitrig::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                           ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
       DriverArgs.hasArg(options::OPT_nostdincxx))
@@ -1851,7 +1851,7 @@ FreeBSD::FreeBSD(const Driver &D, const llvm::Triple& Triple, const ArgList &Arg
 Tool &FreeBSD::SelectTool(const Compilation &C, const JobAction &JA,
                           const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1865,7 +1865,7 @@ Tool &FreeBSD::SelectTool(const Compilation &C, const JobAction &JA,
     switch (Key) {
     case Action::AssembleJobClass:
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::freebsd::Assemble(*this);
       break;
@@ -1913,7 +1913,7 @@ NetBSD::NetBSD(const Driver &D, const llvm::Triple& Triple, const ArgList &Args)
 Tool &NetBSD::SelectTool(const Compilation &C, const JobAction &JA,
                          const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1927,7 +1927,7 @@ Tool &NetBSD::SelectTool(const Compilation &C, const JobAction &JA,
     switch (Key) {
     case Action::AssembleJobClass:
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::netbsd::Assemble(*this);
       break;
@@ -1953,7 +1953,7 @@ Minix::Minix(const Driver &D, const llvm::Triple& Triple, const ArgList &Args)
 Tool &Minix::SelectTool(const Compilation &C, const JobAction &JA,
                         const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -1994,7 +1994,7 @@ AuroraUX::AuroraUX(const Driver &D, const llvm::Triple& Triple,
 Tool &AuroraUX::SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -2031,7 +2031,7 @@ Solaris::Solaris(const Driver &D, const llvm::Triple& Triple,
 Tool &Solaris::SelectTool(const Compilation &C, const JobAction &JA,
                            const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -2198,7 +2198,7 @@ static std::string getMultiarchTriple(const llvm::Triple TargetTriple,
     return TargetTriple.str();
 
     // We use the existence of '/lib/<triple>' as a directory to detect some
-    // common linux triples that don't quite match the Clang triple for both
+    // common linux triples that don't quite match the LFort triple for both
     // 32-bit and 64-bit targets. Multiarch fixes its install triples to these
     // regardless of what the actual target triple is.
   case llvm::Triple::arm:
@@ -2412,7 +2412,7 @@ bool Linux::HasNativeLLVMSupport() const {
 Tool &Linux::SelectTool(const Compilation &C, const JobAction &JA,
                         const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();
@@ -2426,7 +2426,7 @@ Tool &Linux::SelectTool(const Compilation &C, const JobAction &JA,
     switch (Key) {
     case Action::AssembleJobClass:
       if (UseIntegratedAs)
-        T = new tools::ClangAs(*this);
+        T = new tools::LFortAs(*this);
       else
         T = new tools::linuxtools::Assemble(*this);
       break;
@@ -2440,7 +2440,7 @@ Tool &Linux::SelectTool(const Compilation &C, const JobAction &JA,
   return *T;
 }
 
-void Linux::addClangTargetOptions(const ArgList &DriverArgs,
+void Linux::addLFortTargetOptions(const ArgList &DriverArgs,
                                   ArgStringList &CC1Args) const {
   const Generic_GCC::GCCVersion &V = GCCInstallation.getVersion();
   bool UseInitArrayDefault
@@ -2452,7 +2452,7 @@ void Linux::addClangTargetOptions(const ArgList &DriverArgs,
     CC1Args.push_back("-fuse-init-array");
 }
 
-void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+void Linux::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                       ArgStringList &CC1Args) const {
   const Driver &D = getDriver();
 
@@ -2558,7 +2558,7 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
 
   // Add an include of '/include' directly. This isn't provided by default by
   // system GCCs, but is often used with cross-compiling GCCs, and harmless to
-  // add even when Clang is acting as-if it were a system compiler.
+  // add even when LFort is acting as-if it were a system compiler.
   addExternCSystemInclude(DriverArgs, CC1Args, D.SysRoot + "/include");
 
   addExternCSystemInclude(DriverArgs, CC1Args, D.SysRoot + "/usr/include");
@@ -2576,7 +2576,7 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   return true;
 }
 
-void Linux::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void Linux::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                          ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdlibinc) ||
       DriverArgs.hasArg(options::OPT_nostdincxx))
@@ -2641,7 +2641,7 @@ DragonFly::DragonFly(const Driver &D, const llvm::Triple& Triple, const ArgList 
 Tool &DragonFly::SelectTool(const Compilation &C, const JobAction &JA,
                             const ActionList &Inputs) const {
   Action::ActionClass Key;
-  if (getDriver().ShouldUseClangCompiler(C, JA, getTriple()))
+  if (getDriver().ShouldUseLFortCompiler(C, JA, getTriple()))
     Key = Action::AnalyzeJobClass;
   else
     Key = JA.getKind();

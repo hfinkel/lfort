@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -Wused-but-marked-unused -Wno-objc-protocol-method-implementation -Wunused -Wunused-parameter -fsyntax-only -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -verify -Wused-but-marked-unused -Wno-objc-protocol-method-implementation -Wunused -Wunused-parameter -fsyntax-only -Wno-objc-root-class %s
 
 int printf(const char *, ...);
 
@@ -40,7 +40,7 @@ void test2() {
 @end
 
 //===------------------------------------------------------------------------===
-// The next test shows how clang accepted attribute((unused)) on ObjC
+// The next test shows how lfort accepted attribute((unused)) on ObjC
 // instance variables, which GCC does not.
 //===------------------------------------------------------------------------===
 

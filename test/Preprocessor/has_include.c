@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ffreestanding -Eonly -verify %s
+// RUN: %lfort_cc1 -ffreestanding -Eonly -verify %s
 
 // Try different path permutations of __has_include with existing file.
 #if __has_include("stdint.h")

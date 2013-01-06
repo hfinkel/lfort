@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-pch -o %t %s
-// RUN: %clang_cc1 -error-on-deserialized-decl S1_method -include-pch %t -emit-llvm-only %s 
+// RUN: %lfort_cc1 -emit-pch -o %t %s
+// RUN: %lfort_cc1 -error-on-deserialized-decl S1_method -include-pch %t -emit-llvm-only %s 
 
 #ifndef HEADER
 #define HEADER

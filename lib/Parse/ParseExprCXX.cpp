@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/PrettyStackTrace.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
+#include "lfort/Basic/PrettyStackTrace.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
 #include "llvm/Support/ErrorHandling.h"
 
-using namespace clang;
+using namespace lfort;
 
 static int SelectDigraphErrorMessage(tok::TokenKind Kind) {
   switch (Kind) {
@@ -1874,7 +1874,7 @@ bool Parser::ParseUnqualifiedIdOperator(CXXScopeSpec &SS, bool EnteringContext,
       Op = OO_##Name;                                                    \
       break;
 #define OVERLOADED_OPERATOR_MULTI(Name,Spelling,Unary,Binary,MemberOnly)
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
       
     case tok::l_paren: {
       // Consume the '(' and ')'.

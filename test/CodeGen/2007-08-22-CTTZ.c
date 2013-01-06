@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s | FileCheck %s
 
 int bork(unsigned long long x) {
   // CHECK: llvm.cttz.i64

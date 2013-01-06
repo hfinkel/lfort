@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_BUGREPORTER
-#define LLVM_CLANG_GR_BUGREPORTER
+#ifndef LLVM_LFORT_GR_BUGREPORTER
+#define LLVM_LFORT_GR_BUGREPORTER
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporterVisitor.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporterVisitor.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/ImmutableSet.h"
@@ -26,7 +26,7 @@
 #include "llvm/ADT/ilist.h"
 #include "llvm/ADT/ilist_node.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class DiagnosticsEngine;
@@ -298,28 +298,28 @@ public:
 };
 
 } // end ento namespace
-} // end clang namespace
+} // end lfort namespace
 
 namespace llvm {
-  template<> struct ilist_traits<clang::ento::BugReport>
-    : public ilist_default_traits<clang::ento::BugReport> {
-    clang::ento::BugReport *createSentinel() const {
-      return static_cast<clang::ento::BugReport *>(&Sentinel);
+  template<> struct ilist_traits<lfort::ento::BugReport>
+    : public ilist_default_traits<lfort::ento::BugReport> {
+    lfort::ento::BugReport *createSentinel() const {
+      return static_cast<lfort::ento::BugReport *>(&Sentinel);
     }
-    void destroySentinel(clang::ento::BugReport *) const {}
+    void destroySentinel(lfort::ento::BugReport *) const {}
 
-    clang::ento::BugReport *provideInitialHead() const {
+    lfort::ento::BugReport *provideInitialHead() const {
       return createSentinel();
     }
-    clang::ento::BugReport *ensureHead(clang::ento::BugReport *) const {
+    lfort::ento::BugReport *ensureHead(lfort::ento::BugReport *) const {
       return createSentinel();
     }
   private:
-    mutable ilist_half_node<clang::ento::BugReport> Sentinel;
+    mutable ilist_half_node<lfort::ento::BugReport> Sentinel;
   };
 }
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 //===----------------------------------------------------------------------===//
@@ -553,6 +553,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

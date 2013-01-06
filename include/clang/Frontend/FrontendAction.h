@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_FRONTENDACTION_H
-#define LLVM_CLANG_FRONTEND_FRONTENDACTION_H
+#ifndef LLVM_LFORT_FRONTEND_FRONTENDACTION_H
+#define LLVM_LFORT_FRONTEND_FRONTENDACTION_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Frontend/FrontendOptions.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Frontend/FrontendOptions.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 class ASTConsumer;
 class ASTMergeAction;
 class ASTUnit;
@@ -272,6 +272,6 @@ public:
   virtual bool hasCodeCompletionSupport() const;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

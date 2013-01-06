@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-objc-root-class %s 
-// RUN: %clang_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class %s 
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-objc-root-class %s 
+// RUN: %lfort_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class %s 
 // expected-no-diagnostics
 // rdar://8962253
 
@@ -16,7 +16,7 @@
 
 + (void) compileError
 {
-     [Singleton.instance  someSelector]; // clang issues error here
+     [Singleton.instance  someSelector]; // lfort issues error here
 }
 
 @end

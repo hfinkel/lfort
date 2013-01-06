@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -Wunused-value -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -Wunused-value -verify %s
 
 @interface INTF
 - (id) foo __attribute__((warn_unused_result)); 

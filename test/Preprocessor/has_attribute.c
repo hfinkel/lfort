@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck %s
 
 // CHECK: always_inline
 #if __has_attribute(always_inline)

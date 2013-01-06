@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Lex/Lexer.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 const FunctionDecl *CheckerContext::getCalleeDecl(const CallExpr *CE) const {

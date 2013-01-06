@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 template<typename T, T ...Values> struct value_tuple {};
 template<typename...> struct tuple { };

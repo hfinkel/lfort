@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_MULTIPLEINCLUDEOPT_H
-#define LLVM_CLANG_MULTIPLEINCLUDEOPT_H
+#ifndef LLVM_LFORT_MULTIPLEINCLUDEOPT_H
+#define LLVM_LFORT_MULTIPLEINCLUDEOPT_H
 
-namespace clang {
+namespace lfort {
 class IdentifierInfo;
 
 /// \brief Implements the simple state machine that the Lexer class uses to
@@ -124,6 +124,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

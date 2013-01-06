@@ -1,4 +1,4 @@
-//===--- Tooling.cpp - Running clang standalone tools ---------------------===//
+//===--- Tooling.cpp - Running lfort standalone tools ---------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,33 +7,33 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file implements functions to run clang tools standalone instead
+//  This file implements functions to run lfort tools standalone instead
 //  of running them as a plugin.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/Tooling.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/Tool.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Tooling/ArgumentsAdjusters.h"
-#include "clang/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/Tooling.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/Tool.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Tooling/ArgumentsAdjusters.h"
+#include "lfort/Tooling/CompilationDatabase.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/raw_ostream.h"
 
-// For chdir, see the comment in ClangTool::run for more information.
+// For chdir, see the comment in LFortTool::run for more information.
 #ifdef _WIN32
 #  include <direct.h>
 #else
 #  include <unistd.h>
 #endif
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 FrontendActionFactory::~FrontendActionFactory() {}
@@ -42,72 +42,72 @@ FrontendActionFactory::~FrontendActionFactory() {}
 // code that sets up a compiler to run tools on it, and we should refactor
 // it to be based on the same framework.
 
-/// \brief Builds a clang driver initialized for running clang tools.
-static clang::driver::Driver *newDriver(clang::DiagnosticsEngine *Diagnostics,
+/// \brief Builds a lfort driver initialized for running lfort tools.
+static lfort::driver::Driver *newDriver(lfort::DiagnosticsEngine *Diagnostics,
                                         const char *BinaryName) {
   const std::string DefaultOutputName = "a.out";
-  clang::driver::Driver *CompilerDriver = new clang::driver::Driver(
+  lfort::driver::Driver *CompilerDriver = new lfort::driver::Driver(
     BinaryName, llvm::sys::getDefaultTargetTriple(),
     DefaultOutputName, *Diagnostics);
-  CompilerDriver->setTitle("clang_based_tool");
+  CompilerDriver->setTitle("lfort_based_tool");
   return CompilerDriver;
 }
 
-/// \brief Retrieves the clang CC1 specific flags out of the compilation's jobs.
+/// \brief Retrieves the lfort CC1 specific flags out of the compilation's jobs.
 ///
 /// Returns NULL on error.
-static const clang::driver::ArgStringList *getCC1Arguments(
-    clang::DiagnosticsEngine *Diagnostics,
-    clang::driver::Compilation *Compilation) {
+static const lfort::driver::ArgStringList *getCC1Arguments(
+    lfort::DiagnosticsEngine *Diagnostics,
+    lfort::driver::Compilation *Compilation) {
   // We expect to get back exactly one Command job, if we didn't something
   // failed. Extract that job from the Compilation.
-  const clang::driver::JobList &Jobs = Compilation->getJobs();
-  if (Jobs.size() != 1 || !isa<clang::driver::Command>(*Jobs.begin())) {
+  const lfort::driver::JobList &Jobs = Compilation->getJobs();
+  if (Jobs.size() != 1 || !isa<lfort::driver::Command>(*Jobs.begin())) {
     llvm::SmallString<256> error_msg;
     llvm::raw_svector_ostream error_stream(error_msg);
     Compilation->PrintJob(error_stream, Compilation->getJobs(), "; ", true);
-    Diagnostics->Report(clang::diag::err_fe_expected_compiler_job)
+    Diagnostics->Report(lfort::diag::err_fe_expected_compiler_job)
         << error_stream.str();
     return NULL;
   }
 
-  // The one job we find should be to invoke clang again.
-  const clang::driver::Command *Cmd =
-      cast<clang::driver::Command>(*Jobs.begin());
-  if (StringRef(Cmd->getCreator().getName()) != "clang") {
-    Diagnostics->Report(clang::diag::err_fe_expected_clang_command);
+  // The one job we find should be to invoke lfort again.
+  const lfort::driver::Command *Cmd =
+      cast<lfort::driver::Command>(*Jobs.begin());
+  if (StringRef(Cmd->getCreator().getName()) != "lfort") {
+    Diagnostics->Report(lfort::diag::err_fe_expected_lfort_command);
     return NULL;
   }
 
   return &Cmd->getArguments();
 }
 
-/// \brief Returns a clang build invocation initialized from the CC1 flags.
-static clang::CompilerInvocation *newInvocation(
-    clang::DiagnosticsEngine *Diagnostics,
-    const clang::driver::ArgStringList &CC1Args) {
+/// \brief Returns a lfort build invocation initialized from the CC1 flags.
+static lfort::CompilerInvocation *newInvocation(
+    lfort::DiagnosticsEngine *Diagnostics,
+    const lfort::driver::ArgStringList &CC1Args) {
   assert(!CC1Args.empty() && "Must at least contain the program name!");
-  clang::CompilerInvocation *Invocation = new clang::CompilerInvocation;
-  clang::CompilerInvocation::CreateFromArgs(
+  lfort::CompilerInvocation *Invocation = new lfort::CompilerInvocation;
+  lfort::CompilerInvocation::CreateFromArgs(
       *Invocation, CC1Args.data() + 1, CC1Args.data() + CC1Args.size(),
       *Diagnostics);
   Invocation->getFrontendOpts().DisableFree = false;
   return Invocation;
 }
 
-bool runToolOnCode(clang::FrontendAction *ToolAction, const Twine &Code,
+bool runToolOnCode(lfort::FrontendAction *ToolAction, const Twine &Code,
                    const Twine &FileName) {
   return runToolOnCodeWithArgs(
       ToolAction, Code, std::vector<std::string>(), FileName);
 }
 
-bool runToolOnCodeWithArgs(clang::FrontendAction *ToolAction, const Twine &Code,
+bool runToolOnCodeWithArgs(lfort::FrontendAction *ToolAction, const Twine &Code,
                            const std::vector<std::string> &Args,
                            const Twine &FileName) {
   SmallString<16> FileNameStorage;
   StringRef FileNameRef = FileName.toNullTerminatedStringRef(FileNameStorage);
   std::vector<std::string> Commands;
-  Commands.push_back("clang-tool");
+  Commands.push_back("lfort-tool");
   Commands.push_back("-fsyntax-only");
   Commands.insert(Commands.end(), Args.begin(), Args.end());
   Commands.push_back(FileNameRef.data());
@@ -163,21 +163,21 @@ bool ToolInvocation::run() {
   TextDiagnosticPrinter DiagnosticPrinter(
       llvm::errs(), &*DiagOpts);
   DiagnosticsEngine Diagnostics(
-    llvm::IntrusiveRefCntPtr<clang::DiagnosticIDs>(new DiagnosticIDs()),
+    llvm::IntrusiveRefCntPtr<lfort::DiagnosticIDs>(new DiagnosticIDs()),
     &*DiagOpts, &DiagnosticPrinter, false);
 
-  const llvm::OwningPtr<clang::driver::Driver> Driver(
+  const llvm::OwningPtr<lfort::driver::Driver> Driver(
       newDriver(&Diagnostics, BinaryName));
   // Since the input might only be virtual, don't check whether it exists.
   Driver->setCheckInputsExist(false);
-  const llvm::OwningPtr<clang::driver::Compilation> Compilation(
+  const llvm::OwningPtr<lfort::driver::Compilation> Compilation(
       Driver->BuildCompilation(llvm::makeArrayRef(Argv)));
-  const clang::driver::ArgStringList *const CC1Args = getCC1Arguments(
+  const lfort::driver::ArgStringList *const CC1Args = getCC1Arguments(
       &Diagnostics, Compilation.get());
   if (CC1Args == NULL) {
     return false;
   }
-  llvm::OwningPtr<clang::CompilerInvocation> Invocation(
+  llvm::OwningPtr<lfort::CompilerInvocation> Invocation(
       newInvocation(&Diagnostics, *CC1Args));
   return runInvocation(BinaryName, Compilation.get(), Invocation.take(),
                        *CC1Args);
@@ -185,18 +185,18 @@ bool ToolInvocation::run() {
 
 bool ToolInvocation::runInvocation(
     const char *BinaryName,
-    clang::driver::Compilation *Compilation,
-    clang::CompilerInvocation *Invocation,
-    const clang::driver::ArgStringList &CC1Args) {
+    lfort::driver::Compilation *Compilation,
+    lfort::CompilerInvocation *Invocation,
+    const lfort::driver::ArgStringList &CC1Args) {
   // Show the invocation, with -v.
   if (Invocation->getHeaderSearchOpts().Verbose) {
-    llvm::errs() << "clang Invocation:\n";
+    llvm::errs() << "lfort Invocation:\n";
     Compilation->PrintJob(llvm::errs(), Compilation->getJobs(), "\n", true);
     llvm::errs() << "\n";
   }
 
   // Create a compiler instance to handle the actual work.
-  clang::CompilerInstance Compiler;
+  lfort::CompilerInstance Compiler;
   Compiler.setInvocation(Invocation);
   Compiler.setFileManager(Files);
   // FIXME: What about LangOpts?
@@ -236,10 +236,10 @@ void ToolInvocation::addFileMappingsTo(SourceManager &Sources) {
   }
 }
 
-ClangTool::ClangTool(const CompilationDatabase &Compilations,
+LFortTool::LFortTool(const CompilationDatabase &Compilations,
                      ArrayRef<std::string> SourcePaths)
     : Files((FileSystemOptions())),
-      ArgsAdjuster(new ClangSyntaxOnlyAdjuster()) {
+      ArgsAdjuster(new LFortSyntaxOnlyAdjuster()) {
   for (unsigned I = 0, E = SourcePaths.size(); I != E; ++I) {
     llvm::SmallString<1024> File(getAbsolutePath(SourcePaths[I]));
 
@@ -261,25 +261,25 @@ ClangTool::ClangTool(const CompilationDatabase &Compilations,
   }
 }
 
-void ClangTool::mapVirtualFile(StringRef FilePath, StringRef Content) {
+void LFortTool::mapVirtualFile(StringRef FilePath, StringRef Content) {
   MappedFileContents.push_back(std::make_pair(FilePath, Content));
 }
 
-void ClangTool::setArgumentsAdjuster(ArgumentsAdjuster *Adjuster) {
+void LFortTool::setArgumentsAdjuster(ArgumentsAdjuster *Adjuster) {
   ArgsAdjuster.reset(Adjuster);
 }
 
-int ClangTool::run(FrontendActionFactory *ActionFactory) {
+int LFortTool::run(FrontendActionFactory *ActionFactory) {
   // Exists solely for the purpose of lookup of the resource path.
   // This just needs to be some symbol in the binary.
   static int StaticSymbol;
   // The driver detects the builtin header path based on the path of the
   // executable.
   // FIXME: On linux, GetMainExecutable is independent of the value of the
-  // first argument, thus allowing ClangTool and runToolOnCode to just
+  // first argument, thus allowing LFortTool and runToolOnCode to just
   // pass in made-up names here. Make sure this works on other platforms.
   std::string MainExecutable =
-    llvm::sys::Path::GetMainExecutable("clang_tool", &StaticSymbol).str();
+    llvm::sys::Path::GetMainExecutable("lfort_tool", &StaticSymbol).str();
 
   bool ProcessingFailed = false;
   for (unsigned I = 0; I < CompileCommands.size(); ++I) {
@@ -313,4 +313,4 @@ int ClangTool::run(FrontendActionFactory *ActionFactory) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

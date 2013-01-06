@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -std=c++11 -pedantic-errors %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -std=c++11 -pedantic-errors %s
 
 // Make sure we know these are legitimate commas and not typos for ';'.
 namespace Commas {

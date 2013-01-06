@@ -14,9 +14,9 @@
 // This file also defines AccessedEntity.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
 #include <string.h>
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 DelayedDiagnostic DelayedDiagnostic::makeDeprecation(SourceLocation Loc,

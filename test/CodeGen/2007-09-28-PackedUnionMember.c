@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 #pragma pack(push, 2)
 struct H {

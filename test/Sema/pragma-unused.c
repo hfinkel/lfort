@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wunused-parameter -Wused-but-marked-unused -Wunused -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wunused-parameter -Wused-but-marked-unused -Wunused -verify %s
 
 void f1(void) {
   int x, y, z;

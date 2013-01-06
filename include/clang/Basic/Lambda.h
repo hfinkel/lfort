@@ -14,10 +14,10 @@
 //===----------------------------------------------------------------------===//
 
 
-#ifndef LLVM_CLANG_BASIC_LAMBDA_H
-#define LLVM_CLANG_BASIC_LAMBDA_H
+#ifndef LLVM_LFORT_BASIC_LAMBDA_H
+#define LLVM_LFORT_BASIC_LAMBDA_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief The default, if any, capture method for a lambda expression.
 enum LambdaCaptureDefault {
@@ -34,6 +34,6 @@ enum LambdaCaptureKind {
   LCK_ByRef
 };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_BASIC_LAMBDA_H
+#endif // LLVM_LFORT_BASIC_LAMBDA_H

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -fno-builtin -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -fno-builtin -o - | FileCheck %s
 // Check that -fno-builtin is honored.
 
 extern "C" int printf(const char*, ...);

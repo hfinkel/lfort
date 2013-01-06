@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fblocks -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fblocks -verify %s
 
 void cat0(int a[static 0]) {} // expected-warning {{'static' has no effect on zero-length arrays}}
 

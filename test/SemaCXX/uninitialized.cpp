@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wall -Wuninitialized -Wno-unused-value -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wall -Wuninitialized -Wno-unused-value -std=c++11 -verify %s
 
 int foo(int x);
 int bar(int* x);

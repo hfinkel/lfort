@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin9.0.0 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin9.0.0 -fsyntax-only -verify %s
 
 @protocol P
 - (void)proto_method __attribute__((availability(macosx,introduced=10.1,deprecated=10.2))); // expected-note 2 {{method 'proto_method' declared here}}

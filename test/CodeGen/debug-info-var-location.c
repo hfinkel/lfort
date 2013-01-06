@@ -1,4 +1,4 @@
-// RUN: %clang -S -g -fverbose-asm %s -o - | FileCheck %s
+// RUN: %lfort -S -g -fverbose-asm %s -o - | FileCheck %s
 // Radar 8461032
 // CHECK: DW_AT_location
 // CHECK-NEXT: byte 145

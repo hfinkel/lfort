@@ -1,4 +1,4 @@
-//===-- cc1as_main.cpp - Clang Assembler  ---------------------------------===//
+//===-- cc1as_main.cpp - LFort Assembler  ---------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,21 +7,21 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This is the entry point to the clang -cc1as functionality, which implements
+// This is the entry point to the lfort -cc1as functionality, which implements
 // the direct interface to the LLVM MC based assembler.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/CC1AsOptions.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/CC1AsOptions.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Triple.h"
@@ -52,8 +52,8 @@
 #include "llvm/Support/Timer.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
-using namespace clang;
-using namespace clang::driver;
+using namespace lfort;
+using namespace lfort::driver;
 using namespace llvm;
 
 namespace {
@@ -143,7 +143,7 @@ bool AssemblerInvocation::CreateFromArgs(AssemblerInvocation &Opts,
                                          const char **ArgBegin,
                                          const char **ArgEnd,
                                          DiagnosticsEngine &Diags) {
-  using namespace clang::driver::cc1asoptions;
+  using namespace lfort::driver::cc1asoptions;
   bool Success = true;
 
   // Parse the arguments.
@@ -405,7 +405,7 @@ int cc1as_main(const char **ArgBegin, const char **ArgEnd,
   IntrusiveRefCntPtr<DiagnosticOptions> DiagOpts = new DiagnosticOptions();
   TextDiagnosticPrinter *DiagClient
     = new TextDiagnosticPrinter(errs(), &*DiagOpts);
-  DiagClient->setPrefix("clang -cc1as");
+  DiagClient->setPrefix("lfort -cc1as");
   IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
 
@@ -422,7 +422,7 @@ int cc1as_main(const char **ArgBegin, const char **ArgEnd,
   // Honor -help.
   if (Asm.ShowHelp) {
     OwningPtr<driver::OptTable> Opts(driver::createCC1AsOptTable());
-    Opts->PrintHelp(llvm::outs(), "clang -cc1as", "Clang Integrated Assembler");
+    Opts->PrintHelp(llvm::outs(), "lfort -cc1as", "LFort Integrated Assembler");
     return 0;
   }
 
@@ -440,7 +440,7 @@ int cc1as_main(const char **ArgBegin, const char **ArgEnd,
   if (!Asm.LLVMArgs.empty()) {
     unsigned NumArgs = Asm.LLVMArgs.size();
     const char **Args = new const char*[NumArgs + 2];
-    Args[0] = "clang (LLVM option parsing)";
+    Args[0] = "lfort (LLVM option parsing)";
     for (unsigned i = 0; i != NumArgs; ++i)
       Args[i + 1] = Asm.LLVMArgs[i].c_str();
     Args[NumArgs + 1] = 0;

@@ -12,11 +12,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "ASTCommon.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Serialization/ASTDeserializationListener.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Serialization/ASTDeserializationListener.h"
 #include "llvm/ADT/StringExtras.h"
 
-using namespace clang;
+using namespace lfort;
 
 // Give ASTDeserializationListener's VTable a home.
 ASTDeserializationListener::~ASTDeserializationListener() { }

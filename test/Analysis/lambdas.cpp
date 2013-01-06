@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -analyze -analyzer-checker=debug.DumpCFG %s > %t 2>&1
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -analyze -analyzer-checker=debug.DumpCFG %s > %t 2>&1
 // RUN: FileCheck --input-file=%t %s
 
 struct X { X(const X&); };

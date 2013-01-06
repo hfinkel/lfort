@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_STMT_GRAPHTRAITS_H
-#define LLVM_CLANG_AST_STMT_GRAPHTRAITS_H
+#ifndef LLVM_LFORT_AST_STMT_GRAPHTRAITS_H
+#define LLVM_LFORT_AST_STMT_GRAPHTRAITS_H
 
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/GraphTraits.h"
 
@@ -24,12 +24,12 @@ namespace llvm {
 //template <typename T> struct GraphTraits;
 
 
-template <> struct GraphTraits<clang::Stmt*> {
-  typedef clang::Stmt                       NodeType;
-  typedef clang::Stmt::child_iterator       ChildIteratorType;
-  typedef llvm::df_iterator<clang::Stmt*>   nodes_iterator;
+template <> struct GraphTraits<lfort::Stmt*> {
+  typedef lfort::Stmt                       NodeType;
+  typedef lfort::Stmt::child_iterator       ChildIteratorType;
+  typedef llvm::df_iterator<lfort::Stmt*>   nodes_iterator;
 
-  static NodeType* getEntryNode(clang::Stmt* S) { return S; }
+  static NodeType* getEntryNode(lfort::Stmt* S) { return S; }
 
   static inline ChildIteratorType child_begin(NodeType* N) {
     if (N) return N->child_begin();
@@ -41,22 +41,22 @@ template <> struct GraphTraits<clang::Stmt*> {
     else return ChildIteratorType();
   }
 
-  static nodes_iterator nodes_begin(clang::Stmt* S) {
+  static nodes_iterator nodes_begin(lfort::Stmt* S) {
     return df_begin(S);
   }
 
-  static nodes_iterator nodes_end(clang::Stmt* S) {
+  static nodes_iterator nodes_end(lfort::Stmt* S) {
     return df_end(S);
   }
 };
 
 
-template <> struct GraphTraits<const clang::Stmt*> {
-  typedef const clang::Stmt                       NodeType;
-  typedef clang::Stmt::const_child_iterator       ChildIteratorType;
-  typedef llvm::df_iterator<const clang::Stmt*>   nodes_iterator;
+template <> struct GraphTraits<const lfort::Stmt*> {
+  typedef const lfort::Stmt                       NodeType;
+  typedef lfort::Stmt::const_child_iterator       ChildIteratorType;
+  typedef llvm::df_iterator<const lfort::Stmt*>   nodes_iterator;
 
-  static NodeType* getEntryNode(const clang::Stmt* S) { return S; }
+  static NodeType* getEntryNode(const lfort::Stmt* S) { return S; }
 
   static inline ChildIteratorType child_begin(NodeType* N) {
     if (N) return N->child_begin();
@@ -68,11 +68,11 @@ template <> struct GraphTraits<const clang::Stmt*> {
     else return ChildIteratorType();
   }
 
-  static nodes_iterator nodes_begin(const clang::Stmt* S) {
+  static nodes_iterator nodes_begin(const lfort::Stmt* S) {
     return df_begin(S);
   }
 
-  static nodes_iterator nodes_end(const clang::Stmt* S) {
+  static nodes_iterator nodes_end(const lfort::Stmt* S) {
     return df_end(S);
   }
 };

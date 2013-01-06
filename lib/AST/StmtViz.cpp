@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/StmtGraphTraits.h"
-#include "clang/AST/Decl.h"
+#include "lfort/AST/StmtGraphTraits.h"
+#include "lfort/AST/Decl.h"
 #include "llvm/Support/GraphWriter.h"
 
-using namespace clang;
+using namespace lfort;
 
 void Stmt::viewAST() const {
 #ifndef NDEBUG

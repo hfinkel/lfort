@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple i386-apple-macosx10.7.2 < %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -triple i386-apple-macosx10.7.2 < %s | FileCheck %s
 
 // The preferred alignment for a long long on x86-32 is 8; make sure the
 // alloca for x uses that alignment.

@@ -4,7 +4,7 @@ typedef struct t TYPEDEF;
 typedef struct t _TYPEDEF;
 void foo() {
   int y;
-  // RUN: %clang_cc1 -isystem %S/Inputs -fsyntax-only -code-completion-at=%s:6:9 %s -o - | FileCheck -check-prefix=CHECK-CC1 %s
+  // RUN: %lfort_cc1 -isystem %S/Inputs -fsyntax-only -code-completion-at=%s:6:9 %s -o - | FileCheck -check-prefix=CHECK-CC1 %s
   // CHECK-CC1: _Imaginary
   // CHECK-CC1-NOT: _INTEGER_TYPE;
   // CHECK-CC1: _TYPEDEF
@@ -14,4 +14,4 @@ void foo() {
   // CHECK-CC1: y
 
   // PR8744
-  // RUN: %clang_cc1 -isystem %S/Inputs -fsyntax-only -code-completion-at=%s:1:11 %s
+  // RUN: %lfort_cc1 -isystem %S/Inputs -fsyntax-only -code-completion-at=%s:1:11 %s

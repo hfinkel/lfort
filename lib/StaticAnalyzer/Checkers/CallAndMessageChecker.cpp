@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

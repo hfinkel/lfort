@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/Attr.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Type.h"
-using namespace clang;
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Type.h"
+using namespace lfort;
 
 Attr::~Attr() { }
 
@@ -23,4 +23,4 @@ void InheritableAttr::anchor() { }
 
 void InheritableParamAttr::anchor() { }
 
-#include "clang/AST/AttrImpl.inc"
+#include "lfort/AST/AttrImpl.inc"

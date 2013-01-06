@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -fsyntax-only %s -verify
 // expected-no-diagnostics
 class outer {
   class inner1 { inner1(); };

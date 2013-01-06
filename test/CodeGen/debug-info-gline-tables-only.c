@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -gline-tables-only -S -emit-llvm -o - | FileCheck %s
-// Checks that clang with "-gline-tables-only" doesn't emit debug info
+// RUN: %lfort_cc1 %s -gline-tables-only -S -emit-llvm -o - | FileCheck %s
+// Checks that lfort with "-gline-tables-only" doesn't emit debug info
 // for variables and types.
 
 // CHECK-NOT: DW_TAG_variable

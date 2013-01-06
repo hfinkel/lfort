@@ -13,11 +13,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSES_DATAFLOW_VALUES
-#define LLVM_CLANG_ANALYSES_DATAFLOW_VALUES
+#ifndef LLVM_LFORT_ANALYSES_DATAFLOW_VALUES
+#define LLVM_LFORT_ANALYSES_DATAFLOW_VALUES
 
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/ProgramPoint.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/ProgramPoint.h"
 #include "llvm/ADT/DenseMap.h"
 
 //===----------------------------------------------------------------------===//
@@ -26,7 +26,7 @@
 ///  a dataflow analysis flows.
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
 namespace dataflow {
   struct forward_analysis_tag {};
   struct backward_analysis_tag {};
@@ -168,5 +168,5 @@ protected:
   AnalysisDataTy     AnalysisData;
 };
 
-} // end namespace clang
+} // end namespace lfort
 #endif

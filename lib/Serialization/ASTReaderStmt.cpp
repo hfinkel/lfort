@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTReader.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/Serialization/ASTReader.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
-using namespace clang::serialization;
+using namespace lfort;
+using namespace lfort::serialization;
 
-namespace clang {
+namespace lfort {
 
   class ASTStmtReader : public StmtVisitor<ASTStmtReader> {
     typedef ASTReader::RecordData RecordData;
@@ -91,7 +91,7 @@ namespace clang {
     void VisitStmt(Stmt *S);
 #define STMT(Type, Base) \
     void Visit##Type(Type *);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   };
 }
 

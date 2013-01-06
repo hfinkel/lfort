@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-undef %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-undef %s
 // rdar://2362963
 
 #if FOO    // ok.

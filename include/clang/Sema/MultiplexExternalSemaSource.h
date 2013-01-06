@@ -10,15 +10,15 @@
 //  This file defines ExternalSemaSource interface, dispatching to all clients
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H
-#define LLVM_CLANG_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H
+#ifndef LLVM_LFORT_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H
+#define LLVM_LFORT_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H
 
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/Weak.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/Weak.h"
 #include "llvm/ADT/SmallVector.h"
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
   class CXXConstructorDecl;
   class CXXRecordDecl;
@@ -360,6 +360,6 @@ public:
   //static bool classof(const ExternalSemaSource*) { return true; }
 }; 
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H
+#endif // LLVM_LFORT_SEMA_MULTIPLEX_EXTERNAL_SEMA_SOURCE_H

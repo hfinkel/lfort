@@ -1,5 +1,5 @@
 // REQUIRES: mips-registered-target
-// RUN: %clang_cc1 -triple mips-unknown-linux-gnu -emit-llvm %s -o - \
+// RUN: %lfort_cc1 -triple mips-unknown-linux-gnu -emit-llvm %s -o - \
 // RUN:   | FileCheck %s
 
 typedef int q31;

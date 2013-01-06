@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTENDDIAGNOSTIC_H
-#define LLVM_CLANG_FRONTENDDIAGNOSTIC_H
+#ifndef LLVM_LFORT_FRONTENDDIAGNOSTIC_H
+#define LLVM_LFORT_FRONTENDDIAGNOSTIC_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define FRONTENDSTART
-#include "clang/Basic/DiagnosticFrontendKinds.inc"
+#include "lfort/Basic/DiagnosticFrontendKinds.inc"
 #undef DIAG
       NUM_BUILTIN_FRONTEND_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

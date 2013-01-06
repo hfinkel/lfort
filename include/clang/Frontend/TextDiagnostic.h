@@ -13,12 +13,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_H_
-#define LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_H_
+#ifndef LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_H_
+#define LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_H_
 
-#include "clang/Frontend/DiagnosticRenderer.h"
+#include "lfort/Frontend/DiagnosticRenderer.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief Class to encapsulate the logic for formatting and printing a textual
 /// diagnostic message.
@@ -29,9 +29,9 @@ namespace clang {
 /// a recursive process, synthesizing notes for each macro expansion.
 ///
 /// The purpose of this class is to isolate the implementation of printing
-/// beautiful text diagnostics from any particular interfaces. The Clang
+/// beautiful text diagnostics from any particular interfaces. The LFort
 /// DiagnosticClient is implemented through this class as is diagnostic
-/// printing coming out of libclang.
+/// printing coming out of liblfort.
 class TextDiagnostic : public DiagnosticRenderer {
   raw_ostream &OS;
 
@@ -120,6 +120,6 @@ private:
   void emitParseableFixits(ArrayRef<FixItHint> Hints, const SourceManager &SM);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

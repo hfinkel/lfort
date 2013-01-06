@@ -1,11 +1,11 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i386-apple-darwin9 -pedantic -DALLOWED %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple thumbv6-apple-ios4.0 -pedantic -DALLOWED %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i386-apple-darwin9 -pedantic -DALLOWED %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple thumbv6-apple-ios4.0 -pedantic -DALLOWED %s
 
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-mingw32 -pedantic %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-pc-win32 -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-mingw32 -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-pc-win32 -pedantic %s
 
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-linux-gnu -pedantic %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-unknown-freebsd -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-linux-gnu -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-unknown-freebsd -pedantic %s
 
 int printf(const char *restrict, ...);
 int scanf(const char * restrict, ...) ;

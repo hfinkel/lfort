@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 
 int test1() __attribute__((__cold__)) {
   return 42;

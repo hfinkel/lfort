@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -O2 -emit-llvm %s -o - | not grep alloca
-// RUN: %clang_cc1 -m32 -O2 -emit-llvm %s -o - | not grep {store }
+// RUN: %lfort_cc1 -O2 -emit-llvm %s -o - | not grep alloca
+// RUN: %lfort_cc1 -m32 -O2 -emit-llvm %s -o - | not grep {store }
 
 enum {
  PP_C,

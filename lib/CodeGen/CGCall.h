@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGCALL_H
-#define CLANG_CODEGEN_CGCALL_H
+#ifndef LFORT_CODEGEN_CGCALL_H
+#define LFORT_CODEGEN_CGCALL_H
 
 #include "CGValue.h"
-#include "clang/AST/CanonicalType.h"
-#include "clang/AST/Type.h"
+#include "lfort/AST/CanonicalType.h"
+#include "lfort/AST/Type.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/IR/Value.h"
 
@@ -33,7 +33,7 @@ namespace llvm {
   template<typename T, unsigned> class SmallVector;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class Decl;
   class FunctionDecl;
@@ -168,7 +168,7 @@ namespace CodeGen {
     /// depend on the ABI.
     unsigned EffectiveCallingConvention : 8;
 
-    /// The clang::CallingConv that this was originally created with.
+    /// The lfort::CallingConv that this was originally created with.
     unsigned ASTCallingConvention : 8;
 
     /// Whether this function is noreturn.
@@ -300,6 +300,6 @@ namespace CodeGen {
   };
   
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

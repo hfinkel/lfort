@@ -11,23 +11,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/DenseSet.h"
 
-using namespace clang;
+using namespace lfort;
 
 /// Check whether the given method, which must be in the 'init'
 /// family, is a valid member of that family.
@@ -2662,7 +2662,7 @@ private:
 #define ABSTRACT_DECL(expansion)
 #define DECL(type, base) \
     case Decl::type:
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       llvm_unreachable("not an ObjC container!");
     }
   }

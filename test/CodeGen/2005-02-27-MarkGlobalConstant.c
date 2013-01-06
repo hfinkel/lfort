@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1  %s -emit-llvm -o - | FileCheck %s
 // PR10414
 
 // The synthetic global made by the CFE for big initializer should be marked

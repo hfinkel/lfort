@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Werror -triple i386-unknown-unknown -emit-llvm -O1 -disable-llvm-optzns -o %t %s
+// RUN: %lfort_cc1 -Werror -triple i386-unknown-unknown -emit-llvm -O1 -disable-llvm-optzns -o %t %s
 // RUN: FileCheck < %t %s
 
 // Types with the may_alias attribute should be considered equivalent

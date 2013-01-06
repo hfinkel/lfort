@@ -1,14 +1,14 @@
 import gc
 import os
 
-from clang.cindex import CursorKind
-from clang.cindex import Cursor
-from clang.cindex import File
-from clang.cindex import Index
-from clang.cindex import SourceLocation
-from clang.cindex import SourceRange
-from clang.cindex import TranslationUnitSaveError
-from clang.cindex import TranslationUnit
+from lfort.cindex import CursorKind
+from lfort.cindex import Cursor
+from lfort.cindex import File
+from lfort.cindex import Index
+from lfort.cindex import SourceLocation
+from lfort.cindex import SourceRange
+from lfort.cindex import TranslationUnitSaveError
+from lfort.cindex import TranslationUnit
 from .util import get_cursor
 from .util import get_tu
 

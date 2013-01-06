@@ -1,18 +1,18 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough-per-function %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 -Wimplicit-fallthrough-per-function %s
 
 
 int fallthrough(int n) {
   switch (n / 10) {
     case 0:
       n += 100;
-    case 1:  // expected-warning{{unannotated fall-through}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+    case 1:  // expected-warning{{unannotated fall-through}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
       switch (n) {
       case 111:
         n += 111;
-        [[clang::fallthrough]];
+        [[lfort::fallthrough]];
       case 112:
         n += 112;
-      case 113:  // expected-warning{{unannotated fall-through}} expected-note{{insert '[[clang::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
+      case 113:  // expected-warning{{unannotated fall-through}} expected-note{{insert '[[lfort::fallthrough]];' to silence this warning}} expected-note{{insert 'break;' to avoid fall-through}}
         n += 113;
         break    ;
       }
@@ -43,8 +43,8 @@ void unscoped(int n) {
     case 0:
       // FIXME: This should be typo-corrected, probably.
       [[fallthrough]]; // expected-warning{{unknown attribute 'fallthrough' ignored}}
-    case 2: // expected-warning{{unannotated fall-through}} expected-note{{clang::fallthrough}} expected-note{{break;}}
-      [[clang::fallthrough]];
+    case 2: // expected-warning{{unannotated fall-through}} expected-note{{lfort::fallthrough}} expected-note{{break;}}
+      [[lfort::fallthrough]];
     case 1:
       break;
   }

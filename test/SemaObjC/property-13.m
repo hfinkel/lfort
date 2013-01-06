@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wno-unreachable-code
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -Wno-unreachable-code
 // expected-no-diagnostics
 
 @interface NSObject 

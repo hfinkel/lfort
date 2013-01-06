@@ -12,10 +12,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "ParsePragma.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Parse/Parser.h"
-using namespace clang;
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Parse/Parser.h"
+using namespace lfort;
 
 /// \brief Handle the annotation token produced for #pragma unused(...)
 ///
@@ -141,10 +141,10 @@ void Parser::HandlePragmaOpenCLExtension() {
   // behavior is set to disable."
   if (state == 0 && ename->isStr("all")) {
 #define OPENCLEXT(nm)   f.nm = 0;
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
   }
 #define OPENCLEXT(nm) else if (ename->isStr(#nm)) { f.nm = state; }
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
   else {
     PP.Diag(NameLoc, diag::warn_pragma_unknown_extension) << ename;
     return;

@@ -1,5 +1,5 @@
 // REQUIRES: x86-64-registered-target
-// RUN: %clang_cc1 %s -O3 -triple=x86_64-apple-darwin -target-feature +ssse3 -S -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -O3 -triple=x86_64-apple-darwin -target-feature +ssse3 -S -o - | FileCheck %s
 
 // FIXME: Disable inclusion of mm_malloc.h, our current implementation is broken
 // on win32 since we don't generally know how to find errno.h.

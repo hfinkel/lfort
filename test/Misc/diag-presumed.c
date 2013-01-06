@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -pedantic-errors %s 2>&1 | FileCheck %s --check-prefix=PRESUMED
-// RUN: %clang_cc1 -fsyntax-only -pedantic-errors -fno-diagnostics-use-presumed-location %s 2>&1 | FileCheck %s --check-prefix=SPELLING
+// RUN: %lfort_cc1 -fsyntax-only -pedantic-errors %s 2>&1 | FileCheck %s --check-prefix=PRESUMED
+// RUN: %lfort_cc1 -fsyntax-only -pedantic-errors -fno-diagnostics-use-presumed-location %s 2>&1 | FileCheck %s --check-prefix=SPELLING
 
 #line 100
 #define X(y) y

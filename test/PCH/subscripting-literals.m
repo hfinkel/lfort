@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -emit-llvm -o %t.nopch.ll %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -emit-pch -o %t.pch %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -emit-llvm -o %t.pch.ll %s -include-pch %t.pch
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -emit-llvm -o %t.nopch.ll %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -emit-pch -o %t.pch %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -emit-llvm -o %t.pch.ll %s -include-pch %t.pch
 // RUN: diff %t.nopch.ll %t.pch.ll
 
 #ifndef HEADER

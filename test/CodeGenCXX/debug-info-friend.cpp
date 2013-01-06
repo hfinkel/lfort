@@ -1,4 +1,4 @@
-// RUN: %clang -fverbose-asm -S -g %s -o - | grep DW_TAG_friend
+// RUN: %lfort -fverbose-asm -S -g %s -o - | grep DW_TAG_friend
 
 class MyFriend;
 

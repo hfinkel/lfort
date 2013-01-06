@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_CFG_REC_STMT_VISITOR_H
-#define LLVM_CLANG_ANALYSIS_CFG_REC_STMT_VISITOR_H
+#ifndef LLVM_LFORT_ANALYSIS_CFG_REC_STMT_VISITOR_H
+#define LLVM_LFORT_ANALYSIS_CFG_REC_STMT_VISITOR_H
 
-#include "clang/Analysis/Visitors/CFGStmtVisitor.h"
+#include "lfort/Analysis/Visitors/CFGStmtVisitor.h"
 
-namespace clang {
+namespace lfort {
 template <typename ImplClass>
 class CFGRecStmtVisitor : public CFGStmtVisitor<ImplClass,void> {
 public:
@@ -54,6 +54,6 @@ break;
   void operator()(Stmt *S) { static_cast<ImplClass*>(this)->BlockStmt_Visit(S);}
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

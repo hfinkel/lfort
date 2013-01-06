@@ -24,7 +24,7 @@ my $reduceOut = "$dir/reduceOut";
 my $command;
 if (scalar(@ARGV) > 0) { $command = \@ARGV; }
 else {
-  my $compiler = "clang";
+  my $compiler = "lfort";
   $command = [$compiler, "-fsyntax-only", "-Wfatal-errors", "-Wno-deprecated-declarations", "-Wimplicit-function-declaration"];
 }
 push @$command, $srcFile;

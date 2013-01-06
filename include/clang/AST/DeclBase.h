@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLBASE_H
-#define LLVM_CLANG_AST_DECLBASE_H
+#ifndef LLVM_LFORT_AST_DECLBASE_H
+#define LLVM_LFORT_AST_DECLBASE_H
 
-#include "clang/AST/AttrIterator.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/Basic/Specifiers.h"
+#include "lfort/AST/AttrIterator.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/Basic/Specifiers.h"
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/PrettyStackTrace.h"
 
-namespace clang {
+namespace lfort {
 class ASTMutationListener;
 class BlockDecl;
 class CXXRecordDecl;
@@ -52,8 +52,8 @@ class UsingDirectiveDecl;
 namespace llvm {
 // DeclContext* is only 4-byte aligned on 32-bit systems.
 template<>
-  class PointerLikeTypeTraits<clang::DeclContext*> {
-  typedef clang::DeclContext* PT;
+  class PointerLikeTypeTraits<lfort::DeclContext*> {
+  typedef lfort::DeclContext* PT;
 public:
   static inline void *getAsVoidPointer(PT P) { return P; }
   static inline PT getFromVoidPointer(void *P) {
@@ -63,7 +63,7 @@ public:
 };
 }
 
-namespace clang {
+namespace lfort {
 
   /// \brief Captures the result of checking the availability of a
   /// declaration.
@@ -87,7 +87,7 @@ public:
         first##BASE = START, last##BASE = END,
 #define LAST_DECL_RANGE(BASE, START, END) \
         first##BASE = START, last##BASE = END
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   };
 
   /// \brief A placeholder type used to construct an empty shell of a
@@ -170,7 +170,7 @@ public:
   /// apply only to method parameters (?).  oneway applies only to
   /// results.  All of these expect their corresponding parameter to
   /// have a particular type.  None of this is currently enforced by
-  /// clang.
+  /// lfort.
   ///
   /// This should be kept in sync with ObjCDeclSpec::ObjCDeclQualifier.
   enum ObjCDeclQualifier {
@@ -1549,14 +1549,14 @@ struct cast_convert_decl_context<ToTy, true> {
 };
 
 
-} // end clang.
+} // end lfort.
 
 namespace llvm {
 
 /// isa<T>(DeclContext*)
 template <typename To>
-struct isa_impl<To, ::clang::DeclContext> {
-  static bool doit(const ::clang::DeclContext &Val) {
+struct isa_impl<To, ::lfort::DeclContext> {
+  static bool doit(const ::lfort::DeclContext &Val) {
     return To::classofKind(Val.getDeclKind());
   }
 };
@@ -1564,56 +1564,56 @@ struct isa_impl<To, ::clang::DeclContext> {
 /// cast<T>(DeclContext*)
 template<class ToTy>
 struct cast_convert_val<ToTy,
-                        const ::clang::DeclContext,const ::clang::DeclContext> {
-  static const ToTy &doit(const ::clang::DeclContext &Val) {
-    return *::clang::cast_convert_decl_context<ToTy>::doit(&Val);
+                        const ::lfort::DeclContext,const ::lfort::DeclContext> {
+  static const ToTy &doit(const ::lfort::DeclContext &Val) {
+    return *::lfort::cast_convert_decl_context<ToTy>::doit(&Val);
   }
 };
 template<class ToTy>
-struct cast_convert_val<ToTy, ::clang::DeclContext, ::clang::DeclContext> {
-  static ToTy &doit(::clang::DeclContext &Val) {
-    return *::clang::cast_convert_decl_context<ToTy>::doit(&Val);
+struct cast_convert_val<ToTy, ::lfort::DeclContext, ::lfort::DeclContext> {
+  static ToTy &doit(::lfort::DeclContext &Val) {
+    return *::lfort::cast_convert_decl_context<ToTy>::doit(&Val);
   }
 };
 template<class ToTy>
 struct cast_convert_val<ToTy,
-                     const ::clang::DeclContext*, const ::clang::DeclContext*> {
-  static const ToTy *doit(const ::clang::DeclContext *Val) {
-    return ::clang::cast_convert_decl_context<ToTy>::doit(Val);
+                     const ::lfort::DeclContext*, const ::lfort::DeclContext*> {
+  static const ToTy *doit(const ::lfort::DeclContext *Val) {
+    return ::lfort::cast_convert_decl_context<ToTy>::doit(Val);
   }
 };
 template<class ToTy>
-struct cast_convert_val<ToTy, ::clang::DeclContext*, ::clang::DeclContext*> {
-  static ToTy *doit(::clang::DeclContext *Val) {
-    return ::clang::cast_convert_decl_context<ToTy>::doit(Val);
+struct cast_convert_val<ToTy, ::lfort::DeclContext*, ::lfort::DeclContext*> {
+  static ToTy *doit(::lfort::DeclContext *Val) {
+    return ::lfort::cast_convert_decl_context<ToTy>::doit(Val);
   }
 };
 
 /// Implement cast_convert_val for Decl -> DeclContext conversions.
 template<class FromTy>
-struct cast_convert_val< ::clang::DeclContext, FromTy, FromTy> {
-  static ::clang::DeclContext &doit(const FromTy &Val) {
+struct cast_convert_val< ::lfort::DeclContext, FromTy, FromTy> {
+  static ::lfort::DeclContext &doit(const FromTy &Val) {
     return *FromTy::castToDeclContext(&Val);
   }
 };
 
 template<class FromTy>
-struct cast_convert_val< ::clang::DeclContext, FromTy*, FromTy*> {
-  static ::clang::DeclContext *doit(const FromTy *Val) {
+struct cast_convert_val< ::lfort::DeclContext, FromTy*, FromTy*> {
+  static ::lfort::DeclContext *doit(const FromTy *Val) {
     return FromTy::castToDeclContext(Val);
   }
 };
 
 template<class FromTy>
-struct cast_convert_val< const ::clang::DeclContext, FromTy, FromTy> {
-  static const ::clang::DeclContext &doit(const FromTy &Val) {
+struct cast_convert_val< const ::lfort::DeclContext, FromTy, FromTy> {
+  static const ::lfort::DeclContext &doit(const FromTy &Val) {
     return *FromTy::castToDeclContext(&Val);
   }
 };
 
 template<class FromTy>
-struct cast_convert_val< const ::clang::DeclContext, FromTy*, FromTy*> {
-  static const ::clang::DeclContext *doit(const FromTy *Val) {
+struct cast_convert_val< const ::lfort::DeclContext, FromTy*, FromTy*> {
+  static const ::lfort::DeclContext *doit(const FromTy *Val) {
     return FromTy::castToDeclContext(Val);
   }
 };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s 2>&1| FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only %s 2>&1| FileCheck %s
 
 // Note that the error count below doesn't matter. We just want to
 // make sure that the parser doesn't crash.

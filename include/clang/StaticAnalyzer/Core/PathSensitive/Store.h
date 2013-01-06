@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_STORE_H
-#define LLVM_CLANG_GR_STORE_H
+#ifndef LLVM_LFORT_GR_STORE_H
+#define LLVM_LFORT_GR_STORE_H
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/Optional.h"
 
-namespace clang {
+namespace lfort {
 
 class Stmt;
 class Expr;
@@ -287,6 +287,6 @@ StoreManager *CreateFieldsOnlyRegionStoreManager(ProgramStateManager& StMgr);
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

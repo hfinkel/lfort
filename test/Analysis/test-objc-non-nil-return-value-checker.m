@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=osx.cocoa.NonNilReturnValue,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=osx.cocoa.NonNilReturnValue,debug.ExprInspection -verify %s
 
 typedef unsigned int NSUInteger;
 typedef signed char BOOL;
@@ -33,18 +33,18 @@ typedef signed char BOOL;
 - (id)objectAtIndexedSubscript:(NSUInteger)idx;
 @end
 
-void clang_analyzer_eval(id);
+void lfort_analyzer_eval(id);
 
 void assumeThatNSArrayObjectAtIndexIsNeverNull(NSArray *A, NSUInteger i) {
-  clang_analyzer_eval([A objectAtIndex: i]); // expected-warning {{TRUE}} 
+  lfort_analyzer_eval([A objectAtIndex: i]); // expected-warning {{TRUE}} 
   id subscriptObj = A[1];
-  clang_analyzer_eval(subscriptObj); // expected-warning {{TRUE}} 
+  lfort_analyzer_eval(subscriptObj); // expected-warning {{TRUE}} 
 }
 
 void assumeThatNSMutableArrayObjectAtIndexIsNeverNull(NSMutableArray *A, NSUInteger i) {
-  clang_analyzer_eval([A objectAtIndex: i]); // expected-warning {{TRUE}} 
+  lfort_analyzer_eval([A objectAtIndex: i]); // expected-warning {{TRUE}} 
 }
 
 void assumeThatNSArrayObjectAtIndexedSubscriptIsNeverNull(NSOrderedSet *A, NSUInteger i) {
-  clang_analyzer_eval(A[i]); // expected-warning {{TRUE}}
+  lfort_analyzer_eval(A[i]); // expected-warning {{TRUE}}
 }

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -std=c++11 %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -std=c++11 %s -emit-llvm -o - | FileCheck %s
 
 namespace Test1 {
   struct A {

@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_FUNCTIONSUMMARY_H
-#define LLVM_CLANG_GR_FUNCTIONSUMMARY_H
+#ifndef LLVM_LFORT_GR_FUNCTIONSUMMARY_H
+#define LLVM_LFORT_GR_FUNCTIONSUMMARY_H
 
-#include "clang/AST/Decl.h"
+#include "lfort/AST/Decl.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
 #include <deque>
 
-namespace clang {
+namespace lfort {
 namespace ento {
 typedef std::deque<Decl*> SetOfDecls;
 typedef llvm::DenseSet<const Decl*> SetOfConstDecls;
@@ -119,6 +119,6 @@ public:
 
 };
 
-}} // end clang ento namespaces
+}} // end lfort ento namespaces
 
 #endif

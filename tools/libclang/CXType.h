@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CXTYPES_H
-#define LLVM_CLANG_CXTYPES_H
+#ifndef LLVM_LFORT_CXTYPES_H
+#define LLVM_LFORT_CXTYPES_H
 
-#include "clang-c/Index.h"
-#include "clang/AST/Type.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/Type.h"
 
-namespace clang {
+namespace lfort {
   
 class ASTUnit;
   
@@ -25,5 +25,5 @@ namespace cxtype {
   
 CXType MakeCXType(QualType T, CXTranslationUnit TU);
   
-}} // end namespace clang::cxtype
+}} // end namespace lfort::cxtype
 #endif

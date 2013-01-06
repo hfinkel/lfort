@@ -12,19 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_RVALUE_H
-#define LLVM_CLANG_GR_RVALUE_H
+#ifndef LLVM_LFORT_GR_RVALUE_H
+#define LLVM_LFORT_GR_RVALUE_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState_Fwd.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState_Fwd.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
 #include "llvm/ADT/ImmutableList.h"
 
 //==------------------------------------------------------------------------==//
 //  Base SVal types.
 //==------------------------------------------------------------------------==//
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -480,11 +480,11 @@ public:
 } // end ento::loc namespace
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 namespace llvm {
 static inline raw_ostream &operator<<(raw_ostream &os,
-                                            clang::ento::SVal V) {
+                                            lfort::ento::SVal V) {
   V.dumpToStream(os);
   return os;
 }

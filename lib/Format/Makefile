@@ -1,4 +1,4 @@
-##===- clang/lib/Format/Makefile ---------------------------*- Makefile -*-===##
+##===- lfort/lib/Format/Makefile ---------------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,7 +7,7 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangFormat
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortFormat
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

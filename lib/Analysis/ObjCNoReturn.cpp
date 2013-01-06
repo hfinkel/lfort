@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Analysis/DomainSpecific/ObjCNoReturn.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Analysis/DomainSpecific/ObjCNoReturn.h"
 
-using namespace clang;
+using namespace lfort;
 
 static bool isSubclass(const ObjCInterfaceDecl *Class, IdentifierInfo *II) {
   if (!Class)

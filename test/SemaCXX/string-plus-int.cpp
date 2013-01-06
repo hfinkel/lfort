@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-array-bounds %s -fpascal-strings
-// RUN: %clang_cc1 -fdiagnostics-parseable-fixits -x c++ %s 2>&1 -Wno-array-bounds -fpascal-strings | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-array-bounds %s -fpascal-strings
+// RUN: %lfort_cc1 -fdiagnostics-parseable-fixits -x c++ %s 2>&1 -Wno-array-bounds -fpascal-strings | FileCheck %s
 
 void consume(const char* c) {}
 void consume(const unsigned char* c) {}

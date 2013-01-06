@@ -1,4 +1,4 @@
-##===- clang/lib/Basic/Makefile ----------------------------*- Makefile -*-===##
+##===- lfort/lib/Basic/Makefile ----------------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,10 +11,10 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangBasic
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortBasic
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 SVN_REVISION := $(strip \
         $(shell $(LLVM_SRC_ROOT)/utils/GetSourceVersion $(PROJ_SRC_DIR)/../..))

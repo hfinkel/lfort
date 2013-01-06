@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify -std=c++11 -fms-extensions %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify -std=c++11 -fms-extensions %s
 // expected-no-diagnostics
 
 #define P(e) static_assert(noexcept(e), "expected nothrow")

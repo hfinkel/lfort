@@ -11,25 +11,25 @@
 //  traverses the entire AST.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LIBCLANG_RECURSIVEASTVISITOR_H
-#define LLVM_CLANG_LIBCLANG_RECURSIVEASTVISITOR_H
+#ifndef LLVM_LFORT_LIBLFORT_RECURSIVEASTVISITOR_H
+#define LLVM_LFORT_LIBLFORT_RECURSIVEASTVISITOR_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/TemplateName.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLoc.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLoc.h"
 
 // The following three macros are used for meta programming.  The code
 // using them is responsible for defining macro OPERATOR().
@@ -64,7 +64,7 @@
   OPERATOR(Mul) OPERATOR(Div) OPERATOR(Rem) OPERATOR(Add) OPERATOR(Sub) \
   OPERATOR(Shl) OPERATOR(Shr) OPERATOR(And) OPERATOR(Or)  OPERATOR(Xor)
 
-namespace clang {
+namespace lfort {
 namespace cxindex {
 
 // A helper macro to implement short-circuiting when recursing.  It
@@ -75,7 +75,7 @@ namespace cxindex {
   do { if (!getDerived().CALL_EXPR) return false; } while (0)
 
 /// \brief A class that does preorder depth-first traversal on the
-/// entire Clang AST and visits each node.
+/// entire LFort AST and visits each node.
 ///
 /// This class performs three distinct tasks:
 ///   1. traverse the AST (i.e. go to each node);
@@ -243,7 +243,7 @@ public:
 #define ABSTRACT_STMT(STMT)
 #define STMT(CLASS, PARENT)                                     \
   bool Traverse##CLASS(CLASS *S);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   // The above header #undefs ABSTRACT_STMT and STMT upon exit.
 
   // Define WalkUpFrom*() and empty Visit*() for all Stmt classes.
@@ -256,7 +256,7 @@ public:
     return true;                                                \
   }                                                             \
   bool Visit##CLASS(CLASS *S) { return true; }
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
   // Define Traverse*(), WalkUpFrom*(), and Visit*() for unary
   // operator methods.  Unary operators are not classes in themselves
@@ -318,7 +318,7 @@ public:
 #define ABSTRACT_TYPE(CLASS, BASE)
 #define TYPE(CLASS, BASE) \
   bool Traverse##CLASS##Type(CLASS##Type *T);
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   // The above header #undefs ABSTRACT_TYPE and TYPE upon exit.
 
   // Define WalkUpFrom*() and empty Visit*() for all Type classes.
@@ -331,7 +331,7 @@ public:
     return true;                                                \
   }                                                             \
   bool Visit##CLASS##Type(CLASS##Type *T) { return true; }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   // ---- Methods on TypeLocs ----
   // FIXME: this currently just calls the matching Type methods
@@ -340,7 +340,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, BASE)
 #define TYPELOC(CLASS, BASE) \
   bool Traverse##CLASS##TypeLoc(CLASS##TypeLoc TL);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   // The above header #undefs ABSTRACT_TYPELOC and TYPELOC upon exit.
 
   // Define WalkUpFrom*() and empty Visit*() for all TypeLoc classes.
@@ -366,7 +366,7 @@ public:
     return true;                                                \
   }                                                             \
   bool Visit##CLASS##TypeLoc(CLASS##TypeLoc TL) { return true; }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   // ---- Methods on Decls ----
 
@@ -374,7 +374,7 @@ public:
 #define ABSTRACT_DECL(DECL)
 #define DECL(CLASS, BASE) \
   bool Traverse##CLASS##Decl(CLASS##Decl *D);
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   // The above header #undefs ABSTRACT_DECL and DECL upon exit.
 
   // Define WalkUpFrom*() and empty Visit*() for all Decl classes.
@@ -387,7 +387,7 @@ public:
     return true;                                                \
   }                                                             \
   bool Visit##CLASS##Decl(CLASS##Decl *D) { return true; }
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
 
 private:
   // These are helper methods used by more than one Traverse* method.
@@ -497,7 +497,7 @@ bool RecursiveASTVisitor<Derived>::TraverseStmt(Stmt *S) {
 #define ABSTRACT_STMT(STMT)
 #define STMT(CLASS, PARENT) \
       case Stmt::CLASS##Class: DISPATCH_STMT(CLASS, CLASS, S);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
       }
     }
 
@@ -520,7 +520,7 @@ bool RecursiveASTVisitor<Derived>::TraverseType(QualType T) {
 #define TYPE(CLASS, BASE) \
   case Type::CLASS: DISPATCH(CLASS##Type, CLASS##Type, \
                              const_cast<Type*>(T.getTypePtr()));
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
 
   return true;
@@ -536,7 +536,7 @@ bool RecursiveASTVisitor<Derived>::TraverseTypeLoc(TypeLoc TL) {
 #define TYPELOC(CLASS, BASE) \
   case TypeLoc::CLASS: \
     return getDerived().Traverse##CLASS##TypeLoc(*cast<CLASS##TypeLoc>(&TL));
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   }
 
   return true;
@@ -558,7 +558,7 @@ bool RecursiveASTVisitor<Derived>::TraverseDecl(Decl *D) {
 #define ABSTRACT_DECL(DECL)
 #define DECL(CLASS, BASE) \
   case Decl::CLASS: DISPATCH(CLASS##Decl, CLASS##Decl, D);
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
  }
 
   return true;
@@ -1740,7 +1740,7 @@ DEF_TRAVERSE_DECL(ParmVarDecl, {
 // though sometimes the range is empty).  Each individual Traverse*
 // method only needs to worry about children other than those.  To see
 // what children() does for a given class, see, e.g.,
-//   http://clang.llvm.org/doxygen/Stmt_8cpp_source.html
+//   http://lfort.llvm.org/doxygen/Stmt_8cpp_source.html
 
 // This macro makes available a variable S, the passed-in stmt.
 #define DEF_TRAVERSE_STMT(STMT, CODE)                                   \
@@ -2173,9 +2173,9 @@ DEF_TRAVERSE_STMT(AsTypeExpr, { })
 // create new types, and recurse on the types (TypeLocs?) of those.
 // Candidates:
 //
-//    http://clang.llvm.org/doxygen/classclang_1_1CXXTypeidExpr.html
-//    http://clang.llvm.org/doxygen/classclang_1_1UnaryExprOrTypeTraitExpr.html
-//    http://clang.llvm.org/doxygen/classclang_1_1TypesCompatibleExpr.html
+//    http://lfort.llvm.org/doxygen/classlfort_1_1CXXTypeidExpr.html
+//    http://lfort.llvm.org/doxygen/classlfort_1_1UnaryExprOrTypeTraitExpr.html
+//    http://lfort.llvm.org/doxygen/classlfort_1_1TypesCompatibleExpr.html
 //    Every class that has getQualifier.
 
 #undef DEF_TRAVERSE_STMT
@@ -2183,6 +2183,6 @@ DEF_TRAVERSE_STMT(AsTypeExpr, { })
 #undef TRY_TO
 
 } // end namespace cxindex
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_LIBCLANG_RECURSIVEASTVISITOR_H
+#endif // LLVM_LFORT_LIBLFORT_RECURSIVEASTVISITOR_H

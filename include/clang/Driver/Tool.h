@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_TOOL_H_
-#define CLANG_DRIVER_TOOL_H_
+#ifndef LFORT_DRIVER_TOOL_H_
+#define LFORT_DRIVER_TOOL_H_
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class ArgList;
   class Compilation;
@@ -70,6 +70,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

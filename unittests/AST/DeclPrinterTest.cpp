@@ -19,13 +19,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/ADT/SmallString.h"
 #include "gtest/gtest.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ast_matchers;
 using namespace tooling;
 

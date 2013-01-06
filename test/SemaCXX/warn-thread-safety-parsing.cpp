@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wthread-safety %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wthread-safety %s
 
 #define LOCKABLE            __attribute__ ((lockable))
 #define SCOPED_LOCKABLE     __attribute__ ((scoped_lockable))
@@ -1189,7 +1189,7 @@ int trivially_false_edges(bool b) {
   else       return 2;
 }
 
-// Possible Clang bug -- method pointer in template parameter
+// Possible LFort bug -- method pointer in template parameter
 class UnFoo {
 public:
   void foo();
@@ -1199,7 +1199,7 @@ template<void (UnFoo::*methptr)()>
 class MCaller {
 public:
   static void call_method_ptr(UnFoo *f) {
-    // FIXME: Possible Clang bug:
+    // FIXME: Possible LFort bug:
     // getCalleeDecl() returns NULL in the following case:
     (f->*methptr)();
   }
@@ -1228,7 +1228,7 @@ struct Foomgoper {
   bool done();
   void invalid_back_edge() {
     do {
-      // FIXME: Possible Clang bug:
+      // FIXME: Possible LFort bug:
       // The first statement in this basic block has no source location
       ++f;
     } while (!done());

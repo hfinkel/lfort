@@ -1,6 +1,6 @@
 // Example from C99 6.10.3.4p9
 
-// RUN: %clang_cc1 -E %s | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -E %s | FileCheck -strict-whitespace %s
 
 #define debug(...) fprintf(stderr, __VA_ARGS__) 
 #define showlist(...) puts(#__VA_ARGS__) 

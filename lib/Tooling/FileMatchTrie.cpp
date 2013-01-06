@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/FileMatchTrie.h"
+#include "lfort/Tooling/FileMatchTrie.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/PathV2.h"
 #include "llvm/Support/raw_ostream.h"
 #include <sstream>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 /// \brief Default \c PathComparator using \c llvm::sys::fs::equivalent().
@@ -185,4 +185,4 @@ StringRef FileMatchTrie::findEquivalent(StringRef FileName,
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

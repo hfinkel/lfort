@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // <rdar://problem/7971948>
 struct A {};
@@ -94,7 +94,7 @@ int test8( foo x ) {
   }
 }
 
-// Stress test to make sure Clang doesn't crash.
+// Stress test to make sure LFort doesn't crash.
 void test9(int x) {
   switch(x) {
     case 1: return;

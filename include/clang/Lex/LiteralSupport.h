@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_LITERALSUPPORT_H
-#define CLANG_LITERALSUPPORT_H
+#ifndef LFORT_LITERALSUPPORT_H
+#define LFORT_LITERALSUPPORT_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/TokenKinds.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/DataTypes.h"
 #include <cctype>
 
-namespace clang {
+namespace lfort {
 
 class DiagnosticsEngine;
 class Preprocessor;
@@ -237,6 +237,6 @@ private:
   void DiagnoseLexingError(SourceLocation Loc);
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

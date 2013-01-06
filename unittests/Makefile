@@ -7,32 +7,32 @@
 #
 ##===----------------------------------------------------------------------===##
 
-# If CLANG_LEVEL is not set, then we are the top-level Makefile. Otherwise, we
+# If LFORT_LEVEL is not set, then we are the top-level Makefile. Otherwise, we
 # are being included from a subdirectory makefile.
 
-ifndef CLANG_LEVEL
+ifndef LFORT_LEVEL
 
 IS_UNITTEST_LEVEL := 1
-CLANG_LEVEL := ..
+LFORT_LEVEL := ..
 PARALLEL_DIRS = Basic Lex
 
-include $(CLANG_LEVEL)/../..//Makefile.config
+include $(LFORT_LEVEL)/../..//Makefile.config
 
-ifeq ($(ENABLE_CLANG_REWRITER),1)
+ifeq ($(ENABLE_LFORT_REWRITER),1)
 PARALLEL_DIRS += Format
 endif
 
-ifeq ($(ENABLE_CLANG_REWRITER),1)
+ifeq ($(ENABLE_LFORT_REWRITER),1)
 PARALLEL_DIRS += ASTMatchers AST Tooling
 endif
 
-ifeq ($(ENABLE_CLANG_STATIC_ANALYZER),1)
+ifeq ($(ENABLE_LFORT_STATIC_ANALYZER),1)
 PARALLEL_DIRS += Frontend
 endif
 
-endif  # CLANG_LEVEL
+endif  # LFORT_LEVEL
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 ifndef IS_UNITTEST_LEVEL
 

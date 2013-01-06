@@ -5,20 +5,20 @@ Objective-C Literals
 Introduction
 ============
 
-Three new features were introduced into clang at the same time:
+Three new features were introduced into lfort at the same time:
 *NSNumber Literals* provide a syntax for creating ``NSNumber`` from
 scalar literal expressions; *Collection Literals* provide a short-hand
 for creating arrays and dictionaries; *Object Subscripting* provides a
 way to use subscripting with Objective-C objects. Users of Apple
 compiler releases can use these features starting with the Apple LLVM
 Compiler 4.0. Users of open-source LLVM.org compiler releases can use
-these features starting with clang v3.1.
+these features starting with lfort v3.1.
 
 These language additions simplify common Objective-C programming
 patterns, make programs more concise, and improve the safety of
 container creation.
 
-This document describes how the features are implemented in clang, and
+This document describes how the features are implemented in lfort, and
 how to use them in your own programs.
 
 NSNumber Literals
@@ -221,7 +221,7 @@ raise an exception at runtime. When possible, the compiler will reject
 Availability
 ------------
 
-Boxed expressions will be available in clang 3.2. It is not currently
+Boxed expressions will be available in lfort 3.2. It is not currently
 available in any Apple compiler.
 
 Container Literals
@@ -504,7 +504,7 @@ Note: ``@true`` and ``@false`` are only supported in Objective-C++.
 Availability Checks
 ===================
 
-Programs test for the new features by using clang's \_\_has\_feature
+Programs test for the new features by using lfort's \_\_has\_feature
 checks. Here are examples of their use:
 
 .. code-block:: objc

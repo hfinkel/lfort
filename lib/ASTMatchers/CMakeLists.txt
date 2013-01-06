@@ -1,21 +1,21 @@
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangASTMatchers
+add_lfort_library(lfortASTMatchers
   ASTMatchFinder.cpp
   ASTMatchersInternal.cpp
   )
 
-add_dependencies(clangASTMatchers
-  ClangAttrClasses
-  ClangAttrImpl
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
+add_dependencies(lfortASTMatchers
+  LFortAttrClasses
+  LFortAttrImpl
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
   )
 
-target_link_libraries(clangASTMatchers
-  clangBasic
-  clangAST
+target_link_libraries(lfortASTMatchers
+  lfortBasic
+  lfortAST
   )

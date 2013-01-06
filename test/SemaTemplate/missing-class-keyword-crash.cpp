@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 class G {};
 template <Foo> // expected-error{{unknown type name 'Foo'}} \
                // expected-note{{template parameter is declared here}}

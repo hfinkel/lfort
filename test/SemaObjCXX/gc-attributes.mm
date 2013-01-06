@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fobjc-gc -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fobjc-gc -fsyntax-only -verify %s
 
 @interface A
 @end

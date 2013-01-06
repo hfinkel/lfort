@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 template<typename T> struct A {
   enum E : T; // expected-note {{here}}

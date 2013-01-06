@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/LogDiagnosticPrinter.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Frontend/LogDiagnosticPrinter.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 LogDiagnosticPrinter::LogDiagnosticPrinter(raw_ostream &os,
                                            DiagnosticOptions *diags,

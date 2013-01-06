@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARENTMAP_H
-#define LLVM_CLANG_PARENTMAP_H
+#ifndef LLVM_LFORT_PARENTMAP_H
+#define LLVM_LFORT_PARENTMAP_H
 
-namespace clang {
+namespace lfort {
 class Stmt;
 class Expr;
 
@@ -58,5 +58,5 @@ public:
   }
 };
 
-} // end clang namespace
+} // end lfort namespace
 #endif

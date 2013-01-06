@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s | FileCheck %s
+// RUN: %lfort_cc1 -E %s | FileCheck %s
 // PR6282
 // This test should not trigger the include guard optimization since
 // the guard macro is defined on the first include.

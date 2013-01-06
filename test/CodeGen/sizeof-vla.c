@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown -emit-llvm -o %t %s
 
 // PR3442
 

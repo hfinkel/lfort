@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 // rdar://6983634
 
   typedef struct A *Foo;

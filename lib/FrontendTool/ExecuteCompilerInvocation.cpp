@@ -8,29 +8,29 @@
 //===----------------------------------------------------------------------===//
 //
 // This file holds ExecuteCompilerInvocation(). It is split into its own file to
-// minimize the impact of pulling in essentially everything else in Clang.
+// minimize the impact of pulling in essentially everything else in LFort.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/FrontendTool/Utils.h"
-#include "clang/ARCMigrate/ARCMTActions.h"
-#include "clang/CodeGen/CodeGenAction.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/FrontendPluginRegistry.h"
-#include "clang/Rewrite/Frontend/FrontendActions.h"
-#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
+#include "lfort/FrontendTool/Utils.h"
+#include "lfort/ARCMigrate/ARCMTActions.h"
+#include "lfort/CodeGen/CodeGenAction.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Frontend/FrontendActions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/FrontendPluginRegistry.h"
+#include "lfort/Rewrite/Frontend/FrontendActions.h"
+#include "lfort/StaticAnalyzer/Frontend/FrontendActions.h"
 #include "llvm/Support/DynamicLibrary.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
-  using namespace clang::frontend;
+  using namespace lfort::frontend;
   StringRef Action("unknown");
 
   switch (CI.getFrontendOpts().ProgramAction) {
@@ -43,7 +43,7 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
   case DumpTokens:             return new DumpTokensAction();
   case EmitAssembly:           return new EmitAssemblyAction();
   case EmitBC:                 return new EmitBCAction();
-#ifdef CLANG_ENABLE_REWRITER
+#ifdef LFORT_ENABLE_REWRITER
   case EmitHTML:               return new HTMLPrintAction();
 #else
   case EmitHTML:               Action = "EmitHTML"; break;
@@ -52,7 +52,7 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
   case EmitLLVMOnly:           return new EmitLLVMOnlyAction();
   case EmitCodeGenOnly:        return new EmitCodeGenOnlyAction();
   case EmitObj:                return new EmitObjAction();
-#ifdef CLANG_ENABLE_REWRITER
+#ifdef LFORT_ENABLE_REWRITER
   case FixIt:                  return new FixItAction();
 #else
   case FixIt:                  Action = "FixIt"; break;
@@ -84,7 +84,7 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
   case PrintPreamble:          return new PrintPreambleAction();
   case PrintPreprocessedInput: {
     if (CI.getPreprocessorOutputOpts().RewriteIncludes) {
-#ifdef CLANG_ENABLE_REWRITER
+#ifdef LFORT_ENABLE_REWRITER
       return new RewriteIncludesAction();
 #else
       Action = "RewriteIncludesAction";
@@ -94,7 +94,7 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
     return new PrintPreprocessedAction();
   }
 
-#ifdef CLANG_ENABLE_REWRITER
+#ifdef LFORT_ENABLE_REWRITER
   case RewriteMacros:          return new RewriteMacrosAction();
   case RewriteObjC:            return new RewriteObjCAction();
   case RewriteTest:            return new RewriteTestAction();
@@ -103,12 +103,12 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
   case RewriteObjC:            Action = "RewriteObjC"; break;
   case RewriteTest:            Action = "RewriteTest"; break;
 #endif
-#ifdef CLANG_ENABLE_ARCMT
+#ifdef LFORT_ENABLE_ARCMT
   case MigrateSource:          return new arcmt::MigrateSourceAction();
 #else
   case MigrateSource:          Action = "MigrateSource"; break;
 #endif
-#ifdef CLANG_ENABLE_STATIC_ANALYZER
+#ifdef LFORT_ENABLE_STATIC_ANALYZER
   case RunAnalysis:            return new ento::AnalysisAction();
 #else
   case RunAnalysis:            Action = "RunAnalysis"; break;
@@ -116,8 +116,8 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
   case RunPreprocessorOnly:    return new PreprocessOnlyAction();
   }
 
-#if !defined(CLANG_ENABLE_ARCMT) || !defined(CLANG_ENABLE_STATIC_ANALYZER) \
-  || !defined(CLANG_ENABLE_REWRITER)
+#if !defined(LFORT_ENABLE_ARCMT) || !defined(LFORT_ENABLE_STATIC_ANALYZER) \
+  || !defined(LFORT_ENABLE_REWRITER)
   CI.getDiagnostics().Report(diag::err_fe_action_not_available) << Action;
   return 0;
 #else
@@ -133,13 +133,13 @@ static FrontendAction *CreateFrontendAction(CompilerInstance &CI) {
 
   const FrontendOptions &FEOpts = CI.getFrontendOpts();
 
-#ifdef CLANG_ENABLE_REWRITER
+#ifdef LFORT_ENABLE_REWRITER
   if (FEOpts.FixAndRecompile) {
     Act = new FixItRecompile(Act);
   }
 #endif
   
-#ifdef CLANG_ENABLE_ARCMT
+#ifdef LFORT_ENABLE_ARCMT
   // Potentially wrap the base FE action in an ARC Migrate Tool action.
   switch (FEOpts.ARCMTAction) {
   case FrontendOptions::ARCMT_None:
@@ -173,12 +173,12 @@ static FrontendAction *CreateFrontendAction(CompilerInstance &CI) {
   return Act;
 }
 
-bool clang::ExecuteCompilerInvocation(CompilerInstance *Clang) {
+bool lfort::ExecuteCompilerInvocation(CompilerInstance *LFort) {
   // Honor -help.
-  if (Clang->getFrontendOpts().ShowHelp) {
+  if (LFort->getFrontendOpts().ShowHelp) {
     OwningPtr<driver::OptTable> Opts(driver::createDriverOptTable());
-    Opts->PrintHelp(llvm::outs(), "clang -cc1",
-                    "LLVM 'Clang' Compiler: http://clang.llvm.org",
+    Opts->PrintHelp(llvm::outs(), "lfort -cc1",
+                    "LLVM 'LFort' Compiler: http://lfort.llvm.org",
                     /*Include=*/driver::options::CC1Option,
                     /*Exclude=*/0);
     return 0;
@@ -187,18 +187,18 @@ bool clang::ExecuteCompilerInvocation(CompilerInstance *Clang) {
   // Honor -version.
   //
   // FIXME: Use a better -version message?
-  if (Clang->getFrontendOpts().ShowVersion) {
+  if (LFort->getFrontendOpts().ShowVersion) {
     llvm::cl::PrintVersionMessage();
     return 0;
   }
 
   // Load any requested plugins.
   for (unsigned i = 0,
-         e = Clang->getFrontendOpts().Plugins.size(); i != e; ++i) {
-    const std::string &Path = Clang->getFrontendOpts().Plugins[i];
+         e = LFort->getFrontendOpts().Plugins.size(); i != e; ++i) {
+    const std::string &Path = LFort->getFrontendOpts().Plugins[i];
     std::string Error;
     if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(Path.c_str(), &Error))
-      Clang->getDiagnostics().Report(diag::err_fe_unable_to_load_plugin)
+      LFort->getDiagnostics().Report(diag::err_fe_unable_to_load_plugin)
         << Path << Error;
   }
 
@@ -206,33 +206,33 @@ bool clang::ExecuteCompilerInvocation(CompilerInstance *Clang) {
   //
   // FIXME: Remove this, one day.
   // This should happen AFTER plugins have been loaded!
-  if (!Clang->getFrontendOpts().LLVMArgs.empty()) {
-    unsigned NumArgs = Clang->getFrontendOpts().LLVMArgs.size();
+  if (!LFort->getFrontendOpts().LLVMArgs.empty()) {
+    unsigned NumArgs = LFort->getFrontendOpts().LLVMArgs.size();
     const char **Args = new const char*[NumArgs + 2];
-    Args[0] = "clang (LLVM option parsing)";
+    Args[0] = "lfort (LLVM option parsing)";
     for (unsigned i = 0; i != NumArgs; ++i)
-      Args[i + 1] = Clang->getFrontendOpts().LLVMArgs[i].c_str();
+      Args[i + 1] = LFort->getFrontendOpts().LLVMArgs[i].c_str();
     Args[NumArgs + 1] = 0;
     llvm::cl::ParseCommandLineOptions(NumArgs + 1, Args);
   }
 
-#ifdef CLANG_ENABLE_STATIC_ANALYZER
+#ifdef LFORT_ENABLE_STATIC_ANALYZER
   // Honor -analyzer-checker-help.
   // This should happen AFTER plugins have been loaded!
-  if (Clang->getAnalyzerOpts()->ShowCheckerHelp) {
-    ento::printCheckerHelp(llvm::outs(), Clang->getFrontendOpts().Plugins);
+  if (LFort->getAnalyzerOpts()->ShowCheckerHelp) {
+    ento::printCheckerHelp(llvm::outs(), LFort->getFrontendOpts().Plugins);
     return 0;
   }
 #endif
 
   // If there were errors in processing arguments, don't do anything else.
   bool Success = false;
-  if (!Clang->getDiagnostics().hasErrorOccurred()) {
+  if (!LFort->getDiagnostics().hasErrorOccurred()) {
     // Create and execute the frontend action.
-    OwningPtr<FrontendAction> Act(CreateFrontendAction(*Clang));
+    OwningPtr<FrontendAction> Act(CreateFrontendAction(*LFort));
     if (Act) {
-      Success = Clang->ExecuteAction(*Act);
-      if (Clang->getFrontendOpts().DisableFree)
+      Success = LFort->ExecuteAction(*Act);
+      if (LFort->getFrontendOpts().DisableFree)
         Act.take();
     }
   }

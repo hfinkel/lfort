@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -verify -x c %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -verify -x c++ -analyzer-config c++-inlining=constructors %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -DINLINE -verify -x c %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -DINLINE -verify -x c++ -analyzer-config c++-inlining=constructors %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -verify -x c %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -verify -x c++ -analyzer-config c++-inlining=constructors %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -DINLINE -verify -x c %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -DINLINE -verify -x c++ -analyzer-config c++-inlining=constructors %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 struct S {
   int field;
@@ -39,21 +39,21 @@ void testAssignment() {
   struct S s = getS();
 
   if (s.field != 42) return;
-  clang_analyzer_eval(s.field == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.field == 42); // expected-warning{{TRUE}}
 
   s.field = 0;
-  clang_analyzer_eval(s.field == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.field == 0); // expected-warning{{TRUE}}
 
 #if __cplusplus
-  clang_analyzer_eval(s.getThis() == &s); // expected-warning{{TRUE}}
-  clang_analyzer_eval(+s == &s); // expected-warning{{TRUE}}
-  clang_analyzer_eval(-s == &s); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.getThis() == &s); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(+s == &s); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(-s == &s); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(s.check()); // expected-warning{{TRUE}}
-  clang_analyzer_eval(!s); // expected-warning{{FALSE}}
-  clang_analyzer_eval(~s); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(s.check()); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(!s); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(~s); // expected-warning{{FALSE}}
 
-  clang_analyzer_eval(*s == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*s == 0); // expected-warning{{TRUE}}
 #endif
 }
 
@@ -62,16 +62,16 @@ void testImmediateUse() {
   int x = getS().field;
 
   if (x != 42) return;
-  clang_analyzer_eval(x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x == 42); // expected-warning{{TRUE}}
 
 #if __cplusplus
-  clang_analyzer_eval((void *)getS().getThis() == (void *)&x); // expected-warning{{FALSE}}
-  clang_analyzer_eval((void *)+getS() == (void *)&x); // expected-warning{{FALSE}}
-  clang_analyzer_eval((void *)-getS() == (void *)&x); // expected-warning{{FALSE}}
+  lfort_analyzer_eval((void *)getS().getThis() == (void *)&x); // expected-warning{{FALSE}}
+  lfort_analyzer_eval((void *)+getS() == (void *)&x); // expected-warning{{FALSE}}
+  lfort_analyzer_eval((void *)-getS() == (void *)&x); // expected-warning{{FALSE}}
 
-  clang_analyzer_eval(getS().check()); // expected-warning{{TRUE}}
-  clang_analyzer_eval(!getS()); // expected-warning{{FALSE}}
-  clang_analyzer_eval(~getS()); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(getS().check()); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(!getS()); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(~getS()); // expected-warning{{FALSE}}
 #endif
 }
 
@@ -86,23 +86,23 @@ int getAssignedField(struct S s) {
 }
 
 void testArgument() {
-  clang_analyzer_eval(getConstrainedField(getS()) == 42); // expected-warning{{TRUE}}
-  clang_analyzer_eval(getAssignedField(getS()) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getConstrainedField(getS()) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getAssignedField(getS()) == 42); // expected-warning{{TRUE}}
 }
 
 void testImmediateUseParens() {
   int x = ((getS())).field;
 
   if (x != 42) return;
-  clang_analyzer_eval(x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x == 42); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(getConstrainedField(((getS()))) == 42); // expected-warning{{TRUE}}
-  clang_analyzer_eval(getAssignedField(((getS()))) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getConstrainedField(((getS()))) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getAssignedField(((getS()))) == 42); // expected-warning{{TRUE}}
 
 #if __cplusplus
-  clang_analyzer_eval(((getS())).check()); // expected-warning{{TRUE}}
-  clang_analyzer_eval(!((getS()))); // expected-warning{{FALSE}}
-  clang_analyzer_eval(~((getS()))); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(((getS())).check()); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(!((getS()))); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(~((getS()))); // expected-warning{{FALSE}}
 #endif
 }
 
@@ -116,16 +116,16 @@ void testReferenceAssignment() {
   const S &s = getS();
 
   if (s.field != 42) return;
-  clang_analyzer_eval(s.field == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.field == 42); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(s.getThis() == &s); // expected-warning{{TRUE}}
-  clang_analyzer_eval(+s == &s); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(s.getThis() == &s); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(+s == &s); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(s.check()); // expected-warning{{TRUE}}
-  clang_analyzer_eval(!s); // expected-warning{{FALSE}}
-  clang_analyzer_eval(~s); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(s.check()); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(!s); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(~s); // expected-warning{{FALSE}}
 
-  clang_analyzer_eval(*s == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(*s == 42); // expected-warning{{TRUE}}
 }
 
 
@@ -147,10 +147,10 @@ bool checkThisStaticOp(const S &s) {
 }
 
 void testReferenceArgument() {
-  clang_analyzer_eval(getConstrainedFieldRef(getS()) == 42); // expected-warning{{TRUE}}
-  clang_analyzer_eval(checkThis(getS())); // expected-warning{{TRUE}}
-  clang_analyzer_eval(checkThisOp(getS())); // expected-warning{{TRUE}}
-  clang_analyzer_eval(checkThisStaticOp(getS())); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getConstrainedFieldRef(getS()) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(checkThis(getS())); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(checkThisOp(getS())); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(checkThisStaticOp(getS())); // expected-warning{{TRUE}}
 }
 
 
@@ -167,10 +167,10 @@ int getConstrainedFieldRefOp(const S &s) {
 void testImmediateUseOp() {
   int x = *getS();
   if (x != 42) return;
-  clang_analyzer_eval(x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x == 42); // expected-warning{{TRUE}}
 
-  clang_analyzer_eval(getConstrainedFieldOp(getS()) == 42); // expected-warning{{TRUE}}
-  clang_analyzer_eval(getConstrainedFieldRefOp(getS()) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getConstrainedFieldOp(getS()) == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(getConstrainedFieldRefOp(getS()) == 42); // expected-warning{{TRUE}}
 }
 
 #endif

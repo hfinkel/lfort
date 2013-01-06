@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -o - -emit-llvm | FileCheck %s
+// RUN: %lfort_cc1 %s -o - -emit-llvm | FileCheck %s
 // PR1513
 
 struct s{

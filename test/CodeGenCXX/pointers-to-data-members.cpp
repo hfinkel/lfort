@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 %s -emit-llvm -o %t.ll -triple=x86_64-apple-darwin10
+// RUN: %lfort_cc1 %s -emit-llvm -o %t.ll -triple=x86_64-apple-darwin10
 // RUN: FileCheck %s < %t.ll
 // RUN: FileCheck -check-prefix=CHECK-GLOBAL %s < %t.ll
-// RUN: %clang_cc1 %s -emit-llvm -o %t-opt.ll -triple=x86_64-apple-darwin10 -O3
+// RUN: %lfort_cc1 %s -emit-llvm -o %t-opt.ll -triple=x86_64-apple-darwin10 -O3
 // RUN: FileCheck --check-prefix=CHECK-O3 %s < %t-opt.ll
 
 struct A { int a; int b; };

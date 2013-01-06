@@ -3,7 +3,7 @@ void foo() {
   voodoo = voodoo + 1;
 }
 
-// RUN: %clang -Wall -fsyntax-only %s --serialize-diagnostics %t
+// RUN: %lfort -Wall -fsyntax-only %s --serialize-diagnostics %t
 // RUN: c-index-test -read-diagnostics %t 2>&1 | FileCheck %s
 // RUN: rm -f %t
 
@@ -17,7 +17,7 @@ void foo() {
 // CHECK: +-FIXIT: ({{.*}}serialized-diags-single-issue.c:2:13 - {{.*}}serialized-diags-single-issue.c:2:13): " = 0"
 
 // Test that we handle serializing diagnostics for multiple source files
-// RUN: %clang_cc1 -Wall -fsyntax-only %s %s -serialize-diagnostic-file %t
+// RUN: %lfort_cc1 -Wall -fsyntax-only %s %s -serialize-diagnostic-file %t
 // RUN: c-index-test -read-diagnostics %t 2>&1 | FileCheck -check-prefix=CHECK-MULT %s
 // RUN: rm -f %t
 

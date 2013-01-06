@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1_only -c %s -o - > /dev/null
+// RUN: not %lfort_cc1_only -c %s -o - > /dev/null
 // PR 1603
 void func()
 {

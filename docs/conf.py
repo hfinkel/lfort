@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Clang documentation build configuration file, created by
+# LFort documentation build configuration file, created by
 # sphinx-quickstart on Sun Dec  9 20:01:55 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Clang'
-copyright = u'2007-2013, The Clang Team'
+project = u'LFort'
+copyright = u'2007-2013, The LFort Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Clangdoc'
+htmlhelp_basename = 'LFortdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -183,8 +183,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Clang.tex', u'Clang Documentation',
-   u'The Clang Team', 'manual'),
+  ('index', 'LFort.tex', u'LFort Documentation',
+   u'The LFort Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -213,8 +213,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'clang', u'Clang Documentation',
-     [u'The Clang Team'], 1)
+    ('index', 'lfort', u'LFort Documentation',
+     [u'The LFort Team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Clang', u'Clang Documentation',
-   u'The Clang Team', 'Clang', 'One line description of project.',
+  ('index', 'LFort', u'LFort Documentation',
+   u'The LFort Team', 'LFort', 'One line description of project.',
    'Miscellaneous'),
 ]
 

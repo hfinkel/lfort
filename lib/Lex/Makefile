@@ -1,4 +1,4 @@
-##===- clang/lib/Lex/Makefile ------------------------------*- Makefile -*-===##
+##===- lfort/lib/Lex/Makefile ------------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,14 +11,14 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-include $(CLANG_LEVEL)/../../Makefile.config
+LFORT_LEVEL := ../..
+include $(LFORT_LEVEL)/../../Makefile.config
 
-LIBRARYNAME := clangLex
+LIBRARYNAME := lfortLex
 
 ifeq ($(ARCH),PowerPC)
 CXX.Flags += -maltivec
 endif
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

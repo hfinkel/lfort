@@ -9,7 +9,7 @@
 
 #include "TestVisitor.h"
 
-namespace clang {
+namespace lfort {
 
 class TypeLocVisitor : public ExpectedLocationVisitor<TypeLocVisitor> {
 public:
@@ -377,7 +377,7 @@ public:
 TEST(RecursiveASTVisitor, VisitsImplicitCopyConstructors) {
   ImplicitCtorVisitor Visitor;
   Visitor.ExpectMatch("Simple", 2, 8);
-  // Note: Clang lazily instantiates implicit declarations, so we need
+  // Note: LFort lazily instantiates implicit declarations, so we need
   // to use them in order to force them to appear in the AST.
   EXPECT_TRUE(Visitor.runOver(
       "struct WithCtor { WithCtor(); }; \n"
@@ -421,7 +421,7 @@ TEST(RecursiveASTVisitor, CanVisitImplicitMemberInitializations) {
   Visitor.ExpectMatch("WithCtor", 2, 8);
   // Simple has a constructor that implicitly initializes 'w'.  Test
   // that a visitor that visits implicit code visits that initialization.
-  // Note: Clang lazily instantiates implicit declarations, so we need
+  // Note: LFort lazily instantiates implicit declarations, so we need
   // to use them in order to force them to appear in the AST.
   EXPECT_TRUE(Visitor.runOver(
       "struct WithCtor { WithCtor(); }; \n"
@@ -437,7 +437,7 @@ TEST(RecursiveASTVisitor, CanSkipImplicitMemberInitializations) {
   Visitor.DisallowMatch("WithCtor", 2, 8);
   // Simple has a constructor that implicitly initializes 'w'.  Test
   // that a visitor that skips implicit code skips that initialization.
-  // Note: Clang lazily instantiates implicit declarations, so we need
+  // Note: LFort lazily instantiates implicit declarations, so we need
   // to use them in order to force them to appear in the AST.
   EXPECT_TRUE(Visitor.runOver(
       "struct WithCtor { WithCtor(); }; \n"
@@ -460,4 +460,4 @@ TEST(RecursiveASTVisitor, VisitsCompoundLiteralType) {
       TypeLocVisitor::Lang_C));
 }
 
-} // end namespace clang
+} // end namespace lfort

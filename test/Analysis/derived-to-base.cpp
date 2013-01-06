@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 class A {
 protected:
@@ -49,15 +49,15 @@ namespace VirtualBaseClasses {
   void test() {
     D d;
     d.setX();
-    clang_analyzer_eval(d.getX() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(d.getX() == 42); // expected-warning{{TRUE}}
 
     DV dv;
     dv.setX();
-    clang_analyzer_eval(dv.getX() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(dv.getX() == 42); // expected-warning{{TRUE}}
 
     DV2 dv2;
     dv2.setX();
-    clang_analyzer_eval(dv2.getX() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(dv2.getX() == 42); // expected-warning{{TRUE}}
   }
 
 
@@ -82,7 +82,7 @@ namespace VirtualBaseClasses {
   void testIntermediate() {
     DI d;
     d.setX();
-    clang_analyzer_eval(d.getX() == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(d.getX() == 42); // expected-warning{{TRUE}}
   }
 }
 
@@ -103,7 +103,7 @@ namespace DynamicVirtualUpcast {
 
   void test() {
     D d;
-    clang_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
   }
 }
 
@@ -124,7 +124,7 @@ namespace DynamicMultipleInheritanceUpcast {
 
   void test() {
     D d;
-    clang_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
   }
 
 
@@ -132,6 +132,6 @@ namespace DynamicMultipleInheritanceUpcast {
 
   void testVirtual() {
     DV d;
-    clang_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(testCast(&d)); // expected-warning{{TRUE}}
   }
 }

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only %s
 // PR13197
 
 struct type1

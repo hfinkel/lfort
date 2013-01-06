@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -arcmt-check -fsyntax-only -fobjc-arc -x objective-c %s
+// RUN: %lfort_cc1 -arcmt-check -fsyntax-only -fobjc-arc -x objective-c %s
 
 @protocol NSObject
 - (oneway void)release;

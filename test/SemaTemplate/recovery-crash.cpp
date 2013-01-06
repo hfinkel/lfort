@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
-// Clang used to crash trying to recover while adding 'this->' before Work(x);
+// LFort used to crash trying to recover while adding 'this->' before Work(x);
 
 template <typename> struct A {
   static void Work(int);  // expected-note{{must qualify identifier}}

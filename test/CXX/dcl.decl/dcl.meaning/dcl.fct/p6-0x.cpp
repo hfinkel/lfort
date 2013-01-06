@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 void f0() &; // expected-error {{non-member function cannot have '&' qualifier}}
 void f1() &&; // expected-error {{non-member function cannot have '&&' qualifier}}

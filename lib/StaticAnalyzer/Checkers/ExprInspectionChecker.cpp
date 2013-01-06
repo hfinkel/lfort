@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/ADT/StringSwitch.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {
@@ -36,8 +36,8 @@ bool ExprInspectionChecker::evalCall(const CallExpr *CE,
   // These checks should have no effect on the surrounding environment
   // (globals should not be invalidated, etc), hence the use of evalCall.
   FnCheck Handler = llvm::StringSwitch<FnCheck>(C.getCalleeName(CE))
-    .Case("clang_analyzer_eval", &ExprInspectionChecker::analyzerEval)
-    .Case("clang_analyzer_checkInlined",
+    .Case("lfort_analyzer_eval", &ExprInspectionChecker::analyzerEval)
+    .Case("lfort_analyzer_checkInlined",
           &ExprInspectionChecker::analyzerCheckInlined)
     .Default(0);
 
@@ -105,8 +105,8 @@ void ExprInspectionChecker::analyzerCheckInlined(const CallExpr *CE,
   // An inlined function could conceivably also be analyzed as a top-level
   // function. We ignore this case and only emit a message (TRUE or FALSE)
   // when we are analyzing it as an inlined function. This means that
-  // clang_analyzer_checkInlined(true) should always print TRUE, but
-  // clang_analyzer_checkInlined(false) should never actually print anything.
+  // lfort_analyzer_checkInlined(true) should always print TRUE, but
+  // lfort_analyzer_checkInlined(false) should never actually print anything.
   if (LC->getCurrentStackFrame()->getParent() == 0)
     return;
 

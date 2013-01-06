@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_DIAGNOSTICOPTIONS_H
-#define LLVM_CLANG_BASIC_DIAGNOSTICOPTIONS_H
+#ifndef LLVM_LFORT_BASIC_DIAGNOSTICOPTIONS_H
+#define LLVM_LFORT_BASIC_DIAGNOSTICOPTIONS_H
 
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Specifies which overload candidates to display when overload
 /// resolution fails.
@@ -27,7 +27,7 @@ enum OverloadsShown {
 /// engine.
 class DiagnosticOptions : public llvm::RefCountedBase<DiagnosticOptions>{
 public:
-  enum TextDiagnosticFormat { Clang, Msvc, Vi };
+  enum TextDiagnosticFormat { LFort, Msvc, Vi };
 
   // Default values.
   enum { DefaultTabStop = 8, MaxTabStop = 100,
@@ -38,14 +38,14 @@ public:
   // Define simple diagnostic options (with no accessors).
 #define DIAGOPT(Name, Bits, Default) unsigned Name : Bits;
 #define ENUM_DIAGOPT(Name, Type, Bits, Default)
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
 
 protected:
   // Define diagnostic options of enumeration type. These are private, and will
   // have accessors (below).
 #define DIAGOPT(Name, Bits, Default)
 #define ENUM_DIAGOPT(Name, Type, Bits, Default) unsigned Name : Bits;
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
 
 public:
   /// If non-empty, a file to log extended build information to, for development
@@ -68,17 +68,17 @@ public:
 #define ENUM_DIAGOPT(Name, Type, Bits, Default) \
   Type get##Name() const { return static_cast<Type>(Name); } \
   void set##Name(Type Value) { Name = static_cast<unsigned>(Value); }
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
 
   DiagnosticOptions() {
 #define DIAGOPT(Name, Bits, Default) Name = Default;
 #define ENUM_DIAGOPT(Name, Type, Bits, Default) set##Name(Default);
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
   }
 };
 
 typedef DiagnosticOptions::TextDiagnosticFormat TextDiagnosticFormat;
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

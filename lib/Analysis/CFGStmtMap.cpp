@@ -13,11 +13,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/ADT/DenseMap.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/CFGStmtMap.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/CFGStmtMap.h"
 
-using namespace clang;
+using namespace lfort;
 
 typedef llvm::DenseMap<const Stmt*, CFGBlock*> SMap;
 static SMap *AsMap(void *m) { return (SMap*) m; }

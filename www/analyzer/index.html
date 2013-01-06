@@ -2,7 +2,7 @@
           "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <title>Clang Static Analyzer</title>
+  <title>LFort Static Analyzer</title>
   <link type="text/css" rel="stylesheet" href="content.css">
   <link type="text/css" rel="stylesheet" href="menu.css">
   <script type="text/javascript" src="scripts/menu.js"></script>  
@@ -67,9 +67,9 @@
 <table style="margin-top:0px" width="100%" border="0" cellpadding="0px" cellspacing="0">
 <tr><td>
 
-<h1>Clang Static Analyzer</h1>  
+<h1>LFort Static Analyzer</h1>  
 
-<p>The Clang Static Analyzer is source code analysis tool that find bugs in C
+<p>The LFort Static Analyzer is source code analysis tool that find bugs in C
 and Objective-C programs.</p>
 
 <p>Currently it can be run either as a <a href="/scan-build.html">standalone
@@ -78,7 +78,7 @@ invoked from the command-line, and is intended to be run in tandem with a build
 of a codebase.</p>
 
 <p>The analyzer is 100% open source and is part of the <a
-href="http://clang.llvm.org">Clang</a> project. Like the rest of Clang, the
+href="http://lfort.llvm.org">LFort</a> project. Like the rest of LFort, the
 analyzer is implemented as a C++ library that can be used by other tools and
 applications.</p>
 
@@ -154,18 +154,18 @@ techniques such as testing.</p>
 
 <p>Static analysis bug-finding tools have evolved over the last several decades
 from basic syntactic checkers to those that find deep bugs by reasoning about
-the semantics of code. The goal of the Clang Static Analyzer is to provide a
+the semantics of code. The goal of the LFort Static Analyzer is to provide a
 industrial-quality static analysis framework for analyzing C and Objective-C
 programs that is freely available, extensible, and has a high quality of
 implementation.</p>
 
-<h3 id="Clang">Part of Clang and LLVM</h3>
+<h3 id="LFort">Part of LFort and LLVM</h3>
 
-<p>As its name implies, the Clang Static Analyzer is built on top of <a
-href="http://clang.llvm.org">Clang</a> and <a href="http://llvm.org">LLVM</a>.
-Strictly speaking, the analyzer is part of Clang, as Clang consists of a set of
+<p>As its name implies, the LFort Static Analyzer is built on top of <a
+href="http://lfort.llvm.org">LFort</a> and <a href="http://llvm.org">LLVM</a>.
+Strictly speaking, the analyzer is part of LFort, as LFort consists of a set of
 reusable C++ libraries for building powerful source-level tools. The static
-analysis engine used by the Clang Static Analyzer is a Clang library, and has
+analysis engine used by the LFort Static Analyzer is a LFort library, and has
 the capability to be reused in different contexts and by different clients.</p>
 
 <h2>Important Points to Consider</h2>
@@ -188,12 +188,12 @@ automatically find deep program bugs is about trading CPU time for the hardening
 of code. Because of the deep analysis performed by state-of-the-art static
 analysis tools, static analysis can be much slower than compilation.</p>
 
-<p>While the Clang Static Analyzer is being designed to be as fast and
+<p>While the LFort Static Analyzer is being designed to be as fast and
 light-weight as possible, please do not expect it to be as fast as compiling a
 program (even with optimizations enabled). Some of the algorithms needed to find
 bugs require in the worst case exponential time.</p>
 
-<p>The Clang Static Analyzer runs in a reasonable amount of time by both
+<p>The LFort Static Analyzer runs in a reasonable amount of time by both
 bounding the amount of checking work it will do as well as using clever
 algorithms to reduce the amount of work it must do to find bugs.</p>
 
@@ -213,7 +213,7 @@ them.</p>
 
 <p>Static analysis is not magic; a static analyzer can only find bugs that it
 has been specifically engineered to find. If there are specific kinds of bugs
-you would like the Clang Static Analyzer to find, please feel free to
+you would like the LFort Static Analyzer to find, please feel free to
 file <a href="filing_bugs.html">feature requests</a> or contribute your own
 patches.</p>
 

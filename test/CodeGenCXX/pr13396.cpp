@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-pc-linux-gnu %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i686-pc-linux-gnu %s -emit-llvm -o - | FileCheck %s
 struct foo {
   template<typename T>
   __attribute__ ((regparm (3))) foo(T x) {}
@@ -18,7 +18,7 @@ foo::~foo() {
 
 void dummy() {
   // FIXME: how can we explicitly instantiate a template constructor? Gcc and
-  // older clangs accept:
+  // older lforts accept:
   // template foo::foo(int x);
   foo x(10);
   // CHECK: define linkonce_odr void @_ZN3fooC1IiEET_(%struct.foo* inreg %this, i32 inreg %x)

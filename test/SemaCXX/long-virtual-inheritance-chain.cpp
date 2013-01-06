@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %lfort_cc1 -fsyntax-only %s
 
 class test0                   { virtual void f(); };
 class test1  : virtual test0  { virtual void f(); };

@@ -1,4 +1,4 @@
-//===- clang/Basic/PrettyStackTrace.h - Pretty Crash Handling --*- C++ -*-===//
+//===- lfort/Basic/PrettyStackTrace.h - Pretty Crash Handling --*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,13 +14,13 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_BASIC_PRETTYSTACKTRACE_H
-#define CLANG_BASIC_PRETTYSTACKTRACE_H
+#ifndef LFORT_BASIC_PRETTYSTACKTRACE_H
+#define LFORT_BASIC_PRETTYSTACKTRACE_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/Support/PrettyStackTrace.h"
 
-namespace clang {
+namespace lfort {
 
   /// If a crash happens while one of these objects are live, the message
   /// is printed out along with the specified source location.

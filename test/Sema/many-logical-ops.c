@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wconstant-conversion -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wconstant-conversion -verify %s
 // expected-no-diagnostics
 
 // rdar://10913206&10941790

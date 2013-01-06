@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 // rdar://11913153
 
 typedef const struct __CFString * CFStringRef;
@@ -15,10 +15,10 @@ extern const CFStringRef kCFBundleNameKey;
 - (id)objectForKeyedSubscript:(id<NSCopying>)key;
 @end
 
-#pragma clang arc_cf_code_audited begin
+#pragma lfort arc_cf_code_audited begin
 extern
 CFMutableStringRef CFStringCreateMutable(CFAllocatorRef alloc, CFIndex maxLength);
-#pragma clang arc_cf_code_audited end
+#pragma lfort arc_cf_code_audited end
 
 typedef const void * CFTypeRef;
 

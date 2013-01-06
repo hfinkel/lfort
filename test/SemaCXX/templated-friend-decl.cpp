@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s
+// RUN: %lfort_cc1 %s
 
 template <typename T>
 struct Foo {

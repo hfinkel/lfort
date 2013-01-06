@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -O3 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -O3 -emit-llvm -o - %s | FileCheck %s
 // PR7490
 
 // CHECK: define signext i8 @_Z2f0v

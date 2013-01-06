@@ -11,16 +11,16 @@
 // as it builds the ExplodedGraph.
 //
 //===----------------------------------------------------------------------===//
-#include "ClangSACheckers.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

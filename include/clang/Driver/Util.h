@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_UTIL_H_
-#define CLANG_DRIVER_UTIL_H_
+#ifndef LFORT_DRIVER_UTIL_H_
+#define LFORT_DRIVER_UTIL_H_
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class Action;
 
@@ -23,6 +23,6 @@ namespace driver {
   typedef SmallVector<Action*, 3> ActionList;
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

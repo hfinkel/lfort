@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-pch -o %t %s
-// RUN: %clang_cc1 -include-pch %t -fsyntax-only %s 
+// RUN: %lfort_cc1 -emit-pch -o %t %s
+// RUN: %lfort_cc1 -include-pch %t -fsyntax-only %s 
 
 #ifndef HEADER
 #define HEADER

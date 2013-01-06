@@ -1,7 +1,7 @@
 // This file can be used to see what a native C compiler is generating for a
 // variety of interesting operations.
 //
-// RUN: %clang_cc1 -emit-llvm %s -o -
+// RUN: %lfort_cc1 -emit-llvm %s -o -
 
 unsigned int udiv(unsigned int X, unsigned int Y) {
   return X/Y;

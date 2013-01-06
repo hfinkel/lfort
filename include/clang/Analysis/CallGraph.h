@@ -14,16 +14,16 @@
 //  edges to all externally available functions.
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_CALLGRAPH
-#define LLVM_CLANG_ANALYSIS_CALLGRAPH
+#ifndef LLVM_LFORT_ANALYSIS_CALLGRAPH
+#define LLVM_LFORT_ANALYSIS_CALLGRAPH
 
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/SetVector.h"
 
-namespace clang {
+namespace lfort {
 class CallGraphNode;
 
 /// \brief The AST-based call graph.
@@ -166,16 +166,16 @@ public:
   void dump() const;
 };
 
-} // end clang namespace
+} // end lfort namespace
 
 // Graph traits for iteration, viewing.
 namespace llvm {
-template <> struct GraphTraits<clang::CallGraphNode*> {
-  typedef clang::CallGraphNode NodeType;
-  typedef clang::CallGraphNode::CallRecord CallRecordTy;
+template <> struct GraphTraits<lfort::CallGraphNode*> {
+  typedef lfort::CallGraphNode NodeType;
+  typedef lfort::CallGraphNode::CallRecord CallRecordTy;
   typedef std::pointer_to_unary_function<CallRecordTy,
-                                         clang::CallGraphNode*> CGNDerefFun;
-  static NodeType *getEntryNode(clang::CallGraphNode *CGN) { return CGN; }
+                                         lfort::CallGraphNode*> CGNDerefFun;
+  static NodeType *getEntryNode(lfort::CallGraphNode *CGN) { return CGN; }
   typedef mapped_iterator<NodeType::iterator, CGNDerefFun> ChildIteratorType;
   static inline ChildIteratorType child_begin(NodeType *N) {
     return map_iterator(N->begin(), CGNDerefFun(CGNDeref));
@@ -183,67 +183,67 @@ template <> struct GraphTraits<clang::CallGraphNode*> {
   static inline ChildIteratorType child_end  (NodeType *N) {
     return map_iterator(N->end(), CGNDerefFun(CGNDeref));
   }
-  static clang::CallGraphNode *CGNDeref(CallRecordTy P) {
+  static lfort::CallGraphNode *CGNDeref(CallRecordTy P) {
     return P;
   }
 };
 
-template <> struct GraphTraits<const clang::CallGraphNode*> {
-  typedef const clang::CallGraphNode NodeType;
+template <> struct GraphTraits<const lfort::CallGraphNode*> {
+  typedef const lfort::CallGraphNode NodeType;
   typedef NodeType::const_iterator ChildIteratorType;
-  static NodeType *getEntryNode(const clang::CallGraphNode *CGN) { return CGN; }
+  static NodeType *getEntryNode(const lfort::CallGraphNode *CGN) { return CGN; }
   static inline ChildIteratorType child_begin(NodeType *N) { return N->begin();}
   static inline ChildIteratorType child_end(NodeType *N) { return N->end(); }
 };
 
-template <> struct GraphTraits<clang::CallGraph*>
-  : public GraphTraits<clang::CallGraphNode*> {
+template <> struct GraphTraits<lfort::CallGraph*>
+  : public GraphTraits<lfort::CallGraphNode*> {
 
-  static NodeType *getEntryNode(clang::CallGraph *CGN) {
+  static NodeType *getEntryNode(lfort::CallGraph *CGN) {
     return CGN->getRoot();  // Start at the external node!
   }
-  typedef std::pair<const clang::Decl*, clang::CallGraphNode*> PairTy;
-  typedef std::pointer_to_unary_function<PairTy, clang::CallGraphNode&> DerefFun;
+  typedef std::pair<const lfort::Decl*, lfort::CallGraphNode*> PairTy;
+  typedef std::pointer_to_unary_function<PairTy, lfort::CallGraphNode&> DerefFun;
   // nodes_iterator/begin/end - Allow iteration over all nodes in the graph
-  typedef mapped_iterator<clang::CallGraph::iterator, DerefFun> nodes_iterator;
+  typedef mapped_iterator<lfort::CallGraph::iterator, DerefFun> nodes_iterator;
 
-  static nodes_iterator nodes_begin(clang::CallGraph *CG) {
+  static nodes_iterator nodes_begin(lfort::CallGraph *CG) {
     return map_iterator(CG->begin(), DerefFun(CGdereference));
   }
-  static nodes_iterator nodes_end  (clang::CallGraph *CG) {
+  static nodes_iterator nodes_end  (lfort::CallGraph *CG) {
     return map_iterator(CG->end(), DerefFun(CGdereference));
   }
-  static clang::CallGraphNode &CGdereference(PairTy P) {
+  static lfort::CallGraphNode &CGdereference(PairTy P) {
     return *(P.second);
   }
 
-  static unsigned size(clang::CallGraph *CG) {
+  static unsigned size(lfort::CallGraph *CG) {
     return CG->size();
   }
 };
 
-template <> struct GraphTraits<const clang::CallGraph*> :
-  public GraphTraits<const clang::CallGraphNode*> {
-  static NodeType *getEntryNode(const clang::CallGraph *CGN) {
+template <> struct GraphTraits<const lfort::CallGraph*> :
+  public GraphTraits<const lfort::CallGraphNode*> {
+  static NodeType *getEntryNode(const lfort::CallGraph *CGN) {
     return CGN->getRoot();
   }
-  typedef std::pair<const clang::Decl*, clang::CallGraphNode*> PairTy;
-  typedef std::pointer_to_unary_function<PairTy, clang::CallGraphNode&> DerefFun;
+  typedef std::pair<const lfort::Decl*, lfort::CallGraphNode*> PairTy;
+  typedef std::pointer_to_unary_function<PairTy, lfort::CallGraphNode&> DerefFun;
   // nodes_iterator/begin/end - Allow iteration over all nodes in the graph
-  typedef mapped_iterator<clang::CallGraph::const_iterator,
+  typedef mapped_iterator<lfort::CallGraph::const_iterator,
                           DerefFun> nodes_iterator;
 
-  static nodes_iterator nodes_begin(const clang::CallGraph *CG) {
+  static nodes_iterator nodes_begin(const lfort::CallGraph *CG) {
     return map_iterator(CG->begin(), DerefFun(CGdereference));
   }
-  static nodes_iterator nodes_end(const clang::CallGraph *CG) {
+  static nodes_iterator nodes_end(const lfort::CallGraph *CG) {
     return map_iterator(CG->end(), DerefFun(CGdereference));
   }
-  static clang::CallGraphNode &CGdereference(PairTy P) {
+  static lfort::CallGraphNode &CGdereference(PairTy P) {
     return *(P.second);
   }
 
-  static unsigned size(const clang::CallGraph *CG) {
+  static unsigned size(const lfort::CallGraph *CG) {
     return CG->size();
   }
 };

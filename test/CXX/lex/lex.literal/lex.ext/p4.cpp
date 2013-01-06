@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -verify %s
 
 int &operator "" _x1 (long double);
 int &i1 = 0.123_x1;

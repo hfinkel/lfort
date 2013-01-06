@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EDIT_EDITEDSOURCE_H
-#define LLVM_CLANG_EDIT_EDITEDSOURCE_H
+#ifndef LLVM_LFORT_EDIT_EDITEDSOURCE_H
+#define LLVM_LFORT_EDIT_EDITEDSOURCE_H
 
-#include "clang/Edit/FileOffset.h"
+#include "lfort/Edit/FileOffset.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Allocator.h"
 #include <map>
 
-namespace clang {
+namespace lfort {
   class LangOptions;
   class PPConditionalDirectiveRecord;
 
@@ -84,6 +84,6 @@ private:
 
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

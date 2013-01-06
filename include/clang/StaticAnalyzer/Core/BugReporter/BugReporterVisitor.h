@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_BUGREPORTERVISITOR
-#define LLVM_CLANG_GR_BUGREPORTERVISITOR
+#ifndef LLVM_LFORT_GR_BUGREPORTERVISITOR
+#define LLVM_LFORT_GR_BUGREPORTERVISITOR
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/FoldingSet.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -281,9 +281,9 @@ const Stmt *GetRetValExpr(const ExplodedNode *N);
 bool isDeclRefExprToReference(const Expr *E);
 
 
-} // end namespace clang
+} // end namespace lfort
 } // end namespace ento
 } // end namespace bugreporter
 
 
-#endif //LLVM_CLANG_GR__BUGREPORTERVISITOR
+#endif //LLVM_LFORT_GR__BUGREPORTERVISITOR

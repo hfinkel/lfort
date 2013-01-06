@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 struct s { int a; } __attribute__((deprecated)) x;  // expected-warning {{'s' is deprecated}} expected-note 2 {{'s' declared here}}
 

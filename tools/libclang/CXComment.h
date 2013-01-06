@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CXCOMMENT_H
-#define LLVM_CLANG_CXCOMMENT_H
+#ifndef LLVM_LFORT_CXCOMMENT_H
+#define LLVM_LFORT_CXCOMMENT_H
 
 #include "CXTranslationUnit.h"
-#include "clang-c/Index.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Comment.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/Frontend/ASTUnit.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
   class CommandTraits;
 }
@@ -57,7 +57,7 @@ inline comments::CommandTraits &getCommandTraits(CXComment CXC) {
 }
 
 } // end namespace cxcomment
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

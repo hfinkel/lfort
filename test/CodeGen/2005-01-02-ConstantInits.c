@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 // This tests all kinds of hard cases with initializers and
 // array subscripts.  This corresponds to PR487.

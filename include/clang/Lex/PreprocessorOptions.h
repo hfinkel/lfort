@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_PREPROCESSOROPTIONS_H_
-#define LLVM_CLANG_LEX_PREPROCESSOROPTIONS_H_
+#ifndef LLVM_LFORT_LEX_PREPROCESSOROPTIONS_H_
+#define LLVM_LFORT_LEX_PREPROCESSOROPTIONS_H_
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
@@ -25,7 +25,7 @@ namespace llvm {
   class MemoryBuffer;
 }
 
-namespace clang {
+namespace lfort {
 
 class Preprocessor;
 class LangOptions;
@@ -227,6 +227,6 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

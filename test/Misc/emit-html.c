@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-html -o -
+// RUN: %lfort_cc1 %s -emit-html -o -
 
 // rdar://6562329
 #line 42 "foo.c"
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 // -emit-html filters out # directives, but not _Pragma (or MS __pragma)
 // Diagnostic push/pop is stateful, so re-lexing a file can cause problems
 // if these pragmas are interpreted normally.
-_Pragma("clang diagnostic push")
-_Pragma("clang diagnostic ignored \"-Wformat-extra-args\"")
-_Pragma("clang diagnostic pop")
+_Pragma("lfort diagnostic push")
+_Pragma("lfort diagnostic ignored \"-Wformat-extra-args\"")
+_Pragma("lfort diagnostic pop")
 

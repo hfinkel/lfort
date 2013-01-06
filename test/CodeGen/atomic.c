@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=i686-apple-darwin9 | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=i686-apple-darwin9 | FileCheck %s
 
 int atomic(void) {
   // non-sensical test for sync functions

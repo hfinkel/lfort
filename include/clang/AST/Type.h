@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_TYPE_H
-#define LLVM_CLANG_AST_TYPE_H
+#ifndef LLVM_LFORT_AST_TYPE_H
+#define LLVM_LFORT_AST_TYPE_H
 
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/TemplateName.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/ExceptionSpecificationType.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/Linkage.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Basic/Visibility.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/ExceptionSpecificationType.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/Linkage.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Basic/Visibility.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/Optional.h"
@@ -33,7 +33,7 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/type_traits.h"
 
-namespace clang {
+namespace lfort {
   enum {
     TypeAlignmentInBits = 4,
     TypeAlignment = 1 << TypeAlignmentInBits
@@ -47,29 +47,29 @@ namespace llvm {
   template <typename T>
   class PointerLikeTypeTraits;
   template<>
-  class PointerLikeTypeTraits< ::clang::Type*> {
+  class PointerLikeTypeTraits< ::lfort::Type*> {
   public:
-    static inline void *getAsVoidPointer(::clang::Type *P) { return P; }
-    static inline ::clang::Type *getFromVoidPointer(void *P) {
-      return static_cast< ::clang::Type*>(P);
+    static inline void *getAsVoidPointer(::lfort::Type *P) { return P; }
+    static inline ::lfort::Type *getFromVoidPointer(void *P) {
+      return static_cast< ::lfort::Type*>(P);
     }
-    enum { NumLowBitsAvailable = clang::TypeAlignmentInBits };
+    enum { NumLowBitsAvailable = lfort::TypeAlignmentInBits };
   };
   template<>
-  class PointerLikeTypeTraits< ::clang::ExtQuals*> {
+  class PointerLikeTypeTraits< ::lfort::ExtQuals*> {
   public:
-    static inline void *getAsVoidPointer(::clang::ExtQuals *P) { return P; }
-    static inline ::clang::ExtQuals *getFromVoidPointer(void *P) {
-      return static_cast< ::clang::ExtQuals*>(P);
+    static inline void *getAsVoidPointer(::lfort::ExtQuals *P) { return P; }
+    static inline ::lfort::ExtQuals *getFromVoidPointer(void *P) {
+      return static_cast< ::lfort::ExtQuals*>(P);
     }
-    enum { NumLowBitsAvailable = clang::TypeAlignmentInBits };
+    enum { NumLowBitsAvailable = lfort::TypeAlignmentInBits };
   };
 
   template <>
-  struct isPodLike<clang::QualType> { static const bool value = true; };
+  struct isPodLike<lfort::QualType> { static const bool value = true; };
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class TypedefNameDecl;
   class TemplateDecl;
@@ -103,10 +103,10 @@ namespace clang {
 
   // Provide forward declarations for all of the *Type classes
 #define TYPE(Class, Base) class Class##Type;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
 /// Qualifiers - The collection of all-type qualifiers we support.
-/// Clang supports five independent qualifiers:
+/// LFort supports five independent qualifiers:
 /// * C99: const, volatile, and restrict
 /// * Embedded C (TR18037): address spaces
 /// * Objective C: the GC attributes (none, weak, or strong)
@@ -993,29 +993,29 @@ private:
   static DestructionKind isDestructedTypeImpl(QualType type);
 };
 
-} // end clang.
+} // end lfort.
 
 namespace llvm {
 /// Implement simplify_type for QualType, so that we can dyn_cast from QualType
 /// to a specific Type class.
-template<> struct simplify_type<const ::clang::QualType> {
-  typedef const ::clang::Type *SimpleType;
-  static SimpleType getSimplifiedValue(const ::clang::QualType &Val) {
+template<> struct simplify_type<const ::lfort::QualType> {
+  typedef const ::lfort::Type *SimpleType;
+  static SimpleType getSimplifiedValue(const ::lfort::QualType &Val) {
     return Val.getTypePtr();
   }
 };
-template<> struct simplify_type< ::clang::QualType>
-  : public simplify_type<const ::clang::QualType> {};
+template<> struct simplify_type< ::lfort::QualType>
+  : public simplify_type<const ::lfort::QualType> {};
 
 // Teach SmallPtrSet that QualType is "basically a pointer".
 template<>
-class PointerLikeTypeTraits<clang::QualType> {
+class PointerLikeTypeTraits<lfort::QualType> {
 public:
-  static inline void *getAsVoidPointer(clang::QualType P) {
+  static inline void *getAsVoidPointer(lfort::QualType P) {
     return P.getAsOpaquePtr();
   }
-  static inline clang::QualType getFromVoidPointer(void *P) {
-    return clang::QualType::getFromOpaquePtr(P);
+  static inline lfort::QualType getFromVoidPointer(void *P) {
+    return lfort::QualType::getFromOpaquePtr(P);
   }
   // Various qualifiers go in low bits.
   enum { NumLowBitsAvailable = 0 };
@@ -1023,7 +1023,7 @@ public:
 
 } // end namespace llvm
 
-namespace clang {
+namespace lfort {
 
 /// \brief Base class that is common to both the \c ExtQuals and \c Type
 /// classes, which allows \c QualType to access the common fields between the
@@ -1161,7 +1161,7 @@ public:
 #define TYPE(Class, Base) Class,
 #define LAST_TYPE(Class) TypeLast = Class,
 #define ABSTRACT_TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     TagFirst = Record, TagLast = Enum
   };
 
@@ -1481,7 +1481,7 @@ public:
 
   /// isPlaceholderType - Test for a type which does not represent an
   /// actual type-system type but is instead used as a placeholder for
-  /// various convenient purposes within Clang.  All such types are
+  /// various convenient purposes within LFort.  All such types are
   /// BuiltinTypes.
   bool isPlaceholderType() const;
   const BuiltinType *getAsPlaceholderType() const;
@@ -1819,7 +1819,7 @@ template <> inline const Class##Type *Type::getAs() const { \
 template <> inline const Class##Type *Type::castAs() const { \
   return cast<Class##Type>(CanonicalType); \
 }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
 
 /// BuiltinType - This class is used for builtin types like 'int'.  Builtin
@@ -1829,7 +1829,7 @@ public:
   enum Kind {
 #define BUILTIN_TYPE(Id, SingletonId) Id,
 #define LAST_BUILTIN_TYPE(Id) LastKind = Id
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
   };
 
 public:
@@ -3303,7 +3303,7 @@ public:
 class AttributedType : public Type, public llvm::FoldingSetNode {
 public:
   // It is really silly to have yet another attribute-kind enum, but
-  // clang::attr::Kind doesn't currently cover the pure type attrs.
+  // lfort::attr::Kind doesn't currently cover the pure type attrs.
   enum Kind {
     // Expression operand.
     attr_address_space,
@@ -5137,6 +5137,6 @@ inline const ArrayType *Type::castAsArrayTypeUnsafe() const {
   return cast<ArrayType>(getUnqualifiedDesugaredType());
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

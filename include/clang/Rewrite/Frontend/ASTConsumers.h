@@ -14,10 +14,10 @@
 #ifndef REWRITE_ASTCONSUMERS_H
 #define REWRITE_ASTCONSUMERS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class ASTConsumer;
 class DiagnosticsEngine;
@@ -43,6 +43,6 @@ ASTConsumer *CreateHTMLPrinter(raw_ostream *OS, Preprocessor &PP,
                                bool SyntaxHighlight = true,
                                bool HighlightMacros = true);
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

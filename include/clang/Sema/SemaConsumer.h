@@ -12,12 +12,12 @@
 //  additional semantic analysis.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_SEMACONSUMER_H
-#define LLVM_CLANG_SEMA_SEMACONSUMER_H
+#ifndef LLVM_LFORT_SEMA_SEMACONSUMER_H
+#define LLVM_LFORT_SEMA_SEMACONSUMER_H
 
-#include "clang/AST/ASTConsumer.h"
+#include "lfort/AST/ASTConsumer.h"
 
-namespace clang {
+namespace lfort {
   class Sema;
 
   /// \brief An abstract interface that should be implemented by

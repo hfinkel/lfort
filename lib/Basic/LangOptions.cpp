@@ -10,14 +10,14 @@
 //  This file defines the LangOptions class.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Basic/LangOptions.h"
+#include "lfort/Basic/LangOptions.h"
 
-using namespace clang;
+using namespace lfort;
 
 LangOptions::LangOptions() {
 #define LANGOPT(Name, Bits, Default, Description) Name = Default;
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description) set##Name(Default);
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
 }
 
 void LangOptions::resetNonModularOptions() {
@@ -25,7 +25,7 @@ void LangOptions::resetNonModularOptions() {
 #define BENIGN_LANGOPT(Name, Bits, Default, Description) Name = Default;
 #define BENIGN_ENUM_LANGOPT(Name, Type, Bits, Default, Description) \
   Name = Default;
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
   
   CurrentModule.clear();
 }

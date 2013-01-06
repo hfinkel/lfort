@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -fobjc-exceptions -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -g -fobjc-exceptions -emit-llvm %s -o - | FileCheck %s
 @interface Foo @end
 void f0() {
   @try {

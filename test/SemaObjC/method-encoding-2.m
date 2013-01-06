@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s
+// RUN: %lfort_cc1 %s
 // TODO: We don't support rewrite of method definitions
 
 @interface Intf 

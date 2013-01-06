@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_TYPELOC_H
-#define LLVM_CLANG_AST_TYPELOC_H
+#ifndef LLVM_LFORT_AST_TYPELOC_H
+#define LLVM_LFORT_AST_TYPELOC_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/Specifiers.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/Specifiers.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class ParmVarDecl;
   class TypeSourceInfo;
@@ -30,7 +30,7 @@ namespace clang {
 #define ABSTRACT_TYPELOC(Class, Base)
 #define TYPELOC(Class, Base) \
   class Class##TypeLoc;
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
 /// \brief Base wrapper for a particular "section" of type source info.
 ///
@@ -51,7 +51,7 @@ public:
 #define ABSTRACT_TYPE(Class, Base)
 #define TYPE(Class, Base) \
     Class = Type::Class,
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     Qualified
   };
 

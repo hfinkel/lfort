@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -g -emit-llvm -o %t %s
 // RUN: grep 'noinline' %t
 
 void t1() __attribute__((noinline));

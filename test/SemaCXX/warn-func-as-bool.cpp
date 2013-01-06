@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x c++ -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -x c++ -verify -fsyntax-only %s
 
 void f1();
 

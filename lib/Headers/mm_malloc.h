@@ -34,7 +34,7 @@ extern int posix_memalign(void **memptr, size_t alignment, size_t size);
 #else
 // Some systems (e.g. those with GNU libc) declare posix_memalign with an
 // exception specifier. Via an "egregious workaround" in
-// Sema::CheckEquivalentExceptionSpec, Clang accepts the following as a valid
+// Sema::CheckEquivalentExceptionSpec, LFort accepts the following as a valid
 // redeclaration of glibc's declaration.
 extern "C" int posix_memalign(void **memptr, size_t alignment, size_t size);
 #endif

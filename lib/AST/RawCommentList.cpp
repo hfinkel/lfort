@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/RawCommentList.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Comment.h"
-#include "clang/AST/CommentBriefParser.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/CommentLexer.h"
-#include "clang/AST/CommentParser.h"
-#include "clang/AST/CommentSema.h"
+#include "lfort/AST/RawCommentList.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/AST/CommentBriefParser.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentLexer.h"
+#include "lfort/AST/CommentParser.h"
+#include "lfort/AST/CommentSema.h"
 #include "llvm/ADT/STLExtras.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 /// Get comment kind and bool describing if it is a trailing comment.

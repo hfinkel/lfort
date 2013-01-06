@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_TEMPLATENAME_H
-#define LLVM_CLANG_AST_TEMPLATENAME_H
+#ifndef LLVM_LFORT_AST_TEMPLATENAME_H
+#define LLVM_LFORT_AST_TEMPLATENAME_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/OperatorKinds.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/OperatorKinds.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/PointerUnion.h"
 
-namespace clang {
+namespace lfort {
   
 class ASTContext;
 class DependentTemplateName;
@@ -536,20 +536,20 @@ public:
   }
 };
 
-} // end namespace clang.
+} // end namespace lfort.
 
 namespace llvm {
 
-/// \brief The clang::TemplateName class is effectively a pointer.
+/// \brief The lfort::TemplateName class is effectively a pointer.
 template<>
-class PointerLikeTypeTraits<clang::TemplateName> {
+class PointerLikeTypeTraits<lfort::TemplateName> {
 public:
-  static inline void *getAsVoidPointer(clang::TemplateName TN) {
+  static inline void *getAsVoidPointer(lfort::TemplateName TN) {
     return TN.getAsVoidPointer();
   }
 
-  static inline clang::TemplateName getFromVoidPointer(void *Ptr) {
-    return clang::TemplateName::getFromVoidPointer(Ptr);
+  static inline lfort::TemplateName getFromVoidPointer(void *Ptr) {
+    return lfort::TemplateName::getFromVoidPointer(Ptr);
   }
 
   // No bits are available!

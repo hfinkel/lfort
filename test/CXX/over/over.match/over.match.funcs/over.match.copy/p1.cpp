@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only %s -verify
 
 namespace ExplicitConv {
   struct X { }; // expected-note 2{{candidate constructor}}

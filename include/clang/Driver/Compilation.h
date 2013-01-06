@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_COMPILATION_H_
-#define CLANG_DRIVER_COMPILATION_H_
+#ifndef LFORT_DRIVER_COMPILATION_H_
+#define LFORT_DRIVER_COMPILATION_H_
 
-#include "clang/Driver/Job.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Driver/Job.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Support/Path.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class DerivedArgList;
   class Driver;
@@ -170,6 +170,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

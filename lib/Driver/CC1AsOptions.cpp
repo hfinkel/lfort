@@ -1,4 +1,4 @@
-//===--- CC1AsOptions.cpp - Clang Assembler Options Table -----------------===//
+//===--- CC1AsOptions.cpp - LFort Assembler Options Table -----------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/CC1AsOptions.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-using namespace clang;
-using namespace clang::driver;
-using namespace clang::driver::options;
-using namespace clang::driver::cc1asoptions;
+#include "lfort/Driver/CC1AsOptions.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+using namespace lfort;
+using namespace lfort::driver;
+using namespace lfort::driver::options;
+using namespace lfort::driver::cc1asoptions;
 
 #define PREFIX(NAME, VALUE) const char *const NAME[] = VALUE;
 #define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, FLAGS, PARAM, \
                HELPTEXT, METAVAR)
-#include "clang/Driver/CC1AsOptions.inc"
+#include "lfort/Driver/CC1AsOptions.inc"
 #undef OPTION
 #undef PREFIX
 
@@ -28,7 +28,7 @@ static const OptTable::Info CC1AsInfoTable[] = {
                HELPTEXT, METAVAR)   \
   { PREFIX, NAME, HELPTEXT, METAVAR, OPT_##ID, Option::KIND##Class, PARAM, \
     FLAGS, OPT_##GROUP, OPT_##ALIAS },
-#include "clang/Driver/CC1AsOptions.inc"
+#include "lfort/Driver/CC1AsOptions.inc"
 };
 
 namespace {
@@ -42,6 +42,6 @@ public:
 
 }
 
-OptTable *clang::driver::createCC1AsOptTable() {
+OptTable *lfort::driver::createCC1AsOptTable() {
   return new CC1AsOptTable();
 }

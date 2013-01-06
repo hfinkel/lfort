@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -fobjc-runtime=ios-6.0.0 -triple thumbv7-apple-ios6.0.0 -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -fobjc-runtime=ios-6.0.0 -triple thumbv7-apple-ios6.0.0 -o - | FileCheck %s
 // rdar://11915017
 
 @interface I

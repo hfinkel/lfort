@@ -21,7 +21,7 @@ SRC_DOC_DIR=
 DST_HTML_DIR=html/
 DST_MAN_DIR=man/man1/
 DST_PS_DIR=ps/
-CLANG_VERSION := trunk
+LFORT_VERSION := trunk
 
 # If we are in BUILD_FOR_WEBSITE mode, default to the all target.
 all:: html man ps
@@ -37,11 +37,11 @@ clean:
 else
 
 # Otherwise, if not in BUILD_FOR_WEBSITE mode, use the project info.
-CLANG_LEVEL := ../..
-include $(CLANG_LEVEL)/Makefile
+LFORT_LEVEL := ../..
+include $(LFORT_LEVEL)/Makefile
 
-CLANG_VERSION := $(word 3,$(shell grep "CLANG_VERSION " \
-	$(PROJ_OBJ_DIR)/$(CLANG_LEVEL)/include/clang/Basic/Version.inc))
+LFORT_VERSION := $(word 3,$(shell grep "LFORT_VERSION " \
+	$(PROJ_OBJ_DIR)/$(LFORT_LEVEL)/include/lfort/Basic/Version.inc))
 
 SRC_DOC_DIR=$(PROJ_SRC_DIR)/
 DST_HTML_DIR=$(PROJ_OBJ_DIR)/
@@ -70,7 +70,7 @@ $(DST_HTML_DIR)%.html: %.pod $(DST_HTML_DIR)/.dir
 	  --podpath=. --infile=$< --outfile=$@ --title=$*
 
 $(DST_MAN_DIR)%.1: %.pod $(DST_MAN_DIR)/.dir
-	pod2man --release "clang $(CLANG_VERSION)" --center="Clang Tools Documentation" $< $@
+	pod2man --release "lfort $(LFORT_VERSION)" --center="LFort Tools Documentation" $< $@
 
 $(DST_PS_DIR)%.ps: $(DST_MAN_DIR)%.1 $(DST_PS_DIR)/.dir
 	groff -Tps -man $< > $@
@@ -85,30 +85,30 @@ EXTRA_DIST := $(POD)
 clean-local::
 	$(Verb) $(RM) -f pod2htm*.*~~ $(HTML) $(MAN) $(PS)
 
-HTML_DIR := $(DESTDIR)$(PROJ_docsdir)/html/clang
+HTML_DIR := $(DESTDIR)$(PROJ_docsdir)/html/lfort
 MAN_DIR  := $(DESTDIR)$(PROJ_mandir)/man1
 PS_DIR   := $(DESTDIR)$(PROJ_docsdir)/ps
 
 install-html:: $(HTML)
-	$(Echo) Installing HTML Clang Tools Documentation
+	$(Echo) Installing HTML LFort Tools Documentation
 	$(Verb) $(MKDIR) $(HTML_DIR)
 	$(Verb) $(DataInstall) $(HTML) $(HTML_DIR)
 	$(Verb) $(DataInstall) $(PROJ_SRC_DIR)/manpage.css $(HTML_DIR)
 
 install-man:: $(MAN)
-	$(Echo) Installing MAN Clang Tools Documentation
+	$(Echo) Installing MAN LFort Tools Documentation
 	$(Verb) $(MKDIR) $(MAN_DIR)
 	$(Verb) $(DataInstall) $(MAN) $(MAN_DIR)
 
 install-ps:: $(PS)
-	$(Echo) Installing PS Clang Tools Documentation
+	$(Echo) Installing PS LFort Tools Documentation
 	$(Verb) $(MKDIR) $(PS_DIR)
 	$(Verb) $(DataInstall) $(PS) $(PS_DIR)
 
 install-local:: $(INSTALL_TARGETS)
 
 uninstall-local::
-	$(Echo) Uninstalling Clang Tools Documentation
+	$(Echo) Uninstalling LFort Tools Documentation
 	$(Verb) $(RM) -rf $(HTML_DIR) $(MAN_DIR) $(PS_DIR)
 
 printvars::

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int* ret_local() {
   int x = 1;
@@ -137,5 +137,5 @@ namespace PR8774 {
   }
 }
 
-// TODO: test case for dynamic_cast.  clang does not yet have
+// TODO: test case for dynamic_cast.  lfort does not yet have
 // support for C++ classes to write such a test case.

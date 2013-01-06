@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.DumpTraversal %s | FileCheck %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.DumpTraversal -DUSE_EXPR %s | FileCheck %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.DumpTraversal %s | FileCheck %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.DumpTraversal -DUSE_EXPR %s | FileCheck %s
 
 int a();
 int b();

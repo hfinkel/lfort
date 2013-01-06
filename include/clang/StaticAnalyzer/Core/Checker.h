@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_CORE_CHECKER
-#define LLVM_CLANG_SA_CORE_CHECKER
+#ifndef LLVM_LFORT_SA_CORE_CHECKER
+#define LLVM_LFORT_SA_CORE_CHECKER
 
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/Support/Casting.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
   class BugReporter;
 
@@ -471,6 +471,6 @@ struct ImplicitNullDerefEvent {
 
 } // end ento namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

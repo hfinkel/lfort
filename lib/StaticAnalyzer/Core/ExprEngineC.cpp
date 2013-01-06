@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ExprCXX.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::APSInt;
 

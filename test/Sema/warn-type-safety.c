@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -std=c99 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -x c++ -std=c++98 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -std=c99 -fno-signed-char -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -x c++ -std=c++98 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -fno-signed-char -fsyntax-only -verify %s
 
 struct A {};
 

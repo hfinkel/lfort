@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wexit-time-destructors %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -Wexit-time-destructors %s -verify
 
 namespace test1 {
   struct A { ~A(); };

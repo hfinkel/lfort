@@ -12,16 +12,16 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FILESYSTEMSTATCACHE_H
-#define LLVM_CLANG_FILESYSTEMSTATCACHE_H
+#ifndef LLVM_LFORT_FILESYSTEMSTATCACHE_H
+#define LLVM_LFORT_FILESYSTEMSTATCACHE_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringMap.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Abstract interface for introducing a FileManager cache for 'stat'
 /// system calls, which is used by precompiled and pretokenized headers to
@@ -101,6 +101,6 @@ public:
                                bool isFile, int *FileDescriptor);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

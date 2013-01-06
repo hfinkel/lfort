@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclGroup.h"
-using namespace clang;
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclGroup.h"
+using namespace lfort;
 
 bool ASTConsumer::HandleTopLevelDecl(DeclGroupRef D) {
   return true;

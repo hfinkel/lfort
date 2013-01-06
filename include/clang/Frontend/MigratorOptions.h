@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_MIGRATOROPTIONS
-#define LLVM_CLANG_FRONTEND_MIGRATOROPTIONS
+#ifndef LLVM_LFORT_FRONTEND_MIGRATOROPTIONS
+#define LLVM_LFORT_FRONTEND_MIGRATOROPTIONS
 
-namespace clang {
+namespace lfort {
 
 class MigratorOptions {
 public:

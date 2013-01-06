@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -g -emit-llvm %s -o - | grep "metadata ..b., metadata ..b., metadata ...,"
+// RUN: %lfort_cc1 -g -emit-llvm %s -o - | grep "metadata ..b., metadata ..b., metadata ...,"
 // Test to check intentionally empty linkage name for a static variable.
 // Radar 7651244.
 static int foo(int a)

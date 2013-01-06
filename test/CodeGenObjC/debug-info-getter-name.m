@@ -1,5 +1,5 @@
 // REQUIRES: x86-64-registered-target
-// RUN: %clang_cc1 -emit-llvm -triple x86_64-apple-darwin10 -fexceptions -fobjc-exceptions -g %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -triple x86_64-apple-darwin10 -fexceptions -fobjc-exceptions -g %s -o - | FileCheck %s
 
 // CHECK: {{.*}}, metadata !"-[InstanceVariablesEverywhereButTheInterface someString]", {{.*}}} ; [ DW_TAG_subprogram ]
 

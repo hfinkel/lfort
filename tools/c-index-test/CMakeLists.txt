@@ -3,7 +3,7 @@ set( LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_executable(c-index-test
+add_lfort_executable(c-index-test
   c-index-test.c
   )
 
@@ -15,7 +15,7 @@ if(NOT MSVC)
 endif()
 
 target_link_libraries(c-index-test
-  libclang
+  liblfort
   )
 
 set_target_properties(c-index-test
@@ -23,7 +23,7 @@ set_target_properties(c-index-test
   LINKER_LANGUAGE CXX)
 
 # If libxml2 is available, make it available for c-index-test.
-if (CLANG_HAVE_LIBXML)
+if (LFORT_HAVE_LIBXML)
   include_directories(${LIBXML2_INCLUDE_DIR})
   target_link_libraries(c-index-test ${LIBXML2_LIBRARIES})
 endif()

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wall -fsyntax-only %s -std=c++11 -verify
+// RUN: %lfort_cc1 -Wall -fsyntax-only %s -std=c++11 -verify
 
 // The rdar11671507_vector<int *>[]> would previously crash CFG construction
 // because of the temporary array of vectors.

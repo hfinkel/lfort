@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -std=c++11 %s -fcxx-exceptions
+// RUN: %lfort_cc1 -verify -std=c++11 %s -fcxx-exceptions
 
 class BadDtor {
   // A private, but nonetheless trivial, destructor.

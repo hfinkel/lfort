@@ -7,7 +7,7 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* Implements the diagnostic functions of the Clang C interface.              *|
+|* Implements the diagnostic functions of the LFort C interface.              *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 #include "CIndexDiagnostic.h"
@@ -16,19 +16,19 @@
 #include "CXSourceLocation.h"
 #include "CXString.h"
 
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/DiagnosticRenderer.h"
-#include "clang/Basic/DiagnosticOptions.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/DiagnosticRenderer.h"
+#include "lfort/Basic/DiagnosticOptions.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
-using namespace clang::cxloc;
-using namespace clang::cxstring;
-using namespace clang::cxdiag;
+using namespace lfort;
+using namespace lfort::cxloc;
+using namespace lfort::cxstring;
+using namespace lfort::cxdiag;
 using namespace llvm;
 
 
@@ -75,11 +75,11 @@ public:
   CXString getCategoryText() const { return createCXString(""); }
 
   unsigned getNumRanges() const { return 0; }
-  CXSourceRange getRange(unsigned Range) const { return clang_getNullRange(); }
+  CXSourceRange getRange(unsigned Range) const { return lfort_getNullRange(); }
   unsigned getNumFixIts() const { return 0; }
   CXString getFixIt(unsigned FixIt, CXSourceRange *ReplacementRange) const {
     if (ReplacementRange)
-      *ReplacementRange = clang_getNullRange();
+      *ReplacementRange = lfort_getNullRange();
     return createCXString("", false);
   }
 };    
@@ -124,7 +124,7 @@ public:
     if (SM)
       L = translateSourceLocation(*SM, LangOpts, Loc);
     else
-      L = clang_getNullLocation();
+      L = lfort_getNullLocation();
     CXDiagnosticImpl *CD = new CXDiagnosticCustomNoteImpl(Message, L);
     CurrentSet->appendDiagnostic(CD);
   }
@@ -146,7 +146,7 @@ public:
     if (SM)
       L = translateSourceLocation(*SM, LangOpts, Loc);
     else
-      L = clang_getNullLocation();
+      L = lfort_getNullLocation();
     CurrentSet->appendDiagnostic(new CXDiagnosticCustomNoteImpl(Message,
                                                                 L));
   }
@@ -208,14 +208,14 @@ CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXTranslationUnit TU,
 //-----------------------------------------------------------------------------
 extern "C" {
 
-unsigned clang_getNumDiagnostics(CXTranslationUnit Unit) {
+unsigned lfort_getNumDiagnostics(CXTranslationUnit Unit) {
   if (!Unit->TUData)
     return 0;
   return lazyCreateDiags(Unit, /*checkIfChanged=*/true)->getNumDiagnostics();
 }
 
-CXDiagnostic clang_getDiagnostic(CXTranslationUnit Unit, unsigned Index) {
-  CXDiagnosticSet D = clang_getDiagnosticSetFromTU(Unit);
+CXDiagnostic lfort_getDiagnostic(CXTranslationUnit Unit, unsigned Index) {
+  CXDiagnosticSet D = lfort_getDiagnosticSetFromTU(Unit);
   if (!D)
     return 0;
 
@@ -226,22 +226,22 @@ CXDiagnostic clang_getDiagnostic(CXTranslationUnit Unit, unsigned Index) {
   return Diags->getDiagnostic(Index);
 }
   
-CXDiagnosticSet clang_getDiagnosticSetFromTU(CXTranslationUnit Unit) {
+CXDiagnosticSet lfort_getDiagnosticSetFromTU(CXTranslationUnit Unit) {
   if (!Unit->TUData)
     return 0;
   return static_cast<CXDiagnostic>(lazyCreateDiags(Unit));
 }
 
-void clang_disposeDiagnostic(CXDiagnostic Diagnostic) {
+void lfort_disposeDiagnostic(CXDiagnostic Diagnostic) {
   // No-op.  Kept as a legacy API.  CXDiagnostics are now managed
   // by the enclosing CXDiagnosticSet.
 }
 
-CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
+CXString lfort_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
   if (!Diagnostic)
     return createCXString("");
 
-  CXDiagnosticSeverity Severity = clang_getDiagnosticSeverity(Diagnostic);
+  CXDiagnosticSeverity Severity = lfort_getDiagnosticSeverity(Diagnostic);
 
   SmallString<256> Str;
   llvm::raw_svector_ostream Out(Str);
@@ -251,27 +251,27 @@ CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
     // and source ranges.
     CXFile File;
     unsigned Line, Column;
-    clang_getSpellingLocation(clang_getDiagnosticLocation(Diagnostic),
+    lfort_getSpellingLocation(lfort_getDiagnosticLocation(Diagnostic),
                               &File, &Line, &Column, 0);
     if (File) {
-      CXString FName = clang_getFileName(File);
-      Out << clang_getCString(FName) << ":" << Line << ":";
-      clang_disposeString(FName);
+      CXString FName = lfort_getFileName(File);
+      Out << lfort_getCString(FName) << ":" << Line << ":";
+      lfort_disposeString(FName);
       if (Options & CXDiagnostic_DisplayColumn)
         Out << Column << ":";
 
       if (Options & CXDiagnostic_DisplaySourceRanges) {
-        unsigned N = clang_getDiagnosticNumRanges(Diagnostic);
+        unsigned N = lfort_getDiagnosticNumRanges(Diagnostic);
         bool PrintedRange = false;
         for (unsigned I = 0; I != N; ++I) {
           CXFile StartFile, EndFile;
-          CXSourceRange Range = clang_getDiagnosticRange(Diagnostic, I);
+          CXSourceRange Range = lfort_getDiagnosticRange(Diagnostic, I);
           
           unsigned StartLine, StartColumn, EndLine, EndColumn;
-          clang_getSpellingLocation(clang_getRangeStart(Range),
+          lfort_getSpellingLocation(lfort_getRangeStart(Range),
                                     &StartFile, &StartLine, &StartColumn,
                                     0);
-          clang_getSpellingLocation(clang_getRangeEnd(Range),
+          lfort_getSpellingLocation(lfort_getRangeEnd(Range),
                                     &EndFile, &EndLine, &EndColumn, 0);
           
           if (StartFile != EndFile || StartFile != File)
@@ -298,12 +298,12 @@ CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
   case CXDiagnostic_Fatal: Out << "fatal error: "; break;
   }
 
-  CXString Text = clang_getDiagnosticSpelling(Diagnostic);
-  if (clang_getCString(Text))
-    Out << clang_getCString(Text);
+  CXString Text = lfort_getDiagnosticSpelling(Diagnostic);
+  if (lfort_getCString(Text))
+    Out << lfort_getCString(Text);
   else
     Out << "<no diagnostic text>";
-  clang_disposeString(Text);
+  lfort_disposeString(Text);
   
   if (Options & (CXDiagnostic_DisplayOption | CXDiagnostic_DisplayCategoryId |
                  CXDiagnostic_DisplayCategoryName)) {
@@ -311,20 +311,20 @@ CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
     bool NeedComma = false;
 
     if (Options & CXDiagnostic_DisplayOption) {
-      CXString OptionName = clang_getDiagnosticOption(Diagnostic, 0);
-      if (const char *OptionText = clang_getCString(OptionName)) {
+      CXString OptionName = lfort_getDiagnosticOption(Diagnostic, 0);
+      if (const char *OptionText = lfort_getCString(OptionName)) {
         if (OptionText[0]) {
           Out << " [" << OptionText;
           NeedBracket = false;
           NeedComma = true;
         }
       }
-      clang_disposeString(OptionName);
+      lfort_disposeString(OptionName);
     }
     
     if (Options & (CXDiagnostic_DisplayCategoryId | 
                    CXDiagnostic_DisplayCategoryName)) {
-      if (unsigned CategoryID = clang_getDiagnosticCategory(Diagnostic)) {
+      if (unsigned CategoryID = lfort_getDiagnosticCategory(Diagnostic)) {
         if (Options & CXDiagnostic_DisplayCategoryId) {
           if (NeedBracket)
             Out << " [";
@@ -336,15 +336,15 @@ CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
         }
         
         if (Options & CXDiagnostic_DisplayCategoryName) {
-          CXString CategoryName = clang_getDiagnosticCategoryText(Diagnostic);
+          CXString CategoryName = lfort_getDiagnosticCategoryText(Diagnostic);
           if (NeedBracket)
             Out << " [";
           if (NeedComma)
             Out << ", ";
-          Out << clang_getCString(CategoryName);
+          Out << lfort_getCString(CategoryName);
           NeedBracket = false;
           NeedComma = true;
-          clang_disposeString(CategoryName);
+          lfort_disposeString(CategoryName);
         }
       }
     }
@@ -357,30 +357,30 @@ CXString clang_formatDiagnostic(CXDiagnostic Diagnostic, unsigned Options) {
   return createCXString(Out.str(), true);
 }
 
-unsigned clang_defaultDiagnosticDisplayOptions() {
+unsigned lfort_defaultDiagnosticDisplayOptions() {
   return CXDiagnostic_DisplaySourceLocation | CXDiagnostic_DisplayColumn |
          CXDiagnostic_DisplayOption;
 }
 
-enum CXDiagnosticSeverity clang_getDiagnosticSeverity(CXDiagnostic Diag) {
+enum CXDiagnosticSeverity lfort_getDiagnosticSeverity(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl*>(Diag))
     return D->getSeverity();
   return CXDiagnostic_Ignored;
 }
 
-CXSourceLocation clang_getDiagnosticLocation(CXDiagnostic Diag) {
+CXSourceLocation lfort_getDiagnosticLocation(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl*>(Diag))
     return D->getLocation();
-  return clang_getNullLocation();
+  return lfort_getNullLocation();
 }
 
-CXString clang_getDiagnosticSpelling(CXDiagnostic Diag) {
+CXString lfort_getDiagnosticSpelling(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag))
     return D->getSpelling();
   return createCXString("");
 }
 
-CXString clang_getDiagnosticOption(CXDiagnostic Diag, CXString *Disable) {
+CXString lfort_getDiagnosticOption(CXDiagnostic Diag, CXString *Disable) {
   if (Disable)
     *Disable = createCXString("");
 
@@ -390,60 +390,60 @@ CXString clang_getDiagnosticOption(CXDiagnostic Diag, CXString *Disable) {
   return createCXString("");
 }
 
-unsigned clang_getDiagnosticCategory(CXDiagnostic Diag) {
+unsigned lfort_getDiagnosticCategory(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag))
     return D->getCategory();
   return 0;
 }
   
-CXString clang_getDiagnosticCategoryName(unsigned Category) {
+CXString lfort_getDiagnosticCategoryName(unsigned Category) {
   // Kept for backwards compatibility.
   return createCXString(DiagnosticIDs::getCategoryNameFromID(Category));
 }
   
-CXString clang_getDiagnosticCategoryText(CXDiagnostic Diag) {
+CXString lfort_getDiagnosticCategoryText(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag))
     return D->getCategoryText();
   return createCXString("");
 }
   
-unsigned clang_getDiagnosticNumRanges(CXDiagnostic Diag) {
+unsigned lfort_getDiagnosticNumRanges(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag))
     return D->getNumRanges();
   return 0;
 }
 
-CXSourceRange clang_getDiagnosticRange(CXDiagnostic Diag, unsigned Range) {
+CXSourceRange lfort_getDiagnosticRange(CXDiagnostic Diag, unsigned Range) {
   CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag);  
   if (!D || Range >= D->getNumRanges())
-    return clang_getNullRange();
+    return lfort_getNullRange();
   return D->getRange(Range);
 }
 
-unsigned clang_getDiagnosticNumFixIts(CXDiagnostic Diag) {
+unsigned lfort_getDiagnosticNumFixIts(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag))
     return D->getNumFixIts();
   return 0;
 }
 
-CXString clang_getDiagnosticFixIt(CXDiagnostic Diag, unsigned FixIt,
+CXString lfort_getDiagnosticFixIt(CXDiagnostic Diag, unsigned FixIt,
                                   CXSourceRange *ReplacementRange) {
   CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag);
   if (!D || FixIt >= D->getNumFixIts()) {
     if (ReplacementRange)
-      *ReplacementRange = clang_getNullRange();
+      *ReplacementRange = lfort_getNullRange();
     return createCXString("");
   }
   return D->getFixIt(FixIt, ReplacementRange);
 }
 
-void clang_disposeDiagnosticSet(CXDiagnosticSet Diags) {
+void lfort_disposeDiagnosticSet(CXDiagnosticSet Diags) {
   CXDiagnosticSetImpl *D = static_cast<CXDiagnosticSetImpl*>(Diags);
   if (D->isExternallyManaged())
     delete D;
 }
   
-CXDiagnostic clang_getDiagnosticInSet(CXDiagnosticSet Diags,
+CXDiagnostic lfort_getDiagnosticInSet(CXDiagnosticSet Diags,
                                       unsigned Index) {
   if (CXDiagnosticSetImpl *D = static_cast<CXDiagnosticSetImpl*>(Diags))
     if (Index < D->getNumDiagnostics())
@@ -451,7 +451,7 @@ CXDiagnostic clang_getDiagnosticInSet(CXDiagnosticSet Diags,
   return 0;  
 }
   
-CXDiagnosticSet clang_getChildDiagnostics(CXDiagnostic Diag) {
+CXDiagnosticSet lfort_getChildDiagnostics(CXDiagnostic Diag) {
   if (CXDiagnosticImpl *D = static_cast<CXDiagnosticImpl *>(Diag)) {
     CXDiagnosticSetImpl &ChildDiags = D->getChildDiagnostics();
     return ChildDiags.empty() ? 0 : (CXDiagnosticSet) &ChildDiags;
@@ -459,7 +459,7 @@ CXDiagnosticSet clang_getChildDiagnostics(CXDiagnostic Diag) {
   return 0;
 }
 
-unsigned clang_getNumDiagnosticsInSet(CXDiagnosticSet Diags) {
+unsigned lfort_getNumDiagnosticsInSet(CXDiagnosticSet Diags) {
   if (CXDiagnosticSetImpl *D = static_cast<CXDiagnosticSetImpl*>(Diags))
     return D->getNumDiagnostics();
   return 0;

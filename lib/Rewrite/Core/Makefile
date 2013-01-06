@@ -1,4 +1,4 @@
-##===- clang/lib/Rewrite/Makefile --------------------------*- Makefile -*-===##
+##===- lfort/lib/Rewrite/Makefile --------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,8 +11,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../../..
-LIBRARYNAME := clangRewriteCore
+LFORT_LEVEL := ../../..
+LIBRARYNAME := lfortRewriteCore
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

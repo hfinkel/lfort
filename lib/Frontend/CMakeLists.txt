@@ -1,4 +1,4 @@
-add_clang_library(clangFrontend
+add_lfort_library(lfortFrontend
   ASTConsumers.cpp
   ASTMerge.cpp
   ASTUnit.cpp
@@ -30,29 +30,29 @@ add_clang_library(clangFrontend
   Warnings.cpp
   )
 
-add_dependencies(clangFrontend
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticAST
-  ClangDiagnosticCommon
-  ClangDiagnosticDriver
-  ClangDiagnosticFrontend
-  ClangDiagnosticLex
-  ClangDiagnosticSema
-  ClangDriverOptions
-  ClangStmtNodes
+add_dependencies(lfortFrontend
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticAST
+  LFortDiagnosticCommon
+  LFortDiagnosticDriver
+  LFortDiagnosticFrontend
+  LFortDiagnosticLex
+  LFortDiagnosticSema
+  LFortDriverOptions
+  LFortStmtNodes
   )
 
-target_link_libraries(clangFrontend
-  clangAST
-  clangBasic
-  clangDriver
-  clangEdit
-  clangLex
-  clangParse
-  clangSema
-  clangSerialization
+target_link_libraries(lfortFrontend
+  lfortAST
+  lfortBasic
+  lfortDriver
+  lfortEdit
+  lfortLex
+  lfortParse
+  lfortSema
+  lfortSerialization
   )

@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// The format of this database matches clang/Basic/Builtins.def.
+// The format of this database matches lfort/Basic/Builtins.def.
 
 // Builtins retained from previous PTX back-end
 BUILTIN(__builtin_ptx_read_tid_x, "i", "nc")

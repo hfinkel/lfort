@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int* j = false; // expected-warning{{initialization of pointer of type 'int *' to null from a constant boolean expression}}
 

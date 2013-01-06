@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CODEGENTYPES_H
-#define CLANG_CODEGEN_CODEGENTYPES_H
+#ifndef LFORT_CODEGEN_CODEGENTYPES_H
+#define LFORT_CODEGEN_CODEGENTYPES_H
 
 #include "CGCall.h"
-#include "clang/AST/GlobalDecl.h"
+#include "lfort/AST/GlobalDecl.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/Module.h"
 #include <vector>
@@ -29,7 +29,7 @@ namespace llvm {
   class StructType;
 }
 
-namespace clang {
+namespace lfort {
   class ABIInfo;
   class ASTContext;
   template <typename> class CanQual;
@@ -103,7 +103,7 @@ private:
   
 private:
   /// TypeCache - This map keeps cache of llvm::Types
-  /// and maps llvm::Types to corresponding clang::Type.
+  /// and maps llvm::Types to corresponding lfort::Type.
   llvm::DenseMap<const Type *, llvm::Type *> TypeCache;
 
 public:
@@ -259,6 +259,6 @@ public:  // These are internal details of CGT that shouldn't be used externally.
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

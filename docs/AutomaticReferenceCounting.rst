@@ -193,10 +193,10 @@ with a revision marker, like so:
   within` ``extern "BCPL"`` blocks.
 
 For now, it is sensible to version this document by the releases of its sole
-implementation (and its host project), clang.  "LLVM X.Y" refers to an
-open-source release of clang from the LLVM project.  "Apple X.Y" refers to an
+implementation (and its host project), lfort.  "LLVM X.Y" refers to an
+open-source release of lfort from the LLVM project.  "Apple X.Y" refers to an
 Apple-provided release of the Apple LLVM Compiler.  Other organizations that
-prepare their own, separately-versioned clang releases and wish to maintain
+prepare their own, separately-versioned lfort releases and wish to maintain
 similar information in this document should send requests to cfe-dev.
 
 If a change decreases the expressiveness of the language, for example by
@@ -1727,9 +1727,9 @@ A pragma is provided to facilitate the mass annotation of interfaces:
 
 .. code-block:: objc
 
-  #pragma clang arc_cf_code_audited begin
+  #pragma lfort arc_cf_code_audited begin
   ...
-  #pragma clang arc_cf_code_audited end
+  #pragma lfort arc_cf_code_audited end
 
 All C functions declared within the extent of this pragma are treated as if
 annotated with the ``cf_audited_transfer`` attribute unless they otherwise have

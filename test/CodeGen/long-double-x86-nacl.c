@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=i686-unknown-nacl | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=i686-unknown-nacl | FileCheck %s
 
 long double x = 0;
 int checksize[sizeof(x) == 8 ? 1 : -1];

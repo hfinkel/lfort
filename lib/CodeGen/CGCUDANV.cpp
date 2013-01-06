@@ -15,14 +15,14 @@
 #include "CGCUDARuntime.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/Decl.h"
+#include "lfort/AST/Decl.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/Support/CallSite.h"
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 namespace {

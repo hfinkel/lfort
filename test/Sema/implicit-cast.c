@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %lfort_cc1 -fsyntax-only %s
 
 static char *test1(int cf) {
   return cf ? "abc" : 0;

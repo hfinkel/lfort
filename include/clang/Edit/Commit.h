@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EDIT_COMMIT_H
-#define LLVM_CLANG_EDIT_COMMIT_H
+#ifndef LLVM_LFORT_EDIT_COMMIT_H
+#define LLVM_LFORT_EDIT_COMMIT_H
 
-#include "clang/Edit/FileOffset.h"
+#include "lfort/Edit/FileOffset.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
   class LangOptions;
   class PPConditionalDirectiveRecord;
 
@@ -135,6 +135,6 @@ private:
 
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

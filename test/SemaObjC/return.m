@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wmissing-noreturn -fobjc-exceptions -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wmissing-noreturn -fobjc-exceptions -Wno-objc-root-class %s
 
 int test1() {
   id a;

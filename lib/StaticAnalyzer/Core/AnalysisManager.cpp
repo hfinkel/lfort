@@ -7,9 +7,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 void AnalysisManager::anchor() { }

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wassign-enum %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wassign-enum %s
 // rdar://11824807
 
 typedef enum CCTestEnum

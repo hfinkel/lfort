@@ -16,10 +16,10 @@
 
 #include "CGCXXABI.h"
 #include "CodeGenModule.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 namespace {
@@ -210,7 +210,7 @@ void MicrosoftCXXABI::EmitVTables(const CXXRecordDecl *Class) {
   // FIXME: implement
 }
 
-CGCXXABI *clang::CodeGen::CreateMicrosoftCXXABI(CodeGenModule &CGM) {
+CGCXXABI *lfort::CodeGen::CreateMicrosoftCXXABI(CodeGenModule &CGM) {
   return new MicrosoftCXXABI(CGM);
 }
 

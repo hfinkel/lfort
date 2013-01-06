@@ -1,11 +1,11 @@
 // Test this without pch.
-// RUN: %clang_cc1 -include %S/Inputs/chain-decls1.h -include %S/Inputs/chain-decls2.h -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -include %S/Inputs/chain-decls1.h -include %S/Inputs/chain-decls2.h -fsyntax-only -verify %s
 
 // Test with pch.
-// RUN: %clang_cc1 -emit-pch -o %t1 %S/Inputs/chain-decls1.h
-// RUN: %clang_cc1 -emit-pch -o %t2 %S/Inputs/chain-decls2.h -include-pch %t1
-// RUN: %clang_cc1 -include-pch %t2 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -ast-print -include-pch %t2 %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-pch -o %t1 %S/Inputs/chain-decls1.h
+// RUN: %lfort_cc1 -emit-pch -o %t2 %S/Inputs/chain-decls2.h -include-pch %t1
+// RUN: %lfort_cc1 -include-pch %t2 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -ast-print -include-pch %t2 %s | FileCheck %s
 
 // expected-no-diagnostics
 

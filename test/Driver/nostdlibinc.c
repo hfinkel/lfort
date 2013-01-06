@@ -1,4 +1,4 @@
-// RUN: %clang -target x86_64-unknown-unknown \
+// RUN: %lfort -target x86_64-unknown-unknown \
 // RUN:   -nostdlibinc -ffreestanding -fsyntax-only %s
 
 #if !__has_include("stddef.h")

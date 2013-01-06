@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 %s -verify -Wconversion
+// RUN: %lfort_cc1 %s -verify -Wconversion
 
 // Don't crash (rdar://11168596)
-#define A(desc) _Pragma("clang diagnostic push")  _Pragma("clang diagnostic ignored \"-Wparentheses\"") _Pragma("clang diagnostic pop")
+#define A(desc) _Pragma("lfort diagnostic push")  _Pragma("lfort diagnostic ignored \"-Wparentheses\"") _Pragma("lfort diagnostic pop")
 #define B(desc) A(desc)
-B(_Pragma("clang diagnostic ignored \"-Wparentheses\""))
+B(_Pragma("lfort diagnostic ignored \"-Wparentheses\""))
 
 
 #define EMPTY(x)
@@ -13,20 +13,20 @@ B(_Pragma("clang diagnostic ignored \"-Wparentheses\""))
 #define ACTIVE(x) ID(x)
 
 // This should be ignored..
-INACTIVE(_Pragma("clang diagnostic ignored \"-Wconversion\""))
+INACTIVE(_Pragma("lfort diagnostic ignored \"-Wconversion\""))
 
-#define IGNORE_CONV _Pragma("clang diagnostic ignored \"-Wconversion\"") _Pragma("clang diagnostic ignored \"-Wconversion\"")
+#define IGNORE_CONV _Pragma("lfort diagnostic ignored \"-Wconversion\"") _Pragma("lfort diagnostic ignored \"-Wconversion\"")
 
 // ..as should this.
 INACTIVE(IGNORE_CONV)
 
 #define IGNORE_POPPUSH(Pop, Push, W, D) Push W D Pop
-IGNORE_POPPUSH(_Pragma("clang diagnostic pop"), _Pragma("clang diagnostic push"),
-               _Pragma("clang diagnostic ignored \"-Wconversion\""), int q = (double)1.0);
+IGNORE_POPPUSH(_Pragma("lfort diagnostic pop"), _Pragma("lfort diagnostic push"),
+               _Pragma("lfort diagnostic ignored \"-Wconversion\""), int q = (double)1.0);
 
 int x1 = (double)1.0; // expected-warning {{implicit conversion}}
 
-ACTIVE(_Pragma) ("clang diagnostic ignored \"-Wconversion\"")) // expected-error {{_Pragma takes a parenthesized string literal}} \
+ACTIVE(_Pragma) ("lfort diagnostic ignored \"-Wconversion\"")) // expected-error {{_Pragma takes a parenthesized string literal}} \
                                       expected-error {{expected identifier or '('}} expected-error {{expected ')'}} expected-note {{to match this '('}}
 
 // This should disable the warning.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o %t
+// RUN: %lfort_cc1 %s -emit-llvm -o %t
 
 struct test {
   unsigned a:1;

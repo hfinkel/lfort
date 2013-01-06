@@ -33,22 +33,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/APValue.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cstring>
 #include <functional>
 
-using namespace clang;
+using namespace lfort;
 using llvm::APSInt;
 using llvm::APFloat;
 
@@ -4940,7 +4940,7 @@ bool IntExprEvaluator::VisitBinaryOperator(const BinaryOperator *E) {
             (!RHSValue.Base && !RHSValue.Offset.isZero()))
           return Error(E);
         // It's implementation-defined whether distinct literals will have
-        // distinct addresses. In clang, the result of such a comparison is
+        // distinct addresses. In lfort, the result of such a comparison is
         // unspecified, so it is not a constant expression. However, we do know
         // that the address of a literal will be non-null.
         if ((IsLiteralLValue(LHSValue) || IsLiteralLValue(RHSValue)) &&
@@ -4951,7 +4951,7 @@ bool IntExprEvaluator::VisitBinaryOperator(const BinaryOperator *E) {
         if (IsWeakLValue(LHSValue) || IsWeakLValue(RHSValue))
           return Error(E);
         // Pointers with different bases cannot represent the same object.
-        // (Note that clang defaults to -fmerge-all-constants, which can
+        // (Note that lfort defaults to -fmerge-all-constants, which can
         // lead to inconsistent results for comparisons involving the address
         // of a constant; this generally doesn't matter in practice.)
         return Success(E->getOpcode() == BO_NE, E);
@@ -6429,7 +6429,7 @@ static ICEDiag CheckICE(const Expr* E, ASTContext &Ctx) {
 #define ABSTRACT_STMT(Node)
 #define STMT(Node, Base) case Expr::Node##Class:
 #define EXPR(Node, Base)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   case Expr::PredefinedExprClass:
   case Expr::FloatingLiteralClass:
   case Expr::ImaginaryLiteralClass:

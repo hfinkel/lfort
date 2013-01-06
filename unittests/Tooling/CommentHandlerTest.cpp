@@ -8,9 +8,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "TestVisitor.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/Preprocessor.h"
 
-namespace clang {
+namespace lfort {
 
 struct Comment {
   Comment(const std::string &Message, unsigned Line, unsigned Col)
@@ -218,4 +218,4 @@ TEST(CommentHandlerTest, PPDirectives) {
   Verifier.Match("// visible_3", 3, 14);
 }
 
-} // end namespace clang
+} // end namespace lfort

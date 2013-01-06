@@ -1,14 +1,14 @@
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 DIRS := AST Basic Driver Lex Parse Sema Serialization
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 install-local::
-	$(Echo) Installing Clang include files
+	$(Echo) Installing LFort include files
 	$(Verb) $(MKDIR) $(DESTDIR)$(PROJ_includedir)
 	$(Verb) if test -d "$(PROJ_SRC_DIR)" ; then \
 	  cd $(PROJ_SRC_DIR)/.. && \
-	  for  hdr in `find clang -type f \
+	  for  hdr in `find lfort -type f \
 	      '(' -name LICENSE.TXT \
 	       -o -name '*.def' \
 	       -o -name '*.h' \
@@ -24,9 +24,9 @@ install-local::
 	  done ; \
 	fi
 ifneq ($(PROJ_SRC_ROOT),$(PROJ_OBJ_ROOT))
-	$(Verb) if test -d "$(PROJ_OBJ_ROOT)/tools/clang/include/clang" ; then \
-	  cd $(PROJ_OBJ_ROOT)/tools/clang/include && \
-	  for hdr in `find clang -type f \
+	$(Verb) if test -d "$(PROJ_OBJ_ROOT)/tools/lfort/include/lfort" ; then \
+	  cd $(PROJ_OBJ_ROOT)/tools/lfort/include && \
+	  for hdr in `find lfort -type f \
 	      '(' -name LICENSE.TXT \
 	       -o -name '*.def' \
 	       -o -name '*.h' \

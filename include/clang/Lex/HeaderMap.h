@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_HEADERMAP_H
-#define LLVM_CLANG_LEX_HEADERMAP_H
+#ifndef LLVM_LFORT_LEX_HEADERMAP_H
+#define LLVM_LFORT_LEX_HEADERMAP_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/Support/Compiler.h"
 
 namespace llvm {
   class MemoryBuffer;
 }
-namespace clang {
+namespace lfort {
   class FileEntry;
   class FileManager;
   struct HMapBucket;
@@ -68,6 +68,6 @@ private:
   const char *getString(unsigned StrTabIdx) const;
 };
 
-} // end namespace clang.
+} // end namespace lfort.
 
 #endif

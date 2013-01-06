@@ -9,12 +9,12 @@
 
 #include "CXCursor.h"
 #include "Index_Internal.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/AST/DeclObjC.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/AST/DeclObjC.h"
 #include "llvm/ADT/DenseSet.h"
 #include <deque>
 
-namespace clang {
+namespace lfort {
   class FileEntry;
   class ObjCPropertyDecl;
   class ClassTemplateDecl;
@@ -520,29 +520,29 @@ inline T *ScratchAlloc::allocate() {
   return IdxCtx.StrScratch.Allocate<T>();
 }
 
-}} // end clang::cxindex
+}} // end lfort::cxindex
 
 namespace llvm {
   /// Define DenseMapInfo so that FileID's can be used as keys in DenseMap and
   /// DenseSets.
   template <>
-  struct DenseMapInfo<clang::cxindex::RefFileOccurence> {
-    static inline clang::cxindex::RefFileOccurence getEmptyKey() {
-      return clang::cxindex::RefFileOccurence(0, 0);
+  struct DenseMapInfo<lfort::cxindex::RefFileOccurence> {
+    static inline lfort::cxindex::RefFileOccurence getEmptyKey() {
+      return lfort::cxindex::RefFileOccurence(0, 0);
     }
 
-    static inline clang::cxindex::RefFileOccurence getTombstoneKey() {
-      return clang::cxindex::RefFileOccurence((const clang::FileEntry *)~0,
-                                              (const clang::Decl *)~0);
+    static inline lfort::cxindex::RefFileOccurence getTombstoneKey() {
+      return lfort::cxindex::RefFileOccurence((const lfort::FileEntry *)~0,
+                                              (const lfort::Decl *)~0);
     }
 
-    static unsigned getHashValue(clang::cxindex::RefFileOccurence S) {
-      typedef std::pair<const clang::FileEntry *, const clang::Decl *> PairTy;
+    static unsigned getHashValue(lfort::cxindex::RefFileOccurence S) {
+      typedef std::pair<const lfort::FileEntry *, const lfort::Decl *> PairTy;
       return DenseMapInfo<PairTy>::getHashValue(PairTy(S.File, S.Dcl));
     }
 
-    static bool isEqual(clang::cxindex::RefFileOccurence LHS,
-                        clang::cxindex::RefFileOccurence RHS) {
+    static bool isEqual(lfort::cxindex::RefFileOccurence LHS,
+                        lfort::cxindex::RefFileOccurence RHS) {
       return LHS.File == RHS.File && LHS.Dcl == RHS.Dcl;
     }
   };

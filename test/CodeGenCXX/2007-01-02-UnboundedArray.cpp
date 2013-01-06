@@ -1,6 +1,6 @@
 // Make sure unbounded arrays compile with debug information.
 //
-// RUN: %clang_cc1 -emit-llvm -g %s -o -
+// RUN: %lfort_cc1 -emit-llvm -g %s -o -
 
 // PR1068
 

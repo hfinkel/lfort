@@ -10,13 +10,13 @@
 /// \file
 /// \brief Defines the Objective-C statement AST node classes.
 
-#ifndef LLVM_CLANG_AST_STMTOBJC_H
-#define LLVM_CLANG_AST_STMTOBJC_H
+#ifndef LLVM_LFORT_AST_STMTOBJC_H
+#define LLVM_LFORT_AST_STMTOBJC_H
 
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief Represents Objective-C's collection statement.
 ///
@@ -370,6 +370,6 @@ public:
   child_range children() { return child_range(&SubStmt, &SubStmt + 1); }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

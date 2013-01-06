@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
+#include "lfort/StaticAnalyzer/Frontend/FrontendActions.h"
 #include "AnalysisConsumer.h"
-#include "clang/Frontend/CompilerInstance.h"
-using namespace clang;
+#include "lfort/Frontend/CompilerInstance.h"
+using namespace lfort;
 using namespace ento;
 
 ASTConsumer *AnalysisAction::CreateASTConsumer(CompilerInstance &CI,

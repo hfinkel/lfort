@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Werror -triple i386-unknown-unknown -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -Werror -triple i386-unknown-unknown -emit-llvm -o %t %s
 // RUN: FileCheck < %t %s
 //
 // FIXME: Note that we don't currently get the ABI right here. f0() should be

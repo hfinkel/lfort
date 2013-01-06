@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -DQUALIFIED -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -DQUALIFIED -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // PR5904

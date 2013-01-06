@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fobjc-arc -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -Wno-null-dereference -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fobjc-arc -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -Wno-null-dereference -verify %s
 
-void clang_analyzer_eval(bool);
-void clang_analyzer_checkInlined(bool);
+void lfort_analyzer_eval(bool);
+void lfort_analyzer_checkInlined(bool);
 
 struct Wrapper {
   __strong id obj;
@@ -23,7 +23,7 @@ void testCopyConstructor() {
   a.x = 42;
 
   IntWrapper b(a);
-  clang_analyzer_eval(b.x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(b.x == 42); // expected-warning{{TRUE}}
 }
 
 struct NonPODIntWrapper {
@@ -37,7 +37,7 @@ void testNonPODCopyConstructor() {
   a.x = 42;
 
   NonPODIntWrapper b(a);
-  clang_analyzer_eval(b.x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(b.x == 42); // expected-warning{{TRUE}}
 }
 
 
@@ -75,15 +75,15 @@ namespace ConstructorVirtualCalls {
     int a, b, c;
 
     C obj(&a, &b, &c);
-    clang_analyzer_eval(a == 1); // expected-warning{{TRUE}}
-    clang_analyzer_eval(b == 2); // expected-warning{{TRUE}}
-    clang_analyzer_eval(c == 3); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(a == 1); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(b == 2); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(c == 3); // expected-warning{{TRUE}}
 
-    clang_analyzer_eval(obj.get() == 3); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(obj.get() == 3); // expected-warning{{TRUE}}
 
     // Sanity check for devirtualization.
     A *base = &obj;
-    clang_analyzer_eval(base->get() == 3); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(base->get() == 3); // expected-warning{{TRUE}}
   }
 }
 
@@ -91,7 +91,7 @@ namespace TemporaryConstructor {
   class BoolWrapper {
   public:
     BoolWrapper() {
-      clang_analyzer_checkInlined(true); // expected-warning{{TRUE}}
+      lfort_analyzer_checkInlined(true); // expected-warning{{TRUE}}
       value = true;
     }
     bool value;
@@ -114,6 +114,6 @@ namespace ConstructorUsedAsRValue {
 
   void test() {
     bool result = extractValue(BoolWrapper());
-    clang_analyzer_eval(result); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(result); // expected-warning{{TRUE}}
   }
 }

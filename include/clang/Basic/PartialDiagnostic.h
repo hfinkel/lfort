@@ -13,17 +13,17 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARTIALDIAGNOSTIC_H
-#define LLVM_CLANG_PARTIALDIAGNOSTIC_H
+#ifndef LLVM_LFORT_PARTIALDIAGNOSTIC_H
+#define LLVM_LFORT_PARTIALDIAGNOSTIC_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/DataTypes.h"
 #include <cassert>
 
-namespace clang {
+namespace lfort {
 
 class PartialDiagnostic {
 public:
@@ -397,5 +397,5 @@ inline const DiagnosticBuilder &operator<<(const DiagnosticBuilder &DB,
 /// diagnostic occurs.
 typedef std::pair<SourceLocation, PartialDiagnostic> PartialDiagnosticAt;
 
-}  // end namespace clang
+}  // end namespace lfort
 #endif

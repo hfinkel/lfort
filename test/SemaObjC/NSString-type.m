@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -triple x86_64-apple-darwin10 -fblocks -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -triple x86_64-apple-darwin10 -fblocks -fsyntax-only -verify %s
 // rdar://10907410
 
 void test(id pid, Class pclass) {

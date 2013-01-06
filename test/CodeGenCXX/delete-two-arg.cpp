@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-pc-linux-gnu %s -o - -emit-llvm -verify | FileCheck %s
+// RUN: %lfort_cc1 -triple i686-pc-linux-gnu %s -o - -emit-llvm -verify | FileCheck %s
 
 typedef __typeof(sizeof(int)) size_t;
 

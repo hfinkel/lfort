@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -std=c++11 -fsyntax-only -verify -pedantic
+// RUN: %lfort_cc1 %s -std=c++11 -fsyntax-only -verify -pedantic
 
 # 1 "/usr/include/string.h" 1 3 4
 extern "C" {

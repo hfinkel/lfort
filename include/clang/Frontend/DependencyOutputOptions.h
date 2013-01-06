@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_DEPENDENCYOUTPUTOPTIONS_H
-#define LLVM_CLANG_FRONTEND_DEPENDENCYOUTPUTOPTIONS_H
+#ifndef LLVM_LFORT_FRONTEND_DEPENDENCYOUTPUTOPTIONS_H
+#define LLVM_LFORT_FRONTEND_DEPENDENCYOUTPUTOPTIONS_H
 
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 /// DependencyOutputOptions - Options for controlling the compiler dependency
 /// file generation.
@@ -51,6 +51,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CFG_H
-#define LLVM_CLANG_CFG_H
+#ifndef LLVM_LFORT_CFG_H
+#define LLVM_LFORT_CFG_H
 
-#include "clang/AST/Stmt.h"
-#include "clang/Analysis/Support/BumpVector.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/Analysis/Support/BumpVector.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/OwningPtr.h"
@@ -28,7 +28,7 @@
 #include <cassert>
 #include <iterator>
 
-namespace clang {
+namespace lfort {
   class CXXDestructorDecl;
   class Decl;
   class Stmt;
@@ -799,7 +799,7 @@ private:
   std::vector<const CFGBlock *> TryDispatchBlocks;
 
 };
-} // end namespace clang
+} // end namespace lfort
 
 //===----------------------------------------------------------------------===//
 // GraphTraits specializations for CFG basic block graphs (source-level CFGs)
@@ -809,27 +809,27 @@ namespace llvm {
 
 /// Implement simplify_type for CFGTerminator, so that we can dyn_cast from
 /// CFGTerminator to a specific Stmt class.
-template <> struct simplify_type<const ::clang::CFGTerminator> {
-  typedef const ::clang::Stmt *SimpleType;
-  static SimpleType getSimplifiedValue(const ::clang::CFGTerminator &Val) {
+template <> struct simplify_type<const ::lfort::CFGTerminator> {
+  typedef const ::lfort::Stmt *SimpleType;
+  static SimpleType getSimplifiedValue(const ::lfort::CFGTerminator &Val) {
     return Val.getStmt();
   }
 };
 
-template <> struct simplify_type< ::clang::CFGTerminator> {
-  typedef ::clang::Stmt *SimpleType;
-  static SimpleType getSimplifiedValue(const ::clang::CFGTerminator &Val) {
+template <> struct simplify_type< ::lfort::CFGTerminator> {
+  typedef ::lfort::Stmt *SimpleType;
+  static SimpleType getSimplifiedValue(const ::lfort::CFGTerminator &Val) {
     return const_cast<SimpleType>(Val.getStmt());
   }
 };
 
 // Traits for: CFGBlock
 
-template <> struct GraphTraits< ::clang::CFGBlock *> {
-  typedef ::clang::CFGBlock NodeType;
-  typedef ::clang::CFGBlock::succ_iterator ChildIteratorType;
+template <> struct GraphTraits< ::lfort::CFGBlock *> {
+  typedef ::lfort::CFGBlock NodeType;
+  typedef ::lfort::CFGBlock::succ_iterator ChildIteratorType;
 
-  static NodeType* getEntryNode(::clang::CFGBlock *BB)
+  static NodeType* getEntryNode(::lfort::CFGBlock *BB)
   { return BB; }
 
   static inline ChildIteratorType child_begin(NodeType* N)
@@ -839,11 +839,11 @@ template <> struct GraphTraits< ::clang::CFGBlock *> {
   { return N->succ_end(); }
 };
 
-template <> struct GraphTraits< const ::clang::CFGBlock *> {
-  typedef const ::clang::CFGBlock NodeType;
-  typedef ::clang::CFGBlock::const_succ_iterator ChildIteratorType;
+template <> struct GraphTraits< const ::lfort::CFGBlock *> {
+  typedef const ::lfort::CFGBlock NodeType;
+  typedef ::lfort::CFGBlock::const_succ_iterator ChildIteratorType;
 
-  static NodeType* getEntryNode(const clang::CFGBlock *BB)
+  static NodeType* getEntryNode(const lfort::CFGBlock *BB)
   { return BB; }
 
   static inline ChildIteratorType child_begin(NodeType* N)
@@ -853,11 +853,11 @@ template <> struct GraphTraits< const ::clang::CFGBlock *> {
   { return N->succ_end(); }
 };
 
-template <> struct GraphTraits<Inverse< ::clang::CFGBlock*> > {
-  typedef ::clang::CFGBlock NodeType;
-  typedef ::clang::CFGBlock::const_pred_iterator ChildIteratorType;
+template <> struct GraphTraits<Inverse< ::lfort::CFGBlock*> > {
+  typedef ::lfort::CFGBlock NodeType;
+  typedef ::lfort::CFGBlock::const_pred_iterator ChildIteratorType;
 
-  static NodeType *getEntryNode(Inverse< ::clang::CFGBlock*> G)
+  static NodeType *getEntryNode(Inverse< ::lfort::CFGBlock*> G)
   { return G.Graph; }
 
   static inline ChildIteratorType child_begin(NodeType* N)
@@ -867,11 +867,11 @@ template <> struct GraphTraits<Inverse< ::clang::CFGBlock*> > {
   { return N->pred_end(); }
 };
 
-template <> struct GraphTraits<Inverse<const ::clang::CFGBlock*> > {
-  typedef const ::clang::CFGBlock NodeType;
-  typedef ::clang::CFGBlock::const_pred_iterator ChildIteratorType;
+template <> struct GraphTraits<Inverse<const ::lfort::CFGBlock*> > {
+  typedef const ::lfort::CFGBlock NodeType;
+  typedef ::lfort::CFGBlock::const_pred_iterator ChildIteratorType;
 
-  static NodeType *getEntryNode(Inverse<const ::clang::CFGBlock*> G)
+  static NodeType *getEntryNode(Inverse<const ::lfort::CFGBlock*> G)
   { return G.Graph; }
 
   static inline ChildIteratorType child_begin(NodeType* N)
@@ -883,56 +883,56 @@ template <> struct GraphTraits<Inverse<const ::clang::CFGBlock*> > {
 
 // Traits for: CFG
 
-template <> struct GraphTraits< ::clang::CFG* >
-    : public GraphTraits< ::clang::CFGBlock *>  {
+template <> struct GraphTraits< ::lfort::CFG* >
+    : public GraphTraits< ::lfort::CFGBlock *>  {
 
-  typedef ::clang::CFG::graph_iterator nodes_iterator;
+  typedef ::lfort::CFG::graph_iterator nodes_iterator;
 
-  static NodeType     *getEntryNode(::clang::CFG* F) { return &F->getEntry(); }
-  static nodes_iterator nodes_begin(::clang::CFG* F) { return F->nodes_begin();}
-  static nodes_iterator   nodes_end(::clang::CFG* F) { return F->nodes_end(); }
-  static unsigned              size(::clang::CFG* F) { return F->size(); }
+  static NodeType     *getEntryNode(::lfort::CFG* F) { return &F->getEntry(); }
+  static nodes_iterator nodes_begin(::lfort::CFG* F) { return F->nodes_begin();}
+  static nodes_iterator   nodes_end(::lfort::CFG* F) { return F->nodes_end(); }
+  static unsigned              size(::lfort::CFG* F) { return F->size(); }
 };
 
-template <> struct GraphTraits<const ::clang::CFG* >
-    : public GraphTraits<const ::clang::CFGBlock *>  {
+template <> struct GraphTraits<const ::lfort::CFG* >
+    : public GraphTraits<const ::lfort::CFGBlock *>  {
 
-  typedef ::clang::CFG::const_graph_iterator nodes_iterator;
+  typedef ::lfort::CFG::const_graph_iterator nodes_iterator;
 
-  static NodeType *getEntryNode( const ::clang::CFG* F) {
+  static NodeType *getEntryNode( const ::lfort::CFG* F) {
     return &F->getEntry();
   }
-  static nodes_iterator nodes_begin( const ::clang::CFG* F) {
+  static nodes_iterator nodes_begin( const ::lfort::CFG* F) {
     return F->nodes_begin();
   }
-  static nodes_iterator nodes_end( const ::clang::CFG* F) {
+  static nodes_iterator nodes_end( const ::lfort::CFG* F) {
     return F->nodes_end();
   }
-  static unsigned size(const ::clang::CFG* F) {
+  static unsigned size(const ::lfort::CFG* F) {
     return F->size();
   }
 };
 
-template <> struct GraphTraits<Inverse< ::clang::CFG*> >
-  : public GraphTraits<Inverse< ::clang::CFGBlock*> > {
+template <> struct GraphTraits<Inverse< ::lfort::CFG*> >
+  : public GraphTraits<Inverse< ::lfort::CFGBlock*> > {
 
-  typedef ::clang::CFG::graph_iterator nodes_iterator;
+  typedef ::lfort::CFG::graph_iterator nodes_iterator;
 
-  static NodeType *getEntryNode( ::clang::CFG* F) { return &F->getExit(); }
-  static nodes_iterator nodes_begin( ::clang::CFG* F) {return F->nodes_begin();}
-  static nodes_iterator nodes_end( ::clang::CFG* F) { return F->nodes_end(); }
+  static NodeType *getEntryNode( ::lfort::CFG* F) { return &F->getExit(); }
+  static nodes_iterator nodes_begin( ::lfort::CFG* F) {return F->nodes_begin();}
+  static nodes_iterator nodes_end( ::lfort::CFG* F) { return F->nodes_end(); }
 };
 
-template <> struct GraphTraits<Inverse<const ::clang::CFG*> >
-  : public GraphTraits<Inverse<const ::clang::CFGBlock*> > {
+template <> struct GraphTraits<Inverse<const ::lfort::CFG*> >
+  : public GraphTraits<Inverse<const ::lfort::CFGBlock*> > {
 
-  typedef ::clang::CFG::const_graph_iterator nodes_iterator;
+  typedef ::lfort::CFG::const_graph_iterator nodes_iterator;
 
-  static NodeType *getEntryNode(const ::clang::CFG* F) { return &F->getExit(); }
-  static nodes_iterator nodes_begin(const ::clang::CFG* F) {
+  static NodeType *getEntryNode(const ::lfort::CFG* F) { return &F->getExit(); }
+  static nodes_iterator nodes_begin(const ::lfort::CFG* F) {
     return F->nodes_begin();
   }
-  static nodes_iterator nodes_end(const ::clang::CFG* F) {
+  static nodes_iterator nodes_end(const ::lfort::CFG* F) {
     return F->nodes_end();
   }
 };

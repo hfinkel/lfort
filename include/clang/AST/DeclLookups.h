@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLLOOKUPS_H
-#define LLVM_CLANG_AST_DECLLOOKUPS_H
+#ifndef LLVM_LFORT_AST_DECLLOOKUPS_H
+#define LLVM_LFORT_AST_DECLLOOKUPS_H
 
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/AST/DeclarationName.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/AST/DeclarationName.h"
 
-namespace clang {
+namespace lfort {
 
 /// all_lookups_iterator - An iterator that provides a view over the results
 /// of looking up every possible name.
@@ -83,6 +83,6 @@ DeclContext::all_lookups_iterator DeclContext::lookups_end() const {
   return all_lookups_iterator();
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

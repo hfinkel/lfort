@@ -14,11 +14,11 @@
 #include "CodeGenFunction.h"
 #include "CGCXXABI.h"
 #include "CGObjCRuntime.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/IR/Intrinsics.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 static void EmitDeclInit(CodeGenFunction &CGF, const VarDecl &D,

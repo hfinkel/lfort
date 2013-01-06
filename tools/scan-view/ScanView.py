@@ -22,7 +22,7 @@ kReportFileRE = re.compile('(.*/)?report-(.*)\\.html')
 
 kBugKeyValueRE = re.compile('<!-- BUG([^ ]*) (.*) -->')
 
-#  <!-- REPORTPROBLEM file="crashes/clang_crash_ndSGF9.mi" stderr="crashes/clang_crash_ndSGF9.mi.stderr.txt" info="crashes/clang_crash_ndSGF9.mi.info" -->
+#  <!-- REPORTPROBLEM file="crashes/lfort_crash_ndSGF9.mi" stderr="crashes/lfort_crash_ndSGF9.mi.stderr.txt" info="crashes/lfort_crash_ndSGF9.mi.info" -->
 
 kReportCrashEntryRE = re.compile('<!-- REPORTPROBLEM (.*?)-->')
 kReportCrashEntryKeyValueRE = re.compile(' ?([^=]+)="(.*?)"')
@@ -430,7 +430,7 @@ Submit</h3>
             if not data:
                 raise ValueError, 'No crashes detected!'
             c = Context()
-            c.title = 'clang static analyzer failures'
+            c.title = 'lfort static analyzer failures'
 
             stderrSummary = ""
             for item in data:
@@ -443,7 +443,7 @@ Submit</h3>
                                                          ''.join(lns))
 
             c.description = """\
-The clang static analyzer failed on these inputs:
+The lfort static analyzer failed on these inputs:
 %s
 
 STDERR Summary
@@ -459,7 +459,7 @@ STDERR Summary
                 c.files.append(posixpath.join(self.server.root,
                                               item.get('file','')))
                 c.files.append(posixpath.join(self.server.root,
-                                              item.get('clangfile','')))
+                                              item.get('lfortfile','')))
                 c.files.append(posixpath.join(self.server.root,
                                               item.get('stderr','')))
                 c.files.append(posixpath.join(self.server.root,
@@ -475,9 +475,9 @@ STDERR Summary
                 raise ValueError, 'Invalid report ID'
             keys = self.load_report(report)
             c = Context()
-            c.title = keys.get('DESC','clang error (unrecognized')
+            c.title = keys.get('DESC','lfort error (unrecognized')
             c.description = """\
-Bug reported by the clang static analyzer.
+Bug reported by the lfort static analyzer.
 
 Description: %s
 File: %s

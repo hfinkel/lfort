@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_SELECTORLOCATIONSKIND_H
-#define LLVM_CLANG_AST_SELECTORLOCATIONSKIND_H
+#ifndef LLVM_LFORT_AST_SELECTORLOCATIONSKIND_H
+#define LLVM_LFORT_AST_SELECTORLOCATIONSKIND_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
   class Selector;
   class SourceLocation;
   class Expr;
@@ -78,6 +78,6 @@ SourceLocation getStandardSelectorLoc(unsigned Index,
                                       ArrayRef<ParmVarDecl *> Args,
                                       SourceLocation EndLoc);
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

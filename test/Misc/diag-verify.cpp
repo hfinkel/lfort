@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s 2>&1 | FileCheck %s
 
 // Test the -verify flag.  Each of the "x = y;" lines will produce a
 // "use of undeclared identifier 'y'" error message.

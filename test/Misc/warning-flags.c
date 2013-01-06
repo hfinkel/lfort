@@ -9,7 +9,7 @@ This test serves two purposes:
     If take an existing warning and add a flag, this test will fail.  To
     fix this test, simply remove that warning from the list below.
     
-(2) It prevents us adding new warnings to Clang that have no -W flag.  All
+(2) It prevents us adding new warnings to LFort that have no -W flag.  All
     new warnings should have -W flags.
     
     If you add a new warning without a flag, this test will fail.  To fix
@@ -65,7 +65,7 @@ CHECK-NEXT:   warn_conv_to_void_not_used
 CHECK-NEXT:   warn_delete_array_type
 CHECK-NEXT:   warn_double_const_requires_fp64
 CHECK-NEXT:   warn_drv_assuming_mfloat_abi_is
-CHECK-NEXT:   warn_drv_clang_unsupported
+CHECK-NEXT:   warn_drv_lfort_unsupported
 CHECK-NEXT:   warn_drv_objc_gc_unsupported
 CHECK-NEXT:   warn_drv_pch_not_first_include
 CHECK-NEXT:   warn_dup_category_def

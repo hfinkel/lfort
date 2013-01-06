@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_SIMPLE_CONSTRAINT_MANAGER_H
-#define LLVM_CLANG_GR_SIMPLE_CONSTRAINT_MANAGER_H
+#ifndef LLVM_LFORT_GR_SIMPLE_CONSTRAINT_MANAGER_H
+#define LLVM_LFORT_GR_SIMPLE_CONSTRAINT_MANAGER_H
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ConstraintManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ConstraintManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -100,6 +100,6 @@ protected:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

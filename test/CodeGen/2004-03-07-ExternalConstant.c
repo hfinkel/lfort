@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1  %s -emit-llvm -o - | FileCheck %s
 
 // CHECK: @a = external constan
 extern const int a[];   // 'a' should be marked constant even though it's external!

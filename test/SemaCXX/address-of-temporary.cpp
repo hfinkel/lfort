@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wno-error=address-of-temporary -verify -std=gnu++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-error=address-of-temporary -verify -std=gnu++11 %s
 struct X {
   X();
   X(int);

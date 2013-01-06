@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wheader-hygiene -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wheader-hygiene -verify %s
 
 #ifdef BE_THE_HEADER
 namespace warn_in_header_in_global_context {}

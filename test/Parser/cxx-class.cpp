@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic %s
 class C;
 class C {
 public:

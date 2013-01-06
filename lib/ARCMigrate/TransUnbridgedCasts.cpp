@@ -42,16 +42,16 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

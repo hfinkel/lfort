@@ -1,6 +1,6 @@
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangTooling
+add_lfort_library(lfortTooling
   ArgumentsAdjusters.cpp
   CommonOptionsParser.cpp
   CompilationDatabase.cpp
@@ -11,20 +11,20 @@ add_clang_library(clangTooling
   Tooling.cpp
   )
 
-add_dependencies(clangTooling
-  ClangAttrClasses
-  ClangAttrList
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangStmtNodes
+add_dependencies(lfortTooling
+  LFortAttrClasses
+  LFortAttrList
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortStmtNodes
   )
 
-target_link_libraries(clangTooling
-  clangBasic
-  clangFrontend
-  clangAST
-  clangASTMatchers
-  clangRewriteCore
-  clangRewriteFrontend
+target_link_libraries(lfortTooling
+  lfortBasic
+  lfortFrontend
+  lfortAST
+  lfortASTMatchers
+  lfortRewriteCore
+  lfortRewriteFrontend
   )

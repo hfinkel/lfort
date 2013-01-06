@@ -1,6 +1,6 @@
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangStaticAnalyzerCore
+add_lfort_library(lfortStaticAnalyzerCore
   APSIntType.cpp
   AnalysisManager.cpp
   AnalyzerOptions.cpp
@@ -41,19 +41,19 @@ add_clang_library(clangStaticAnalyzerCore
   TextPathDiagnostics.cpp
   )
 
-add_dependencies(clangStaticAnalyzerCore
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
+add_dependencies(lfortStaticAnalyzerCore
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
   )
 
-target_link_libraries(clangStaticAnalyzerCore
-  clangBasic
-  clangLex
-  clangAST
-  clangFrontend
-  clangRewriteCore
+target_link_libraries(lfortStaticAnalyzerCore
+  lfortBasic
+  lfortLex
+  lfortAST
+  lfortFrontend
+  lfortRewriteCore
   )

@@ -628,9 +628,9 @@ def findClosestTOCEntry(data, target):
 
 # What a hack. Slow to boot.
 doxyLineRefRE = re.compile(r"<a name=\"l([0-9]+)\"></a>")
-def findClosestLineReference(clangRoot, doxyName, target):
+def findClosestLineReference(lfortRoot, doxyName, target):
     try:
-        f = open(os.path.join(clangRoot, 'docs', 'doxygen', 'html', doxyName))
+        f = open(os.path.join(lfortRoot, 'docs', 'doxygen', 'html', doxyName))
     except:
         return None
     
@@ -803,7 +803,7 @@ def preorder(node,parents=(),first=True):
 def main():
     global options
     from optparse import OptionParser
-    parser = OptionParser("usage: %prog [options] CLANG_ROOT <output-dir>")
+    parser = OptionParser("usage: %prog [options] LFORT_ROOT <output-dir>")
     parser.add_option("", "--debug", dest="debug",
                       help="Print extra debugging output",
                       action="store_true",
@@ -841,7 +841,7 @@ def main():
     referencesPath = os.path.join(outputDir,'references.html')
     print 'Writing: %s'%(referencesPath,)
     f = open(referencesPath,'w')   
-    print >>f, '<html><head><title>clang: Specification References</title></head>'
+    print >>f, '<html><head><title>lfort: Specification References</title></head>'
     print >>f, '<body>'
     print >>f, '\t<h2>Specification References</h2>'
     for i,node in enumerate(refTree[1]):
@@ -889,9 +889,9 @@ def main():
                 # Grrr, why can't doxygen write line number references.
                 lineReference = findClosestLineReference(root,doxyName,item.line)
                 if lineReference is not None:
-                    linkStr = 'http://clang.llvm.org/doxygen/%s#%s'%(doxyName,lineReference)
+                    linkStr = 'http://lfort.llvm.org/doxygen/%s#%s'%(doxyName,lineReference)
                 else:
-                    linkStr = 'http://clang.llvm.org/doxygen/%s'%(doxyName,)
+                    linkStr = 'http://lfort.llvm.org/doxygen/%s'%(doxyName,)
                 if item.section.paragraph is not None:
                     paraText = '&nbsp;(p%d)'%(item.section.paragraph,)
                 else:

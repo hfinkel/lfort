@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -verify %s
 
 // The exception specification of a destructor declaration is matched *before*
 // the exception specification adjustment occurs.

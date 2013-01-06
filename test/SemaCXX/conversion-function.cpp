@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 class X { 
 public:
   operator bool();
@@ -54,7 +54,7 @@ public:
   operator const B(); // expected-warning{{conversion function converting 'B' to itself will never be used}}
 };
 
-// This used to crash Clang.
+// This used to crash LFort.
 struct Flip;
 struct Flop {
   Flop();

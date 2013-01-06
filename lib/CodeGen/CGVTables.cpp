@@ -14,9 +14,9 @@
 #include "CodeGenFunction.h"
 #include "CGCXXABI.h"
 #include "CodeGenModule.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/Support/Compiler.h"
@@ -25,7 +25,7 @@
 #include <algorithm>
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CodeGenVTables::CodeGenVTables(CodeGenModule &CGM)

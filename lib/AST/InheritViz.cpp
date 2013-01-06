@@ -13,17 +13,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/TypeOrdering.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/TypeOrdering.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include <map>
 
 using namespace llvm;
 
-namespace clang {
+namespace lfort {
 
 /// InheritanceHierarchyWriter - Helper class that writes out a
 /// GraphViz file that diagrams the inheritance hierarchy starting at

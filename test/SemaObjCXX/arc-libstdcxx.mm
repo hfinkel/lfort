@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -fobjc-arc-cxxlib=libstdc++ -fobjc-runtime-has-weak -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -fobjc-arc-cxxlib=libstdc++ -fobjc-runtime-has-weak -verify %s
 // expected-no-diagnostics
 
 @interface A @end

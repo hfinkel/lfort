@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:100:2: error: #import of type library is an unsupported Microsoft feature'
-// RUN: %clang_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:200:2: error: #import of type library is an unsupported Microsoft feature'
-// RUN: %clang_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:300:2: error: #import of type library is an unsupported Microsoft feature'
+// RUN: %lfort_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:100:2: error: #import of type library is an unsupported Microsoft feature'
+// RUN: %lfort_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:200:2: error: #import of type library is an unsupported Microsoft feature'
+// RUN: %lfort_cc1 -E -fms-compatibility %s 2>&1 | grep 'doh.c:300:2: error: #import of type library is an unsupported Microsoft feature'
 
 #line 100 "doh.c"
 #import "pp-record.h" // expected-error {{#import of type library is an unsupported Microsoft feature}}

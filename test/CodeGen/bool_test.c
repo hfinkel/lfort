@@ -1,5 +1,5 @@
 // REQUIRES: ppc32-registered-target
-// RUN: %clang_cc1 -triple powerpc-apple-macosx10.4.0 -emit-llvm -o - %s -O2 -disable-llvm-optzns | FileCheck %s
+// RUN: %lfort_cc1 -triple powerpc-apple-macosx10.4.0 -emit-llvm -o - %s -O2 -disable-llvm-optzns | FileCheck %s
 
 int boolsize = sizeof(_Bool);
 // CHECK: boolsize = global i32 4, align 4

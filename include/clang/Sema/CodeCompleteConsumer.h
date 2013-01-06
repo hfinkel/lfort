@@ -10,19 +10,19 @@
 //  This file defines the CodeCompleteConsumer class.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_CODECOMPLETECONSUMER_H
-#define LLVM_CLANG_SEMA_CODECOMPLETECONSUMER_H
+#ifndef LLVM_LFORT_SEMA_CODECOMPLETECONSUMER_H
+#define LLVM_LFORT_SEMA_CODECOMPLETECONSUMER_H
 
-#include "clang-c/Index.h"
-#include "clang/AST/CanonicalType.h"
-#include "clang/AST/Type.h"
-#include "clang/Sema/CodeCompleteOptions.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/CanonicalType.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Sema/CodeCompleteOptions.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Allocator.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 
@@ -136,7 +136,7 @@ unsigned getMacroUsagePriority(StringRef MacroName,
                                const LangOptions &LangOpts,
                                bool PreferredTypeIsPointer = false);
 
-/// \brief Determine the libclang cursor kind associated with the given
+/// \brief Determine the liblfort cursor kind associated with the given
 /// declaration.
 CXCursorKind getCursorKindForDecl(Decl *D);
 
@@ -549,15 +549,15 @@ public:
   StringRef getParentName(DeclContext *DC);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 namespace llvm {
-  template <> struct isPodLike<clang::CodeCompletionString::Chunk> {
+  template <> struct isPodLike<lfort::CodeCompletionString::Chunk> {
     static const bool value = true;
   };
 }
 
-namespace clang {
+namespace lfort {
 
 /// \brief A builder class used to construct new code-completion strings.
 class CodeCompletionBuilder {
@@ -989,6 +989,6 @@ public:
   virtual CodeCompletionTUInfo &getCodeCompletionTUInfo() { return CCTUInfo; }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_CODECOMPLETECONSUMER_H
+#endif // LLVM_LFORT_SEMA_CODECOMPLETECONSUMER_H

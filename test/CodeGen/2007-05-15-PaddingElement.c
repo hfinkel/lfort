@@ -1,6 +1,6 @@
 // PR 1419
 
-// RUN: %clang_cc1   -O2 %s -emit-llvm -o - | grep "ret i32 1"
+// RUN: %lfort_cc1   -O2 %s -emit-llvm -o - | grep "ret i32 1"
 struct A {
   short x;
   long long :0;

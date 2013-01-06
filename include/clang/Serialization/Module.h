@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SERIALIZATION_MODULE_H
-#define LLVM_CLANG_SERIALIZATION_MODULE_H
+#ifndef LLVM_LFORT_SERIALIZATION_MODULE_H
+#define LLVM_LFORT_SERIALIZATION_MODULE_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Serialization/ASTBitCodes.h"
-#include "clang/Serialization/ContinuousRangeMap.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Serialization/ASTBitCodes.h"
+#include "lfort/Serialization/ContinuousRangeMap.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/Bitcode/BitstreamReader.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class FileEntry;
 class DeclContext;
@@ -400,6 +400,6 @@ public:
 
 } // end namespace serialization
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

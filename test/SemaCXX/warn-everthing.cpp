@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Weverything -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -Weverything -fsyntax-only %s -verify
 
 // This previously crashed due to a bug in the CFG.  Exercising all
 // warnings helps check CFG construction.

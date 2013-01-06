@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin11 -g -S %s -o -
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin11 -g -S %s -o -
 // REQUIRES: x86-64-registered-target
 
 @class Bar;

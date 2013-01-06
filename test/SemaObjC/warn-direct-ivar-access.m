@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak  -Wdirect-ivar-access -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1  -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak  -Wdirect-ivar-access -verify -Wno-objc-root-class %s
 // rdar://6505197
 
 __attribute__((objc_root_class)) @interface MyObject {

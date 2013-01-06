@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -std=c++11 -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
-// RUN: %clang_cc1 %s -std=c++11 -triple=x86_64-apple-darwin10 -fvisibility hidden -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-HIDDEN
+// RUN: %lfort_cc1 %s -std=c++11 -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -std=c++11 -triple=x86_64-apple-darwin10 -fvisibility hidden -emit-llvm -o - | FileCheck %s -check-prefix=CHECK-HIDDEN
 
 #define HIDDEN __attribute__((visibility("hidden")))
 #define PROTECTED __attribute__((visibility("protected")))

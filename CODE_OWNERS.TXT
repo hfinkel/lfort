@@ -1,6 +1,6 @@
 This file is a list of the people responsible for ensuring that patches for a
-particular part of Clang are reviewed, either by themself or by someone else.
-They are also the gatekeepers for their part of Clang, with the final word on
+particular part of LFort are reviewed, either by themself or by someone else.
+They are also the gatekeepers for their part of LFort, with the final word on
 what goes in or not.
 
 The list is sorted by surname and formatted to allow easy grepping and
@@ -18,18 +18,18 @@ E: echristo@gmail.com
 D: Debug Information, autotools/configure/make build, inline assembly
 
 N: Doug Gregor
-D: All parts of Clang not covered by someone else
+D: All parts of LFort not covered by someone else
 
 N: Anton Korobeynikov
 E: anton@korobeynikov.info
 D: Exception handling, Windows codegen, ARM EABI
 
 N: Ted Kremenek
-D: Clang Static Analyzer
+D: LFort Static Analyzer
 
 N: John McCall
 E: rjmccall@apple.com
-D: Clang LLVM IR generation
+D: LFort LLVM IR generation
 
 N: Chad Rosier
 E: mcrosier@apple.com
@@ -37,4 +37,4 @@ D: MS-inline asm, and the compiler driver
 
 N: Richard Smith
 E: richard@metafoo.co.uk
-D: Clang Semantic Analysis (tools/clang/lib/Sema/* tools/clang/include/clang/Sema/*)
+D: LFort Semantic Analysis (tools/lfort/lib/Sema/* tools/lfort/include/lfort/Sema/*)

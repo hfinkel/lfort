@@ -7,8 +7,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ..
+LFORT_LEVEL := ..
 
-PARALLEL_DIRS := analyzer-plugin clang-interpreter PrintFunctionNames
+PARALLEL_DIRS := analyzer-plugin lfort-interpreter PrintFunctionNames
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

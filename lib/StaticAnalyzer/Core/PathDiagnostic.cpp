@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 bool PathDiagnosticMacroPiece::containsEvent() const {
@@ -278,15 +278,15 @@ static llvm::Optional<bool> comparePiece(const PathDiagnosticPiece &X,
   }
   
   switch (X.getKind()) {
-    case clang::ento::PathDiagnosticPiece::ControlFlow:
+    case lfort::ento::PathDiagnosticPiece::ControlFlow:
       return compareControlFlow(cast<PathDiagnosticControlFlowPiece>(X),
                                 cast<PathDiagnosticControlFlowPiece>(Y));
-    case clang::ento::PathDiagnosticPiece::Event:
+    case lfort::ento::PathDiagnosticPiece::Event:
       return llvm::Optional<bool>();
-    case clang::ento::PathDiagnosticPiece::Macro:
+    case lfort::ento::PathDiagnosticPiece::Macro:
       return compareMacro(cast<PathDiagnosticMacroPiece>(X),
                           cast<PathDiagnosticMacroPiece>(Y));
-    case clang::ento::PathDiagnosticPiece::Call:
+    case lfort::ento::PathDiagnosticPiece::Call:
       return compareCall(cast<PathDiagnosticCallPiece>(X),
                          cast<PathDiagnosticCallPiece>(Y));
   }

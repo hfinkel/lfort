@@ -11,9 +11,9 @@
 /// \brief Defines and computes precedence levels for binary/ternary operators.
 ///
 //===----------------------------------------------------------------------===//
-#include "clang/Basic/OperatorPrecedence.h"
+#include "lfort/Basic/OperatorPrecedence.h"
 
-namespace clang {
+namespace lfort {
 
 prec::Level getBinOpPrecedence(tok::TokenKind Kind, bool GreaterThanIsOperator,
                                bool CPlusPlus11) {
@@ -73,4 +73,4 @@ prec::Level getBinOpPrecedence(tok::TokenKind Kind, bool GreaterThanIsOperator,
   }
 }
 
-}  // namespace clang
+}  // namespace lfort

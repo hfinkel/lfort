@@ -1,7 +1,7 @@
-clang_tablegen(Options.inc -gen-opt-parser-defs
+lfort_tablegen(Options.inc -gen-opt-parser-defs
   SOURCE Options.td
-  TARGET ClangDriverOptions)
+  TARGET LFortDriverOptions)
 
-clang_tablegen(CC1AsOptions.inc -gen-opt-parser-defs
+lfort_tablegen(CC1AsOptions.inc -gen-opt-parser-defs
   SOURCE CC1AsOptions.td
-  TARGET ClangCC1AsOptions)
+  TARGET LFortCC1AsOptions)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple armv7-none-eabi -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple armv7-none-eabi -emit-llvm -o - | FileCheck %s
 
 struct A {
   virtual void f();

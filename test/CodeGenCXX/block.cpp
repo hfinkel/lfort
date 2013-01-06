@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -fblocks 
+// RUN: %lfort_cc1 %s -emit-llvm -o - -fblocks 
 // Just test that this doesn't crash the compiler...
 
 void func(void*);

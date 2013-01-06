@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused-value -Wunused-label %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wall %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused-value -Wunused-label %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wall %s
 
 int i = 0;
 int j = 0;

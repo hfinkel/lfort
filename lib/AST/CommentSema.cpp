@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentSema.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/CommentDiagnostic.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/AST/CommentSema.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentDiagnostic.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 namespace {
-#include "clang/AST/CommentHTMLTagsProperties.inc"
+#include "lfort/AST/CommentHTMLTagsProperties.inc"
 } // unnamed namespace
 
 Sema::Sema(llvm::BumpPtrAllocator &Allocator, const SourceManager &SourceMgr,
@@ -818,5 +818,5 @@ Sema::getInlineCommandRenderKind(StringRef Name) const {
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

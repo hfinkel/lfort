@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CodeGen/CodeGenAction.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/CodeGen/BackendUtil.h"
-#include "clang/CodeGen/ModuleBuilder.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
+#include "lfort/CodeGen/CodeGenAction.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/CodeGen/BackendUtil.h"
+#include "lfort/CodeGen/ModuleBuilder.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Bitcode/ReaderWriter.h"
@@ -29,10 +29,10 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/Timer.h"
-using namespace clang;
+using namespace lfort;
 using namespace llvm;
 
-namespace clang {
+namespace lfort {
   class BackendConsumer : public ASTConsumer {
     virtual void anchor();
     DiagnosticsEngine &Diags;
@@ -196,17 +196,17 @@ namespace clang {
 /// buffer to be a valid FullSourceLoc.
 static FullSourceLoc ConvertBackendLocation(const llvm::SMDiagnostic &D,
                                             SourceManager &CSM) {
-  // Get both the clang and llvm source managers.  The location is relative to
+  // Get both the lfort and llvm source managers.  The location is relative to
   // a memory buffer that the LLVM Source Manager is handling, we need to add
-  // a copy to the Clang source manager.
+  // a copy to the LFort source manager.
   const llvm::SourceMgr &LSM = *D.getSourceMgr();
 
   // We need to copy the underlying LLVM memory buffer because llvm::SourceMgr
-  // already owns its one and clang::SourceManager wants to own its one.
+  // already owns its one and lfort::SourceManager wants to own its one.
   const MemoryBuffer *LBuf =
   LSM.getMemoryBuffer(LSM.FindBufferContainingLoc(D.getLoc()));
 
-  // Create the copy and transfer ownership to clang::SourceManager.
+  // Create the copy and transfer ownership to lfort::SourceManager.
   llvm::MemoryBuffer *CBuf =
   llvm::MemoryBuffer::getMemBufferCopy(LBuf->getBuffer(),
                                        LBuf->getBufferIdentifier());
@@ -226,7 +226,7 @@ static FullSourceLoc ConvertBackendLocation(const llvm::SMDiagnostic &D,
 void BackendConsumer::InlineAsmDiagHandler2(const llvm::SMDiagnostic &D,
                                             SourceLocation LocCookie) {
   // There are a couple of different kinds of errors we could get here.  First,
-  // we re-format the SMDiagnostic in terms of a clang diagnostic.
+  // we re-format the SMDiagnostic in terms of a lfort diagnostic.
 
   // Strip "error: " off the start of the message string.
   StringRef Message = D.getMessage();
@@ -239,7 +239,7 @@ void BackendConsumer::InlineAsmDiagHandler2(const llvm::SMDiagnostic &D,
     Loc = ConvertBackendLocation(D, Context->getSourceManager());
   
 
-  // If this problem has clang-level source location information, report the
+  // If this problem has lfort-level source location information, report the
   // issue as being an error in the source with a note showing the instantiated
   // code.
   if (LocCookie.isValid()) {

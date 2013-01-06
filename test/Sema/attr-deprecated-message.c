@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 // rdar: // 6734520
 
 typedef int INT1 __attribute__((deprecated("Please avoid INT1"))); // expected-note 3 {{'INT1' declared here}}

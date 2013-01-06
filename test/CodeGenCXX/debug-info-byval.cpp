@@ -1,4 +1,4 @@
-// RUN: %clang -g -S %s -o - | FileCheck %s
+// RUN: %lfort -g -S %s -o - | FileCheck %s
 // Test to check presence of debug info for byval parameter.
 // Radar 8350436.
 class DAG {

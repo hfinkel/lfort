@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
 
 @interface A {
   int X __attribute__((deprecated)); // expected-note 2 {{declared here}}

@@ -1,4 +1,4 @@
-// RUN: %clang -emit-llvm -S -o %t %s
+// RUN: %lfort -emit-llvm -S -o %t %s
 
 struct s0 {
   void *a;

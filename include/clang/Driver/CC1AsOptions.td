@@ -1,4 +1,4 @@
-//===--- CC1AsOptions.td - Options for clang -cc1as -----------------------===//
+//===--- CC1AsOptions.td - Options for lfort -cc1as -----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the options accepted by clang -cc1as.
+//  This file defines the options accepted by lfort -cc1as.
 //
 //===----------------------------------------------------------------------===//
 

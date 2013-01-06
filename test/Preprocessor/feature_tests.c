@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -triple=i686-apple-darwin9
-// RUN: %clang_cc1 %s -E -triple=i686-apple-darwin9
+// RUN: %lfort_cc1 %s -triple=i686-apple-darwin9
+// RUN: %lfort_cc1 %s -E -triple=i686-apple-darwin9
 #ifndef __has_feature
 #error Should have __has_feature
 #endif
@@ -15,11 +15,11 @@
      !__has_builtin(__c11_atomic_init) || \
      !__has_feature(attribute_analyzer_noreturn) || \
      !__has_feature(attribute_overloadable)
-#error Clang should have these
+#error LFort should have these
 #endif
 
 #if __has_builtin(__builtin_insanity)
-#error Clang should not have this
+#error LFort should not have this
 #endif
 
 #if !__has_feature(__attribute_deprecated_with_message__)

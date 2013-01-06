@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -verify %s
 
 struct A {
   virtual void a(); // expected-note{{overridden virtual function is here}}

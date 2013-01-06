@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -arcmt-check -verify -triple x86_64-apple-darwin10 -fblocks -Werror %s
+// RUN: %lfort_cc1 -arcmt-check -verify -triple x86_64-apple-darwin10 -fblocks -Werror %s
 // DISABLE: mingw32
 
 #if __has_feature(objc_arc)

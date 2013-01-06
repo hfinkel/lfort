@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STATICANALYZER_CORE_CHECKEROPTINFO_H
-#define LLVM_CLANG_STATICANALYZER_CORE_CHECKEROPTINFO_H
+#ifndef LLVM_LFORT_STATICANALYZER_CORE_CHECKEROPTINFO_H
+#define LLVM_LFORT_STATICANALYZER_CORE_CHECKEROPTINFO_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// Represents a request to include or exclude a checker or package from a
@@ -38,6 +38,6 @@ public:
 };
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort
 
 #endif

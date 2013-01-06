@@ -11,10 +11,10 @@
 // target Objective-C runtime.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Basic/ObjCRuntime.h"
+#include "lfort/Basic/ObjCRuntime.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 
 std::string ObjCRuntime::getAsString() const {
   std::string Result;
@@ -25,7 +25,7 @@ std::string ObjCRuntime::getAsString() const {
   return Result;  
 }
 
-raw_ostream &clang::operator<<(raw_ostream &out, const ObjCRuntime &value) {
+raw_ostream &lfort::operator<<(raw_ostream &out, const ObjCRuntime &value) {
   switch (value.getKind()) {
   case ObjCRuntime::MacOSX: out << "macosx"; break;
   case ObjCRuntime::FragileMacOSX: out << "macosx-fragile"; break;

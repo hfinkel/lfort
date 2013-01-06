@@ -11,26 +11,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DependentDiagnostic.h"
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DependentDiagnostic.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 //  Statistics
@@ -38,7 +38,7 @@ using namespace clang;
 
 #define DECL(DERIVED, BASE) static int n##DERIVED##s = 0;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
 
 void *Decl::AllocateDeserializedDecl(const ASTContext &Context, 
                                      unsigned ID,
@@ -64,7 +64,7 @@ const char *Decl::getDeclKindName() const {
   default: llvm_unreachable("Declaration not in DeclNodes.inc!");
 #define DECL(DERIVED, BASE) case DERIVED: return #DERIVED;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   }
 }
 
@@ -83,7 +83,7 @@ const char *DeclContext::getDeclKindName() const {
   default: llvm_unreachable("Declaration context not in DeclNodes.inc!");
 #define DECL(DERIVED, BASE) case Decl::DERIVED: return #DERIVED;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   }
 }
 
@@ -98,7 +98,7 @@ void Decl::PrintStats() {
   int totalDecls = 0;
 #define DECL(DERIVED, BASE) totalDecls += n##DERIVED##s;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   llvm::errs() << "  " << totalDecls << " decls total.\n";
 
   int totalBytes = 0;
@@ -111,7 +111,7 @@ void Decl::PrintStats() {
                  << " bytes)\n";                                        \
   }
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
 
   llvm::errs() << "Total bytes = " << totalBytes << "\n";
 }
@@ -120,7 +120,7 @@ void Decl::add(Kind k) {
   switch (k) {
 #define DECL(DERIVED, BASE) case DERIVED: ++n##DERIVED##s; break;
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
   }
 }
 
@@ -612,13 +612,13 @@ Decl *Decl::castFromDeclContext (const DeclContext *D) {
     case Decl::NAME:       \
       return static_cast<NAME##Decl*>(const_cast<DeclContext*>(D));
 #define DECL_CONTEXT_BASE(NAME)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
     default:
 #define DECL(NAME, BASE)
 #define DECL_CONTEXT_BASE(NAME)                  \
       if (DK >= first##NAME && DK <= last##NAME) \
         return static_cast<NAME##Decl*>(const_cast<DeclContext*>(D));
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       llvm_unreachable("a decl that inherits DeclContext isn't handled");
   }
 }
@@ -631,13 +631,13 @@ DeclContext *Decl::castToDeclContext(const Decl *D) {
     case Decl::NAME:       \
       return static_cast<NAME##Decl*>(const_cast<Decl*>(D));
 #define DECL_CONTEXT_BASE(NAME)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
     default:
 #define DECL(NAME, BASE)
 #define DECL_CONTEXT_BASE(NAME)                                   \
       if (DK >= first##NAME && DK <= last##NAME)                  \
         return static_cast<NAME##Decl*>(const_cast<Decl*>(D));
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       llvm_unreachable("a decl that inherits DeclContext isn't handled");
   }
 }
@@ -713,7 +713,7 @@ bool DeclContext::classof(const Decl *D) {
 #define DECL(NAME, BASE)
 #define DECL_CONTEXT(NAME) case Decl::NAME:
 #define DECL_CONTEXT_BASE(NAME)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       return true;
     default:
 #define DECL(NAME, BASE)
@@ -721,7 +721,7 @@ bool DeclContext::classof(const Decl *D) {
       if (D->getKind() >= Decl::first##NAME &&  \
           D->getKind() <= Decl::last##NAME)     \
         return true;
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       return false;
   }
 }

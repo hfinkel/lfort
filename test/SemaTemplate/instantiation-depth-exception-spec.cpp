@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 -ftemplate-depth 16 -fcxx-exceptions -fexceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 -ftemplate-depth 16 -fcxx-exceptions -fexceptions %s
 
 template<typename T> T go(T a) noexcept(noexcept(go(a))); // \
 // expected-error 16{{call to function 'go' that is neither visible}} \

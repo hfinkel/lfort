@@ -12,10 +12,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTICIDS_H
-#define LLVM_CLANG_DIAGNOSTICIDS_H
+#ifndef LLVM_LFORT_DIAGNOSTICIDS_H
+#define LLVM_LFORT_DIAGNOSTICIDS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringRef.h"
 
@@ -23,7 +23,7 @@ namespace llvm {
   template<typename T, unsigned> class SmallVector;
 }
 
-namespace clang {
+namespace lfort {
   class DiagnosticsEngine;
   class SourceLocation;
   struct WarningOption;
@@ -53,7 +53,7 @@ namespace clang {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,CATEGORY,NOWERROR,SHOWINSYSHEADER) ENUM,
-#include "clang/Basic/DiagnosticCommonKinds.inc"
+#include "lfort/Basic/DiagnosticCommonKinds.inc"
       NUM_BUILTIN_COMMON_DIAGNOSTICS
 #undef DIAG
     };
@@ -280,6 +280,6 @@ private:
   friend class DiagnosticsEngine;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

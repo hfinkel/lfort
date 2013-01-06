@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-pc-linux-gnu -emit-llvm < %s| FileCheck %s
+// RUN: %lfort_cc1 -triple i386-pc-linux-gnu -emit-llvm < %s| FileCheck %s
 
 // CHECK: @test1
 // CHECK: call void @llvm.memset.p0i8.i32

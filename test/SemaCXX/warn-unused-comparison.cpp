@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fcxx-exceptions -verify -Wno-unused -Wunused-comparison %s
+// RUN: %lfort_cc1 -fsyntax-only -fcxx-exceptions -verify -Wno-unused -Wunused-comparison %s
 
 struct A {
   bool operator==(const A&);

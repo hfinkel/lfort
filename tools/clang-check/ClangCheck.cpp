@@ -1,4 +1,4 @@
-//===--- tools/clang-check/ClangCheck.cpp - Clang check tool --------------===//
+//===--- tools/lfort-check/LFortCheck.cpp - LFort check tool --------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,41 +7,41 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file implements a clang-check tool that runs clang based on the info
+//  This file implements a lfort-check tool that runs lfort based on the info
 //  stored in a compilation database.
 //
-//  This tool uses the Clang Tooling infrastructure, see
-//    http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html
+//  This tool uses the LFort Tooling infrastructure, see
+//    http://lfort.llvm.org/docs/HowToSetupToolingForLLVM.html
 //  for details on setting it up with LLVM source tree.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/ASTConsumers.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Rewrite/Frontend/FixItRewriter.h"
-#include "clang/Rewrite/Frontend/FrontendActions.h"
-#include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Frontend/ASTConsumers.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Rewrite/Frontend/FixItRewriter.h"
+#include "lfort/Rewrite/Frontend/FrontendActions.h"
+#include "lfort/Tooling/CommonOptionsParser.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Path.h"
 
-using namespace clang::driver;
-using namespace clang::tooling;
+using namespace lfort::driver;
+using namespace lfort::tooling;
 using namespace llvm;
 
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 static cl::extrahelp MoreHelp(
-    "\tFor example, to run clang-check on all files in a subtree of the\n"
+    "\tFor example, to run lfort-check on all files in a subtree of the\n"
     "\tsource tree, use:\n"
     "\n"
-    "\t  find path/in/subtree -name '*.cpp'|xargs clang-check\n"
+    "\t  find path/in/subtree -name '*.cpp'|xargs lfort-check\n"
     "\n"
     "\tor using a specific build path:\n"
     "\n"
-    "\t  find path/in/subtree -name '*.cpp'|xargs clang-check -p build/path\n"
+    "\t  find path/in/subtree -name '*.cpp'|xargs lfort-check -p build/path\n"
     "\n"
     "\tNote, that path/in/subtree and current directory should follow the\n"
     "\trules described above.\n"
@@ -73,7 +73,7 @@ namespace {
 
 // FIXME: Move FixItRewriteInPlace from lib/Rewrite/Frontend/FrontendActions.cpp
 // into a header file and reuse that.
-class FixItOptions : public clang::FixItOptions {
+class FixItOptions : public lfort::FixItOptions {
 public:
   FixItOptions() {
     FixWhatYouCan = ::FixWhatYouCan;
@@ -81,9 +81,9 @@ public:
 
   std::string RewriteFilename(const std::string& filename, int &fd) {
     assert(llvm::sys::path::is_absolute(filename) &&
-           "clang-fixit expects absolute paths only.");
+           "lfort-fixit expects absolute paths only.");
 
-    // We don't need to do permission checking here since clang will diagnose
+    // We don't need to do permission checking here since lfort will diagnose
     // any I/O errors itself.
 
     fd = -1;  // No file descriptor for file.
@@ -92,28 +92,28 @@ public:
   }
 };
 
-/// \brief Subclasses \c clang::FixItRewriter to not count fixed errors/warnings
+/// \brief Subclasses \c lfort::FixItRewriter to not count fixed errors/warnings
 /// in the final error counts.
 ///
-/// This has the side-effect that clang-check -fixit exits with code 0 on
+/// This has the side-effect that lfort-check -fixit exits with code 0 on
 /// successfully fixing all errors.
-class FixItRewriter : public clang::FixItRewriter {
+class FixItRewriter : public lfort::FixItRewriter {
 public:
-  FixItRewriter(clang::DiagnosticsEngine& Diags,
-                clang::SourceManager& SourceMgr,
-                const clang::LangOptions& LangOpts,
-                clang::FixItOptions* FixItOpts)
-      : clang::FixItRewriter(Diags, SourceMgr, LangOpts, FixItOpts) {
+  FixItRewriter(lfort::DiagnosticsEngine& Diags,
+                lfort::SourceManager& SourceMgr,
+                const lfort::LangOptions& LangOpts,
+                lfort::FixItOptions* FixItOpts)
+      : lfort::FixItRewriter(Diags, SourceMgr, LangOpts, FixItOpts) {
   }
 
   virtual bool IncludeInDiagnosticCounts() const { return false; }
 };
 
-/// \brief Subclasses \c clang::FixItAction so that we can install the custom
+/// \brief Subclasses \c lfort::FixItAction so that we can install the custom
 /// \c FixItRewriter.
-class FixItAction : public clang::FixItAction {
+class FixItAction : public lfort::FixItAction {
 public:
-  virtual bool BeginSourceFileAction(clang::CompilerInstance& CI,
+  virtual bool BeginSourceFileAction(lfort::CompilerInstance& CI,
                                      StringRef Filename) {
     FixItOpts.reset(new FixItOptions);
     Rewriter.reset(new FixItRewriter(CI.getDiagnostics(), CI.getSourceManager(),
@@ -126,27 +126,27 @@ public:
 
 // Anonymous namespace here causes problems with gcc <= 4.4 on MacOS 10.6.
 // "Non-global symbol: ... can't be a weak_definition"
-namespace clang_check {
-class ClangCheckActionFactory {
+namespace lfort_check {
+class LFortCheckActionFactory {
 public:
-  clang::ASTConsumer *newASTConsumer() {
+  lfort::ASTConsumer *newASTConsumer() {
     if (ASTList)
-      return clang::CreateASTDeclNodeLister();
+      return lfort::CreateASTDeclNodeLister();
     if (ASTDump)
-      return clang::CreateASTDumper(ASTDumpFilter);
+      return lfort::CreateASTDumper(ASTDumpFilter);
     if (ASTPrint)
-      return clang::CreateASTPrinter(&llvm::outs(), ASTDumpFilter);
-    return new clang::ASTConsumer();
+      return lfort::CreateASTPrinter(&llvm::outs(), ASTDumpFilter);
+    return new lfort::ASTConsumer();
   }
 };
 }
 
 int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv);
-  ClangTool Tool(OptionsParser.getCompilations(),
+  LFortTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
   if (Fixit)
     return Tool.run(newFrontendActionFactory<FixItAction>());
-  clang_check::ClangCheckActionFactory Factory;
+  lfort_check::LFortCheckActionFactory Factory;
   return Tool.run(newFrontendActionFactory(&Factory));
 }

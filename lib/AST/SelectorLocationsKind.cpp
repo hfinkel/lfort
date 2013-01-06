@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/SelectorLocationsKind.h"
-#include "clang/AST/Expr.h"
+#include "lfort/AST/SelectorLocationsKind.h"
+#include "lfort/AST/Expr.h"
 
-using namespace clang;
+using namespace lfort;
 
 static SourceLocation getStandardSelLoc(unsigned Index,
                                         Selector Sel,
@@ -94,14 +94,14 @@ SelectorLocationsKind hasStandardSelLocs(Selector Sel,
 } // anonymous namespace
 
 SelectorLocationsKind
-clang::hasStandardSelectorLocs(Selector Sel,
+lfort::hasStandardSelectorLocs(Selector Sel,
                                ArrayRef<SourceLocation> SelLocs,
                                ArrayRef<Expr *> Args,
                                SourceLocation EndLoc) {
   return hasStandardSelLocs(Sel, SelLocs, Args, EndLoc);
 }
 
-SourceLocation clang::getStandardSelectorLoc(unsigned Index,
+SourceLocation lfort::getStandardSelectorLoc(unsigned Index,
                                              Selector Sel,
                                              bool WithArgSpace,
                                              ArrayRef<Expr *> Args,
@@ -111,14 +111,14 @@ SourceLocation clang::getStandardSelectorLoc(unsigned Index,
 }
 
 SelectorLocationsKind
-clang::hasStandardSelectorLocs(Selector Sel,
+lfort::hasStandardSelectorLocs(Selector Sel,
                                ArrayRef<SourceLocation> SelLocs,
                                ArrayRef<ParmVarDecl *> Args,
                                SourceLocation EndLoc) {
   return hasStandardSelLocs(Sel, SelLocs, Args, EndLoc);
 }
 
-SourceLocation clang::getStandardSelectorLoc(unsigned Index,
+SourceLocation lfort::getStandardSelectorLoc(unsigned Index,
                                              Selector Sel,
                                              bool WithArgSpace,
                                              ArrayRef<ParmVarDecl *> Args,

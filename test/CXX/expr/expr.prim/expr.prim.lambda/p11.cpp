@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 
 void test_reaching_scope() {
   int local; // expected-note{{declared here}}

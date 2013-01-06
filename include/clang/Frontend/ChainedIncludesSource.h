@@ -11,13 +11,13 @@
 //  to chained PCHs in memory, mainly used for testing.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SERIALIZATION_CHAINEDINCLUDESSOURCE_H
-#define LLVM_CLANG_SERIALIZATION_CHAINEDINCLUDESSOURCE_H
+#ifndef LLVM_LFORT_SERIALIZATION_CHAINEDINCLUDESSOURCE_H
+#define LLVM_LFORT_SERIALIZATION_CHAINEDINCLUDESSOURCE_H
 
-#include "clang/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/ExternalSemaSource.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class CompilerInstance;
 
 class ChainedIncludesSource : public ExternalSemaSource {

@@ -7,9 +7,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/FrontendOptions.h"
+#include "lfort/Frontend/FrontendOptions.h"
 #include "llvm/ADT/StringSwitch.h"
-using namespace clang;
+using namespace lfort;
 
 InputKind FrontendOptions::getInputKindForExtension(StringRef Extension) {
   return llvm::StringSwitch<InputKind>(Extension)

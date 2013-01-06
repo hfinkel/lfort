@@ -8,15 +8,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "DiagnosticNames.h"
-#include "clang/Basic/AllDiagnostics.h"
+#include "lfort/Basic/AllDiagnostics.h"
 #include "llvm/ADT/STLExtras.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace diagtool;
 
 static const DiagnosticRecord BuiltinDiagnosticsByName[] = {
 #define DIAG_NAME_INDEX(ENUM) { #ENUM, diag::ENUM, STR_SIZE(#ENUM, uint8_t) },
-#include "clang/Basic/DiagnosticIndexName.inc"
+#include "lfort/Basic/DiagnosticIndexName.inc"
 #undef DIAG_NAME_INDEX
 };
 
@@ -32,16 +32,16 @@ static const DiagnosticRecord BuiltinDiagnosticsByID[] = {
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,              \
              CATEGORY)                                            \
   { #ENUM, diag::ENUM, STR_SIZE(#ENUM, uint8_t) },
-#include "clang/Basic/DiagnosticCommonKinds.inc"
-#include "clang/Basic/DiagnosticDriverKinds.inc"
-#include "clang/Basic/DiagnosticFrontendKinds.inc"
-#include "clang/Basic/DiagnosticSerializationKinds.inc"
-#include "clang/Basic/DiagnosticLexKinds.inc"
-#include "clang/Basic/DiagnosticParseKinds.inc"
-#include "clang/Basic/DiagnosticASTKinds.inc"
-#include "clang/Basic/DiagnosticCommentKinds.inc"
-#include "clang/Basic/DiagnosticSemaKinds.inc"
-#include "clang/Basic/DiagnosticAnalysisKinds.inc"
+#include "lfort/Basic/DiagnosticCommonKinds.inc"
+#include "lfort/Basic/DiagnosticDriverKinds.inc"
+#include "lfort/Basic/DiagnosticFrontendKinds.inc"
+#include "lfort/Basic/DiagnosticSerializationKinds.inc"
+#include "lfort/Basic/DiagnosticLexKinds.inc"
+#include "lfort/Basic/DiagnosticParseKinds.inc"
+#include "lfort/Basic/DiagnosticASTKinds.inc"
+#include "lfort/Basic/DiagnosticCommentKinds.inc"
+#include "lfort/Basic/DiagnosticSemaKinds.inc"
+#include "lfort/Basic/DiagnosticAnalysisKinds.inc"
 #undef DIAG
 };
 
@@ -63,13 +63,13 @@ const DiagnosticRecord &diagtool::getDiagnosticForID(short DiagID) {
 
 
 #define GET_DIAG_ARRAYS
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef GET_DIAG_ARRAYS
 
 // Second the table of options, sorted by name for fast binary lookup.
 static const GroupRecord OptionTable[] = {
 #define GET_DIAG_TABLE
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef GET_DIAG_TABLE
 };
 

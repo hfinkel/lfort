@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 #if defined(INCLUDE)
 // -------
@@ -63,15 +63,15 @@ inline int useStaticMainFile () {
 
 // Check that the warnings show up when explicitly requested.
 
-#pragma clang diagnostic push
-#pragma clang diagnostic warning "-Wstatic-in-inline"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic warning "-Wstatic-in-inline"
 
 inline int useStaticAgain () { // expected-note 2 {{use 'static' to give inline function 'useStaticAgain' internal linkage}}
   staticFunction(); // expected-warning{{static function 'staticFunction' is used in an inline function with external linkage}}
   return staticVar; // expected-warning{{static variable 'staticVar' is used in an inline function with external linkage}}
 }
 
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
 #endif
 

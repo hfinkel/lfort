@@ -11,10 +11,10 @@
 // of taint.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_TAINTTAG_H
-#define LLVM_CLANG_TAINTTAG_H
+#ifndef LLVM_LFORT_TAINTTAG_H
+#define LLVM_LFORT_TAINTTAG_H
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// The type of taint, which helps to differentiate between different types of

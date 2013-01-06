@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_STMT_H
-#define LLVM_CLANG_AST_STMT_H
+#ifndef LLVM_LFORT_AST_STMT_H
+#define LLVM_LFORT_AST_STMT_H
 
-#include "clang/AST/DeclGroup.h"
-#include "clang/AST/StmtIterator.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/AST/StmtIterator.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -28,7 +28,7 @@ namespace llvm {
   class FoldingSetNodeID;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class Attr;
   class Decl;
@@ -107,7 +107,7 @@ public:
 #define LAST_STMT_RANGE(BASE, FIRST, LAST) \
         first##BASE##Constant=FIRST##Class, last##BASE##Constant=LAST##Class
 #define ABSTRACT_STMT(STMT)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   };
 
   // Make vanilla 'new' and 'delete' illegal for Stmts.
@@ -1870,6 +1870,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

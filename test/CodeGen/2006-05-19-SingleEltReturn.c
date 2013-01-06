@@ -1,5 +1,5 @@
 // Test returning a single element aggregate value containing a double.
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 
 struct X {
   double D;

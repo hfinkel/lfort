@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple armv7 -fsyntax-only -verify -DTEST0 %s
-// RUN: %clang_cc1 -triple armv7 -fsyntax-only -verify -DTEST1 %s
-// RUN: %clang_cc1 -triple armv7 -target-abi apcs-gnu \
+// RUN: %lfort_cc1 -triple armv7 -fsyntax-only -verify -DTEST0 %s
+// RUN: %lfort_cc1 -triple armv7 -fsyntax-only -verify -DTEST1 %s
+// RUN: %lfort_cc1 -triple armv7 -target-abi apcs-gnu \
 // RUN:   -fsyntax-only -verify -DTEST1 %s
 
 #ifdef TEST0

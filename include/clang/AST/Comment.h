@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_COMMENT_H
-#define LLVM_CLANG_AST_COMMENT_H
+#ifndef LLVM_LFORT_AST_COMMENT_H
+#define LLVM_LFORT_AST_COMMENT_H
 
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 class Decl;
 class ParmVarDecl;
 class TemplateParameterList;
@@ -154,7 +154,7 @@ public:
 #define LAST_COMMENT_RANGE(BASE, FIRST, LAST) \
     First##BASE##Constant=FIRST##Kind, Last##BASE##Constant=LAST##Kind
 #define ABSTRACT_COMMENT(COMMENT)
-#include "clang/AST/CommentNodes.inc"
+#include "lfort/AST/CommentNodes.inc"
   };
 
   Comment(CommentKind K,
@@ -1066,7 +1066,7 @@ public:
   
 };
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

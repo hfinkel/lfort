@@ -1,4 +1,4 @@
-#===- __init__.py - Clang Python Bindings --------------------*- python -*--===#
+#===- __init__.py - LFort Python Bindings --------------------*- python -*--===#
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -8,16 +8,16 @@
 #===------------------------------------------------------------------------===#
 
 r"""
-Clang Library Bindings
+LFort Library Bindings
 ======================
 
-This package provides access to the Clang compiler and libraries.
+This package provides access to the LFort compiler and libraries.
 
 The available modules are:
 
   cindex
 
-    Bindings for the Clang indexing library.
+    Bindings for the LFort indexing library.
 """
 
 __all__ = ['cindex']

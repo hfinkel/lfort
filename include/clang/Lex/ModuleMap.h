@@ -13,12 +13,12 @@
 //===----------------------------------------------------------------------===//
 
 
-#ifndef LLVM_CLANG_LEX_MODULEMAP_H
-#define LLVM_CLANG_LEX_MODULEMAP_H
+#ifndef LLVM_LFORT_LEX_MODULEMAP_H
+#define LLVM_LFORT_LEX_MODULEMAP_H
 
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/Module.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/Module.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/SmallVector.h"
@@ -26,7 +26,7 @@
 #include "llvm/ADT/StringRef.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
   
 class DirectoryEntry;
 class FileEntry;
@@ -41,7 +41,7 @@ class ModuleMap {
   const LangOptions &LangOpts;
   const TargetInfo *Target;
   
-  /// \brief The directory used for Clang-supplied, builtin include headers,
+  /// \brief The directory used for LFort-supplied, builtin include headers,
   /// such as "stdint.h".
   const DirectoryEntry *BuiltinIncludeDir;
   
@@ -152,7 +152,7 @@ public:
   /// \brief Set the target information.
   void setTarget(const TargetInfo &Target);
 
-  /// \brief Set the directory that contains Clang-supplied include
+  /// \brief Set the directory that contains LFort-supplied include
   /// files, such as our stdarg.h or tgmath.h.
   void setBuiltinIncludeDir(const DirectoryEntry *Dir) {
     BuiltinIncludeDir = Dir;

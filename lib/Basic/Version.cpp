@@ -1,4 +1,4 @@
-//===- Version.cpp - Clang Version Number -----------------------*- C++ -*-===//
+//===- Version.cpp - LFort Version Number -----------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines several version-related utility functions for Clang.
+// This file defines several version-related utility functions for LFort.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/Version.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/Config/config.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cstdlib>
 #include <cstring>
 
-namespace clang {
+namespace lfort {
 
-std::string getClangRepositoryPath() {
-#if defined(CLANG_REPOSITORY_STRING)
-  return CLANG_REPOSITORY_STRING;
+std::string getLFortRepositoryPath() {
+#if defined(LFORT_REPOSITORY_STRING)
+  return LFORT_REPOSITORY_STRING;
 #else
 #ifdef SVN_REPOSITORY
   StringRef URL(SVN_REPOSITORY);
@@ -39,7 +39,7 @@ std::string getClangRepositoryPath() {
   }
 
   // Strip off version from a build from an integration branch.
-  URL = URL.slice(0, URL.find("/src/tools/clang"));
+  URL = URL.slice(0, URL.find("/src/tools/lfort"));
 
   // Trim path prefix off, assuming path came from standard cfe path.
   size_t Start = URL.find("cfe/");
@@ -59,7 +59,7 @@ std::string getLLVMRepositoryPath() {
 
   // Trim path prefix off, assuming path came from standard llvm path.
   // Leave "llvm/" prefix to distinguish the following llvm revision from the
-  // clang revision.
+  // lfort revision.
   size_t Start = URL.find("llvm/");
   if (Start != StringRef::npos)
     URL = URL.substr(Start);
@@ -67,7 +67,7 @@ std::string getLLVMRepositoryPath() {
   return URL;
 }
 
-std::string getClangRevision() {
+std::string getLFortRevision() {
 #ifdef SVN_REVISION
   return SVN_REVISION;
 #else
@@ -83,11 +83,11 @@ std::string getLLVMRevision() {
 #endif
 }
 
-std::string getClangFullRepositoryVersion() {
+std::string getLFortFullRepositoryVersion() {
   std::string buf;
   llvm::raw_string_ostream OS(buf);
-  std::string Path = getClangRepositoryPath();
-  std::string Revision = getClangRevision();
+  std::string Path = getLFortRepositoryPath();
+  std::string Revision = getLFortRevision();
   if (!Path.empty() || !Revision.empty()) {
     OS << '(';
     if (!Path.empty())
@@ -111,33 +111,33 @@ std::string getClangFullRepositoryVersion() {
   return OS.str();
 }
 
-std::string getClangFullVersion() {
+std::string getLFortFullVersion() {
   std::string buf;
   llvm::raw_string_ostream OS(buf);
-#ifdef CLANG_VENDOR
-  OS << CLANG_VENDOR;
+#ifdef LFORT_VENDOR
+  OS << LFORT_VENDOR;
 #endif
-  OS << "clang version " CLANG_VERSION_STRING " "
-     << getClangFullRepositoryVersion();
+  OS << "lfort version " LFORT_VERSION_STRING " "
+     << getLFortFullRepositoryVersion();
 
   // If vendor supplied, include the base LLVM version as well.
-#ifdef CLANG_VENDOR
+#ifdef LFORT_VENDOR
   OS << " (based on LLVM " << PACKAGE_VERSION << ")";
 #endif
 
   return OS.str();
 }
 
-std::string getClangFullCPPVersion() {
+std::string getLFortFullCPPVersion() {
   // The version string we report in __VERSION__ is just a compacted version of
   // the one we report on the command line.
   std::string buf;
   llvm::raw_string_ostream OS(buf);
-#ifdef CLANG_VENDOR
-  OS << CLANG_VENDOR;
+#ifdef LFORT_VENDOR
+  OS << LFORT_VENDOR;
 #endif
-  OS << "Clang " CLANG_VERSION_STRING " " << getClangFullRepositoryVersion();
+  OS << "LFort " LFORT_VERSION_STRING " " << getLFortFullRepositoryVersion();
   return OS.str();
 }
 
-} // end namespace clang
+} // end namespace lfort

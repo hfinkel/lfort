@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DRIVERDIAGNOSTIC_H
-#define LLVM_CLANG_DRIVERDIAGNOSTIC_H
+#ifndef LLVM_LFORT_DRIVERDIAGNOSTIC_H
+#define LLVM_LFORT_DRIVERDIAGNOSTIC_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define DRIVERSTART
-#include "clang/Basic/DiagnosticDriverKinds.inc"
+#include "lfort/Basic/DiagnosticDriverKinds.inc"
 #undef DIAG
       NUM_BUILTIN_DRIVER_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

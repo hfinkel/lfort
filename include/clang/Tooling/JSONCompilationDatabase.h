@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_JSON_COMPILATION_DATABASE_H
-#define LLVM_CLANG_TOOLING_JSON_COMPILATION_DATABASE_H
+#ifndef LLVM_LFORT_TOOLING_JSON_COMPILATION_DATABASE_H
+#define LLVM_LFORT_TOOLING_JSON_COMPILATION_DATABASE_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/FileMatchTrie.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/FileMatchTrie.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 /// \brief A JSON based compilation database.
@@ -110,6 +110,6 @@ private:
 };
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_JSON_COMPILATION_DATABASE_H
+#endif // LLVM_LFORT_TOOLING_JSON_COMPILATION_DATABASE_H

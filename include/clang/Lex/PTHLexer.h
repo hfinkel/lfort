@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PTHLEXER_H
-#define LLVM_CLANG_PTHLEXER_H
+#ifndef LLVM_LFORT_PTHLEXER_H
+#define LLVM_LFORT_PTHLEXER_H
 
-#include "clang/Lex/PreprocessorLexer.h"
+#include "lfort/Lex/PreprocessorLexer.h"
 
-namespace clang {
+namespace lfort {
 
 class PTHManager;
 class PTHSpellingSearch;
@@ -100,6 +100,6 @@ public:
   bool SkipBlock();
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

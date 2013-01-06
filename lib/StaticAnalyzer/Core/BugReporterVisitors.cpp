@@ -11,20 +11,20 @@
 //  enhance the diagnostics reported for a bug.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporterVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporterVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 //===----------------------------------------------------------------------===//

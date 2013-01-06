@@ -1,5 +1,5 @@
-// RUN: %clang -Xclang -verify -fsyntax-only %s
-// RUN: %clang -emit-llvm -S -o %t %s
+// RUN: %lfort -Xlfort -verify -fsyntax-only %s
+// RUN: %lfort -emit-llvm -S -o %t %s
 
 #include <stddef.h>
 

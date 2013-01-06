@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify
+// RUN: %lfort_cc1 %s -verify
 // PR11358
 
 namespace test1 {

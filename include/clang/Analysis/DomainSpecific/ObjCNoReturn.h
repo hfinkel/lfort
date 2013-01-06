@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_DS_OBJCNORETURN
-#define LLVM_CLANG_ANALYSIS_DS_OBJCNORETURN
+#ifndef LLVM_LFORT_ANALYSIS_DS_OBJCNORETURN
+#define LLVM_LFORT_ANALYSIS_DS_OBJCNORETURN
 
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/Basic/IdentifierTable.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class ObjCMessageExpr;

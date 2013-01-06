@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 int a __attribute__((noinline)); // expected-warning {{'noinline' attribute only applies to functions}}
 

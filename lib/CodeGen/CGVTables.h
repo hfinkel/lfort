@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGVTABLE_H
-#define CLANG_CODEGEN_CGVTABLE_H
+#ifndef LFORT_CODEGEN_CGVTABLE_H
+#define LFORT_CODEGEN_CGVTABLE_H
 
-#include "clang/AST/BaseSubobject.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/GlobalDecl.h"
-#include "clang/AST/VTableBuilder.h"
-#include "clang/Basic/ABI.h"
+#include "lfort/AST/BaseSubobject.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/GlobalDecl.h"
+#include "lfort/AST/VTableBuilder.h"
+#include "lfort/Basic/ABI.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/GlobalVariable.h"
 
-namespace clang {
+namespace lfort {
   class CXXRecordDecl;
 
 namespace CodeGen {
@@ -137,5 +137,5 @@ public:
 };
 
 } // end namespace CodeGen
-} // end namespace clang
+} // end namespace lfort
 #endif

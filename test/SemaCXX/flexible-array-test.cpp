@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s 
+// RUN: %lfort_cc1 -fsyntax-only -verify %s 
 // pr7029
 
 template <class Key, class T> struct QMap
@@ -19,7 +19,7 @@ struct inotify_event
 {
   int wd;
  
-  // clang doesn't like '[]': 
+  // lfort doesn't like '[]': 
   // cannot initialize a parameter of type 'void *' with an rvalue of type 'char (*)[]'
   char name [];	
 };

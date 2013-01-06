@@ -10,12 +10,12 @@
 //  This file defines the ASTMutationListener interface.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_ASTMUTATIONLISTENER_H
-#define LLVM_CLANG_AST_ASTMUTATIONLISTENER_H
+#ifndef LLVM_LFORT_AST_ASTMUTATIONLISTENER_H
+#define LLVM_LFORT_AST_ASTMUTATIONLISTENER_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
   class CXXRecordDecl;
   class ClassTemplateDecl;
   class ClassTemplateSpecializationDecl;
@@ -82,6 +82,6 @@ public:
   // MultiplexASTMutationListener.
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

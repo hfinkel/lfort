@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOKENLEXER_H
-#define LLVM_CLANG_TOKENLEXER_H
+#ifndef LLVM_LFORT_TOKENLEXER_H
+#define LLVM_LFORT_TOKENLEXER_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
   class MacroInfo;
   class Preprocessor;
   class Token;
@@ -183,6 +183,6 @@ private:
                                   Token *begin_tokens, Token *end_tokens);
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fms-extensions -fdelayed-template-parsing -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fms-extensions -fdelayed-template-parsing -fsyntax-only -verify -std=c++11 %s
 
 template <class T>
 class A {

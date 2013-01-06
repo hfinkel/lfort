@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -Wcast-align -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -Wcast-align -verify %s
 
 // Simple casts.
 void test0(char *P) {

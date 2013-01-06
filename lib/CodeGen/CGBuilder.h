@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGBUILDER_H
-#define CLANG_CODEGEN_CGBUILDER_H
+#ifndef LFORT_CODEGEN_CGBUILDER_H
+#define LFORT_CODEGEN_CGBUILDER_H
 
 #include "llvm/IR/IRBuilder.h"
 
-namespace clang {
+namespace lfort {
 namespace CodeGen {
 
 // Don't preserve names on values in an optimized build.
@@ -23,6 +23,6 @@ typedef llvm::IRBuilder<> CGBuilderTy;
 #endif
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

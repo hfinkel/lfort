@@ -8,10 +8,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "Internals.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-using namespace clang;
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+using namespace lfort;
 using namespace arcmt;
 
 // FIXME: This duplicates significant functionality from PlistDiagnostics.cpp,

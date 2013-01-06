@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -F %S/Inputs -Wsign-conversion -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -F %S/Inputs -Wsign-conversion -verify %s
 // expected-no-diagnostics
 
 // Check that TestFramework is treated as a system header.

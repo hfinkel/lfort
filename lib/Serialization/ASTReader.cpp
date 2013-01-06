@@ -11,37 +11,37 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "ASTCommon.h"
 #include "ASTReaderInternals.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLocVisitor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemStatCache.h"
-#include "clang/Basic/OnDiskHashTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/SourceManagerInternals.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Basic/Version.h"
-#include "clang/Basic/VersionTuple.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/PreprocessingRecord.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/PreprocessorOptions.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Serialization/ASTDeserializationListener.h"
-#include "clang/Serialization/ModuleManager.h"
-#include "clang/Serialization/SerializationDiagnostic.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLocVisitor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/OnDiskHashTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/SourceManagerInternals.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Basic/VersionTuple.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/PreprocessingRecord.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/PreprocessorOptions.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Serialization/ASTDeserializationListener.h"
+#include "lfort/Serialization/ModuleManager.h"
+#include "lfort/Serialization/SerializationDiagnostic.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Bitcode/BitstreamReader.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -54,9 +54,9 @@
 #include <cstdio>
 #include <iterator>
 
-using namespace clang;
-using namespace clang::serialization;
-using namespace clang::serialization::reader;
+using namespace lfort;
+using namespace lfort::serialization;
+using namespace lfort::serialization::reader;
 
 //===----------------------------------------------------------------------===//
 // PCH validator implementation
@@ -99,7 +99,7 @@ static bool checkLanguageOptions(const LangOptions &LangOpts,
 
 #define BENIGN_LANGOPT(Name, Bits, Default, Description)
 #define BENIGN_ENUM_LANGOPT(Name, Type, Bits, Default, Description)
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
 
   if (ExistingLangOpts.ObjCRuntime != LangOpts.ObjCRuntime) {
     if (Diags)
@@ -385,7 +385,7 @@ unsigned ASTSelectorLookupTrait::ComputeHash(Selector Sel) {
 
 std::pair<unsigned, unsigned>
 ASTSelectorLookupTrait::ReadKeyDataLength(const unsigned char*& d) {
-  using namespace clang::io;
+  using namespace lfort::io;
   unsigned KeyLen = ReadUnalignedLE16(d);
   unsigned DataLen = ReadUnalignedLE16(d);
   return std::make_pair(KeyLen, DataLen);
@@ -393,7 +393,7 @@ ASTSelectorLookupTrait::ReadKeyDataLength(const unsigned char*& d) {
 
 ASTSelectorLookupTrait::internal_key_type 
 ASTSelectorLookupTrait::ReadKey(const unsigned char* d, unsigned) {
-  using namespace clang::io;
+  using namespace lfort::io;
   SelectorTable &SelTable = Reader.getContext().Selectors;
   unsigned N = ReadUnalignedLE16(d);
   IdentifierInfo *FirstII
@@ -414,7 +414,7 @@ ASTSelectorLookupTrait::ReadKey(const unsigned char* d, unsigned) {
 ASTSelectorLookupTrait::data_type 
 ASTSelectorLookupTrait::ReadData(Selector, const unsigned char* d, 
                                  unsigned DataLen) {
-  using namespace clang::io;
+  using namespace lfort::io;
 
   data_type Result;
 
@@ -445,7 +445,7 @@ unsigned ASTIdentifierLookupTrait::ComputeHash(const internal_key_type& a) {
 
 std::pair<unsigned, unsigned>
 ASTIdentifierLookupTrait::ReadKeyDataLength(const unsigned char*& d) {
-  using namespace clang::io;
+  using namespace lfort::io;
   unsigned DataLen = ReadUnalignedLE16(d);
   unsigned KeyLen = ReadUnalignedLE16(d);
   return std::make_pair(KeyLen, DataLen);
@@ -460,7 +460,7 @@ ASTIdentifierLookupTrait::ReadKey(const unsigned char* d, unsigned n) {
 IdentifierInfo *ASTIdentifierLookupTrait::ReadData(const internal_key_type& k,
                                                    const unsigned char* d,
                                                    unsigned DataLen) {
-  using namespace clang::io;
+  using namespace lfort::io;
   unsigned RawID = ReadUnalignedLE32(d);
   bool IsInteresting = RawID & 0x01;
 
@@ -609,7 +609,7 @@ ASTDeclContextNameLookupTrait::GetInternalKey(
 
 std::pair<unsigned, unsigned>
 ASTDeclContextNameLookupTrait::ReadKeyDataLength(const unsigned char*& d) {
-  using namespace clang::io;
+  using namespace lfort::io;
   unsigned KeyLen = ReadUnalignedLE16(d);
   unsigned DataLen = ReadUnalignedLE16(d);
   return std::make_pair(KeyLen, DataLen);
@@ -617,7 +617,7 @@ ASTDeclContextNameLookupTrait::ReadKeyDataLength(const unsigned char*& d) {
 
 ASTDeclContextNameLookupTrait::internal_key_type 
 ASTDeclContextNameLookupTrait::ReadKey(const unsigned char* d, unsigned) {
-  using namespace clang::io;
+  using namespace lfort::io;
 
   DeclNameKey Key;
   Key.Kind = (DeclarationName::NameKind)*d++;
@@ -653,7 +653,7 @@ ASTDeclContextNameLookupTrait::data_type
 ASTDeclContextNameLookupTrait::ReadData(internal_key_type, 
                                         const unsigned char* d,
                                         unsigned DataLen) {
-  using namespace clang::io;
+  using namespace lfort::io;
   unsigned NumDecls = ReadUnalignedLE16(d);
   LE32DeclID *Start = (LE32DeclID *)d;
   return std::make_pair(Start, Start + NumDecls);
@@ -1304,7 +1304,7 @@ bool HeaderFileInfoTrait::EqualKey(internal_key_type a, internal_key_type b) {
     
 std::pair<unsigned, unsigned>
 HeaderFileInfoTrait::ReadKeyDataLength(const unsigned char*& d) {
-  unsigned KeyLen = (unsigned) clang::io::ReadUnalignedLE16(d);
+  unsigned KeyLen = (unsigned) lfort::io::ReadUnalignedLE16(d);
   unsigned DataLen = (unsigned) *d++;
   return std::make_pair(KeyLen + 1, DataLen);
 }
@@ -1313,7 +1313,7 @@ HeaderFileInfoTrait::data_type
 HeaderFileInfoTrait::ReadData(const internal_key_type, const unsigned char *d,
                               unsigned DataLen) {
   const unsigned char *End = d + DataLen;
-  using namespace clang::io;
+  using namespace lfort::io;
   HeaderFileInfo HFI;
   unsigned Flags = *d++;
   HFI.isImport = (Flags >> 5) & 0x01;
@@ -1703,7 +1703,7 @@ ASTReader::ReadControlBlock(ModuleFile &F,
 
       F.RelocatablePCH = Record[4];
 
-      const std::string &CurBranch = getClangFullRepositoryVersion();
+      const std::string &CurBranch = getLFortFullRepositoryVersion();
       StringRef ASTBranch(BlobStart, BlobLen);
       if (StringRef(CurBranch) != ASTBranch && !DisableValidation) {
         if ((ClientLoadCapabilities & ARR_VersionMismatch) == 0)
@@ -3260,7 +3260,7 @@ bool ASTReader::readASTFileControlBlock(StringRef Filename,
           return true;
         }
 
-        const std::string &CurBranch = getClangFullRepositoryVersion();
+        const std::string &CurBranch = getLFortFullRepositoryVersion();
         StringRef ASTBranch(BlobStart, BlobLen);
         if (StringRef(CurBranch) != ASTBranch)
           return true;
@@ -3618,7 +3618,7 @@ bool ASTReader::ParseLanguageOptions(const RecordData &Record,
   LangOpts.Name = Record[Idx++];
 #define ENUM_LANGOPT(Name, Type, Bits, Default, Description) \
   LangOpts.set##Name(static_cast<LangOptions::Type>(Record[Idx++]));
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
 
   ObjCRuntime::Kind runtimeKind = (ObjCRuntime::Kind) Record[Idx++];
   VersionTuple runtimeVersion = ReadVersionTuple(Record, Idx);
@@ -3657,7 +3657,7 @@ bool ASTReader::ParseDiagnosticOptions(const RecordData &Record, bool Complain,
 #define DIAGOPT(Name, Bits, Default) DiagOpts.Name = Record[Idx++];
 #define ENUM_DIAGOPT(Name, Type, Bits, Default) \
   DiagOpts.set##Name(static_cast<Type>(Record[Idx++]));
-#include "clang/Basic/DiagnosticOptions.def"
+#include "lfort/Basic/DiagnosticOptions.def"
 
   for (unsigned N = Record[Idx++]; N; --N) {
     DiagOpts.Warnings.push_back(ReadString(Record, Idx));
@@ -4587,7 +4587,7 @@ QualType ASTReader::readTypeRecord(unsigned Index) {
   llvm_unreachable("Invalid TypeCode!");
 }
 
-class clang::TypeLocReader : public TypeLocVisitor<TypeLocReader> {
+class lfort::TypeLocReader : public TypeLocVisitor<TypeLocReader> {
   ASTReader &Reader;
   ModuleFile &F;
   const ASTReader::RecordData &Record;
@@ -4615,7 +4615,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
   void Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
   void VisitFunctionTypeLoc(FunctionTypeLoc);
   void VisitArrayTypeLoc(ArrayTypeLoc);
@@ -5727,7 +5727,7 @@ void ASTReader::InitializeSema(Sema &S) {
   if (!OpenCLExtensions.empty()) {
     unsigned I = 0;
 #define OPENCLEXT(nm)  SemaObj->OpenCLFeatures.nm = OpenCLExtensions[I++];
-#include "clang/Basic/OpenCLExtensions.def"
+#include "lfort/Basic/OpenCLExtensions.def"
 
     assert(OpenCLExtensions.size() == I && "Wrong number of OPENCL_EXTENSIONS");
   }
@@ -5745,7 +5745,7 @@ IdentifierInfo* ASTReader::get(const char *NameStart, const char *NameEnd) {
   return II;
 }
 
-namespace clang {
+namespace lfort {
   /// \brief An identifier-lookup iterator that enumerates all of the
   /// identifiers stored within a set of AST files.
   class ASTIdentifierIterator : public IdentifierIterator {
@@ -5804,7 +5804,7 @@ IdentifierIterator *ASTReader::getIdentifiers() const {
   return new ASTIdentifierIterator(*this);
 }
 
-namespace clang { namespace serialization {
+namespace lfort { namespace serialization {
   class ReadMethodPoolVisitor {
     ASTReader &Reader;
     Selector Sel;
@@ -5859,7 +5859,7 @@ namespace clang { namespace serialization {
       return FactoryMethods;
     }
   };
-} } // end namespace clang::serialization
+} } // end namespace lfort::serialization
 
 /// \brief Add the given set of methods to the method list.
 static void addMethodsToPool(Sema &S, ArrayRef<ObjCMethodDecl *> Methods,

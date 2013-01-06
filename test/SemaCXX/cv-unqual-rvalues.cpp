@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // PR7463: Make sure that when we have an rvalue, it does not have
 // cv-qualified non-class type.

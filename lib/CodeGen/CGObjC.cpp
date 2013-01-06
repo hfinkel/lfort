@@ -16,14 +16,14 @@
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/InlineAsm.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 typedef llvm::PointerIntPair<llvm::Value*,1,bool> TryEmitResult;
@@ -1866,7 +1866,7 @@ llvm::Value *CodeGenFunction::EmitARCRetainBlock(llvm::Value *value,
                             CGM.getARCEntrypoints().objc_retainBlock,
                             "objc_retainBlock");
 
-  // If the copy isn't mandatory, add !clang.arc.copy_on_escape to
+  // If the copy isn't mandatory, add !lfort.arc.copy_on_escape to
   // tell the optimizer that it doesn't need to do this copy if the
   // block doesn't escape, where being passed as an argument doesn't
   // count as escaping.
@@ -1876,7 +1876,7 @@ llvm::Value *CodeGenFunction::EmitARCRetainBlock(llvm::Value *value,
     assert(call->getCalledValue() == CGM.getARCEntrypoints().objc_retainBlock);
 
     SmallVector<llvm::Value*,1> args;
-    call->setMetadata("clang.arc.copy_on_escape",
+    call->setMetadata("lfort.arc.copy_on_escape",
                       llvm::MDNode::get(Builder.getContext(), args));
   }
 
@@ -1916,7 +1916,7 @@ CodeGenFunction::EmitARCRetainAutoreleasedReturnValue(llvm::Value *value) {
     } else {
       llvm::NamedMDNode *metadata =
         CGM.getModule().getOrInsertNamedMetadata(
-                            "clang.arc.retainAutoreleasedReturnValueMarker");
+                            "lfort.arc.retainAutoreleasedReturnValueMarker");
       assert(metadata->getNumOperands() <= 1);
       if (metadata->getNumOperands() == 0) {
         llvm::Value *string = llvm::MDString::get(getLLVMContext(), assembly);
@@ -1955,7 +1955,7 @@ void CodeGenFunction::EmitARCRelease(llvm::Value *value, bool precise) {
 
   if (!precise) {
     SmallVector<llvm::Value*,1> args;
-    call->setMetadata("clang.imprecise_release",
+    call->setMetadata("lfort.imprecise_release",
                       llvm::MDNode::get(Builder.getContext(), args));
   }
 }

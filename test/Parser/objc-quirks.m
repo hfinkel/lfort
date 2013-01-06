@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic %s
 
 // FIXME: This is a horrible error message here. Fix.
 int @"s" = 5;  // expected-error {{prefix attribute must be}}

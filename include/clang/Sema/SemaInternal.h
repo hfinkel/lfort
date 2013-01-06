@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_SEMA_INTERNAL_H
-#define LLVM_CLANG_SEMA_SEMA_INTERNAL_H
+#ifndef LLVM_LFORT_SEMA_SEMA_INTERNAL_H
+#define LLVM_LFORT_SEMA_SEMA_INTERNAL_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 
-namespace clang {
+namespace lfort {
 
 inline PartialDiagnostic Sema::PDiag(unsigned DiagID) {
   return PartialDiagnostic(DiagID, Context.getDiagAllocator());

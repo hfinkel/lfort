@@ -1,4 +1,4 @@
-// RUN: %clang -emit-llvm -g -S %s -o -
+// RUN: %lfort -emit-llvm -g -S %s -o -
 // PR13531
 template <typename>
 struct unique_ptr {

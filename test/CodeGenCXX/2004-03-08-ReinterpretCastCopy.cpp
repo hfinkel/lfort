@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o -
+// RUN: %lfort_cc1 -emit-llvm %s -o -
 
 struct A {
   virtual void Method() = 0;

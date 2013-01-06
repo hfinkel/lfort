@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-print %s | FileCheck %s
+// RUN: %lfort_cc1 -ast-print %s | FileCheck %s
 
 // CHECK: r;
 // CHECK-NEXT: (r->method());

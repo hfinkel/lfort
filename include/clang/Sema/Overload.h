@@ -12,21 +12,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_OVERLOAD_H
-#define LLVM_CLANG_SEMA_OVERLOAD_H
+#ifndef LLVM_LFORT_SEMA_OVERLOAD_H
+#define LLVM_LFORT_SEMA_OVERLOAD_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/UnresolvedSet.h"
-#include "clang/Sema/SemaFixItUtils.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/UnresolvedSet.h"
+#include "lfort/Sema/SemaFixItUtils.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Allocator.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class CXXConstructorDecl;
   class CXXConversionDecl;
@@ -60,11 +60,11 @@ namespace clang {
     ICK_Lvalue_To_Rvalue,      ///< Lvalue-to-rvalue conversion (C++ 4.1)
     ICK_Array_To_Pointer,      ///< Array-to-pointer conversion (C++ 4.2)
     ICK_Function_To_Pointer,   ///< Function-to-pointer (C++ 4.3)
-    ICK_NoReturn_Adjustment,   ///< Removal of noreturn from a type (Clang)
+    ICK_NoReturn_Adjustment,   ///< Removal of noreturn from a type (LFort)
     ICK_Qualification,         ///< Qualification conversions (C++ 4.4)
     ICK_Integral_Promotion,    ///< Integral promotions (C++ 4.5)
     ICK_Floating_Promotion,    ///< Floating point promotions (C++ 4.6)
-    ICK_Complex_Promotion,     ///< Complex promotions (Clang extension)
+    ICK_Complex_Promotion,     ///< Complex promotions (LFort extension)
     ICK_Integral_Conversion,   ///< Integral conversions (C++ 4.7)
     ICK_Floating_Conversion,   ///< Floating point conversions (C++ 4.8)
     ICK_Complex_Conversion,    ///< Complex conversions (C99 6.3.1.6)
@@ -819,6 +819,6 @@ namespace clang {
                                  const OverloadCandidate& Cand2,
                                  SourceLocation Loc,
                                  bool UserDefinedConversion = false);
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_OVERLOAD_H
+#endif // LLVM_LFORT_SEMA_OVERLOAD_H

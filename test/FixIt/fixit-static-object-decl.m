@@ -1,12 +1,12 @@
 // Objective-C recovery
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -fixit -x objective-c %t
-// RUN: %clang_cc1 -fsyntax-only -Werror -x objective-c %t
+// RUN: not %lfort_cc1 -fixit -x objective-c %t
+// RUN: %lfort_cc1 -fsyntax-only -Werror -x objective-c %t
 
 // Objective-C++ recovery
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -fixit -x objective-c++ %t
-// RUN: %clang_cc1 -fsyntax-only -Werror -x objective-c++ %t
+// RUN: not %lfort_cc1 -fixit -x objective-c++ %t
+// RUN: %lfort_cc1 -fsyntax-only -Werror -x objective-c++ %t
 // rdar://9603056
 
 @interface S @end

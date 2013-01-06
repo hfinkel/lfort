@@ -17,7 +17,7 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = clang
+PROJECT_NAME           = lfort
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
@@ -609,7 +609,7 @@ COLS_IN_ALPHA_INDEX    = 4
 # The IGNORE_PREFIX tag can be used to specify one or more prefixes that 
 # should be ignored while generating the index headers.
 
-IGNORE_PREFIX          = clang::
+IGNORE_PREFIX          = lfort::
 
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output

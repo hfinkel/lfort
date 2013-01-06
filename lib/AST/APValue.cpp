@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/APValue.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/AST/APValue.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
   struct LVBase {

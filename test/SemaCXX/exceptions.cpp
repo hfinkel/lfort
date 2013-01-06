@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
 
 struct A; // expected-note 4 {{forward declaration of 'A'}}
 

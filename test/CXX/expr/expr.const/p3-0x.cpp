@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -verify %s
 
 // A converted constant expression of type T is a core constant expression,
 int nonconst = 8; // expected-note 3 {{here}}

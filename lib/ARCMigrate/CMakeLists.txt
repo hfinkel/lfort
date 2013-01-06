@@ -1,4 +1,4 @@
-add_clang_library(clangARCMigrate
+add_lfort_library(lfortARCMigrate
   ARCMT.cpp
   ARCMTActions.cpp
   FileRemapper.cpp
@@ -21,23 +21,23 @@ add_clang_library(clangARCMigrate
   Transforms.cpp
   )
 
-add_dependencies(clangARCMigrate
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticGroups
-  ClangDiagnosticSema
-  ClangStmtNodes
+add_dependencies(lfortARCMigrate
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticGroups
+  LFortDiagnosticSema
+  LFortStmtNodes
   )
 
-target_link_libraries(clangARCMigrate
-  clangBasic
-  clangAST
-  clangParse
-  clangFrontend
-  clangRewriteCore
-  clangRewriteFrontend
+target_link_libraries(lfortARCMigrate
+  lfortBasic
+  lfortAST
+  lfortParse
+  lfortFrontend
+  lfortRewriteCore
+  lfortRewriteFrontend
   )

@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_PRETTY_PRINTER_H
-#define LLVM_CLANG_AST_PRETTY_PRINTER_H
+#ifndef LLVM_LFORT_AST_PRETTY_PRINTER_H
+#define LLVM_LFORT_AST_PRETTY_PRINTER_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/LangOptions.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/LangOptions.h"
 
-namespace clang {
+namespace lfort {
 
 class LangOptions;
 class SourceManager;
@@ -148,6 +148,6 @@ struct PrintingPolicy {
   unsigned PolishForDeclaration : 1;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

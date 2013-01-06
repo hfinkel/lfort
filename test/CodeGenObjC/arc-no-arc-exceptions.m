@@ -1,18 +1,18 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O2 -disable-llvm-optzns -o - %s | FileCheck %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O0 -disable-llvm-optzns -o - %s | FileCheck -check-prefix=NO-METADATA %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O2 -disable-llvm-optzns -o - %s -fobjc-arc-exceptions | FileCheck -check-prefix=NO-METADATA %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O2 -disable-llvm-optzns -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O0 -disable-llvm-optzns -o - %s | FileCheck -check-prefix=NO-METADATA %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fobjc-arc -fblocks -fexceptions -fobjc-exceptions -O2 -disable-llvm-optzns -o - %s -fobjc-arc-exceptions | FileCheck -check-prefix=NO-METADATA %s
 
-// The front-end should emit clang.arc.no_objc_arc_exceptions in -fobjc-arc-exceptions
+// The front-end should emit lfort.arc.no_objc_arc_exceptions in -fobjc-arc-exceptions
 // mode when optimization is enabled, and not otherwise.
 
 void thrower(void);
 void not(void) __attribute__((nothrow));
 
 // CHECK: define void @test0(
-// CHECK: call void @thrower(), !clang.arc.no_objc_arc_exceptions !
-// CHECK: call void @not() nounwind, !clang.arc.no_objc_arc_exceptions !
+// CHECK: call void @thrower(), !lfort.arc.no_objc_arc_exceptions !
+// CHECK: call void @not() nounwind, !lfort.arc.no_objc_arc_exceptions !
 // NO-METADATA: define void @test0(
-// NO-METADATA-NOT: !clang.arc.no_objc_arc_exceptions
+// NO-METADATA-NOT: !lfort.arc.no_objc_arc_exceptions
 // NO-METADATA: }
 void test0(void) {
   thrower();
@@ -20,10 +20,10 @@ void test0(void) {
 }
 
 // CHECK: define void @test1(
-// CHECK: call void @thrower(), !clang.arc.no_objc_arc_exceptions !
-// CHECK: call void @not() nounwind, !clang.arc.no_objc_arc_exceptions !
+// CHECK: call void @thrower(), !lfort.arc.no_objc_arc_exceptions !
+// CHECK: call void @not() nounwind, !lfort.arc.no_objc_arc_exceptions !
 // NO-METADATA: define void @test1(
-// NO-METADATA-NOT: !clang.arc.no_objc_arc_exceptions
+// NO-METADATA-NOT: !lfort.arc.no_objc_arc_exceptions
 // NO-METADATA: }
 void test1(id x) {
   id y = x;
@@ -35,9 +35,9 @@ void NSLog(id, ...);
 
 // CHECK: define void @test2(
 // CHECK: invoke void (i8*, ...)* @NSLog(i8* bitcast (%struct.NSConstantString* @_unnamed_cfstring_ to i8*), i32* %{{.*}})
-// CHECK:   to label %{{.*}} unwind label %{{.*}}, !clang.arc.no_objc_arc_exceptions !
+// CHECK:   to label %{{.*}} unwind label %{{.*}}, !lfort.arc.no_objc_arc_exceptions !
 // NO-METADATA: define void @test2(
-// NO-METADATA-NOT: !clang.arc.no_objc_arc_exceptions
+// NO-METADATA-NOT: !lfort.arc.no_objc_arc_exceptions
 // NO-METADATA: }
 void test2(void) {
     @autoreleasepool {
@@ -48,9 +48,9 @@ void test2(void) {
 
 // CHECK: define void @test3(
 // CHECK: invoke void %{{.*}}(i8* %{{.*}})
-// CHECK:   to label %{{.*}} unwind label %{{.*}}, !clang.arc.no_objc_arc_exceptions !
+// CHECK:   to label %{{.*}} unwind label %{{.*}}, !lfort.arc.no_objc_arc_exceptions !
 // NO-METADATA: define void @test3(
-// NO-METADATA-NOT: !clang.arc.no_objc_arc_exceptions
+// NO-METADATA-NOT: !lfort.arc.no_objc_arc_exceptions
 // NO-METADATA: }
 void test3(void) {
     @autoreleasepool {
@@ -63,9 +63,9 @@ void test3(void) {
 
 // CHECK: define void @test4(
 // CHECK: invoke void %{{.*}}(i8* %{{.*}})
-// CHECK:   to label %{{.*}} unwind label %{{.*}}, !clang.arc.no_objc_arc_exceptions !
+// CHECK:   to label %{{.*}} unwind label %{{.*}}, !lfort.arc.no_objc_arc_exceptions !
 // NO-METADATA: define void @test4(
-// NO-METADATA-NOT: !clang.arc.no_objc_arc_exceptions
+// NO-METADATA-NOT: !lfort.arc.no_objc_arc_exceptions
 // NO-METADATA: }
 void test4(void) {
     @autoreleasepool {

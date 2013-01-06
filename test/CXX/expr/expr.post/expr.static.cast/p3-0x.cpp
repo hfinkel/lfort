@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 // A glvalue of type "cv1 T1" can be cast to type "rvalue reference to

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify 
+// RUN: %lfort_cc1 %s -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify 
 
 @interface X 
 {

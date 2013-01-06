@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
-using namespace clang;
+#include "lfort/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
+using namespace lfort;
 using namespace ento;
 
 FunctionSummariesTy::~FunctionSummariesTy() {

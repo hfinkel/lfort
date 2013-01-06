@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 int a __attribute__((returns_twice)); // expected-warning {{'returns_twice' attribute only applies to functions}}
 

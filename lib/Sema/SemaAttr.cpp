@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Lookup.h"
-using namespace clang;
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Lookup.h"
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Pragma 'pack' and 'options align'

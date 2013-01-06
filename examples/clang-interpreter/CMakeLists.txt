@@ -11,28 +11,28 @@ set(LLVM_LINK_COMPONENTS
   selectiondag
   )
 
-add_clang_executable(clang-interpreter
+add_lfort_executable(lfort-interpreter
   main.cpp
   )
 
-add_dependencies(clang-interpreter
-  clang-headers
+add_dependencies(lfort-interpreter
+  lfort-headers
   )
 
-target_link_libraries(clang-interpreter
-  clangFrontend
-  clangSerialization
-  clangDriver
-  clangCodeGen
-  clangSema
-  clangStaticAnalyzerFrontend
-  clangStaticAnalyzerCheckers
-  clangStaticAnalyzerCore
-  clangAnalysis
-  clangRewriteCore
-  clangRewriteFrontend
-  clangAST
-  clangParse
-  clangLex
-  clangBasic
+target_link_libraries(lfort-interpreter
+  lfortFrontend
+  lfortSerialization
+  lfortDriver
+  lfortCodeGen
+  lfortSema
+  lfortStaticAnalyzerFrontend
+  lfortStaticAnalyzerCheckers
+  lfortStaticAnalyzerCore
+  lfortAnalysis
+  lfortRewriteCore
+  lfortRewriteFrontend
+  lfortAST
+  lfortParse
+  lfortLex
+  lfortBasic
   )

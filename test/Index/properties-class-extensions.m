@@ -1,5 +1,5 @@
 // Test that @properties within class extensions are visited by
-// clang_visitChildren only in the class extension, not the original
+// lfort_visitChildren only in the class extension, not the original
 // @interface (where we have a duplicate declaration - to be removed).
 @interface Foo {} @end
 @interface Foo (Cat)

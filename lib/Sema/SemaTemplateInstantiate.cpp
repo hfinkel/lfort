@@ -10,20 +10,20 @@
 //
 //===----------------------------------------------------------------------===/
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TreeTransform.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Template.h"
-#include "clang/Sema/TemplateDeduction.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Template.h"
+#include "lfort/Sema/TemplateDeduction.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 //===----------------------------------------------------------------------===/
@@ -1845,7 +1845,7 @@ Sema::SubstBaseSpecifiers(CXXRecordDecl *Instantiation,
 }
 
 // Defined via #include from SemaTemplateInstantiateDecl.cpp
-namespace clang {
+namespace lfort {
   namespace sema {
     Attr *instantiateTemplateAttribute(const Attr *At, ASTContext &C, Sema &S,
                             const MultiLevelTemplateArgumentList &TemplateArgs);

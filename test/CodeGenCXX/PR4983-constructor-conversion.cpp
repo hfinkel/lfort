@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %lfort_cc1 -emit-llvm-only %s
 
 struct A {
   A(const char *s){}

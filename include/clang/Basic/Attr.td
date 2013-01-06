@@ -10,8 +10,8 @@
 // allow attributes on a given Decl or Stmt).
 class AttrSubject;
 
-include "clang/Basic/DeclNodes.td"
-include "clang/Basic/StmtNodes.td"
+include "lfort/Basic/DeclNodes.td"
+include "lfort/Basic/StmtNodes.td"
 
 // A subset-subject is an AttrSubject constrained to operate only on some subset
 // of that subject.
@@ -220,7 +220,7 @@ def CDecl : InheritableAttr {
 // cf_audited_transfer indicates that the given function has been
 // audited and has been marked with the appropriate cf_consumed and
 // cf_returns_retained attributes.  It is generally applied by
-// '#pragma clang arc_cf_code_audited' rather than explicitly.
+// '#pragma lfort arc_cf_code_audited' rather than explicitly.
 def CFAuditedTransfer : InheritableAttr {
   let Spellings = [GNU<"cf_audited_transfer">];
   let Subjects = [Function];
@@ -323,7 +323,7 @@ def ExtVectorType : Attr {
 }
 
 def FallThrough : Attr {
-  let Spellings = [CXX11<"clang","fallthrough">];
+  let Spellings = [CXX11<"lfort","fallthrough">];
   let Subjects = [NullStmt];
 }
 
@@ -698,7 +698,7 @@ def VecReturn : InheritableAttr {
 }
 
 def WarnUnusedResult : InheritableAttr {
-  let Spellings = [GNU<"warn_unused_result">, CXX11<"clang","warn_unused_result">];
+  let Spellings = [GNU<"warn_unused_result">, CXX11<"lfort","warn_unused_result">];
 }
 
 def Weak : InheritableAttr {

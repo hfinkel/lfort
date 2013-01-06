@@ -14,13 +14,13 @@
 //        of ScopedDecl.
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_CFG_REC_STMT_DECL_VISITOR_H
-#define LLVM_CLANG_ANALYSIS_CFG_REC_STMT_DECL_VISITOR_H
+#ifndef LLVM_LFORT_ANALYSIS_CFG_REC_STMT_DECL_VISITOR_H
+#define LLVM_LFORT_ANALYSIS_CFG_REC_STMT_DECL_VISITOR_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Analysis/Visitors/CFGRecStmtVisitor.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Analysis/Visitors/CFGRecStmtVisitor.h"
 
 #define DISPATCH_CASE(CLASS)                                  \
 case Decl::CLASS:                                             \
@@ -33,7 +33,7 @@ break;
   { static_cast<ImplClass*>(this)->VisitVarDecl(D); }
 
 
-namespace clang {
+namespace lfort {
 template <typename ImplClass>
 class CFGRecStmtDeclVisitor : public CFGRecStmtVisitor<ImplClass> {
 public:
@@ -98,7 +98,7 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #undef DISPATCH_CASE
 #undef DEFAULT_DISPATCH

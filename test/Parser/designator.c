@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify -pedantic
+// RUN: %lfort_cc1 -fsyntax-only %s -verify -pedantic
 
 int X[] = {
   [4]4,       // expected-warning {{use of GNU 'missing =' extension in designator}}

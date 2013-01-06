@@ -1,4 +1,4 @@
-//==- Dominators.h - Implementation of dominators tree for Clang CFG C++ -*-==//
+//==- Dominators.h - Implementation of dominators tree for LFort CFG C++ -*-==//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,27 +7,27 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the dominators tree functionality for Clang CFGs.
+// This file implements the dominators tree functionality for LFort CFGs.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DOMINATORS_H
-#define LLVM_CLANG_DOMINATORS_H
+#ifndef LLVM_LFORT_DOMINATORS_H
+#define LLVM_LFORT_DOMINATORS_H
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/Analysis/DominatorInternals.h"
 #include "llvm/Analysis/Dominators.h"
 #include "llvm/IR/Module.h"
 
-namespace clang {
+namespace lfort {
 
 class CFGBlock;
 typedef llvm::DomTreeNodeBase<CFGBlock> DomTreeNode;
 
-/// \brief Concrete subclass of DominatorTreeBase for Clang
-/// This class implements the dominators tree functionality given a Clang CFG.
+/// \brief Concrete subclass of DominatorTreeBase for LFort
+/// This class implements the dominators tree functionality given a LFort CFG.
 ///
 class DominatorTree : public ManagedAnalysis {
   virtual void anchor();
@@ -160,15 +160,15 @@ inline void WriteAsOperand(raw_ostream &OS, const CFGBlock *BB,
   OS << "BB#" << BB->getBlockID();
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 //===-------------------------------------
 /// DominatorTree GraphTraits specialization so the DominatorTree can be
 /// iterable by generic graph iterators.
 ///
 namespace llvm {
-template <> struct GraphTraits< ::clang::DomTreeNode* > {
-  typedef ::clang::DomTreeNode NodeType;
+template <> struct GraphTraits< ::lfort::DomTreeNode* > {
+  typedef ::lfort::DomTreeNode NodeType;
   typedef NodeType::iterator  ChildIteratorType;
 
   static NodeType *getEntryNode(NodeType *N) {
@@ -181,28 +181,28 @@ template <> struct GraphTraits< ::clang::DomTreeNode* > {
     return N->end();
   }
 
-  typedef df_iterator< ::clang::DomTreeNode* > nodes_iterator;
+  typedef df_iterator< ::lfort::DomTreeNode* > nodes_iterator;
 
-  static nodes_iterator nodes_begin(::clang::DomTreeNode *N) {
+  static nodes_iterator nodes_begin(::lfort::DomTreeNode *N) {
     return df_begin(getEntryNode(N));
   }
 
-  static nodes_iterator nodes_end(::clang::DomTreeNode *N) {
+  static nodes_iterator nodes_end(::lfort::DomTreeNode *N) {
     return df_end(getEntryNode(N));
   }
 };
 
-template <> struct GraphTraits< ::clang::DominatorTree* >
-  : public GraphTraits< ::clang::DomTreeNode* > {
-  static NodeType *getEntryNode(::clang::DominatorTree *DT) {
+template <> struct GraphTraits< ::lfort::DominatorTree* >
+  : public GraphTraits< ::lfort::DomTreeNode* > {
+  static NodeType *getEntryNode(::lfort::DominatorTree *DT) {
     return DT->getRootNode();
   }
 
-  static nodes_iterator nodes_begin(::clang::DominatorTree *N) {
+  static nodes_iterator nodes_begin(::lfort::DominatorTree *N) {
     return df_begin(getEntryNode(N));
   }
 
-  static nodes_iterator nodes_end(::clang::DominatorTree *N) {
+  static nodes_iterator nodes_end(::lfort::DominatorTree *N) {
     return df_end(getEntryNode(N));
   }
 };

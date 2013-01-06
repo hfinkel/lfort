@@ -1,7 +1,7 @@
 // REQUIRES: nvptx-registered-target
 // REQUIRES: nvptx64-registered-target
-// RUN: %clang_cc1 -triple nvptx-unknown-unknown -S -emit-llvm -o - %s | FileCheck %s
-// RUN: %clang_cc1 -triple nvptx64-unknown-unknown -S -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple nvptx-unknown-unknown -S -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple nvptx64-unknown-unknown -S -emit-llvm -o - %s | FileCheck %s
 
 int read_tid() {
 
@@ -145,7 +145,7 @@ void sync() {
 
 // NVVM intrinsics
 
-// The idea is not to test all intrinsics, just that Clang is recognizing the
+// The idea is not to test all intrinsics, just that LFort is recognizing the
 // builtins defined in BuiltinsNVPTX.def
 void nvvm_math(float f1, float f2, double d1, double d2) {
 // CHECK: call float @llvm.nvvm.fmax.f

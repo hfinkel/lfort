@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -fblocks
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -fblocks
 // expected-no-diagnostics
 
 #include <stdarg.h>

@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_STMTCXX_H
-#define LLVM_CLANG_AST_STMTCXX_H
+#ifndef LLVM_LFORT_AST_STMTCXX_H
+#define LLVM_LFORT_AST_STMTCXX_H
 
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 class VarDecl;
 
@@ -222,7 +222,7 @@ public:
 ///
 /// Note that this statement only captures __if_exists and __if_not_exists
 /// statements whose name is dependent. All non-dependent cases are handled
-/// directly in the parser, so that they don't introduce a new scope. Clang
+/// directly in the parser, so that they don't introduce a new scope. LFort
 /// introduces scopes in the dependent case to keep names inside the compound
 /// statement from leaking out into the surround statements, which would
 /// compromise the template instantiation model. This behavior differs from
@@ -284,6 +284,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

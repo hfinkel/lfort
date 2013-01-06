@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CFGSTMTMAP_H
-#define LLVM_CLANG_CFGSTMTMAP_H
+#ifndef LLVM_LFORT_CFGSTMTMAP_H
+#define LLVM_LFORT_CFGSTMTMAP_H
 
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/CFG.h"
 
-namespace clang {
+namespace lfort {
 
 class CFG;
 class CFGBlock;
@@ -48,5 +48,5 @@ public:
   }
 };
 
-} // end clang namespace
+} // end lfort namespace
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix -verify %s
 // expected-no-diagnostics
 
 int printf(const char *restrict,...);

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 // Basic parsing/Sema tests for _Atomic
 // No operations are actually supported on objects of this type yet.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -triple=i686-pc-linux-gnu
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -triple=i686-pc-linux-gnu
 
 #include <stddef.h>
 
@@ -75,7 +75,7 @@ void bad_news(int *ip)
   (void)new S(1, 1); // expected-error {{call to constructor of 'S' is ambiguous}}
   (void)new const int; // expected-error {{default initialization of an object of const type 'const int'}}
   (void)new float*(ip); // expected-error {{cannot initialize a new value of type 'float *' with an lvalue of type 'int *'}}
-  // Undefined, but clang should reject it directly.
+  // Undefined, but lfort should reject it directly.
   (void)new int[-1]; // expected-error {{array size is negative}}
   (void)new int[2000000000]; // expected-error {{array is too large}}
   (void)new int[*(S*)0]; // expected-error {{array size expression must have integral or enumeration type, not 'S'}}

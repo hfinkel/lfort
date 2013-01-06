@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -triple i386-apple-darwin9 -fobjc-gc -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -triple i386-apple-darwin9 -fobjc-gc -verify %s
 // expected-no-diagnostics
 
 void f0(__weak id *);

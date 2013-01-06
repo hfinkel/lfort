@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -Wdocumentation -Wmissing-prototypes -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wdocumentation -Wmissing-prototypes -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdocumentation -Wmissing-prototypes -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wdocumentation -Wmissing-prototypes -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 
 int f();
 

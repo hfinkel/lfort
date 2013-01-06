@@ -17,11 +17,11 @@ import shutil
 import stat
 from AppKit import *
 
-def FindClangSpecs(path):
+def FindLFortSpecs(path):
   print "(+) Searching for xcspec file in: ", path
   for root, dirs, files in os.walk(path):
     for f in files:
-      if f.endswith(".xcspec") and f.startswith("Clang LLVM"):
+      if f.endswith(".xcspec") and f.startswith("LFort LLVM"):
         yield os.path.join(root, f)
 
 def ModifySpec(path, isBuiltinAnalyzer, pathToChecker):
@@ -29,12 +29,12 @@ def ModifySpec(path, isBuiltinAnalyzer, pathToChecker):
   foundAnalyzer = False
   with open(path) as f:
     if isBuiltinAnalyzer:
-      # First search for CLANG_ANALYZER_EXEC.  Newer
-      # versions of Xcode set EXEC_PATH to be CLANG_ANALYZER_EXEC.
+      # First search for LFORT_ANALYZER_EXEC.  Newer
+      # versions of Xcode set EXEC_PATH to be LFORT_ANALYZER_EXEC.
       with open(path) as f2:
         for line in f2:
-          if line.find("CLANG_ANALYZER_EXEC") >= 0:
-            pathToChecker = "$(CLANG_ANALYZER_EXEC)"
+          if line.find("LFORT_ANALYZER_EXEC") >= 0:
+            pathToChecker = "$(LFORT_ANALYZER_EXEC)"
             break
     # Now create a new file.
     for line in f:
@@ -64,13 +64,13 @@ def main():
   parser = OptionParser('usage: %prog [options]')
   parser.set_description(__doc__)
   parser.add_option("--use-checker-build", dest="path",
-                    help="Use the Clang located at the provided absolute path, e.g. /Users/foo/checker-1")
-  parser.add_option("--use-xcode-clang", action="store_const", 
-                    const="$(CLANG)", dest="default",
-                    help="Use the Clang bundled with Xcode")
+                    help="Use the LFort located at the provided absolute path, e.g. /Users/foo/checker-1")
+  parser.add_option("--use-xcode-lfort", action="store_const", 
+                    const="$(LFORT)", dest="default",
+                    help="Use the LFort bundled with Xcode")
   (options, args) = parser.parse_args()
   if options.path is None and options.default is None:
-    parser.error("You must specify a version of Clang to use for static analysis.  Specify '-h' for details")
+    parser.error("You must specify a version of LFort to use for static analysis.  Specify '-h' for details")
 
   # determine if Xcode is running
   for x in NSWorkspace.sharedWorkspace().runningApplications():
@@ -82,13 +82,13 @@ def main():
   if options.path:
     # Expand tildes.
     path = os.path.expanduser(options.path)
-    if not path.endswith("clang"):
-      print "(+) Using Clang bundled with checker build:", path
-      path = os.path.join(path, "bin", "clang");
+    if not path.endswith("lfort"):
+      print "(+) Using LFort bundled with checker build:", path
+      path = os.path.join(path, "bin", "lfort");
     else:
-      print "(+) Using Clang located at:", path
+      print "(+) Using LFort located at:", path
   else:
-    print "(+) Using the Clang bundled with Xcode"
+    print "(+) Using the LFort bundled with Xcode"
     path = options.default
     isBuiltinAnalyzer = True
   
@@ -103,7 +103,7 @@ def main():
     xcode_path = os.path.dirname(xcode_path)
   
   foundSpec = False
-  for x in FindClangSpecs(xcode_path):
+  for x in FindLFortSpecs(xcode_path):
     foundSpec = True
     ModifySpec(x, isBuiltinAnalyzer, path)
     

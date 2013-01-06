@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fobjc-exceptions %s
+// RUN: %lfort_cc1 -verify -fobjc-exceptions %s
 @interface A @end
 @protocol P;
 

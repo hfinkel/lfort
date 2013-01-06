@@ -1,5 +1,5 @@
-// PR13606 - Clang crashes with large alignment attribute
-// RUN: %clang -S -emit-llvm %s -o - | FileCheck %s
+// PR13606 - LFort crashes with large alignment attribute
+// RUN: %lfort -S -emit-llvm %s -o - | FileCheck %s
 
 // CHECK: x
 // CHECK: align

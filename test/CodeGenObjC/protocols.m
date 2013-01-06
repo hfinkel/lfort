@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %lfort_cc1 -emit-llvm-only %s
 
 void p(const char*, ...);
 

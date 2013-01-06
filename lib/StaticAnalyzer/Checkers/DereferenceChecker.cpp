@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {
@@ -250,7 +250,7 @@ void DereferenceChecker::checkBind(SVal L, SVal V, const Stmt *S,
 
   // Unlike a regular null dereference, initializing a reference with a
   // dereferenced null pointer does not actually cause a runtime exception in
-  // Clang's implementation of references.
+  // LFort's implementation of references.
   //
   //   int &r = *p; // safe??
   //   if (p != NULL) return; // uh-oh

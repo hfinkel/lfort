@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SERIALIZATION_MODULE_MANAGER_H
-#define LLVM_CLANG_SERIALIZATION_MODULE_MANAGER_H
+#ifndef LLVM_LFORT_SERIALIZATION_MODULE_MANAGER_H
+#define LLVM_LFORT_SERIALIZATION_MODULE_MANAGER_H
 
-#include "clang/Basic/FileManager.h"
-#include "clang/Serialization/Module.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Serialization/Module.h"
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang { 
+namespace lfort { 
 
 namespace serialization {
   
@@ -159,6 +159,6 @@ public:
   void viewGraph();
 };
 
-} } // end namespace clang::serialization
+} } // end namespace lfort::serialization
 
 #endif

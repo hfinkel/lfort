@@ -11,21 +11,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/ASTConsumers.h"
-#include "clang/AST/AST.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Frontend/ASTConsumers.h"
+#include "lfort/AST/AST.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Timer.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 /// ASTPrinter - Pretty-printer and dumper of ASTs
@@ -113,16 +113,16 @@ namespace {
   };
 } // end anonymous namespace
 
-ASTConsumer *clang::CreateASTPrinter(raw_ostream *Out,
+ASTConsumer *lfort::CreateASTPrinter(raw_ostream *Out,
                                      StringRef FilterString) {
   return new ASTPrinter(Out, /*Dump=*/ false, FilterString);
 }
 
-ASTConsumer *clang::CreateASTDumper(StringRef FilterString) {
+ASTConsumer *lfort::CreateASTDumper(StringRef FilterString) {
   return new ASTPrinter(0, /*Dump=*/ true, FilterString);
 }
 
-ASTConsumer *clang::CreateASTDeclNodeLister() {
+ASTConsumer *lfort::CreateASTDeclNodeLister() {
   return new ASTDeclNodeLister(0);
 }
 
@@ -160,7 +160,7 @@ void ASTViewer::HandleTopLevelSingleDecl(Decl *D) {
 }
 
 
-ASTConsumer *clang::CreateASTViewer() { return new ASTViewer(); }
+ASTConsumer *lfort::CreateASTViewer() { return new ASTViewer(); }
 
 //===----------------------------------------------------------------------===//
 /// DeclContextPrinter - Decl and DeclContext Visualization
@@ -468,7 +468,7 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
     }
   }
 }
-ASTConsumer *clang::CreateDeclContextPrinter() {
+ASTConsumer *lfort::CreateDeclContextPrinter() {
   return new DeclContextPrinter();
 }
 
@@ -488,6 +488,6 @@ public:
 };
 }
 
-ASTConsumer *clang::CreateASTDumperXML(raw_ostream &OS) {
+ASTConsumer *lfort::CreateASTDumperXML(raw_ostream &OS) {
   return new ASTDumpXML(OS);
 }

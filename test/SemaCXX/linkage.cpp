@@ -3,7 +3,7 @@
 // compared against the earlier cached value.  If we had a way of
 // testing linkage directly in Sema, that would be better.
 
-// RUN: %clang_cc1 -Werror -triple x86_64-apple-darwin10 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -Werror -triple x86_64-apple-darwin10 -emit-llvm %s -o - | FileCheck %s
 
 // PR8926
 namespace test0 {

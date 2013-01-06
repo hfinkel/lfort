@@ -1,12 +1,12 @@
 // RUN: touch %t.o
-// RUN: %clang -target x86_64-apple-macosx -### %t.o 2> %t.log
-// RUN: %clang -target x86_64-apple-darwin9 -### %t.o 2>> %t.log
-// RUN: %clang -target x86_64-apple-macosx10.7 -### %t.o 2>> %t.log
+// RUN: %lfort -target x86_64-apple-macosx -### %t.o 2> %t.log
+// RUN: %lfort -target x86_64-apple-darwin9 -### %t.o 2>> %t.log
+// RUN: %lfort -target x86_64-apple-macosx10.7 -### %t.o 2>> %t.log
 //
-// RUN: %clang -target armv7-apple-ios -### %t.o 2>> %t.log
-// RUN: %clang -target armv7-apple-ios0.0 -### %t.o 2>> %t.log
-// RUN: %clang -target armv7-apple-ios1.2.3 -### %t.o 2>> %t.log
-// RUN: %clang -target armv7-apple-ios5.0 -### %t.o 2>> %t.log
+// RUN: %lfort -target armv7-apple-ios -### %t.o 2>> %t.log
+// RUN: %lfort -target armv7-apple-ios0.0 -### %t.o 2>> %t.log
+// RUN: %lfort -target armv7-apple-ios1.2.3 -### %t.o 2>> %t.log
+// RUN: %lfort -target armv7-apple-ios5.0 -### %t.o 2>> %t.log
 //
 // RUN: FileCheck %s < %t.log
 

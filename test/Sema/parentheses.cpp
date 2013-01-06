@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -Wparentheses -fsyntax-only -verify %s
-// RUN: %clang_cc1 -Wparentheses -fixit %s -o - | %clang_cc1 -Wparentheses -Werror -
+// RUN: %lfort_cc1 -Wparentheses -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wparentheses -fixit %s -o - | %lfort_cc1 -Wparentheses -Werror -
 
 bool someConditionFunc();
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 template<typename T> void f0(T) { } // expected-note{{previous}}
 template<class U> void f0(U) { } // expected-error{{redefinition}}

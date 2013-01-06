@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_BUFFER_H_
-#define LLVM_CLANG_FRONTEND_TEXT_DIAGNOSTIC_BUFFER_H_
+#ifndef LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_BUFFER_H_
+#define LLVM_LFORT_FRONTEND_TEXT_DIAGNOSTIC_BUFFER_H_
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class Preprocessor;
 class SourceManager;
@@ -49,6 +49,6 @@ public:
   virtual DiagnosticConsumer *clone(DiagnosticsEngine &Diags) const;
 };
 
-} // end namspace clang
+} // end namspace lfort
 
 #endif

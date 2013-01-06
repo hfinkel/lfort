@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARSE_RAII_OBJECTS_FOR_PARSER_H
-#define LLVM_CLANG_PARSE_RAII_OBJECTS_FOR_PARSER_H
+#ifndef LLVM_LFORT_PARSE_RAII_OBJECTS_FOR_PARSER_H
+#define LLVM_LFORT_PARSE_RAII_OBJECTS_FOR_PARSER_H
 
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Parse/Parser.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Parse/Parser.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Sema.h"
 
-namespace clang {
+namespace lfort {
   // TODO: move ParsingClassDefinition here.
   // TODO: move TentativeParsingAction here.
 
@@ -429,6 +429,6 @@ namespace clang {
     void skipToEnd();
   };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

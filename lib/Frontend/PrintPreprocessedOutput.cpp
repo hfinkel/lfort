@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/PreprocessorOutputOptions.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/Pragma.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/TokenConcatenation.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/PreprocessorOutputOptions.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/PPCallbacks.h"
+#include "lfort/Lex/Pragma.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Lex/TokenConcatenation.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
@@ -28,7 +28,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <cctype>
 #include <cstdio>
-using namespace clang;
+using namespace lfort;
 
 /// PrintMacroDefinition - Print a macro definition in a form that will be
 /// properly accepted back as a definition.
@@ -601,7 +601,7 @@ static void DoPrintMacros(Preprocessor &PP, raw_ostream *OS) {
 
 /// DoPrintPreprocessedInput - This implements -E mode.
 ///
-void clang::DoPrintPreprocessedInput(Preprocessor &PP, raw_ostream *OS,
+void lfort::DoPrintPreprocessedInput(Preprocessor &PP, raw_ostream *OS,
                                      const PreprocessorOutputOptions &Opts) {
   // Show macros with no output is handled specially.
   if (!Opts.ShowCPP) {
@@ -619,8 +619,8 @@ void clang::DoPrintPreprocessedInput(Preprocessor &PP, raw_ostream *OS,
                                    Opts.ShowMacros);
   PP.AddPragmaHandler(new UnknownPragmaHandler("#pragma", Callbacks));
   PP.AddPragmaHandler("GCC", new UnknownPragmaHandler("#pragma GCC",Callbacks));
-  PP.AddPragmaHandler("clang",
-                      new UnknownPragmaHandler("#pragma clang", Callbacks));
+  PP.AddPragmaHandler("lfort",
+                      new UnknownPragmaHandler("#pragma lfort", Callbacks));
 
   PP.addPPCallbacks(Callbacks);
 

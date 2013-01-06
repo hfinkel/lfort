@@ -1,4 +1,4 @@
-//===--- ParseAST.cpp - Provide the clang::ParseAST method ----------------===//
+//===--- ParseAST.cpp - Provide the lfort::ParseAST method ----------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,27 +7,27 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the clang::ParseAST method.
+// This file implements the lfort::ParseAST method.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/ParseAST.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/Stmt.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Parse/Parser.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaConsumer.h"
+#include "lfort/Parse/ParseAST.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Parse/Parser.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaConsumer.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/CrashRecoveryContext.h"
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 
@@ -71,7 +71,7 @@ void PrettyStackTraceParserEntry::print(raw_ostream &OS) const {
 /// the file is parsed.  This inserts the parsed decls into the translation unit
 /// held by Ctx.
 ///
-void clang::ParseAST(Preprocessor &PP, ASTConsumer *Consumer,
+void lfort::ParseAST(Preprocessor &PP, ASTConsumer *Consumer,
                      ASTContext &Ctx, bool PrintStats,
                      TranslationUnitKind TUKind,
                      CodeCompleteConsumer *CompletionConsumer,
@@ -85,7 +85,7 @@ void clang::ParseAST(Preprocessor &PP, ASTConsumer *Consumer,
   ParseAST(*S.get(), PrintStats, SkipFunctionBodies);
 }
 
-void clang::ParseAST(Sema &S, bool PrintStats, bool SkipFunctionBodies) {
+void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipFunctionBodies) {
   // Collect global stats on Decls/Stmts (until we have a module streamer).
   if (PrintStats) {
     Decl::EnableStatistics();

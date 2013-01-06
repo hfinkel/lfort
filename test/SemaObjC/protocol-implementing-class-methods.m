@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -verify %s
 // rdar://7020493
 
 @protocol P1

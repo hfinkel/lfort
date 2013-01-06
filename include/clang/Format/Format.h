@@ -15,13 +15,13 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FORMAT_FORMAT_H
-#define LLVM_CLANG_FORMAT_FORMAT_H
+#ifndef LLVM_LFORT_FORMAT_FORMAT_H
+#define LLVM_LFORT_FORMAT_FORMAT_H
 
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Tooling/Refactoring.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Tooling/Refactoring.h"
 
-namespace clang {
+namespace lfort {
 
 class Lexer;
 class SourceManager;
@@ -76,6 +76,6 @@ tooling::Replacements reformat(const FormatStyle &Style, Lexer &Lex,
                                std::vector<CharSourceRange> Ranges);
 
 }  // end namespace format
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif  // LLVM_CLANG_FORMAT_FORMAT_H
+#endif  // LLVM_LFORT_FORMAT_FORMAT_H

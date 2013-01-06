@@ -12,21 +12,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/FormatString.h"
+#include "lfort/Analysis/Analyses/FormatString.h"
 #include "FormatStringParsing.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using clang::analyze_format_string::ArgType;
-using clang::analyze_format_string::FormatStringHandler;
-using clang::analyze_format_string::LengthModifier;
-using clang::analyze_format_string::OptionalAmount;
-using clang::analyze_format_string::ConversionSpecifier;
-using clang::analyze_scanf::ScanfConversionSpecifier;
-using clang::analyze_scanf::ScanfSpecifier;
-using clang::UpdateOnReturn;
-using namespace clang;
+using lfort::analyze_format_string::ArgType;
+using lfort::analyze_format_string::FormatStringHandler;
+using lfort::analyze_format_string::LengthModifier;
+using lfort::analyze_format_string::OptionalAmount;
+using lfort::analyze_format_string::ConversionSpecifier;
+using lfort::analyze_scanf::ScanfConversionSpecifier;
+using lfort::analyze_scanf::ScanfSpecifier;
+using lfort::UpdateOnReturn;
+using namespace lfort;
 
-typedef clang::analyze_format_string::SpecifierResult<ScanfSpecifier>
+typedef lfort::analyze_format_string::SpecifierResult<ScanfSpecifier>
         ScanfSpecifierResult;
 
 static bool ParseScanList(FormatStringHandler &H,
@@ -71,7 +71,7 @@ static ScanfSpecifierResult ParseScanfSpecifier(FormatStringHandler &H,
                                                 const LangOptions &LO,
                                                 const TargetInfo &Target) {
   
-  using namespace clang::analyze_scanf;
+  using namespace lfort::analyze_scanf;
   const char *I = Beg;
   const char *Start = 0;
   UpdateOnReturn <const char*> UpdateBeg(Beg, I);
@@ -121,7 +121,7 @@ static ScanfSpecifierResult ParseScanfSpecifier(FormatStringHandler &H,
   
   // Look for the field width (if any).  Unlike printf, this is either
   // a fixed integer or isn't present.
-  const OptionalAmount &Amt = clang::analyze_format_string::ParseAmount(I, E);
+  const OptionalAmount &Amt = lfort::analyze_format_string::ParseAmount(I, E);
   if (Amt.getHowSpecified() != OptionalAmount::NotSpecified) {
     assert(Amt.getHowSpecified() == OptionalAmount::Constant);
     FS.setFieldWidth(Amt);
@@ -481,7 +481,7 @@ void ScanfSpecifier::toString(raw_ostream &os) const {
   os << CS.toString();
 }
 
-bool clang::analyze_format_string::ParseScanfString(FormatStringHandler &H,
+bool lfort::analyze_format_string::ParseScanfString(FormatStringHandler &H,
                                                     const char *I,
                                                     const char *E,
                                                     const LangOptions &LO,

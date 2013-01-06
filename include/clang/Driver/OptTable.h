@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_OPTTABLE_H
-#define CLANG_DRIVER_OPTTABLE_H
+#ifndef LFORT_DRIVER_OPTTABLE_H
+#define LFORT_DRIVER_OPTTABLE_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/OptSpecifier.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/OptSpecifier.h"
 #include "llvm/ADT/StringSet.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class Arg;
   class ArgList;

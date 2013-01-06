@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 StringRef CheckerBase::getTagDescription() const {

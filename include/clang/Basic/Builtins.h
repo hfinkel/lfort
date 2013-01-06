@@ -13,17 +13,17 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_BUILTINS_H
-#define LLVM_CLANG_BASIC_BUILTINS_H
+#ifndef LLVM_LFORT_BASIC_BUILTINS_H
+#define LLVM_LFORT_BASIC_BUILTINS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include <cstring>
 
 // VC++ defines 'alloca' as an object-like macro, which interferes with our
 // builtins.
 #undef alloca
 
-namespace clang {
+namespace lfort {
   class TargetInfo;
   class IdentifierTable;
   class ASTContext;
@@ -41,7 +41,7 @@ namespace Builtin {
 enum ID {
   NotBuiltin  = 0,      // This is not a builtin function.
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/Builtins.def"
+#include "lfort/Basic/Builtins.def"
   FirstTSBuiltin
 };
 
@@ -160,5 +160,5 @@ private:
 };
 
 }
-} // end namespace clang
+} // end namespace lfort
 #endif

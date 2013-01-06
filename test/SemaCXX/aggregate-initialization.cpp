@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s 
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s 
 
 // Verify that using an initializer list for a non-aggregate looks for
 // constructors..

@@ -8,7 +8,7 @@
 // for this macro.
 // #pragma push_macro("macro_name")
 //
-// RUN: %clang_cc1 -fms-extensions -E %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -fms-extensions -E %s -o - | FileCheck %s
 
 #define X 1
 #define Y 2

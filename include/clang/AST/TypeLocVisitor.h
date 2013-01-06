@@ -10,14 +10,14 @@
 //  This file defines the TypeLocVisitor interface.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_TYPELOCVISITOR_H
-#define LLVM_CLANG_AST_TYPELOCVISITOR_H
+#ifndef LLVM_LFORT_AST_TYPELOCVISITOR_H
+#define LLVM_LFORT_AST_TYPELOCVISITOR_H
 
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/TypeVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/TypeVisitor.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 
 #define DISPATCH(CLASSNAME) \
   return static_cast<ImplClass*>(this)-> \
@@ -31,7 +31,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
     case TypeLoc::CLASS: DISPATCH(CLASS##TypeLoc);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
     }
     llvm_unreachable("unexpected type loc class!");
   }
@@ -41,7 +41,7 @@ public:
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
     case TypeLoc::CLASS: DISPATCH(CLASS##TypeLoc);
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
     }
     llvm_unreachable("unexpected type loc class!");
   }
@@ -50,13 +50,13 @@ public:
   RetTy Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc) { \
     DISPATCH(PARENT);               \
   }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
 
   RetTy VisitTypeLoc(TypeLoc TyLoc) { return RetTy(); }
 };
 
 #undef DISPATCH
 
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif // LLVM_CLANG_AST_TYPELOCVISITOR_H
+#endif // LLVM_LFORT_AST_TYPELOCVISITOR_H

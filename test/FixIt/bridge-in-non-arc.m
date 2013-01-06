@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10  -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10  -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 
 @interface I
 @end

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - -triple arm-none-linux-gnueabi %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o - -triple arm-none-linux-gnueabi %s | FileCheck %s
 
 extern int foo(float x);
 extern int foo(double x);

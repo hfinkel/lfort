@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/CompilationDatabasePluginRegistry.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/CompilationDatabasePluginRegistry.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/system_error.h"
 #include <sstream>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 CompilationDatabase::~CompilationDatabase() {}
@@ -114,7 +114,7 @@ FixedCompilationDatabase::loadFromCommandLine(int &Argc,
 
 FixedCompilationDatabase::
 FixedCompilationDatabase(Twine Directory, ArrayRef<std::string> CommandLine) {
-  std::vector<std::string> ToolCommandLine(1, "clang-tool");
+  std::vector<std::string> ToolCommandLine(1, "lfort-tool");
   ToolCommandLine.insert(ToolCommandLine.end(),
                          CommandLine.begin(), CommandLine.end());
   CompileCommands.push_back(CompileCommand(Directory, ToolCommandLine));
@@ -143,4 +143,4 @@ extern volatile int JSONAnchorSource;
 static int JSONAnchorDest = JSONAnchorSource;
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

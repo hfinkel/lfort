@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple x86_64-apple-darwin -O0 -emit-llvm %s -o - | FileCheck %s
-// RUN: %clang_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple i386-apple-darwin -O0 -emit-llvm %s -o - | FileCheck -check-prefix=CHECK-i386 %s
+// RUN: %lfort_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple x86_64-apple-darwin -O0 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple i386-apple-darwin -O0 -emit-llvm %s -o - | FileCheck -check-prefix=CHECK-i386 %s
 // rdar://12184410
 
 void x(id y) {}

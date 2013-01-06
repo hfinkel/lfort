@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 template <class T> struct Base { // expected-note 4 {{member found by ambiguous name lookup}}
   static void f();

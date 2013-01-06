@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -analyze -analyzer-checker=debug.DumpCFG %s > %t 2>&1
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -analyze -analyzer-checker=debug.DumpCFG %s > %t 2>&1
 // RUN: FileCheck --input-file=%t %s
 // XPASS: *
 

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=text -analyzer-config graph-trim-interval=5 -verify %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-multi-file -analyzer-config graph-trim-interval=5 %s -o %t.plist
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=text -analyzer-config graph-trim-interval=5 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=plist-multi-file -analyzer-config graph-trim-interval=5 %s -o %t.plist
 // RUN: FileCheck --input-file=%t.plist %s
 
 void use(int *ptr, int val) {

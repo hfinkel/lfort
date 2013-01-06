@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify -fblocks
+// RUN: %lfort_cc1 -fsyntax-only %s -verify -fblocks
 
 int j;
 void foo() {

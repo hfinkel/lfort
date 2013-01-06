@@ -1,4 +1,4 @@
-// RUN: %clang -S %s -o /dev/null
+// RUN: %lfort -S %s -o /dev/null
 struct rtxc_snapshot {
   int a, b, c, d;
 };

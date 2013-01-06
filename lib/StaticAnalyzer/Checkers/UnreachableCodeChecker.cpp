@@ -13,24 +13,24 @@
 // A similar flow-sensitive only check exists in Analysis/ReachableCode.cpp
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerHelpers.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/SmallSet.h"
 
 // The number of CFGBlock pointers we want to reserve memory for. This is used
 // once for each function we analyze.
 #define DEFAULT_CFGBLOCKS 256
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

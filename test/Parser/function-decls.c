@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -ast-print
+/* RUN: %lfort_cc1 %s -ast-print
  */
 
 void foo() {

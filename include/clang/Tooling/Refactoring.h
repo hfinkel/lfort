@@ -1,4 +1,4 @@
-//===--- Refactoring.h - Framework for clang refactoring tools --*- C++ -*-===//
+//===--- Refactoring.h - Framework for lfort refactoring tools --*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,16 +16,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_REFACTORING_H
-#define LLVM_CLANG_TOOLING_REFACTORING_H
+#ifndef LLVM_LFORT_TOOLING_REFACTORING_H
+#define LLVM_LFORT_TOOLING_REFACTORING_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/ADT/StringRef.h"
 #include <set>
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 class Rewriter;
 class SourceLocation;
@@ -114,13 +114,13 @@ bool applyAllReplacements(Replacements &Replaces, Rewriter &Rewrite);
 
 /// \brief A tool to run refactorings.
 ///
-/// This is a refactoring specific version of \see ClangTool.
+/// This is a refactoring specific version of \see LFortTool.
 /// All text replacements added to getReplacements() during the run of the
 /// tool will be applied and saved after all translation units have been
 /// processed.
 class RefactoringTool {
 public:
-  /// \see ClangTool::ClangTool.
+  /// \see LFortTool::LFortTool.
   RefactoringTool(const CompilationDatabase &Compilations,
                   ArrayRef<std::string> SourcePaths);
 
@@ -129,11 +129,11 @@ public:
   /// processed.
   Replacements &getReplacements();
 
-  /// \see ClangTool::run.
+  /// \see LFortTool::run.
   int run(FrontendActionFactory *ActionFactory);
 
 private:
-  ClangTool Tool;
+  LFortTool Tool;
   Replacements Replace;
 };
 
@@ -146,7 +146,7 @@ Replacement::Replacement(SourceManager &Sources, const Node &NodeToReplace,
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // end namespace LLVM_CLANG_TOOLING_REFACTORING_H
+#endif // end namespace LLVM_LFORT_TOOLING_REFACTORING_H
 

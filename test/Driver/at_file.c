@@ -1,4 +1,4 @@
-// RUN: %clang -E %s @%s.args -o %t.log
+// RUN: %lfort -E %s @%s.args -o %t.log
 // RUN: FileCheck --input-file=%t.log %s
 
 // CHECK: bar1

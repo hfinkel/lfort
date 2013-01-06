@@ -15,8 +15,8 @@ This is similar to -Eonly.
 
 Creating and using a PTH file for performance measurement (use a release build).
 
-$ clang -ccc-pch-is-pth -x objective-c-header INPUTS/Cocoa_h.m -o /tmp/tokencache
-$ clang -cc1 -token-cache /tmp/tokencache INPUTS/Cocoa_h.m
+$ lfort -ccc-pch-is-pth -x objective-c-header INPUTS/Cocoa_h.m -o /tmp/tokencache
+$ lfort -cc1 -token-cache /tmp/tokencache INPUTS/Cocoa_h.m
 
 //===---------------------------------------------------------------------===//
 
@@ -51,7 +51,7 @@ TODO: File Manager Speedup:
 // Specifying targets:  -triple and -arch
 //===---------------------------------------------------------------------===//
 
-The clang supports "-triple" and "-arch" options. At most one -triple and one
+The lfort supports "-triple" and "-arch" options. At most one -triple and one
 -arch option may be specified.  Both are optional.
 
 The "selection of target" behavior is defined as follows:

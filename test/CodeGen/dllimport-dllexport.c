@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-mingw32 -emit-llvm < %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-mingw32 -emit-llvm < %s | FileCheck %s
 
 void __attribute__((dllimport)) foo1();
 void __attribute__((dllexport)) foo1(){}

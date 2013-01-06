@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -emit-llvm %s -o %t
 namespace foo {
 
 // RUN: not grep "@a = global i32" %t

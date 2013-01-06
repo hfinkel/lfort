@@ -11,14 +11,14 @@
 //  templates.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_PARSEDTEMPLATE_H
-#define LLVM_CLANG_SEMA_PARSEDTEMPLATE_H
+#ifndef LLVM_LFORT_SEMA_PARSEDTEMPLATE_H
+#define LLVM_LFORT_SEMA_PARSEDTEMPLATE_H
 
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Ownership.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Ownership.h"
 #include <cassert>
 
-namespace clang {  
+namespace lfort {  
   /// \brief Represents the parsed form of a C++ template argument.
   class ParsedTemplateArgument {
   public:

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -verify -fsyntax-only %s
 
 float foof(float x);
 double food(double x);

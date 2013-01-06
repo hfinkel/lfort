@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify 
+// RUN: %lfort_cc1 %s -fsyntax-only -verify 
 enum e0; // expected-note{{forward declaration of 'enum e0'}}
 
 struct a {

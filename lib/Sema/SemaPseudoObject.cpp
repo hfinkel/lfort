@@ -30,14 +30,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 namespace {

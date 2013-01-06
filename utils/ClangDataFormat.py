@@ -1,30 +1,30 @@
-"""lldb data formatters for clang classes.
+"""lldb data formatters for lfort classes.
 
 Usage
 --
 import this file in your ~/.lldbinit by adding this line:
 
-command script import /path/to/ClangDataFormat.py
+command script import /path/to/LFortDataFormat.py
 
 After that, instead of getting this:
 
 (lldb) p Tok.Loc
-(clang::SourceLocation) $0 = {
+(lfort::SourceLocation) $0 = {
   (unsigned int) ID = 123582
 }
 
 you'll get:
 
 (lldb) p Tok.Loc
-(clang::SourceLocation) $4 = "/usr/include/i386/_types.h:37:1" (offset: 123582, file, local)
+(lfort::SourceLocation) $4 = "/usr/include/i386/_types.h:37:1" (offset: 123582, file, local)
 """
 
 import lldb
 
 def __lldb_init_module(debugger, internal_dict):
-	debugger.HandleCommand("type summary add -F ClangDataFormat.SourceLocation_summary clang::SourceLocation")
-	debugger.HandleCommand("type summary add -F ClangDataFormat.QualType_summary clang::QualType")
-	debugger.HandleCommand("type summary add -F ClangDataFormat.StringRef_summary llvm::StringRef")
+	debugger.HandleCommand("type summary add -F LFortDataFormat.SourceLocation_summary lfort::SourceLocation")
+	debugger.HandleCommand("type summary add -F LFortDataFormat.QualType_summary lfort::QualType")
+	debugger.HandleCommand("type summary add -F LFortDataFormat.StringRef_summary llvm::StringRef")
 
 def SourceLocation_summary(srcloc, internal_dict):
 	return SourceLocation(srcloc).summary()
@@ -59,7 +59,7 @@ class SourceLocation(object):
 	def summary(self):
 		if self.isInvalid():
 			return "<invalid loc>"
-		srcmgr_path = findObjectExpressionPath("clang::SourceManager", lldb.frame)
+		srcmgr_path = findObjectExpressionPath("lfort::SourceManager", lldb.frame)
 		if srcmgr_path:
 			return "%s (offset: %d, %s, %s)" % (self.getPrint(srcmgr_path), self.offset(), "macro" if self.isMacro() else "file", "local" if self.isLocal(srcmgr_path) else "loaded")
 		return "(offset: %d, %s)" % (self.offset(), "macro" if self.isMacro() else "file")

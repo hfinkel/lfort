@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -emit-llvm %s -o %t
 // PR1824
 
 int foo(int x, short y) {

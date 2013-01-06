@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -x objective-c %s -emit-pch -o %t
-// RUN: %clang_cc1 -x objective-c %s -emit-pch -o %t -D IMPL
+// RUN: %lfort_cc1 -x objective-c %s -emit-pch -o %t
+// RUN: %lfort_cc1 -x objective-c %s -emit-pch -o %t -D IMPL
 
 // Avoid infinite loop because of method redeclarations.
 

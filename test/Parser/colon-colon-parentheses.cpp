@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -verify
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -x c++ -fixit %t
-// RUN: %clang_cc1 -x c++ %t
+// RUN: not %lfort_cc1 -x c++ -fixit %t
+// RUN: %lfort_cc1 -x c++ %t
 
 struct S { static int a,b,c;};
 int S::(a);  // expected-error{{unexpected parenthesis after '::'}}

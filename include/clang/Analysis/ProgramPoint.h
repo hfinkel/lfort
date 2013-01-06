@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_PROGRAM_POINT
-#define LLVM_CLANG_ANALYSIS_PROGRAM_POINT
+#ifndef LLVM_LFORT_ANALYSIS_PROGRAM_POINT
+#define LLVM_LFORT_ANALYSIS_PROGRAM_POINT
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/PointerIntPair.h"
@@ -27,7 +27,7 @@
 #include <string>
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 class AnalysisDeclContext;
 class FunctionDecl;
@@ -558,38 +558,38 @@ public:
   StringRef getTagDescription() const;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 
 namespace llvm { // Traits specialization for DenseMap
 
-template <> struct DenseMapInfo<clang::ProgramPoint> {
+template <> struct DenseMapInfo<lfort::ProgramPoint> {
 
-static inline clang::ProgramPoint getEmptyKey() {
+static inline lfort::ProgramPoint getEmptyKey() {
   uintptr_t x =
    reinterpret_cast<uintptr_t>(DenseMapInfo<void*>::getEmptyKey()) & ~0x7;
-  return clang::BlockEntrance(reinterpret_cast<clang::CFGBlock*>(x), 0);
+  return lfort::BlockEntrance(reinterpret_cast<lfort::CFGBlock*>(x), 0);
 }
 
-static inline clang::ProgramPoint getTombstoneKey() {
+static inline lfort::ProgramPoint getTombstoneKey() {
   uintptr_t x =
    reinterpret_cast<uintptr_t>(DenseMapInfo<void*>::getTombstoneKey()) & ~0x7;
-  return clang::BlockEntrance(reinterpret_cast<clang::CFGBlock*>(x), 0);
+  return lfort::BlockEntrance(reinterpret_cast<lfort::CFGBlock*>(x), 0);
 }
 
-static unsigned getHashValue(const clang::ProgramPoint &Loc) {
+static unsigned getHashValue(const lfort::ProgramPoint &Loc) {
   return Loc.getHashValue();
 }
 
-static bool isEqual(const clang::ProgramPoint &L,
-                    const clang::ProgramPoint &R) {
+static bool isEqual(const lfort::ProgramPoint &L,
+                    const lfort::ProgramPoint &R) {
   return L == R;
 }
 
 };
   
 template <>
-struct isPodLike<clang::ProgramPoint> { static const bool value = true; };
+struct isPodLike<lfort::ProgramPoint> { static const bool value = true; };
 
 } // end namespace llvm
 

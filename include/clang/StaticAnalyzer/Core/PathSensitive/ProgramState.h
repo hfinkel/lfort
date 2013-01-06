@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_VALUESTATE_H
-#define LLVM_CLANG_GR_VALUESTATE_H
+#ifndef LLVM_LFORT_GR_VALUESTATE_H
+#define LLVM_LFORT_GR_VALUESTATE_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ConstraintManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/DynamicTypeInfo.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Environment.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState_Fwd.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/TaintTag.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ConstraintManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/DynamicTypeInfo.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Environment.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState_Fwd.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/TaintTag.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/ImmutableMap.h"
 #include "llvm/ADT/PointerIntPair.h"
@@ -31,7 +31,7 @@ class APSInt;
 class BumpPtrAllocator;
 }
 
-namespace clang {
+namespace lfort {
 class ASTContext;
 
 namespace ento {
@@ -797,6 +797,6 @@ public:
 
 } // end ento namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

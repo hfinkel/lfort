@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -Wprivate-extern -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -Wprivate-extern -verify
 
 // PR3310
 struct a x1; // expected-note 2{{forward declaration of 'struct a'}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wtautological-constant-out-of-range-compare -verify %s 
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -fsyntax-only -Wtautological-constant-out-of-range-compare -verify %s 
 // rdar://12202422
 
 int value(void);

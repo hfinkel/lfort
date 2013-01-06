@@ -16,12 +16,12 @@
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Function.h"
@@ -31,7 +31,7 @@
 #include "llvm/Support/CFG.h"
 #include <cstdarg>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 using llvm::Value;
 

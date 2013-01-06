@@ -1,6 +1,6 @@
 #include "nonnull.h"
 
-// RUN: %clang_cc1 -fblocks -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -verify -Wno-objc-root-class %s
 // REQUIRES: LP64
 
 @class NSObject;
@@ -42,7 +42,7 @@ foo (int i1, int i2, int i3, void (^cp1)(), void (^cp2)(), void (^cp3)())
   func4(0, cp1); // expected-warning {{null passed to a callee which requires a non-null argument}}
   func4(cp1, 0); // expected-warning {{null passed to a callee which requires a non-null argument}}
   
-  // Shouldn't these emit warnings?  Clang doesn't, and neither does GCC.  It
+  // Shouldn't these emit warnings?  LFort doesn't, and neither does GCC.  It
   // seems that the checking should handle Objective-C pointers.
   func6((NSObject*) 0); // no-warning
   func7((NSObject*) 0); // no-warning

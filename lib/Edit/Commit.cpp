@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Edit/Commit.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Edit/EditedSource.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/PPConditionalDirectiveRecord.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Edit/EditedSource.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/PPConditionalDirectiveRecord.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace edit;
 
 SourceLocation Commit::Edit::getFileLocation(SourceManager &SM) const {

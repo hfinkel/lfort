@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - | grep TheGlobal | not grep weak
+// RUN: %lfort_cc1 %s -emit-llvm -o - | grep TheGlobal | not grep weak
 
 extern int TheGlobal;
 int foo() { return TheGlobal; }

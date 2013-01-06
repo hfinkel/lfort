@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused-value %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused-value %s
 
 // PR4806
 namespace test0 {

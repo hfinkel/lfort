@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -std=c++11 -verify -fsyntax-only %s
 
 struct S {
   constexpr S(bool b) : b(b) {}

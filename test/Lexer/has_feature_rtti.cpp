@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-RTTI %s
-// RUN: %clang_cc1 -E -fno-rtti %s -o - | FileCheck --check-prefix=CHECK-NO-RTTI %s
+// RUN: %lfort_cc1 -E %s -o - | FileCheck --check-prefix=CHECK-RTTI %s
+// RUN: %lfort_cc1 -E -fno-rtti %s -o - | FileCheck --check-prefix=CHECK-NO-RTTI %s
 
 #if __has_feature(cxx_rtti)
 int foo();

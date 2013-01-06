@@ -1,4 +1,4 @@
-// RUN: %clang --analyze -std=c++11 %s -Xclang -verify -o /dev/null
+// RUN: %lfort --analyze -std=c++11 %s -Xlfort -verify -o /dev/null
 
 void test_static_assert() {
   static_assert(sizeof(void *) == sizeof(void*), "test_static_assert");

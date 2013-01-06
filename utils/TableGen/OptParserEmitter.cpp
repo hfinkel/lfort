@@ -99,7 +99,7 @@ static raw_ostream &write_cstring(raw_ostream &OS, llvm::StringRef Str) {
 /// OptParserEmitter - This tablegen backend takes an input .td file
 /// describing a list of options and emits a data structure for parsing and
 /// working with those options when given an input command line.
-namespace clang {
+namespace lfort {
 void EmitOptParser(RecordKeeper &Records, raw_ostream &OS, bool GenDefs) {
   // Get the option groups and options.
   const std::vector<Record*> &Groups =
@@ -272,4 +272,4 @@ void EmitOptParser(RecordKeeper &Records, raw_ostream &OS, bool GenDefs) {
     }
   }
 }
-} // end namespace clang
+} // end namespace lfort

@@ -9,18 +9,18 @@
 
 #include "DiagTool.h"
 #include "DiagnosticNames.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/TextDiagnosticBuffer.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Frontend/Utils.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/TextDiagnosticBuffer.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Frontend/Utils.h"
 #include "llvm/Support/TargetSelect.h"
 
 DEF_DIAGTOOL("show-enabled",
              "Show which warnings are enabled for a given command line",
              ShowEnabledWarnings)
 
-using namespace clang;
+using namespace lfort;
 using namespace diagtool;
 
 namespace {

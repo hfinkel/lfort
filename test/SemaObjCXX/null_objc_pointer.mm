@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wnull-arithmetic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wnull-arithmetic %s
 // expected-no-diagnostics
 #define NULL __null
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -o %t %s
 // RUN: grep '@"OBJC_IVAR_$_XCOrganizerDeviceNodeInfo.viewController"' %t
 
 // PR13820

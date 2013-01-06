@@ -1,4 +1,4 @@
-/*===-- clang-c/CXString.h - C Index strings  --------------------*- C -*-===*\
+/*===-- lfort-c/CXString.h - C Index strings  --------------------*- C -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -11,10 +11,10 @@
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-#ifndef CLANG_CXSTRING_H
-#define CLANG_CXSTRING_H
+#ifndef LFORT_CXSTRING_H
+#define LFORT_CXSTRING_H
 
-#include "clang-c/Platform.h"
+#include "lfort-c/Platform.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,8 +32,8 @@ extern "C" {
  *
  * The \c CXString type is used to return strings from the interface when
  * the ownership of that string might different from one call to the next.
- * Use \c clang_getCString() to retrieve the string data and, once finished
- * with the string data, call \c clang_disposeString() to free the string.
+ * Use \c lfort_getCString() to retrieve the string data and, once finished
+ * with the string data, call \c lfort_disposeString() to free the string.
  */
 typedef struct {
   void *data;
@@ -43,12 +43,12 @@ typedef struct {
 /**
  * \brief Retrieve the character data associated with the given string.
  */
-CINDEX_LINKAGE const char *clang_getCString(CXString string);
+CINDEX_LINKAGE const char *lfort_getCString(CXString string);
 
 /**
  * \brief Free the given string,
  */
-CINDEX_LINKAGE void clang_disposeString(CXString string);
+CINDEX_LINKAGE void lfort_disposeString(CXString string);
 
 /**
  * @}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o %t
+// RUN: %lfort_cc1 %s -emit-llvm -o %t
 
 int* a = __null;
 int b = __null;

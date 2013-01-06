@@ -1,4 +1,4 @@
-add_clang_library(clangRewriteCore
+add_lfort_library(lfortRewriteCore
   DeltaTree.cpp
   HTMLRewrite.cpp
   RewriteRope.cpp
@@ -6,19 +6,19 @@ add_clang_library(clangRewriteCore
   TokenRewriter.cpp
   )
 
-add_dependencies(clangRewriteCore
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangStmtNodes
+add_dependencies(lfortRewriteCore
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortStmtNodes
   )
 
-target_link_libraries(clangRewriteCore
-  clangBasic
-  clangAST
-  clangParse
+target_link_libraries(lfortRewriteCore
+  lfortBasic
+  lfortAST
+  lfortParse
   )

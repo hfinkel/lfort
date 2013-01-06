@@ -8,21 +8,21 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::TokenKind enum and support functions.
+/// \brief Defines the lfort::TokenKind enum and support functions.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOKENKINDS_H
-#define LLVM_CLANG_TOKENKINDS_H
+#ifndef LLVM_LFORT_TOKENKINDS_H
+#define LLVM_LFORT_TOKENKINDS_H
 
-namespace clang {
+namespace lfort {
 
 namespace tok {
 
 /// \brief Provides a simple uniform namespace for tokens from all C languages.
 enum TokenKind {
 #define TOK(X) X,
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   NUM_TOKENS
 };
 
@@ -30,7 +30,7 @@ enum TokenKind {
 /// '#' at the beginning of the line.
 enum PPKeywordKind {
 #define PPKEYWORD(X) pp_##X,
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   NUM_PP_KEYWORDS
 };
 
@@ -39,7 +39,7 @@ enum PPKeywordKind {
 enum ObjCKeywordKind {
 #define OBJC1_AT_KEYWORD(X) objc_##X,
 #define OBJC2_AT_KEYWORD(X) objc_##X,
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   NUM_OBJC_KEYWORDS
 };
 
@@ -84,11 +84,11 @@ inline bool isAnnotation(TokenKind K) {
 #define ANNOTATION(NAME) \
   if (K == tok::annot_##NAME) \
     return true;
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
   return false;
 }
 
 }  // end namespace tok
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

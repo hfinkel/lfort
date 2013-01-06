@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Arg.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Option.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Option.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang::driver;
-using clang::StringRef;
+using namespace lfort::driver;
+using lfort::StringRef;
 
 Arg::Arg(const Option _Opt, StringRef S, unsigned _Index, const Arg *_BaseArg)
   : Opt(_Opt), BaseArg(_BaseArg), Spelling(S), Index(_Index),

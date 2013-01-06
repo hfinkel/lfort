@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple x86_64-apple-darwin10 < %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -triple x86_64-apple-darwin10 < %s | FileCheck %s
 
 struct Test1S {
  long NumDecls;

@@ -1,5 +1,5 @@
 // REQUIRES: arm-registered-target
-// RUN: %clang_cc1 -triple armv6-unknown-unknown -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple armv6-unknown-unknown -emit-llvm -o - %s | FileCheck %s
 
 void test0(void) {
 	asm volatile("mov r0, r0" :: );

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wdangling-else %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wdangling-else %s
 
 void f(int a, int b, int c, int d, int e) {
 

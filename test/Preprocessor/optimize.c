@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Eonly %s -DOPT_O2 -O2 -verify
+// RUN: %lfort_cc1 -Eonly %s -DOPT_O2 -O2 -verify
 #ifdef OPT_O2
   // expected-no-diagnostics
   #ifndef __OPTIMIZE__
@@ -9,7 +9,7 @@
   #endif
 #endif
 
-// RUN: %clang_cc1 -Eonly %s -DOPT_O0 -O0 -verify
+// RUN: %lfort_cc1 -Eonly %s -DOPT_O0 -O0 -verify
 #ifdef OPT_O0
   // expected-no-diagnostics
   #ifdef __OPTIMIZE__
@@ -20,7 +20,7 @@
   #endif
 #endif
 
-// RUN: %clang_cc1 -Eonly %s -DOPT_OS -Os -verify
+// RUN: %lfort_cc1 -Eonly %s -DOPT_OS -Os -verify
 #ifdef OPT_OS
   // expected-no-diagnostics
   #ifndef __OPTIMIZE__

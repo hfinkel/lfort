@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -O0 -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -O0 -o - %s | FileCheck %s
 
 kernel __attribute__((reqd_work_group_size(1,2,4))) void kernel1(int a) {}
 

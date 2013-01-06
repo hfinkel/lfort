@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 
 // This is a testcase for LLVM PR445, which was a problem where the
 // instantiation of callDefaultCtor was not being emitted correctly.

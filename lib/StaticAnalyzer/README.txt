@@ -1,5 +1,5 @@
 //===----------------------------------------------------------------------===//
-// Clang Static Analyzer
+// LFort Static Analyzer
 //===----------------------------------------------------------------------===//
 
 = Library Structure =
@@ -105,7 +105,7 @@ these interfaces.
 
 There are some useful command-line options for debugging.  For example:
 
-$ clang -cc1 -help | grep analyze
+$ lfort -cc1 -help | grep analyze
  -analyze-function <value>
  -analyzer-display-progress
  -analyzer-viz-egraph-graphviz
@@ -119,7 +119,7 @@ simulation results.
 
 Of course, viewing the CFG (Control-Flow Graph) is also useful:
 
-$ clang -cc1 -help | grep cfg
+$ lfort -cc1 -help | grep cfg
  -cfg-add-implicit-dtors Add C++ implicit destructors to CFGs for all analyses
  -cfg-add-initializers   Add C++ initializers to CFGs for all analyses
  -cfg-dump               Display Control-Flow Graphs

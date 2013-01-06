@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/DeclGroup.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
 #include "llvm/Support/Allocator.h"
-using namespace clang;
+using namespace lfort;
 
 DeclGroup* DeclGroup::Create(ASTContext &C, Decl **Decls, unsigned NumDecls) {
   assert(NumDecls > 1 && "Invalid DeclGroup");

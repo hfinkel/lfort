@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/Version.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 typedef llvm::DenseMap<FileID, unsigned> FIDMap;
@@ -419,12 +419,12 @@ void PlistDiagnostics::FlushDiagnosticsImpl(
   "<plist version=\"1.0\">\n";
 
   // Write the root object: a <dict> containing...
-  //  - "clang_version", the string representation of clang version
+  //  - "lfort_version", the string representation of lfort version
   //  - "files", an <array> mapping from FIDs to file names
   //  - "diagnostics", an <array> containing the path diagnostics
   o << "<dict>\n" <<
-       " <key>clang_version</key>\n";
-  EmitString(o, getClangFullVersion()) << '\n';
+       " <key>lfort_version</key>\n";
+  EmitString(o, getLFortFullVersion()) << '\n';
   o << " <key>files</key>\n"
        " <array>\n";
 

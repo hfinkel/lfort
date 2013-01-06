@@ -13,16 +13,16 @@
 //===----------------------------------------------------------------------===//
 
 
-#ifndef LLVM_CLANG_AST_COMMENT_COMMAND_TRAITS_H
-#define LLVM_CLANG_AST_COMMENT_COMMAND_TRAITS_H
+#ifndef LLVM_LFORT_AST_COMMENT_COMMAND_TRAITS_H
+#define LLVM_LFORT_AST_COMMENT_COMMAND_TRAITS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Allocator.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 /// \brief Information about a single command.
@@ -146,7 +146,7 @@ private:
 };
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EDIT_FILEOFFSET_H
-#define LLVM_CLANG_EDIT_FILEOFFSET_H
+#ifndef LLVM_LFORT_EDIT_FILEOFFSET_H
+#define LLVM_LFORT_EDIT_FILEOFFSET_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
 
 namespace edit {
 
@@ -60,6 +60,6 @@ public:
 
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

@@ -8,16 +8,16 @@
 //===----------------------------------------------------------------------===//
 //
 // This file defines a flow-sensitive, (mostly) path-insensitive reachability
-// analysis based on Clang's CFGs.  Clients can query if a given basic block
+// analysis based on LFort's CFGs.  Clients can query if a given basic block
 // is reachable within the CFG.
 //
 //===----------------------------------------------------------------------===//
 
 #include "llvm/ADT/SmallVector.h"
-#include "clang/Analysis/Analyses/CFGReachabilityAnalysis.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/Analyses/CFGReachabilityAnalysis.h"
+#include "lfort/Analysis/CFG.h"
 
-using namespace clang;
+using namespace lfort;
 
 CFGReverseBlockReachabilityAnalysis::CFGReverseBlockReachabilityAnalysis(const CFG &cfg)
   : analyzed(cfg.getNumBlockIDs(), false) {}

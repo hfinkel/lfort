@@ -7,24 +7,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ARCMigrate/ARCMTActions.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/NSAPI.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Edit/Commit.h"
-#include "clang/Edit/EditedSource.h"
-#include "clang/Edit/EditsReceiver.h"
-#include "clang/Edit/Rewriters.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/MultiplexConsumer.h"
-#include "clang/Lex/PPConditionalDirectiveRecord.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/ARCMigrate/ARCMTActions.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/NSAPI.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Edit/EditedSource.h"
+#include "lfort/Edit/EditsReceiver.h"
+#include "lfort/Edit/Rewriters.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/MultiplexConsumer.h"
+#include "lfort/Lex/PPConditionalDirectiveRecord.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/ADT/SmallString.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 namespace {

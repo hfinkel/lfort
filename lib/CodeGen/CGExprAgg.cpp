@@ -14,15 +14,15 @@
 #include "CodeGenFunction.h"
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Intrinsics.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 //===----------------------------------------------------------------------===//

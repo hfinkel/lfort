@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_FRONTENDACTIONS_H
-#define LLVM_CLANG_GR_FRONTENDACTIONS_H
+#ifndef LLVM_LFORT_GR_FRONTENDACTIONS_H
+#define LLVM_LFORT_GR_FRONTENDACTIONS_H
 
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendAction.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -30,6 +30,6 @@ void printCheckerHelp(raw_ostream &OS, ArrayRef<std::string> plugins);
 
 } // end GR namespace
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

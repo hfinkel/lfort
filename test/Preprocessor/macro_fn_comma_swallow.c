@@ -1,5 +1,5 @@
 // Test the GNU comma swallowing extension.
-// RUN: %clang_cc1 %s -E | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 %s -E | FileCheck -strict-whitespace %s
 
 // CHECK: 1: foo{A, }
 #define X(Y) foo{A, Y}

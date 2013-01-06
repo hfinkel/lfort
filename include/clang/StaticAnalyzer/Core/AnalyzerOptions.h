@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYZEROPTIONS_H
-#define LLVM_CLANG_ANALYZEROPTIONS_H
+#ifndef LLVM_LFORT_ANALYZEROPTIONS_H
+#define LLVM_LFORT_ANALYZEROPTIONS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/StringMap.h"
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 class ASTConsumer;
 class DiagnosticsEngine;
 class Preprocessor;
@@ -31,21 +31,21 @@ class LangOptions;
 /// Analysis - Set of available source code analyses.
 enum Analyses {
 #define ANALYSIS(NAME, CMDFLAG, DESC, SCOPE) NAME,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumAnalyses
 };
 
 /// AnalysisStores - Set of available analysis store models.
 enum AnalysisStores {
 #define ANALYSIS_STORE(NAME, CMDFLAG, DESC, CREATFN) NAME##Model,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumStores
 };
 
 /// AnalysisConstraints - Set of available constraint models.
 enum AnalysisConstraints {
 #define ANALYSIS_CONSTRAINTS(NAME, CMDFLAG, DESC, CREATFN) NAME##Model,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumConstraints
 };
 
@@ -53,28 +53,28 @@ NumConstraints
 ///  analysis results.
 enum AnalysisDiagClients {
 #define ANALYSIS_DIAGNOSTICS(NAME, CMDFLAG, DESC, CREATFN, AUTOCREAT) PD_##NAME,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NUM_ANALYSIS_DIAG_CLIENTS
 };
 
 /// AnalysisPurgeModes - Set of available strategies for dead symbol removal.
 enum AnalysisPurgeMode {
 #define ANALYSIS_PURGE(NAME, CMDFLAG, DESC) NAME,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumPurgeModes
 };
 
 /// AnalysisIPAMode - Set of inter-procedural modes.
 enum AnalysisIPAMode {
 #define ANALYSIS_IPA(NAME, CMDFLAG, DESC) NAME,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumIPAModes
 };
 
 /// AnalysisInlineFunctionSelection - Set of inlining function selection heuristics.
 enum AnalysisInliningMode {
 #define ANALYSIS_INLINING_MODE(NAME, CMDFLAG, DESC) NAME,
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
 NumInliningModes
 };
 

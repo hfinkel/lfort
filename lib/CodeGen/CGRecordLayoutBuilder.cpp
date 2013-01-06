@@ -14,19 +14,19 @@
 #include "CGRecordLayout.h"
 #include "CGCXXABI.h"
 #include "CodeGenTypes.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 namespace {

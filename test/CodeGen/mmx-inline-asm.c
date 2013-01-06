@@ -1,4 +1,4 @@
-// RUN: %clang -mmmx -target i386-unknown-unknown -emit-llvm -S %s -o - | FileCheck %s
+// RUN: %lfort -mmmx -target i386-unknown-unknown -emit-llvm -S %s -o - | FileCheck %s
 // <rdar://problem/9091220>
 #include <mmintrin.h>
 

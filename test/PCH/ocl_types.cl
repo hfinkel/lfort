@@ -1,9 +1,9 @@
 // Test this without pch.
-// RUN: %clang_cc1 -include %S/ocl_types.h -fsyntax-only %s
+// RUN: %lfort_cc1 -include %S/ocl_types.h -fsyntax-only %s
 
 // Test with pch.
-// RUN: %clang_cc1 -x cl -emit-pch -o %t %S/ocl_types.h
-// RUN: %clang_cc1 -include-pch %t -fsyntax-only %s -ast-print
+// RUN: %lfort_cc1 -x cl -emit-pch -o %t %S/ocl_types.h
+// RUN: %lfort_cc1 -include-pch %t -fsyntax-only %s -ast-print
 
 void foo1(img1d_t img);
 

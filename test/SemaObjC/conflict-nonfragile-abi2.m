@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -verify -fsyntax-only -Wno-objc-root-class %s
 // expected-no-diagnostics
 // rdar://8225011
 

@@ -16,15 +16,15 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FORMAT_UNWRAPPED_LINE_PARSER_H
-#define LLVM_CLANG_FORMAT_UNWRAPPED_LINE_PARSER_H
+#ifndef LLVM_LFORT_FORMAT_UNWRAPPED_LINE_PARSER_H
+#define LLVM_LFORT_FORMAT_UNWRAPPED_LINE_PARSER_H
 
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Format/Format.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Format/Format.h"
+#include "lfort/Lex/Lexer.h"
 
-namespace clang {
+namespace lfort {
 namespace format {
 
 /// \brief A wrapper around a \c Token storing information about the
@@ -140,6 +140,6 @@ private:
 };
 
 }  // end namespace format
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif  // LLVM_CLANG_FORMAT_UNWRAPPED_LINE_PARSER_H
+#endif  // LLVM_LFORT_FORMAT_UNWRAPPED_LINE_PARSER_H

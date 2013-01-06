@@ -1,19 +1,19 @@
 // cygming have not supported integrated-as yet.
-// REQUIRES: clang-driver
+// REQUIRES: lfort-driver
 //
-// Check to make sure clang is somewhat picky about -g options.
+// Check to make sure lfort is somewhat picky about -g options.
 // (Delived from debug-options.c)
 // rdar://10383444
-// RUN: %clang -### -c -save-temps -integrated-as -g %s 2>&1 \
+// RUN: %lfort -### -c -save-temps -integrated-as -g %s 2>&1 \
 // RUN:   | FileCheck -check-prefix=SAVE %s
 //
 // SAVE: "-cc1as"
 // SAVE-NOT: "-g"
 
-// Check to make sure clang with -g on a .s file gets passed.
+// Check to make sure lfort with -g on a .s file gets passed.
 // rdar://9275556
 // RUN: touch %t.s
-// RUN: %clang -### -c -integrated-as -g %t.s 2>&1 \
+// RUN: %lfort -### -c -integrated-as -g %t.s 2>&1 \
 // RUN:   | FileCheck %s
 //
 // CHECK: "-cc1as"

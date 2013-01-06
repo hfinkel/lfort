@@ -1,4 +1,4 @@
-add_clang_library(clangRewriteFrontend
+add_lfort_library(lfortRewriteFrontend
   FixItRewriter.cpp
   FrontendActions.cpp
   HTMLPrint.cpp
@@ -9,21 +9,21 @@ add_clang_library(clangRewriteFrontend
   RewriteTest.cpp
   )
 
-add_dependencies(clangRewriteFrontend
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangStmtNodes
+add_dependencies(lfortRewriteFrontend
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortStmtNodes
   )
 
-target_link_libraries(clangRewriteFrontend
-  clangBasic
-  clangAST
-  clangParse
-  clangFrontend
-  clangRewriteCore
+target_link_libraries(lfortRewriteFrontend
+  lfortBasic
+  lfortAST
+  lfortParse
+  lfortFrontend
+  lfortRewriteCore
   )

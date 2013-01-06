@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -S -emit-llvm -o - %s -finstrument-functions | FileCheck %s
+// RUN: %lfort_cc1 -S -emit-llvm -o - %s -finstrument-functions | FileCheck %s
 
 // CHECK: @test1
 int test1(int x) {

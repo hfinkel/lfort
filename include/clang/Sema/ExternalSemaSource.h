@@ -10,14 +10,14 @@
 //  This file defines the ExternalSemaSource interface.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_EXTERNAL_SEMA_SOURCE_H
-#define LLVM_CLANG_SEMA_EXTERNAL_SEMA_SOURCE_H
+#ifndef LLVM_LFORT_SEMA_EXTERNAL_SEMA_SOURCE_H
+#define LLVM_LFORT_SEMA_EXTERNAL_SEMA_SOURCE_H
 
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/Sema/Weak.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/Sema/Weak.h"
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 class CXXConstructorDecl;
 class CXXRecordDecl;
@@ -177,6 +177,6 @@ public:
   }
 }; 
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

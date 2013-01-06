@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_OBJC_METHOD_LIST_H
-#define LLVM_CLANG_SEMA_OBJC_METHOD_LIST_H
+#ifndef LLVM_LFORT_SEMA_OBJC_METHOD_LIST_H
+#define LLVM_LFORT_SEMA_OBJC_METHOD_LIST_H
 
-namespace clang {
+namespace lfort {
 
 class ObjCMethodDecl;
 

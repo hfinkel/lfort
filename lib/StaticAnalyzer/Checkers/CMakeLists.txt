@@ -1,9 +1,9 @@
-clang_tablegen(Checkers.inc -gen-clang-sa-checkers
+lfort_tablegen(Checkers.inc -gen-lfort-sa-checkers
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../../include
   SOURCE Checkers.td
-  TARGET ClangSACheckers)
+  TARGET LFortSACheckers)
 
-add_clang_library(clangStaticAnalyzerCheckers
+add_lfort_library(lfortStaticAnalyzerCheckers
   AnalyzerStatsChecker.cpp
   ArrayBoundChecker.cpp
   ArrayBoundCheckerV2.cpp
@@ -22,7 +22,7 @@ add_clang_library(clangStaticAnalyzerCheckers
   CheckSizeofPointer.cpp
   CheckerDocumentation.cpp
   ChrootChecker.cpp
-  ClangCheckers.cpp
+  LFortCheckers.cpp
   CommonBugCategories.cpp
   DeadStoresChecker.cpp
   DebugCheckers.cpp
@@ -72,19 +72,19 @@ add_clang_library(clangStaticAnalyzerCheckers
   VirtualCallChecker.cpp
   )
 
-add_dependencies(clangStaticAnalyzerCheckers
-  clangStaticAnalyzerCore
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
-  ClangSACheckers
+add_dependencies(lfortStaticAnalyzerCheckers
+  lfortStaticAnalyzerCore
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
+  LFortSACheckers
   )
 
-target_link_libraries(clangStaticAnalyzerCheckers
-  clangBasic
-  clangAST
-  clangStaticAnalyzerCore
+target_link_libraries(lfortStaticAnalyzerCheckers
+  lfortBasic
+  lfortAST
+  lfortStaticAnalyzerCore
   )

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fobjc-runtime-has-weak -fsyntax-only -fobjc-arc -verify -fblocks %s
+// RUN: %lfort_cc1 -fobjc-runtime-has-weak -fsyntax-only -fobjc-arc -verify -fblocks %s
 
 @interface A
 @end

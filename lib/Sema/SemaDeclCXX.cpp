@@ -11,36 +11,36 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/TypeOrdering.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/CXXFieldCollector.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/TypeOrdering.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/CXXFieldCollector.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include <map>
 #include <set>
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // CheckDefaultArgumentVisitor
@@ -3760,7 +3760,7 @@ struct CheckAbstractUsage {
 #define ABSTRACT_TYPELOC(CLASS, PARENT)
 #define TYPELOC(CLASS, PARENT) \
     case TypeLoc::CLASS: Check(cast<CLASS##TypeLoc>(TL), Sel); break;
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
     }
   }
 
@@ -9809,7 +9809,7 @@ bool Sema::CheckOverloadedOperatorDeclaration(FunctionDecl *FnDecl) {
     { false, false, false }
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
     , { Unary, Binary, MemberOnly }
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   };
 
   bool CanBeUnaryOperator = OperatorUses[Op][0];

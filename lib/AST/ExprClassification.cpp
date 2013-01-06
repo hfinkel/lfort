@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/Expr.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 typedef Expr::Classification Cl;
 
@@ -109,7 +109,7 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
 #define ABSTRACT_STMT(Kind)
 #define STMT(Kind, Base) case Expr::Kind##Class:
 #define EXPR(Kind, Base)
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
     llvm_unreachable("cannot classify a statement");
 
     // First come the expressions that are always lvalues, unconditionally.

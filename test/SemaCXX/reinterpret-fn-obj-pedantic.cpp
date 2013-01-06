@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
 
 void fnptrs()
 {

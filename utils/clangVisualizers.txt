@@ -76,8 +76,8 @@ llvm::StringRef{
 	)
 }
 
-clang::Token{
-	preview((clang::tok::TokenKind)(int)$e.Kind)
+lfort::Token{
+	preview((lfort::tok::TokenKind)(int)$e.Kind)
 }
 
 llvm::PointerIntPair<*,*,*,*>{
@@ -281,7 +281,7 @@ llvm::StringMapEntry<*>{
 	)
 }
 
-clang::DirectoryEntry|clang::FileEntry|clang::PragmaHandler{
+lfort::DirectoryEntry|lfort::FileEntry|lfort::PragmaHandler{
 	preview ( [$e.Name,s] )
 	children (
 		#(
@@ -291,39 +291,39 @@ clang::DirectoryEntry|clang::FileEntry|clang::PragmaHandler{
 	)
 }
 
-clang::DeclarationName{
+lfort::DeclarationName{
 	preview (
-		; enum values from clang::DeclarationName::StoredNameKind
+		; enum values from lfort::DeclarationName::StoredNameKind
 		#if ($e.Ptr == 0) (
 			"empty"
 		) #elif (($e.Ptr & $e.PtrMask) == $e.StoredIdentifier) (
-			#else ( #("Identifier, ", (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask)) )
+			#else ( #("Identifier, ", (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask)) )
 		) #elif (($e.Ptr & $e.PtrMask) == $e.StoredObjCZeroArgSelector) (
-			#("ZeroArgSelector, ", (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
+			#("ZeroArgSelector, ", (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
 		) #elif (($e.Ptr & $e.PtrMask) == $e.StoredObjCOneArgSelector) (
-			#("OneArgSelector, ", (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
+			#("OneArgSelector, ", (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
 		) #elif (($e.Ptr & $e.PtrMask) == $e.StoredDeclarationNameExtra) (
-			#switch (((clang::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs)
+			#switch (((lfort::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs)
 			#case 0 ( ;DeclarationNameExtra::CXXConstructor
-				#("CXXConstructorName, ", (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+				#("CXXConstructorName, ", (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 			)
 			#case 1 ( ;DeclarationNameExtra::CXXDestructor
-				#("CXXDestructorName, ", (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+				#("CXXDestructorName, ", (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 			)
 			#case 2 ( ;DeclarationNameExtra::CXXConversionFunction
-				#("CXXConversionFunctionName, ", (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+				#("CXXConversionFunctionName, ", (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 			)
 			#case 46 ( ;DeclarationNameExtra::CXXLiteralOperator
-				#("CXXLiteralOperatorName, ", (clang::CXXLiteralOperatorIdName*)($e.Ptr & ~$e.PtrMask))
+				#("CXXLiteralOperatorName, ", (lfort::CXXLiteralOperatorIdName*)($e.Ptr & ~$e.PtrMask))
 			)
 			#case 47 ( ;DeclarationNameExtra::CXXUsingDirective
 				#("CXXUsingDirective")	;TODO What to add here?
 			)
 			#default (
-				#if (((clang::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs < 47) (
-					#("CXXOperatorName, ", (clang::CXXOperatorIdName*)($e.Ptr & ~$e.PtrMask))
+				#if (((lfort::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs < 47) (
+					#("CXXOperatorName, ", (lfort::CXXOperatorIdName*)($e.Ptr & ~$e.PtrMask))
 				) #else (
-					#("ObjCMultiArgSelector, ", (clang::MultiKeywordSelector*)($e.Ptr & ~$e.PtrMask))
+					#("ObjCMultiArgSelector, ", (lfort::MultiKeywordSelector*)($e.Ptr & ~$e.PtrMask))
 				)
 			)
 		)
@@ -331,40 +331,40 @@ clang::DeclarationName{
 
 	children (
 		#(
-			; enum values from clang::DeclarationName::StoredNameKind
+			; enum values from lfort::DeclarationName::StoredNameKind
 			#if ($e.Ptr == 0) (
 				#array( expr: 0, size: 0 )
 			) #else (
 				#(
 					#([raw members] : [$e.Ptr,!]),
 					if (($e.Ptr & $e.PtrMask) == $e.StoredIdentifier) (
-						#(Ptr : (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
+						#(Ptr : (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
 					) #elif (($e.Ptr & $e.PtrMask) == $e.StoredObjCZeroArgSelector) (
-						#(Ptr : (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
+						#(Ptr : (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
 					) #elif (($e.Ptr & $e.PtrMask) == $e.StoredObjCOneArgSelector) (
-						#(Ptr : (clang::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
+						#(Ptr : (lfort::IdentifierInfo*)($e.Ptr & ~$e.PtrMask))
 					) #elif (($e.Ptr & $e.PtrMask) == $e.StoredDeclarationNameExtra) (
-						#switch (((clang::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs)
+						#switch (((lfort::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs)
 						#case 0 ( ;DeclarationNameExtra::CXXConstructor
-							#(Ptr : (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+							#(Ptr : (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 						)
 						#case 1 ( ;DeclarationNameExtra::CXXDestructor
-							#(Ptr : (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+							#(Ptr : (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 						)
 						#case 2 ( ;DeclarationNameExtra::CXXConversionFunction
-							#(Ptr : (clang::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
+							#(Ptr : (lfort::CXXSpecialName*)($e.Ptr & ~$e.PtrMask))
 						)
 						#case 46 ( ;DeclarationNameExtra::CXXLiteralOperator
-							#(Ptr : (clang::CXXLiteralOperatorIdName*)($e.Ptr & ~$e.PtrMask))
+							#(Ptr : (lfort::CXXLiteralOperatorIdName*)($e.Ptr & ~$e.PtrMask))
 						)
 						#case 47 ( ;DeclarationNameExtra::CXXUsingDirective
 							#(Ptr : $e.Ptr)	;TODO What to add here?
 						)
 						#default (
-							#if (((clang::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs < 47) (
+							#if (((lfort::DeclarationNameExtra*)($e.Ptr & ~$e.PtrMask)).ExtraKindOrNumArgs < 47) (
 								#(Ptr : (CXXOperatorIdName*)($e.Ptr & ~$e.PtrMask))
 							) #else (
-								#(Ptr : (clang::MultiKeywordSelector*)($e.Ptr & ~$e.PtrMask))
+								#(Ptr : (lfort::MultiKeywordSelector*)($e.Ptr & ~$e.PtrMask))
 							)
 						)
 					)
@@ -374,13 +374,13 @@ clang::DeclarationName{
 	)
 }
 
-clang::DeclSpec{
+lfort::DeclSpec{
 	preview (
 		#(
 			"[",
-			(clang::DeclSpec::SCS)$e.StorageClassSpec,
+			(lfort::DeclSpec::SCS)$e.StorageClassSpec,
 			", ",
-			(clang::TypeSpecifierType)$e.TypeSpecType,
+			(lfort::TypeSpecifierType)$e.TypeSpecType,
 			"]"
 		)
 	)

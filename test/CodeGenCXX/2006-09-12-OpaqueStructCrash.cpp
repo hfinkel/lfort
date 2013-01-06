@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s
 
 struct A {
    virtual ~A();

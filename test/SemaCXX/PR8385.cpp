@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -fsyntax-only %s
+// RUN: not %lfort_cc1 -fsyntax-only %s
 
 // don't crash on this, but don't constrain our diagnostics here as they're
 // currently rather poor (we even accept things like "template struct {}").

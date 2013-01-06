@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-llvm < %s | grep "llvm.returnaddress"
-// RUN: %clang_cc1 -emit-llvm < %s | grep "llvm.frameaddress"
+// RUN: %lfort_cc1 -emit-llvm < %s | grep "llvm.returnaddress"
+// RUN: %lfort_cc1 -emit-llvm < %s | grep "llvm.frameaddress"
 void* a(unsigned x) {
 return __builtin_return_address(0);
 }

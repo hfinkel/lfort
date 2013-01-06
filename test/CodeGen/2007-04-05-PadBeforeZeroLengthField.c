@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o -
+// RUN: %lfort_cc1 %s -emit-llvm -o -
 struct c__ { unsigned int type:4; };
 union A { struct c__ c;  } __attribute__((aligned(8)));
 struct B {

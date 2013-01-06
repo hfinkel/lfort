@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_PREPROCESSOR_H
-#define LLVM_CLANG_LEX_PREPROCESSOR_H
+#ifndef LLVM_LFORT_LEX_PREPROCESSOR_H
+#define LLVM_LFORT_LEX_PREPROCESSOR_H
 
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/PPMutationListener.h"
-#include "clang/Lex/PTHLexer.h"
-#include "clang/Lex/PTHManager.h"
-#include "clang/Lex/TokenLexer.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/PPCallbacks.h"
+#include "lfort/Lex/PPMutationListener.h"
+#include "lfort/Lex/PTHLexer.h"
+#include "lfort/Lex/PTHManager.h"
+#include "lfort/Lex/TokenLexer.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -38,7 +38,7 @@ namespace llvm {
   template<unsigned InternalLen> class SmallString;
 }
 
-namespace clang {
+namespace lfort {
 
 class SourceManager;
 class ExternalPreprocessorSource;
@@ -171,7 +171,7 @@ class Preprocessor : public RefCountedBase<Preprocessor> {
   /// IdentifierTable above, this table *isn't* populated by the preprocessor.
   /// It is declared/expanded here because it's role/lifetime is
   /// conceptually similar the IdentifierTable. In addition, the current control
-  /// flow (in clang::ParseAST()), make it convenient to put here.
+  /// flow (in lfort::ParseAST()), make it convenient to put here.
   /// FIXME: Make sure the lifetime of Identifiers/Selectors *isn't* tied to
   /// the lifetime of the preprocessor.
   SelectorTable Selectors;
@@ -223,7 +223,7 @@ class Preprocessor : public RefCountedBase<Preprocessor> {
   bool ModuleImportExpectsIdentifier;
   
   /// \brief The source location of the currently-active
-  /// #pragma clang arc_cf_code_audited begin.
+  /// #pragma lfort arc_cf_code_audited begin.
   SourceLocation PragmaARCCFCodeAuditedLoc;
 
   /// \brief True if we hit the code-completion point.
@@ -877,14 +877,14 @@ public:
     getDiagnostics().setSuppressAllDiagnostics(true);
   }
 
-  /// \brief The location of the currently-active \#pragma clang
+  /// \brief The location of the currently-active \#pragma lfort
   /// arc_cf_code_audited begin.  Returns an invalid location if there
   /// is no such pragma active.
   SourceLocation getPragmaARCCFCodeAuditedLoc() const {
     return PragmaARCCFCodeAuditedLoc;
   }
 
-  /// \brief Set the location of the currently-active \#pragma clang
+  /// \brief Set the location of the currently-active \#pragma lfort
   /// arc_cf_code_audited begin.  An invalid location ends the pragma.
   void setPragmaARCCFCodeAuditedLoc(SourceLocation Loc) {
     PragmaARCCFCodeAuditedLoc = Loc;
@@ -1432,6 +1432,6 @@ public:
   virtual bool HandleComment(Preprocessor &PP, SourceRange Comment) = 0;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

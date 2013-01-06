@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fno-builtin -O1 -S -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -fno-builtin -O1 -S -o - %s | FileCheck %s
 
 void PR13497() {
   char content[2];

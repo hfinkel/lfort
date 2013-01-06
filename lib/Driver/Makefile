@@ -1,4 +1,4 @@
-##===- clang/lib/Driver/Makefile ---------------------------*- Makefile -*-===##
+##===- lfort/lib/Driver/Makefile ---------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,7 +7,7 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangDriver
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortDriver
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

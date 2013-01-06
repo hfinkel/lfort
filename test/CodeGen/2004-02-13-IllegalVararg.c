@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  %s -w -emit-llvm -o -
+// RUN: %lfort_cc1  %s -w -emit-llvm -o -
 
 float test(int X, ...) {
   __builtin_va_list ap;

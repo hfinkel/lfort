@@ -1,6 +1,6 @@
 /* RUN: cp %s %t
-   RUN: %clang_cc1 -x objective-c -fixit %t
-   RUN: %clang_cc1 -x objective-c -Werror %t
+   RUN: %lfort_cc1 -x objective-c -fixit %t
+   RUN: %lfort_cc1 -x objective-c -Werror %t
  */
 
 // rdar://9036633

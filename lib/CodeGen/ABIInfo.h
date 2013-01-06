@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_ABIINFO_H
-#define CLANG_CODEGEN_ABIINFO_H
+#ifndef LFORT_CODEGEN_ABIINFO_H
+#define LFORT_CODEGEN_ABIINFO_H
 
-#include "clang/AST/Type.h"
+#include "lfort/AST/Type.h"
 #include "llvm/IR/Type.h"
 
 namespace llvm {
@@ -19,7 +19,7 @@ namespace llvm {
   class DataLayout;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
 
   namespace CodeGen {
@@ -202,6 +202,6 @@ namespace clang {
     virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                    CodeGen::CodeGenFunction &CGF) const = 0;
   };
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

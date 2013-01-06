@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only %s -std=c++11 -verify
+// RUN: %lfort_cc1 -fsyntax-only %s -std=c++11 -verify
 
-// This is a test for an egregious hack in Clang that works around
+// This is a test for an egregious hack in LFort that works around
 // an issue with GCC's <type_traits> implementation. std::common_type
 // relies on pre-standard rules for decltype(), in which it doesn't
 // produce reference types so frequently.

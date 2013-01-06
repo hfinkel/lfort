@@ -1,4 +1,4 @@
-//===--- ClangCommentHTMLTagsEmitter.cpp - Generate HTML tag list for Clang -=//
+//===--- LFortCommentHTMLTagsEmitter.cpp - Generate HTML tag list for LFort -=//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -18,8 +18,8 @@
 
 using namespace llvm;
 
-namespace clang {
-void EmitClangCommentHTMLTags(RecordKeeper &Records, raw_ostream &OS) {
+namespace lfort {
+void EmitLFortCommentHTMLTags(RecordKeeper &Records, raw_ostream &OS) {
   std::vector<Record *> Tags = Records.getAllDerivedDefinitions("Tag");
   std::vector<StringMatcher::StringPair> Matches;
   for (std::vector<Record *>::iterator I = Tags.begin(), E = Tags.end();
@@ -37,7 +37,7 @@ void EmitClangCommentHTMLTags(RecordKeeper &Records, raw_ostream &OS) {
      << "}\n\n";
 }
 
-void EmitClangCommentHTMLTagsProperties(RecordKeeper &Records,
+void EmitLFortCommentHTMLTagsProperties(RecordKeeper &Records,
                                         raw_ostream &OS) {
   std::vector<Record *> Tags = Records.getAllDerivedDefinitions("Tag");
   std::vector<StringMatcher::StringPair> MatchesEndTagOptional;
@@ -65,5 +65,5 @@ void EmitClangCommentHTMLTagsProperties(RecordKeeper &Records,
   OS << "  return false;\n"
      << "}\n\n";
 }
-} // end namespace clang
+} // end namespace lfort
 

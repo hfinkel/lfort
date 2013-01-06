@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -O2 -disable-llvm-optzns -o - %s | FileCheck %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -o - %s | FileCheck -check-prefix=CHECK-UNOPT %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -O2 -disable-llvm-optzns -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -fblocks -fobjc-arc -fobjc-runtime-has-weak -o - %s | FileCheck -check-prefix=CHECK-UNOPT %s
 
 // This shouldn't crash.
 void test0(id (^maker)(void)) {
@@ -36,9 +36,9 @@ void test2(id x) {
 // CHECK-NEXT: bitcast
 // CHECK-NEXT: call void @test2_helper(
 // CHECK-NEXT: [[T0:%.*]] = load i8** [[SLOTREL]]
-// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
 // CHECK-NEXT: [[T0:%.*]] = load i8** [[X]]
-// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !clang.imprecise_release
+// CHECK-NEXT: call void @objc_release(i8* [[T0]]) nounwind, !lfort.imprecise_release
 // CHECK-NEXT: ret void
   extern void test2_helper(id (^)(void));
   test2_helper(^{ return x; });
@@ -225,11 +225,11 @@ void test6(void) {
   // CHECK-NEXT: ret void
 
   // CHECK:    define internal void @__copy_helper_block_
-  // 0x8 - FIELD_IS_BYREF (no FIELD_IS_WEAK because clang in control)
+  // 0x8 - FIELD_IS_BYREF (no FIELD_IS_WEAK because lfort in control)
   // CHECK:      call void @_Block_object_assign(i8* {{%.*}}, i8* {{%.*}}, i32 8)
 
   // CHECK:    define internal void @__destroy_helper_block_
-  // 0x8 - FIELD_IS_BYREF (no FIELD_IS_WEAK because clang in control)
+  // 0x8 - FIELD_IS_BYREF (no FIELD_IS_WEAK because lfort in control)
   // CHECK:      call void @_Block_object_dispose(i8* {{%.*}}, i32 8)
 }
 

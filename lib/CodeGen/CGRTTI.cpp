@@ -14,11 +14,11 @@
 #include "CodeGenModule.h"
 #include "CGCXXABI.h"
 #include "CGObjCRuntime.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/Type.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 namespace {
@@ -203,7 +203,7 @@ static bool TypeInfoIsInStandardLibrary(const BuiltinType *Ty) {
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \
     case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
       llvm_unreachable("asking for RRTI for a placeholder type!");
       
     case BuiltinType::ObjCId:
@@ -399,7 +399,7 @@ void RTTIBuilder::BuildVTablePointer(const Type *Ty) {
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Non-canonical and dependent types shouldn't get here");
 
   case Type::LValueReference:
@@ -596,7 +596,7 @@ llvm::Constant *RTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class, Base) case Type::Class:
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
 #define DEPENDENT_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Non-canonical and dependent types shouldn't get here");
 
   // GCC treats vector types as fundamental types.

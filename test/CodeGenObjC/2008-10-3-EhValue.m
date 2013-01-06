@@ -1,4 +1,4 @@
-// RUN: %clang -fexceptions -fobjc-exceptions -S -emit-llvm  %s -o /dev/null
+// RUN: %lfort -fexceptions -fobjc-exceptions -S -emit-llvm  %s -o /dev/null
 
 @interface Object {
 @public

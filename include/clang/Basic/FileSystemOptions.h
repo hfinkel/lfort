@@ -8,16 +8,16 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::FileSystemOptions interface.
+/// \brief Defines the lfort::FileSystemOptions interface.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_FILESYSTEMOPTIONS_H
-#define LLVM_CLANG_BASIC_FILESYSTEMOPTIONS_H
+#ifndef LLVM_LFORT_BASIC_FILESYSTEMOPTIONS_H
+#define LLVM_LFORT_BASIC_FILESYSTEMOPTIONS_H
 
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Keeps track of options that affect how file operations are performed.
 class FileSystemOptions {
@@ -27,6 +27,6 @@ public:
   std::string WorkingDir;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

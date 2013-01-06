@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wconversion -Wliteral-conversion -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wconversion -Wliteral-conversion -fsyntax-only -verify %s
 
 // C DR #316, PR 3626.
 void f0(a, b, c, d) int a,b,c,d; {}

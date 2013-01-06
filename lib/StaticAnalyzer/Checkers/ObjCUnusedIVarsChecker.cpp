@@ -13,18 +13,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 enum IVarState { Unused, Used };

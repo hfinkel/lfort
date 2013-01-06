@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This provides a possible implementation of PTH support for Clang that is
+// This provides a possible implementation of PTH support for LFort that is
 // based on caching lexed tokens and identifiers.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemStatCache.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/OnDiskHashTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemStatCache.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/OnDiskHashTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/FileSystem.h"
@@ -33,8 +33,8 @@
 #define S_ISDIR(x) (((x)&_S_IFDIR)!=0)
 #endif
 
-using namespace clang;
-using namespace clang::io;
+using namespace lfort;
+using namespace lfort::io;
 
 //===----------------------------------------------------------------------===//
 // PTH-specific stuff.
@@ -536,7 +536,7 @@ public:
 } // end anonymous namespace
 
 
-void clang::CacheTokens(Preprocessor &PP, llvm::raw_fd_ostream* OS) {
+void lfort::CacheTokens(Preprocessor &PP, llvm::raw_fd_ostream* OS) {
   // Get the name of the main file.
   const SourceManager &SrcMgr = PP.getSourceManager();
   const FileEntry *MainFile = SrcMgr.getFileEntryForID(SrcMgr.getMainFileID());

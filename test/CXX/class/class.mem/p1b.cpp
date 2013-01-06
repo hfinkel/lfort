@@ -1,8 +1,8 @@
 // The first run checks that the correct errors are generated,
 // implicitly checking the order of default argument parsing:
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // The second run checks the order of inline method definitions:
-// RUN: not %clang_cc1 -fsyntax-only %s 2> %t
+// RUN: not %lfort_cc1 -fsyntax-only %s 2> %t
 // RUN: FileCheck %s < %t
 
 class A {

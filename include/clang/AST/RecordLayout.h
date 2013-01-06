@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_LAYOUTINFO_H
-#define LLVM_CLANG_AST_LAYOUTINFO_H
+#ifndef LLVM_LFORT_AST_LAYOUTINFO_H
+#define LLVM_LFORT_AST_LAYOUTINFO_H
 
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class FieldDecl;
   class RecordDecl;
@@ -239,6 +239,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

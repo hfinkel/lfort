@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/Version.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
-#include "clang/Frontend/LangStandard.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Frontend/LangStandard.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
@@ -29,7 +29,7 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/Path.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Initialization.
@@ -53,8 +53,8 @@ CompilerInvocationBase::CompilerInvocationBase(const CompilerInvocationBase &X)
 // Deserialization (from args)
 //===----------------------------------------------------------------------===//
 
-using namespace clang::driver;
-using namespace clang::driver::options;
+using namespace lfort::driver;
+using namespace lfort::driver::options;
 
 //
 
@@ -129,7 +129,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisStores Value = llvm::StringSwitch<AnalysisStores>(Name)
 #define ANALYSIS_STORE(NAME, CMDFLAG, DESC, CREATFN) \
       .Case(CMDFLAG, NAME##Model)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NumStores);
     if (Value == NumStores) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -145,7 +145,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisConstraints Value = llvm::StringSwitch<AnalysisConstraints>(Name)
 #define ANALYSIS_CONSTRAINTS(NAME, CMDFLAG, DESC, CREATFN) \
       .Case(CMDFLAG, NAME##Model)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NumConstraints);
     if (Value == NumConstraints) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -161,7 +161,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisDiagClients Value = llvm::StringSwitch<AnalysisDiagClients>(Name)
 #define ANALYSIS_DIAGNOSTICS(NAME, CMDFLAG, DESC, CREATFN, AUTOCREAT) \
       .Case(CMDFLAG, PD_##NAME)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NUM_ANALYSIS_DIAG_CLIENTS);
     if (Value == NUM_ANALYSIS_DIAG_CLIENTS) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -177,7 +177,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisPurgeMode Value = llvm::StringSwitch<AnalysisPurgeMode>(Name)
 #define ANALYSIS_PURGE(NAME, CMDFLAG, DESC) \
       .Case(CMDFLAG, NAME)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NumPurgeModes);
     if (Value == NumPurgeModes) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -193,7 +193,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisIPAMode Value = llvm::StringSwitch<AnalysisIPAMode>(Name)
 #define ANALYSIS_IPA(NAME, CMDFLAG, DESC) \
       .Case(CMDFLAG, NAME)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NumIPAModes);
     if (Value == NumIPAModes) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -209,7 +209,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
     AnalysisInliningMode Value = llvm::StringSwitch<AnalysisInliningMode>(Name)
 #define ANALYSIS_INLINING_MODE(NAME, CMDFLAG, DESC) \
       .Case(CMDFLAG, NAME)
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       .Default(NumInliningModes);
     if (Value == NumInliningModes) {
       Diags.Report(diag::err_drv_invalid_value)
@@ -475,7 +475,7 @@ static void ParseDependencyOutputArgs(DependencyOutputOptions &Opts,
   Opts.DOTOutputFile = Args.getLastArgValue(OPT_dependency_dot);
 }
 
-bool clang::ParseDiagnosticArgs(DiagnosticOptions &Opts, ArgList &Args,
+bool lfort::ParseDiagnosticArgs(DiagnosticOptions &Opts, ArgList &Args,
                                 DiagnosticsEngine *Diags) {
   using namespace options;
   bool Success = true;
@@ -534,9 +534,9 @@ bool clang::ParseDiagnosticArgs(DiagnosticOptions &Opts, ArgList &Args,
   }
 
   StringRef Format =
-    Args.getLastArgValue(OPT_fdiagnostics_format, "clang");
-  if (Format == "clang")
-    Opts.setFormat(DiagnosticOptions::Clang);
+    Args.getLastArgValue(OPT_fdiagnostics_format, "lfort");
+  if (Format == "lfort")
+    Opts.setFormat(DiagnosticOptions::LFort);
   else if (Format == "msvc")
     Opts.setFormat(DiagnosticOptions::Msvc);
   else if (Format == "vi")
@@ -803,13 +803,13 @@ std::string CompilerInvocation::GetResourcesPath(const char *Argv0,
   llvm::sys::Path P = llvm::sys::Path::GetMainExecutable(Argv0, MainAddr);
 
   if (!P.isEmpty()) {
-    P.eraseComponent();  // Remove /clang from foo/bin/clang
+    P.eraseComponent();  // Remove /lfort from foo/bin/lfort
     P.eraseComponent();  // Remove /bin   from foo/bin
 
-    // Get foo/lib/clang/<version>/include
+    // Get foo/lib/lfort/<version>/include
     P.appendComponent("lib");
-    P.appendComponent("clang");
-    P.appendComponent(CLANG_VERSION_STRING);
+    P.appendComponent("lfort");
+    P.appendComponent(LFORT_VERSION_STRING);
   }
 
   return P.str();
@@ -1016,7 +1016,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     LangStd = llvm::StringSwitch<LangStandard::Kind>(A->getValue())
 #define LANGSTANDARD(id, name, desc, features) \
       .Case(name, LangStandard::lang_##id)
-#include "clang/Frontend/LangStandards.def"
+#include "lfort/Frontend/LangStandards.def"
       .Default(LangStandard::lang_unspecified);
     if (LangStd == LangStandard::lang_unspecified)
       Diags.Report(diag::err_drv_invalid_value)
@@ -1080,7 +1080,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   // We abuse '-f[no-]gnu-keywords' to force overriding all GNU-extension
   // keywords. This behavior is provided by GCC's poorly named '-fasm' flag,
   // while a subset (the non-C++ GNU keywords) is provided by GCC's
-  // '-fgnu-keywords'. Clang conflates the two for simplicity under the single
+  // '-fgnu-keywords'. LFort conflates the two for simplicity under the single
   // name, as it doesn't seem a useful distinction.
   Opts.GNUKeywords = Args.hasFlag(OPT_fgnu_keywords, OPT_fno_gnu_keywords,
                                   Opts.GNUKeywords);
@@ -1286,19 +1286,19 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     enum Sanitizer {
 #define SANITIZER(NAME, ID) \
       ID,
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
       Unknown
     };
     switch (llvm::StringSwitch<unsigned>(Sanitizers[I])
 #define SANITIZER(NAME, ID) \
               .Case(NAME, ID)
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
               .Default(Unknown)) {
 #define SANITIZER(NAME, ID) \
     case ID: \
       Opts.Sanitize##ID = true; \
       break;
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
 
     case Unknown:
       Diags.Report(diag::err_drv_invalid_value)
@@ -1553,7 +1553,7 @@ std::string CompilerInvocation::getModuleHash() const {
   // Start the signature with the compiler version.
   // FIXME: We'd rather use something more cryptographically sound than
   // CityHash, but this will do for now.
-  hash_code code = hash_value(getClangFullRepositoryVersion());
+  hash_code code = hash_value(getLFortFullRepositoryVersion());
 
   // Extend the signature with the language options
 #define LANGOPT(Name, Bits, Default, Description) \
@@ -1562,7 +1562,7 @@ std::string CompilerInvocation::getModuleHash() const {
   code = hash_combine(code, static_cast<unsigned>(LangOpts->get##Name()));
 #define BENIGN_LANGOPT(Name, Bits, Default, Description)
 #define BENIGN_ENUM_LANGOPT(Name, Type, Bits, Default, Description)
-#include "clang/Basic/LangOptions.def"
+#include "lfort/Basic/LangOptions.def"
   
   // Extend the signature with the target options.
   code = hash_combine(code, TargetOpts->Triple, TargetOpts->CPU,

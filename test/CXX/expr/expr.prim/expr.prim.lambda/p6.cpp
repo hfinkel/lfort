@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 %s -verify
 
 void test_conversion() {
   int (*fp1)(int) = [](int x) { return x + 1; };

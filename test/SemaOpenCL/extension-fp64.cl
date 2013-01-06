@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -pedantic -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -pedantic -fsyntax-only
 
 void f1(double da) { // expected-error {{type 'double' requires cl_khr_fp64 extension}}
   double d; // expected-error {{type 'double' requires cl_khr_fp64 extension}}

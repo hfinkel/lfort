@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=debug.DumpCallGraph %s -fblocks 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=debug.DumpCallGraph %s -fblocks 2>&1 | FileCheck %s
 
 static void mmm(int y) {
   if (y != 0)

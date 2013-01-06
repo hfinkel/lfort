@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -Eonly -Werror=undef -verify
-// RUN: %clang_cc1 %s -Eonly -Werror-undef -verify
+// RUN: %lfort_cc1 %s -Eonly -Werror=undef -verify
+// RUN: %lfort_cc1 %s -Eonly -Werror-undef -verify
 
 extern int x;
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-linux -Wno-string-plus-int -fsyntax-only -fcxx-exceptions -verify -std=c++11 -pedantic %s -Wno-comment
+// RUN: %lfort_cc1 -triple i686-linux -Wno-string-plus-int -fsyntax-only -fcxx-exceptions -verify -std=c++11 -pedantic %s -Wno-comment
 
 namespace StaticAssertFoldTest {
 
@@ -380,7 +380,7 @@ static_assert(*max == 'z', "");
 static_assert(max == str + 38, "");
 
 static_assert(strcmp_ce("hello world", "hello world") == 0, "");
-static_assert(strcmp_ce("hello world", "hello clang") > 0, "");
+static_assert(strcmp_ce("hello world", "hello lfort") > 0, "");
 static_assert(strcmp_ce("constexpr", "test") < 0, "");
 static_assert(strcmp_ce("", " ") < 0, "");
 

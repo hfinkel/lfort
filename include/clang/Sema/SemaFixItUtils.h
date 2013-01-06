@@ -10,12 +10,12 @@
 //  This file defines helper classes for generation of Sema FixItHints.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_FIXITUTILS_H
-#define LLVM_CLANG_SEMA_FIXITUTILS_H
+#ifndef LLVM_LFORT_SEMA_FIXITUTILS_H
+#define LLVM_LFORT_SEMA_FIXITUTILS_H
 
-#include "clang/AST/Expr.h"
+#include "lfort/AST/Expr.h"
 
-namespace clang {
+namespace lfort {
 
 enum OverloadFixItKind {
   OFIK_Undefined = 0,
@@ -87,5 +87,5 @@ struct ConversionFixItGenerator {
   }
 };
 
-} // endof namespace clang
-#endif // LLVM_CLANG_SEMA_FIXITUTILS_H
+} // endof namespace lfort
+#endif // LLVM_LFORT_SEMA_FIXITUTILS_H

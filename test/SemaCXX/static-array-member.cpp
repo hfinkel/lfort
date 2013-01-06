@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %lfort_cc1 -fsyntax-only %s
 
 struct X0 {
   static int array[];

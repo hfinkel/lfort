@@ -14,24 +14,24 @@
 #include "CXSourceLocation.h"
 #include "CXString.h"
 #include "CXTranslationUnit.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/CompilerInvocation.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/PPConditionalDirectiveRecord.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/SemaConsumer.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/CompilerInvocation.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/PPCallbacks.h"
+#include "lfort/Lex/PPConditionalDirectiveRecord.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/SemaConsumer.h"
 #include "llvm/Support/CrashRecoveryContext.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Mutex.h"
 #include "llvm/Support/MutexGuard.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace cxstring;
 using namespace cxtu;
 using namespace cxindex;
@@ -460,7 +460,7 @@ public:
 };
 
 //===----------------------------------------------------------------------===//
-// clang_indexSourceFileUnit Implementation
+// lfort_indexSourceFileUnit Implementation
 //===----------------------------------------------------------------------===//
 
 struct IndexSessionData {
@@ -499,7 +499,7 @@ struct MemBufferOwner {
 
 } // anonymous namespace
 
-static void clang_indexSourceFile_Impl(void *UserData) {
+static void lfort_indexSourceFile_Impl(void *UserData) {
   IndexSourceFileInfo *ITUI =
     static_cast<IndexSourceFileInfo*>(UserData);
   CXIndexAction cxIdxAction = ITUI->idxAction;
@@ -599,7 +599,7 @@ static void clang_indexSourceFile_Impl(void *UserData) {
     BufOwner->Buffers.push_back(Buffer);
   }
 
-  // Since libclang is primarily used by batch tools dealing with
+  // Since liblfort is primarily used by batch tools dealing with
   // (often very broken) source code, where spell-checking can have a
   // significant negative impact on performance (particularly when 
   // precompiled headers are involved), we disable it.
@@ -660,7 +660,7 @@ static void clang_indexSourceFile_Impl(void *UserData) {
                                                        IndexAction.get(),
                                                        Unit,
                                                        Persistent,
-                                                CXXIdx->getClangResourcesPath(),
+                                                CXXIdx->getLFortResourcesPath(),
                                                        OnlyLocalDecls,
                                                     /*CaptureDiagnostics=*/true,
                                                        PrecompilePreamble,
@@ -680,7 +680,7 @@ static void clang_indexSourceFile_Impl(void *UserData) {
 }
 
 //===----------------------------------------------------------------------===//
-// clang_indexTranslationUnit Implementation
+// lfort_indexTranslationUnit Implementation
 //===----------------------------------------------------------------------===//
 
 namespace {
@@ -745,7 +745,7 @@ static void indexDiagnostics(CXTranslationUnit TU, IndexingContext &IdxCtx) {
   IdxCtx.handleDiagnosticSet(DiagSet);
 }
 
-static void clang_indexTranslationUnit_Impl(void *UserData) {
+static void lfort_indexTranslationUnit_Impl(void *UserData) {
   IndexTranslationUnitInfo *ITUI =
     static_cast<IndexTranslationUnitInfo*>(UserData);
   CXTranslationUnit TU = ITUI->TU;
@@ -810,17 +810,17 @@ static void clang_indexTranslationUnit_Impl(void *UserData) {
 }
 
 //===----------------------------------------------------------------------===//
-// libclang public APIs.
+// liblfort public APIs.
 //===----------------------------------------------------------------------===//
 
 extern "C" {
 
-int clang_index_isEntityObjCContainerKind(CXIdxEntityKind K) {
+int lfort_index_isEntityObjCContainerKind(CXIdxEntityKind K) {
   return CXIdxEntity_ObjCClass <= K && K <= CXIdxEntity_ObjCCategory;
 }
 
 const CXIdxObjCContainerDeclInfo *
-clang_index_getObjCContainerDeclInfo(const CXIdxDeclInfo *DInfo) {
+lfort_index_getObjCContainerDeclInfo(const CXIdxDeclInfo *DInfo) {
   if (!DInfo)
     return 0;
 
@@ -833,7 +833,7 @@ clang_index_getObjCContainerDeclInfo(const CXIdxDeclInfo *DInfo) {
 }
 
 const CXIdxObjCInterfaceDeclInfo *
-clang_index_getObjCInterfaceDeclInfo(const CXIdxDeclInfo *DInfo) {
+lfort_index_getObjCInterfaceDeclInfo(const CXIdxDeclInfo *DInfo) {
   if (!DInfo)
     return 0;
 
@@ -846,7 +846,7 @@ clang_index_getObjCInterfaceDeclInfo(const CXIdxDeclInfo *DInfo) {
 }
 
 const CXIdxObjCCategoryDeclInfo *
-clang_index_getObjCCategoryDeclInfo(const CXIdxDeclInfo *DInfo){
+lfort_index_getObjCCategoryDeclInfo(const CXIdxDeclInfo *DInfo){
   if (!DInfo)
     return 0;
 
@@ -859,7 +859,7 @@ clang_index_getObjCCategoryDeclInfo(const CXIdxDeclInfo *DInfo){
 }
 
 const CXIdxObjCProtocolRefListInfo *
-clang_index_getObjCProtocolRefListInfo(const CXIdxDeclInfo *DInfo) {
+lfort_index_getObjCProtocolRefListInfo(const CXIdxDeclInfo *DInfo) {
   if (!DInfo)
     return 0;
 
@@ -880,7 +880,7 @@ clang_index_getObjCProtocolRefListInfo(const CXIdxDeclInfo *DInfo) {
 }
 
 const CXIdxObjCPropertyDeclInfo *
-clang_index_getObjCPropertyDeclInfo(const CXIdxDeclInfo *DInfo) {
+lfort_index_getObjCPropertyDeclInfo(const CXIdxDeclInfo *DInfo) {
   if (!DInfo)
     return 0;
 
@@ -892,7 +892,7 @@ clang_index_getObjCPropertyDeclInfo(const CXIdxDeclInfo *DInfo) {
 }
 
 const CXIdxIBOutletCollectionAttrInfo *
-clang_index_getIBOutletCollectionAttrInfo(const CXIdxAttrInfo *AInfo) {
+lfort_index_getIBOutletCollectionAttrInfo(const CXIdxAttrInfo *AInfo) {
   if (!AInfo)
     return 0;
 
@@ -905,7 +905,7 @@ clang_index_getIBOutletCollectionAttrInfo(const CXIdxAttrInfo *AInfo) {
 }
 
 const CXIdxCXXClassDeclInfo *
-clang_index_getCXXClassDeclInfo(const CXIdxDeclInfo *DInfo) {
+lfort_index_getCXXClassDeclInfo(const CXIdxDeclInfo *DInfo) {
   if (!DInfo)
     return 0;
 
@@ -917,14 +917,14 @@ clang_index_getCXXClassDeclInfo(const CXIdxDeclInfo *DInfo) {
 }
 
 CXIdxClientContainer
-clang_index_getClientContainer(const CXIdxContainerInfo *info) {
+lfort_index_getClientContainer(const CXIdxContainerInfo *info) {
   if (!info)
     return 0;
   const ContainerInfo *Container = static_cast<const ContainerInfo *>(info);
   return Container->IndexCtx->getClientContainerForDC(Container->DC);
 }
 
-void clang_index_setClientContainer(const CXIdxContainerInfo *info,
+void lfort_index_setClientContainer(const CXIdxContainerInfo *info,
                                     CXIdxClientContainer client) {
   if (!info)
     return;
@@ -932,14 +932,14 @@ void clang_index_setClientContainer(const CXIdxContainerInfo *info,
   Container->IndexCtx->addContainerInMap(Container->DC, client);
 }
 
-CXIdxClientEntity clang_index_getClientEntity(const CXIdxEntityInfo *info) {
+CXIdxClientEntity lfort_index_getClientEntity(const CXIdxEntityInfo *info) {
   if (!info)
     return 0;
   const EntityInfo *Entity = static_cast<const EntityInfo *>(info);
   return Entity->IndexCtx->getClientEntity(Entity->Dcl);
 }
 
-void clang_index_setClientEntity(const CXIdxEntityInfo *info,
+void lfort_index_setClientEntity(const CXIdxEntityInfo *info,
                                  CXIdxClientEntity client) {
   if (!info)
     return;
@@ -947,16 +947,16 @@ void clang_index_setClientEntity(const CXIdxEntityInfo *info,
   Entity->IndexCtx->setClientEntity(Entity->Dcl, client);
 }
 
-CXIndexAction clang_IndexAction_create(CXIndex CIdx) {
+CXIndexAction lfort_IndexAction_create(CXIndex CIdx) {
   return new IndexSessionData(CIdx);
 }
 
-void clang_IndexAction_dispose(CXIndexAction idxAction) {
+void lfort_IndexAction_dispose(CXIndexAction idxAction) {
   if (idxAction)
     delete static_cast<IndexSessionData *>(idxAction);
 }
 
-int clang_indexSourceFile(CXIndexAction idxAction,
+int lfort_indexSourceFile(CXIndexAction idxAction,
                           CXClientData client_data,
                           IndexerCallbacks *index_callbacks,
                           unsigned index_callbacks_size,
@@ -975,15 +975,15 @@ int clang_indexSourceFile(CXIndexAction idxAction,
                                num_command_line_args, unsaved_files,
                                num_unsaved_files, out_TU, TU_options, 0 };
 
-  if (getenv("LIBCLANG_NOTHREADS")) {
-    clang_indexSourceFile_Impl(&ITUI);
+  if (getenv("LIBLFORT_NOTHREADS")) {
+    lfort_indexSourceFile_Impl(&ITUI);
     return ITUI.result;
   }
 
   llvm::CrashRecoveryContext CRC;
 
-  if (!RunSafely(CRC, clang_indexSourceFile_Impl, &ITUI)) {
-    fprintf(stderr, "libclang: crash detected during indexing source file: {\n");
+  if (!RunSafely(CRC, lfort_indexSourceFile_Impl, &ITUI)) {
+    fprintf(stderr, "liblfort: crash detected during indexing source file: {\n");
     fprintf(stderr, "  'source_filename' : '%s'\n", source_filename);
     fprintf(stderr, "  'command_line_args' : [");
     for (int i = 0; i != num_command_line_args; ++i) {
@@ -1004,15 +1004,15 @@ int clang_indexSourceFile(CXIndexAction idxAction,
     fprintf(stderr, "}\n");
     
     return 1;
-  } else if (getenv("LIBCLANG_RESOURCE_USAGE")) {
+  } else if (getenv("LIBLFORT_RESOURCE_USAGE")) {
     if (out_TU)
-      PrintLibclangResourceUsage(*out_TU);
+      PrintLiblfortResourceUsage(*out_TU);
   }
   
   return ITUI.result;
 }
 
-int clang_indexTranslationUnit(CXIndexAction idxAction,
+int lfort_indexTranslationUnit(CXIndexAction idxAction,
                                CXClientData client_data,
                                IndexerCallbacks *index_callbacks,
                                unsigned index_callbacks_size,
@@ -1023,15 +1023,15 @@ int clang_indexTranslationUnit(CXIndexAction idxAction,
                                     index_callbacks_size, index_options, TU,
                                     0 };
 
-  if (getenv("LIBCLANG_NOTHREADS")) {
-    clang_indexTranslationUnit_Impl(&ITUI);
+  if (getenv("LIBLFORT_NOTHREADS")) {
+    lfort_indexTranslationUnit_Impl(&ITUI);
     return ITUI.result;
   }
 
   llvm::CrashRecoveryContext CRC;
 
-  if (!RunSafely(CRC, clang_indexTranslationUnit_Impl, &ITUI)) {
-    fprintf(stderr, "libclang: crash detected during indexing TU\n");
+  if (!RunSafely(CRC, lfort_indexTranslationUnit_Impl, &ITUI)) {
+    fprintf(stderr, "liblfort: crash detected during indexing TU\n");
     
     return 1;
   }
@@ -1039,7 +1039,7 @@ int clang_indexTranslationUnit(CXIndexAction idxAction,
   return ITUI.result;
 }
 
-void clang_indexLoc_getFileLocation(CXIdxLoc location,
+void lfort_indexLoc_getFileLocation(CXIdxLoc location,
                                     CXIdxClientFile *indexFile,
                                     CXFile *file,
                                     unsigned *line,
@@ -1060,10 +1060,10 @@ void clang_indexLoc_getFileLocation(CXIdxLoc location,
   IndexCtx.translateLoc(Loc, indexFile, file, line, column, offset);
 }
 
-CXSourceLocation clang_indexLoc_getCXSourceLocation(CXIdxLoc location) {
+CXSourceLocation lfort_indexLoc_getCXSourceLocation(CXIdxLoc location) {
   SourceLocation Loc = SourceLocation::getFromRawEncoding(location.int_data);
   if (!location.ptr_data[0] || Loc.isInvalid())
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
 
   IndexingContext &IndexCtx =
       *static_cast<IndexingContext*>(location.ptr_data[0]);

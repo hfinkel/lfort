@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_VTABLEBUILDER_H
-#define LLVM_CLANG_AST_VTABLEBUILDER_H
+#ifndef LLVM_LFORT_AST_VTABLEBUILDER_H
+#define LLVM_LFORT_AST_VTABLEBUILDER_H
 
-#include "clang/AST/BaseSubobject.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/GlobalDecl.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Basic/ABI.h"
+#include "lfort/AST/BaseSubobject.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/GlobalDecl.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Basic/ABI.h"
 #include "llvm/ADT/SetVector.h"
 #include <utility>
 
-namespace clang {
+namespace lfort {
   class CXXRecordDecl;
 
 /// VTableComponent - Represents a single component in a vtable.

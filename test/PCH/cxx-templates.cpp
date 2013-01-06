@@ -1,11 +1,11 @@
 // Test this without pch.
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include %S/cxx-templates.h -verify %s -ast-dump -o -
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include %S/cxx-templates.h %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include %S/cxx-templates.h -verify %s -ast-dump -o -
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include %S/cxx-templates.h %s -emit-llvm -o - | FileCheck %s
 
 // Test with pch.
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -fexceptions -x c++-header -emit-pch -o %t %S/cxx-templates.h
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include-pch %t -verify %s -ast-dump  -o -
-// RUN: %clang_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include-pch %t %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -fexceptions -x c++-header -emit-pch -o %t %S/cxx-templates.h
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include-pch %t -verify %s -ast-dump  -o -
+// RUN: %lfort_cc1 -std=c++11 -fcxx-exceptions -fexceptions -include-pch %t %s -emit-llvm -o - | FileCheck %s
 
 // expected-no-diagnostics
 

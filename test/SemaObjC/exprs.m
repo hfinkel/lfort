@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -fblocks -verify -Wno-unreachable-code
+// RUN: %lfort_cc1 %s -fsyntax-only -fblocks -verify -Wno-unreachable-code
 
 // rdar://6597252
 Class test1(Class X) {

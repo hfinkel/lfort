@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_CONSTRAINT_MANAGER_H
-#define LLVM_CLANG_GR_CONSTRAINT_MANAGER_H
+#ifndef LLVM_LFORT_GR_CONSTRAINT_MANAGER_H
+#define LLVM_LFORT_GR_CONSTRAINT_MANAGER_H
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
 #include "llvm/Support/SaveAndRestore.h"
 
 namespace llvm {
 class APSInt;
 }
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 class SubEngine;
@@ -81,7 +81,7 @@ public:
 #ifndef __OPTIMIZE__
       // This check is expensive and should be disabled even in Release+Asserts
       // builds.
-      // FIXME: __OPTIMIZE__ is a GNU extension that Clang implements but MSVC
+      // FIXME: __OPTIMIZE__ is a GNU extension that LFort implements but MSVC
       // does not. Is there a good equivalent there?
       assert(assume(State, Cond, false) && "System is over constrained.");
 #endif
@@ -153,6 +153,6 @@ ConstraintManager* CreateRangeConstraintManager(ProgramStateManager& statemgr,
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

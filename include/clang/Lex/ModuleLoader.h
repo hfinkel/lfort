@@ -11,15 +11,15 @@
 //  loading named modules.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_LEX_MODULE_LOADER_H
-#define LLVM_CLANG_LEX_MODULE_LOADER_H
+#ifndef LLVM_LFORT_LEX_MODULE_LOADER_H
+#define LLVM_LFORT_LEX_MODULE_LOADER_H
 
-#include "clang/Basic/Module.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/Module.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerIntPair.h"
 
-namespace clang {
+namespace lfort {
 
 class IdentifierInfo;
 class Module;

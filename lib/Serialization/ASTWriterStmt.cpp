@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTWriter.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/Serialization/ASTWriter.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Statement/expression serialization
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
   class ASTStmtWriter : public StmtVisitor<ASTStmtWriter, void> {
     ASTWriter &Writer;
     ASTWriter::RecordData &Record;
@@ -41,7 +41,7 @@ namespace clang {
     void VisitStmt(Stmt *S);
 #define STMT(Type, Base) \
     void Visit##Type(Type *);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   };
 }
 

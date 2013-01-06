@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown %s -emit-llvm -o - | FileCheck %s
 
 // PR1895
 // sizeof function

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -o %t %s
 // RUN: grep "_ZN1XaSERK1X" %t | count 0
 
 extern "C" int printf(...);

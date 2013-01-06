@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DependentDiagnostic.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DependentDiagnostic.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 /// A copy of Sema's enum without AR_delayed.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-runtime-has-weak -fobjc-arc -fblocks -Wno-objc-root-class -std=c++11 -Warc-repeated-use-of-weak -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-runtime-has-weak -fobjc-arc -fblocks -Wno-objc-root-class -std=c++11 -Warc-repeated-use-of-weak -verify %s
 
 @interface Test {
 @public

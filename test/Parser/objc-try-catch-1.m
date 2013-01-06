@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fobjc-exceptions %s
-// RUN: %clang_cc1 -fsyntax-only -verify -fobjc-exceptions -x objective-c++ %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fobjc-exceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fobjc-exceptions -x objective-c++ %s
 void * proc();
 
 @interface NSConstantString

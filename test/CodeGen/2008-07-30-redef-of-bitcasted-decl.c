@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s
+// RUN: %lfort_cc1 -emit-llvm -o - %s
 // <rdar://problem/6108358>
 
 /* For posterity, the issue here begins initial "char []" decl for

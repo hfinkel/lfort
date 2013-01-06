@@ -1,5 +1,5 @@
 
-#pragma clang system_header
+#pragma lfort system_header
 
 typedef struct __sFILE {
   unsigned char *_p;

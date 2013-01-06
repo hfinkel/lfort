@@ -18,12 +18,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_DELAYED_DIAGNOSTIC_H
-#define LLVM_CLANG_SEMA_DELAYED_DIAGNOSTIC_H
+#ifndef LLVM_LFORT_SEMA_DELAYED_DIAGNOSTIC_H
+#define LLVM_LFORT_SEMA_DELAYED_DIAGNOSTIC_H
 
-#include "clang/Sema/Sema.h"
+#include "lfort/Sema/Sema.h"
 
-namespace clang {
+namespace lfort {
 namespace sema {
 
 /// A declaration being accessed, together with information about how

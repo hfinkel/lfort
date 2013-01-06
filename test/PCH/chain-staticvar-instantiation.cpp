@@ -1,8 +1,8 @@
 // Without PCH
-// RUN: %clang_cc1 -fsyntax-only -verify -include %s -include %s %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -include %s -include %s %s
 
 // With PCH
-// RUN: %clang_cc1 -fsyntax-only -verify %s -chain-include %s -chain-include %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -chain-include %s -chain-include %s
 
 #ifndef HEADER1
 #define HEADER1

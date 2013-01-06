@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -emit-llvm %s -o - | FileCheck %s
 
 void f1() {
   // Scalars in braces.

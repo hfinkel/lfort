@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/ASTConsumers.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Rewrite/Core/HTMLRewrite.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Rewrite/Frontend/ASTConsumers.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Core/HTMLRewrite.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Functional HTML pretty-printing.
@@ -47,7 +47,7 @@ namespace {
   };
 }
 
-ASTConsumer* clang::CreateHTMLPrinter(raw_ostream *OS,
+ASTConsumer* lfort::CreateHTMLPrinter(raw_ostream *OS,
                                       Preprocessor &PP,
                                       bool SyntaxHighlight,
                                       bool HighlightMacros) {

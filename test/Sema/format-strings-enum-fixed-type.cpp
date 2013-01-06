@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -x c++ -std=c++11 -verify %s
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -x objective-c -verify %s
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -x objective-c++ -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -x c++ -std=c++11 -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -x objective-c -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -x objective-c++ -verify %s
 
 #ifdef __cplusplus
 # define EXTERN_C extern "C"

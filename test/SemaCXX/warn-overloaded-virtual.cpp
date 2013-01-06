@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Woverloaded-virtual -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Woverloaded-virtual -verify %s
 
 struct B1 {
   virtual void foo(int); // expected-note {{declared here}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fobjc-exceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fobjc-exceptions %s
 
 @interface NSException
 @end

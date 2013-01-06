@@ -14,27 +14,27 @@
 #define DEBUG_TYPE "AnalysisConsumer"
 
 #include "AnalysisConsumer.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/CallGraph.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/StaticAnalyzer/Checkers/LocalCheckers.h"
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/StaticAnalyzer/Frontend/CheckerRegistration.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/CallGraph.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/StaticAnalyzer/Checkers/LocalCheckers.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Frontend/CheckerRegistration.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/PostOrderIterator.h"
@@ -46,7 +46,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <queue>
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::SmallPtrSet;
 
@@ -75,12 +75,12 @@ static void createPlistHTMLDiagnosticConsumer(AnalyzerOptions &AnalyzerOpts,
 }
 
 namespace {
-class ClangDiagPathDiagConsumer : public PathDiagnosticConsumer {
+class LFortDiagPathDiagConsumer : public PathDiagnosticConsumer {
   DiagnosticsEngine &Diag;
 public:
-  ClangDiagPathDiagConsumer(DiagnosticsEngine &Diag) : Diag(Diag) {}
-  virtual ~ClangDiagPathDiagConsumer() {}
-  virtual StringRef getName() const { return "ClangDiags"; }
+  LFortDiagPathDiagConsumer(DiagnosticsEngine &Diag) : Diag(Diag) {}
+  virtual ~LFortDiagPathDiagConsumer() {}
+  virtual StringRef getName() const { return "LFortDiags"; }
   virtual PathGenerationScheme getGenerationScheme() const { return None; }
 
   void FlushDiagnosticsImpl(std::vector<const PathDiagnostic *> &Diags,
@@ -185,7 +185,7 @@ public:
 
   void DigestAnalyzerOptions() {
     // Create the PathDiagnosticConsumer.
-    PathConsumers.push_back(new ClangDiagPathDiagConsumer(PP.getDiagnostics()));
+    PathConsumers.push_back(new LFortDiagPathDiagConsumer(PP.getDiagnostics()));
 
     if (!OutDir.empty()) {
       switch (Opts->AnalysisDiagOpt) {
@@ -193,7 +193,7 @@ public:
 #define ANALYSIS_DIAGNOSTICS(NAME, CMDFLAG, DESC, CREATEFN, AUTOCREATE) \
         case PD_##NAME: CREATEFN(*Opts.getPtr(), PathConsumers, OutDir, PP);\
         break;
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
       }
     } else if (Opts->AnalysisDiagOpt == PD_TEXT) {
       // Create the text client even without a specified output file since
@@ -207,7 +207,7 @@ public:
       llvm_unreachable("Unknown store manager.");
 #define ANALYSIS_STORE(NAME, CMDFLAG, DESC, CREATEFN)           \
       case NAME##Model: CreateStoreMgr = CREATEFN; break;
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
     }
 
     switch (Opts->AnalysisConstraintsOpt) {
@@ -215,7 +215,7 @@ public:
       llvm_unreachable("Unknown store manager.");
 #define ANALYSIS_CONSTRAINTS(NAME, CMDFLAG, DESC, CREATEFN)     \
       case NAME##Model: CreateConstraintMgr = CREATEFN; break;
-#include "clang/StaticAnalyzer/Core/Analyses.def"
+#include "lfort/StaticAnalyzer/Core/Analyses.def"
     }
   }
 
@@ -435,8 +435,8 @@ void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
   // often.
   SetOfConstDecls Visited;
   SetOfConstDecls VisitedAsTopLevel;
-  llvm::ReversePostOrderTraversal<clang::CallGraph*> RPOT(&CG);
-  for (llvm::ReversePostOrderTraversal<clang::CallGraph*>::rpo_iterator
+  llvm::ReversePostOrderTraversal<lfort::CallGraph*> RPOT(&CG);
+  for (llvm::ReversePostOrderTraversal<lfort::CallGraph*>::rpo_iterator
          I = RPOT.begin(), E = RPOT.end(); I != E; ++I) {
     NumFunctionTopLevel++;
 

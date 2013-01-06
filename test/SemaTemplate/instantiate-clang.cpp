@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
-// Test template instantiation for Clang-specific features.
+// Test template instantiation for LFort-specific features.
 
 // ---------------------------------------------------------------------
 // Vector types

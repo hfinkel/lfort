@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -Wweak-vtables -Wweak-template-vtables
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -Wweak-vtables -Wweak-template-vtables
 
 struct A { // expected-warning {{'A' has no out-of-line virtual method definitions; its vtable will be emitted in every translation unit}}
   virtual void f() { } 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 @compatibility_alias alias4 foo; // expected-warning {{cannot find interface declaration for 'foo'}}
 

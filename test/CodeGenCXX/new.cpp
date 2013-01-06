@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown %s -emit-llvm -o - | FileCheck %s
 
 typedef __typeof__(sizeof(0)) size_t;
 

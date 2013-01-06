@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/Designator.h"
-#include "clang/Sema/Scope.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/Designator.h"
+#include "lfort/Sema/Scope.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 
 /// MayBeDesignationStart - Return true if the current token might be the start 

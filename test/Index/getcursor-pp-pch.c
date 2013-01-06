@@ -19,7 +19,7 @@ void OBSCURE(func)(int x) {
 // RUN:     -include %s.h %s | FileCheck %s
 
 // With PCH
-// RUN: c-index-test -write-pch %t.h.pch %s.h -Xclang -detailed-preprocessing-record
+// RUN: c-index-test -write-pch %t.h.pch %s.h -Xlfort -detailed-preprocessing-record
 // RUN: c-index-test -cursor-at=%s.h:1:11 \
 // RUN:              -cursor-at=%s.h:2:14 \
 // RUN:              -cursor-at=%s.h:4:5 \

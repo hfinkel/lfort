@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 typedef struct { } rwlock_t;
 struct fs_struct { rwlock_t lock; int umask; };

@@ -1,9 +1,9 @@
 // Test this without pch.
-// RUN: %clang_cc1 -fblocks -include %S/exprs.h -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fblocks -include %S/exprs.h -fsyntax-only -verify %s
 
 // Test with pch.
-// RUN: %clang_cc1 -emit-pch -fblocks -o %t %S/exprs.h
-// RUN: %clang_cc1 -fblocks -include-pch %t -fsyntax-only -verify %s -DWITH_PCH
+// RUN: %lfort_cc1 -emit-pch -fblocks -o %t %S/exprs.h
+// RUN: %lfort_cc1 -fblocks -include-pch %t -fsyntax-only -verify %s -DWITH_PCH
 
 #ifdef WITH_PCH
 // expected-no-diagnostics

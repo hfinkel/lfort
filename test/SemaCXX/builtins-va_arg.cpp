@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 %s -ffreestanding
-// RUN: %clang_cc1 %s -ffreestanding -triple i686-unknown-linux
-// RUN: %clang_cc1 %s -ffreestanding -triple x86_64-unknown-linux
-// RUN: %clang_cc1 %s -ffreestanding -triple mips-unknown-linux
-// RUN: %clang_cc1 %s -ffreestanding -triple mipsel-unknown-linux
-// RUN: %clang_cc1 %s -ffreestanding -triple armv7-unknown-linux-gnueabi
-// RUN: %clang_cc1 %s -ffreestanding -triple thumbv7-unknown-linux-gnueabi
+// RUN: %lfort_cc1 %s -ffreestanding
+// RUN: %lfort_cc1 %s -ffreestanding -triple i686-unknown-linux
+// RUN: %lfort_cc1 %s -ffreestanding -triple x86_64-unknown-linux
+// RUN: %lfort_cc1 %s -ffreestanding -triple mips-unknown-linux
+// RUN: %lfort_cc1 %s -ffreestanding -triple mipsel-unknown-linux
+// RUN: %lfort_cc1 %s -ffreestanding -triple armv7-unknown-linux-gnueabi
+// RUN: %lfort_cc1 %s -ffreestanding -triple thumbv7-unknown-linux-gnueabi
 
 #include "stdarg.h"
 

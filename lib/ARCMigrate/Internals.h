@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LIB_ARCMIGRATE_INTERNALS_H
-#define LLVM_CLANG_LIB_ARCMIGRATE_INTERNALS_H
+#ifndef LLVM_LFORT_LIB_ARCMIGRATE_INTERNALS_H
+#define LLVM_LFORT_LIB_ARCMIGRATE_INTERNALS_H
 
-#include "clang/ARCMigrate/ARCMT.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/ARCMigrate/ARCMT.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 #include <list>
 
-namespace clang {
+namespace lfort {
   class Sema;
   class Stmt;
 
@@ -175,6 +175,6 @@ static inline StringRef getARCMTMacroName() {
 
 } // end namespace arcmt
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

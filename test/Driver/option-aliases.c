@@ -1,4 +1,4 @@
-// RUN: %clang -ccc-print-options \
+// RUN: %lfort -ccc-print-options \
 // RUN:  --save-temps --undefine-macro=FOO --undefine-macro FOO \
 // RUN: --param=FOO --output=FOO 2> %t
 // RUN: FileCheck --check-prefix=CHECK-OPTIONS < %t %s

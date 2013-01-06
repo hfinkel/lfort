@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++98 -pedantic %s
 
 // Intentionally compiled as C++03 to test the extension warning.
 

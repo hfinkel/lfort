@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -fblocks -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -fblocks -verify %s
 
 // rdar://problem/10982793
 // [p foo] in ARC creates a cleanup.

@@ -1,13 +1,13 @@
 // Test with pch.
-// RUN: %clang_cc1 -emit-pch -DFOO -o %t %S/variables.h
-// RUN: %clang_cc1 -DBAR=int -include-pch %t -fsyntax-only -pedantic %s
-// RUN: %clang_cc1 -DFOO -DBAR=int -include-pch %t %s
-// RUN: not %clang_cc1 -DFOO=blah -DBAR=int -include-pch %t %s 2> %t.err
+// RUN: %lfort_cc1 -emit-pch -DFOO -o %t %S/variables.h
+// RUN: %lfort_cc1 -DBAR=int -include-pch %t -fsyntax-only -pedantic %s
+// RUN: %lfort_cc1 -DFOO -DBAR=int -include-pch %t %s
+// RUN: not %lfort_cc1 -DFOO=blah -DBAR=int -include-pch %t %s 2> %t.err
 // RUN: FileCheck -check-prefix=CHECK-FOO %s < %t.err
-// RUN: not %clang_cc1 -UFOO -include-pch %t %s 2> %t.err
+// RUN: not %lfort_cc1 -UFOO -include-pch %t %s 2> %t.err
 // RUN: FileCheck -check-prefix=CHECK-NOFOO %s < %t.err
 
-// RUN: not %clang_cc1 -DFOO -undef -include-pch %t %s 2> %t.err
+// RUN: not %lfort_cc1 -DFOO -undef -include-pch %t %s 2> %t.err
 // RUN: FileCheck -check-prefix=CHECK-UNDEF %s < %t.err
 
 BAR bar = 17;

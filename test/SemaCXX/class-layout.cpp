@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown %s -fsyntax-only -verify 
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown %s -fsyntax-only -verify 
 // expected-no-diagnostics
 
 #define SA(n, p) int a##n[(p) ? 1 : -1]

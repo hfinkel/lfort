@@ -1,4 +1,4 @@
-//===--- ClangCheckers.h - Provides builtin checkers ------------*- C++ -*-===//
+//===--- LFortCheckers.h - Provides builtin checkers ------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STATICANALYZER_CHECKERS_CLANGCHECKERS_H
-#define LLVM_CLANG_STATICANALYZER_CHECKERS_CLANGCHECKERS_H
+#ifndef LLVM_LFORT_STATICANALYZER_CHECKERS_LFORTCHECKERS_H
+#define LLVM_LFORT_STATICANALYZER_CHECKERS_LFORTCHECKERS_H
 
-namespace clang {
+namespace lfort {
 namespace ento {
 class CheckerRegistry;
 
 void registerBuiltinCheckers(CheckerRegistry &registry);
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort
 
 #endif

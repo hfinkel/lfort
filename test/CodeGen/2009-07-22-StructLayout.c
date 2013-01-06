@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple i686-pc-linux-gnu -emit-llvm -o /dev/null
+// RUN: %lfort_cc1 %s -triple i686-pc-linux-gnu -emit-llvm -o /dev/null
 // PR4590
 
 typedef unsigned char __u8;

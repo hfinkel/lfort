@@ -1,8 +1,8 @@
-// RUN: %clang -x c-header -o %t.pch %s
+// RUN: %lfort -x c-header -o %t.pch %s
 // RUN: echo > %t.empty.c
-// RUN: %clang -include %t -x c %t.empty.c -emit-llvm -S -o -
+// RUN: %lfort -include %t -x c %t.empty.c -emit-llvm -S -o -
 
-// FIXME: This test is forcibly disabled, it is flaky on the clang-i686-xp-msvc9
+// FIXME: This test is forcibly disabled, it is flaky on the lfort-i686-xp-msvc9
 // buildbot.
 //
 // RUN: false

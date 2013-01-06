@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PTHMANAGER_H
-#define LLVM_CLANG_PTHMANAGER_H
+#ifndef LLVM_LFORT_PTHMANAGER_H
+#define LLVM_LFORT_PTHMANAGER_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Lex/PTHLexer.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Lex/PTHLexer.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/Support/Allocator.h"
 #include <string>
@@ -26,7 +26,7 @@ namespace llvm {
   class MemoryBuffer;
 }
 
-namespace clang {
+namespace lfort {
 
 class FileEntry;
 class PTHLexer;
@@ -134,6 +134,6 @@ public:
   FileSystemStatCache *createStatCache();
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

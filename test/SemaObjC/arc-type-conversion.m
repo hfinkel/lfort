@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -verify -fblocks %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -fobjc-runtime-has-weak -verify -fblocks %s
 
 typedef const void * CFTypeRef;
 CFTypeRef CFBridgingRetain(id X);

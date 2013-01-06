@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wmethod-signatures -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -Wmethod-signatures -fsyntax-only -verify -Wno-objc-root-class %s
 
 @interface A @end
 @interface B : A @end

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -emit-llvm -triple=x86_64-apple-darwin10 -o - %s | FileCheck -check-prefix=WITH-TSS %s
-// RUN: %clang_cc1 -emit-llvm -triple=x86_64-apple-darwin10 -o - %s -fno-threadsafe-statics | FileCheck -check-prefix=NO-TSS %s
+// RUN: %lfort_cc1 -emit-llvm -triple=x86_64-apple-darwin10 -o - %s | FileCheck -check-prefix=WITH-TSS %s
+// RUN: %lfort_cc1 -emit-llvm -triple=x86_64-apple-darwin10 -o - %s -fno-threadsafe-statics | FileCheck -check-prefix=NO-TSS %s
 
 int f();
 

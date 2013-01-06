@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -Warray-bounds-pointer-arithmetic %s
+// RUN: %lfort_cc1 -verify -Warray-bounds-pointer-arithmetic %s
 
 // Test case from PR10615
 struct ext2_super_block{

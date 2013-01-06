@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -pedantic -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -pedantic -fsyntax-only -verify %s
 
 @protocol MyProto1 
 @end

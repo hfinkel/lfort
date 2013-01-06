@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
 
 // CHECK: @_ZZ1hvE1i = internal global i32 0, align 4
 // CHECK: @base_req = global [4 x i8] c"foo\00", align 1

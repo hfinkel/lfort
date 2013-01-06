@@ -7,45 +7,45 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendActions.h"
+#include "lfort/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/Tooling.h"
 #include "gtest/gtest.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 namespace {
 /// Takes an ast consumer and returns it from CreateASTConsumer. This only
 /// works with single translation unit compilations.
-class TestAction : public clang::ASTFrontendAction {
+class TestAction : public lfort::ASTFrontendAction {
  public:
   /// Takes ownership of TestConsumer.
-  explicit TestAction(clang::ASTConsumer *TestConsumer)
+  explicit TestAction(lfort::ASTConsumer *TestConsumer)
       : TestConsumer(TestConsumer) {}
 
  protected:
-  virtual clang::ASTConsumer* CreateASTConsumer(
-      clang::CompilerInstance& compiler, StringRef dummy) {
+  virtual lfort::ASTConsumer* CreateASTConsumer(
+      lfort::CompilerInstance& compiler, StringRef dummy) {
     /// TestConsumer will be deleted by the framework calling us.
     return TestConsumer;
   }
 
  private:
-  clang::ASTConsumer * const TestConsumer;
+  lfort::ASTConsumer * const TestConsumer;
 };
 
-class FindTopLevelDeclConsumer : public clang::ASTConsumer {
+class FindTopLevelDeclConsumer : public lfort::ASTConsumer {
  public:
   explicit FindTopLevelDeclConsumer(bool *FoundTopLevelDecl)
       : FoundTopLevelDecl(FoundTopLevelDecl) {}
-  virtual bool HandleTopLevelDecl(clang::DeclGroupRef DeclGroup) {
+  virtual bool HandleTopLevelDecl(lfort::DeclGroupRef DeclGroup) {
     *FoundTopLevelDecl = true;
     return true;
   }
@@ -67,12 +67,12 @@ TEST(runToolOnCode, FindsNoTopLevelDeclOnEmptyCode) {
 }
 
 namespace {
-class FindClassDeclXConsumer : public clang::ASTConsumer {
+class FindClassDeclXConsumer : public lfort::ASTConsumer {
  public:
   FindClassDeclXConsumer(bool *FoundClassDeclX)
       : FoundClassDeclX(FoundClassDeclX) {}
-  virtual bool HandleTopLevelDecl(clang::DeclGroupRef GroupRef) {
-    if (CXXRecordDecl* Record = dyn_cast<clang::CXXRecordDecl>(
+  virtual bool HandleTopLevelDecl(lfort::DeclGroupRef GroupRef) {
+    if (CXXRecordDecl* Record = dyn_cast<lfort::CXXRecordDecl>(
             *GroupRef.begin())) {
       if (Record->getName() == "X") {
         *FoundClassDeclX = true;
@@ -119,13 +119,13 @@ TEST(newFrontendActionFactory, CreatesFrontendActionFactoryFromFactoryType) {
 }
 
 TEST(ToolInvocation, TestMapVirtualFile) {
-  clang::FileManager Files((clang::FileSystemOptions()));
+  lfort::FileManager Files((lfort::FileSystemOptions()));
   std::vector<std::string> Args;
   Args.push_back("tool-executable");
   Args.push_back("-Idef");
   Args.push_back("-fsyntax-only");
   Args.push_back("test.cpp");
-  clang::tooling::ToolInvocation Invocation(Args, new SyntaxOnlyAction, &Files);
+  lfort::tooling::ToolInvocation Invocation(Args, new SyntaxOnlyAction, &Files);
   Invocation.mapVirtualFile("test.cpp", "#include <abc>\n");
   Invocation.mapVirtualFile("def/abc", "\n");
   EXPECT_TRUE(Invocation.run());
@@ -151,7 +151,7 @@ TEST(newFrontendActionFactory, InjectsEndOfSourceFileCallback) {
   std::vector<std::string> Sources;
   Sources.push_back("/a.cc");
   Sources.push_back("/b.cc");
-  ClangTool Tool(Compilations, Sources);
+  LFortTool Tool(Compilations, Sources);
 
   Tool.mapVirtualFile("/a.cc", "void a() {}");
   Tool.mapVirtualFile("/b.cc", "void b() {}");
@@ -163,7 +163,7 @@ TEST(newFrontendActionFactory, InjectsEndOfSourceFileCallback) {
 }
 #endif
 
-struct SkipBodyConsumer : public clang::ASTConsumer {
+struct SkipBodyConsumer : public lfort::ASTConsumer {
   /// Skip the 'skipMe' function.
   virtual bool shouldSkipFunctionBody(Decl *D) {
     FunctionDecl *F = dyn_cast<FunctionDecl>(D);
@@ -171,7 +171,7 @@ struct SkipBodyConsumer : public clang::ASTConsumer {
   }
 };
 
-struct SkipBodyAction : public clang::ASTFrontendAction {
+struct SkipBodyAction : public lfort::ASTFrontendAction {
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &Compiler,
                                          StringRef) {
     Compiler.getFrontendOpts().SkipFunctionBodies = true;
@@ -187,4 +187,4 @@ TEST(runToolOnCode, TestSkipFunctionBoddy) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

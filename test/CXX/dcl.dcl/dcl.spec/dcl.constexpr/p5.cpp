@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -triple x86_64-unknown-unknown -verify -std=c++11 -fcxx-exceptions %s
-// RUN: %clang_cc1 -fsyntax-only -triple x86_64-unknown-unknown -std=c++11 -fcxx-exceptions -Wno-invalid-constexpr %s -DNO_INVALID_CONSTEXPR
+// RUN: %lfort_cc1 -fsyntax-only -triple x86_64-unknown-unknown -verify -std=c++11 -fcxx-exceptions %s
+// RUN: %lfort_cc1 -fsyntax-only -triple x86_64-unknown-unknown -std=c++11 -fcxx-exceptions -Wno-invalid-constexpr %s -DNO_INVALID_CONSTEXPR
 
 namespace StdExample {
 

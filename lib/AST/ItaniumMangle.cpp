@@ -14,19 +14,19 @@
 //   http://www.codesourcery.com/public/cxx-abi/abi.html
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/Mangle.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/ABI.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/ABI.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
@@ -37,7 +37,7 @@
 #include <cxxabi.h>
 #endif
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 
@@ -46,7 +46,7 @@ namespace {
 static const DeclContext *getEffectiveDeclContext(const Decl *D) {
   // The ABI assumes that lambda closure types that occur within 
   // default arguments live in the context of the function. However, due to
-  // the way in which Clang parses and creates function declarations, this is
+  // the way in which LFort parses and creates function declarations, this is
   // not the case: the lambda closure type ends up living in the context 
   // where the function itself resides, because the function declaration itself
   // had not yet been created. Fix the context here.
@@ -325,7 +325,7 @@ private:
 #define ABSTRACT_TYPE(CLASS, PARENT)
 #define NON_CANONICAL_TYPE(CLASS, PARENT)
 #define TYPE(CLASS, PARENT) void mangleType(const CLASS##Type *T);
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
 
   void mangleType(const TagType*);
   void mangleType(TemplateName);
@@ -377,7 +377,7 @@ bool ItaniumMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   if (D->hasAttr<AsmLabelAttr>())
     return true;
 
-  // Clang's "overloadable" attribute extension to C/C++ implies name mangling
+  // LFort's "overloadable" attribute extension to C/C++ implies name mangling
   // (always) as does passing a C++ member function and a function
   // whose name is not a simple identifier.
   const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
@@ -1801,7 +1801,7 @@ void CXXNameMangler::mangleType(QualType T) {
     case Type::CLASS: \
       mangleType(static_cast<const CLASS##Type*>(ty)); \
       break;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 
@@ -1874,7 +1874,7 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \
   case BuiltinType::Id:
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
   case BuiltinType::Dependent:
     llvm_unreachable("mangling a placeholder type");
   case BuiltinType::ObjCId: Out << "11objc_object"; break;
@@ -2373,7 +2373,7 @@ recurse:
 #define EXPR(Type, Base)
 #define STMT(Type, Base) \
   case Expr::Type##Class:
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
     // fallthrough
 
   // These all can only appear in local or variable-initialization
@@ -3128,7 +3128,7 @@ void CXXNameMangler::mangleTemplateArg(TemplateArgument A) {
     break;
   case TemplateArgument::Declaration: {
     //  <expr-primary> ::= L <mangled-name> E # external name
-    // Clang produces AST's where pointer-to-member-function expressions
+    // LFort produces AST's where pointer-to-member-function expressions
     // and pointer-to-function expressions are represented as a declaration not
     // an expression. We compensate for it here to produce the correct mangling.
     ValueDecl *D = A.getAsDecl();
@@ -3574,7 +3574,7 @@ void ItaniumMangleContext::mangleCXXRTTIName(QualType Ty,
   Mangler.mangleType(Ty);
 }
 
-MangleContext *clang::createItaniumMangleContext(ASTContext &Context,
+MangleContext *lfort::createItaniumMangleContext(ASTContext &Context,
                                                  DiagnosticsEngine &Diags) {
   return new ItaniumMangleContext(Context, Diags);
 }

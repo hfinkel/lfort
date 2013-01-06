@@ -15,18 +15,18 @@
 
 #define DEBUG_TYPE "ExprEngine"
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/PrettyStackTrace.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/PrettyStackTrace.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
 #include "llvm/ADT/ImmutableList.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/raw_ostream.h"
@@ -35,7 +35,7 @@
 #include "llvm/Support/GraphWriter.h"
 #endif
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::APSInt;
 

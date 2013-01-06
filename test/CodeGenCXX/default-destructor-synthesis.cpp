@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=x86_64-apple-darwin10 -emit-llvm -O2 -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple=x86_64-apple-darwin10 -emit-llvm -O2 -o - | FileCheck %s
 static int count = 0;
 
 struct S {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm <%s
+// RUN: %lfort_cc1 -emit-llvm <%s
 
 struct FileName {
     struct FileName *next;

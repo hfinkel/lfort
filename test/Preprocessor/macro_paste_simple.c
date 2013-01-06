@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -E | FileCheck %s
+// RUN: %lfort_cc1 %s -E | FileCheck %s
 
 #define FOO bar ## baz ## 123
 

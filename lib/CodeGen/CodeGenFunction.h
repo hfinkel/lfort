@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CODEGENFUNCTION_H
-#define CLANG_CODEGEN_CODEGENFUNCTION_H
+#ifndef LFORT_CODEGEN_CODEGENFUNCTION_H
+#define LFORT_CODEGEN_CODEGENFUNCTION_H
 
 #include "CGBuilder.h"
 #include "CGDebugInfo.h"
 #include "CGValue.h"
 #include "CodeGenModule.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/ABI.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/ABI.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallVector.h"
@@ -42,7 +42,7 @@ namespace llvm {
   class CallSite;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class BlockDecl;
   class CXXDestructorDecl;
@@ -2772,6 +2772,6 @@ template <> struct DominatingValue<RValue> {
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

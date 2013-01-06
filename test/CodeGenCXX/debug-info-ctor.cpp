@@ -1,4 +1,4 @@
-// RUN: %clang -emit-llvm -g -S %s -o - | FileCheck %s
+// RUN: %lfort -emit-llvm -g -S %s -o - | FileCheck %s
 
 struct X {
   X(int v);

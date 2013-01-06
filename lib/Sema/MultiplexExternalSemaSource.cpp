@@ -10,11 +10,11 @@
 // This file implements the event dispatching to the subscribed clients.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/MultiplexExternalSemaSource.h"
-#include "clang/AST/DeclContextInternals.h"
-#include "clang/Sema/Lookup.h"
+#include "lfort/Sema/MultiplexExternalSemaSource.h"
+#include "lfort/AST/DeclContextInternals.h"
+#include "lfort/Sema/Lookup.h"
 
-using namespace clang;
+using namespace lfort;
 
 ///\brief Constructs a new multiplexing external sema source and appends the
 /// given element to it.

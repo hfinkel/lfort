@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -detailed-preprocessing-record %s
+// RUN: %lfort_cc1 -fsyntax-only -detailed-preprocessing-record %s
 
 // http://llvm.org/PR11120
 

@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/ScratchBuffer.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Lex/ScratchBuffer.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include <cstring>
-using namespace clang;
+using namespace lfort;
 
 // ScratchBufSize - The size of each chunk of scratch memory.  Slightly less
 //than a page, almost certainly enough for anything. :)

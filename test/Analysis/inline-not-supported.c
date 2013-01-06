@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fblocks -analyze -analyzer-checker=core -verify %s
+// RUN: %lfort_cc1 -fblocks -analyze -analyzer-checker=core -verify %s
 
 // For now, don't inline varargs.
 void foo(int *x, ...) {

@@ -11,10 +11,10 @@
 /// \brief Defines the Linkage enumeration and various utility functions.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_LINKAGE_H
-#define LLVM_CLANG_BASIC_LINKAGE_H
+#ifndef LLVM_LFORT_BASIC_LINKAGE_H
+#define LLVM_LFORT_BASIC_LINKAGE_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief Describes the different kinds of linkage 
 /// (C++ [basic.link], C99 6.2.2) that an entity may have.
@@ -64,6 +64,6 @@ inline Linkage minLinkage(Linkage L1, Linkage L2) {
   return L1 < L2? L1 : L2;
 }
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_BASIC_LINKAGE_H
+#endif // LLVM_LFORT_BASIC_LINKAGE_H

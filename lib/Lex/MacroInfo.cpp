@@ -11,9 +11,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Preprocessor.h"
-using namespace clang;
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+using namespace lfort;
 
 MacroInfo::MacroInfo(SourceLocation DefLoc)
   : Location(DefLoc),

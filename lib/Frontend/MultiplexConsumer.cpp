@@ -13,14 +13,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/MultiplexConsumer.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/Serialization/ASTDeserializationListener.h"
+#include "lfort/Frontend/MultiplexConsumer.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/Serialization/ASTDeserializationListener.h"
 
-using namespace clang;
+using namespace lfort;
 
-namespace clang {
+namespace lfort {
 
 // This ASTDeserializationListener forwards its notifications to a set of
 // child listeners.
@@ -162,7 +162,7 @@ void MultiplexASTMutationListener::AddedObjCPropertyInClassExtension(
     Listeners[i]->AddedObjCPropertyInClassExtension(Prop, OrigProp, ClassExt);
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 
 MultiplexConsumer::MultiplexConsumer(ArrayRef<ASTConsumer*> C)

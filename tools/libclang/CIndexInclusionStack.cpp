@@ -1,4 +1,4 @@
-//===- CIndexInclusionStack.cpp - Clang-C Source Indexing Library ---------===//
+//===- CIndexInclusionStack.cpp - LFort-C Source Indexing Library ---------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -15,14 +15,14 @@
 #include "CIndexer.h"
 #include "CXSourceLocation.h"
 #include "CXTranslationUnit.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/Frontend/ASTUnit.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 extern "C" {
-void clang_getInclusions(CXTranslationUnit TU, CXInclusionVisitor CB,
+void lfort_getInclusions(CXTranslationUnit TU, CXInclusionVisitor CB,
                          CXClientData clientData) {
   
   ASTUnit *CXXUnit = static_cast<ASTUnit *>(TU->TUData);

@@ -1,4 +1,4 @@
-//===--- TypePrinter.cpp - Pretty-Print Clang Types -----------------------===//
+//===--- TypePrinter.cpp - Pretty-Print LFort Types -----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,24 +7,24 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This contains code to print types from Clang's type system.
+// This contains code to print types from LFort's type system.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/SaveAndRestore.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
   /// \brief RAII object that enables printing of the ARC __strong lifetime
@@ -104,7 +104,7 @@ namespace {
 #define TYPE(CLASS, PARENT) \
     void print##CLASS##Before(const CLASS##Type *T, raw_ostream &OS); \
     void print##CLASS##After(const CLASS##Type *T, raw_ostream &OS);
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   };
 }
 
@@ -271,7 +271,7 @@ void TypePrinter::printBefore(const Type *T,Qualifiers Quals, raw_ostream &OS) {
 #define TYPE(CLASS, PARENT) case Type::CLASS: \
     print##CLASS##Before(cast<CLASS##Type>(T), OS); \
     break;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
 
   if (hasAfterQuals) {
@@ -297,7 +297,7 @@ void TypePrinter::printAfter(const Type *T, Qualifiers Quals, raw_ostream &OS) {
 #define TYPE(CLASS, PARENT) case Type::CLASS: \
     print##CLASS##After(cast<CLASS##Type>(T), OS); \
     break;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
 }
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -dD %s | FileCheck %s
+// RUN: %lfort_cc1 -E -dD %s | FileCheck %s
 // PR7818
 
 // CHECK: # 1 "{{.+}}.c"

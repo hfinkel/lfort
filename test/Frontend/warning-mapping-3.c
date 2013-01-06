@@ -2,7 +2,7 @@
 //
 // Verify mode doesn't work with fatal errors, just use FileCheck here.
 //
-// RUN: not %clang_cc1 -Wunused-function -Werror -Wfatal-errors %s 2> %t.err
+// RUN: not %lfort_cc1 -Wunused-function -Werror -Wfatal-errors %s 2> %t.err
 // RUN: FileCheck < %t.err %s
 // CHECK: fatal error: unused function
 // CHECK: 1 error generated

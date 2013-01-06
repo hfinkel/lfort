@@ -1,4 +1,4 @@
-// RUN: %clang -target x86_64-apple-darwin10 -S -o %t.s -mkernel -Xclang -verify %s
+// RUN: %lfort -target x86_64-apple-darwin10 -S -o %t.s -mkernel -Xlfort -verify %s
 
 // rdar://problem/9143356
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -W -Wall -Werror -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -W -Wall -Werror -verify %s
 // expected-no-diagnostics
 
 int f(int i __attribute__((__unused__)))

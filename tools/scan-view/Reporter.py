@@ -202,7 +202,7 @@ class RadarReporter:
         config = ""
 
         if not component.strip():
-            component = 'Bugs found by clang Analyzer'
+            component = 'Bugs found by lfort Analyzer'
         if not componentVersion.strip():
             componentVersion = 'X'
 

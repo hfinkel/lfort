@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=dynamic-bifurcate -verify %s
 
 #include "InlineObjCInstanceMethod.h"
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 PublicSubClass2 *getObj();
 
@@ -23,53 +23,53 @@ PublicSubClass2 *getObj();
 /* Test that we get the right type from call to alloc. */
 + (void) testAllocSelf {
   id a = [self alloc];
-  clang_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
 }
 
 
 + (void) testAllocClass {
   id a = [PublicSubClass2 alloc];
-  clang_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
 }
 
 + (void) testAllocSuperOverriden {
   id a = [super alloc];
   // Evaluates to 1 in the parent.
-  clang_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{FALSE}} 
+  lfort_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{FALSE}} 
 }
 
 + (void) testAllocSuper {
   id a = [super alloc];
-  clang_analyzer_eval([a getZero] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([a getZero] == 0); // expected-warning{{TRUE}}
 }
 
 + (void) testAllocInit {
   id a = [[self alloc] init];
-  clang_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
 }
 
 + (void) testNewSelf {
   id a = [self new];
-  clang_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([a getZeroOverridden] == 0); // expected-warning{{TRUE}}
 }
 
 // Casting to parent should not pessimize the dynamic type. 
 + (void) testCastToParent {
  id a = [[self alloc] init];
  PublicParent *p = a;  
-  clang_analyzer_eval([p getZeroOverridden] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([p getZeroOverridden] == 0); // expected-warning{{TRUE}}
 }
 
 // The type of parameter gets used.
 + (void)testTypeFromParam:(PublicParent*) p {
-  clang_analyzer_eval([p getZero] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([p getZero] == 0); // expected-warning{{TRUE}}
 }
 
 // Test implicit cast.
 // Note, in this case, p could also be a subclass of MyParent.
 + (void) testCastFromId:(id) a {
   PublicParent *p = a;  
-  clang_analyzer_eval([p getZero] == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval([p getZero] == 0); // expected-warning{{TRUE}}
 }
 @end
 

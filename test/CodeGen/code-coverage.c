@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -disable-red-zone -femit-coverage-data %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -disable-red-zone -femit-coverage-data %s -o - | FileCheck %s
 
 // <rdar://problem/12843084>
 

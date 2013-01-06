@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %lfort_cc1 -verify %s
 
 int foo() {
   int x[2]; // expected-note 4 {{array 'x' declared here}}
@@ -95,7 +95,7 @@ int test_no_warn_macro_unreachable() {
          ARR_IN_MACRO(1, arr, SIZE); // expected-warning{{array index 10 is past the end of the array (which contains 10 elements)}}
 }
 
-// This exhibited an assertion failure for a 32-bit build of Clang.
+// This exhibited an assertion failure for a 32-bit build of LFort.
 int test_pr9240() {
   short array[100]; // expected-note {{array 'array' declared here}}
   return array[(unsigned long long) 100]; // expected-warning {{array index 100 is past the end of the array (which contains 100 elements)}}

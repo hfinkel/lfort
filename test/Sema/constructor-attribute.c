@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int x __attribute__((constructor)); // expected-warning {{'constructor' attribute only applies to functions}}
 int f() __attribute__((constructor));

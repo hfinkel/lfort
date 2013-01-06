@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c90 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c90 %s
 // expected-no-diagnostics
 
 int f (int z)

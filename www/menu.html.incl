@@ -4,7 +4,7 @@
   </div>
   
   <div class="submenu">
-    <label>Clang Info</label>
+    <label>LFort Info</label>
     <a href="/index.html">About</a>
     <a href="/features.html">Features</a>
     <a href="/comparison.html">Comparisons</a>
@@ -16,19 +16,19 @@
   </div>
 
   <div class="submenu">
-    <label>Clang Development</label>
+    <label>LFort Development</label>
     <a href="/get_started.html">Get&nbsp;Started</a>
     <a href="/get_involved.html">Get&nbsp;Involved</a>
     <a href="/OpenProjects.html">Open&nbsp;Projects</a>
-    <a href="/docs/InternalsManual.html">Clang&nbsp;Internals</a>
-    <a href="/hacking.html">Hacking on Clang</a>
+    <a href="/docs/InternalsManual.html">LFort&nbsp;Internals</a>
+    <a href="/hacking.html">Hacking on LFort</a>
     <a href="/performance.html">Performance</a>
   </div>
   
   <div class="submenu">
-    <label>Clang Tools</label>
-    <a href="http://clang-analyzer.llvm.org">Automatic Bug-Finding</a>
-    <a href="/docs/Tooling.html">Writing Clang Tools</a>
+    <label>LFort Tools</label>
+    <a href="http://lfort-analyzer.llvm.org">Automatic Bug-Finding</a>
+    <a href="/docs/Tooling.html">Writing LFort Tools</a>
   </div>
   
   <div class="submenu">
@@ -45,17 +45,17 @@
     <a href="/get_started.html#build">Check Out SVN</a>
     <a href="http://llvm.org/svn/llvm-project/cfe/trunk/">Browse SVN</a>
     <a href="http://llvm.org/viewvc/llvm-project/cfe/trunk/">Browse ViewVC</a>
-    <a href="http://clang.llvm.org/doxygen/">doxygen</a>
+    <a href="http://lfort.llvm.org/doxygen/">doxygen</a>
   </div>
 
   <div class="submenu">
     <label>Quick Links</label>
-    <a href="http://test.minormatter.com/~ddunbar/clang-cov/">Testing Coverage</a>
+    <a href="http://test.minormatter.com/~ddunbar/lfort-cov/">Testing Coverage</a>
     <a href="http://test.minormatter.com/~ddunbar/references.html">Spec. References</a>
   </div>
   
   <div class="submenu">
-    <label>Clang Events</label>
+    <label>LFort Events</label>
     <a href="http://llvm.org/devmtg/2009-10/">October 2009</a>
     <a href="http://llvm.org/devmtg/2010-11/">November 2010</a> 
   </div>

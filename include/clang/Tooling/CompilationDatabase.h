@@ -25,10 +25,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLING_COMPILATION_DATABASE_H
-#define LLVM_CLANG_TOOLING_COMPILATION_DATABASE_H
+#ifndef LLVM_LFORT_TOOLING_COMPILATION_DATABASE_H
+#define LLVM_LFORT_TOOLING_COMPILATION_DATABASE_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/StringRef.h"
@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 /// \brief Specifies the working directory and command of a compilation.
@@ -56,7 +56,7 @@ struct CompileCommand {
 ///
 /// A compilation database allows the user to retrieve all compile command lines
 /// that a specified file is compiled with in a project.
-/// The retrieved compile command lines can be used to run clang tools over
+/// The retrieved compile command lines can be used to run lfort tools over
 /// a subset of the files in a project.
 class CompilationDatabase {
 public:
@@ -96,8 +96,8 @@ public:
   ///
   /// This includes compile comamnds that span multiple source files.
   /// For example, consider a project with the following compilations:
-  /// $ clang++ -o test a.cc b.cc t.cc
-  /// $ clang++ -o production a.cc b.cc -DPRODUCTION
+  /// $ lfort++ -o test a.cc b.cc t.cc
+  /// $ lfort++ -o production a.cc b.cc -DPRODUCTION
   /// A compilation database representing the project would return both command
   /// lines for a.cc and b.cc and only the first command line for t.cc.
   virtual std::vector<CompileCommand> getCompileCommands(
@@ -145,7 +145,7 @@ public:
   /// The arguments after "--" must not include positional parameters or the
   /// argv[0] of the tool. Those will be added by the FixedCompilationDatabase
   /// when a CompileCommand is requested. The argv[0] of the returned command
-  /// line will be "clang-tool".
+  /// line will be "lfort-tool".
   ///
   /// Returns NULL in case "--" is not found.
   ///
@@ -174,7 +174,7 @@ public:
   /// \brief Returns the given compile command.
   ///
   /// Will always return a vector with one entry that contains the directory
-  /// and command line specified at construction with "clang-tool" as argv[0]
+  /// and command line specified at construction with "lfort-tool" as argv[0]
   /// and 'FilePath' as positional argument.
   virtual std::vector<CompileCommand> getCompileCommands(
     StringRef FilePath) const;
@@ -197,6 +197,6 @@ private:
 };
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_TOOLING_COMPILATION_DATABASE_H
+#endif // LLVM_LFORT_TOOLING_COMPILATION_DATABASE_H

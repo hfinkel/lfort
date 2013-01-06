@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -isystem %S/Inputs -verify %s
+// RUN: %lfort_cc1 -isystem %S/Inputs -verify %s
 #include <array-bounds-system-header.h>
 void test_system_header_macro() {
   BAD_MACRO_1; // no-warning

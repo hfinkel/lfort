@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 namespace A {
   short i; // expected-note 2{{candidate found by name lookup is 'A::i'}}

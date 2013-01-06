@@ -13,10 +13,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
 #include "llvm/ADT/ImmutableMap.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

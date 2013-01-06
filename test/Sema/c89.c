@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -std=c89 -pedantic -fsyntax-only -verify -Wimplicit-function-declaration
+/* RUN: %lfort_cc1 %s -std=c89 -pedantic -fsyntax-only -verify -Wimplicit-function-declaration
  */
 void test1() {
   {

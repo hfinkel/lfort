@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -fsyntax-only %s -verify
 
 // C++'0x [namespace.memdef] p3:
 //   Every name first declared in a namespace is a member of that namespace. If

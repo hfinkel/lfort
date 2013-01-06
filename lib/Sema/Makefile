@@ -1,4 +1,4 @@
-##===- clang/lib/Sema/Makefile -----------------------------*- Makefile -*-===##
+##===- lfort/lib/Sema/Makefile -----------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -12,8 +12,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangSema
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortSema
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -pedantic -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -verify %s
 
 struct ValueInt
 {

@@ -1,1 +1,1 @@
-#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma lfort diagnostic ignored "-Wunused-parameter"

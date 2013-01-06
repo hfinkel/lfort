@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/AddressSpaces.h"
-#include "clang/Basic/OpenCL.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/PrettyDeclStackTrace.h"
-#include "clang/Sema/Scope.h"
+#include "lfort/Basic/AddressSpaces.h"
+#include "lfort/Basic/OpenCL.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
+#include "lfort/Sema/Scope.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // C99 6.7: Declarations.
@@ -65,7 +65,7 @@ TypeResult Parser::ParseTypeName(SourceRange *Range,
 /// require late parsing.
 static bool isAttributeLateParsed(const IdentifierInfo &II) {
     return llvm::StringSwitch<bool>(II.getName())
-#include "clang/Parse/AttrLateParsed.inc"
+#include "lfort/Parse/AttrLateParsed.inc"
         .Default(false);
 }
 
@@ -2118,7 +2118,7 @@ void Parser::ParseAlignmentSpecifier(ParsedAttributes &Attrs,
 /// [C99]   function-specifier declaration-specifiers[opt]
 /// [C11]   alignment-specifier declaration-specifiers[opt]
 /// [GNU]   attributes declaration-specifiers[opt]
-/// [Clang] '__module_private__' declaration-specifiers[opt]
+/// [LFort] '__module_private__' declaration-specifiers[opt]
 ///
 ///       storage-class-specifier: [C99 6.7.1]
 ///         'typedef'
@@ -2402,7 +2402,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
     }
 
     case tok::kw___is_signed:
-      // GNU libstdc++ 4.4 uses __is_signed as an identifier, but Clang
+      // GNU libstdc++ 4.4 uses __is_signed as an identifier, but LFort
       // typically treats it as a trait. If we see __is_signed as it appears
       // in libstdc++, e.g.,
       //

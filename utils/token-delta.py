@@ -107,7 +107,7 @@ kTokenRE = re.compile(r"""([a-z_]+) '(.*)'\t(.*)\tLoc=<(.*):(.*):(.*)>""",
                       re.DOTALL | re.MULTILINE)
 
 def getTokens(path):
-    p = subprocess.Popen(['clang','-dump-raw-tokens',path],
+    p = subprocess.Popen(['lfort','-dump-raw-tokens',path],
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)

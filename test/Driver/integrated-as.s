@@ -1,6 +1,6 @@
-// RUN: %clang -### -c -integrated-as %s 2>&1 | FileCheck %s
+// RUN: %lfort -### -c -integrated-as %s 2>&1 | FileCheck %s
 
-// REQUIRES: clang-driver
+// REQUIRES: lfort-driver
 
 // CHECK: cc1as
 // CHECK-NOT: -relax-all

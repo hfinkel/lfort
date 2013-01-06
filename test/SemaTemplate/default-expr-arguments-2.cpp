@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-dump %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -ast-dump %s 2>&1 | FileCheck %s
 
 // This is a wacky test to ensure that we're actually instantiating
 // the default arguments of the constructor when the function type is

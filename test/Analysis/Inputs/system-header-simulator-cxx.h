@@ -1,4 +1,4 @@
-#pragma clang system_header
+#pragma lfort system_header
 
 namespace std {
   template <class T1, class T2>

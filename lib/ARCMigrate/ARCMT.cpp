@@ -8,19 +8,19 @@
 //===----------------------------------------------------------------------===//
 
 #include "Internals.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Basic/DiagnosticCategories.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/Basic/DiagnosticCategories.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Support/MemoryBuffer.h"
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 bool CapturedDiagList::clearDiagnostic(ArrayRef<unsigned> IDs,

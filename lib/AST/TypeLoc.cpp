@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/TypeLoc.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/TypeLocVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/TypeLocVisitor.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // TypeLoc Implementation
@@ -31,7 +31,7 @@ namespace {
     SourceRange Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc) { \
       return TyLoc.getLocalSourceRange(); \
     }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   };
 }
 
@@ -48,7 +48,7 @@ namespace {
     unsigned Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc) { \
       return TyLoc.getFullDataSize(); \
     }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   };
 }
 
@@ -66,7 +66,7 @@ namespace {
     TypeLoc Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc) { \
       return TyLoc.getNextTypeLoc(); \
     }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   };
 }
 
@@ -92,7 +92,7 @@ void TypeLoc::initializeImpl(ASTContext &Context, TypeLoc TL,
       if (!TL) return;                \
       continue;                       \
     }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
     }
   }
 }
@@ -185,7 +185,7 @@ namespace {
     bool Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc) { \
       return isTypeSpec(TyLoc); \
     }
-#include "clang/AST/TypeLocNodes.def"
+#include "lfort/AST/TypeLocNodes.def"
   };
 }
 

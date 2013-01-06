@@ -11,22 +11,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_ASTUNIT_H
-#define LLVM_CLANG_FRONTEND_ASTUNIT_H
+#ifndef LLVM_LFORT_FRONTEND_ASTUNIT_H
+#define LLVM_LFORT_FRONTEND_ASTUNIT_H
 
-#include "clang-c/Index.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemOptions.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Lex/HeaderSearchOptions.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Lex/PreprocessingRecord.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Serialization/ASTBitCodes.h"
+#include "lfort-c/Index.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemOptions.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Lex/HeaderSearchOptions.h"
+#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PreprocessingRecord.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Serialization/ASTBitCodes.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
@@ -43,7 +43,7 @@ namespace llvm {
   class MemoryBuffer;
 }
 
-namespace clang {
+namespace lfort {
 class ASTContext;
 class ASTReader;
 class CodeCompleteConsumer;
@@ -294,7 +294,7 @@ public:
     /// \brief The priority given to this code-completion result.
     unsigned Priority;
     
-    /// \brief The libclang cursor kind corresponding to this code-completion 
+    /// \brief The liblfort cursor kind corresponding to this code-completion 
     /// result.
     CXCursorKind Kind;
     
@@ -839,6 +839,6 @@ public:
   }
 };
 
-} // namespace clang
+} // namespace lfort
 
 #endif

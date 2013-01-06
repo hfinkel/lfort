@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EDIT_REWRITERS_H
-#define LLVM_CLANG_EDIT_REWRITERS_H
+#ifndef LLVM_LFORT_EDIT_REWRITERS_H
+#define LLVM_LFORT_EDIT_REWRITERS_H
 
-namespace clang {
+namespace lfort {
   class ObjCMessageExpr;
   class NSAPI;
 
@@ -28,6 +28,6 @@ bool rewriteToObjCSubscriptSyntax(const ObjCMessageExpr *Msg,
 
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

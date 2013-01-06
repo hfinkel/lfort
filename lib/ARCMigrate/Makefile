@@ -1,4 +1,4 @@
-##===- clang/lib/ARCMigrate/Makefile --------------------------*- Makefile -*-===##
+##===- lfort/lib/ARCMigrate/Makefile --------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,8 +11,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangARCMigrate
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortARCMigrate
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

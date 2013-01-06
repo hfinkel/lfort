@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple=x86_64-unknown-freebsd7.0 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple=x86_64-unknown-freebsd7.0 %s
 // expected-no-diagnostics
 
 // PR2631

@@ -18,13 +18,13 @@
 #include "CGCleanup.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/IR/DataLayout.h"
@@ -36,7 +36,7 @@
 #include <cstdarg>
 
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 
@@ -125,7 +125,7 @@ protected:
   /// calling conventions, it must always be cast to the correct type before
   /// actually being used.
   llvm::PointerType *IMPTy;
-  /// Type of an untyped Objective-C object.  Clang treats id as a built-in type
+  /// Type of an untyped Objective-C object.  LFort treats id as a built-in type
   /// when compiling Objective-C code, so this may be an opaque pointer (i8*),
   /// but if the runtime header declaring it is included then it may be a
   /// pointer to a structure.
@@ -133,7 +133,7 @@ protected:
   /// Pointer to a pointer to an Objective-C object.  Used in the new ABI
   /// message lookup function and some GC-related functions.
   llvm::PointerType *PtrToIdTy;
-  /// The clang type of id.  Used when using the clang CGCall infrastructure to
+  /// The lfort type of id.  Used when using the lfort CGCall infrastructure to
   /// call Objective-C methods.
   CanQualType ASTIdTy;
   /// LLVM type for C int type.
@@ -296,7 +296,7 @@ private:
   /// Selectors related to memory management.  When compiling in GC mode, we
   /// omit these.
   Selector RetainSel, ReleaseSel, AutoreleaseSel;
-  /// Runtime functions used for memory management in GC mode.  Note that clang
+  /// Runtime functions used for memory management in GC mode.  Note that lfort
   /// supports code generation for calling these functions, but neither GNU
   /// runtime actually supports this API properly yet.
   LazyRuntimeFunction IvarAssignFn, StrongCastAssignFn, MemMoveFn, WeakReadFn, 
@@ -551,7 +551,7 @@ public:
 ///
 /// The GCC ABI target actually generates code that is approximately compatible
 /// with the new GNUstep runtime ABI, but refrains from using any features that
-/// would not work with the GCC runtime.  For example, clang always generates
+/// would not work with the GCC runtime.  For example, lfort always generates
 /// the extended form of the class structure, and the extra fields are simply
 /// ignored by GCC libobjc.
 class CGObjCGCC : public CGObjCGNU {
@@ -2812,7 +2812,7 @@ llvm::Value *CGObjCGNU::EmitIvarOffset(CodeGenFunction &CGF,
 }
 
 CGObjCRuntime *
-clang::CodeGen::CreateGNUObjCRuntime(CodeGenModule &CGM) {
+lfort::CodeGen::CreateGNUObjCRuntime(CodeGenModule &CGM) {
   switch (CGM.getLangOpts().ObjCRuntime.getKind()) {
   case ObjCRuntime::GNUstep:
     return new CGObjCGNUstep(CGM);

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -fblocks
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -fblocks
 void donotwarn();
 
 int (^IFP) ();

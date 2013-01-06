@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o - %s | grep memcpy
+// RUN: %lfort_cc1 -emit-llvm -o - %s | grep memcpy
 // PR1421
 
 struct A {

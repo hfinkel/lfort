@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H
-#define LLVM_CLANG_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H
+#ifndef LLVM_LFORT_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H
+#define LLVM_LFORT_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H
 
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/Tooling/Tooling.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 
-using clang::tooling::newFrontendActionFactory;
-using clang::tooling::runToolOnCodeWithArgs;
-using clang::tooling::FrontendActionFactory;
+using lfort::tooling::newFrontendActionFactory;
+using lfort::tooling::runToolOnCodeWithArgs;
+using lfort::tooling::FrontendActionFactory;
 
 class BoundNodesCallback {
 public:
@@ -129,6 +129,6 @@ matchAndVerifyResultFalse(const std::string &Code, const T &AMatcher,
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort
 
-#endif  // LLVM_CLANG_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H
+#endif  // LLVM_LFORT_UNITTESTS_AST_MATCHERS_AST_MATCHERS_TEST_H

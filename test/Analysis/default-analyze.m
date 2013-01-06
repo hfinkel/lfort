@@ -1,4 +1,4 @@
-// RUN: %clang --analyze %s -o %t
+// RUN: %lfort --analyze %s -o %t
 
 // Tests that some specific checkers are enabled by default.
 

@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 -fsyntax-only -pedantic -verify -DPEDANTIC %s
-// RUN: %clang_cc1 -fsyntax-only -Wextra-semi -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wextra-semi -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -verify -DPEDANTIC %s
+// RUN: %lfort_cc1 -fsyntax-only -Wextra-semi -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wextra-semi -verify -std=c++11 %s
 // RUN: cp %s %t
-// RUN: %clang_cc1 -x c++ -Wextra-semi -fixit %t
-// RUN: %clang_cc1 -x c++ -Wextra-semi -Werror %t
+// RUN: %lfort_cc1 -x c++ -Wextra-semi -fixit %t
+// RUN: %lfort_cc1 -x c++ -Wextra-semi -Werror %t
 
 class A {
   void A1();

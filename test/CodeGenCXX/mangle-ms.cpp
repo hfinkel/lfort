@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fms-extensions -fblocks -emit-llvm %s -o - -cxx-abi microsoft -triple=i386-pc-win32 | FileCheck %s
-// RUN: %clang_cc1 -fms-compatibility -fblocks -emit-llvm %s -o - -cxx-abi microsoft -triple=x86_64-pc-win32 | FileCheck -check-prefix X64 %s
+// RUN: %lfort_cc1 -fms-extensions -fblocks -emit-llvm %s -o - -cxx-abi microsoft -triple=i386-pc-win32 | FileCheck %s
+// RUN: %lfort_cc1 -fms-compatibility -fblocks -emit-llvm %s -o - -cxx-abi microsoft -triple=x86_64-pc-win32 | FileCheck -check-prefix X64 %s
 
 // CHECK: @"\01?a@@3HA"
 // CHECK: @"\01?b@N@@3HA"
@@ -134,7 +134,7 @@ void epsilon(int a[][10][20]) {}
 void zeta(int (*)(int, int)) {}
 // CHECK: @"\01?zeta@@YAXP6AHHH@Z@Z"
 
-// Blocks mangling (Clang extension). A block should be mangled slightly
+// Blocks mangling (LFort extension). A block should be mangled slightly
 // differently from a similar function pointer.
 void eta(int (^)(int, int)) {}
 // CHECK: @"\01?eta@@YAXP_EAHHH@Z@Z"

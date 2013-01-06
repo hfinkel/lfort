@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=alpha.core -analyzer-checker=deadcode.DeadStores,osx.cocoa.RetainCount -fblocks -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=alpha.core -analyzer-checker=deadcode.DeadStores,osx.cocoa.RetainCount -fblocks -verify -Wno-objc-root-class %s
 // expected-no-diagnostics
 
 typedef signed char BOOL;
@@ -35,7 +35,7 @@ void DeadStoreTest(NSObject *anObject) {
       ([keys containsObject:@"name"] && [keys containsObject:@"icon"])) {}
 }
 
-// This test case was a false positive due to how clang models
+// This test case was a false positive due to how lfort models
 // pointer types and ObjC object pointer types differently.  Here
 // we don't warn about a dead store because 'nil' is assigned to
 // an object pointer for the sake of defensive programming.

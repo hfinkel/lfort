@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -cxx-abi microsoft -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -cxx-abi microsoft -fsyntax-only -verify %s
 
 // Test that we reject pointers to members of incomplete classes (for now)
 struct A; //expected-note{{forward declaration of 'A'}}

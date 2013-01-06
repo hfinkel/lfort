@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -fvisibility-inlines-hidden -emit-llvm -o - %s -O2 -disable-llvm-optzns | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -fvisibility-inlines-hidden -emit-llvm -o - %s -O2 -disable-llvm-optzns | FileCheck %s
 
 // The trickery with optimization in the run line is to get IR
 // generation to emit available_externally function bodies, but not
@@ -109,7 +109,7 @@ namespace PR11642 {
   // CHECK: define weak_odr i32 @_ZN7PR116423FooIiE3fooEi
 }
 
-// Test that clang implements the new gcc behaviour for inline functions.
+// Test that lfort implements the new gcc behaviour for inline functions.
 // GCC PR30066.
 namespace test3 {
   inline void foo(void) {

@@ -13,15 +13,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "SimpleConstraintManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/ImmutableSet.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 /// A Range represents the closed range [from, to].  The caller must
@@ -278,7 +278,7 @@ public:
 } // end anonymous namespace
 
 REGISTER_TRAIT_WITH_PROGRAMSTATE(ConstraintRange,
-                                 CLANG_ENTO_PROGRAMSTATE_MAP(SymbolRef,
+                                 LFORT_ENTO_PROGRAMSTATE_MAP(SymbolRef,
                                                              RangeSet))
 
 namespace {

@@ -12,7 +12,7 @@
 
 #ifndef INTERCHECKERAPI_H_
 #define INTERCHECKERAPI_H_
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// Register the checker which evaluates CString API calls.

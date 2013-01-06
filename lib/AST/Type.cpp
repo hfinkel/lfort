@@ -11,22 +11,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeVisitor.h"
-#include "clang/Basic/Specifiers.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeVisitor.h"
+#include "lfort/Basic/Specifiers.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 bool Qualifiers::isStrictSupersetOf(Qualifiers Other) const {
   return (*this != Other) &&
@@ -217,7 +217,7 @@ QualType Type::getLocallyUnqualifiedSingleStepDesugaredType() const {
     if (!ty->isSugared()) return QualType(ty, 0); \
     return ty->desugar(); \
   }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
   llvm_unreachable("bad type kind!");
 }
@@ -238,7 +238,7 @@ SplitQualType QualType::getSplitDesugaredType(QualType T) {
       Cur = Ty->desugar(); \
       break; \
     }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 }
@@ -266,7 +266,7 @@ SplitQualType QualType::getSplitUnqualifiedTypeImpl(QualType type) {
       next = ty->desugar(); \
       break; \
     }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
 
     // Otherwise, split the underlying type.  If that yields qualifiers,
@@ -305,7 +305,7 @@ template<typename T> static const T *getAsSugar(const Type *Cur) {
       Cur = Ty->desugar().getTypePtr(); \
       break; \
     }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 }
@@ -334,7 +334,7 @@ const Type *Type::getUnqualifiedDesugaredType() const {
       Cur = Ty->desugar().getTypePtr(); \
       break; \
     }
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     }
   }
 }
@@ -1047,7 +1047,7 @@ bool QualType::isTrivialType(ASTContext &Context) const {
   //   cv-qualified versions of these types are collectively called trivial
   //   types.
   
-  // As an extension, Clang treats vector types as Scalar types.
+  // As an extension, LFort treats vector types as Scalar types.
   if (CanonicalType->isScalarType() || CanonicalType->isVectorType())
     return true;
   if (const RecordType *RT = CanonicalType->getAs<RecordType>()) {
@@ -1104,7 +1104,7 @@ bool QualType::isTriviallyCopyableType(ASTContext &Context) const {
   if (CanonicalType->isIncompleteType())
     return false;
  
-  // As an extension, Clang treats vector types as Scalar types.
+  // As an extension, LFort treats vector types as Scalar types.
   if (CanonicalType->isScalarType() || CanonicalType->isVectorType())
     return true;
 
@@ -1146,7 +1146,7 @@ bool Type::isLiteralType() const {
   // C++0x [basic.types]p10:
   //   A type is a literal type if it is:
   //    -- a scalar type; or
-  // As an extension, Clang treats vector types and complex types as
+  // As an extension, LFort treats vector types and complex types as
   // literal types.
   if (BaseTy->isScalarType() || BaseTy->isVectorType() ||
       BaseTy->isAnyComplexType())
@@ -1192,7 +1192,7 @@ bool Type::isStandardLayoutType() const {
   if (BaseTy->isIncompleteType())
     return false;
 
-  // As an extension, Clang treats vector types as Scalar types.
+  // As an extension, LFort treats vector types as Scalar types.
   if (BaseTy->isScalarType() || BaseTy->isVectorType()) return true;
   if (const RecordType *RT = BaseTy->getAs<RecordType>()) {
     if (const CXXRecordDecl *ClassDecl =
@@ -1244,7 +1244,7 @@ bool QualType::isCXX11PODType(ASTContext &Context) const {
   if (BaseTy->isIncompleteType())
     return false;
 
-  // As an extension, Clang treats vector types as Scalar types.
+  // As an extension, LFort treats vector types as Scalar types.
   if (BaseTy->isScalarType() || BaseTy->isVectorType()) return true;
   if (const RecordType *RT = BaseTy->getAs<RecordType>()) {
     if (const CXXRecordDecl *ClassDecl =
@@ -1469,7 +1469,7 @@ const char *Type::getTypeClassName() const {
   switch (TypeBits.TC) {
 #define ABSTRACT_TYPE(Derived, Base)
 #define TYPE(Derived, Base) case Derived: return #Derived;
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
   }
   
   llvm_unreachable("Invalid type class.");
@@ -2020,7 +2020,7 @@ public:
 
 static CachedProperties computeCachedProperties(const Type *T);
 
-namespace clang {
+namespace lfort {
 /// The type-property cache.  This is templated so as to be
 /// instantiated at an internal type to prevent unnecessary symbol
 /// leakage.
@@ -2078,13 +2078,13 @@ static CachedProperties computeCachedProperties(const Type *T) {
   switch (T->getTypeClass()) {
 #define TYPE(Class,Base)
 #define NON_CANONICAL_TYPE(Class,Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     llvm_unreachable("didn't expect a non-canonical type here");
 
 #define TYPE(Class,Base)
 #define DEPENDENT_TYPE(Class,Base) case Type::Class:
 #define NON_CANONICAL_UNLESS_DEPENDENT_TYPE(Class,Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     // Treat instantiation-dependent types as external.
     assert(T->isInstantiationDependentType());
     return CachedProperties(NamedDecl::LinkageInfo(), false);

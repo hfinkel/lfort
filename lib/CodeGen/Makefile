@@ -1,4 +1,4 @@
-##===- clang/lib/CodeGen/Makefile --------------------------*- Makefile -*-===##
+##===- lfort/lib/CodeGen/Makefile --------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -12,8 +12,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangCodeGen
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortCodeGen
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

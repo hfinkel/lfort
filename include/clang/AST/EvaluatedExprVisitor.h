@@ -12,15 +12,15 @@
 //  expression.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_EVALUATEDEXPRVISITOR_H
-#define LLVM_CLANG_AST_EVALUATEDEXPRVISITOR_H
+#ifndef LLVM_LFORT_AST_EVALUATEDEXPRVISITOR_H
+#define LLVM_LFORT_AST_EVALUATEDEXPRVISITOR_H
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/StmtVisitor.h"
 
-namespace clang {
+namespace lfort {
   
 class ASTContext;
   
@@ -75,4 +75,4 @@ public:
 
 }
 
-#endif // LLVM_CLANG_AST_EVALUATEDEXPRVISITOR_H
+#endif // LLVM_LFORT_AST_EVALUATEDEXPRVISITOR_H

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -o %t %s
 // RUN: grep '@llvm.used = .*@g0' %t
 // RUN: grep '@llvm.used = .*@f0' %t
 // RUN: grep '@llvm.used = .*@f1.l0' %t

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -verify
 // rdar://10095762
 
 typedef void (*Fn_noret)(void) __attribute__((noreturn));

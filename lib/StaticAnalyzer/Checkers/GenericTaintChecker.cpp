@@ -14,17 +14,17 @@
 // aggressively, even if the involved symbols are under constrained.
 //
 //===----------------------------------------------------------------------===//
-#include "ClangSACheckers.h"
-#include "clang/AST/Attr.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 #include <climits>
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

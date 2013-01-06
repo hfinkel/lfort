@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -verify %s
 
 typedef decltype(sizeof(int)) size_t;
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wunused-parameter -Wunused -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wunused-parameter -Wunused -verify %s
 // expected-no-diagnostics
 
 struct S {

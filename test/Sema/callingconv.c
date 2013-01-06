@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -triple i386-unknown-unknown -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -triple i386-unknown-unknown -verify
 
 void __attribute__((fastcall)) foo(float *a) { 
 }

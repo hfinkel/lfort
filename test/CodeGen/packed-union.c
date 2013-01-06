@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm %s -o %t
 
 typedef struct _attrs {
         unsigned file_attributes;

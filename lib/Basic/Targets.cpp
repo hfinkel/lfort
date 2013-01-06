@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/MacroBuilder.h"
-#include "clang/Basic/TargetBuiltins.h"
-#include "clang/Basic/TargetOptions.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/MacroBuilder.h"
+#include "lfort/Basic/TargetBuiltins.h"
+#include "lfort/Basic/TargetOptions.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/STLExtras.h"
@@ -29,7 +29,7 @@
 #include "llvm/MC/MCSectionMachO.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 //  Common code shared among targets.
@@ -703,7 +703,7 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::PPC::LastTSBuiltin-Builtin::FirstTSBuiltin;
+    NumRecords = lfort::PPC::LastTSBuiltin-Builtin::FirstTSBuiltin;
   }
 
   virtual bool isCLZForZeroUndef() const { return false; }
@@ -824,7 +824,7 @@ const Builtin::Info PPCTargetInfo::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsPPC.def"
+#include "lfort/Basic/BuiltinsPPC.def"
 };
 
 
@@ -1141,7 +1141,7 @@ namespace {
     virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                    unsigned &NumRecords) const {
       Records = BuiltinInfo;
-      NumRecords = clang::NVPTX::LastTSBuiltin-Builtin::FirstTSBuiltin;
+      NumRecords = lfort::NVPTX::LastTSBuiltin-Builtin::FirstTSBuiltin;
     }
     virtual bool hasFeature(StringRef Feature) const {
       return Feature == "ptx" || Feature == "nvptx";
@@ -1180,7 +1180,7 @@ namespace {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsNVPTX.def"
+#include "lfort/Basic/BuiltinsNVPTX.def"
   };
 
   const char * const NVPTXTargetInfo::GCCRegNames[] = {
@@ -1432,7 +1432,7 @@ const Builtin::Info BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsX86.def"
+#include "lfort/Basic/BuiltinsX86.def"
 };
 
 static const char* const GCCRegNames[] = {
@@ -1482,9 +1482,9 @@ class X86TargetInfo : public TargetInfo {
   bool HasXOP;
   bool HasF16C;
 
-  /// \brief Enumeration of all of the X86 CPUs supported by Clang.
+  /// \brief Enumeration of all of the X86 CPUs supported by LFort.
   ///
-  /// Each enumeration represents a particular CPU supported by Clang. These
+  /// Each enumeration represents a particular CPU supported by LFort. These
   /// loosely correspond to the options passed to '-march' or '-mtune' flags.
   enum CPUKind {
     CK_Generic,
@@ -1524,7 +1524,7 @@ class X86TargetInfo : public TargetInfo {
     CK_C3_2,
 
     /// This enumerator is a bit odd, as GCC no longer accepts -march=yonah.
-    /// Clang however has some logic to suport this.
+    /// LFort however has some logic to suport this.
     // FIXME: Warn, deprecate, and potentially remove this.
     CK_Yonah,
     //@}
@@ -1544,7 +1544,7 @@ class X86TargetInfo : public TargetInfo {
     CK_Core2,
 
     /// This enumerator, like \see CK_Yonah, is a bit odd. It is another
-    /// codename which GCC no longer accepts as an option to -march, but Clang
+    /// codename which GCC no longer accepts as an option to -march, but LFort
     /// has some logic for recognizing it.
     // FIXME: Warn, deprecate, and potentially remove this.
     CK_Penryn,
@@ -1639,7 +1639,7 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::X86::LastTSBuiltin-Builtin::FirstTSBuiltin;
+    NumRecords = lfort::X86::LastTSBuiltin-Builtin::FirstTSBuiltin;
   }
   virtual void getGCCRegNames(const char * const *&Names,
                               unsigned &NumNames) const {
@@ -1732,7 +1732,7 @@ public:
 
     // Perform any per-CPU checks necessary to determine if this CPU is
     // acceptable.
-    // FIXME: This results in terrible diagnostics. Clang just says the CPU is
+    // FIXME: This results in terrible diagnostics. LFort just says the CPU is
     // invalid without explaining *why*.
     switch (CPU) {
     case CK_Generic:
@@ -2737,7 +2737,7 @@ public:
     Builder.defineMacro("__MINGW32__");
 
     // mingw32-gcc provides __declspec(a) as alias of __attribute__((a)).
-    // In contrast, clang-cc1 provides __declspec(a) with -fms-extensions.
+    // In contrast, lfort-cc1 provides __declspec(a) with -fms-extensions.
     if (Opts.MicrosoftExt)
       // Provide "as-is" __declspec.
       Builder.defineMacro("__declspec", "__declspec");
@@ -2969,7 +2969,7 @@ public:
     Builder.defineMacro("__MINGW64__");
 
     // mingw32-gcc provides __declspec(a) as alias of __attribute__((a)).
-    // In contrast, clang-cc1 provides __declspec(a) with -fms-extensions.
+    // In contrast, lfort-cc1 provides __declspec(a) with -fms-extensions.
     if (Opts.MicrosoftExt)
       // Provide "as-is" __declspec.
       Builder.defineMacro("__declspec", "__declspec");
@@ -3311,7 +3311,7 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::ARM::LastTSBuiltin-Builtin::FirstTSBuiltin;
+    NumRecords = lfort::ARM::LastTSBuiltin-Builtin::FirstTSBuiltin;
   }
   virtual bool isCLZForZeroUndef() const { return false; }
   virtual BuiltinVaListKind getBuiltinVaListKind() const {
@@ -3464,7 +3464,7 @@ const Builtin::Info ARMTargetInfo::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsARM.def"
+#include "lfort/Basic/BuiltinsARM.def"
 };
 } // end anonymous namespace.
 
@@ -3511,7 +3511,7 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::Hexagon::LastTSBuiltin-Builtin::FirstTSBuiltin;
+    NumRecords = lfort::Hexagon::LastTSBuiltin-Builtin::FirstTSBuiltin;
   }
 
   virtual bool validateAsmConstraint(const char *&Name,
@@ -3640,7 +3640,7 @@ const Builtin::Info HexagonTargetInfo::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsHexagon.def"
+#include "lfort/Basic/BuiltinsHexagon.def"
 };
 }
 
@@ -3857,7 +3857,7 @@ namespace {
 
 namespace {
 
-  // LLVM and Clang cannot be used directly to output native binaries for
+  // LLVM and LFort cannot be used directly to output native binaries for
   // target, but is used to compile C code to llvm bitcode with correct
   // type and alignment information.
   //
@@ -4020,7 +4020,7 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::Mips::LastTSBuiltin - Builtin::FirstTSBuiltin;
+    NumRecords = lfort::Mips::LastTSBuiltin - Builtin::FirstTSBuiltin;
   }
   virtual bool hasFeature(StringRef Feature) const {
     return Feature == "mips";
@@ -4119,7 +4119,7 @@ const Builtin::Info MipsTargetInfoBase::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsMips.def"
+#include "lfort/Basic/BuiltinsMips.def"
 };
 
 class Mips32TargetInfoBase : public MipsTargetInfoBase {

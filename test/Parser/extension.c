@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -fsyntax-only -pedantic -verify -std=c89
+/* RUN: %lfort_cc1 %s -fsyntax-only -pedantic -verify -std=c89
  */
 
 /* Top level extension marker. */

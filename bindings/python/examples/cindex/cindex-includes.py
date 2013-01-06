@@ -16,11 +16,11 @@ describes include dependencies.
 
 def main():
     import sys
-    from clang.cindex import Index
+    from lfort.cindex import Index
 
     from optparse import OptionParser, OptionGroup
 
-    parser = OptionParser("usage: %prog [options] {filename} [clang-args*]")
+    parser = OptionParser("usage: %prog [options] {filename} [lfort-args*]")
     parser.disable_interspersed_args()
     (opts, args) = parser.parse_args()
     if len(args) == 0:

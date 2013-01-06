@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %lfort_cc1 -emit-llvm-only %s
 
 typedef struct _IO_FILE FILE;
 int vfprintf(FILE*restrict,const char*restrict, __builtin_va_list);

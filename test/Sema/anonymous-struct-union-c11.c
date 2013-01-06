@@ -1,8 +1,8 @@
 // Check for warnings in non-C11 mode:
-// RUN: %clang_cc1 -fsyntax-only -verify -Wc11-extensions %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wc11-extensions %s
 
 // Expect no warnings in C11 mode:
-// RUN: %clang_cc1 -fsyntax-only -pedantic -Werror -std=c11 %s
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -Werror -std=c11 %s
 
 struct s {
   int a;

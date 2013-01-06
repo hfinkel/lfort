@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SCRATCHBUFFER_H
-#define LLVM_CLANG_SCRATCHBUFFER_H
+#ifndef LLVM_LFORT_SCRATCHBUFFER_H
+#define LLVM_LFORT_SCRATCHBUFFER_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 
-namespace clang {
+namespace lfort {
   class SourceManager;
 
 /// ScratchBuffer - This class exposes a simple interface for the dynamic
@@ -40,6 +40,6 @@ private:
   void AllocScratchBuffer(unsigned RequestLen);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

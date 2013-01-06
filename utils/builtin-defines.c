@@ -1,5 +1,5 @@
 /* 
-This is a clang style test case for checking that preprocessor
+This is a lfort style test case for checking that preprocessor
 defines match gcc.
 */
 
@@ -11,7 +11,7 @@ RUN:       for opts in "-O0" "-O1 -dynamic" "-O2 -static" "-Os"; do     \
 RUN:         echo "-- $arch, $lang, $input, $opts --"; \
 RUN:         for cc in 0 1; do \
 RUN:           if [ "$cc" == 0 ]; then \
-RUN:             cc_prog=clang; \
+RUN:             cc_prog=lfort; \
 RUN:             output=%t0; \
 RUN:           else \
 RUN:             cc_prog=gcc; \
@@ -50,7 +50,7 @@ RUN: done;
 #undef __SSP__
 #undef __APPLE_CC__
 #undef __VERSION__
-#undef __clang__
+#undef __lfort__
 #undef __llvm__
 #undef __nocona
 #undef __nocona__

@@ -1,6 +1,6 @@
 set(LLVM_LINK_COMPONENTS mc)
 
-add_clang_library(clangBasic
+add_lfort_library(lfortBasic
   Builtins.cpp
   ConvertUTF.c
   ConvertUTFWrapper.cpp
@@ -25,28 +25,28 @@ add_clang_library(clangBasic
 # Determine Subversion revision.
 # FIXME: This only gets updated when CMake is run, so this revision number
 # may be out-of-date!
-if( NOT IS_SYMLINK "${CLANG_SOURCE_DIR}" )  # See PR 8437
+if( NOT IS_SYMLINK "${LFORT_SOURCE_DIR}" )  # See PR 8437
   find_package(Subversion)
 endif()
-if (Subversion_FOUND AND EXISTS "${CLANG_SOURCE_DIR}/.svn")
-  Subversion_WC_INFO(${CLANG_SOURCE_DIR} CLANG)
+if (Subversion_FOUND AND EXISTS "${LFORT_SOURCE_DIR}/.svn")
+  Subversion_WC_INFO(${LFORT_SOURCE_DIR} LFORT)
   set_source_files_properties(Version.cpp
-    PROPERTIES COMPILE_DEFINITIONS "SVN_REVISION=\"${CLANG_WC_REVISION}\"")
+    PROPERTIES COMPILE_DEFINITIONS "SVN_REVISION=\"${LFORT_WC_REVISION}\"")
 endif()
 
-add_dependencies(clangBasic
-  ClangARMNeon
-  ClangAttrList
-  ClangDiagnosticAnalysis
-  ClangDiagnosticAST
-  ClangDiagnosticComment
-  ClangDiagnosticCommon
-  ClangDiagnosticDriver
-  ClangDiagnosticFrontend
-  ClangDiagnosticGroups
-  ClangDiagnosticIndexName
-  ClangDiagnosticLex
-  ClangDiagnosticParse
-  ClangDiagnosticSema
-  ClangDiagnosticSerialization
+add_dependencies(lfortBasic
+  LFortARMNeon
+  LFortAttrList
+  LFortDiagnosticAnalysis
+  LFortDiagnosticAST
+  LFortDiagnosticComment
+  LFortDiagnosticCommon
+  LFortDiagnosticDriver
+  LFortDiagnosticFrontend
+  LFortDiagnosticGroups
+  LFortDiagnosticIndexName
+  LFortDiagnosticLex
+  LFortDiagnosticParse
+  LFortDiagnosticSema
+  LFortDiagnosticSerialization
   )

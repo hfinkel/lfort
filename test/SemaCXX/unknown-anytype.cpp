@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -funknown-anytype -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -funknown-anytype -fsyntax-only -verify %s
 
 namespace test0 {
   extern __unknown_anytype test0;

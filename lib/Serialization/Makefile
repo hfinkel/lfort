@@ -1,4 +1,4 @@
-##===- clang/lib/Serialization/Makefile --------------------*- Makefile -*-===##
+##===- lfort/lib/Serialization/Makefile --------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -12,8 +12,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangSerialization
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortSerialization
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wc++11-compat -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wc++11-compat -verify %s
 
 class A {
   friend static class B; // expected-error {{'static' is invalid in friend declarations}}

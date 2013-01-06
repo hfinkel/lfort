@@ -11,17 +11,17 @@
 //  containing a serialized representation of a translation unit.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_FRONTEND_AST_WRITER_H
-#define LLVM_CLANG_FRONTEND_AST_WRITER_H
+#ifndef LLVM_LFORT_FRONTEND_AST_WRITER_H
+#define LLVM_LFORT_FRONTEND_AST_WRITER_H
 
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/Lex/PPMutationListener.h"
-#include "clang/Sema/SemaConsumer.h"
-#include "clang/Serialization/ASTBitCodes.h"
-#include "clang/Serialization/ASTDeserializationListener.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/Lex/PPMutationListener.h"
+#include "lfort/Sema/SemaConsumer.h"
+#include "lfort/Serialization/ASTBitCodes.h"
+#include "lfort/Serialization/ASTDeserializationListener.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/MapVector.h"
@@ -39,7 +39,7 @@ namespace llvm {
   class BitstreamWriter;
 }
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class NestedNameSpecifier;
@@ -725,7 +725,7 @@ public:
 class PCHGenerator : public SemaConsumer {
   const Preprocessor &PP;
   std::string OutputFile;
-  clang::Module *Module;
+  lfort::Module *Module;
   std::string isysroot;
   raw_ostream *Out;
   Sema *SemaPtr;
@@ -739,7 +739,7 @@ protected:
 
 public:
   PCHGenerator(const Preprocessor &PP, StringRef OutputFile,
-               clang::Module *Module,
+               lfort::Module *Module,
                StringRef isysroot, raw_ostream *Out);
   ~PCHGenerator();
   virtual void InitializeSema(Sema &S) { SemaPtr = &S; }
@@ -749,6 +749,6 @@ public:
   virtual ASTDeserializationListener *GetASTDeserializationListener();
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

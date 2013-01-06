@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/TemplateName.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/LangOptions.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/LangOptions.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 using namespace llvm;
 
 TemplateArgument 
@@ -156,7 +156,7 @@ TemplateName::print(raw_ostream &OS, const PrintingPolicy &Policy,
   }
 }
 
-const DiagnosticBuilder &clang::operator<<(const DiagnosticBuilder &DB,
+const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
                                            TemplateName N) {
   std::string NameStr;
   raw_string_ostream OS(NameStr);

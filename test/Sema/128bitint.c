@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin9 -fms-extensions %s -DHAVE
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-linux-gnu -fms-extensions %s -DHAVE_NOT
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin9 -fms-extensions %s -DHAVE
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-linux-gnu -fms-extensions %s -DHAVE_NOT
 
 #ifdef HAVE
 typedef int i128 __attribute__((__mode__(TI)));

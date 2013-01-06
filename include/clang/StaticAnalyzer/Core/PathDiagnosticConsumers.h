@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_PATH_DIAGNOSTIC_CLIENTS_H
-#define LLVM_CLANG_GR_PATH_DIAGNOSTIC_CLIENTS_H
+#ifndef LLVM_LFORT_GR_PATH_DIAGNOSTIC_CLIENTS_H
+#define LLVM_LFORT_GR_PATH_DIAGNOSTIC_CLIENTS_H
 
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class AnalyzerOptions;
 class Preprocessor;
@@ -41,6 +41,6 @@ CREATE_CONSUMER(TextPath)
 #undef CREATE_CONSUMER
 
 } // end 'ento' namespace
-} // end 'clang' namespace
+} // end 'lfort' namespace
 
 #endif

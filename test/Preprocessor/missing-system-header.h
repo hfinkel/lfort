@@ -1,2 +1,2 @@
-#pragma clang system_header
+#pragma lfort system_header
 #include "not exist"  // expected-error {{file not found}}

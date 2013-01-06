@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -std=c++11
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -std=c++11
 
 // PR11179
 template <short T> class Type1 {};

@@ -63,7 +63,7 @@ valid Block variable declarations:
 Variadic ``...`` arguments are supported. [variadic.c] A Block that
 takes no arguments must specify void in the argument list [voidarg.c].
 An empty parameter list does not represent, as K&R provide, an
-unspecified argument list.  Note: both gcc and clang support K&R style
+unspecified argument list.  Note: both gcc and lfort support K&R style
 as a convenience.
 
 A Block reference may be cast to a pointer of arbitrary type and vice

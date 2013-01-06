@@ -1,25 +1,25 @@
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangFormat
+add_lfort_library(lfortFormat
   UnwrappedLineParser.cpp
   Format.cpp
   )
 
-add_dependencies(clangFormat
-  ClangAttrClasses
-  ClangAttrList
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangStmtNodes
+add_dependencies(lfortFormat
+  LFortAttrClasses
+  LFortAttrList
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortStmtNodes
   )
 
-target_link_libraries(clangFormat
-  clangBasic
-  clangFrontend
-  clangAST
-  clangASTMatchers
-  clangRewriteCore
-  clangRewriteFrontend
-  clangTooling
+target_link_libraries(lfortFormat
+  lfortBasic
+  lfortFrontend
+  lfortAST
+  lfortASTMatchers
+  lfortRewriteCore
+  lfortRewriteFrontend
+  lfortTooling
   )

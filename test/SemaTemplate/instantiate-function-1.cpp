@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
 template<typename T, typename U>
 struct X0 {
   void f(T x, U y) { 

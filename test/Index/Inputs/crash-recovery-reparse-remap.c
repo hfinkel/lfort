@@ -5,7 +5,7 @@
 
 int x;
 
-#pragma clang __debug crash
+#pragma lfort __debug crash
 
 int x;
 

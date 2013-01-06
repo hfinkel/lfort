@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ffreestanding -Eonly -verify %s 
+// RUN: %lfort_cc1 -ffreestanding -Eonly -verify %s 
 #  define HEADER <stdarg.h>
 
 #  include HEADER

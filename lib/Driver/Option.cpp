@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <cassert>
-using namespace clang::driver;
+using namespace lfort::driver;
 
 Option::Option(const OptTable::Info *info, const OptTable *owner)
   : Info(info), Owner(owner) {

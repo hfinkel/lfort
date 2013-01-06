@@ -6,17 +6,17 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-#ifndef CLANG_LIB_DRIVER_SANITIZERARGS_H_
-#define CLANG_LIB_DRIVER_SANITIZERARGS_H_
+#ifndef LFORT_LIB_DRIVER_SANITIZERARGS_H_
+#define LFORT_LIB_DRIVER_SANITIZERARGS_H_
 
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Options.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Options.h"
 #include "llvm/ADT/StringSwitch.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
 
 class SanitizerArgs {
@@ -24,7 +24,7 @@ class SanitizerArgs {
   /// bit positions within \c Kind.
   enum SanitizeOrdinal {
 #define SANITIZER(NAME, ID) SO_##ID,
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
     SO_Count
   };
 
@@ -32,7 +32,7 @@ class SanitizerArgs {
   enum SanitizeKind {
 #define SANITIZER(NAME, ID) ID = 1 << SO_##ID,
 #define SANITIZER_GROUP(NAME, ID, ALIAS) ID = ALIAS,
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
     NeedsAsanRt = AddressFull,
     NeedsTsanRt = Thread,
     NeedsMsanRt = Memory,
@@ -61,7 +61,7 @@ class SanitizerArgs {
 #define SANITIZER(NAME, ID) \
     if (Kind & ID) \
       SanitizeOpt += NAME ",";
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
     SanitizeOpt.pop_back();
     CmdArgs.push_back(Args.MakeArgString(SanitizeOpt));
     if (!BlacklistFile.empty()) {
@@ -82,7 +82,7 @@ class SanitizerArgs {
     return llvm::StringSwitch<SanitizeKind>(Value)
 #define SANITIZER(NAME, ID) .Case(NAME, ID)
 #define SANITIZER_GROUP(NAME, ID, ALIAS) .Case(NAME, ID)
-#include "clang/Basic/Sanitizers.def"
+#include "lfort/Basic/Sanitizers.def"
       .Default(SanitizeKind());
   }
 
@@ -178,6 +178,6 @@ class SanitizerArgs {
 };
 
 }  // namespace driver
-}  // namespace clang
+}  // namespace lfort
 
-#endif // CLANG_LIB_DRIVER_SANITIZERARGS_H_
+#endif // LFORT_LIB_DRIVER_SANITIZERARGS_H_

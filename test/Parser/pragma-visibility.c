@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 #pragma GCC visibility foo // expected-warning{{expected identifier in '#pragma visibility' - ignored}}
 #pragma GCC visibility pop foo // expected-warning{{extra tokens at end of '#pragma visibility' - ignored}}

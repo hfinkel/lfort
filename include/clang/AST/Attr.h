@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_ATTR_H
-#define LLVM_CLANG_AST_ATTR_H
+#ifndef LLVM_LFORT_AST_ATTR_H
+#define LLVM_LFORT_AST_ATTR_H
 
-#include "clang/AST/AttrIterator.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/AttrKinds.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/VersionTuple.h"
+#include "lfort/AST/AttrIterator.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/AttrKinds.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/VersionTuple.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -28,7 +28,7 @@
 #include <cassert>
 #include <cstring>
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class IdentifierInfo;
   class ObjCInterfaceDecl;
@@ -120,8 +120,8 @@ public:
   }
 };
 
-#include "clang/AST/Attrs.inc"
+#include "lfort/AST/Attrs.inc"
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_APVALUE_H
-#define LLVM_CLANG_AST_APVALUE_H
+#ifndef LLVM_LFORT_AST_APVALUE_H
+#define LLVM_LFORT_AST_APVALUE_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/PointerUnion.h"
 
-namespace clang {
+namespace lfort {
   class AddrLabelExpr;
   class ASTContext;
   class CharUnits;
@@ -441,6 +441,6 @@ private:
   }
 };
 
-} // end namespace clang.
+} // end namespace lfort.
 
 #endif

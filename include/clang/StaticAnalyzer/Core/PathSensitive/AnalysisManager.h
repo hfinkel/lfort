@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_ANALYSISMANAGER_H
-#define LLVM_CLANG_GR_ANALYSISMANAGER_H
+#ifndef LLVM_LFORT_GR_ANALYSISMANAGER_H
+#define LLVM_LFORT_GR_ANALYSISMANAGER_H
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugReporter.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/PathDiagnosticConsumers.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
   class CheckerManager;
@@ -123,6 +123,6 @@ public:
 
 } // enAnaCtxMgrspace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

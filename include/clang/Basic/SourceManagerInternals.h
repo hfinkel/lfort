@@ -8,19 +8,19 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines implementation details of the clang::SourceManager class.
+/// \brief Defines implementation details of the lfort::SourceManager class.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SOURCEMANAGER_INTERNALS_H
-#define LLVM_CLANG_SOURCEMANAGER_INTERNALS_H
+#ifndef LLVM_LFORT_SOURCEMANAGER_INTERNALS_H
+#define LLVM_LFORT_SOURCEMANAGER_INTERNALS_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/StringMap.h"
 #include <map>
 
-namespace clang {
+namespace lfort {
 
 //===----------------------------------------------------------------------===//
 // Line Table Implementation
@@ -128,6 +128,6 @@ public:
   void AddEntry(FileID FID, const std::vector<LineEntry> &Entries);
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

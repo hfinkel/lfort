@@ -1,7 +1,7 @@
-from clang.cindex import CompilationDatabase
-from clang.cindex import CompilationDatabaseError
-from clang.cindex import CompileCommands
-from clang.cindex import CompileCommand
+from lfort.cindex import CompilationDatabase
+from lfort.cindex import CompilationDatabaseError
+from lfort.cindex import CompileCommands
+from lfort.cindex import CompileCommand
 import os
 import gc
 
@@ -38,7 +38,7 @@ def test_1_compilecommand():
     cmds = cdb.getCompileCommands('/home/john.doe/MyProject/project.cpp')
     assert len(cmds) == 1
     assert cmds[0].directory == '/home/john.doe/MyProject'
-    expected = [ 'clang++', '-o', 'project.o', '-c',
+    expected = [ 'lfort++', '-o', 'project.o', '-c',
                  '/home/john.doe/MyProject/project.cpp']
     for arg, exp in zip(cmds[0].arguments, expected):
         assert arg == exp
@@ -50,10 +50,10 @@ def test_2_compilecommand():
     assert len(cmds) == 2
     expected = [
         { 'wd': '/home/john.doe/MyProjectA',
-          'line': ['clang++', '-o', 'project2.o', '-c',
+          'line': ['lfort++', '-o', 'project2.o', '-c',
                    '/home/john.doe/MyProject/project2.cpp']},
         { 'wd': '/home/john.doe/MyProjectB',
-          'line': ['clang++', '-DFEATURE=1', '-o', 'project2-feature.o', '-c',
+          'line': ['lfort++', '-DFEATURE=1', '-o', 'project2-feature.o', '-c',
                    '/home/john.doe/MyProject/project2.cpp']}
         ]
     for i in range(len(cmds)):

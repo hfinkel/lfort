@@ -11,20 +11,20 @@
 //  context into another context.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/ASTImporter.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/AST/TypeVisitor.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/ASTImporter.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/AST/TypeVisitor.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include <deque>
 
-namespace clang {
+namespace lfort {
   class ASTNodeImporter : public TypeVisitor<ASTNodeImporter, QualType>,
                           public DeclVisitor<ASTNodeImporter, Decl *>,
                           public StmtVisitor<ASTNodeImporter, Stmt *> {
@@ -175,7 +175,7 @@ namespace clang {
     Expr *VisitCStyleCastExpr(CStyleCastExpr *E);
   };
 }
-using namespace clang;
+using namespace lfort;
 
 //----------------------------------------------------------------------------
 // Structural Equivalence
@@ -1416,7 +1416,7 @@ QualType ASTNodeImporter::VisitBuiltinType(const BuiltinType *T) {
 #define SHARED_SINGLETON_TYPE(Expansion)
 #define BUILTIN_TYPE(Id, SingletonId) \
   case BuiltinType::Id: return Importer.getToContext().SingletonId;
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
 
   // FIXME: for Char16, Char32, and NullPtr, make sure that the "to"
   // context supports C++.

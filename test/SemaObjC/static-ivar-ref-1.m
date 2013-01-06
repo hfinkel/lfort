@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown -ast-print %s 2>&1 | FileCheck  %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10  -ast-print %s  2>&1  | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown -ast-print %s 2>&1 | FileCheck  %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10  -ast-print %s  2>&1  | FileCheck %s
 
 @interface current 
 {

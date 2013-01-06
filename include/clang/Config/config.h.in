@@ -1,4 +1,4 @@
-/* include/clang/Config/config.h.in. */
+/* include/lfort/Config/config.h.in. */
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -7,9 +7,9 @@
 #undef BUG_REPORT_URL
 
 /* Relative directory for resource files */
-#undef CLANG_RESOURCE_DIR
+#undef LFORT_RESOURCE_DIR
 
-/* Directories clang will search for headers */
+/* Directories lfort will search for headers */
 #undef C_INCLUDE_DIRS
 
 /* Linker version detected at compile time. */

@@ -11,15 +11,15 @@
 // of a module as it relates to headers.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Lex/ModuleMap.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/LiteralSupport.h"
+#include "lfort/Lex/ModuleMap.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/LiteralSupport.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/Allocator.h"
@@ -28,7 +28,7 @@
 #include "llvm/Support/PathV2.h"
 #include "llvm/Support/raw_ostream.h"
 #include <stdlib.h>
-using namespace clang;
+using namespace lfort;
 
 Module::ExportDecl 
 ModuleMap::resolveExport(Module *Mod, 
@@ -135,7 +135,7 @@ static StringRef sanitizeFilenameAsIdentifier(StringRef Name,
   while (llvm::StringSwitch<bool>(Name)
 #define KEYWORD(Keyword,Conditions) .Case(#Keyword, true)
 #define ALIAS(Keyword, AliasOf, Conditions) .Case(Keyword, true)
-#include "clang/Basic/TokenKinds.def"
+#include "lfort/Basic/TokenKinds.def"
            .Default(false)) {
     if (Name.data() != Buffer.data())
       Buffer.append(Name.begin(), Name.end());
@@ -621,7 +621,7 @@ Module *ModuleMap::inferModuleFromLocation(FullSourceLoc Loc) {
 // Module map file parser
 //----------------------------------------------------------------------------//
 
-namespace clang {
+namespace lfort {
   /// \brief A token in a module map file.
   struct MMToken {
     enum TokenKind {
@@ -690,7 +690,7 @@ namespace clang {
     /// \brief The directory that this module map resides in.
     const DirectoryEntry *Directory;
 
-    /// \brief The directory containing Clang-supplied headers.
+    /// \brief The directory containing LFort-supplied headers.
     const DirectoryEntry *BuiltinIncludeDir;
 
     /// \brief Whether an error occurred.
@@ -1191,7 +1191,7 @@ static void appendSubframeworkPaths(Module *Mod,
 }
 
 /// \brief Determine whether the given file name is the name of a builtin
-/// header, supplied by Clang to replace, override, or augment existing system
+/// header, supplied by LFort to replace, override, or augment existing system
 /// headers.
 static bool isBuiltinHeader(StringRef FileName) {
   return llvm::StringSwitch<bool>(FileName)
@@ -1277,14 +1277,14 @@ void ModuleMapParser::parseHeaderDecl(SourceLocation UmbrellaLoc,
       
       // If this is a system module with a top-level header, this header
       // may have a counterpart (or replacement) in the set of headers
-      // supplied by Clang. Find that builtin header.
+      // supplied by LFort. Find that builtin header.
       if (ActiveModule->IsSystem && !Umbrella && BuiltinIncludeDir &&
           BuiltinIncludeDir != Directory && isBuiltinHeader(FileName)) {
         SmallString<128> BuiltinPathName(BuiltinIncludeDir->getName());
         llvm::sys::path::append(BuiltinPathName, FileName);
         BuiltinFile = SourceMgr.getFileManager().getFile(BuiltinPathName);
         
-        // If Clang supplies this header but the underlying system does not,
+        // If LFort supplies this header but the underlying system does not,
         // just silently swap in our builtin version. Otherwise, we'll end
         // up adding both (later).
         if (!File && BuiltinFile) {

@@ -1,7 +1,7 @@
-// RUN: %clang_cc1  -fsyntax-only -verify -Wno-objc-root-class %s
-// RUN: %clang_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class %s
-// RUN: %clang_cc1  -fsyntax-only -fobjc-arc -verify -Wno-objc-root-class %s
-// RUN: %clang_cc1 -x objective-c++ -fobjc-arc -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1  -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -x objective-c++ -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1  -fsyntax-only -fobjc-arc -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -x objective-c++ -fobjc-arc -fsyntax-only -verify -Wno-objc-root-class %s
 // rdar://6386358
 
 #if __has_attribute(objc_requires_super)

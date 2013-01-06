@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple armv7-unknown-nacl-gnueabi \
+// RUN: %lfort_cc1 -triple armv7-unknown-nacl-gnueabi \
 // RUN:   -ffreestanding -mfloat-abi hard -target-cpu cortex-a8 \
 // RUN:   -emit-llvm -w -o - %s | FileCheck %s
 

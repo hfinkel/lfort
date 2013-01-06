@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 class A {
   int x;
@@ -25,5 +25,5 @@ B::B() {
 
 void f() {
   B b;
-  clang_analyzer_eval(b.getx() == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(b.getx() == 0); // expected-warning{{TRUE}}
 }

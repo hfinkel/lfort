@@ -7,19 +7,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/ToolChain.h"
-#include "clang/Basic/ObjCRuntime.h"
-#include "clang/Driver/Action.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
+#include "lfort/Driver/ToolChain.h"
+#include "lfort/Basic/ObjCRuntime.h"
+#include "lfort/Driver/Action.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang::driver;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort;
 
 ToolChain::ToolChain(const Driver &D, const llvm::Triple &T)
   : D(D), Triple(T) {
@@ -179,24 +179,24 @@ std::string ToolChain::ComputeLLVMTriple(const ArgList &Args,
   }
 }
 
-std::string ToolChain::ComputeEffectiveClangTriple(const ArgList &Args, 
+std::string ToolChain::ComputeEffectiveLFortTriple(const ArgList &Args, 
                                                    types::ID InputType) const {
   // Diagnose use of Darwin OS deployment target arguments on non-Darwin.
   if (Arg *A = Args.getLastArg(options::OPT_mmacosx_version_min_EQ,
                                options::OPT_miphoneos_version_min_EQ,
                                options::OPT_mios_simulator_version_min_EQ))
-    getDriver().Diag(diag::err_drv_clang_unsupported)
+    getDriver().Diag(diag::err_drv_lfort_unsupported)
       << A->getAsString(Args);
 
   return ComputeLLVMTriple(Args, InputType);
 }
 
-void ToolChain::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
+void ToolChain::AddLFortSystemIncludeArgs(const ArgList &DriverArgs,
                                           ArgStringList &CC1Args) const {
   // Each toolchain should provide the appropriate include flags.
 }
 
-void ToolChain::addClangTargetOptions(const ArgList &DriverArgs,
+void ToolChain::addLFortTargetOptions(const ArgList &DriverArgs,
                                       ArgStringList &CC1Args) const {
 }
 
@@ -264,7 +264,7 @@ ToolChain::CXXStdlibType ToolChain::GetCXXStdlibType(const ArgList &Args) const{
   }
 }
 
-void ToolChain::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+void ToolChain::AddLFortCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                              ArgStringList &CC1Args) const {
   // Header search paths should be handled by each of the subclasses.
   // Historically, they have not been, and instead have been handled inside of

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int foo(int x) {
   return x == x; // expected-warning {{self-comparison always evaluates to true}}

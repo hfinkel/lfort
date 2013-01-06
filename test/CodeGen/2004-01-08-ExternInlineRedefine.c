@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=gnu89 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -std=gnu89 -emit-llvm %s  -o /dev/null
 
 
 extern __inline long int

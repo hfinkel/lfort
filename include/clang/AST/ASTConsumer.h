@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_ASTCONSUMER_H
-#define LLVM_CLANG_AST_ASTCONSUMER_H
+#ifndef LLVM_LFORT_AST_ASTCONSUMER_H
+#define LLVM_LFORT_AST_ASTCONSUMER_H
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class CXXRecordDecl;
   class Decl;
@@ -141,6 +141,6 @@ public:
   virtual bool shouldSkipFunctionBody(Decl *D) { return true; }
 };
 
-} // end namespace clang.
+} // end namespace lfort.
 
 #endif

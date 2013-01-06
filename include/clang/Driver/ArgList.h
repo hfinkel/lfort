@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_ARGLIST_H_
-#define CLANG_DRIVER_ARGLIST_H_
+#ifndef LFORT_DRIVER_ARGLIST_H_
+#define LFORT_DRIVER_ARGLIST_H_
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Driver/OptSpecifier.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Driver/OptSpecifier.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include <list>
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class DiagnosticsEngine;
 
 namespace driver {
@@ -426,6 +426,6 @@ namespace driver {
   };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

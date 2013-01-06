@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -fsyntax-only %s 2> %t
+// RUN: not %lfort_cc1 -fsyntax-only %s 2> %t
 // RUN: FileCheck %s < %t
 // CHECK: 10 errors
 template<typename _CharT>

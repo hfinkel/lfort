@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_ASTUNRESOLVEDSET_H
-#define LLVM_CLANG_AST_ASTUNRESOLVEDSET_H
+#ifndef LLVM_LFORT_AST_ASTUNRESOLVEDSET_H
+#define LLVM_LFORT_AST_ASTUNRESOLVEDSET_H
 
-#include "clang/AST/ASTVector.h"
-#include "clang/AST/UnresolvedSet.h"
+#include "lfort/AST/ASTVector.h"
+#include "lfort/AST/UnresolvedSet.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief An UnresolvedSet-like class which uses the ASTContext's allocator.
 class ASTUnresolvedSet {
@@ -81,6 +81,6 @@ public:
   const DeclAccessPair &operator[](unsigned I) const { return Decls[I]; }
 };
   
-} // namespace clang
+} // namespace lfort
 
 #endif

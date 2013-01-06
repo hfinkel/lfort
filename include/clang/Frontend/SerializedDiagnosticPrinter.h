@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_SERIALIZE_DIAGNOSTIC_PRINTER_H_
-#define LLVM_CLANG_FRONTEND_SERIALIZE_DIAGNOSTIC_PRINTER_H_
+#ifndef LLVM_LFORT_FRONTEND_SERIALIZE_DIAGNOSTIC_PRINTER_H_
+#define LLVM_LFORT_FRONTEND_SERIALIZE_DIAGNOSTIC_PRINTER_H_
 
 #include "llvm/Bitcode/BitstreamWriter.h"
 
@@ -16,7 +16,7 @@ namespace llvm {
 class raw_ostream;
 }
 
-namespace clang {
+namespace lfort {
 class DiagnosticConsumer;
 class DiagnosticsEngine;
 class DiagnosticOptions;
@@ -50,13 +50,13 @@ enum RecordIDs {
 ///
 /// The created DiagnosticConsumer is designed for quick and lightweight
 /// transfer of of diagnostics to the enclosing build system (e.g., an IDE).
-/// This allows wrapper tools for Clang to get diagnostics from Clang
-/// (via libclang) without needing to parse Clang's command line output.
+/// This allows wrapper tools for LFort to get diagnostics from LFort
+/// (via liblfort) without needing to parse LFort's command line output.
 ///
 DiagnosticConsumer *create(llvm::raw_ostream *OS,
                            DiagnosticOptions *diags);
 
 } // end serialized_diags namespace
-} // end clang namespace
+} // end lfort namespace
 
 #endif

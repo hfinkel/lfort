@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-config suppress-null-return-paths=false -verify %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -verify -DSUPPRESSED=1 %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-config avoid-suppressing-null-argument-paths=true -DSUPPRESSED=1 -DNULL_ARGS=1 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-config suppress-null-return-paths=false -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -verify -DSUPPRESSED=1 %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-config avoid-suppressing-null-argument-paths=true -DSUPPRESSED=1 -DNULL_ARGS=1 -verify %s
 
 int opaquePropertyCheck(void *object);
 int coin();

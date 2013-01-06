@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wloop-analysis -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wloop-analysis -verify %s
 
 struct S {
   bool stop() { return false; }

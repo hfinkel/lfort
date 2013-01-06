@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wformat-nonliteral %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wformat-nonliteral %s
 
 // Test that -Wformat=0 works:
-// RUN: %clang_cc1 -fsyntax-only -Werror -Wformat=0 %s
+// RUN: %lfort_cc1 -fsyntax-only -Werror -Wformat=0 %s
 
 #include <stdarg.h>
 typedef __typeof(sizeof(int)) size_t;

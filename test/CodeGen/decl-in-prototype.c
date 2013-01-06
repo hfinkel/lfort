@@ -1,4 +1,4 @@
-// RUN: %clang -target i386-unknown-unknown -emit-llvm -S -o - %s | FileCheck %s
+// RUN: %lfort -target i386-unknown-unknown -emit-llvm -S -o - %s | FileCheck %s
 
 const int AA = 5;
 

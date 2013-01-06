@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_OWNERSHIP_H
-#define LLVM_CLANG_SEMA_OWNERSHIP_H
+#ifndef LLVM_LFORT_SEMA_OWNERSHIP_H
+#define LLVM_LFORT_SEMA_OWNERSHIP_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerIntPair.h"
 
@@ -22,7 +22,7 @@
 // OpaquePtr
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
   class Attr;
   class CXXCtorInitializer;
   class CXXBaseSpecifier;
@@ -96,23 +96,23 @@ namespace clang {
 
 namespace llvm {
   template <class T>
-  class PointerLikeTypeTraits<clang::OpaquePtr<T> > {
+  class PointerLikeTypeTraits<lfort::OpaquePtr<T> > {
   public:
-    static inline void *getAsVoidPointer(clang::OpaquePtr<T> P) {
+    static inline void *getAsVoidPointer(lfort::OpaquePtr<T> P) {
       // FIXME: Doesn't work? return P.getAs< void >();
       return P.getAsOpaquePtr();
     }
-    static inline clang::OpaquePtr<T> getFromVoidPointer(void *P) {
-      return clang::OpaquePtr<T>::getFromOpaquePtr(P);
+    static inline lfort::OpaquePtr<T> getFromVoidPointer(void *P) {
+      return lfort::OpaquePtr<T>::getFromOpaquePtr(P);
     }
     enum { NumLowBitsAvailable = 0 };
   };
 
   template <class T>
-  struct isPodLike<clang::OpaquePtr<T> > { static const bool value = true; };
+  struct isPodLike<lfort::OpaquePtr<T> > { static const bool value = true; };
 }
 
-namespace clang {
+namespace lfort {
   // Basic
   class DiagnosticBuilder;
 

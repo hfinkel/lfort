@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors %s
+// RUN: %lfort_cc1 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors %s
 
 void f() {
   int a;

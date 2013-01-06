@@ -15,36 +15,36 @@
 // RUN: export ARM_SYSROOT=$(xcodebuild -sdk iphoneos -version Path)
 
 // RUN: echo iPhoneOS, ARM, v6, thumb
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv6 -mthumb -c %s -o %t.o
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv6 -mthumb -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv6 -mthumb -c %s -o %t.o
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv6 -mthumb -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: rsync -arv %t $ARM_MACHINE:/tmp/a.out
 // RUN: ssh $ARM_MACHINE /tmp/a.out
 // RUN: echo
 
 // RUN: echo iPhoneOS, ARM, v6, no-thumb
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv6 -mno-thumb -c %s -o %t.o
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv6 -mno-thumb -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv6 -mno-thumb -c %s -o %t.o
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv6 -mno-thumb -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: rsync -arv %t $ARM_MACHINE:/tmp/a.out
 // RUN: ssh $ARM_MACHINE /tmp/a.out
 // RUN: echo
 
 // RUN: echo iPhoneOS, ARM, v7, thumb
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv7 -mthumb -c %s -o %t.o
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv7 -mthumb -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv7 -mthumb -c %s -o %t.o
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv7 -mthumb -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: rsync -arv %t $ARM_MACHINE:/tmp/a.out
 // RUN: ssh $ARM_MACHINE /tmp/a.out
 // RUN: echo
 
 // RUN: echo iPhoneOS, ARM, v7, no-thumb
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv7 -mno-thumb -c %s -o %t.o
-// RUN: %clang -isysroot $ARM_SYSROOT -arch armv7 -mno-thumb -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv7 -mno-thumb -c %s -o %t.o
+// RUN: %lfort -isysroot $ARM_SYSROOT -arch armv7 -mno-thumb -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: rsync -arv %t $ARM_MACHINE:/tmp/a.out
 // RUN: ssh $ARM_MACHINE /tmp/a.out
 // RUN: echo
 
 // RUN: echo 10.4, i386
-// RUN: %clang -arch i386 -mmacosx-version-min=10.4 -c %s -o %t.o
-// RUN: %clang -arch i386 -mmacosx-version-min=10.4 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.4 -c %s -o %t.o
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.4 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
@@ -57,8 +57,8 @@
 // RUN: echo
 
 // RUN: echo 10.5, i386
-// RUN: %clang -arch i386 -mmacosx-version-min=10.5 -c %s -o %t.o
-// RUN: %clang -arch i386 -mmacosx-version-min=10.5 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.5 -c %s -o %t.o
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.5 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
@@ -67,14 +67,14 @@
 // RUN: echo
 
 // RUN: echo 10.6, i386
-// RUN: %clang -arch i386 -mmacosx-version-min=10.6 -c %s -o %t.o
-// RUN: %clang -arch i386 -mmacosx-version-min=10.6 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.6 -c %s -o %t.o
+// RUN: %lfort -arch i386 -mmacosx-version-min=10.6 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
 // RUN: echo 10.4, x86_64
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.4 -c %s -o %t.o
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.4 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.4 -c %s -o %t.o
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.4 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
@@ -87,8 +87,8 @@
 // RUN: echo
 
 // RUN: echo 10.5, x86_64
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.5 -c %s -o %t.o
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.5 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.5 -c %s -o %t.o
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.5 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
@@ -97,8 +97,8 @@
 // RUN: echo
 
 // RUN: echo 10.6, x86_64
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.6 -c %s -o %t.o
-// RUN: %clang -arch x86_64 -mmacosx-version-min=10.6 -v -Wl,-t,-v -o %t %t.o 1>&2
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.6 -c %s -o %t.o
+// RUN: %lfort -arch x86_64 -mmacosx-version-min=10.6 -v -Wl,-t,-v -o %t %t.o 1>&2
 // RUN: %t
 // RUN: echo
 
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
   if (uname(&name))
     return 1;
 
-  fprintf(stderr, "%s: clang_rt test:\n", argv[0]);
+  fprintf(stderr, "%s: lfort_rt test:\n", argv[0]);
   fprintf(stderr, "  target  : %s %d.%d.%d\n\n", target_name,
           target_maj, target_min, target_micro);
   fprintf(stderr, "  sysname : %s\n", name.sysname);
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
   assert(__powisf2(2.0, 2) == 4.0);
   assert(__powidf2(2.0, 2) == 4.0);
 
-  // FIXME: Clang/LLVM seems to be miscompiling _Complex currently, probably an
+  // FIXME: LFort/LLVM seems to be miscompiling _Complex currently, probably an
   // ABI issue.
 #ifndef __arm
   {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 template <int A, int B> void foo() {
   (void)(A == A); // expected-warning {{self-comparison always evaluates to true}}

@@ -7,9 +7,9 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL = ../..
+LFORT_LEVEL = ../..
 TESTNAME = Lex
 LINK_COMPONENTS := support mc
-USEDLIBS = clangLex.a clangBasic.a
+USEDLIBS = lfortLex.a lfortBasic.a
 
-include $(CLANG_LEVEL)/unittests/Makefile
+include $(LFORT_LEVEL)/unittests/Makefile

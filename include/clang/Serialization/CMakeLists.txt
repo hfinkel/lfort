@@ -1,9 +1,9 @@
-clang_tablegen(AttrPCHRead.inc -gen-clang-attr-pch-read
+lfort_tablegen(AttrPCHRead.inc -gen-lfort-attr-pch-read
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrPCHRead)
+  TARGET LFortAttrPCHRead)
 
-clang_tablegen(AttrPCHWrite.inc -gen-clang-attr-pch-write
+lfort_tablegen(AttrPCHWrite.inc -gen-lfort-attr-pch-write
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrPCHWrite)
+  TARGET LFortAttrPCHWrite)

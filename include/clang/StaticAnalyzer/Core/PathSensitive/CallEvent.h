@@ -13,19 +13,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STATICANALYZER_PATHSENSITIVE_CALL
-#define LLVM_CLANG_STATICANALYZER_PATHSENSITIVE_CALL
+#ifndef LLVM_LFORT_STATICANALYZER_PATHSENSITIVE_CALL
+#define LLVM_LFORT_STATICANALYZER_PATHSENSITIVE_CALL
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/PointerIntPair.h"
 
-namespace clang {
+namespace lfort {
 class ProgramPoint;
 class ProgramPointTag;
 
@@ -1016,15 +1016,15 @@ inline void CallEvent::Release() const {
 }
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort
 
 namespace llvm {
   // Support isa<>, cast<>, and dyn_cast<> for CallEventRef.
-  template<class T> struct simplify_type< clang::ento::CallEventRef<T> > {
+  template<class T> struct simplify_type< lfort::ento::CallEventRef<T> > {
     typedef const T *SimpleType;
 
     static SimpleType
-    getSimplifiedValue(const clang::ento::CallEventRef<T>& Val) {
+    getSimplifiedValue(const lfort::ento::CallEventRef<T>& Val) {
       return Val.getPtr();
     }
   };

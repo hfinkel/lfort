@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/VerifyDiagnosticConsumer.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/TextDiagnosticBuffer.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Frontend/VerifyDiagnosticConsumer.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/TextDiagnosticBuffer.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Regex.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cctype>
 
-using namespace clang;
+using namespace lfort;
 typedef VerifyDiagnosticConsumer::Directive Directive;
 typedef VerifyDiagnosticConsumer::DirectiveList DirectiveList;
 typedef VerifyDiagnosticConsumer::ExpectedData ExpectedData;

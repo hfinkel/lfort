@@ -12,20 +12,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "LFortSACheckers.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 // All checkers should be placed into anonymous namespace.
 // We place the CheckerDocumentation inside ento namespace to make the
 // it visible in doxygen.
-namespace clang {
+namespace lfort {
 namespace ento {
 
 /// This checker documents the callback functions checkers can use to implement
@@ -295,4 +295,4 @@ void CheckerDocumentation::checkPostStmt(const DeclStmt *DS,
 }
 
 } // end namespace ento
-} // end namespace clang
+} // end namespace lfort

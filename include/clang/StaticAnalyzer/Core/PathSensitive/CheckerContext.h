@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_CORE_PATHSENSITIVE_CHECKERCONTEXT
-#define LLVM_CLANG_SA_CORE_PATHSENSITIVE_CHECKERCONTEXT
+#ifndef LLVM_LFORT_SA_CORE_PATHSENSITIVE_CHECKERCONTEXT
+#define LLVM_LFORT_SA_CORE_PATHSENSITIVE_CHECKERCONTEXT
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
   /// Declares an immutable map of type \p NameTy, suitable for placement into
@@ -35,7 +35,7 @@ namespace ento {
   /// be accessible from more than one translation unit.
   #define REGISTER_MAP_WITH_PROGRAMSTATE(Name, Key, Value) \
     REGISTER_TRAIT_WITH_PROGRAMSTATE(Name, \
-                                     CLANG_ENTO_PROGRAMSTATE_MAP(Key, Value))
+                                     LFORT_ENTO_PROGRAMSTATE_MAP(Key, Value))
 
   /// Declares an immutable set of type \p NameTy, suitable for placement into
   /// the ProgramState. This is implementing using llvm::ImmutableSet.
@@ -278,7 +278,7 @@ public:
   ///   s = socket(AF_INET,..)
   /// If AF_INET is a macro, the result should be treated as a source of taint.
   ///
-  /// \sa clang::Lexer::getSpelling(), clang::Lexer::getImmediateMacroName().
+  /// \sa lfort::Lexer::getSpelling(), lfort::Lexer::getImmediateMacroName().
   StringRef getMacroNameOrSpelling(SourceLocation &Loc);
 
 private:
@@ -313,6 +313,6 @@ struct DefaultBool {
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

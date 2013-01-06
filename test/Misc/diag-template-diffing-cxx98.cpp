@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -std=c++98 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only %s -std=c++98 2>&1 | FileCheck %s
 
 namespace PR14342 {
   template<typename T, char a> struct X {};

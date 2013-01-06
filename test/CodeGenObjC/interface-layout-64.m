@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -emit-llvm -o - %s | FileCheck %s
 // RUNX: llvm-gcc -m64 -emit-llvm -S -o %t %s &&
 
 // CHECK: @"OBJC_IVAR_$_I3._iv2" = global i64 8, section "__DATA, __objc_ivar", align 8

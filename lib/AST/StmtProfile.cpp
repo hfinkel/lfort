@@ -11,16 +11,16 @@
 // representation that identifies a statement/expression.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/FoldingSet.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
   class StmtProfiler : public ConstStmtVisitor<StmtProfiler> {
@@ -36,7 +36,7 @@ namespace {
     void VisitStmt(const Stmt *S);
 
 #define STMT(Node, Base) void Visit##Node(const Node *S);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
 
     /// \brief Visit a declaration that is referenced within an expression
     /// or statement.

@@ -1,5 +1,5 @@
 // REQUIRES: arm-registered-target
-// RUN: %clang_cc1 -Wall -Werror -triple thumbv7-eabi -target-cpu cortex-a8 -O3 -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -Wall -Werror -triple thumbv7-eabi -target-cpu cortex-a8 -O3 -emit-llvm -o - %s | FileCheck %s
 
 void *f0()
 {

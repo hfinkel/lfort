@@ -5,7 +5,7 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_executable(diagtool
+add_lfort_executable(diagtool
   diagtool_main.cpp
   DiagTool.cpp
   DiagnosticNames.cpp
@@ -15,18 +15,18 @@ add_clang_executable(diagtool
 )
 
 add_dependencies(diagtool
-  ClangDiagnosticIndexName
+  LFortDiagnosticIndexName
   )
 
 target_link_libraries(diagtool
-  clangBasic
-  clangLex
-  clangSema
-  clangFrontend
+  lfortBasic
+  lfortLex
+  lfortSema
+  lfortFrontend
   )
 
 if(UNIX)
-  set(CLANGXX_LINK_OR_COPY create_symlink)
+  set(LFORTXX_LINK_OR_COPY create_symlink)
 else()
-  set(CLANGXX_LINK_OR_COPY copy)
+  set(LFORTXX_LINK_OR_COPY copy)
 endif()

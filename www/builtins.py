@@ -4,7 +4,7 @@ import sys, fileinput
 
 err=0
 
-# Giant associative set of builtin->intrinsic mappings where clang doesn't
+# Giant associative set of builtin->intrinsic mappings where lfort doesn't
 # implement the builtin since the vector operation works by default.
 
 repl_map = {

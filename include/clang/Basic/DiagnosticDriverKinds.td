@@ -57,12 +57,12 @@ def err_drv_no_linker_llvm_support : Error<
   "'%0': unable to pass LLVM bit-code files to linker">;
 def err_drv_no_ast_support : Error<
   "'%0': unable to use AST files with this tool">;
-def err_drv_clang_unsupported : Error<
-  "the clang compiler does not support '%0'">;
-def err_drv_clang_unsupported_per_platform : Error<
-  "the clang compiler does not support '%0' on this platform">;
-def err_drv_clang_unsupported_opt_cxx_darwin_i386 : Error<
-  "the clang compiler does not support '%0' for C++ on Darwin/i386">;
+def err_drv_lfort_unsupported : Error<
+  "the lfort compiler does not support '%0'">;
+def err_drv_lfort_unsupported_per_platform : Error<
+  "the lfort compiler does not support '%0' on this platform">;
+def err_drv_lfort_unsupported_opt_cxx_darwin_i386 : Error<
+  "the lfort compiler does not support '%0' for C++ on Darwin/i386">;
 def err_drv_command_failed : Error<
   "%0 command failed with exit code %1 (use -v to see invocation)">;
 def err_drv_command_signalled : Error<
@@ -123,8 +123,8 @@ def warn_drv_unused_argument : Warning<
 def warn_drv_empty_joined_argument : Warning<
   "joined argument expects additional value: '%0'">,
   InGroup<DiagGroup<"unused-command-line-argument">>;
-def warn_drv_clang_unsupported : Warning<
-  "the clang compiler does not support '%0'">;
+def warn_drv_lfort_unsupported : Warning<
+  "the lfort compiler does not support '%0'">;
 def warn_drv_deprecated_arg : Warning<
   "argument '%0' is deprecated, use '%1' instead">, InGroup<Deprecated>;
 def warn_drv_assuming_mfloat_abi_is : Warning<

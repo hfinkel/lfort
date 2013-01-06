@@ -16,14 +16,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_EXPLODEDGRAPH
-#define LLVM_CLANG_GR_EXPLODEDGRAPH
+#ifndef LLVM_LFORT_GR_EXPLODEDGRAPH
+#define LLVM_LFORT_GR_EXPLODEDGRAPH
 
-#include "clang/AST/Decl.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/ProgramPoint.h"
-#include "clang/Analysis/Support/BumpVector.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/ProgramPoint.h"
+#include "lfort/Analysis/Support/BumpVector.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/GraphTraits.h"
@@ -34,7 +34,7 @@
 #include "llvm/Support/Casting.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class CFG;
 
@@ -438,13 +438,13 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 // GraphTraits
 
 namespace llvm {
-  template<> struct GraphTraits<clang::ento::ExplodedNode*> {
-    typedef clang::ento::ExplodedNode NodeType;
+  template<> struct GraphTraits<lfort::ento::ExplodedNode*> {
+    typedef lfort::ento::ExplodedNode NodeType;
     typedef NodeType::succ_iterator  ChildIteratorType;
     typedef llvm::df_iterator<NodeType*>      nodes_iterator;
 
@@ -469,8 +469,8 @@ namespace llvm {
     }
   };
 
-  template<> struct GraphTraits<const clang::ento::ExplodedNode*> {
-    typedef const clang::ento::ExplodedNode NodeType;
+  template<> struct GraphTraits<const lfort::ento::ExplodedNode*> {
+    typedef const lfort::ento::ExplodedNode NodeType;
     typedef NodeType::const_succ_iterator   ChildIteratorType;
     typedef llvm::df_iterator<NodeType*>       nodes_iterator;
 

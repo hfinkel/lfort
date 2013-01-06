@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Job.h"
+#include "lfort/Driver/Job.h"
 #include "llvm/ADT/STLExtras.h"
 #include <cassert>
-using namespace clang::driver;
+using namespace lfort::driver;
 
 Job::~Job() {}
 

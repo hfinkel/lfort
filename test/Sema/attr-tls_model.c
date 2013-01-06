@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-pc-linux-gnu -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -triple x86_64-pc-linux-gnu -verify -fsyntax-only %s
 
 #if !__has_attribute(tls_model)
 #error "Should support tls_model attribute"

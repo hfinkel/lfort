@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -std=c99
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -std=c99
 // expected-no-diagnostics
 // rdar://6095180
 

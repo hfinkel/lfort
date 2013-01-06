@@ -1,6 +1,6 @@
-// RUN: %clang -target x86_64-unknown-nacl -ccc-echo %s -emit-llvm-only -c -o %t.o 2>&1 | FileCheck %s -check-prefix=ECHO
-// RUN: %clang -target x86_64-unknown-nacl %s -emit-llvm -S -c -o - | FileCheck %s
-// RUN: %clang -target x86_64-unknown-nacl %s -emit-llvm -S -c -pthread -o - | FileCheck %s -check-prefix=THREADS
+// RUN: %lfort -target x86_64-unknown-nacl -ccc-echo %s -emit-llvm-only -c -o %t.o 2>&1 | FileCheck %s -check-prefix=ECHO
+// RUN: %lfort -target x86_64-unknown-nacl %s -emit-llvm -S -c -o - | FileCheck %s
+// RUN: %lfort -target x86_64-unknown-nacl %s -emit-llvm -S -c -pthread -o - | FileCheck %s -check-prefix=THREADS
 
 // ECHO: {{.*}} -cc1 {{.*}}x86_64-nacl-defines.c
 

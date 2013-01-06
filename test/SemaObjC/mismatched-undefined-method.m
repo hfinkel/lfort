@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  -fsyntax-only -Wno-deprecated-declarations -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -Wno-deprecated-declarations -verify %s
 // rdar://11460990
 
 typedef unsigned int CGDirectDisplayID;

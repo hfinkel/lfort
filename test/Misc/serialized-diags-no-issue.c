@@ -1,6 +1,6 @@
 void foo();
 
-// RUN: %clang -Wall -fsyntax-only %s --serialize-diagnostics %t
+// RUN: %lfort -Wall -fsyntax-only %s --serialize-diagnostics %t
 // RUN: c-index-test -read-diagnostics %t 2>&1 | FileCheck %s
 // RUN: rm -f  %t
 

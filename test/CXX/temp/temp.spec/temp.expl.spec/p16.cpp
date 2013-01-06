@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 template<class T> struct A { 
   void f(T);
   template<class X1> void g1(T, X1); 

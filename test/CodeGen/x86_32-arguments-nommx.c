@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -target-feature -mmx -target-feature +sse2 -triple i686-pc-linux-gnu -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -target-feature -mmx -target-feature +sse2 -triple i686-pc-linux-gnu -emit-llvm -o - %s | FileCheck %s
 
 // no-mmx should put mmx into memory
 typedef int __attribute__((vector_size (8))) i32v2;

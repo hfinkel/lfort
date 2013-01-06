@@ -11,18 +11,18 @@
 //  of DeclContext.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_DECLCONTEXTINTERNALS_H
-#define LLVM_CLANG_AST_DECLCONTEXTINTERNALS_H
+#ifndef LLVM_LFORT_AST_DECLCONTEXTINTERNALS_H
+#define LLVM_LFORT_AST_DECLCONTEXTINTERNALS_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclarationName.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclarationName.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/ADT/SmallVector.h"
 #include <algorithm>
 
-namespace clang {
+namespace lfort {
 
 class DependentDiagnostic;
 
@@ -218,6 +218,6 @@ private:
   DependentDiagnostic *FirstDiagnostic;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

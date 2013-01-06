@@ -12,33 +12,33 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_SEMA_H
-#define LLVM_CLANG_SEMA_SEMA_H
+#ifndef LLVM_LFORT_SEMA_SEMA_H
+#define LLVM_LFORT_SEMA_SEMA_H
 
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/ExternalASTSource.h"
-#include "clang/AST/LambdaMangleContext.h"
-#include "clang/AST/NSAPI.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/ExpressionTraits.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Basic/TemplateKinds.h"
-#include "clang/Basic/TypeTraits.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Sema/AnalysisBasedWarnings.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Sema/IdentifierResolver.h"
-#include "clang/Sema/LocInfoType.h"
-#include "clang/Sema/ObjCMethodList.h"
-#include "clang/Sema/Ownership.h"
-#include "clang/Sema/TypoCorrection.h"
-#include "clang/Sema/Weak.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/ExternalASTSource.h"
+#include "lfort/AST/LambdaMangleContext.h"
+#include "lfort/AST/NSAPI.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/ExpressionTraits.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Basic/TemplateKinds.h"
+#include "lfort/Basic/TypeTraits.h"
+#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Sema/AnalysisBasedWarnings.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Sema/IdentifierResolver.h"
+#include "lfort/Sema/LocInfoType.h"
+#include "lfort/Sema/ObjCMethodList.h"
+#include "lfort/Sema/Ownership.h"
+#include "lfort/Sema/TypoCorrection.h"
+#include "lfort/Sema/Weak.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/OwningPtr.h"
@@ -55,7 +55,7 @@ namespace llvm {
   class SmallBitVector;
 }
 
-namespace clang {
+namespace lfort {
   class ADLResult;
   class ASTConsumer;
   class ASTContext;
@@ -6487,7 +6487,7 @@ public:
   void FreeVisContext();
 
   /// AddCFAuditedAttribute - Check whether we're currently within
-  /// '\#pragma clang arc_cf_code_audited' and, if so, consider adding
+  /// '\#pragma lfort arc_cf_code_audited' and, if so, consider adding
   /// the appropriate attribute.
   void AddCFAuditedAttribute(Decl *D);
 
@@ -7402,6 +7402,6 @@ public:
   }
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

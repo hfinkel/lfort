@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
 #include "llvm/ADT/BitVector.h"
-using namespace clang;
+using namespace lfort;
 
 namespace {
 

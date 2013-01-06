@@ -12,22 +12,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/TemplateBase.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclBase.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclBase.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <cctype>
 
-using namespace clang;
+using namespace lfort;
 
 /// \brief Print a template integral argument value.
 ///
@@ -36,7 +36,7 @@ using namespace clang;
 /// \param Out the raw_ostream instance to use for printing.
 static void printIntegral(const TemplateArgument &TemplArg,
                           raw_ostream &Out) {
-  const ::clang::Type *T = TemplArg.getIntegralType().getTypePtr();
+  const ::lfort::Type *T = TemplArg.getIntegralType().getTypePtr();
   const llvm::APSInt &Val = TemplArg.getAsIntegral();
 
   if (T->isBooleanType()) {
@@ -515,7 +515,7 @@ TemplateArgumentLoc::getPackExpansionPattern(SourceLocation &Ellipsis,
   llvm_unreachable("Invalid TemplateArgument Kind!");
 }
 
-const DiagnosticBuilder &clang::operator<<(const DiagnosticBuilder &DB,
+const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
                                            const TemplateArgument &Arg) {
   switch (Arg.getKind()) {
   case TemplateArgument::Null:

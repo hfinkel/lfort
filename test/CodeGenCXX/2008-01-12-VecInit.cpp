@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o -
+// RUN: %lfort_cc1 -emit-llvm %s -o -
 // rdar://5685492
 
 typedef int __attribute__((vector_size(16))) v;

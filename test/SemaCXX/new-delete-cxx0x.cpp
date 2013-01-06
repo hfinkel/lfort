@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -std=c++11 -triple=i686-pc-linux-gnu
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -std=c++11 -triple=i686-pc-linux-gnu
 
 void ugly_news(int *ip) {
   // These are ill-formed according to one reading of C++98, and at the least

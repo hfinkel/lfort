@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 // Common strings used for the "category" of many static analyzer issues.
-namespace clang { namespace ento { namespace categories {
+namespace lfort { namespace ento { namespace categories {
 
 const char *CoreFoundationObjectiveC = "Core Foundation/Objective-C";
 const char *MemoryCoreFoundationObjectiveC =

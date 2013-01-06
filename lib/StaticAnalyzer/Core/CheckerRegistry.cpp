@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/CheckerRegistry.h"
-#include "clang/StaticAnalyzer/Core/CheckerOptInfo.h"
+#include "lfort/StaticAnalyzer/Core/CheckerRegistry.h"
+#include "lfort/StaticAnalyzer/Core/CheckerOptInfo.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 static const char PackageSeparator = '.';

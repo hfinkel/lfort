@@ -1,9 +1,9 @@
 // NOTE: Use '-fobjc-gc' to test the analysis being run twice, and multiple reports are not issued.
-// RUN: %clang_cc1 -triple i386-apple-darwin10 -analyze -analyzer-checker=core,alpha.deadcode.IdempotentOperations,alpha.core,osx.cocoa.AtSync -analyzer-store=region -analyzer-constraints=range -verify -fblocks -Wno-unreachable-code -Wno-null-dereference -Wno-objc-root-class %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,alpha.deadcode.IdempotentOperations,alpha.core,osx.cocoa.AtSync -analyzer-store=region -analyzer-constraints=range -verify -fblocks -Wno-unreachable-code -Wno-null-dereference -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin10 -analyze -analyzer-checker=core,alpha.deadcode.IdempotentOperations,alpha.core,osx.cocoa.AtSync -analyzer-store=region -analyzer-constraints=range -verify -fblocks -Wno-unreachable-code -Wno-null-dereference -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,alpha.deadcode.IdempotentOperations,alpha.core,osx.cocoa.AtSync -analyzer-store=region -analyzer-constraints=range -verify -fblocks -Wno-unreachable-code -Wno-null-dereference -Wno-objc-root-class %s
 
-#ifndef __clang_analyzer__
-#error __clang_analyzer__ not defined
+#ifndef __lfort_analyzer__
+#error __lfort_analyzer__ not defined
 #endif
 
 typedef struct objc_ivar *Ivar;

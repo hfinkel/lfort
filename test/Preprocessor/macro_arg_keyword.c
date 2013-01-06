@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s | grep xxx-xxx
+// RUN: %lfort_cc1 -E %s | grep xxx-xxx
 
 #define foo(return) return-return
 

@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PRAGMA_H
-#define LLVM_CLANG_PRAGMA_H
+#ifndef LLVM_LFORT_PRAGMA_H
+#define LLVM_LFORT_PRAGMA_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include <cassert>
 
-namespace clang {
+namespace lfort {
   class Preprocessor;
   class Token;
   class IdentifierInfo;
@@ -121,6 +121,6 @@ public:
 };
 
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

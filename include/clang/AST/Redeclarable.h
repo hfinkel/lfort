@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_REDECLARABLE_H
-#define LLVM_CLANG_AST_REDECLARABLE_H
+#ifndef LLVM_LFORT_AST_REDECLARABLE_H
+#define LLVM_LFORT_AST_REDECLARABLE_H
 
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/Support/Casting.h"
 #include <iterator>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Provides common interface for the Decls that can be redeclared.
 template<typename decl_type>

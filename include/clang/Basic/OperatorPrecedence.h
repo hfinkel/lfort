@@ -12,12 +12,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_OPERATOR_PRECEDENCE_H
-#define LLVM_CLANG_OPERATOR_PRECEDENCE_H
+#ifndef LLVM_LFORT_OPERATOR_PRECEDENCE_H
+#define LLVM_LFORT_OPERATOR_PRECEDENCE_H
 
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/TokenKinds.h"
 
-namespace clang {
+namespace lfort {
 
 /// PrecedenceLevels - These are precedences for the binary/ternary
 /// operators in the C99 grammar.  These have been named to relate
@@ -47,6 +47,6 @@ namespace prec {
 prec::Level getBinOpPrecedence(tok::TokenKind Kind, bool GreaterThanIsOperator,
                                bool CPlusPlus11);
 
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif  // LLVM_CLANG_OPERATOR_PRECEDENCE_H
+#endif  // LLVM_LFORT_OPERATOR_PRECEDENCE_H

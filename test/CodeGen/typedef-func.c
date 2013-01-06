@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm < %s
+// RUN: %lfort_cc1 -emit-llvm < %s
 
 // PR2414
 struct mad_frame{};

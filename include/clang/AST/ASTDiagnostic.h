@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTICAST_H
-#define LLVM_CLANG_DIAGNOSTICAST_H
+#ifndef LLVM_LFORT_DIAGNOSTICAST_H
+#define LLVM_LFORT_DIAGNOSTICAST_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define ASTSTART
-#include "clang/Basic/DiagnosticASTKinds.inc"
+#include "lfort/Basic/DiagnosticASTKinds.inc"
 #undef DIAG
       NUM_BUILTIN_AST_DIAGNOSTICS
     };
@@ -45,6 +45,6 @@ namespace clang {
       SmallVectorImpl<char> &Output,
       void *Cookie,
       ArrayRef<intptr_t> QualTypeVals);
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

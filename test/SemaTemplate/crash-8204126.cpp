@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 struct A
 {
   template<int> template<typename T> friend void foo(T) {} // expected-error{{extraneous template parameter list}}

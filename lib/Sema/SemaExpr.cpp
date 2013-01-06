@@ -11,37 +11,37 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TreeTransform.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/AnalysisBasedWarnings.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/DelayedDiagnostic.h"
-#include "clang/Sema/Designator.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/SemaFixItUtils.h"
-#include "clang/Sema/Template.h"
-using namespace clang;
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/AnalysisBasedWarnings.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/DelayedDiagnostic.h"
+#include "lfort/Sema/Designator.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaFixItUtils.h"
+#include "lfort/Sema/Template.h"
+using namespace lfort;
 using namespace sema;
 
 /// \brief Determine whether the use of this declaration is valid, without
@@ -435,7 +435,7 @@ static void CheckForNullPointerDereference(Sema &S, Expr *E) {
   // Check to see if we are dereferencing a null pointer.  If so,
   // and if not volatile-qualified, this is undefined behavior that the
   // optimizer will delete, so warn about it.  People sometimes try to use this
-  // to get a deterministic trap and are surprised by clang's behavior.  This
+  // to get a deterministic trap and are surprised by lfort's behavior.  This
   // only handles the pattern "*null", which is a very syntactic check.
   if (UnaryOperator *UO = dyn_cast<UnaryOperator>(E->IgnoreParenCasts()))
     if (UO->getOpcode() == UO_Deref &&
@@ -2405,7 +2405,7 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
 #define VALUE(type, base)
 #define DECL(type, base) \
     case Decl::type:
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
       llvm_unreachable("invalid value decl kind");
 
     // These shouldn't make it here.
@@ -7349,7 +7349,7 @@ QualType Sema::GetSignedVectorType(QualType V) {
   return Context.getExtVectorType(Context.LongLongTy, VTy->getNumElements());
 }
 
-/// CheckVectorCompareOperands - vector comparisons are a clang extension that
+/// CheckVectorCompareOperands - vector comparisons are a lfort extension that
 /// operates on extended vector types.  Instead of producing an IntTy result,
 /// like a scalar comparison, a vector comparison produces a vector of integer
 /// types.
@@ -9339,7 +9339,7 @@ ExprResult Sema::ActOnChooseExpr(SourceLocation BuiltinLoc,
 }
 
 //===----------------------------------------------------------------------===//
-// Clang Extensions.
+// LFort Extensions.
 //===----------------------------------------------------------------------===//
 
 /// ActOnBlockStart - This callback is invoked when a block literal is started.
@@ -11961,7 +11961,7 @@ ExprResult Sema::CheckPlaceholderExpr(Expr *E) {
 #define BUILTIN_TYPE(Id, SingletonId) \
   case BuiltinType::Id:
 #define PLACEHOLDER_TYPE(Id, SingletonId)
-#include "clang/AST/BuiltinTypes.def"
+#include "lfort/AST/BuiltinTypes.def"
     break;
   }
 

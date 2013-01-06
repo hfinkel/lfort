@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 /* GCC was not emitting string constants of the correct length when
  * embedded into a structure field like this.  It thought the strlength

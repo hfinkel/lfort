@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-print %s | FileCheck %s
+// RUN: %lfort_cc1 -ast-print %s | FileCheck %s
 
 // CHECK: test12_A::foo()
 struct test12_A {

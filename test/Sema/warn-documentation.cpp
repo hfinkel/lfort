@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -Wdocumentation -Wdocumentation-pedantic -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -Wdocumentation -Wdocumentation-pedantic -verify %s
 
 // This file contains lots of corner cases, so ensure that XML we generate is not invalid.
 // RUN: c-index-test -test-load-source all -comments-xml-schema=%S/../../bindings/xml/comment-xml-schema.rng %s | FileCheck %s -check-prefix=WRONG

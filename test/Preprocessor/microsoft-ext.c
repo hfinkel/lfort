@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -fms-compatibility %s -o %t
+// RUN: %lfort_cc1 -E -fms-compatibility %s -o %t
 // RUN: FileCheck %s < %t
 
 # define M2(x, y) x + y

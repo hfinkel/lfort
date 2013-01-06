@@ -1,4 +1,4 @@
-// RUN: not %clang_cc1 -fsyntax-only %s
+// RUN: not %lfort_cc1 -fsyntax-only %s
 namespace PR6375 {
   template<class Conv> class rasterizer_sl_clip Conv::xi(x2), Conv::yi(y2));
 namespace agg

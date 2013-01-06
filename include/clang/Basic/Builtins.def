@@ -16,7 +16,7 @@
 // Perhaps tblgen should have plugins.
 
 // The first value provided to the macro specifies the function name of the
-// builtin, and results in a clang::builtin::BIXX enum value for XX.
+// builtin, and results in a lfort::builtin::BIXX enum value for XX.
 
 // The second value provided to the macro specifies the type of the function
 // (result value, then each argument) as follows:
@@ -654,7 +654,7 @@ BUILTIN(__atomic_is_lock_free, "izvCD*", "n")
 
 // Non-overloaded atomic builtins.
 BUILTIN(__sync_synchronize, "v.", "n")
-// GCC does not support these, they are a Clang extension.
+// GCC does not support these, they are a LFort extension.
 BUILTIN(__sync_fetch_and_min, "iiD*i", "n")
 BUILTIN(__sync_fetch_and_max, "iiD*i", "n")
 BUILTIN(__sync_fetch_and_umin, "UiUiD*Ui", "n")

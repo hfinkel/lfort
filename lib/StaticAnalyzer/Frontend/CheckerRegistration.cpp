@@ -11,27 +11,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Frontend/CheckerRegistration.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/StaticAnalyzer/Checkers/ClangCheckers.h"
-#include "clang/StaticAnalyzer/Core/AnalyzerOptions.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/CheckerOptInfo.h"
-#include "clang/StaticAnalyzer/Core/CheckerRegistry.h"
-#include "clang/StaticAnalyzer/Frontend/FrontendActions.h"
+#include "lfort/StaticAnalyzer/Frontend/CheckerRegistration.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/StaticAnalyzer/Checkers/LFortCheckers.h"
+#include "lfort/StaticAnalyzer/Core/AnalyzerOptions.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/CheckerOptInfo.h"
+#include "lfort/StaticAnalyzer/Core/CheckerRegistry.h"
+#include "lfort/StaticAnalyzer/Frontend/FrontendActions.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/DynamicLibrary.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::sys::DynamicLibrary;
 
 namespace {
-class ClangCheckerRegistry : public CheckerRegistry {
+class LFortCheckerRegistry : public CheckerRegistry {
   typedef void (*RegisterCheckersFn)(CheckerRegistry &);
 
   static bool isCompatibleAPIVersion(const char *versionString);
@@ -39,13 +39,13 @@ class ClangCheckerRegistry : public CheckerRegistry {
                                const char *pluginAPIVersion);
 
 public:
-  ClangCheckerRegistry(ArrayRef<std::string> plugins,
+  LFortCheckerRegistry(ArrayRef<std::string> plugins,
                        DiagnosticsEngine *diags = 0);
 };
   
 } // end anonymous namespace
 
-ClangCheckerRegistry::ClangCheckerRegistry(ArrayRef<std::string> plugins,
+LFortCheckerRegistry::LFortCheckerRegistry(ArrayRef<std::string> plugins,
                                            DiagnosticsEngine *diags) {
   registerBuiltinCheckers(*this);
 
@@ -54,9 +54,9 @@ ClangCheckerRegistry::ClangCheckerRegistry(ArrayRef<std::string> plugins,
     // Get access to the plugin.
     DynamicLibrary lib = DynamicLibrary::getPermanentLibrary(i->c_str());
 
-    // See if it's compatible with this build of clang.
+    // See if it's compatible with this build of lfort.
     const char *pluginAPIVersion =
-      (const char *) lib.getAddressOfSymbol("clang_analyzerAPIVersionString");
+      (const char *) lib.getAddressOfSymbol("lfort_analyzerAPIVersionString");
     if (!isCompatibleAPIVersion(pluginAPIVersion)) {
       warnIncompatible(diags, *i, pluginAPIVersion);
       continue;
@@ -65,26 +65,26 @@ ClangCheckerRegistry::ClangCheckerRegistry(ArrayRef<std::string> plugins,
     // Register its checkers.
     RegisterCheckersFn registerPluginCheckers =
       (RegisterCheckersFn) (intptr_t) lib.getAddressOfSymbol(
-                                                      "clang_registerCheckers");
+                                                      "lfort_registerCheckers");
     if (registerPluginCheckers)
       registerPluginCheckers(*this);
   }
 }
 
-bool ClangCheckerRegistry::isCompatibleAPIVersion(const char *versionString) {
+bool LFortCheckerRegistry::isCompatibleAPIVersion(const char *versionString) {
   // If the version string is null, it's not an analyzer plugin.
   if (versionString == 0)
     return false;
 
   // For now, none of the static analyzer API is considered stable.
   // Versions must match exactly.
-  if (strcmp(versionString, CLANG_ANALYZER_API_VERSION_STRING) == 0)
+  if (strcmp(versionString, LFORT_ANALYZER_API_VERSION_STRING) == 0)
     return true;
 
   return false;
 }
 
-void ClangCheckerRegistry::warnIncompatible(DiagnosticsEngine *diags,
+void LFortCheckerRegistry::warnIncompatible(DiagnosticsEngine *diags,
                                             StringRef pluginPath,
                                             const char *pluginAPIVersion) {
   if (!diags)
@@ -95,7 +95,7 @@ void ClangCheckerRegistry::warnIncompatible(DiagnosticsEngine *diags,
   diags->Report(diag::warn_incompatible_analyzer_plugin_api)
       << llvm::sys::path::filename(pluginPath);
   diags->Report(diag::note_incompatible_analyzer_plugin_api)
-      << CLANG_ANALYZER_API_VERSION_STRING
+      << LFORT_ANALYZER_API_VERSION_STRING
       << pluginAPIVersion;
 }
 
@@ -112,7 +112,7 @@ CheckerManager *ento::createCheckerManager(const AnalyzerOptions &opts,
     checkerOpts.push_back(CheckerOptInfo(opt.first.c_str(), opt.second));
   }
 
-  ClangCheckerRegistry allCheckers(plugins, &diags);
+  LFortCheckerRegistry allCheckers(plugins, &diags);
   allCheckers.initializeManager(*checkerMgr, checkerOpts);
   checkerMgr->finishedCheckerRegistration();
 
@@ -126,8 +126,8 @@ CheckerManager *ento::createCheckerManager(const AnalyzerOptions &opts,
 }
 
 void ento::printCheckerHelp(raw_ostream &out, ArrayRef<std::string> plugins) {
-  out << "OVERVIEW: Clang Static Analyzer Checkers List\n\n";
+  out << "OVERVIEW: LFort Static Analyzer Checkers List\n\n";
   out << "USAGE: -analyzer-checker <CHECKER or PACKAGE,...>\n\n";
 
-  ClangCheckerRegistry(plugins).printHelp(out);
+  LFortCheckerRegistry(plugins).printHelp(out);
 }

@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ARCMigrate/FileRemapper.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Lex/PreprocessorOptions.h"
+#include "lfort/ARCMigrate/FileRemapper.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Lex/PreprocessorOptions.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 #include <fstream>
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 FileRemapper::FileRemapper() {

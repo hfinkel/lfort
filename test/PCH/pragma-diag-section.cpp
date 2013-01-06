@@ -1,15 +1,15 @@
 // Test this without pch.
-// RUN: %clang_cc1 %s -include %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -include %s -verify -fsyntax-only
 
 // Test with pch.
-// RUN: %clang_cc1 %s -emit-pch -o %t
-// RUN: %clang_cc1 %s -include-pch %t -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -emit-pch -o %t
+// RUN: %lfort_cc1 %s -include-pch %t -verify -fsyntax-only
 
 #ifndef HEADER
 #define HEADER
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wtautological-compare"
 template <typename T>
 struct TS1 {
     void m() {
@@ -17,7 +17,7 @@ struct TS1 {
       T b = a==a;
     }
 };
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
 #else
 

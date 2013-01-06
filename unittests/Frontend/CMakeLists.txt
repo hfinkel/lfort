@@ -5,9 +5,9 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_unittest(FrontendTests
+add_lfort_unittest(FrontendTests
   FrontendActionTest.cpp
   )
 target_link_libraries(FrontendTests
-  clangFrontend
+  lfortFrontend
   )

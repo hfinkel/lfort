@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fshort-enums -fsyntax-only %s
+// RUN: %lfort_cc1 -fshort-enums -fsyntax-only %s
 
 // This shouldn't crash: PR9474
 

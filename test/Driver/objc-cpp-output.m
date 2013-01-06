@@ -1,4 +1,4 @@
-// RUN: %clang -x objc-cpp-output -c %s -o /dev/null
+// RUN: %lfort -x objc-cpp-output -c %s -o /dev/null
 
 // PR13820
 // REQUIRES: LP64

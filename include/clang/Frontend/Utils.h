@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_UTILS_H
-#define LLVM_CLANG_FRONTEND_UTILS_H
+#ifndef LLVM_LFORT_FRONTEND_UTILS_H
+#define LLVM_LFORT_FRONTEND_UTILS_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringRef.h"
 
@@ -23,7 +23,7 @@ class raw_fd_ostream;
 class Triple;
 }
 
-namespace clang {
+namespace lfort {
 class ASTConsumer;
 class CompilerInstance;
 class CompilerInvocation;
@@ -103,6 +103,6 @@ createInvocationFromCommandLine(ArrayRef<const char *> Args,
                             IntrusiveRefCntPtr<DiagnosticsEngine> Diags =
                                 IntrusiveRefCntPtr<DiagnosticsEngine>());
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

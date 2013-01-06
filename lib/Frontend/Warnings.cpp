@@ -20,16 +20,16 @@
 // Given a warning option 'foo', the following are valid:
 //    -Wfoo, -Wno-foo, -Werror=foo, -Wfatal-errors=foo
 //
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include <algorithm>
 #include <cstring>
 #include <utility>
-using namespace clang;
+using namespace lfort;
 
 // EmitUnknownDiagWarning - Emit a warning and typo hint for unknown warning
 // opts
@@ -47,7 +47,7 @@ static void EmitUnknownDiagWarning(DiagnosticsEngine &Diags,
       << (Prefix.str() += Opt);
 }
 
-void clang::ProcessWarningOptions(DiagnosticsEngine &Diags,
+void lfort::ProcessWarningOptions(DiagnosticsEngine &Diags,
                                   const DiagnosticOptions &Opts) {
   Diags.setSuppressSystemWarnings(true);  // Default to -Wno-system-headers
   Diags.setIgnoreAllWarnings(Opts.IgnoreWarnings);

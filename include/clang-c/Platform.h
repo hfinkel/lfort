@@ -1,4 +1,4 @@
-/*===-- clang-c/Platform.h - C Index platform decls   -------------*- C -*-===*\
+/*===-- lfort-c/Platform.h - C Index platform decls   -------------*- C -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -11,8 +11,8 @@
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
-#ifndef CLANG_C_PLATFORM_H
-#define CLANG_C_PLATFORM_H
+#ifndef LFORT_C_PLATFORM_H
+#define LFORT_C_PLATFORM_H
 
 #ifdef __cplusplus
 extern "C" {

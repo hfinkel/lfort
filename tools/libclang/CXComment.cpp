@@ -1,4 +1,4 @@
-//===- CXComment.cpp - libclang APIs for manipulating CXComments ----------===//
+//===- CXComment.cpp - liblfort APIs for manipulating CXComments ----------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,35 +7,35 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines all libclang APIs related to walking comment AST.
+// This file defines all liblfort APIs related to walking comment AST.
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 #include "CXComment.h"
 #include "CXCursor.h"
 #include "CXString.h"
 #include "SimpleFormatContext.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/CommentVisitor.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/Format/Format.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentVisitor.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/Format/Format.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include <climits>
 
-using namespace clang;
-using namespace clang::cxstring;
-using namespace clang::comments;
-using namespace clang::cxcomment;
+using namespace lfort;
+using namespace lfort::cxstring;
+using namespace lfort::comments;
+using namespace lfort::cxcomment;
 
 extern "C" {
 
-enum CXCommentKind clang_Comment_getKind(CXComment CXC) {
+enum CXCommentKind lfort_Comment_getKind(CXComment CXC) {
   const Comment *C = getASTNode(CXC);
   if (!C)
     return CXComment_Null;
@@ -83,7 +83,7 @@ enum CXCommentKind clang_Comment_getKind(CXComment CXC) {
   llvm_unreachable("unknown CommentKind");
 }
 
-unsigned clang_Comment_getNumChildren(CXComment CXC) {
+unsigned lfort_Comment_getNumChildren(CXComment CXC) {
   const Comment *C = getASTNode(CXC);
   if (!C)
     return 0;
@@ -91,7 +91,7 @@ unsigned clang_Comment_getNumChildren(CXComment CXC) {
   return C->child_count();
 }
 
-CXComment clang_Comment_getChild(CXComment CXC, unsigned ChildIdx) {
+CXComment lfort_Comment_getChild(CXComment CXC, unsigned ChildIdx) {
   const Comment *C = getASTNode(CXC);
   if (!C || ChildIdx >= C->child_count())
     return createCXComment(NULL, NULL);
@@ -99,7 +99,7 @@ CXComment clang_Comment_getChild(CXComment CXC, unsigned ChildIdx) {
   return createCXComment(*(C->child_begin() + ChildIdx), CXC.TranslationUnit);
 }
 
-unsigned clang_Comment_isWhitespace(CXComment CXC) {
+unsigned lfort_Comment_isWhitespace(CXComment CXC) {
   const Comment *C = getASTNode(CXC);
   if (!C)
     return false;
@@ -113,7 +113,7 @@ unsigned clang_Comment_isWhitespace(CXComment CXC) {
   return false;
 }
 
-unsigned clang_InlineContentComment_hasTrailingNewline(CXComment CXC) {
+unsigned lfort_InlineContentComment_hasTrailingNewline(CXComment CXC) {
   const InlineContentComment *ICC = getASTNodeAs<InlineContentComment>(CXC);
   if (!ICC)
     return false;
@@ -121,7 +121,7 @@ unsigned clang_InlineContentComment_hasTrailingNewline(CXComment CXC) {
   return ICC->hasTrailingNewline();
 }
 
-CXString clang_TextComment_getText(CXComment CXC) {
+CXString lfort_TextComment_getText(CXComment CXC) {
   const TextComment *TC = getASTNodeAs<TextComment>(CXC);
   if (!TC)
     return createCXString((const char *) 0);
@@ -129,7 +129,7 @@ CXString clang_TextComment_getText(CXComment CXC) {
   return createCXString(TC->getText(), /*DupString=*/ false);
 }
 
-CXString clang_InlineCommandComment_getCommandName(CXComment CXC) {
+CXString lfort_InlineCommandComment_getCommandName(CXComment CXC) {
   const InlineCommandComment *ICC = getASTNodeAs<InlineCommandComment>(CXC);
   if (!ICC)
     return createCXString((const char *) 0);
@@ -139,7 +139,7 @@ CXString clang_InlineCommandComment_getCommandName(CXComment CXC) {
 }
 
 enum CXCommentInlineCommandRenderKind
-clang_InlineCommandComment_getRenderKind(CXComment CXC) {
+lfort_InlineCommandComment_getRenderKind(CXComment CXC) {
   const InlineCommandComment *ICC = getASTNodeAs<InlineCommandComment>(CXC);
   if (!ICC)
     return CXCommentInlineCommandRenderKind_Normal;
@@ -160,7 +160,7 @@ clang_InlineCommandComment_getRenderKind(CXComment CXC) {
   llvm_unreachable("unknown InlineCommandComment::RenderKind");
 }
 
-unsigned clang_InlineCommandComment_getNumArgs(CXComment CXC) {
+unsigned lfort_InlineCommandComment_getNumArgs(CXComment CXC) {
   const InlineCommandComment *ICC = getASTNodeAs<InlineCommandComment>(CXC);
   if (!ICC)
     return 0;
@@ -168,7 +168,7 @@ unsigned clang_InlineCommandComment_getNumArgs(CXComment CXC) {
   return ICC->getNumArgs();
 }
 
-CXString clang_InlineCommandComment_getArgText(CXComment CXC,
+CXString lfort_InlineCommandComment_getArgText(CXComment CXC,
                                                unsigned ArgIdx) {
   const InlineCommandComment *ICC = getASTNodeAs<InlineCommandComment>(CXC);
   if (!ICC || ArgIdx >= ICC->getNumArgs())
@@ -177,7 +177,7 @@ CXString clang_InlineCommandComment_getArgText(CXComment CXC,
   return createCXString(ICC->getArgText(ArgIdx), /*DupString=*/ false);
 }
 
-CXString clang_HTMLTagComment_getTagName(CXComment CXC) {
+CXString lfort_HTMLTagComment_getTagName(CXComment CXC) {
   const HTMLTagComment *HTC = getASTNodeAs<HTMLTagComment>(CXC);
   if (!HTC)
     return createCXString((const char *) 0);
@@ -185,7 +185,7 @@ CXString clang_HTMLTagComment_getTagName(CXComment CXC) {
   return createCXString(HTC->getTagName(), /*DupString=*/ false);
 }
 
-unsigned clang_HTMLStartTagComment_isSelfClosing(CXComment CXC) {
+unsigned lfort_HTMLStartTagComment_isSelfClosing(CXComment CXC) {
   const HTMLStartTagComment *HST = getASTNodeAs<HTMLStartTagComment>(CXC);
   if (!HST)
     return false;
@@ -193,7 +193,7 @@ unsigned clang_HTMLStartTagComment_isSelfClosing(CXComment CXC) {
   return HST->isSelfClosing();
 }
 
-unsigned clang_HTMLStartTag_getNumAttrs(CXComment CXC) {
+unsigned lfort_HTMLStartTag_getNumAttrs(CXComment CXC) {
   const HTMLStartTagComment *HST = getASTNodeAs<HTMLStartTagComment>(CXC);
   if (!HST)
     return 0;
@@ -201,7 +201,7 @@ unsigned clang_HTMLStartTag_getNumAttrs(CXComment CXC) {
   return HST->getNumAttrs();
 }
 
-CXString clang_HTMLStartTag_getAttrName(CXComment CXC, unsigned AttrIdx) {
+CXString lfort_HTMLStartTag_getAttrName(CXComment CXC, unsigned AttrIdx) {
   const HTMLStartTagComment *HST = getASTNodeAs<HTMLStartTagComment>(CXC);
   if (!HST || AttrIdx >= HST->getNumAttrs())
     return createCXString((const char *) 0);
@@ -209,7 +209,7 @@ CXString clang_HTMLStartTag_getAttrName(CXComment CXC, unsigned AttrIdx) {
   return createCXString(HST->getAttr(AttrIdx).Name, /*DupString=*/ false);
 }
 
-CXString clang_HTMLStartTag_getAttrValue(CXComment CXC, unsigned AttrIdx) {
+CXString lfort_HTMLStartTag_getAttrValue(CXComment CXC, unsigned AttrIdx) {
   const HTMLStartTagComment *HST = getASTNodeAs<HTMLStartTagComment>(CXC);
   if (!HST || AttrIdx >= HST->getNumAttrs())
     return createCXString((const char *) 0);
@@ -217,7 +217,7 @@ CXString clang_HTMLStartTag_getAttrValue(CXComment CXC, unsigned AttrIdx) {
   return createCXString(HST->getAttr(AttrIdx).Value, /*DupString=*/ false);
 }
 
-CXString clang_BlockCommandComment_getCommandName(CXComment CXC) {
+CXString lfort_BlockCommandComment_getCommandName(CXComment CXC) {
   const BlockCommandComment *BCC = getASTNodeAs<BlockCommandComment>(CXC);
   if (!BCC)
     return createCXString((const char *) 0);
@@ -226,7 +226,7 @@ CXString clang_BlockCommandComment_getCommandName(CXComment CXC) {
   return createCXString(BCC->getCommandName(Traits), /*DupString=*/ false);
 }
 
-unsigned clang_BlockCommandComment_getNumArgs(CXComment CXC) {
+unsigned lfort_BlockCommandComment_getNumArgs(CXComment CXC) {
   const BlockCommandComment *BCC = getASTNodeAs<BlockCommandComment>(CXC);
   if (!BCC)
     return 0;
@@ -234,7 +234,7 @@ unsigned clang_BlockCommandComment_getNumArgs(CXComment CXC) {
   return BCC->getNumArgs();
 }
 
-CXString clang_BlockCommandComment_getArgText(CXComment CXC,
+CXString lfort_BlockCommandComment_getArgText(CXComment CXC,
                                               unsigned ArgIdx) {
   const BlockCommandComment *BCC = getASTNodeAs<BlockCommandComment>(CXC);
   if (!BCC || ArgIdx >= BCC->getNumArgs())
@@ -243,7 +243,7 @@ CXString clang_BlockCommandComment_getArgText(CXComment CXC,
   return createCXString(BCC->getArgText(ArgIdx), /*DupString=*/ false);
 }
 
-CXComment clang_BlockCommandComment_getParagraph(CXComment CXC) {
+CXComment lfort_BlockCommandComment_getParagraph(CXComment CXC) {
   const BlockCommandComment *BCC = getASTNodeAs<BlockCommandComment>(CXC);
   if (!BCC)
     return createCXComment(NULL, NULL);
@@ -251,7 +251,7 @@ CXComment clang_BlockCommandComment_getParagraph(CXComment CXC) {
   return createCXComment(BCC->getParagraph(), CXC.TranslationUnit);
 }
 
-CXString clang_ParamCommandComment_getParamName(CXComment CXC) {
+CXString lfort_ParamCommandComment_getParamName(CXComment CXC) {
   const ParamCommandComment *PCC = getASTNodeAs<ParamCommandComment>(CXC);
   if (!PCC || !PCC->hasParamName())
     return createCXString((const char *) 0);
@@ -259,7 +259,7 @@ CXString clang_ParamCommandComment_getParamName(CXComment CXC) {
   return createCXString(PCC->getParamNameAsWritten(), /*DupString=*/ false);
 }
 
-unsigned clang_ParamCommandComment_isParamIndexValid(CXComment CXC) {
+unsigned lfort_ParamCommandComment_isParamIndexValid(CXComment CXC) {
   const ParamCommandComment *PCC = getASTNodeAs<ParamCommandComment>(CXC);
   if (!PCC)
     return false;
@@ -267,7 +267,7 @@ unsigned clang_ParamCommandComment_isParamIndexValid(CXComment CXC) {
   return PCC->isParamIndexValid();
 }
 
-unsigned clang_ParamCommandComment_getParamIndex(CXComment CXC) {
+unsigned lfort_ParamCommandComment_getParamIndex(CXComment CXC) {
   const ParamCommandComment *PCC = getASTNodeAs<ParamCommandComment>(CXC);
   if (!PCC || !PCC->isParamIndexValid())
     return ParamCommandComment::InvalidParamIndex;
@@ -275,7 +275,7 @@ unsigned clang_ParamCommandComment_getParamIndex(CXComment CXC) {
   return PCC->getParamIndex();
 }
 
-unsigned clang_ParamCommandComment_isDirectionExplicit(CXComment CXC) {
+unsigned lfort_ParamCommandComment_isDirectionExplicit(CXComment CXC) {
   const ParamCommandComment *PCC = getASTNodeAs<ParamCommandComment>(CXC);
   if (!PCC)
     return false;
@@ -283,7 +283,7 @@ unsigned clang_ParamCommandComment_isDirectionExplicit(CXComment CXC) {
   return PCC->isDirectionExplicit();
 }
 
-enum CXCommentParamPassDirection clang_ParamCommandComment_getDirection(
+enum CXCommentParamPassDirection lfort_ParamCommandComment_getDirection(
                                                             CXComment CXC) {
   const ParamCommandComment *PCC = getASTNodeAs<ParamCommandComment>(CXC);
   if (!PCC)
@@ -302,7 +302,7 @@ enum CXCommentParamPassDirection clang_ParamCommandComment_getDirection(
   llvm_unreachable("unknown ParamCommandComment::PassDirection");
 }
 
-CXString clang_TParamCommandComment_getParamName(CXComment CXC) {
+CXString lfort_TParamCommandComment_getParamName(CXComment CXC) {
   const TParamCommandComment *TPCC = getASTNodeAs<TParamCommandComment>(CXC);
   if (!TPCC || !TPCC->hasParamName())
     return createCXString((const char *) 0);
@@ -310,7 +310,7 @@ CXString clang_TParamCommandComment_getParamName(CXComment CXC) {
   return createCXString(TPCC->getParamNameAsWritten(), /*DupString=*/ false);
 }
 
-unsigned clang_TParamCommandComment_isParamPositionValid(CXComment CXC) {
+unsigned lfort_TParamCommandComment_isParamPositionValid(CXComment CXC) {
   const TParamCommandComment *TPCC = getASTNodeAs<TParamCommandComment>(CXC);
   if (!TPCC)
     return false;
@@ -318,7 +318,7 @@ unsigned clang_TParamCommandComment_isParamPositionValid(CXComment CXC) {
   return TPCC->isPositionValid();
 }
 
-unsigned clang_TParamCommandComment_getDepth(CXComment CXC) {
+unsigned lfort_TParamCommandComment_getDepth(CXComment CXC) {
   const TParamCommandComment *TPCC = getASTNodeAs<TParamCommandComment>(CXC);
   if (!TPCC || !TPCC->isPositionValid())
     return 0;
@@ -326,7 +326,7 @@ unsigned clang_TParamCommandComment_getDepth(CXComment CXC) {
   return TPCC->getDepth();
 }
 
-unsigned clang_TParamCommandComment_getIndex(CXComment CXC, unsigned Depth) {
+unsigned lfort_TParamCommandComment_getIndex(CXComment CXC, unsigned Depth) {
   const TParamCommandComment *TPCC = getASTNodeAs<TParamCommandComment>(CXC);
   if (!TPCC || !TPCC->isPositionValid() || Depth >= TPCC->getDepth())
     return 0;
@@ -334,7 +334,7 @@ unsigned clang_TParamCommandComment_getIndex(CXComment CXC, unsigned Depth) {
   return TPCC->getIndex(Depth);
 }
 
-CXString clang_VerbatimBlockLineComment_getText(CXComment CXC) {
+CXString lfort_VerbatimBlockLineComment_getText(CXComment CXC) {
   const VerbatimBlockLineComment *VBL =
       getASTNodeAs<VerbatimBlockLineComment>(CXC);
   if (!VBL)
@@ -343,7 +343,7 @@ CXString clang_VerbatimBlockLineComment_getText(CXComment CXC) {
   return createCXString(VBL->getText(), /*DupString=*/ false);
 }
 
-CXString clang_VerbatimLineComment_getText(CXComment CXC) {
+CXString lfort_VerbatimLineComment_getText(CXComment CXC) {
   const VerbatimLineComment *VLC = getASTNodeAs<VerbatimLineComment>(CXC);
   if (!VLC)
     return createCXString((const char *) 0);
@@ -828,7 +828,7 @@ void CommentASTToHTMLConverter::appendToResultWithHTMLEscaping(StringRef S) {
 
 extern "C" {
 
-CXString clang_HTMLTagComment_getAsString(CXComment CXC) {
+CXString lfort_HTMLTagComment_getAsString(CXComment CXC) {
   const HTMLTagComment *HTC = getASTNodeAs<HTMLTagComment>(CXC);
   if (!HTC)
     return createCXString((const char *) 0);
@@ -839,7 +839,7 @@ CXString clang_HTMLTagComment_getAsString(CXComment CXC) {
   return createCXString(HTML.str(), /* DupString = */ true);
 }
 
-CXString clang_FullComment_getAsHTML(CXComment CXC) {
+CXString lfort_FullComment_getAsHTML(CXComment CXC) {
   const FullComment *FC = getASTNodeAs<FullComment>(CXC);
   if (!FC)
     return createCXString((const char *) 0);
@@ -1361,7 +1361,7 @@ void CommentASTToXMLConverter::appendToResultWithXMLEscaping(StringRef S) {
 
 extern "C" {
 
-CXString clang_FullComment_getAsXML(CXComment CXC) {
+CXString lfort_FullComment_getAsXML(CXComment CXC) {
   const FullComment *FC = getASTNodeAs<FullComment>(CXC);
   if (!FC)
     return createCXString((const char *) 0);

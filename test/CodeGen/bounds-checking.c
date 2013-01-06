@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsanitize=bounds -emit-llvm -triple x86_64-apple-darwin10 < %s | FileCheck %s
+// RUN: %lfort_cc1 -fsanitize=bounds -emit-llvm -triple x86_64-apple-darwin10 < %s | FileCheck %s
 
 // CHECK: @f
 double f(int b, int i) {

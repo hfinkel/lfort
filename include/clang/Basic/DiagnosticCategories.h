@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_DIAGNOSTICCATEGORIES_H
-#define LLVM_CLANG_BASIC_DIAGNOSTICCATEGORIES_H
+#ifndef LLVM_LFORT_BASIC_DIAGNOSTICCATEGORIES_H
+#define LLVM_LFORT_BASIC_DIAGNOSTICCATEGORIES_H
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define GET_CATEGORY_TABLE
 #define CATEGORY(X, ENUM) ENUM,
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef CATEGORY
 #undef GET_CATEGORY_TABLE
       DiagCat_NUM_CATEGORIES
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

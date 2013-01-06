@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallPtrSet.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Decl Allocation/Deallocation Method Implementations
@@ -2008,12 +2008,12 @@ static const char *getAccessName(AccessSpecifier AS) {
   llvm_unreachable("Invalid access specifier!");
 }
 
-const DiagnosticBuilder &clang::operator<<(const DiagnosticBuilder &DB,
+const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
                                            AccessSpecifier AS) {
   return DB << getAccessName(AS);
 }
 
-const PartialDiagnostic &clang::operator<<(const PartialDiagnostic &DB,
+const PartialDiagnostic &lfort::operator<<(const PartialDiagnostic &DB,
                                            AccessSpecifier AS) {
   return DB << getAccessName(AS);
 }

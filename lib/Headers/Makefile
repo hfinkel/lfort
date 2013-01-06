@@ -1,4 +1,4 @@
-##===- clang/lib/Headers/Makefile --------------------------*- Makefile -*-===##
+##===- lfort/lib/Headers/Makefile --------------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,17 +7,17 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 
 BUILT_SOURCES = arm_neon.h.inc
 TABLEGEN_INC_FILES_COMMON = 1
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
-CLANG_VERSION := $(word 3,$(shell grep "CLANG_VERSION " \
-	$(PROJ_OBJ_DIR)/$(CLANG_LEVEL)/include/clang/Basic/Version.inc))
+LFORT_VERSION := $(word 3,$(shell grep "LFORT_VERSION " \
+	$(PROJ_OBJ_DIR)/$(LFORT_LEVEL)/include/lfort/Basic/Version.inc))
 
-HeaderDir := $(PROJ_OBJ_ROOT)/$(BuildMode)/lib/clang/$(CLANG_VERSION)/include
+HeaderDir := $(PROJ_OBJ_ROOT)/$(BuildMode)/lib/lfort/$(LFORT_VERSION)/include
 
 HEADERS := $(notdir $(wildcard $(PROJ_SRC_DIR)/*.h))
 
@@ -40,7 +40,7 @@ $(HeaderDir)/module.map: $(PROJ_SRC_DIR)/module.map $(HeaderDir)/.dir
 # Hook into the standard Makefile rules.
 all-local:: $(OBJHEADERS) $(HeaderDir)/module.map
 
-PROJ_headers := $(DESTDIR)$(PROJ_prefix)/lib/clang/$(CLANG_VERSION)/include
+PROJ_headers := $(DESTDIR)$(PROJ_prefix)/lib/lfort/$(LFORT_VERSION)/include
 
 INSTHEADERS := $(addprefix $(PROJ_headers)/, $(HEADERS))
 INSTHEADERS += $(PROJ_headers)/arm_neon.h
@@ -59,6 +59,6 @@ $(PROJ_headers)/module.map: $(HeaderDir)/module.map | $(PROJ_headers)
 
 install-local:: $(INSTHEADERS) $(PROJ_headers)/module.map
 
-$(ObjDir)/arm_neon.h.inc.tmp : $(CLANG_LEVEL)/include/clang/Basic/arm_neon.td $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang arm_neon.h.inc with tblgen"
-	$(Verb) $(ClangTableGen) -gen-arm-neon -o $(call SYSPATH, $@) $<
+$(ObjDir)/arm_neon.h.inc.tmp : $(LFORT_LEVEL)/include/lfort/Basic/arm_neon.td $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort arm_neon.h.inc with tblgen"
+	$(Verb) $(LFortTableGen) -gen-arm-neon -o $(call SYSPATH, $@) $<

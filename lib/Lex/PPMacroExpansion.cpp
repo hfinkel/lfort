@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "MacroArgs.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/ExternalPreprocessorSource.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/MacroInfo.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/ExternalPreprocessorSource.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/MacroInfo.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -30,7 +30,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <cstdio>
 #include <ctime>
-using namespace clang;
+using namespace lfort;
 
 MacroInfo *Preprocessor::getMacroInfoHistory(IdentifierInfo *II) const {
   assert(II->hadMacroDefinition() && "Identifier has not been not a macro!");
@@ -190,7 +190,7 @@ void Preprocessor::RegisterBuiltinMacros() {
   Ident__INCLUDE_LEVEL__ = RegisterBuiltinMacro(*this, "__INCLUDE_LEVEL__");
   Ident__TIMESTAMP__     = RegisterBuiltinMacro(*this, "__TIMESTAMP__");
 
-  // Clang Extensions.
+  // LFort Extensions.
   Ident__has_feature      = RegisterBuiltinMacro(*this, "__has_feature");
   Ident__has_extension    = RegisterBuiltinMacro(*this, "__has_extension");
   Ident__has_builtin      = RegisterBuiltinMacro(*this, "__has_builtin");
@@ -818,7 +818,7 @@ static bool HasFeature(const Preprocessor &PP, const IdentifierInfo *II) {
            .Case("objc_instancetype", LangOpts.ObjC2)
            .Case("objc_modules", LangOpts.ObjC2 && LangOpts.Modules)
            .Case("objc_nonfragile_abi", LangOpts.ObjCRuntime.isNonFragile())
-           .Case("objc_property_explicit_atomic", true) // Does clang support explicit "atomic" keyword?
+           .Case("objc_property_explicit_atomic", true) // Does lfort support explicit "atomic" keyword?
            .Case("objc_weak_class", LangOpts.ObjCRuntime.hasWeakClassImport())
            .Case("ownership_holds", true)
            .Case("ownership_returns", true)
@@ -954,7 +954,7 @@ static bool HasAttribute(const IdentifierInfo *II) {
 
   // FIXME: Do we need to handle namespaces here?
   return llvm::StringSwitch<bool>(Name)
-#include "clang/Lex/AttrSpellings.inc"
+#include "lfort/Lex/AttrSpellings.inc"
         .Default(false);
 }
 

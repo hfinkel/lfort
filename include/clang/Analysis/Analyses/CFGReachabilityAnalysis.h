@@ -8,18 +8,18 @@
 //===----------------------------------------------------------------------===//
 //
 // This file defines a flow-sensitive, (mostly) path-insensitive reachability
-// analysis based on Clang's CFGs.  Clients can query if a given basic block
+// analysis based on LFort's CFGs.  Clients can query if a given basic block
 // is reachable within the CFG.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_ANALYSIS_CFG_REACHABILITY
-#define CLANG_ANALYSIS_CFG_REACHABILITY
+#ifndef LFORT_ANALYSIS_CFG_REACHABILITY
+#define LFORT_ANALYSIS_CFG_REACHABILITY
 
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/DenseMap.h"
 
-namespace clang {
+namespace lfort {
 
 class CFG;
 class CFGBlock;

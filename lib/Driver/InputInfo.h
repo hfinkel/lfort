@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_LIB_DRIVER_INPUTINFO_H_
-#define CLANG_LIB_DRIVER_INPUTINFO_H_
+#ifndef LFORT_LIB_DRIVER_INPUTINFO_H_
+#define LFORT_LIB_DRIVER_INPUTINFO_H_
 
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/Types.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/Types.h"
 #include <cassert>
 #include <string>
 
-namespace clang {
+namespace lfort {
 namespace driver {
 
 /// InputInfo - Wrapper for information about an input source.
@@ -83,6 +83,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -verify -fsyntax-only %s
 
 static void (*fp0)(void) __attribute__((noreturn));
 
@@ -20,7 +20,7 @@ void f3() {
   return;  // expected-warning {{function 'f3' declared 'noreturn' should not return}}
 }
 
-#pragma clang diagnostic error "-Winvalid-noreturn"
+#pragma lfort diagnostic error "-Winvalid-noreturn"
 
 void f4() __attribute__((noreturn));
 void f4() {

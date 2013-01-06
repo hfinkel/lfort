@@ -28,7 +28,7 @@ cscope.out
 #==============================================================================#
 # Directories to ignore (do not add trailing '/'s, they skip symlinks).
 #==============================================================================#
-# Clang extra user tools, which is tracked independently (clang-tools-extra).
+# LFort extra user tools, which is tracked independently (lfort-tools-extra).
 tools/extra
 # Sphinx build products
 docs/_build

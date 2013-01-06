@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 // C++ [basic.def.odr]p1:
 //   No translation unit shall contain more than one definition of any

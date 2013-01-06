@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -O2 -emit-llvm %s -o - | grep call
+// RUN: %lfort_cc1 -O2 -emit-llvm %s -o - | grep call
 
 static int bar(int x, int y) __attribute__((noinline));
 

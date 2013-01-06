@@ -1,4 +1,4 @@
-// RUN: %clang -emit-llvm -S -g %s -o - | FileCheck %s
+// RUN: %lfort -emit-llvm -S -g %s -o - | FileCheck %s
 
 // Radar 8396182
 // There is only one lexical block, but we need a DILexicalBlock and two

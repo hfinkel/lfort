@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic -Wsign-conversion %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic -Wsign-conversion %s
 void foo() {
   *(0 ? (double *)0 : (void *)0) = 0;
   // FIXME: GCC doesn't consider the following two statements to be errors.

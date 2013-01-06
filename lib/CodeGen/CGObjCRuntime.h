@@ -13,13 +13,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_OBCJRUNTIME_H
-#define CLANG_CODEGEN_OBCJRUNTIME_H
+#ifndef LFORT_CODEGEN_OBCJRUNTIME_H
+#define LFORT_CODEGEN_OBCJRUNTIME_H
 #include "CGBuilder.h"
 #include "CGCall.h"
 #include "CGValue.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Basic/IdentifierTable.h" // Selector
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Basic/IdentifierTable.h" // Selector
 
 namespace llvm {
   class Constant;
@@ -31,7 +31,7 @@ namespace llvm {
   class Value;
 }
 
-namespace clang {
+namespace lfort {
 namespace CodeGen {
   class CodeGenFunction;
 }

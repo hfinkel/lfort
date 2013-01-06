@@ -1,4 +1,4 @@
-##===- clang/lib/StaticAnalyzer/Frontend/Makefile ----------*- Makefile -*-===##
+##===- lfort/lib/StaticAnalyzer/Frontend/Makefile ----------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,9 +11,9 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../../..
-LIBRARYNAME := clangStaticAnalyzerFrontend
+LFORT_LEVEL := ../../..
+LIBRARYNAME := lfortStaticAnalyzerFrontend
 
 CPP.Flags += -I${PROJ_OBJ_DIR}/../Checkers
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

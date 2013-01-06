@@ -11,21 +11,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REWRITER_TEST_CONTEXT_H
-#define LLVM_CLANG_REWRITER_TEST_CONTEXT_H
+#ifndef LLVM_LFORT_REWRITER_TEST_CONTEXT_H
+#define LLVM_LFORT_REWRITER_TEST_CONTEXT_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 
 /// \brief A class that sets up a ready to use Rewriter.
 ///
@@ -123,6 +123,6 @@ class RewriterTestContext {
   SmallString<128> TemporaryDirectory;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -Wno-private-extern -triple i386-pc-linux-gnu -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -Wno-private-extern -triple i386-pc-linux-gnu -verify -fsyntax-only
 
 void f() {
   int i;

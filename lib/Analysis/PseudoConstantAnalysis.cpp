@@ -13,14 +13,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/PseudoConstantAnalysis.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Stmt.h"
+#include "lfort/Analysis/Analyses/PseudoConstantAnalysis.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include <deque>
 
-using namespace clang;
+using namespace lfort;
 
 // The number of ValueDecls we want to keep track of by default (per-function)
 #define VARDECL_SET_SIZE 256

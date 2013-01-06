@@ -1,7 +1,7 @@
 // REQUIRES: x86-registered-target
 
 // RUN: true
-// UN: not %clang_cc1 -triple i386-apple-darwin10 -emit-obj %s -o /dev/null > %t 2>&1
+// UN: not %lfort_cc1 -triple i386-apple-darwin10 -emit-obj %s -o /dev/null > %t 2>&1
 // UN: FileCheck %s < %t
 
 int test1(int X) {

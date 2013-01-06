@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_ENVIRONMENT_H
-#define LLVM_CLANG_GR_ENVIRONMENT_H
+#ifndef LLVM_LFORT_GR_ENVIRONMENT_H
+#define LLVM_LFORT_GR_ENVIRONMENT_H
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/ImmutableMap.h"
 
-namespace clang {
+namespace lfort {
 
 class LiveVariables;
 
@@ -123,6 +123,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

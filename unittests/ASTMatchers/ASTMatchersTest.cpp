@@ -8,13 +8,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "ASTMatchersTest.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/ASTMatchers/ASTMatchFinder.h"
+#include "lfort/ASTMatchers/ASTMatchers.h"
+#include "lfort/Tooling/Tooling.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 
 #if GTEST_HAS_DEATH_TEST
@@ -3466,19 +3466,19 @@ private:
 TEST(MatchFinder, CanMatchDeclarationsRecursively) {
   EXPECT_TRUE(matchAndVerifyResultTrue("class X { class Y {}; };",
     recordDecl(hasName("::X")).bind("X"),
-    new VerifyRecursiveMatch<clang::Decl>("X", recordDecl(hasName("X::Y")))));
+    new VerifyRecursiveMatch<lfort::Decl>("X", recordDecl(hasName("X::Y")))));
   EXPECT_TRUE(matchAndVerifyResultFalse("class X { class Y {}; };",
     recordDecl(hasName("::X")).bind("X"),
-    new VerifyRecursiveMatch<clang::Decl>("X", recordDecl(hasName("X::Z")))));
+    new VerifyRecursiveMatch<lfort::Decl>("X", recordDecl(hasName("X::Z")))));
 }
 
 TEST(MatchFinder, CanMatchStatementsRecursively) {
   EXPECT_TRUE(matchAndVerifyResultTrue("void f() { if (1) { for (;;) { } } }",
     ifStmt().bind("if"),
-    new VerifyRecursiveMatch<clang::Stmt>("if", forStmt())));
+    new VerifyRecursiveMatch<lfort::Stmt>("if", forStmt())));
   EXPECT_TRUE(matchAndVerifyResultFalse("void f() { if (1) { for (;;) { } } }",
     ifStmt().bind("if"),
-    new VerifyRecursiveMatch<clang::Stmt>("if", declStmt())));
+    new VerifyRecursiveMatch<lfort::Stmt>("if", declStmt())));
 }
 
 class VerifyStartOfTranslationUnit : public MatchFinder::MatchCallback {
@@ -3503,4 +3503,4 @@ TEST(MatchFinder, InterceptsStartOfTranslationUnit) {
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort

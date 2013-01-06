@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -Wnewline-eof -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wnewline-eof %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -Wnewline-eof -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wnewline-eof %s 2>&1 | FileCheck %s
 // rdar://9133072
 
 // Make sure the diagnostic shows up properly at the end of the last line.

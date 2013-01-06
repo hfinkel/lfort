@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -O2 | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -O2 | FileCheck %s
 
 struct B;
 extern B x;

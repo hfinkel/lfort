@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-apple-darwin -verify %s
+// RUN: %lfort_cc1 -triple i686-apple-darwin -verify %s
 
 void f() {
   int x0[1073741824]; // expected-error{{array is too large}}

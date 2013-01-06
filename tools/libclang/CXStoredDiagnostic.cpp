@@ -7,7 +7,7 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* Implements part of the diagnostic functions of the Clang C interface.      *|
+|* Implements part of the diagnostic functions of the LFort C interface.      *|
 |*                                                                            *|
 \*===----------------------------------------------------------------------===*/
 
@@ -17,16 +17,16 @@
 #include "CXSourceLocation.h"
 #include "CXString.h"
 
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
-using namespace clang::cxloc;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxloc;
+using namespace lfort::cxstring;
 
 CXDiagnosticSeverity CXStoredDiagnostic::getSeverity() const {
   switch (Diag.getLevel()) {
@@ -42,7 +42,7 @@ CXDiagnosticSeverity CXStoredDiagnostic::getSeverity() const {
 
 CXSourceLocation CXStoredDiagnostic::getLocation() const {
   if (Diag.getLocation().isInvalid())
-    return clang_getNullLocation();
+    return lfort_getNullLocation();
   
   return translateSourceLocation(Diag.getLocation().getManager(),
                                  LangOpts, Diag.getLocation());

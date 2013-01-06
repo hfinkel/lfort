@@ -8,7 +8,7 @@
 ##===----------------------------------------------------------------------===##
 
 LEVEL = ../../../..
-TOOLNAME = clang-tblgen
+TOOLNAME = lfort-tblgen
 USEDLIBS = LLVMTableGen.a LLVMSupport.a
 
 # This tool has no plugins, optimize startup time.

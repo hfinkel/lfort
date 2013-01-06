@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386 -emit-llvm -O2 -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple i386 -emit-llvm -O2 -o - %s | FileCheck %s
 
 // CHECK: define i32 @f0()
 // CHECK:  ret i32 1

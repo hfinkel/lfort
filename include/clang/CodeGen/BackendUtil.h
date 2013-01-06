@@ -7,16 +7,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CODEGEN_BACKEND_UTIL_H
-#define LLVM_CLANG_CODEGEN_BACKEND_UTIL_H
+#ifndef LLVM_LFORT_CODEGEN_BACKEND_UTIL_H
+#define LLVM_LFORT_CODEGEN_BACKEND_UTIL_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
 namespace llvm {
   class Module;
 }
 
-namespace clang {
+namespace lfort {
   class DiagnosticsEngine;
   class CodeGenOptions;
   class TargetOptions;

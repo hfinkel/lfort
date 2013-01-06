@@ -8,11 +8,11 @@
 #===------------------------------------------------------------------------===#
 
 r"""
-Clang Indexing Library Bindings
+LFort Indexing Library Bindings
 ===============================
 
-This module provides an interface to the Clang indexing library. It is a
-low-level interface to the indexing library which attempts to match the Clang
+This module provides an interface to the LFort indexing library. It is a
+low-level interface to the indexing library which attempts to match the LFort
 API directly while also being "pythonic". Notable differences from the C API
 are:
 
@@ -65,7 +65,7 @@ call is efficient.
 from ctypes import *
 import collections
 
-import clang.enumerations
+import lfort.enumerations
 
 # ctypes doesn't implicitly convert c_void_p to the appropriate wrapper
 # object. This is a problem, because it means that from_parameter will see an
@@ -81,9 +81,9 @@ class TranslationUnitLoadError(Exception):
     """Represents an error that occurred when loading a TranslationUnit.
 
     This is raised in the case where a TranslationUnit could not be
-    instantiated due to failure in the libclang library.
+    instantiated due to failure in the liblfort library.
 
-    FIXME: Make libclang expose additional error information in this scenario.
+    FIXME: Make liblfort expose additional error information in this scenario.
     """
     pass
 
@@ -150,12 +150,12 @@ class _CXString(Structure):
     _fields_ = [("spelling", c_char_p), ("free", c_int)]
 
     def __del__(self):
-        conf.lib.clang_disposeString(self)
+        conf.lib.lfort_disposeString(self)
 
     @staticmethod
     def from_result(res, fn, args):
         assert isinstance(res, _CXString)
-        return conf.lib.clang_getCString(res)
+        return conf.lib.lfort_getCString(res)
 
 class SourceLocation(Structure):
     """
@@ -167,7 +167,7 @@ class SourceLocation(Structure):
     def _get_instantiation(self):
         if self._data is None:
             f, l, c, o = c_object_p(), c_uint(), c_uint(), c_uint()
-            conf.lib.clang_getInstantiationLocation(self, byref(f), byref(l),
+            conf.lib.lfort_getInstantiationLocation(self, byref(f), byref(l),
                     byref(c), byref(o))
             if f:
                 f = File(f)
@@ -182,7 +182,7 @@ class SourceLocation(Structure):
         Retrieve the source location associated with a given file/line/column in
         a particular translation unit.
         """
-        return conf.lib.clang_getLocation(tu, file, line, column)
+        return conf.lib.lfort_getLocation(tu, file, line, column)
 
     @staticmethod
     def from_offset(tu, file, offset):
@@ -192,7 +192,7 @@ class SourceLocation(Structure):
         file -- File instance to obtain offset from
         offset -- Integer character offset within file
         """
-        return conf.lib.clang_getLocationForOffset(tu, file, offset)
+        return conf.lib.lfort_getLocationForOffset(tu, file, offset)
 
     @property
     def file(self):
@@ -215,7 +215,7 @@ class SourceLocation(Structure):
         return self._get_instantiation()[3]
 
     def __eq__(self, other):
-        return conf.lib.clang_equalLocations(self, other)
+        return conf.lib.lfort_equalLocations(self, other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -242,7 +242,7 @@ class SourceRange(Structure):
     # object.
     @staticmethod
     def from_locations(start, end):
-        return conf.lib.clang_getRange(start, end)
+        return conf.lib.lfort_getRange(start, end)
 
     @property
     def start(self):
@@ -250,7 +250,7 @@ class SourceRange(Structure):
         Return a SourceLocation representing the first character within a
         source range.
         """
-        return conf.lib.clang_getRangeStart(self)
+        return conf.lib.lfort_getRangeStart(self)
 
     @property
     def end(self):
@@ -258,10 +258,10 @@ class SourceRange(Structure):
         Return a SourceLocation representing the last character within a
         source range.
         """
-        return conf.lib.clang_getRangeEnd(self)
+        return conf.lib.lfort_getRangeEnd(self)
 
     def __eq__(self, other):
-        return conf.lib.clang_equalRanges(self, other)
+        return conf.lib.lfort_equalRanges(self, other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -271,7 +271,7 @@ class SourceRange(Structure):
 
 class Diagnostic(object):
     """
-    A Diagnostic is a single instance of a Clang diagnostic. It includes the
+    A Diagnostic is a single instance of a LFort diagnostic. It includes the
     diagnostic severity, the message, the location the diagnostic occurred, as
     well as additional source ranges and associated fix-it hints.
     """
@@ -286,19 +286,19 @@ class Diagnostic(object):
         self.ptr = ptr
 
     def __del__(self):
-        conf.lib.clang_disposeDiagnostic(self)
+        conf.lib.lfort_disposeDiagnostic(self)
 
     @property
     def severity(self):
-        return conf.lib.clang_getDiagnosticSeverity(self)
+        return conf.lib.lfort_getDiagnosticSeverity(self)
 
     @property
     def location(self):
-        return conf.lib.clang_getDiagnosticLocation(self)
+        return conf.lib.lfort_getDiagnosticLocation(self)
 
     @property
     def spelling(self):
-        return conf.lib.clang_getDiagnosticSpelling(self)
+        return conf.lib.lfort_getDiagnosticSpelling(self)
 
     @property
     def ranges(self):
@@ -307,12 +307,12 @@ class Diagnostic(object):
                 self.diag = diag
 
             def __len__(self):
-                return int(conf.lib.clang_getDiagnosticNumRanges(self.diag))
+                return int(conf.lib.lfort_getDiagnosticNumRanges(self.diag))
 
             def __getitem__(self, key):
                 if (key >= len(self)):
                     raise IndexError
-                return conf.lib.clang_getDiagnosticRange(self.diag, key)
+                return conf.lib.lfort_getDiagnosticRange(self.diag, key)
 
         return RangeIterator(self)
 
@@ -323,11 +323,11 @@ class Diagnostic(object):
                 self.diag = diag
 
             def __len__(self):
-                return int(conf.lib.clang_getDiagnosticNumFixIts(self.diag))
+                return int(conf.lib.lfort_getDiagnosticNumFixIts(self.diag))
 
             def __getitem__(self, key):
                 range = SourceRange()
-                value = conf.lib.clang_getDiagnosticFixIt(self.diag, key,
+                value = conf.lib.lfort_getDiagnosticFixIt(self.diag, key,
                         byref(range))
                 if len(value) == 0:
                     raise IndexError
@@ -339,25 +339,25 @@ class Diagnostic(object):
     @property
     def category_number(self):
         """The category number for this diagnostic."""
-        return conf.lib.clang_getDiagnosticCategory(self)
+        return conf.lib.lfort_getDiagnosticCategory(self)
 
     @property
     def category_name(self):
         """The string name of the category for this diagnostic."""
-        return conf.lib.clang_getDiagnosticCategoryName(self.category_number)
+        return conf.lib.lfort_getDiagnosticCategoryName(self.category_number)
 
     @property
     def option(self):
         """The command-line option that enables this diagnostic."""
-        return conf.lib.clang_getDiagnosticOption(self, None)
+        return conf.lib.lfort_getDiagnosticOption(self, None)
 
     @property
     def disable_option(self):
         """The command-line option that disables this diagnostic."""
         disable = _CXString()
-        conf.lib.clang_getDiagnosticOption(self, byref(disable))
+        conf.lib.lfort_getDiagnosticOption(self, byref(disable))
 
-        return conf.lib.clang_getCString(disable)
+        return conf.lib.lfort_getCString(disable)
 
     def __repr__(self):
         return "<Diagnostic severity %r, location %r, spelling %r>" % (
@@ -383,14 +383,14 @@ class FixIt(object):
 class TokenGroup(object):
     """Helper class to facilitate token management.
 
-    Tokens are allocated from libclang in chunks. They must be disposed of as a
+    Tokens are allocated from liblfort in chunks. They must be disposed of as a
     collective group.
 
     One purpose of this class is for instances to represent groups of allocated
     tokens. Each token in a group contains a reference back to an instance of
     this class. When all tokens from a group are garbage collected, it allows
     this class to be garbage collected. When this class is garbage collected,
-    it calls the libclang destructor which invalidates all tokens in the group.
+    it calls the liblfort destructor which invalidates all tokens in the group.
 
     You should not instantiate this class outside of this module.
     """
@@ -400,7 +400,7 @@ class TokenGroup(object):
         self._count = count
 
     def __del__(self):
-        conf.lib.clang_disposeTokens(self._tu, self._memory, self._count)
+        conf.lib.lfort_disposeTokens(self._tu, self._memory, self._count)
 
     @staticmethod
     def get_tokens(tu, extent):
@@ -412,7 +412,7 @@ class TokenGroup(object):
         tokens_memory = POINTER(Token)()
         tokens_count = c_uint()
 
-        conf.lib.clang_tokenize(tu, extent, byref(tokens_memory),
+        conf.lib.lfort_tokenize(tu, extent, byref(tokens_memory),
                 byref(tokens_count))
 
         count = int(tokens_count.value)
@@ -518,39 +518,39 @@ class CursorKind(object):
 
     def is_declaration(self):
         """Test if this is a declaration kind."""
-        return conf.lib.clang_isDeclaration(self)
+        return conf.lib.lfort_isDeclaration(self)
 
     def is_reference(self):
         """Test if this is a reference kind."""
-        return conf.lib.clang_isReference(self)
+        return conf.lib.lfort_isReference(self)
 
     def is_expression(self):
         """Test if this is an expression kind."""
-        return conf.lib.clang_isExpression(self)
+        return conf.lib.lfort_isExpression(self)
 
     def is_statement(self):
         """Test if this is a statement kind."""
-        return conf.lib.clang_isStatement(self)
+        return conf.lib.lfort_isStatement(self)
 
     def is_attribute(self):
         """Test if this is an attribute kind."""
-        return conf.lib.clang_isAttribute(self)
+        return conf.lib.lfort_isAttribute(self)
 
     def is_invalid(self):
         """Test if this is an invalid kind."""
-        return conf.lib.clang_isInvalid(self)
+        return conf.lib.lfort_isInvalid(self)
 
     def is_translation_unit(self):
         """Test if this is a translation unit kind."""
-        return conf.lib.clang_isTranslationUnit(self)
+        return conf.lib.lfort_isTranslationUnit(self)
 
     def is_preprocessing(self):
         """Test if this is a preprocessing kind."""
-        return conf.lib.clang_isPreprocessing(self)
+        return conf.lib.lfort_isPreprocessing(self)
 
     def is_unexposed(self):
         """Test if this is an unexposed kind."""
-        return conf.lib.clang_isUnexposed(self)
+        return conf.lib.lfort_isUnexposed(self)
 
     def __repr__(self):
         return 'CursorKind.%s' % (self.name,)
@@ -1049,13 +1049,13 @@ class Cursor(Structure):
     def from_location(tu, location):
         # We store a reference to the TU in the instance so the TU won't get
         # collected before the cursor.
-        cursor = conf.lib.clang_getCursor(tu, location)
+        cursor = conf.lib.lfort_getCursor(tu, location)
         cursor._tu = tu
 
         return cursor
 
     def __eq__(self, other):
-        return conf.lib.clang_equalCursors(self, other)
+        return conf.lib.lfort_equalCursors(self, other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -1065,13 +1065,13 @@ class Cursor(Structure):
         Returns true if the declaration pointed at by the cursor is also a
         definition of that entity.
         """
-        return conf.lib.clang_isCursorDefinition(self)
+        return conf.lib.lfort_isCursorDefinition(self)
 
     def is_static_method(self):
         """Returns True if the cursor refers to a C++ member function or member
         function template that is declared 'static'.
         """
-        return conf.lib.clang_CXXMethod_isStatic(self)
+        return conf.lib.lfort_CXXMethod_isStatic(self)
 
     def get_definition(self):
         """
@@ -1081,7 +1081,7 @@ class Cursor(Structure):
         """
         # TODO: Should probably check that this is either a reference or
         # declaration prior to issuing the lookup.
-        return conf.lib.clang_getCursorDefinition(self)
+        return conf.lib.lfort_getCursorDefinition(self)
 
     def get_usr(self):
         """Return the Unified Symbol Resultion (USR) for the entity referenced
@@ -1092,7 +1092,7 @@ class Cursor(Structure):
         program. USRs can be compared across translation units to determine,
         e.g., when references in one translation refer to an entity defined in
         another translation unit."""
-        return conf.lib.clang_getCursorUSR(self)
+        return conf.lib.lfort_getCursorUSR(self)
 
     @property
     def kind(self):
@@ -1103,11 +1103,11 @@ class Cursor(Structure):
     def spelling(self):
         """Return the spelling of the entity pointed at by the cursor."""
         if not self.kind.is_declaration():
-            # FIXME: clang_getCursorSpelling should be fixed to not assert on
-            # this, for consistency with clang_getCursorUSR.
+            # FIXME: lfort_getCursorSpelling should be fixed to not assert on
+            # this, for consistency with lfort_getCursorUSR.
             return None
         if not hasattr(self, '_spelling'):
-            self._spelling = conf.lib.clang_getCursorSpelling(self)
+            self._spelling = conf.lib.lfort_getCursorSpelling(self)
 
         return self._spelling
 
@@ -1121,7 +1121,7 @@ class Cursor(Structure):
         class template specialization.
         """
         if not hasattr(self, '_displayname'):
-            self._displayname = conf.lib.clang_getCursorDisplayName(self)
+            self._displayname = conf.lib.lfort_getCursorDisplayName(self)
 
         return self._displayname
 
@@ -1132,7 +1132,7 @@ class Cursor(Structure):
         pointed at by the cursor.
         """
         if not hasattr(self, '_loc'):
-            self._loc = conf.lib.clang_getCursorLocation(self)
+            self._loc = conf.lib.lfort_getCursorLocation(self)
 
         return self._loc
 
@@ -1143,7 +1143,7 @@ class Cursor(Structure):
         pointed at by the cursor.
         """
         if not hasattr(self, '_extent'):
-            self._extent = conf.lib.clang_getCursorExtent(self)
+            self._extent = conf.lib.lfort_getCursorExtent(self)
 
         return self._extent
 
@@ -1153,7 +1153,7 @@ class Cursor(Structure):
         Retrieve the Type (if any) of the entity pointed at by the cursor.
         """
         if not hasattr(self, '_type'):
-            self._type = conf.lib.clang_getCursorType(self)
+            self._type = conf.lib.lfort_getCursorType(self)
 
         return self._type
 
@@ -1167,7 +1167,7 @@ class Cursor(Structure):
         declarations will be identical.
         """
         if not hasattr(self, '_canonical'):
-            self._canonical = conf.lib.clang_getCanonicalCursor(self)
+            self._canonical = conf.lib.lfort_getCanonicalCursor(self)
 
         return self._canonical
 
@@ -1175,7 +1175,7 @@ class Cursor(Structure):
     def result_type(self):
         """Retrieve the Type of the result for this Cursor."""
         if not hasattr(self, '_result_type'):
-            self._result_type = conf.lib.clang_getResultType(self.type)
+            self._result_type = conf.lib.lfort_getResultType(self.type)
 
         return self._result_type
 
@@ -1189,7 +1189,7 @@ class Cursor(Structure):
         if not hasattr(self, '_underlying_type'):
             assert self.kind.is_declaration()
             self._underlying_type = \
-              conf.lib.clang_getTypedefDeclUnderlyingType(self)
+              conf.lib.lfort_getTypedefDeclUnderlyingType(self)
 
         return self._underlying_type
 
@@ -1202,7 +1202,7 @@ class Cursor(Structure):
         """
         if not hasattr(self, '_enum_type'):
             assert self.kind == CursorKind.ENUM_DECL
-            self._enum_type = conf.lib.clang_getEnumDeclIntegerType(self)
+            self._enum_type = conf.lib.lfort_getEnumDeclIntegerType(self)
 
         return self._enum_type
 
@@ -1226,9 +1226,9 @@ class Cursor(Structure):
                                         TypeKind.ULONGLONG,
                                         TypeKind.UINT128):
                 self._enum_value = \
-                  conf.lib.clang_getEnumConstantDeclUnsignedValue(self)
+                  conf.lib.lfort_getEnumConstantDeclUnsignedValue(self)
             else:
-                self._enum_value = conf.lib.clang_getEnumConstantDeclValue(self)
+                self._enum_value = conf.lib.lfort_getEnumConstantDeclValue(self)
         return self._enum_value
 
     @property
@@ -1236,7 +1236,7 @@ class Cursor(Structure):
         """Return the Objective-C type encoding as a str."""
         if not hasattr(self, '_objc_type_encoding'):
             self._objc_type_encoding = \
-              conf.lib.clang_getDeclObjCTypeEncoding(self)
+              conf.lib.lfort_getDeclObjCTypeEncoding(self)
 
         return self._objc_type_encoding
 
@@ -1244,7 +1244,7 @@ class Cursor(Structure):
     def hash(self):
         """Returns a hash of the cursor as an int."""
         if not hasattr(self, '_hash'):
-            self._hash = conf.lib.clang_hashCursor(self)
+            self._hash = conf.lib.lfort_hashCursor(self)
 
         return self._hash
 
@@ -1252,7 +1252,7 @@ class Cursor(Structure):
     def semantic_parent(self):
         """Return the semantic parent for this cursor."""
         if not hasattr(self, '_semantic_parent'):
-            self._semantic_parent = conf.lib.clang_getCursorSemanticParent(self)
+            self._semantic_parent = conf.lib.lfort_getCursorSemanticParent(self)
 
         return self._semantic_parent
 
@@ -1260,7 +1260,7 @@ class Cursor(Structure):
     def lexical_parent(self):
         """Return the lexical parent for this cursor."""
         if not hasattr(self, '_lexical_parent'):
-            self._lexical_parent = conf.lib.clang_getCursorLexicalParent(self)
+            self._lexical_parent = conf.lib.lfort_getCursorLexicalParent(self)
 
         return self._lexical_parent
 
@@ -1278,15 +1278,15 @@ class Cursor(Structure):
         representing the entity that it references.
         """
         if not hasattr(self, '_referenced'):
-            self._referenced = conf.lib.clang_getCursorReferenced(self)
+            self._referenced = conf.lib.lfort_getCursorReferenced(self)
 
         return self._referenced
 
     def get_arguments(self):
         """Return an iterator for accessing the arguments of this cursor."""
-        num_args = conf.lib.clang_Cursor_getNumArguments(self)
+        num_args = conf.lib.lfort_Cursor_getNumArguments(self)
         for i in range(0, num_args):
-            yield conf.lib.clang_Cursor_getArgument(self, i)
+            yield conf.lib.lfort_Cursor_getArgument(self, i)
 
     def get_children(self):
         """Return an iterator for accessing the children of this cursor."""
@@ -1295,14 +1295,14 @@ class Cursor(Structure):
         def visitor(child, parent, children):
             # FIXME: Document this assertion in API.
             # FIXME: There should just be an isNull method.
-            assert child != conf.lib.clang_getNullCursor()
+            assert child != conf.lib.lfort_getNullCursor()
 
             # Create reference to TU so it isn't GC'd before Cursor.
             child._tu = self._tu
             children.append(child)
             return 1 # continue
         children = []
-        conf.lib.clang_visitChildren(self, callbacks['cursor_visit'](visitor),
+        conf.lib.lfort_visitChildren(self, callbacks['cursor_visit'](visitor),
             children)
         return iter(children)
 
@@ -1318,7 +1318,7 @@ class Cursor(Structure):
     def from_result(res, fn, args):
         assert isinstance(res, Cursor)
         # FIXME: There should just be an isNull method.
-        if res == conf.lib.clang_getNullCursor():
+        if res == conf.lib.lfort_getNullCursor():
             return None
 
         # Store a reference to the TU in the Python object so it won't get GC'd
@@ -1341,7 +1341,7 @@ class Cursor(Structure):
     @staticmethod
     def from_cursor_result(res, fn, args):
         assert isinstance(res, Cursor)
-        if res == conf.lib.clang_getNullCursor():
+        if res == conf.lib.lfort_getNullCursor():
             return None
 
         res._tu = args[0]._tu
@@ -1383,7 +1383,7 @@ class TypeKind(object):
     @property
     def spelling(self):
         """Retrieve the spelling of this TypeKind."""
-        return conf.lib.clang_getTypeKindSpelling(self.value)
+        return conf.lib.lfort_getTypeKindSpelling(self.value)
 
     @staticmethod
     def from_id(id):
@@ -1463,7 +1463,7 @@ class Type(Structure):
 
             def __len__(self):
                 if self.length is None:
-                    self.length = conf.lib.clang_getNumArgTypes(self.parent)
+                    self.length = conf.lib.lfort_getNumArgTypes(self.parent)
 
                 return self.length
 
@@ -1479,7 +1479,7 @@ class Type(Structure):
                     raise IndexError("Index greater than container length: "
                                      "%d > %d" % ( key, len(self) ))
 
-                result = conf.lib.clang_getArgType(self.parent, key)
+                result = conf.lib.lfort_getArgType(self.parent, key)
                 if result.kind == TypeKind.INVALID:
                     raise IndexError("Argument could not be retrieved.")
 
@@ -1495,7 +1495,7 @@ class Type(Structure):
         If accessed on a type that is not an array, complex, or vector type, an
         exception will be raised.
         """
-        result = conf.lib.clang_getElementType(self)
+        result = conf.lib.lfort_getElementType(self)
         if result.kind == TypeKind.INVALID:
             raise Exception('Element type not available on this type.')
 
@@ -1509,7 +1509,7 @@ class Type(Structure):
 
         If the Type is not an array or vector, this raises.
         """
-        result = conf.lib.clang_getNumElements(self)
+        result = conf.lib.lfort_getNumElements(self)
         if result < 0:
             raise Exception('Type does not have elements.')
 
@@ -1541,13 +1541,13 @@ class Type(Structure):
         """
         Return the canonical type for a Type.
 
-        Clang's type system explicitly models typedefs and all the
+        LFort's type system explicitly models typedefs and all the
         ways a specific type can be represented.  The canonical type
         is the underlying type with all the "sugar" removed.  For
         example, if 'T' is a typedef for 'int', the canonical type for
         'T' would be 'int'.
         """
-        return conf.lib.clang_getCanonicalType(self)
+        return conf.lib.lfort_getCanonicalType(self)
 
     def is_const_qualified(self):
         """Determine whether a Type has the "const" qualifier set.
@@ -1555,7 +1555,7 @@ class Type(Structure):
         This does not look through typedefs that may have added "const"
         at a different level.
         """
-        return conf.lib.clang_isConstQualifiedType(self)
+        return conf.lib.lfort_isConstQualifiedType(self)
 
     def is_volatile_qualified(self):
         """Determine whether a Type has the "volatile" qualifier set.
@@ -1563,7 +1563,7 @@ class Type(Structure):
         This does not look through typedefs that may have added "volatile"
         at a different level.
         """
-        return conf.lib.clang_isVolatileQualifiedType(self)
+        return conf.lib.lfort_isVolatileQualifiedType(self)
 
     def is_restrict_qualified(self):
         """Determine whether a Type has the "restrict" qualifier set.
@@ -1571,67 +1571,67 @@ class Type(Structure):
         This does not look through typedefs that may have added "restrict" at
         a different level.
         """
-        return conf.lib.clang_isRestrictQualifiedType(self)
+        return conf.lib.lfort_isRestrictQualifiedType(self)
 
     def is_function_variadic(self):
         """Determine whether this function Type is a variadic function type."""
         assert self.kind == TypeKind.FUNCTIONPROTO
 
-        return conf.lib.clang_isFunctionTypeVariadic(self)
+        return conf.lib.lfort_isFunctionTypeVariadic(self)
 
     def is_pod(self):
         """Determine whether this Type represents plain old data (POD)."""
-        return conf.lib.clang_isPODType(self)
+        return conf.lib.lfort_isPODType(self)
 
     def get_pointee(self):
         """
         For pointer types, returns the type of the pointee.
         """
-        return conf.lib.clang_getPointeeType(self)
+        return conf.lib.lfort_getPointeeType(self)
 
     def get_declaration(self):
         """
         Return the cursor for the declaration of the given type.
         """
-        return conf.lib.clang_getTypeDeclaration(self)
+        return conf.lib.lfort_getTypeDeclaration(self)
 
     def get_result(self):
         """
         Retrieve the result type associated with a function type.
         """
-        return conf.lib.clang_getResultType(self)
+        return conf.lib.lfort_getResultType(self)
 
     def get_array_element_type(self):
         """
         Retrieve the type of the elements of the array type.
         """
-        return conf.lib.clang_getArrayElementType(self)
+        return conf.lib.lfort_getArrayElementType(self)
 
     def get_array_size(self):
         """
         Retrieve the size of the constant array.
         """
-        return conf.lib.clang_getArraySize(self)
+        return conf.lib.lfort_getArraySize(self)
 
     def __eq__(self, other):
         if type(other) != type(self):
             return False
 
-        return conf.lib.clang_equalTypes(self, other)
+        return conf.lib.lfort_equalTypes(self, other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
 ## CIndex Objects ##
 
-# CIndex objects (derived from ClangObject) are essentially lightweight
+# CIndex objects (derived from LFortObject) are essentially lightweight
 # wrappers attached to some underlying object, which is exposed via CIndex as
 # a void*.
 
-class ClangObject(object):
+class LFortObject(object):
     """
-    A helper for Clang objects. This class helps act as an intermediary for
-    the ctypes library and the Clang CIndex library.
+    A helper for LFort objects. This class helps act as an intermediary for
+    the ctypes library and the LFort CIndex library.
     """
     def __init__(self, obj):
         assert isinstance(obj, c_object_p) and obj
@@ -1665,16 +1665,16 @@ class CompletionChunk:
 
     @CachedProperty
     def spelling(self):
-        return conf.lib.clang_getCompletionChunkText(self.cs, self.key).spelling
+        return conf.lib.lfort_getCompletionChunkText(self.cs, self.key).spelling
 
     @CachedProperty
     def kind(self):
-        res = conf.lib.clang_getCompletionChunkKind(self.cs, self.key)
+        res = conf.lib.lfort_getCompletionChunkKind(self.cs, self.key)
         return completionChunkKindMap[res]
 
     @CachedProperty
     def string(self):
-        res = conf.lib.clang_getCompletionChunkCompletionString(self.cs,
+        res = conf.lib.lfort_getCompletionChunkCompletionString(self.cs,
                                                                 self.key)
 
         if (res):
@@ -1720,7 +1720,7 @@ completionChunkKindMap = {
             19: CompletionChunk.Kind("HorizontalSpace"),
             20: CompletionChunk.Kind("VerticalSpace")}
 
-class CompletionString(ClangObject):
+class CompletionString(LFortObject):
     class Availability:
         def __init__(self, name):
             self.name = name
@@ -1736,7 +1736,7 @@ class CompletionString(ClangObject):
 
     @CachedProperty
     def num_chunks(self):
-        return conf.lib.clang_getNumCompletionChunks(self.obj)
+        return conf.lib.lfort_getNumCompletionChunks(self.obj)
 
     def __getitem__(self, key):
         if self.num_chunks <= key:
@@ -1745,17 +1745,17 @@ class CompletionString(ClangObject):
 
     @property
     def priority(self):
-        return conf.lib.clang_getCompletionPriority(self.obj)
+        return conf.lib.lfort_getCompletionPriority(self.obj)
 
     @property
     def availability(self):
-        res = conf.lib.clang_getCompletionAvailability(self.obj)
+        res = conf.lib.lfort_getCompletionAvailability(self.obj)
         return availabilityKinds[res]
 
     @property
     def briefComment(self):
-        if conf.function_exists("clang_getCompletionBriefComment"):
-            return conf.lib.clang_getCompletionBriefComment(self.obj)
+        if conf.function_exists("lfort_getCompletionBriefComment"):
+            return conf.lib.lfort_getCompletionBriefComment(self.obj)
         return _CXString()
 
     def __repr__(self):
@@ -1797,7 +1797,7 @@ class CCRStructure(Structure):
 
         return self.results[key]
 
-class CodeCompletionResults(ClangObject):
+class CodeCompletionResults(LFortObject):
     def __init__(self, ptr):
         assert isinstance(ptr, POINTER(CCRStructure)) and ptr
         self.ptr = self._as_parameter_ = ptr
@@ -1806,7 +1806,7 @@ class CodeCompletionResults(ClangObject):
         return self._as_parameter_
 
     def __del__(self):
-        conf.lib.clang_disposeCodeCompleteResults(self)
+        conf.lib.lfort_disposeCodeCompleteResults(self)
 
     @property
     def results(self):
@@ -1820,17 +1820,17 @@ class CodeCompletionResults(ClangObject):
 
             def __len__(self):
                 return int(\
-                  conf.lib.clang_codeCompleteGetNumDiagnostics(self.ccr))
+                  conf.lib.lfort_codeCompleteGetNumDiagnostics(self.ccr))
 
             def __getitem__(self, key):
-                return conf.lib.clang_codeCompleteGetDiagnostic(self.ccr, key)
+                return conf.lib.lfort_codeCompleteGetDiagnostic(self.ccr, key)
 
         return DiagnosticsItr(self)
 
 
-class Index(ClangObject):
+class Index(LFortObject):
     """
-    The Index type provides the primary interface to the Clang CIndex library,
+    The Index type provides the primary interface to the LFort CIndex library,
     primarily by providing an interface for reading and parsing translation
     units.
     """
@@ -1842,10 +1842,10 @@ class Index(ClangObject):
         Parameters:
         excludeDecls -- Exclude local declarations from translation units.
         """
-        return Index(conf.lib.clang_createIndex(excludeDecls, 0))
+        return Index(conf.lib.lfort_createIndex(excludeDecls, 0))
 
     def __del__(self):
-        conf.lib.clang_disposeIndex(self)
+        conf.lib.lfort_disposeIndex(self)
 
     def read(self, path):
         """Load a TranslationUnit from the given AST file."""
@@ -1853,8 +1853,8 @@ class Index(ClangObject):
 
     def parse(self, path, args=None, unsaved_files=None, options = 0):
         """Load the translation unit from the given source code file by running
-        clang and generating the AST before loading. Additional command line
-        parameters can be passed to clang via the args parameter.
+        lfort and generating the AST before loading. Additional command line
+        parameters can be passed to lfort via the args parameter.
 
         In-memory contents for files can be provided by passing a list of pairs
         to as unsaved_files, the first item should be the filenames to be mapped
@@ -1867,11 +1867,11 @@ class Index(ClangObject):
         return TranslationUnit.from_source(path, args, unsaved_files, options,
                                            self)
 
-class TranslationUnit(ClangObject):
+class TranslationUnit(LFortObject):
     """Represents a source code translation unit.
 
     This is one of the main types in the API. Any time you wish to interact
-    with Clang's representation of a source file, you typically start with a
+    with LFort's representation of a source file, you typically start with a
     translation unit.
     """
 
@@ -1914,7 +1914,7 @@ class TranslationUnit(ClangObject):
         This is capable of processing source code both from files on the
         filesystem as well as in-memory contents.
 
-        Command-line arguments that would be passed to clang are specified as
+        Command-line arguments that would be passed to lfort are specified as
         a list via args. These can be used to specify include paths, warnings,
         etc. e.g. ["-Wall", "-I/path/to/include"].
 
@@ -1944,7 +1944,7 @@ class TranslationUnit(ClangObject):
         Please note that a TranslationUnit with parser errors may be returned.
         It is the caller's responsibility to check tu.diagnostics for errors.
 
-        Also note that Clang infers the source language from the extension of
+        Also note that LFort infers the source language from the extension of
         the input filename. If you pass in source code containing a C++ class
         declaration with the filename "test.c" parsing will fail.
         """
@@ -1972,7 +1972,7 @@ class TranslationUnit(ClangObject):
                 unsaved_array[i].contents = contents
                 unsaved_array[i].length = len(contents)
 
-        ptr = conf.lib.clang_parseTranslationUnit(index, filename, args_array,
+        ptr = conf.lib.lfort_parseTranslationUnit(index, filename, args_array,
                                     len(args), unsaved_array,
                                     len(unsaved_files), options)
 
@@ -1997,7 +1997,7 @@ class TranslationUnit(ClangObject):
         if index is None:
             index = Index.create()
 
-        ptr = conf.lib.clang_createTranslationUnit(index, filename)
+        ptr = conf.lib.lfort_createTranslationUnit(index, filename)
         if ptr is None:
             raise TranslationUnitLoadError(filename)
 
@@ -2011,20 +2011,20 @@ class TranslationUnit(ClangObject):
         """
         assert isinstance(index, Index)
 
-        ClangObject.__init__(self, ptr)
+        LFortObject.__init__(self, ptr)
 
     def __del__(self):
-        conf.lib.clang_disposeTranslationUnit(self)
+        conf.lib.lfort_disposeTranslationUnit(self)
 
     @property
     def cursor(self):
         """Retrieve the cursor that represents the given translation unit."""
-        return conf.lib.clang_getTranslationUnitCursor(self)
+        return conf.lib.lfort_getTranslationUnitCursor(self)
 
     @property
     def spelling(self):
         """Get the original translation unit source file name."""
-        return conf.lib.clang_getTranslationUnitSpelling(self)
+        return conf.lib.lfort_getTranslationUnitSpelling(self)
 
     def get_includes(self):
         """
@@ -2041,7 +2041,7 @@ class TranslationUnit(ClangObject):
 
         # Automatically adapt CIndex/ctype pointers to python objects
         includes = []
-        conf.lib.clang_getInclusions(self,
+        conf.lib.lfort_getInclusions(self,
                 callbacks['translation_unit_includes'](visitor), includes)
 
         return iter(includes)
@@ -2117,10 +2117,10 @@ class TranslationUnit(ClangObject):
                 self.tu = tu
 
             def __len__(self):
-                return int(conf.lib.clang_getNumDiagnostics(self.tu))
+                return int(conf.lib.lfort_getNumDiagnostics(self.tu))
 
             def __getitem__(self, key):
-                diag = conf.lib.clang_getDiagnostic(self.tu, key)
+                diag = conf.lib.lfort_getDiagnostic(self.tu, key)
                 if not diag:
                     raise IndexError
                 return Diagnostic(diag)
@@ -2153,13 +2153,13 @@ class TranslationUnit(ClangObject):
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
-        ptr = conf.lib.clang_reparseTranslationUnit(self, len(unsaved_files),
+        ptr = conf.lib.lfort_reparseTranslationUnit(self, len(unsaved_files),
                 unsaved_files_array, options)
 
     def save(self, filename):
         """Saves the TranslationUnit to a file.
 
-        This is equivalent to passing -emit-ast to the clang frontend. The
+        This is equivalent to passing -emit-ast to the lfort frontend. The
         saved file can be loaded back into a TranslationUnit. Or, if it
         corresponds to a header, it can be used as a pre-compiled header file.
 
@@ -2171,8 +2171,8 @@ class TranslationUnit(ClangObject):
 
         filename -- The path to save the translation unit to.
         """
-        options = conf.lib.clang_defaultSaveOptions(self)
-        result = int(conf.lib.clang_saveTranslationUnit(self, filename,
+        options = conf.lib.lfort_defaultSaveOptions(self)
+        result = int(conf.lib.lfort_saveTranslationUnit(self, filename,
                                                         options))
         if result != 0:
             raise TranslationUnitSaveError(result,
@@ -2217,7 +2217,7 @@ class TranslationUnit(ClangObject):
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
-        ptr = conf.lib.clang_codeCompleteAt(self, path, line, column,
+        ptr = conf.lib.lfort_codeCompleteAt(self, path, line, column,
                 unsaved_files_array, len(unsaved_files), options)
         if ptr:
             return CodeCompletionResults(ptr)
@@ -2236,7 +2236,7 @@ class TranslationUnit(ClangObject):
 
         return TokenGroup.get_tokens(self, extent)
 
-class File(ClangObject):
+class File(LFortObject):
     """
     The File class represents a particular source file that is part of a
     translation unit.
@@ -2245,17 +2245,17 @@ class File(ClangObject):
     @staticmethod
     def from_name(translation_unit, file_name):
         """Retrieve a file handle within the given translation unit."""
-        return File(conf.lib.clang_getFile(translation_unit, file_name))
+        return File(conf.lib.lfort_getFile(translation_unit, file_name))
 
     @property
     def name(self):
         """Return the complete file and path name of the file."""
-        return conf.lib.clang_getCString(conf.lib.clang_getFileName(self))
+        return conf.lib.lfort_getCString(conf.lib.lfort_getFileName(self))
 
     @property
     def time(self):
         """Return the last modification time of the file."""
-        return conf.lib.clang_getFileTime(self)
+        return conf.lib.lfort_getFileTime(self)
 
     def __str__(self):
         return self.name
@@ -2327,7 +2327,7 @@ class CompileCommand(object):
     @property
     def directory(self):
         """Get the working directory for this CompileCommand"""
-        return conf.lib.clang_CompileCommand_getDirectory(self.cmd)
+        return conf.lib.lfort_CompileCommand_getDirectory(self.cmd)
 
     @property
     def arguments(self):
@@ -2337,9 +2337,9 @@ class CompileCommand(object):
 
         Invariant : the first argument is the compiler executable
         """
-        length = conf.lib.clang_CompileCommand_getNumArgs(self.cmd)
+        length = conf.lib.lfort_CompileCommand_getNumArgs(self.cmd)
         for i in xrange(length):
-            yield conf.lib.clang_CompileCommand_getArg(self.cmd, i)
+            yield conf.lib.lfort_CompileCommand_getArg(self.cmd, i)
 
 class CompileCommands(object):
     """
@@ -2350,13 +2350,13 @@ class CompileCommands(object):
         self.ccmds = ccmds
 
     def __del__(self):
-        conf.lib.clang_CompileCommands_dispose(self.ccmds)
+        conf.lib.lfort_CompileCommands_dispose(self.ccmds)
 
     def __len__(self):
-        return int(conf.lib.clang_CompileCommands_getSize(self.ccmds))
+        return int(conf.lib.lfort_CompileCommands_getSize(self.ccmds))
 
     def __getitem__(self, i):
-        cc = conf.lib.clang_CompileCommands_getCommand(self.ccmds, i)
+        cc = conf.lib.lfort_CompileCommands_getCommand(self.ccmds, i)
         if not cc:
             raise IndexError
         return CompileCommand(cc, self)
@@ -2367,16 +2367,16 @@ class CompileCommands(object):
             return None
         return CompileCommands(res)
 
-class CompilationDatabase(ClangObject):
+class CompilationDatabase(LFortObject):
     """
     The CompilationDatabase is a wrapper class around
-    clang::tooling::CompilationDatabase
+    lfort::tooling::CompilationDatabase
 
     It enables querying how a specific source file can be built.
     """
 
     def __del__(self):
-        conf.lib.clang_CompilationDatabase_dispose(self)
+        conf.lib.lfort_CompilationDatabase_dispose(self)
 
     @staticmethod
     def from_result(res, fn, args):
@@ -2390,7 +2390,7 @@ class CompilationDatabase(ClangObject):
         """Builds a CompilationDatabase from the database found in buildDir"""
         errorCode = c_uint()
         try:
-            cdb = conf.lib.clang_CompilationDatabase_fromDirectory(buildDir,
+            cdb = conf.lib.lfort_CompilationDatabase_fromDirectory(buildDir,
                 byref(errorCode))
         except CompilationDatabaseError as e:
             raise CompilationDatabaseError(int(errorCode.value),
@@ -2402,7 +2402,7 @@ class CompilationDatabase(ClangObject):
         Get an iterable object providing all the CompileCommands available to
         build filename. Returns None if filename is not found in the database.
         """
-        return conf.lib.clang_CompilationDatabase_getCompileCommands(self,
+        return conf.lib.lfort_CompilationDatabase_getCompileCommands(self,
                                                                      filename)
 
 class Token(Structure):
@@ -2425,29 +2425,29 @@ class Token(Structure):
 
         This is the textual representation of the token in source.
         """
-        return conf.lib.clang_getTokenSpelling(self._tu, self)
+        return conf.lib.lfort_getTokenSpelling(self._tu, self)
 
     @property
     def kind(self):
         """Obtain the TokenKind of the current token."""
-        return TokenKind.from_value(conf.lib.clang_getTokenKind(self))
+        return TokenKind.from_value(conf.lib.lfort_getTokenKind(self))
 
     @property
     def location(self):
         """The SourceLocation this Token occurs at."""
-        return conf.lib.clang_getTokenLocation(self._tu, self)
+        return conf.lib.lfort_getTokenLocation(self._tu, self)
 
     @property
     def extent(self):
         """The SourceRange this Token occupies."""
-        return conf.lib.clang_getTokenExtent(self._tu, self)
+        return conf.lib.lfort_getTokenExtent(self._tu, self)
 
     @property
     def cursor(self):
         """The Cursor this Token corresponds to."""
         cursor = Cursor()
 
-        conf.lib.clang_annotateTokens(self._tu, byref(self), 1, byref(cursor))
+        conf.lib.lfort_annotateTokens(self._tu, byref(self), 1, byref(cursor))
 
         return cursor
 
@@ -2460,548 +2460,548 @@ callbacks['cursor_visit'] = CFUNCTYPE(c_int, Cursor, Cursor, py_object)
 
 # Functions strictly alphabetical order.
 functionList = [
-  ("clang_annotateTokens",
+  ("lfort_annotateTokens",
    [TranslationUnit, POINTER(Token), c_uint, POINTER(Cursor)]),
 
-  ("clang_CompilationDatabase_dispose",
+  ("lfort_CompilationDatabase_dispose",
    [c_object_p]),
 
-  ("clang_CompilationDatabase_fromDirectory",
+  ("lfort_CompilationDatabase_fromDirectory",
    [c_char_p, POINTER(c_uint)],
    c_object_p,
    CompilationDatabase.from_result),
 
-  ("clang_CompilationDatabase_getCompileCommands",
+  ("lfort_CompilationDatabase_getCompileCommands",
    [c_object_p, c_char_p],
    c_object_p,
    CompileCommands.from_result),
 
-  ("clang_CompileCommands_dispose",
+  ("lfort_CompileCommands_dispose",
    [c_object_p]),
 
-  ("clang_CompileCommands_getCommand",
+  ("lfort_CompileCommands_getCommand",
    [c_object_p, c_uint],
    c_object_p),
 
-  ("clang_CompileCommands_getSize",
+  ("lfort_CompileCommands_getSize",
    [c_object_p],
    c_uint),
 
-  ("clang_CompileCommand_getArg",
+  ("lfort_CompileCommand_getArg",
    [c_object_p, c_uint],
    _CXString,
    _CXString.from_result),
 
-  ("clang_CompileCommand_getDirectory",
+  ("lfort_CompileCommand_getDirectory",
    [c_object_p],
    _CXString,
    _CXString.from_result),
 
-  ("clang_CompileCommand_getNumArgs",
+  ("lfort_CompileCommand_getNumArgs",
    [c_object_p],
    c_uint),
 
-  ("clang_codeCompleteAt",
+  ("lfort_codeCompleteAt",
    [TranslationUnit, c_char_p, c_int, c_int, c_void_p, c_int, c_int],
    POINTER(CCRStructure)),
 
-  ("clang_codeCompleteGetDiagnostic",
+  ("lfort_codeCompleteGetDiagnostic",
    [CodeCompletionResults, c_int],
    Diagnostic),
 
-  ("clang_codeCompleteGetNumDiagnostics",
+  ("lfort_codeCompleteGetNumDiagnostics",
    [CodeCompletionResults],
    c_int),
 
-  ("clang_createIndex",
+  ("lfort_createIndex",
    [c_int, c_int],
    c_object_p),
 
-  ("clang_createTranslationUnit",
+  ("lfort_createTranslationUnit",
    [Index, c_char_p],
    c_object_p),
 
-  ("clang_CXXMethod_isStatic",
+  ("lfort_CXXMethod_isStatic",
    [Cursor],
    bool),
 
-  ("clang_CXXMethod_isVirtual",
+  ("lfort_CXXMethod_isVirtual",
    [Cursor],
    bool),
 
-  ("clang_defaultSaveOptions",
+  ("lfort_defaultSaveOptions",
    [TranslationUnit],
    c_uint),
 
-  ("clang_disposeCodeCompleteResults",
+  ("lfort_disposeCodeCompleteResults",
    [CodeCompletionResults]),
 
-# ("clang_disposeCXTUResourceUsage",
+# ("lfort_disposeCXTUResourceUsage",
 #  [CXTUResourceUsage]),
 
-  ("clang_disposeDiagnostic",
+  ("lfort_disposeDiagnostic",
    [Diagnostic]),
 
-  ("clang_disposeIndex",
+  ("lfort_disposeIndex",
    [Index]),
 
-  ("clang_disposeString",
+  ("lfort_disposeString",
    [_CXString]),
 
-  ("clang_disposeTokens",
+  ("lfort_disposeTokens",
    [TranslationUnit, POINTER(Token), c_uint]),
 
-  ("clang_disposeTranslationUnit",
+  ("lfort_disposeTranslationUnit",
    [TranslationUnit]),
 
-  ("clang_equalCursors",
+  ("lfort_equalCursors",
    [Cursor, Cursor],
    bool),
 
-  ("clang_equalLocations",
+  ("lfort_equalLocations",
    [SourceLocation, SourceLocation],
    bool),
 
-  ("clang_equalRanges",
+  ("lfort_equalRanges",
    [SourceRange, SourceRange],
    bool),
 
-  ("clang_equalTypes",
+  ("lfort_equalTypes",
    [Type, Type],
    bool),
 
-  ("clang_getArgType",
+  ("lfort_getArgType",
    [Type, c_uint],
    Type,
    Type.from_result),
 
-  ("clang_getArrayElementType",
+  ("lfort_getArrayElementType",
    [Type],
    Type,
    Type.from_result),
 
-  ("clang_getArraySize",
+  ("lfort_getArraySize",
    [Type],
    c_longlong),
 
-  ("clang_getCanonicalCursor",
+  ("lfort_getCanonicalCursor",
    [Cursor],
    Cursor,
    Cursor.from_cursor_result),
 
-  ("clang_getCanonicalType",
+  ("lfort_getCanonicalType",
    [Type],
    Type,
    Type.from_result),
 
-  ("clang_getCompletionAvailability",
+  ("lfort_getCompletionAvailability",
    [c_void_p],
    c_int),
 
-  ("clang_getCompletionBriefComment",
+  ("lfort_getCompletionBriefComment",
    [c_void_p],
    _CXString),
 
-  ("clang_getCompletionChunkCompletionString",
+  ("lfort_getCompletionChunkCompletionString",
    [c_void_p, c_int],
    c_object_p),
 
-  ("clang_getCompletionChunkKind",
+  ("lfort_getCompletionChunkKind",
    [c_void_p, c_int],
    c_int),
 
-  ("clang_getCompletionChunkText",
+  ("lfort_getCompletionChunkText",
    [c_void_p, c_int],
    _CXString),
 
-  ("clang_getCompletionPriority",
+  ("lfort_getCompletionPriority",
    [c_void_p],
    c_int),
 
-  ("clang_getCString",
+  ("lfort_getCString",
    [_CXString],
    c_char_p),
 
-  ("clang_getCursor",
+  ("lfort_getCursor",
    [TranslationUnit, SourceLocation],
    Cursor),
 
-  ("clang_getCursorDefinition",
+  ("lfort_getCursorDefinition",
    [Cursor],
    Cursor,
    Cursor.from_result),
 
-  ("clang_getCursorDisplayName",
+  ("lfort_getCursorDisplayName",
    [Cursor],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getCursorExtent",
+  ("lfort_getCursorExtent",
    [Cursor],
    SourceRange),
 
-  ("clang_getCursorLexicalParent",
+  ("lfort_getCursorLexicalParent",
    [Cursor],
    Cursor,
    Cursor.from_cursor_result),
 
-  ("clang_getCursorLocation",
+  ("lfort_getCursorLocation",
    [Cursor],
    SourceLocation),
 
-  ("clang_getCursorReferenced",
+  ("lfort_getCursorReferenced",
    [Cursor],
    Cursor,
    Cursor.from_result),
 
-  ("clang_getCursorReferenceNameRange",
+  ("lfort_getCursorReferenceNameRange",
    [Cursor, c_uint, c_uint],
    SourceRange),
 
-  ("clang_getCursorSemanticParent",
+  ("lfort_getCursorSemanticParent",
    [Cursor],
    Cursor,
    Cursor.from_cursor_result),
 
-  ("clang_getCursorSpelling",
+  ("lfort_getCursorSpelling",
    [Cursor],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getCursorType",
+  ("lfort_getCursorType",
    [Cursor],
    Type,
    Type.from_result),
 
-  ("clang_getCursorUSR",
+  ("lfort_getCursorUSR",
    [Cursor],
    _CXString,
    _CXString.from_result),
 
-# ("clang_getCXTUResourceUsage",
+# ("lfort_getCXTUResourceUsage",
 #  [TranslationUnit],
 #  CXTUResourceUsage),
 
-  ("clang_getCXXAccessSpecifier",
+  ("lfort_getCXXAccessSpecifier",
    [Cursor],
    c_uint),
 
-  ("clang_getDeclObjCTypeEncoding",
+  ("lfort_getDeclObjCTypeEncoding",
    [Cursor],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getDiagnostic",
+  ("lfort_getDiagnostic",
    [c_object_p, c_uint],
    c_object_p),
 
-  ("clang_getDiagnosticCategory",
+  ("lfort_getDiagnosticCategory",
    [Diagnostic],
    c_uint),
 
-  ("clang_getDiagnosticCategoryName",
+  ("lfort_getDiagnosticCategoryName",
    [c_uint],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getDiagnosticFixIt",
+  ("lfort_getDiagnosticFixIt",
    [Diagnostic, c_uint, POINTER(SourceRange)],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getDiagnosticLocation",
+  ("lfort_getDiagnosticLocation",
    [Diagnostic],
    SourceLocation),
 
-  ("clang_getDiagnosticNumFixIts",
+  ("lfort_getDiagnosticNumFixIts",
    [Diagnostic],
    c_uint),
 
-  ("clang_getDiagnosticNumRanges",
+  ("lfort_getDiagnosticNumRanges",
    [Diagnostic],
    c_uint),
 
-  ("clang_getDiagnosticOption",
+  ("lfort_getDiagnosticOption",
    [Diagnostic, POINTER(_CXString)],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getDiagnosticRange",
+  ("lfort_getDiagnosticRange",
    [Diagnostic, c_uint],
    SourceRange),
 
-  ("clang_getDiagnosticSeverity",
+  ("lfort_getDiagnosticSeverity",
    [Diagnostic],
    c_int),
 
-  ("clang_getDiagnosticSpelling",
+  ("lfort_getDiagnosticSpelling",
    [Diagnostic],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getElementType",
+  ("lfort_getElementType",
    [Type],
    Type,
    Type.from_result),
 
-  ("clang_getEnumConstantDeclUnsignedValue",
+  ("lfort_getEnumConstantDeclUnsignedValue",
    [Cursor],
    c_ulonglong),
 
-  ("clang_getEnumConstantDeclValue",
+  ("lfort_getEnumConstantDeclValue",
    [Cursor],
    c_longlong),
 
-  ("clang_getEnumDeclIntegerType",
+  ("lfort_getEnumDeclIntegerType",
    [Cursor],
    Type,
    Type.from_result),
 
-  ("clang_getFile",
+  ("lfort_getFile",
    [TranslationUnit, c_char_p],
    c_object_p),
 
-  ("clang_getFileName",
+  ("lfort_getFileName",
    [File],
    _CXString), # TODO go through _CXString.from_result?
 
-  ("clang_getFileTime",
+  ("lfort_getFileTime",
    [File],
    c_uint),
 
-  ("clang_getIBOutletCollectionType",
+  ("lfort_getIBOutletCollectionType",
    [Cursor],
    Type,
    Type.from_result),
 
-  ("clang_getIncludedFile",
+  ("lfort_getIncludedFile",
    [Cursor],
    File,
    File.from_cursor_result),
 
-  ("clang_getInclusions",
+  ("lfort_getInclusions",
    [TranslationUnit, callbacks['translation_unit_includes'], py_object]),
 
-  ("clang_getInstantiationLocation",
+  ("lfort_getInstantiationLocation",
    [SourceLocation, POINTER(c_object_p), POINTER(c_uint), POINTER(c_uint),
     POINTER(c_uint)]),
 
-  ("clang_getLocation",
+  ("lfort_getLocation",
    [TranslationUnit, File, c_uint, c_uint],
    SourceLocation),
 
-  ("clang_getLocationForOffset",
+  ("lfort_getLocationForOffset",
    [TranslationUnit, File, c_uint],
    SourceLocation),
 
-  ("clang_getNullCursor",
+  ("lfort_getNullCursor",
    None,
    Cursor),
 
-  ("clang_getNumArgTypes",
+  ("lfort_getNumArgTypes",
    [Type],
    c_uint),
 
-  ("clang_getNumCompletionChunks",
+  ("lfort_getNumCompletionChunks",
    [c_void_p],
    c_int),
 
-  ("clang_getNumDiagnostics",
+  ("lfort_getNumDiagnostics",
    [c_object_p],
    c_uint),
 
-  ("clang_getNumElements",
+  ("lfort_getNumElements",
    [Type],
    c_longlong),
 
-  ("clang_getNumOverloadedDecls",
+  ("lfort_getNumOverloadedDecls",
    [Cursor],
    c_uint),
 
-  ("clang_getOverloadedDecl",
+  ("lfort_getOverloadedDecl",
    [Cursor, c_uint],
    Cursor,
    Cursor.from_cursor_result),
 
-  ("clang_getPointeeType",
+  ("lfort_getPointeeType",
    [Type],
    Type,
    Type.from_result),
 
-  ("clang_getRange",
+  ("lfort_getRange",
    [SourceLocation, SourceLocation],
    SourceRange),
 
-  ("clang_getRangeEnd",
+  ("lfort_getRangeEnd",
    [SourceRange],
    SourceLocation),
 
-  ("clang_getRangeStart",
+  ("lfort_getRangeStart",
    [SourceRange],
    SourceLocation),
 
-  ("clang_getResultType",
+  ("lfort_getResultType",
    [Type],
    Type,
    Type.from_result),
 
-  ("clang_getSpecializedCursorTemplate",
+  ("lfort_getSpecializedCursorTemplate",
    [Cursor],
    Cursor,
    Cursor.from_cursor_result),
 
-  ("clang_getTemplateCursorKind",
+  ("lfort_getTemplateCursorKind",
    [Cursor],
    c_uint),
 
-  ("clang_getTokenExtent",
+  ("lfort_getTokenExtent",
    [TranslationUnit, Token],
    SourceRange),
 
-  ("clang_getTokenKind",
+  ("lfort_getTokenKind",
    [Token],
    c_uint),
 
-  ("clang_getTokenLocation",
+  ("lfort_getTokenLocation",
    [TranslationUnit, Token],
    SourceLocation),
 
-  ("clang_getTokenSpelling",
+  ("lfort_getTokenSpelling",
    [TranslationUnit, Token],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getTranslationUnitCursor",
+  ("lfort_getTranslationUnitCursor",
    [TranslationUnit],
    Cursor,
    Cursor.from_result),
 
-  ("clang_getTranslationUnitSpelling",
+  ("lfort_getTranslationUnitSpelling",
    [TranslationUnit],
    _CXString,
    _CXString.from_result),
 
-  ("clang_getTUResourceUsageName",
+  ("lfort_getTUResourceUsageName",
    [c_uint],
    c_char_p),
 
-  ("clang_getTypeDeclaration",
+  ("lfort_getTypeDeclaration",
    [Type],
    Cursor,
    Cursor.from_result),
 
-  ("clang_getTypedefDeclUnderlyingType",
+  ("lfort_getTypedefDeclUnderlyingType",
    [Cursor],
    Type,
    Type.from_result),
 
-  ("clang_getTypeKindSpelling",
+  ("lfort_getTypeKindSpelling",
    [c_uint],
    _CXString,
    _CXString.from_result),
 
-  ("clang_hashCursor",
+  ("lfort_hashCursor",
    [Cursor],
    c_uint),
 
-  ("clang_isAttribute",
+  ("lfort_isAttribute",
    [CursorKind],
    bool),
 
-  ("clang_isConstQualifiedType",
+  ("lfort_isConstQualifiedType",
    [Type],
    bool),
 
-  ("clang_isCursorDefinition",
+  ("lfort_isCursorDefinition",
    [Cursor],
    bool),
 
-  ("clang_isDeclaration",
+  ("lfort_isDeclaration",
    [CursorKind],
    bool),
 
-  ("clang_isExpression",
+  ("lfort_isExpression",
    [CursorKind],
    bool),
 
-  ("clang_isFileMultipleIncludeGuarded",
+  ("lfort_isFileMultipleIncludeGuarded",
    [TranslationUnit, File],
    bool),
 
-  ("clang_isFunctionTypeVariadic",
+  ("lfort_isFunctionTypeVariadic",
    [Type],
    bool),
 
-  ("clang_isInvalid",
+  ("lfort_isInvalid",
    [CursorKind],
    bool),
 
-  ("clang_isPODType",
+  ("lfort_isPODType",
    [Type],
    bool),
 
-  ("clang_isPreprocessing",
+  ("lfort_isPreprocessing",
    [CursorKind],
    bool),
 
-  ("clang_isReference",
+  ("lfort_isReference",
    [CursorKind],
    bool),
 
-  ("clang_isRestrictQualifiedType",
+  ("lfort_isRestrictQualifiedType",
    [Type],
    bool),
 
-  ("clang_isStatement",
+  ("lfort_isStatement",
    [CursorKind],
    bool),
 
-  ("clang_isTranslationUnit",
+  ("lfort_isTranslationUnit",
    [CursorKind],
    bool),
 
-  ("clang_isUnexposed",
+  ("lfort_isUnexposed",
    [CursorKind],
    bool),
 
-  ("clang_isVirtualBase",
+  ("lfort_isVirtualBase",
    [Cursor],
    bool),
 
-  ("clang_isVolatileQualifiedType",
+  ("lfort_isVolatileQualifiedType",
    [Type],
    bool),
 
-  ("clang_parseTranslationUnit",
+  ("lfort_parseTranslationUnit",
    [Index, c_char_p, c_void_p, c_int, c_void_p, c_int, c_int],
    c_object_p),
 
-  ("clang_reparseTranslationUnit",
+  ("lfort_reparseTranslationUnit",
    [TranslationUnit, c_int, c_void_p, c_int],
    c_int),
 
-  ("clang_saveTranslationUnit",
+  ("lfort_saveTranslationUnit",
    [TranslationUnit, c_char_p, c_uint],
    c_int),
 
-  ("clang_tokenize",
+  ("lfort_tokenize",
    [TranslationUnit, SourceRange, POINTER(POINTER(Token)), POINTER(c_uint)]),
 
-  ("clang_visitChildren",
+  ("lfort_visitChildren",
    [Cursor, callbacks['cursor_visit'], py_object],
    c_uint),
 
-  ("clang_Cursor_getNumArguments",
+  ("lfort_Cursor_getNumArguments",
    [Cursor],
    c_int),
 
-  ("clang_Cursor_getArgument",
+  ("lfort_Cursor_getArgument",
    [Cursor, c_uint],
    Cursor,
    Cursor.from_result),
 ]
 
-class LibclangError(Exception):
+class LiblfortError(Exception):
     def __init__(self, message):
         self.m = message
 
@@ -3010,15 +3010,15 @@ class LibclangError(Exception):
 
 def register_function(lib, item, ignore_errors):
     # A function may not exist, if these bindings are used with an older or
-    # incompatible version of libclang.so.
+    # incompatible version of liblfort.so.
     try:
         func = getattr(lib, item[0])
     except AttributeError as e:
         msg = str(e) + ". Please ensure that your python bindings are "\
-                       "compatible with your libclang.so version."
+                       "compatible with your liblfort.so version."
         if ignore_errors:
             return
-        raise LibclangError(msg)
+        raise LiblfortError(msg)
 
     if len(item) >= 2:
         func.argtypes = item[1]
@@ -3030,7 +3030,7 @@ def register_function(lib, item, ignore_errors):
         func.errcheck = item[3]
 
 def register_functions(lib, ignore_errors):
-    """Register function prototypes with a libclang library instance.
+    """Register function prototypes with a liblfort library instance.
 
     This must be called as part of library instantiation so Python knows how
     to call out to the shared library.
@@ -3049,43 +3049,43 @@ class Config:
 
     @staticmethod
     def set_library_path(path):
-        """Set the path in which to search for libclang"""
+        """Set the path in which to search for liblfort"""
         if Config.loaded:
             raise Exception("library path must be set before before using " \
-                            "any other functionalities in libclang.")
+                            "any other functionalities in liblfort.")
 
         Config.library_path = path
 
     @staticmethod
     def set_library_file(filename):
-        """Set the exact location of libclang"""
+        """Set the exact location of liblfort"""
         if Config.loaded:
             raise Exception("library file must be set before before using " \
-                            "any other functionalities in libclang.")
+                            "any other functionalities in liblfort.")
 
         Config.library_file = filename
 
     @staticmethod
     def set_compatibility_check(check_status):
-        """ Perform compatibility check when loading libclang
+        """ Perform compatibility check when loading liblfort
 
         The python bindings are only tested and evaluated with the version of
-        libclang they are provided with. To ensure correct behavior a (limited)
+        liblfort they are provided with. To ensure correct behavior a (limited)
         compatibility check is performed when loading the bindings. This check
         will throw an exception, as soon as it fails.
 
-        In case these bindings are used with an older version of libclang, parts
+        In case these bindings are used with an older version of liblfort, parts
         that have been stable between releases may still work. Users of the
         python bindings can disable the compatibility check. This will cause
         the python bindings to load, even though they are written for a newer
-        version of libclang. Failures now arise if unsupported or incompatible
+        version of liblfort. Failures now arise if unsupported or incompatible
         features are accessed. The user is required to test himself if the
         features he is using are available and compatible between different
-        libclang versions.
+        liblfort versions.
         """
         if Config.loaded:
             raise Exception("compatibility_check must be set before before " \
-                            "using any other functionalities in libclang.")
+                            "using any other functionalities in liblfort.")
 
         Config.compatibility_check = check_status
 
@@ -3104,11 +3104,11 @@ class Config:
         name = platform.system()
 
         if name == 'Darwin':
-            file = 'libclang.dylib'
+            file = 'liblfort.dylib'
         elif name == 'Windows':
-            file = 'libclang.dll'
+            file = 'liblfort.dll'
         else:
-            file = 'libclang.so'
+            file = 'liblfort.so'
 
         if Config.library_path:
             file = Config.library_path + '/' + file
@@ -3119,10 +3119,10 @@ class Config:
         try:
             library = cdll.LoadLibrary(self.get_filename())
         except OSError as e:
-            msg = str(e) + ". To provide a path to libclang use " \
+            msg = str(e) + ". To provide a path to liblfort use " \
                            "Config.set_library_path() or " \
                            "Config.set_library_file()."
-            raise LibclangError(msg)
+            raise LiblfortError(msg)
 
         return library
 
@@ -3135,7 +3135,7 @@ class Config:
         return True
 
 def register_enumerations():
-    for name, value in clang.enumerations.TokenKinds:
+    for name, value in lfort.enumerations.TokenKinds:
         TokenKind.register(value, name)
 
 conf = Config()

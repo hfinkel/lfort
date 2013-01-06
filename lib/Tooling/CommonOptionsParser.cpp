@@ -1,4 +1,4 @@
-//===--- CommonOptionsParser.cpp - common options for clang tools ---------===//
+//===--- CommonOptionsParser.cpp - common options for lfort tools ---------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 //
 //  This file implements the CommonOptionsParser class used to parse common
-//  command-line options for clang tools, so that they can be run as separate
+//  command-line options for lfort tools, so that they can be run as separate
 //  command-line applications with a consistent common interface for handling
 //  compilation database and input files.
 //
@@ -18,17 +18,17 @@
 //
 //  It creates a CompilationDatabase and reads common command-line options.
 //
-//  This class uses the Clang Tooling infrastructure, see
-//    http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html
+//  This class uses the LFort Tooling infrastructure, see
+//    http://lfort.llvm.org/docs/HowToSetupToolingForLLVM.html
 //  for details on setting it up with LLVM source tree.
 //
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Support/CommandLine.h"
-#include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/Tooling/CommonOptionsParser.h"
+#include "lfort/Tooling/Tooling.h"
 
-using namespace clang::tooling;
+using namespace lfort::tooling;
 using namespace llvm;
 
 const char *const CommonOptionsParser::HelpMessage =
@@ -40,8 +40,8 @@ const char *const CommonOptionsParser::HelpMessage =
     "\tCMake option to get this output). When no build path is specified,\n"
     "\ta search for compile_commands.json will be attempted through all\n"
     "\tparent paths of the first input file . See:\n"
-    "\thttp://clang.llvm.org/docs/HowToSetupToolingForLLVM.html for an\n"
-    "\texample of setting up Clang Tooling on a source tree.\n"
+    "\thttp://lfort.llvm.org/docs/HowToSetupToolingForLLVM.html for an\n"
+    "\texample of setting up LFort Tooling on a source tree.\n"
     "\n"
     "<source0> ... specify the paths of source files. These paths are\n"
     "\tlooked up in the compile command database. If the path of a file is\n"

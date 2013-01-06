@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection %s -analyzer-store=region -verify
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection %s -analyzer-store=region -verify
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 unsigned foo();
 typedef struct bf { unsigned x:2; } bf;
@@ -33,6 +33,6 @@ void test() {
 void testLazyCompoundVal() {
   Point p = {42, 0};
   Point q;
-  clang_analyzer_eval((q = p).x == 42); // expected-warning{{TRUE}}
-  clang_analyzer_eval(q.x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval((q = p).x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(q.x == 42); // expected-warning{{TRUE}}
 }

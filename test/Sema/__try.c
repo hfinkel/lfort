@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fborland-extensions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fborland-extensions -fsyntax-only -verify %s
 
 #define JOIN2(x,y) x ## y
 #define JOIN(x,y) JOIN2(x,y)

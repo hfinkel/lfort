@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -O3 -triple=x86_64-apple-darwin -target-feature +bmi2 -emit-llvm -o - | FileCheck %s
-// RUN: %clang_cc1 %s -O3 -triple=i386-apple-darwin -target-feature +bmi2 -emit-llvm -o - | FileCheck %s --check-prefix=B32
+// RUN: %lfort_cc1 %s -O3 -triple=x86_64-apple-darwin -target-feature +bmi2 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -O3 -triple=i386-apple-darwin -target-feature +bmi2 -emit-llvm -o - | FileCheck %s --check-prefix=B32
 
 // Don't include mm_malloc.h, it's system specific.
 #define __MM_MALLOC_H

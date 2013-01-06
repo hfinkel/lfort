@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -emit-llvm %s  -o /dev/null
 
 #define _JBLEN ((9 * 2) + 3 + 16)
 typedef int sigjmp_buf[_JBLEN + 1];

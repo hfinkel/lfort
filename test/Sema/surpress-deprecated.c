@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wno-deprecated-declarations -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wno-deprecated-declarations -verify %s
 // expected-no-diagnostics
 extern void OldFunction() __attribute__((deprecated));
 

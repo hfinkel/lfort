@@ -7,9 +7,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Tool.h"
+#include "lfort/Driver/Tool.h"
 
-using namespace clang::driver;
+using namespace lfort::driver;
 
 Tool::Tool(const char *_Name, const char *_ShortName,
            const ToolChain &TC) : Name(_Name), ShortName(_ShortName),

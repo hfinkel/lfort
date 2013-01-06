@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 // The implicit specialization of a class template specialuzation causes the
 // implicit instantiation of the declarations, but not the definitions or

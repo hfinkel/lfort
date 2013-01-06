@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -emit-llvm -o /dev/null %s
+// RUN: %lfort_cc1 -w -emit-llvm -o /dev/null %s
 // PR2264.
 unsigned foo = 8L;
 unsigned bar = 0L;

@@ -5,13 +5,13 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_unittest(FormatTests
+add_lfort_unittest(FormatTests
   FormatTest.cpp
   )
 
 target_link_libraries(FormatTests
-  clangAST
-  clangFormat
-  clangTooling
-  clangRewriteCore
+  lfortAST
+  lfortFormat
+  lfortTooling
+  lfortRewriteCore
   )

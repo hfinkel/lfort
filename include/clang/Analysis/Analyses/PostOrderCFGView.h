@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_POSTORDER_CFGVIEW
-#define LLVM_CLANG_POSTORDER_CFGVIEW
+#ifndef LLVM_LFORT_POSTORDER_CFGVIEW
+#define LLVM_LFORT_POSTORDER_CFGVIEW
 
 #include <vector>
 //#include <algorithm>
@@ -21,10 +21,10 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/BitVector.h"
 
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
 
-namespace clang {
+namespace lfort {
 
 class PostOrderCFGView : public ManagedAnalysis {
   virtual void anchor();
@@ -105,7 +105,7 @@ public:
   static PostOrderCFGView *create(AnalysisDeclContext &analysisContext);
 };
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif
 

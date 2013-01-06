@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_CHARUNITS_H
-#define LLVM_CLANG_AST_CHARUNITS_H
+#ifndef LLVM_LFORT_AST_CHARUNITS_H
+#define LLVM_LFORT_AST_CHARUNITS_H
 
 #include "llvm/ADT/DenseMapInfo.h"
 #include "llvm/Support/DataTypes.h"
 #include "llvm/Support/MathExtras.h"
 
-namespace clang {
+namespace lfort {
   
   /// CharUnits - This is an opaque type for sizes expressed in character units.
   /// Instances of this type represent a quantity as a multiple of the size 
@@ -30,7 +30,7 @@ namespace clang {
   /// refer to addressable units of data storage on the target machine, and
   /// characters are members of a set of elements used for the organization,
   /// control, or representation of data. According to C99, bytes are allowed
-  /// to exceed characters in size, although currently, clang only supports
+  /// to exceed characters in size, although currently, lfort only supports
   /// architectures where the two are the same size.
   /// 
   /// For portability, never assume that a target character is 8 bits wide. Use 
@@ -173,45 +173,45 @@ namespace clang {
 
 
   }; // class CharUnit
-} // namespace clang
+} // namespace lfort
 
-inline clang::CharUnits operator* (clang::CharUnits::QuantityType Scale, 
-                                   const clang::CharUnits &CU) {
+inline lfort::CharUnits operator* (lfort::CharUnits::QuantityType Scale, 
+                                   const lfort::CharUnits &CU) {
   return CU * Scale;
 }
 
 namespace llvm {
 
-template<> struct DenseMapInfo<clang::CharUnits> {
-  static clang::CharUnits getEmptyKey() {
-    clang::CharUnits::QuantityType Quantity =
-      DenseMapInfo<clang::CharUnits::QuantityType>::getEmptyKey();
+template<> struct DenseMapInfo<lfort::CharUnits> {
+  static lfort::CharUnits getEmptyKey() {
+    lfort::CharUnits::QuantityType Quantity =
+      DenseMapInfo<lfort::CharUnits::QuantityType>::getEmptyKey();
 
-    return clang::CharUnits::fromQuantity(Quantity);
+    return lfort::CharUnits::fromQuantity(Quantity);
   }
 
-  static clang::CharUnits getTombstoneKey() {
-    clang::CharUnits::QuantityType Quantity =
-      DenseMapInfo<clang::CharUnits::QuantityType>::getTombstoneKey();
+  static lfort::CharUnits getTombstoneKey() {
+    lfort::CharUnits::QuantityType Quantity =
+      DenseMapInfo<lfort::CharUnits::QuantityType>::getTombstoneKey();
     
-    return clang::CharUnits::fromQuantity(Quantity);    
+    return lfort::CharUnits::fromQuantity(Quantity);    
   }
 
-  static unsigned getHashValue(const clang::CharUnits &CU) {
-    clang::CharUnits::QuantityType Quantity = CU.getQuantity();
-    return DenseMapInfo<clang::CharUnits::QuantityType>::getHashValue(Quantity);
+  static unsigned getHashValue(const lfort::CharUnits &CU) {
+    lfort::CharUnits::QuantityType Quantity = CU.getQuantity();
+    return DenseMapInfo<lfort::CharUnits::QuantityType>::getHashValue(Quantity);
   }
 
-  static bool isEqual(const clang::CharUnits &LHS, 
-                      const clang::CharUnits &RHS) {
+  static bool isEqual(const lfort::CharUnits &LHS, 
+                      const lfort::CharUnits &RHS) {
     return LHS == RHS;
   }
 };
 
-template <> struct isPodLike<clang::CharUnits> {
+template <> struct isPodLike<lfort::CharUnits> {
   static const bool value = true;
 };
   
 } // end namespace llvm
 
-#endif // LLVM_CLANG_AST_CHARUNITS_H
+#endif // LLVM_LFORT_AST_CHARUNITS_H

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -E | grep "^xy$"
+// RUN: %lfort_cc1 %s -E | grep "^xy$"
 
 #define A  x ## y
 blah

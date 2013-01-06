@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -std=gnu++11 -Wsometimes-uninitialized -verify %s
-// RUN: %clang_cc1 -std=gnu++11 -Wsometimes-uninitialized -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -std=gnu++11 -Wsometimes-uninitialized -verify %s
+// RUN: %lfort_cc1 -std=gnu++11 -Wsometimes-uninitialized -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 
 bool maybe();
 

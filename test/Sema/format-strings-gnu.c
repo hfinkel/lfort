@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i386-apple-darwin9 %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple thumbv6-apple-ios4.0 %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-mingw32 %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-pc-win32 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i386-apple-darwin9 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple thumbv6-apple-ios4.0 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-mingw32 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-pc-win32 %s
 
-// RUN: %clang_cc1 -fsyntax-only -verify -triple i686-linux-gnu -DALLOWED %s
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-unknown-freebsd -DALLOWED %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple i686-linux-gnu -DALLOWED %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-unknown-freebsd -DALLOWED %s
 
 int printf(const char *restrict, ...);
 int scanf(const char * restrict, ...) ;
@@ -32,7 +32,7 @@ void testAlwaysInvalid() {
 }
 
 #ifdef ALLOWED
-// PR 9466: clang: doesn't know about %Lu, %Ld, and %Lx
+// PR 9466: lfort: doesn't know about %Lu, %Ld, and %Lx
 void printf_longlong(long long x, unsigned long long y) {
   printf("%Ld", y); // no-warning
   printf("%Lu", y); // no-warning

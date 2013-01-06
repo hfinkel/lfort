@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,osx.cocoa.RetainCount,alpha.core -analyzer-constraints=range -analyzer-store=region -fobjc-gc -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,osx.cocoa.RetainCount,alpha.core -analyzer-constraints=range -analyzer-store=region -fobjc-gc -verify %s
 
 typedef const void * CFTypeRef;
 typedef const struct __CFString * CFStringRef;

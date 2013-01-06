@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 int f(int x) {
   if (int foo = f(bar)) {}     // expected-error{{use of undeclared identifier 'bar'}}

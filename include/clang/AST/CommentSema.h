@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_COMMENT_SEMA_H
-#define LLVM_CLANG_AST_COMMENT_SEMA_H
+#ifndef LLVM_LFORT_AST_COMMENT_SEMA_H
+#define LLVM_LFORT_AST_COMMENT_SEMA_H
 
-#include "clang/AST/Comment.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/AST/Comment.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Allocator.h"
 
-namespace clang {
+namespace lfort {
 class Decl;
 class SourceMgr;
 class Preprocessor;
@@ -228,7 +228,7 @@ public:
 };
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 
 #endif
 

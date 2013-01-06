@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Action.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Options.h"
-#include "clang/Driver/ToolChain.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Action.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Driver/ToolChain.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/Program.h"
@@ -21,8 +21,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-using namespace clang::driver;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort;
 
 Compilation::Compilation(const Driver &D, const ToolChain &_DefaultToolChain,
                          InputArgList *_Args, DerivedArgList *_TranslatedArgs)
@@ -225,7 +225,7 @@ bool Compilation::CleanupFileList(const ArgStringList &Files,
       if (::stat(P.c_str(), &buf) == 0 ? (buf.st_mode & S_IFMT) == S_IFREG :
                                          (errno != ENOENT)) {
         if (IssueErrors)
-          getDriver().Diag(clang::diag::err_drv_unable_to_remove_file)
+          getDriver().Diag(lfort::diag::err_drv_unable_to_remove_file)
             << Error;
         Success = false;
       }
@@ -255,7 +255,7 @@ int Compilation::ExecuteCommand(const Command &C,
                                     Error,
                                     llvm::raw_fd_ostream::F_Append);
       if (!Error.empty()) {
-        getDriver().Diag(clang::diag::err_drv_cc_print_options_failure)
+        getDriver().Diag(lfort::diag::err_drv_cc_print_options_failure)
           << Error;
         FailingCommand = &C;
         delete OS;
@@ -264,7 +264,7 @@ int Compilation::ExecuteCommand(const Command &C,
     }
 
     if (getDriver().CCPrintOptions)
-      *OS << "[Logging clang options]";
+      *OS << "[Logging lfort options]";
 
     PrintJob(*OS, C, "\n", /*Quote=*/getDriver().CCPrintOptions);
 
@@ -280,7 +280,7 @@ int Compilation::ExecuteCommand(const Command &C,
                                        &Error);
   if (!Error.empty()) {
     assert(Res && "Error string set with 0 result code!");
-    getDriver().Diag(clang::diag::err_drv_command_failure) << Error;
+    getDriver().Diag(lfort::diag::err_drv_command_failure) << Error;
   }
 
   if (Res)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic %s
 
 union u { int i; unsigned : 3; };
 void f(union u);

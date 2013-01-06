@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -I%S/Inputs %s
+// RUN: %lfort_cc1 -fsyntax-only -I%S/Inputs %s
 
 // As long as none of this crashes, we don't care about comments in
 // preprocessor directives.

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x objective-c++ -fblocks -triple x86_64-apple-darwin -fobjc-runtime=macosx-fragile-10.5 %s -verify -std=c++11 -emit-llvm -o %t
+// RUN: %lfort_cc1 -x objective-c++ -fblocks -triple x86_64-apple-darwin -fobjc-runtime=macosx-fragile-10.5 %s -verify -std=c++11 -emit-llvm -o %t
 // rdar://8979379
 
 @interface A

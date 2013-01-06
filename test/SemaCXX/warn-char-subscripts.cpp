@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wchar-subscripts -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wchar-subscripts -fsyntax-only -verify %s
 
 template<typename T>
 void t1() {

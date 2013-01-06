@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_MACROARGS_H
-#define LLVM_CLANG_MACROARGS_H
+#ifndef LLVM_LFORT_MACROARGS_H
+#define LLVM_LFORT_MACROARGS_H
 
 #include "llvm/ADT/ArrayRef.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
   class MacroInfo;
   class Preprocessor;
   class Token;
@@ -119,6 +119,6 @@ public:
   MacroArgs *deallocate();
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wsemicolon-before-method-body %s -verify -fsyntax-only
+// RUN: %lfort_cc1 -Wsemicolon-before-method-body %s -verify -fsyntax-only
 
 #define nil 0       /* id of Nil instance */
 

@@ -9,10 +9,10 @@
 //
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Lex/Lexer.h"
-#include "clang/Tooling/RefactoringCallbacks.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Tooling/RefactoringCallbacks.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 RefactoringCallback::RefactoringCallback() {}
@@ -78,4 +78,4 @@ void ReplaceIfStmtWithItsBody::run(
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

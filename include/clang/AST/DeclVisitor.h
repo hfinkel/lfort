@@ -10,16 +10,16 @@
 //  This file defines the DeclVisitor interface.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_DECLVISITOR_H
-#define LLVM_CLANG_AST_DECLVISITOR_H
+#ifndef LLVM_LFORT_AST_DECLVISITOR_H
+#define LLVM_LFORT_AST_DECLVISITOR_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
 
-namespace clang {
+namespace lfort {
 
 #define DISPATCH(NAME, CLASS) \
   return static_cast<ImplClass*>(this)-> Visit##NAME(static_cast<CLASS*>(D))
@@ -33,7 +33,7 @@ public:
 #define DECL(DERIVED, BASE) \
       case Decl::DERIVED: DISPATCH(DERIVED##Decl, DERIVED##Decl);
 #define ABSTRACT_DECL(DECL)
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
     }
     llvm_unreachable("Decl that isn't part of DeclNodes.inc!");
   }
@@ -42,13 +42,13 @@ public:
   // method, fall back to the parent.
 #define DECL(DERIVED, BASE) \
   RetTy Visit##DERIVED##Decl(DERIVED##Decl *D) { DISPATCH(BASE, BASE); }
-#include "clang/AST/DeclNodes.inc"
+#include "lfort/AST/DeclNodes.inc"
 
   RetTy VisitDecl(Decl *D) { return RetTy(); }
 };
 
 #undef DISPATCH
 
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif // LLVM_CLANG_AST_DECLVISITOR_H
+#endif // LLVM_LFORT_AST_DECLVISITOR_H

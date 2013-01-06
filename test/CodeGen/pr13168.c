@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o -
+// RUN: %lfort_cc1 -emit-llvm %s -o -
 
 typedef int (*_MD_Open64)(int oflag, ...);
 _MD_Open64 _open64;

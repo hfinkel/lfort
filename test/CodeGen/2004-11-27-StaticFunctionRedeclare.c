@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | \
+// RUN: %lfort_cc1 -emit-llvm %s -o - | \
 // RUN:   opt -std-compile-opts -emit-llvm | not grep {declare i32.*func}
 
 // There should not be an unresolved reference to func here.  Believe it or not,

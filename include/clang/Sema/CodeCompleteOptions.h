@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_CODECOMPLETEOPTIONS_H
-#define LLVM_CLANG_SEMA_CODECOMPLETEOPTIONS_H
+#ifndef LLVM_LFORT_SEMA_CODECOMPLETEOPTIONS_H
+#define LLVM_LFORT_SEMA_CODECOMPLETEOPTIONS_H
 
 /// Options controlling the behavior of code completion.
 class CodeCompleteOptions {

@@ -13,15 +13,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_GR_BASICVALUEFACTORY_H
-#define LLVM_CLANG_GR_BASICVALUEFACTORY_H
+#ifndef LLVM_LFORT_GR_BASICVALUEFACTORY_H
+#define LLVM_LFORT_GR_BASICVALUEFACTORY_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/StoreRef.h"
 
-namespace clang {
+namespace lfort {
 namespace ento {
 
 class CompoundValData : public llvm::FoldingSetNode {
@@ -195,6 +195,6 @@ public:
 
 } // end GR namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

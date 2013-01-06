@@ -13,11 +13,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/BasicValueFactory.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/BasicValueFactory.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 void CompoundValData::Profile(llvm::FoldingSetNodeID& ID, QualType T,

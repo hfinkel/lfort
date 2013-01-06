@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Tooling/FileMatchTrie.h"
-#include "clang/Tooling/JSONCompilationDatabase.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Tooling/FileMatchTrie.h"
+#include "lfort/Tooling/JSONCompilationDatabase.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/Support/PathV2.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 static void expectFailure(StringRef JSONDatabase, StringRef Explanation) {
@@ -399,7 +399,7 @@ TEST(FixedCompilationDatabase, ReturnsFixedCommandLine) {
   std::vector<CompileCommand> Result =
     Database.getCompileCommands("source");
   ASSERT_EQ(1ul, Result.size());
-  std::vector<std::string> ExpectedCommandLine(1, "clang-tool");
+  std::vector<std::string> ExpectedCommandLine(1, "lfort-tool");
   ExpectedCommandLine.insert(ExpectedCommandLine.end(),
                              CommandLine.begin(), CommandLine.end());
   ExpectedCommandLine.push_back("source");
@@ -453,7 +453,7 @@ TEST(ParseFixedCompilationDatabase, ReturnsArgumentsAfterDoubleDash) {
   ASSERT_EQ(1ul, Result.size());
   ASSERT_EQ(".", Result[0].Directory);
   std::vector<std::string> CommandLine;
-  CommandLine.push_back("clang-tool");
+  CommandLine.push_back("lfort-tool");
   CommandLine.push_back("3");
   CommandLine.push_back("4");
   CommandLine.push_back("source");
@@ -472,11 +472,11 @@ TEST(ParseFixedCompilationDatabase, ReturnsEmptyCommandLine) {
   ASSERT_EQ(1ul, Result.size());
   ASSERT_EQ(".", Result[0].Directory);
   std::vector<std::string> CommandLine;
-  CommandLine.push_back("clang-tool");
+  CommandLine.push_back("lfort-tool");
   CommandLine.push_back("source");
   ASSERT_EQ(CommandLine, Result[0].CommandLine);
   EXPECT_EQ(2, Argc);
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

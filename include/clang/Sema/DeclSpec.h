@@ -20,22 +20,22 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_DECLSPEC_H
-#define LLVM_CLANG_SEMA_DECLSPEC_H
+#ifndef LLVM_LFORT_SEMA_DECLSPEC_H
+#define LLVM_LFORT_SEMA_DECLSPEC_H
 
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/Basic/ExceptionSpecificationType.h"
-#include "clang/Basic/Lambda.h"
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Lex/Token.h"
-#include "clang/Sema/AttributeList.h"
-#include "clang/Sema/Ownership.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/Basic/ExceptionSpecificationType.h"
+#include "lfort/Basic/Lambda.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Lex/Token.h"
+#include "lfort/Sema/AttributeList.h"
+#include "lfort/Sema/Ownership.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/ErrorHandling.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class TypeLoc;
   class LangOptions;
@@ -229,10 +229,10 @@ public:
 
   // Import type specifier width enumeration and constants.
   typedef TypeSpecifierWidth TSW;
-  static const TSW TSW_unspecified = clang::TSW_unspecified;
-  static const TSW TSW_short = clang::TSW_short;
-  static const TSW TSW_long = clang::TSW_long;
-  static const TSW TSW_longlong = clang::TSW_longlong;
+  static const TSW TSW_unspecified = lfort::TSW_unspecified;
+  static const TSW TSW_short = lfort::TSW_short;
+  static const TSW TSW_long = lfort::TSW_long;
+  static const TSW TSW_longlong = lfort::TSW_longlong;
   
   enum TSC {
     TSC_unspecified,
@@ -242,47 +242,47 @@ public:
 
   // Import type specifier sign enumeration and constants.
   typedef TypeSpecifierSign TSS;
-  static const TSS TSS_unspecified = clang::TSS_unspecified;
-  static const TSS TSS_signed = clang::TSS_signed;
-  static const TSS TSS_unsigned = clang::TSS_unsigned;
+  static const TSS TSS_unspecified = lfort::TSS_unspecified;
+  static const TSS TSS_signed = lfort::TSS_signed;
+  static const TSS TSS_unsigned = lfort::TSS_unsigned;
 
   // Import type specifier type enumeration and constants.
   typedef TypeSpecifierType TST;
-  static const TST TST_unspecified = clang::TST_unspecified;
-  static const TST TST_void = clang::TST_void;
-  static const TST TST_char = clang::TST_char;
-  static const TST TST_wchar = clang::TST_wchar;
-  static const TST TST_char16 = clang::TST_char16;
-  static const TST TST_char32 = clang::TST_char32;
-  static const TST TST_int = clang::TST_int;
-  static const TST TST_int128 = clang::TST_int128;
-  static const TST TST_half = clang::TST_half;
-  static const TST TST_float = clang::TST_float;
-  static const TST TST_double = clang::TST_double;
-  static const TST TST_bool = clang::TST_bool;
-  static const TST TST_decimal32 = clang::TST_decimal32;
-  static const TST TST_decimal64 = clang::TST_decimal64;
-  static const TST TST_decimal128 = clang::TST_decimal128;
-  static const TST TST_enum = clang::TST_enum;
-  static const TST TST_union = clang::TST_union;
-  static const TST TST_struct = clang::TST_struct;
-  static const TST TST_interface = clang::TST_interface;
-  static const TST TST_class = clang::TST_class;
-  static const TST TST_typename = clang::TST_typename;
-  static const TST TST_typeofType = clang::TST_typeofType;
-  static const TST TST_typeofExpr = clang::TST_typeofExpr;
-  static const TST TST_decltype = clang::TST_decltype;
-  static const TST TST_underlyingType = clang::TST_underlyingType;
-  static const TST TST_auto = clang::TST_auto;
-  static const TST TST_unknown_anytype = clang::TST_unknown_anytype;
-  static const TST TST_atomic = clang::TST_atomic;
-  static const TST TST_image1d_t = clang::TST_image1d_t;
-  static const TST TST_image1d_array_t = clang::TST_image1d_array_t;
-  static const TST TST_image1d_buffer_t = clang::TST_image1d_buffer_t;
-  static const TST TST_image2d_t = clang::TST_image2d_t;
-  static const TST TST_image2d_array_t = clang::TST_image2d_array_t;
-  static const TST TST_image3d_t = clang::TST_image3d_t;
-  static const TST TST_error = clang::TST_error;
+  static const TST TST_unspecified = lfort::TST_unspecified;
+  static const TST TST_void = lfort::TST_void;
+  static const TST TST_char = lfort::TST_char;
+  static const TST TST_wchar = lfort::TST_wchar;
+  static const TST TST_char16 = lfort::TST_char16;
+  static const TST TST_char32 = lfort::TST_char32;
+  static const TST TST_int = lfort::TST_int;
+  static const TST TST_int128 = lfort::TST_int128;
+  static const TST TST_half = lfort::TST_half;
+  static const TST TST_float = lfort::TST_float;
+  static const TST TST_double = lfort::TST_double;
+  static const TST TST_bool = lfort::TST_bool;
+  static const TST TST_decimal32 = lfort::TST_decimal32;
+  static const TST TST_decimal64 = lfort::TST_decimal64;
+  static const TST TST_decimal128 = lfort::TST_decimal128;
+  static const TST TST_enum = lfort::TST_enum;
+  static const TST TST_union = lfort::TST_union;
+  static const TST TST_struct = lfort::TST_struct;
+  static const TST TST_interface = lfort::TST_interface;
+  static const TST TST_class = lfort::TST_class;
+  static const TST TST_typename = lfort::TST_typename;
+  static const TST TST_typeofType = lfort::TST_typeofType;
+  static const TST TST_typeofExpr = lfort::TST_typeofExpr;
+  static const TST TST_decltype = lfort::TST_decltype;
+  static const TST TST_underlyingType = lfort::TST_underlyingType;
+  static const TST TST_auto = lfort::TST_auto;
+  static const TST TST_unknown_anytype = lfort::TST_unknown_anytype;
+  static const TST TST_atomic = lfort::TST_atomic;
+  static const TST TST_image1d_t = lfort::TST_image1d_t;
+  static const TST TST_image1d_array_t = lfort::TST_image1d_array_t;
+  static const TST TST_image1d_buffer_t = lfort::TST_image1d_buffer_t;
+  static const TST TST_image2d_t = lfort::TST_image2d_t;
+  static const TST TST_image2d_array_t = lfort::TST_image2d_array_t;
+  static const TST TST_image3d_t = lfort::TST_image3d_t;
+  static const TST TST_error = lfort::TST_error;
 
   // type-qualifiers
   enum TQ {   // NOTE: These flags must be kept in sync with Qualifiers::TQ.
@@ -2025,6 +2025,6 @@ struct LambdaIntroducer {
 
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

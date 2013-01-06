@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only
+// RUN: %lfort_cc1 %s -fsyntax-only
 
 __kernel void f__ro(__read_only image2d_t a) { }
 

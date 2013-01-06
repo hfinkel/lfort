@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -emit-llvm %s -o %t
 
 const int globalInt = 1;
 int globalIntWithFloat = 1.5f;

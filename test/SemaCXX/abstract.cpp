@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -std=c++11
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -std=c++11
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 #define __CONCAT(__X, __Y) __CONCAT1(__X, __Y)
@@ -250,7 +250,7 @@ namespace test4 {
   };
 }
 
-// PR9247: Crash on invalid in clang::Sema::ActOnFinishCXXMemberSpecification
+// PR9247: Crash on invalid in lfort::Sema::ActOnFinishCXXMemberSpecification
 namespace pr9247 {
   struct A {
     virtual void g(const A& input) = 0;

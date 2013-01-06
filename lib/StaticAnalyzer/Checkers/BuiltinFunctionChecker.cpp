@@ -7,17 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This checker evaluates clang builtin functions.
+// This checker evaluates lfort builtin functions.
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "LFortSACheckers.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {

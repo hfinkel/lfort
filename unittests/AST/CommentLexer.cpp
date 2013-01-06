@@ -7,20 +7,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentLexer.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/AST/CommentLexer.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/STLExtras.h"
 #include "gtest/gtest.h"
 #include <vector>
 
 using namespace llvm;
-using namespace clang;
+using namespace lfort;
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
 namespace {
@@ -1720,5 +1720,5 @@ TEST_F(CommentLexerTest, MultipleComments) {
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

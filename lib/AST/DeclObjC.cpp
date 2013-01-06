@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // ObjCListBase
@@ -1501,7 +1501,7 @@ FindPropertyImplDecl(IdentifierInfo *Id) const {
   return 0;
 }
 
-raw_ostream &clang::operator<<(raw_ostream &OS,
+raw_ostream &lfort::operator<<(raw_ostream &OS,
                                const ObjCCategoryImplDecl &CID) {
   OS << CID.getName();
   return OS;
@@ -1548,7 +1548,7 @@ void ObjCImplementationDecl::setIvarInitializers(ASTContext &C,
   }
 }
 
-raw_ostream &clang::operator<<(raw_ostream &OS,
+raw_ostream &lfort::operator<<(raw_ostream &OS,
                                const ObjCImplementationDecl &ID) {
   OS << ID.getName();
   return OS;

@@ -18,22 +18,22 @@
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/Support/CallSite.h"
 #include "llvm/Transforms/Utils/Local.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 /***/
 
-static unsigned ClangCallConvToLLVMCallConv(CallingConv CC) {
+static unsigned LFortCallConvToLLVMCallConv(CallingConv CC) {
   switch (CC) {
   default: return llvm::CallingConv::C;
   case CC_X86StdCall: return llvm::CallingConv::X86_StdCall;
@@ -436,7 +436,7 @@ CodeGenTypes::arrangeLLVMFunctionInfo(CanQualType resultType,
     assert(I->isCanonicalAsParam());
 #endif
 
-  unsigned CC = ClangCallConvToLLVMCallConv(info.getCC());
+  unsigned CC = LFortCallConvToLLVMCallConv(info.getCC());
 
   // Lookup or create unique function info.
   llvm::FoldingSetNodeID ID;
@@ -1890,7 +1890,7 @@ void
 CodeGenFunction::AddObjCARCExceptionMetadata(llvm::Instruction *Inst) {
   if (CGM.getCodeGenOpts().OptimizationLevel != 0 &&
       !CGM.getCodeGenOpts().ObjCAutoRefCountExceptions)
-    Inst->setMetadata("clang.arc.no_objc_arc_exceptions",
+    Inst->setMetadata("lfort.arc.no_objc_arc_exceptions",
                       CGM.getNoObjCARCExceptionsMetadata());
 }
 

@@ -11,32 +11,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_ATTRITERATOR_H
-#define LLVM_CLANG_AST_ATTRITERATOR_H
+#ifndef LLVM_LFORT_AST_ATTRITERATOR_H
+#define LLVM_LFORT_AST_ATTRITERATOR_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include <iterator>
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class Attr;
 }
 
 // Defined in ASTContext.h
-void *operator new(size_t Bytes, const clang::ASTContext &C,
+void *operator new(size_t Bytes, const lfort::ASTContext &C,
                    size_t Alignment = 16);
 // FIXME: Being forced to not have a default argument here due to redeclaration
 //        rules on default arguments sucks
-void *operator new[](size_t Bytes, const clang::ASTContext &C,
+void *operator new[](size_t Bytes, const lfort::ASTContext &C,
                      size_t Alignment);
 
 // It is good practice to pair new/delete operators.  Also, MSVC gives many
 // warnings if a matching delete overload is not declared, even though the
 // throw() spec guarantees it will not be implicitly called.
-void operator delete(void *Ptr, const clang::ASTContext &C, size_t);
-void operator delete[](void *Ptr, const clang::ASTContext &C, size_t);
+void operator delete(void *Ptr, const lfort::ASTContext &C, size_t);
+void operator delete[](void *Ptr, const lfort::ASTContext &C, size_t);
 
-namespace clang {
+namespace lfort {
 
 /// AttrVec - A vector of Attr, which is how they are stored on the AST.
 typedef SmallVector<Attr*, 2> AttrVec;
@@ -136,6 +136,6 @@ inline SpecificAttr *getSpecificAttr(const Container& container) {
     return 0;
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

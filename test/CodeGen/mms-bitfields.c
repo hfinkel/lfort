@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin10 -mms-bitfields -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin10 -mms-bitfields -emit-llvm %s -o - | FileCheck %s
 
 struct s1 {
   int       f32;

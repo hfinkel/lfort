@@ -13,10 +13,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_ADDRESSSPACES_H
-#define LLVM_CLANG_BASIC_ADDRESSSPACES_H
+#ifndef LLVM_LFORT_BASIC_ADDRESSSPACES_H
+#define LLVM_LFORT_BASIC_ADDRESSSPACES_H
 
-namespace clang {
+namespace lfort {
 
 namespace LangAS {
 

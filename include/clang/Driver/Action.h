@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_DRIVER_ACTION_H_
-#define CLANG_DRIVER_ACTION_H_
+#ifndef LFORT_DRIVER_ACTION_H_
+#define LFORT_DRIVER_ACTION_H_
 
-#include "clang/Driver/Types.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Driver/Types.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 namespace driver {
   class Arg;
 
@@ -234,6 +234,6 @@ public:
 };
 
 } // end namespace driver
-} // end namespace clang
+} // end namespace lfort
 
 #endif

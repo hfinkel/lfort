@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -pedantic
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -pedantic
 
 int printf(const char *, ...);
 

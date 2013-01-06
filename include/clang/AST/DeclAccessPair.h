@@ -15,13 +15,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_DECLACCESSPAIR_H
-#define LLVM_CLANG_AST_DECLACCESSPAIR_H
+#ifndef LLVM_LFORT_AST_DECLACCESSPAIR_H
+#define LLVM_LFORT_AST_DECLACCESSPAIR_H
 
-#include "clang/Basic/Specifiers.h"
+#include "lfort/Basic/Specifiers.h"
 #include "llvm/Support/DataTypes.h"
 
-namespace clang {
+namespace lfort {
 
 class NamedDecl;
 
@@ -65,7 +65,7 @@ public:
 // Take a moment to tell SmallVector that DeclAccessPair is POD.
 namespace llvm {
 template<typename> struct isPodLike;
-template<> struct isPodLike<clang::DeclAccessPair> {
+template<> struct isPodLike<lfort::DeclAccessPair> {
    static const bool value = true;
 };
 }

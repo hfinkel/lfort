@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOKENREWRITER_H
-#define LLVM_CLANG_TOKENREWRITER_H
+#ifndef LLVM_LFORT_TOKENREWRITER_H
+#define LLVM_LFORT_TOKENREWRITER_H
 
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/Token.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Lex/Token.h"
 #include "llvm/ADT/OwningPtr.h"
 #include <list>
 #include <map>
 
-namespace clang {
+namespace lfort {
   class LangOptions;
   class ScratchBuffer;
 
@@ -74,6 +74,6 @@ namespace clang {
 
 
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

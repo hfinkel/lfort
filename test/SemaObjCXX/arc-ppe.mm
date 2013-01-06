@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fobjc-arc %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fobjc-arc %s
 
 // Make sure the ARC auto-deduction of id* in unevaluated contexts
 // works correctly in cases where we can't immediately tell whether the

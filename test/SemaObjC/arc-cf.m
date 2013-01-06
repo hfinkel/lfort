@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -verify %s
 
 #if __has_feature(arc_cf_code_audited)
 char _global[-1]; // expected-error {{declared as an array with a negative size}}
@@ -10,9 +10,9 @@ id CFBridgingRelease(CFTypeRef);
 typedef const struct __CFString *CFStringRef;
 
 extern CFStringRef CFMakeString0(void);
-#pragma clang arc_cf_code_audited begin
+#pragma lfort arc_cf_code_audited begin
 extern CFStringRef CFCreateString0(void);
-#pragma clang arc_cf_code_audited end
+#pragma lfort arc_cf_code_audited end
 void test0() {
   id x;
   x = (id) CFMakeString0(); // expected-error {{requires a bridged cast}} expected-note {{__bridge to convert directly}} expected-note {{CFBridgingRelease call to transfer}}
@@ -27,8 +27,8 @@ void test1() {
   x = (id) CFCreateString1(); // expected-error {{requires a bridged cast}} expected-note {{CFBridgingRelease call to transfer}}
 }
 
-#define CF_AUDIT_BEGIN _Pragma("clang arc_cf_code_audited begin")
-#define CF_AUDIT_END _Pragma("clang arc_cf_code_audited end")
+#define CF_AUDIT_BEGIN _Pragma("lfort arc_cf_code_audited begin")
+#define CF_AUDIT_END _Pragma("lfort arc_cf_code_audited end")
 #define CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
 #define CF_RETURNS_NOT_RETAINED __attribute__((cf_returns_not_retained))
 

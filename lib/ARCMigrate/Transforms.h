@@ -7,15 +7,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LIB_ARCMIGRATE_TRANSFORMS_H
-#define LLVM_CLANG_LIB_ARCMIGRATE_TRANSFORMS_H
+#ifndef LLVM_LFORT_LIB_ARCMIGRATE_TRANSFORMS_H
+#define LLVM_LFORT_LIB_ARCMIGRATE_TRANSFORMS_H
 
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/Support/SaveAndRestore.h"
 
-namespace clang {
+namespace lfort {
   class Decl;
   class Stmt;
   class BlockDecl;
@@ -218,6 +218,6 @@ void collectRemovables(Stmt *S, ExprSet &exprs);
 
 } // end namespace arcmt
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

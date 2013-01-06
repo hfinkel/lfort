@@ -1,4 +1,4 @@
-//===- CIndexCXX.cpp - Clang-C Source Indexing Library --------------------===//
+//===- CIndexCXX.cpp - LFort-C Source Indexing Library --------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the libclang support for C++ cursors.
+// This file implements the liblfort support for C++ cursors.
 //
 //===----------------------------------------------------------------------===//
 
 #include "CIndexer.h"
 #include "CXCursor.h"
 #include "CXType.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclTemplate.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclTemplate.h"
 
-using namespace clang;
-using namespace clang::cxcursor;
+using namespace lfort;
+using namespace lfort::cxcursor;
 
 extern "C" {
 
-unsigned clang_isVirtualBase(CXCursor C) {
+unsigned lfort_isVirtualBase(CXCursor C) {
   if (C.kind != CXCursor_CXXBaseSpecifier)
     return 0;
   
@@ -30,7 +30,7 @@ unsigned clang_isVirtualBase(CXCursor C) {
   return B->isVirtual();
 }
 
-enum CX_CXXAccessSpecifier clang_getCXXAccessSpecifier(CXCursor C) {
+enum CX_CXXAccessSpecifier lfort_getCXXAccessSpecifier(CXCursor C) {
   AccessSpecifier spec = AS_none;
 
   if (C.kind == CXCursor_CXXAccessSpecifier)
@@ -50,8 +50,8 @@ enum CX_CXXAccessSpecifier clang_getCXXAccessSpecifier(CXCursor C) {
   llvm_unreachable("Invalid AccessSpecifier!");
 }
 
-enum CXCursorKind clang_getTemplateCursorKind(CXCursor C) {
-  using namespace clang::cxcursor;
+enum CXCursorKind lfort_getTemplateCursorKind(CXCursor C) {
+  using namespace lfort::cxcursor;
   
   switch (C.kind) {
   case CXCursor_ClassTemplate: 
@@ -83,13 +83,13 @@ enum CXCursorKind clang_getTemplateCursorKind(CXCursor C) {
   return CXCursor_NoDeclFound;
 }
 
-CXCursor clang_getSpecializedCursorTemplate(CXCursor C) {
-  if (!clang_isDeclaration(C.kind))
-    return clang_getNullCursor();
+CXCursor lfort_getSpecializedCursorTemplate(CXCursor C) {
+  if (!lfort_isDeclaration(C.kind))
+    return lfort_getNullCursor();
     
   Decl *D = getCursorDecl(C);
   if (!D)
-    return clang_getNullCursor();
+    return lfort_getNullCursor();
   
   Decl *Template = 0;
   if (CXXRecordDecl *CXXRecord = dyn_cast<CXXRecordDecl>(D)) {
@@ -120,7 +120,7 @@ CXCursor clang_getSpecializedCursorTemplate(CXCursor C) {
     Template = Tmpl->getInstantiatedFromMemberTemplate();
   
   if (!Template)
-    return clang_getNullCursor();
+    return lfort_getNullCursor();
   
   return MakeCXCursor(Template, static_cast<CXTranslationUnit>(C.data[2]));
 }

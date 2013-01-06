@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple armv7-apple-darwin -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -triple armv7-apple-darwin -verify -fsyntax-only
 
 void f (void) {
   int Val;

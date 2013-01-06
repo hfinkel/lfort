@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -ast-print -o - -chain-include %s -chain-include %s
+// RUN: %lfort_cc1 %s -ast-print -o - -chain-include %s -chain-include %s
 
 #if !defined(PASS1)
 #define PASS1

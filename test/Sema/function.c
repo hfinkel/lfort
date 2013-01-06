@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -pedantic
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -pedantic
 
 // PR1892, PR11354
 void f(double a[restrict][5]) { __typeof(a) x = 10; } // expected-warning {{(aka 'double (*restrict)[5]')}}

@@ -13,18 +13,18 @@
 
 #define DEBUG_TYPE "ExprEngine"
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/SaveAndRestore.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 STATISTIC(NumOfDynamicDispatchPathSplits,
@@ -459,7 +459,7 @@ namespace {
   };
 }
 REGISTER_TRAIT_WITH_PROGRAMSTATE(DynamicDispatchBifurcationMap,
-                                 CLANG_ENTO_PROGRAMSTATE_MAP(const MemRegion *,
+                                 LFORT_ENTO_PROGRAMSTATE_MAP(const MemRegion *,
                                                              unsigned))
 
 bool ExprEngine::inlineCall(const CallEvent &Call, const Decl *D,

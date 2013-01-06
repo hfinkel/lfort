@@ -1,6 +1,6 @@
-// RUN: %clang %s -fsyntax-only -Wignored-qualifiers -Wno-error=return-type -Xclang -verify -fblocks -Wno-unreachable-code -Wno-unused-value
+// RUN: %lfort %s -fsyntax-only -Wignored-qualifiers -Wno-error=return-type -Xlfort -verify -fblocks -Wno-unreachable-code -Wno-unused-value
 
-// clang emits the following warning by default.
+// lfort emits the following warning by default.
 // With GCC, -pedantic, -Wreturn-type or -Wall are required to produce the 
 // following warning.
 int t14() {

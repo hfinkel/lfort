@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fdebugger-support -funknown-anytype -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fdebugger-support -funknown-anytype -fsyntax-only -verify %s
 
 // rdar://problem/9416370
 namespace test0 {

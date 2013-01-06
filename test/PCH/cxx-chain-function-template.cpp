@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -chain-include %s -chain-include %s -fsyntax-only %s
+// RUN: %lfort_cc1 -chain-include %s -chain-include %s -fsyntax-only %s
 // Just don't crash.
 #if !defined(RUN1)
 #define RUN1

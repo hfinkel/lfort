@@ -87,8 +87,8 @@
 
 ------------------------------------------------------------------------ */
 
-#ifndef CLANG_BASIC_CONVERTUTF_H
-#define CLANG_BASIC_CONVERTUTF_H
+#ifndef LFORT_BASIC_CONVERTUTF_H
+#define LFORT_BASIC_CONVERTUTF_H
 
 /* ---------------------------------------------------------------------
     The following 4 definitions are compiler-specific.
@@ -137,7 +137,7 @@ ConversionResult ConvertUTF8toUTF32 (
   const UTF8** sourceStart, const UTF8* sourceEnd,
   UTF32** targetStart, UTF32* targetEnd, ConversionFlags flags);
 
-#ifdef CLANG_NEEDS_THESE_ONE_DAY
+#ifdef LFORT_NEEDS_THESE_ONE_DAY
 ConversionResult ConvertUTF16toUTF8 (
   const UTF16** sourceStart, const UTF16* sourceEnd,
   UTF8** targetStart, UTF8* targetEnd, ConversionFlags flags);
@@ -170,7 +170,7 @@ unsigned getNumBytesForUTF8(UTF8 firstByte);
 
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 
 /**
  * Convert an UTF8 StringRef to UTF8, UTF16, or UTF32 depending on

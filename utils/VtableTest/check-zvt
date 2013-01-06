@@ -6,9 +6,9 @@ N_STRUCTS=300
 
 let i=1;
 while [ $i != $N_STRUCTS ]; do
-  sed -n "/^__ZTV.*s$i:/,/\.[sg][el]/p" test-clang.s | grep -v '\.[sg][el]' >test-clang-ztv
+  sed -n "/^__ZTV.*s$i:/,/\.[sg][el]/p" test-lfort.s | grep -v '\.[sg][el]' >test-lfort-ztv
   sed -n "/^__ZTV.*s$i:/,/\.[sg][el]/p" test-gcc.s | grep -v '\.[sg][el]' >test-gcc-ztv
-  diff -U3 test-gcc-ztv test-clang-ztv
+  diff -U3 test-gcc-ztv test-lfort-ztv
   if [ $? != 0 ]; then
      echo "FAIL: s$i vtable"
   else

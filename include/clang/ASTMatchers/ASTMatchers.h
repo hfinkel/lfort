@@ -42,17 +42,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_H
-#define LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_H
+#ifndef LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_H
+#define LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_H
 
-#include "clang/AST/DeclTemplate.h"
-#include "clang/ASTMatchers/ASTMatchersInternal.h"
-#include "clang/ASTMatchers/ASTMatchersMacros.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/ASTMatchers/ASTMatchersInternal.h"
+#include "lfort/ASTMatchers/ASTMatchersMacros.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/Regex.h"
 #include <iterator>
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 
 /// \brief Maps string IDs to AST nodes matched by parts of a matcher.
@@ -409,7 +409,7 @@ const internal::VariadicDynCastAllOfMatcher<Decl, CXXMethodDecl> methodDecl;
 /// \brief Matches variable declarations.
 ///
 /// Note: this does not match declarations of member variables, which are
-/// "field" declarations in Clang parlance.
+/// "field" declarations in LFort parlance.
 ///
 /// Example matches a
 /// \code
@@ -1033,8 +1033,8 @@ const internal::VariadicDynCastAllOfMatcher<
 ///
 /// Does not match implicit conversions.
 ///
-/// Note: the name "explicitCast" is chosen to match Clang's terminology, as
-/// Clang uses the term "cast" to apply to implicit conversions as well as to
+/// Note: the name "explicitCast" is chosen to match LFort's terminology, as
+/// LFort uses the term "cast" to apply to implicit conversions as well as to
 /// actual cast expressions.
 ///
 /// \see hasDestinationType.
@@ -1051,7 +1051,7 @@ const internal::VariadicDynCastAllOfMatcher<
   Stmt,
   ExplicitCastExpr> explicitCastExpr;
 
-/// \brief Matches the implicit cast nodes of Clang's AST.
+/// \brief Matches the implicit cast nodes of LFort's AST.
 ///
 /// This matches many different places, including function call return value
 /// eliding, as well as any type conversions.
@@ -1059,7 +1059,7 @@ const internal::VariadicDynCastAllOfMatcher<
   Stmt,
   ImplicitCastExpr> implicitCastExpr;
 
-/// \brief Matches any cast nodes of Clang's AST.
+/// \brief Matches any cast nodes of LFort's AST.
 ///
 /// Example: castExpr() matches each of the following:
 /// \code
@@ -1086,13 +1086,13 @@ const internal::VariadicDynCastAllOfMatcher<
   Stmt,
   CXXFunctionalCastExpr> functionalCastExpr;
 
-/// \brief Matches \c QualTypes in the clang AST.
+/// \brief Matches \c QualTypes in the lfort AST.
 const internal::VariadicAllOfMatcher<QualType> qualType;
 
-/// \brief Matches \c Types in the clang AST.
+/// \brief Matches \c Types in the lfort AST.
 const internal::VariadicDynCastAllOfMatcher<Type, Type> type;
 
-/// \brief Matches \c TypeLocs in the clang AST.
+/// \brief Matches \c TypeLocs in the lfort AST.
 const internal::VariadicDynCastAllOfMatcher<TypeLoc, TypeLoc> typeLoc;
 
 /// \brief Various overloads for the anyOf matcher.
@@ -2236,7 +2236,7 @@ AST_MATCHER_P(CastExpr, hasSourceExpression,
 
 /// \brief Matches casts whose destination type matches a given matcher.
 ///
-/// (Note: Clang's AST refers to other conversions as "casts" too, and calls
+/// (Note: LFort's AST refers to other conversions as "casts" too, and calls
 /// actual casts "explicit" casts.)
 AST_MATCHER_P(ExplicitCastExpr, hasDestinationType,
               internal::Matcher<QualType>, InnerMatcher) {
@@ -2880,6 +2880,6 @@ AST_MATCHER_P(NestedNameSpecifier, specifiesNamespace,
 }
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_H
+#endif // LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_H

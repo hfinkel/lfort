@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -fexceptions -fobjc-exceptions -O2 -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fobjc-runtime=macosx-fragile-10.5 -emit-llvm -fexceptions -fobjc-exceptions -O2 -o - %s | FileCheck %s
 //
-// <rdar://problem/7471679> [irgen] [eh] Exception code built with clang (x86_64) crashes
+// <rdar://problem/7471679> [irgen] [eh] Exception code built with lfort (x86_64) crashes
 
 // Just check that we don't emit any dead blocks.
 @interface NSArray @end

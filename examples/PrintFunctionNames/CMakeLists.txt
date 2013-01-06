@@ -2,20 +2,20 @@ set(MODULE TRUE)
 
 set( LLVM_LINK_COMPONENTS support mc)
 
-add_clang_library(PrintFunctionNames PrintFunctionNames.cpp)
+add_lfort_library(PrintFunctionNames PrintFunctionNames.cpp)
 
 add_dependencies(PrintFunctionNames
-  ClangAttrClasses
-  ClangAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangStmtNodes
+  LFortAttrClasses
+  LFortAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortStmtNodes
   )
 
 target_link_libraries(PrintFunctionNames
-  clangFrontend
-  clangAST
+  lfortFrontend
+  lfortAST
   )
 
 set_target_properties(PrintFunctionNames

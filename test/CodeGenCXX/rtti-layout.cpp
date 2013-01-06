@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -I%S -triple=x86_64-apple-darwin10 -emit-llvm -O3 -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -I%S -triple=x86_64-apple-darwin10 -emit-llvm -O3 -o - | FileCheck %s
 #include <typeinfo>
 
 // vtables.

@@ -13,30 +13,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/AnalysisBasedWarnings.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/Analyses/CFGReachabilityAnalysis.h"
-#include "clang/Analysis/Analyses/ReachableCode.h"
-#include "clang/Analysis/Analyses/ThreadSafety.h"
-#include "clang/Analysis/Analyses/UninitializedValues.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/CFGStmtMap.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/AnalysisBasedWarnings.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/Analyses/CFGReachabilityAnalysis.h"
+#include "lfort/Analysis/Analyses/ReachableCode.h"
+#include "lfort/Analysis/Analyses/ThreadSafety.h"
+#include "lfort/Analysis/Analyses/UninitializedValues.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/CFGStmtMap.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/FoldingSet.h"
@@ -51,7 +51,7 @@
 #include <iterator>
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Unreachable code analysis.
@@ -869,11 +869,11 @@ static void DiagnoseSwitchLabelsFallthrough(Sema &S, AnalysisDeclContext &AC,
         if (!(B.empty() && Term && isa<BreakStmt>(Term))) {
           Preprocessor &PP = S.getPreprocessor();
           TokenValue Tokens[] = {
-            tok::l_square, tok::l_square, PP.getIdentifierInfo("clang"),
+            tok::l_square, tok::l_square, PP.getIdentifierInfo("lfort"),
             tok::coloncolon, PP.getIdentifierInfo("fallthrough"),
             tok::r_square, tok::r_square
           };
-          StringRef AnnotationSpelling = "[[clang::fallthrough]]";
+          StringRef AnnotationSpelling = "[[lfort::fallthrough]]";
           StringRef MacroName = PP.getLastMacroWithSpelling(L, Tokens);
           if (!MacroName.empty())
             AnnotationSpelling = MacroName;
@@ -1196,7 +1196,7 @@ private:
 //===----------------------------------------------------------------------===//
 // -Wthread-safety
 //===----------------------------------------------------------------------===//
-namespace clang {
+namespace lfort {
 namespace thread_safety {
 typedef llvm::SmallVector<PartialDiagnosticAt, 1> OptionalNotes;
 typedef std::pair<PartialDiagnosticAt, OptionalNotes> DelayedDiag;
@@ -1214,7 +1214,7 @@ struct SortDiagBySourceLocation {
 };
 
 namespace {
-class ThreadSafetyReporter : public clang::thread_safety::ThreadSafetyHandler {
+class ThreadSafetyReporter : public lfort::thread_safety::ThreadSafetyHandler {
   Sema &S;
   DiagList Warnings;
   SourceLocation FunLocation, FunEndLocation;
@@ -1363,13 +1363,13 @@ class ThreadSafetyReporter : public clang::thread_safety::ThreadSafetyHandler {
 //  warnings on a function, method, or block.
 //===----------------------------------------------------------------------===//
 
-clang::sema::AnalysisBasedWarnings::Policy::Policy() {
+lfort::sema::AnalysisBasedWarnings::Policy::Policy() {
   enableCheckFallThrough = 1;
   enableCheckUnreachable = 0;
   enableThreadSafetyAnalysis = 0;
 }
 
-clang::sema::AnalysisBasedWarnings::AnalysisBasedWarnings(Sema &s)
+lfort::sema::AnalysisBasedWarnings::AnalysisBasedWarnings(Sema &s)
   : S(s),
     NumFunctionsAnalyzed(0),
     NumFunctionsWithBadCFGs(0),
@@ -1400,7 +1400,7 @@ static void flushDiagnostics(Sema &S, sema::FunctionScopeInfo *fscope) {
   }
 }
 
-void clang::sema::
+void lfort::sema::
 AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
                                      sema::FunctionScopeInfo *fscope,
                                      const Decl *D, const BlockExpr *blkExpr) {
@@ -1609,7 +1609,7 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
   }
 }
 
-void clang::sema::AnalysisBasedWarnings::PrintStats() const {
+void lfort::sema::AnalysisBasedWarnings::PrintStats() const {
   llvm::errs() << "\n*** Analysis Based Warnings Stats:\n";
 
   unsigned NumCFGsBuilt = NumFunctionsAnalyzed - NumFunctionsWithBadCFGs;

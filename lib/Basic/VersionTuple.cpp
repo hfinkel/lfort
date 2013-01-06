@@ -11,10 +11,10 @@
 // the form major[.minor[.subminor]].
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Basic/VersionTuple.h"
+#include "lfort/Basic/VersionTuple.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 
 std::string VersionTuple::getAsString() const {
   std::string Result;
@@ -25,7 +25,7 @@ std::string VersionTuple::getAsString() const {
   return Result;
 }
 
-raw_ostream& clang::operator<<(raw_ostream &Out, 
+raw_ostream& lfort::operator<<(raw_ostream &Out, 
                                      const VersionTuple &V) {
   Out << V.getMajor();
   if (llvm::Optional<unsigned> Minor = V.getMinor())

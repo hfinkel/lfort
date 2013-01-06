@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 
 __attribute((aligned(16))) float a[128];
 union {int a[4]; __attribute((aligned(16))) float b[4];} b;

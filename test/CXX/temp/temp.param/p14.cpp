@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s 
+// RUN: %lfort_cc1 -fsyntax-only -verify %s 
 // XFAIL: *
 
 // A template-parameter shall not be used in its own default argument.

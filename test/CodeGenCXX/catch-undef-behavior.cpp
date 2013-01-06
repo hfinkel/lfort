@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsanitize=signed-integer-overflow,integer-divide-by-zero,float-divide-by-zero,shift,unreachable,return,vla-bound,alignment,null,vptr,object-size,float-cast-overflow,bool,enum -emit-llvm %s -o - -triple x86_64-linux-gnu | FileCheck %s
+// RUN: %lfort_cc1 -fsanitize=signed-integer-overflow,integer-divide-by-zero,float-divide-by-zero,shift,unreachable,return,vla-bound,alignment,null,vptr,object-size,float-cast-overflow,bool,enum -emit-llvm %s -o - -triple x86_64-linux-gnu | FileCheck %s
 
 struct S {
   double d;
@@ -52,7 +52,7 @@ void member_access(S *p) {
   // has changed, or that LLVM's hashing function has changed. The latter case
   // is OK if the hashing function is still stable.
   //
-  // The two hash values are for 64- and 32-bit Clang binaries, respectively.
+  // The two hash values are for 64- and 32-bit LFort binaries, respectively.
   // FIXME: We should produce a 64-bit value either way.
   //
   // CHECK-NEXT: xor i64 {{-4030275160588942838|2562089159}}, %[[VPTR]]

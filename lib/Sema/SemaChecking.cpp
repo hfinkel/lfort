@@ -12,32 +12,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/EvaluatedExprVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/StmtObjC.h"
-#include "clang/Analysis/Analyses/FormatString.h"
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Basic/TargetBuiltins.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/Sema.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/EvaluatedExprVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/Analysis/Analyses/FormatString.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Basic/TargetBuiltins.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/Sema.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 #include <limits>
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 SourceLocation Sema::getLocationOfStringLiteralByte(const StringLiteral *SL,
@@ -269,7 +269,7 @@ Sema::CheckBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
 #define ATOMIC_BUILTIN(ID, TYPE, ATTRS) \
   case Builtin::BI##ID: \
     return SemaAtomicOpsOverloaded(TheCallResult, AtomicExpr::AO##ID);
-#include "clang/Basic/Builtins.def"
+#include "lfort/Basic/Builtins.def"
   case Builtin::BI__builtin_annotation:
     if (SemaBuiltinAnnotation(*this, TheCall))
       return ExprError();
@@ -359,7 +359,7 @@ bool Sema::CheckARMBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
   bool HasConstPtr = false;
   switch (BuiltinID) {
 #define GET_NEON_OVERLOAD_CHECK
-#include "clang/Basic/arm_neon.inc"
+#include "lfort/Basic/arm_neon.inc"
 #undef GET_NEON_OVERLOAD_CHECK
   }
   
@@ -406,7 +406,7 @@ bool Sema::CheckARMBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall) {
   case ARM::BI__builtin_arm_vcvtr_f:
   case ARM::BI__builtin_arm_vcvtr_d: i = 1; u = 1; break;
 #define GET_NEON_IMMEDIATE_CHECK
-#include "clang/Basic/arm_neon.inc"
+#include "lfort/Basic/arm_neon.inc"
 #undef GET_NEON_IMMEDIATE_CHECK
   };
 
@@ -3159,7 +3159,7 @@ static bool isDynamicClassType(QualType T) {
 static const Expr *getSizeOfExprArg(const Expr* E) {
   if (const UnaryExprOrTypeTraitExpr *SizeOf =
       dyn_cast<UnaryExprOrTypeTraitExpr>(E))
-    if (SizeOf->getKind() == clang::UETT_SizeOf && !SizeOf->isArgumentType())
+    if (SizeOf->getKind() == lfort::UETT_SizeOf && !SizeOf->isArgumentType())
       return SizeOf->getArgumentExpr()->IgnoreParenImpCasts();
 
   return 0;
@@ -3169,7 +3169,7 @@ static const Expr *getSizeOfExprArg(const Expr* E) {
 static QualType getSizeOfArgType(const Expr* E) {
   if (const UnaryExprOrTypeTraitExpr *SizeOf =
       dyn_cast<UnaryExprOrTypeTraitExpr>(E))
-    if (SizeOf->getKind() == clang::UETT_SizeOf)
+    if (SizeOf->getKind() == lfort::UETT_SizeOf)
       return SizeOf->getTypeOfArgument();
 
   return QualType();
@@ -4928,7 +4928,7 @@ void CheckImplicitConversion(Sema &S, Expr *E, QualType T,
       Loc = S.SourceMgr.getImmediateExpansionRange(Loc).first;
     if (!Loc.isMacroID() || CC.isMacroID())
       S.Diag(Loc, diag::warn_impcast_null_pointer_to_integer)
-          << T << clang::SourceRange(CC)
+          << T << lfort::SourceRange(CC)
           << FixItHint::CreateReplacement(Loc, S.getFixItZeroLiteralForType(T));
   }
 
@@ -4958,7 +4958,7 @@ void CheckImplicitConversion(Sema &S, Expr *E, QualType T,
         S.PDiag(diag::warn_impcast_integer_precision_constant)
             << PrettySourceValue << PrettyTargetValue
             << E->getType() << T << E->getSourceRange()
-            << clang::SourceRange(CC));
+            << lfort::SourceRange(CC));
       return;
     }
 

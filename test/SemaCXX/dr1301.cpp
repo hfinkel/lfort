@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 struct A { // expected-note 2{{candidate}}
   A(int); // expected-note {{candidate}}
   int n;

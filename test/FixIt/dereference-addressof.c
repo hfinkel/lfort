@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -fsyntax-only -fixit -x c %t
-// RUN: %clang_cc1 -fsyntax-only -pedantic -x c %t
+// RUN: not %lfort_cc1 -fsyntax-only -fixit -x c %t
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -x c %t
 
 void ip(int *aPtr) {}   // expected-note{{passing argument to parameter 'aPtr' here}}
 void i(int a) {}        // expected-note{{passing argument to parameter 'a' here}}

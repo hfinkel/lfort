@@ -5,7 +5,7 @@ set(LLVM_LINK_COMPONENTS
   mc
   )
 
-add_clang_unittest(ToolingTests
+add_lfort_unittest(ToolingTests
   CommentHandlerTest.cpp
   CompilationDatabaseTest.cpp
   ToolingTest.cpp
@@ -16,7 +16,7 @@ add_clang_unittest(ToolingTests
   )
 
 target_link_libraries(ToolingTests
-  clangAST
-  clangTooling
-  clangRewriteCore
+  lfortAST
+  lfortTooling
+  lfortRewriteCore
   )

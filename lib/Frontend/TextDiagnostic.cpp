@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/TextDiagnostic.h"
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Frontend/TextDiagnostic.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cctype>
 
-using namespace clang;
+using namespace lfort;
 
 static const enum raw_ostream::Colors noteColor =
   raw_ostream::BLACK;
@@ -680,7 +680,7 @@ TextDiagnostic::emitDiagnosticMessage(SourceLocation Loc,
                                       PresumedLoc PLoc,
                                       DiagnosticsEngine::Level Level,
                                       StringRef Message,
-                                      ArrayRef<clang::CharSourceRange> Ranges,
+                                      ArrayRef<lfort::CharSourceRange> Ranges,
                                       const SourceManager *SM,
                                       DiagOrStoredDiag D) {
   uint64_t StartOfLocationInfo = OS.tell();
@@ -797,7 +797,7 @@ void TextDiagnostic::emitDiagnosticLoc(SourceLocation Loc, PresumedLoc PLoc,
 
   OS << PLoc.getFilename();
   switch (DiagOpts->getFormat()) {
-  case DiagnosticOptions::Clang: OS << ':'  << LineNo; break;
+  case DiagnosticOptions::LFort: OS << ':'  << LineNo; break;
   case DiagnosticOptions::Msvc:  OS << '('  << LineNo; break;
   case DiagnosticOptions::Vi:    OS << " +" << LineNo; break;
   }
@@ -813,7 +813,7 @@ void TextDiagnostic::emitDiagnosticLoc(SourceLocation Loc, PresumedLoc PLoc,
       OS << ColNo;
     }
   switch (DiagOpts->getFormat()) {
-  case DiagnosticOptions::Clang:
+  case DiagnosticOptions::LFort:
   case DiagnosticOptions::Vi:    OS << ':';    break;
   case DiagnosticOptions::Msvc:  OS << ") : "; break;
   }

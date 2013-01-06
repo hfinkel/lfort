@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify -pedantic %s
 
 // Test the c++0x-specific reference initialization rules, e.g., the
 // rules for rvalue references.

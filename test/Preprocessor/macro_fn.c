@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -Eonly -std=c89 -pedantic -verify
+/* RUN: %lfort_cc1 %s -Eonly -std=c89 -pedantic -verify
 */
 /* PR3937 */
 #define zero() 0 /* expected-note 2 {{defined here}} */

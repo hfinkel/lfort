@@ -1,4 +1,4 @@
-// RUN: %clang  -emit-llvm -g -S %s -o - | FileCheck %s
+// RUN: %lfort  -emit-llvm -g -S %s -o - | FileCheck %s
 struct foo;
 void func(foo *f) { // CHECK: DW_TAG_structure_type
 }

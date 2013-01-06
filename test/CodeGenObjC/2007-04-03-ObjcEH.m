@@ -1,4 +1,4 @@
-// RUN: %clang -fexceptions -S -emit-llvm %s -o -
+// RUN: %lfort -fexceptions -S -emit-llvm %s -o -
 
 @interface B 
 -(int)bar;

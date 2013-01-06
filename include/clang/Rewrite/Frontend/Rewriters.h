@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REWRITE_REWRITERS_H
-#define LLVM_CLANG_REWRITE_REWRITERS_H
+#ifndef LLVM_LFORT_REWRITE_REWRITERS_H
+#define LLVM_LFORT_REWRITE_REWRITERS_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
 class Preprocessor;
 class PreprocessorOutputOptions;
 
@@ -30,6 +30,6 @@ void DoRewriteTest(Preprocessor &PP, raw_ostream *OS);
 void RewriteIncludesInInput(Preprocessor &PP, raw_ostream *OS,
                             const PreprocessorOutputOptions &Opts);
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

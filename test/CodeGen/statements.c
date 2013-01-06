@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wno-error=return-type %s -emit-llvm-only
+// RUN: %lfort_cc1 -Wno-error=return-type %s -emit-llvm-only
 // REQUIRES: LP64
 
 void test1(int x) {

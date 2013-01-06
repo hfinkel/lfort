@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_SEMA_IDENTIFIERRESOLVER_H
-#define LLVM_CLANG_AST_SEMA_IDENTIFIERRESOLVER_H
+#ifndef LLVM_LFORT_AST_SEMA_IDENTIFIERRESOLVER_H
+#define LLVM_LFORT_AST_SEMA_IDENTIFIERRESOLVER_H
 
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class Decl;
@@ -215,6 +215,6 @@ private:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

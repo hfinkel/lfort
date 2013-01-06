@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - | FileCheck %s
 // The template should compile to linkonce linkage, not weak linkage.
 
 // CHECK-NOT: weak

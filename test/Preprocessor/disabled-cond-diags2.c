@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Eonly -verify %s
+// RUN: %lfort_cc1 -Eonly -verify %s
 
 #if 0
 #if 1

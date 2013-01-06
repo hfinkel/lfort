@@ -1,4 +1,4 @@
-//===- CIndexer.h - Clang-C Source Indexing Library -------------*- C++ -*-===//
+//===- CIndexer.h - LFort-C Source Indexing Library -------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CINDEXER_H
-#define LLVM_CLANG_CINDEXER_H
+#ifndef LLVM_LFORT_CINDEXER_H
+#define LLVM_LFORT_CINDEXER_H
 
-#include "clang-c/Index.h"
+#include "lfort-c/Index.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Path.h"
 #include <vector>
@@ -24,7 +24,7 @@ namespace llvm {
   class CrashRecoveryContext;
 }
 
-namespace clang {
+namespace lfort {
   class ASTUnit;
 
 class CIndexer {
@@ -56,13 +56,13 @@ public:
     return Options & opt;
   }
 
-  /// \brief Get the path of the clang resource files.
-  std::string getClangResourcesPath();
+  /// \brief Get the path of the lfort resource files.
+  std::string getLFortResourcesPath();
 };
 
   /**
    * \brief Given a set of "unsaved" files, create temporary files and 
-   * construct the clang -cc1 argument list needed to perform the remapping.
+   * construct the lfort -cc1 argument list needed to perform the remapping.
    *
    * \returns true if an error occurred.
    */
@@ -89,8 +89,8 @@ public:
   /// FIXME: Move to llvm/Support.
   void setThreadBackgroundPriority();
 
-  /// \brief Print libclang's resource usage to standard error.
-  void PrintLibclangResourceUsage(CXTranslationUnit TU);
+  /// \brief Print liblfort's resource usage to standard error.
+  void PrintLiblfortResourceUsage(CXTranslationUnit TU);
 
   namespace cxindex {
     void printDiagsToStderr(ASTUnit *Unit);

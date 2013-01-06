@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin %s
 
 // This file tests -Wconstant-conversion, a subcategory of -Wconversion
 // which is on by default.

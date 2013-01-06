@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wreorder -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -Wreorder -fsyntax-only -verify %s
 class A { 
   int m;
 public:

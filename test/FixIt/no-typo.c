@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fno-spell-checking -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -fno-spell-checking -verify %s
 typedef struct {
   float x, y;
 } Point;

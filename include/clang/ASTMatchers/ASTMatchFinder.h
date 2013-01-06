@@ -29,7 +29,7 @@
 //  };
 //
 //  int main(int argc, char **argv) {
-//    ClangTool Tool(argc, argv);
+//    LFortTool Tool(argc, argv);
 //    MatchFinder finder;
 //    finder.AddMatcher(Id("id", record(hasName("::a_namespace::AClass"))),
 //                      new HandleMatch);
@@ -38,16 +38,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MATCHERS_AST_MATCH_FINDER_H
-#define LLVM_CLANG_AST_MATCHERS_AST_MATCH_FINDER_H
+#ifndef LLVM_LFORT_AST_MATCHERS_AST_MATCH_FINDER_H
+#define LLVM_LFORT_AST_MATCHERS_AST_MATCH_FINDER_H
 
-#include "clang/ASTMatchers/ASTMatchers.h"
+#include "lfort/ASTMatchers/ASTMatchers.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ast_matchers {
 
-/// \brief A class to allow finding matches over the Clang AST.
+/// \brief A class to allow finding matches over the LFort AST.
 ///
 /// After creation, you can add multiple matchers to the MatchFinder via
 /// calls to addMatcher(...).
@@ -70,7 +70,7 @@ public:
   /// Every time a match is found, the MatchFinder will invoke the registered
   /// MatchCallback with a MatchResult containing information about the match.
   struct MatchResult {
-    MatchResult(const BoundNodes &Nodes, clang::ASTContext *Context);
+    MatchResult(const BoundNodes &Nodes, lfort::ASTContext *Context);
 
     /// \brief Contains the nodes bound on the current match.
     ///
@@ -79,8 +79,8 @@ public:
 
     /// \brief Utilities for interpreting the matched AST structures.
     /// @{
-    clang::ASTContext * const Context;
-    clang::SourceManager * const SourceManager;
+    lfort::ASTContext * const Context;
+    lfort::SourceManager * const SourceManager;
     /// @}
   };
 
@@ -131,8 +131,8 @@ public:
                   MatchCallback *Action);
   /// @}
 
-  /// \brief Creates a clang ASTConsumer that finds all matches.
-  clang::ASTConsumer *newASTConsumer();
+  /// \brief Creates a lfort ASTConsumer that finds all matches.
+  lfort::ASTConsumer *newASTConsumer();
 
   /// \brief Finds all matches on the given \c Node.
   ///
@@ -159,6 +159,6 @@ private:
 };
 
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_AST_MATCHERS_AST_MATCH_FINDER_H
+#endif // LLVM_LFORT_AST_MATCHERS_AST_MATCH_FINDER_H

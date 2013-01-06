@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -std=c++11 -Wfour-char-constants -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -std=c++11 -Wfour-char-constants -fsyntax-only -verify %s
 
 int a = 'ab'; // expected-warning {{multi-character character constant}}
 int b = '\xFF\xFF'; // expected-warning {{multi-character character constant}}

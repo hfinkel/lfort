@@ -10,18 +10,18 @@
 //  This file implements semantic analysis member access expressions.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Sema/SemaInternal.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 typedef llvm::SmallPtrSet<const CXXRecordDecl*, 4> BaseSet;

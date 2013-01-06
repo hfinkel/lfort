@@ -6,7 +6,7 @@
   <ul class="menubar">
     <li><a href="/index.html">About the Analyzer</a></li>
     <li><a href="http://llvm.org/">LLVM Project</a></li>
-    <li><a href="http://clang.llvm.org/">Clang Project</a></li>
+    <li><a href="http://lfort.llvm.org/">LFort Project</a></li>
   </ul>
 </li>
 <li>

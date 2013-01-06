@@ -1,4 +1,4 @@
-add_clang_library(clangSerialization
+add_lfort_library(lfortSerialization
   ASTCommon.h
   ASTReaderInternals.h
   ASTCommon.cpp
@@ -13,21 +13,21 @@ add_clang_library(clangSerialization
   ModuleManager.cpp
   )
 
-add_dependencies(clangSerialization
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangAttrPCHRead
-  ClangAttrPCHWrite
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticLex
-  ClangDiagnosticSema
-  ClangDiagnosticSerialization
-  ClangStmtNodes
+add_dependencies(lfortSerialization
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortAttrPCHRead
+  LFortAttrPCHWrite
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticLex
+  LFortDiagnosticSema
+  LFortDiagnosticSerialization
+  LFortStmtNodes
   )
 
-target_link_libraries(clangSerialization
-  clangSema
+target_link_libraries(lfortSerialization
+  lfortSema
   )

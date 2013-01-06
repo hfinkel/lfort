@@ -13,14 +13,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TYPE_ORDERING_H
-#define LLVM_CLANG_TYPE_ORDERING_H
+#ifndef LLVM_LFORT_TYPE_ORDERING_H
+#define LLVM_LFORT_TYPE_ORDERING_H
 
-#include "clang/AST/CanonicalType.h"
-#include "clang/AST/Type.h"
+#include "lfort/AST/CanonicalType.h"
+#include "lfort/AST/Type.h"
 #include <functional>
 
-namespace clang {
+namespace lfort {
 
 /// QualTypeOrdering - Function object that provides a total ordering
 /// on QualType values.
@@ -35,40 +35,40 @@ struct QualTypeOrdering : std::binary_function<QualType, QualType, bool> {
 namespace llvm {
   template<class> struct DenseMapInfo;
 
-  template<> struct DenseMapInfo<clang::QualType> {
-    static inline clang::QualType getEmptyKey() { return clang::QualType(); }
+  template<> struct DenseMapInfo<lfort::QualType> {
+    static inline lfort::QualType getEmptyKey() { return lfort::QualType(); }
 
-    static inline clang::QualType getTombstoneKey() {
-      using clang::QualType;
-      return QualType::getFromOpaquePtr(reinterpret_cast<clang::Type *>(-1));
+    static inline lfort::QualType getTombstoneKey() {
+      using lfort::QualType;
+      return QualType::getFromOpaquePtr(reinterpret_cast<lfort::Type *>(-1));
     }
 
-    static unsigned getHashValue(clang::QualType Val) {
+    static unsigned getHashValue(lfort::QualType Val) {
       return (unsigned)((uintptr_t)Val.getAsOpaquePtr()) ^
             ((unsigned)((uintptr_t)Val.getAsOpaquePtr() >> 9));
     }
 
-    static bool isEqual(clang::QualType LHS, clang::QualType RHS) {
+    static bool isEqual(lfort::QualType LHS, lfort::QualType RHS) {
       return LHS == RHS;
     }
   };
 
-  template<> struct DenseMapInfo<clang::CanQualType> {
-    static inline clang::CanQualType getEmptyKey() { 
-      return clang::CanQualType(); 
+  template<> struct DenseMapInfo<lfort::CanQualType> {
+    static inline lfort::CanQualType getEmptyKey() { 
+      return lfort::CanQualType(); 
     }
     
-    static inline clang::CanQualType getTombstoneKey() {
-      using clang::CanQualType;
-      return CanQualType::getFromOpaquePtr(reinterpret_cast<clang::Type *>(-1));
+    static inline lfort::CanQualType getTombstoneKey() {
+      using lfort::CanQualType;
+      return CanQualType::getFromOpaquePtr(reinterpret_cast<lfort::Type *>(-1));
     }
     
-    static unsigned getHashValue(clang::CanQualType Val) {
+    static unsigned getHashValue(lfort::CanQualType Val) {
       return (unsigned)((uintptr_t)Val.getAsOpaquePtr()) ^
       ((unsigned)((uintptr_t)Val.getAsOpaquePtr() >> 9));
     }
     
-    static bool isEqual(clang::CanQualType LHS, clang::CanQualType RHS) {
+    static bool isEqual(lfort::CanQualType LHS, lfort::CanQualType RHS) {
       return LHS == RHS;
     }
   };

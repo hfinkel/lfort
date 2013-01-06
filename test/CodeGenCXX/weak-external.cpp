@@ -1,4 +1,4 @@
-// RUN: %clang -fexceptions %s -S -emit-llvm -o - | FileCheck %s
+// RUN: %lfort -fexceptions %s -S -emit-llvm -o - | FileCheck %s
 // PR4262
 
 // CHECK-NOT: _ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag

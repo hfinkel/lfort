@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null
 // This is a testcase for PR461
 typedef struct {
   unsigned min_align: 1;

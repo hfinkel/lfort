@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Type.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Type.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cctype>
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 bool cocoa::isRefType(QualType RetTy, StringRef Prefix,

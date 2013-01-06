@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fmessage-length 60 %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only -fmessage-length 60 %s 2>&1 | FileCheck %s
 
 struct B { void f(); };
 struct D1 : B {};

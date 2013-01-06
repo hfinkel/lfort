@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_CXCURSOR_H
-#define LLVM_CLANG_CXCURSOR_H
+#ifndef LLVM_LFORT_CXCURSOR_H
+#define LLVM_LFORT_CXCURSOR_H
 
-#include "clang-c/Index.h"
-#include "clang/Basic/SourceLocation.h"
+#include "lfort-c/Index.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/PointerUnion.h"
 #include <utility>
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class ASTUnit;
@@ -47,12 +47,12 @@ namespace cxcursor {
 
 CXCursor getCursor(CXTranslationUnit, SourceLocation);
   
-CXCursor MakeCXCursor(const clang::Attr *A, clang::Decl *Parent,
+CXCursor MakeCXCursor(const lfort::Attr *A, lfort::Decl *Parent,
                       CXTranslationUnit TU);
-CXCursor MakeCXCursor(clang::Decl *D, CXTranslationUnit TU,
+CXCursor MakeCXCursor(lfort::Decl *D, CXTranslationUnit TU,
                       SourceRange RegionOfInterest = SourceRange(),
                       bool FirstInDeclGroup = true);
-CXCursor MakeCXCursor(clang::Stmt *S, clang::Decl *Parent,
+CXCursor MakeCXCursor(lfort::Stmt *S, lfort::Decl *Parent,
                       CXTranslationUnit TU,
                       SourceRange RegionOfInterest = SourceRange());
 CXCursor MakeCXCursorInvalid(CXCursorKind K, CXTranslationUnit TU = 0);
@@ -251,6 +251,6 @@ inline bool operator!=(CXCursor X, CXCursor Y) {
 /// first in a declaration group.
 bool isFirstInDeclGroup(CXCursor C);
 
-}} // end namespace: clang::cxcursor
+}} // end namespace: lfort::cxcursor
 
 #endif

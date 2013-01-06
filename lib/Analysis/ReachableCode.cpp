@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/ReachableCode.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Analysis/Analyses/ReachableCode.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/BitVector.h"
 #include "llvm/ADT/SmallVector.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 class DeadCodeScan {
@@ -43,14 +43,14 @@ public:
   
   void enqueue(const CFGBlock *block);  
   unsigned scanBackwards(const CFGBlock *Start,
-                         clang::reachable_code::Callback &CB);
+                         lfort::reachable_code::Callback &CB);
   
   bool isDeadCodeRoot(const CFGBlock *Block);
   
   const Stmt *findDeadCode(const CFGBlock *Block);
   
   void reportDeadCode(const Stmt *S,
-                      clang::reachable_code::Callback &CB);
+                      lfort::reachable_code::Callback &CB);
 };
 }
 
@@ -62,7 +62,7 @@ void DeadCodeScan::enqueue(const CFGBlock *block) {
   WorkList.push_back(block);
 }
 
-bool DeadCodeScan::isDeadCodeRoot(const clang::CFGBlock *Block) {
+bool DeadCodeScan::isDeadCodeRoot(const lfort::CFGBlock *Block) {
   bool isDeadRoot = true;
   
   for (CFGBlock::const_pred_iterator I = Block->pred_begin(),
@@ -93,7 +93,7 @@ static bool isValidDeadStmt(const Stmt *S) {
   return true;
 }
 
-const Stmt *DeadCodeScan::findDeadCode(const clang::CFGBlock *Block) {
+const Stmt *DeadCodeScan::findDeadCode(const lfort::CFGBlock *Block) {
   for (CFGBlock::const_iterator I = Block->begin(), E = Block->end(); I!=E; ++I)
     if (const CFGStmt *CS = I->getAs<CFGStmt>()) {
       const Stmt *S = CS->getStmt();
@@ -116,8 +116,8 @@ static int SrcCmp(const void *p1, const void *p2) {
     ((const std::pair<const CFGBlock *, const Stmt *>*) p1)->second->getLocStart();
 }
 
-unsigned DeadCodeScan::scanBackwards(const clang::CFGBlock *Start,
-                                     clang::reachable_code::Callback &CB) {
+unsigned DeadCodeScan::scanBackwards(const lfort::CFGBlock *Start,
+                                     lfort::reachable_code::Callback &CB) {
 
   unsigned count = 0;
   enqueue(Start);
@@ -145,13 +145,13 @@ unsigned DeadCodeScan::scanBackwards(const clang::CFGBlock *Start,
     
     // Specially handle macro-expanded code.
     if (S->getLocStart().isMacroID()) {
-      count += clang::reachable_code::ScanReachableFromBlock(Block, Reachable);
+      count += lfort::reachable_code::ScanReachableFromBlock(Block, Reachable);
       continue;
     }
 
     if (isDeadCodeRoot(Block)) {
       reportDeadCode(S, CB);
-      count += clang::reachable_code::ScanReachableFromBlock(Block, Reachable);
+      count += lfort::reachable_code::ScanReachableFromBlock(Block, Reachable);
     }
     else {
       // Record this statement as the possibly best location in a
@@ -171,7 +171,7 @@ unsigned DeadCodeScan::scanBackwards(const clang::CFGBlock *Start,
       if (Reachable[block->getBlockID()])
         continue;
       reportDeadCode(I->second, CB);
-      count += clang::reachable_code::ScanReachableFromBlock(block, Reachable);
+      count += lfort::reachable_code::ScanReachableFromBlock(block, Reachable);
     }
   }
     
@@ -244,13 +244,13 @@ static SourceLocation GetUnreachableLoc(const Stmt *S,
 }
 
 void DeadCodeScan::reportDeadCode(const Stmt *S,
-                                  clang::reachable_code::Callback &CB) {
+                                  lfort::reachable_code::Callback &CB) {
   SourceRange R1, R2;
   SourceLocation Loc = GetUnreachableLoc(S, R1, R2);
   CB.HandleUnreachable(Loc, R1, R2);
 }
 
-namespace clang { namespace reachable_code {
+namespace lfort { namespace reachable_code {
 
 void Callback::anchor() { }  
 
@@ -328,4 +328,4 @@ void FindUnreachableCode(AnalysisDeclContext &AC, Callback &CB) {
   }
 }
 
-}} // end namespace clang::reachable_code
+}} // end namespace lfort::reachable_code

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - | FileCheck %s
 
 // CHECK: 0x3BFD83C940000000
 // CHECK: 2.000000e+{{[0]*}}32

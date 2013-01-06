@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -Wno-error=non-pod-varargs -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -Wno-error=non-pod-varargs -emit-llvm -o - %s | FileCheck %s
 
 struct X {
   X();

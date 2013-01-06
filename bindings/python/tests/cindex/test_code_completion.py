@@ -1,4 +1,4 @@
-from clang.cindex import TranslationUnit
+from lfort.cindex import TranslationUnit
 
 def check_completion_results(cr, expected):
     assert cr is not None

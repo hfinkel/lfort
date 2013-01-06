@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -std=c++11 -fsyntax-only -Wno-unused-value -Wmicrosoft -verify -fms-extensions -fms-compatibility -fdelayed-template-parsing
+// RUN: %lfort_cc1 %s -std=c++11 -fsyntax-only -Wno-unused-value -Wmicrosoft -verify -fms-extensions -fms-compatibility -fdelayed-template-parsing
 
 /* Microsoft attribute tests */
 [repeatable][source_annotation_attribute( Parameter|ReturnValue )]

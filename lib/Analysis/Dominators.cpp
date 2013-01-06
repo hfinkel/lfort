@@ -1,4 +1,4 @@
-//=- Dominators.cpp - Implementation of dominators tree for Clang CFG C++ -*-=//
+//=- Dominators.cpp - Implementation of dominators tree for LFort CFG C++ -*-=//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/Dominators.h"
+#include "lfort/Analysis/Analyses/Dominators.h"
 
-using namespace clang;
+using namespace lfort;
 
 void DominatorTree::anchor() { }

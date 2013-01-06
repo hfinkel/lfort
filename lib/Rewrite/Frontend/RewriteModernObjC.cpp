@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/ASTConsumers.h"
-#include "clang/AST/AST.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Rewrite/Frontend/ASTConsumers.h"
+#include "lfort/AST/AST.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -29,7 +29,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using llvm::utostr;
 
 namespace {
@@ -615,7 +615,7 @@ RewriteModernObjC::RewriteModernObjC(std::string inFile, raw_ostream* OS,
                "for @try/@finally (code may not execute properly)");
 }
 
-ASTConsumer *clang::CreateModernObjCRewriter(const std::string& InFile,
+ASTConsumer *lfort::CreateModernObjCRewriter(const std::string& InFile,
                                        raw_ostream* OS,
                                        DiagnosticsEngine &Diags,
                                        const LangOptions &LOpts,
@@ -5540,7 +5540,7 @@ Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
     messString += "\n";
 
     // FIXME: Missing definition of
-    // InsertText(clang::SourceLocation, char const*, unsigned int).
+    // InsertText(lfort::SourceLocation, char const*, unsigned int).
     // InsertText(startLoc, messString.c_str(), messString.size());
     // Tried this, but it didn't work either...
     // ReplaceText(startLoc, 0, messString.c_str(), messString.size());
@@ -6002,7 +6002,7 @@ void RewriteModernObjC::Initialize(ASTContext &context) {
   if (LangOpts.MicrosoftExt) {
     Preamble += "#undef __OBJC_RW_DLLIMPORT\n";
     Preamble += "#undef __OBJC_RW_STATICIMPORT\n";
-    Preamble += "#ifndef KEEP_ATTRIBUTES\n";  // We use this for clang tests.
+    Preamble += "#ifndef KEEP_ATTRIBUTES\n";  // We use this for lfort tests.
     Preamble += "#define __attribute__(X)\n";
     Preamble += "#endif\n";
     Preamble += "#ifndef __weak\n";

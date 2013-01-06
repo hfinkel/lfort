@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -O1 -o - -triple=i686-apple-darwin9 | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -O1 -o - -triple=i686-apple-darwin9 | FileCheck %s
 struct A {
   _Atomic(int) i;
   A(int j);

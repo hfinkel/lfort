@@ -12,29 +12,29 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ALL_DIAGNOSTICS_H
-#define LLVM_CLANG_ALL_DIAGNOSTICS_H
+#ifndef LLVM_LFORT_ALL_DIAGNOSTICS_H
+#define LLVM_LFORT_ALL_DIAGNOSTICS_H
 
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/AST/CommentDiagnostic.h"
-#include "clang/Analysis/AnalysisDiagnostic.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Parse/ParseDiagnostic.h"
-#include "clang/Sema/SemaDiagnostic.h"
-#include "clang/Serialization/SerializationDiagnostic.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/AST/CommentDiagnostic.h"
+#include "lfort/Analysis/AnalysisDiagnostic.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Parse/ParseDiagnostic.h"
+#include "lfort/Sema/SemaDiagnostic.h"
+#include "lfort/Serialization/SerializationDiagnostic.h"
 
-namespace clang {
+namespace lfort {
 template <size_t SizeOfStr, typename FieldType>
 class StringSizerHelper {
   char FIELD_TOO_SMALL[SizeOfStr <= FieldType(~0U) ? 1 : -1];
 public:
   enum { Size = SizeOfStr };
 };
-} // end namespace clang 
+} // end namespace lfort 
 
-#define STR_SIZE(str, fieldTy) clang::StringSizerHelper<sizeof(str)-1, \
+#define STR_SIZE(str, fieldTy) lfort::StringSizerHelper<sizeof(str)-1, \
                                                         fieldTy>::Size 
 
 #endif

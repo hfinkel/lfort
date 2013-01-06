@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -g < %s | grep  lexical | count 5
+// RUN: %lfort_cc1 -emit-llvm -g < %s | grep  lexical | count 5
 // Test to check number of lexical scope identified in debug info.
 
 extern int bar();

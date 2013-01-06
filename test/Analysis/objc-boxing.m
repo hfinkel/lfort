@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc -analyzer-store=region -verify %s
 
 typedef signed char BOOL;
 typedef long NSInteger;

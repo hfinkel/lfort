@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -pedantic
+// RUN: %lfort_cc1 %s -verify -pedantic
 typedef int unary_int_func(int arg);
 unary_int_func *func;
 

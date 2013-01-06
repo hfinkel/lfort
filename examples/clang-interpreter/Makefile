@@ -1,4 +1,4 @@
-##===- examples/clang-interpreter/Makefile -----------------*- Makefile -*-===##
+##===- examples/lfort-interpreter/Makefile -----------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,9 +7,9 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
+LFORT_LEVEL := ../..
 
-TOOLNAME = clang-interpreter
+TOOLNAME = lfort-interpreter
 NO_INSTALL = 1
 
 # No plugins, optimize startup time.
@@ -17,10 +17,10 @@ TOOL_NO_EXPORTS = 1
 
 LINK_COMPONENTS := jit interpreter nativecodegen bitreader bitwriter ipo \
 	linker selectiondag asmparser instrumentation
-USEDLIBS = clangFrontend.a clangSerialization.a clangDriver.a clangCodeGen.a \
-           clangParse.a clangSema.a clangStaticAnalyzerFrontend.a \
-           clangStaticAnalyzerCheckers.a clangStaticAnalyzerCore.a \
-           clangAnalysis.a clangRewriteCore.a clangRewriteFrontend.a \
-           clangEdit.a clangAST.a clangLex.a clangBasic.a
+USEDLIBS = lfortFrontend.a lfortSerialization.a lfortDriver.a lfortCodeGen.a \
+           lfortParse.a lfortSema.a lfortStaticAnalyzerFrontend.a \
+           lfortStaticAnalyzerCheckers.a lfortStaticAnalyzerCore.a \
+           lfortAnalysis.a lfortRewriteCore.a lfortRewriteFrontend.a \
+           lfortEdit.a lfortAST.a lfortLex.a lfortBasic.a
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

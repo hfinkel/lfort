@@ -12,9 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Tooling/ArgumentsAdjusters.h"
+#include "lfort/Tooling/ArgumentsAdjusters.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 void ArgumentsAdjuster::anchor() {
@@ -22,7 +22,7 @@ void ArgumentsAdjuster::anchor() {
 
 /// Add -fsyntax-only option to the commnand line arguments.
 CommandLineArguments
-ClangSyntaxOnlyAdjuster::Adjust(const CommandLineArguments &Args) {
+LFortSyntaxOnlyAdjuster::Adjust(const CommandLineArguments &Args) {
   CommandLineArguments AdjustedArgs = Args;
   // FIXME: Remove options that generate output.
   AdjustedArgs.push_back("-fsyntax-only");
@@ -30,5 +30,5 @@ ClangSyntaxOnlyAdjuster::Adjust(const CommandLineArguments &Args) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort
 

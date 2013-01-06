@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++11 %s
 
 struct A { };
 A::A() { } // expected-error {{definition of implicitly declared default constructor}}
@@ -43,7 +43,7 @@ namespace PR6570 {
 namespace PR7594 {
   // If the lazy declaration of special member functions is triggered
   // in an out-of-line initializer, make sure the functions aren't in
-  // the initializer scope. This used to crash Clang:
+  // the initializer scope. This used to crash LFort:
   struct C {
     C();
     static C *c;

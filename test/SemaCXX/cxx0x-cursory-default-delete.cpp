@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fsyntax-only -verify %s
 
 struct non_copiable {
   non_copiable(const non_copiable&) = delete; // expected-note {{marked deleted here}}

@@ -7,30 +7,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/Version.h"
-#include "clang/Frontend/ChainedDiagnosticConsumer.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Frontend/LogDiagnosticPrinter.h"
-#include "clang/Frontend/SerializedDiagnosticPrinter.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Frontend/VerifyDiagnosticConsumer.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/PTHManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/Version.h"
+#include "lfort/Frontend/ChainedDiagnosticConsumer.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendActions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Frontend/LogDiagnosticPrinter.h"
+#include "lfort/Frontend/SerializedDiagnosticPrinter.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Frontend/VerifyDiagnosticConsumer.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/PTHManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Config/config.h"
 #include "llvm/Support/CrashRecoveryContext.h"
@@ -45,7 +45,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/system_error.h"
 
-using namespace clang;
+using namespace lfort;
 
 CompilerInstance::CompilerInstance()
   : Invocation(new CompilerInvocation()), ModuleManager(0) {
@@ -104,7 +104,7 @@ static void SetUpBuildDumpLog(DiagnosticOptions *DiagOpts,
     return;
   }
 
-  (*OS) << "clang -cc1 command line arguments: ";
+  (*OS) << "lfort -cc1 command line arguments: ";
   for (unsigned i = 0; i != argc; ++i)
     (*OS) << argv[i] << ' ';
   (*OS) << '\n';
@@ -160,7 +160,7 @@ static void SetupSerializedDiagnostics(DiagnosticOptions *DiagOpts,
   }
   
   DiagnosticConsumer *SerializedConsumer =
-    clang::serialized_diags::create(OS.take(), DiagOpts);
+    lfort::serialized_diags::create(OS.take(), DiagOpts);
 
   
   Diags.setClient(new ChainedDiagnosticConsumer(Diags.takeClient(),
@@ -409,7 +409,7 @@ void CompilerInstance::createCodeCompletionConsumer() {
 }
 
 void CompilerInstance::createFrontendTimer() {
-  FrontendTimer.reset(new llvm::Timer("Clang front-end timer"));
+  FrontendTimer.reset(new llvm::Timer("LFort front-end timer"));
 }
 
 CodeCompleteConsumer *
@@ -684,7 +684,7 @@ bool CompilerInstance::ExecuteAction(FrontendAction &Act) {
 
   // Validate/process some options.
   if (getHeaderSearchOpts().Verbose)
-    OS << "clang -cc1 version " CLANG_VERSION_STRING
+    OS << "lfort -cc1 version " LFORT_VERSION_STRING
        << " based upon " << PACKAGE_STRING
        << " default target " << llvm::sys::getDefaultTargetTriple() << "\n";
 
@@ -908,10 +908,10 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
   StringRef ModuleName = Path[0].first->getName();
   SourceLocation ModuleNameLoc = Path[0].second;
 
-  clang::Module *Module = 0;
+  lfort::Module *Module = 0;
   
   // If we don't already have information on this module, load the module now.
-  llvm::DenseMap<const IdentifierInfo *, clang::Module *>::iterator Known
+  llvm::DenseMap<const IdentifierInfo *, lfort::Module *>::iterator Known
     = KnownModules.find(Path[0].first);
   if (Known != KnownModules.end()) {
     // Retrieve the cached top-level module.
@@ -1103,14 +1103,14 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
   if (Path.size() > 1) {
     for (unsigned I = 1, N = Path.size(); I != N; ++I) {
       StringRef Name = Path[I].first->getName();
-      clang::Module *Sub = Module->findSubmodule(Name);
+      lfort::Module *Sub = Module->findSubmodule(Name);
       
       if (!Sub) {
         // Attempt to perform typo correction to find a module name that works.
         llvm::SmallVector<StringRef, 2> Best;
         unsigned BestEditDistance = (std::numeric_limits<unsigned>::max)();
         
-        for (clang::Module::submodule_iterator J = Module->submodule_begin(), 
+        for (lfort::Module::submodule_iterator J = Module->submodule_begin(), 
                                             JEnd = Module->submodule_end();
              J != JEnd; ++J) {
           unsigned ED = Name.edit_distance((*J)->Name,

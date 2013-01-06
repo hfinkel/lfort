@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 namespace test0 {
   template<class T> void apply(T x, void (*f)(T)) { f(x); } // expected-note 2 {{candidate template ignored: deduced conflicting types for parameter 'T'}}\

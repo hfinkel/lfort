@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s | grep '^ # define X 3$'
+// RUN: %lfort_cc1 -E %s | grep '^ # define X 3$'
 
 #define H # 
  #define D define 

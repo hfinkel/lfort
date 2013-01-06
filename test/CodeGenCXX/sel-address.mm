@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -emit-llvm -o %t
+// RUN: %lfort_cc1 %s -verify -emit-llvm -o %t
 // pr7390
 
 void f(const SEL& v2) {}

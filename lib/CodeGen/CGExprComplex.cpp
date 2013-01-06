@@ -13,12 +13,12 @@
 
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Function.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 //===----------------------------------------------------------------------===//

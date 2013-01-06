@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CGVALUE_H
-#define CLANG_CODEGEN_CGVALUE_H
+#ifndef LFORT_CODEGEN_CGVALUE_H
+#define LFORT_CODEGEN_CGVALUE_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Type.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/Type.h"
 #include "llvm/IR/Metadata.h"
 
 namespace llvm {
@@ -25,7 +25,7 @@ namespace llvm {
   class Value;
 }
 
-namespace clang {
+namespace lfort {
 namespace CodeGen {
   class AggValueSlot;
   struct CGBitFieldInfo;
@@ -448,6 +448,6 @@ public:
 };
 
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_VERIFYDIAGNOSTICSCLIENT_H
-#define LLVM_CLANG_FRONTEND_VERIFYDIAGNOSTICSCLIENT_H
+#ifndef LLVM_LFORT_FRONTEND_VERIFYDIAGNOSTICSCLIENT_H
+#define LLVM_LFORT_FRONTEND_VERIFYDIAGNOSTICSCLIENT_H
 
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/STLExtras.h"
 #include <climits>
 
-namespace clang {
+namespace lfort {
 
 class DiagnosticsEngine;
 class TextDiagnosticBuffer;
@@ -258,6 +258,6 @@ public:
   virtual DiagnosticConsumer *clone(DiagnosticsEngine &Diags) const;
 };
 
-} // end namspace clang
+} // end namspace lfort
 
 #endif

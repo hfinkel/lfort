@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/LiteralSupport.h"
-#include "clang/Basic/ConvertUTF.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/LiteralSupport.h"
+#include "lfort/Basic/ConvertUTF.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 
 /// HexDigitValue - Return the value of the specified hex digit, or -1 if it's
 /// not valid.
@@ -960,7 +960,7 @@ CharLiteralParser::CharLiteralParser(const char *begin, const char *end,
       if (res!=conversionOK) {
         // If we see bad encoding for unprefixed character literals, warn and 
         // simply copy the byte values, for compatibility with gcc and 
-        // older versions of clang.
+        // older versions of lfort.
         bool NoErrorOnBadEncoding = isAscii();
         unsigned Msg = diag::err_bad_character_encoding;
         if (NoErrorOnBadEncoding)
@@ -1404,7 +1404,7 @@ bool StringLiteralParser::CopyStringFragment(const Token &Tok,
 
   // If we see bad encoding for unprefixed string literals, warn and
   // simply copy the byte values, for compatibility with gcc and older
-  // versions of clang.
+  // versions of lfort.
   bool NoErrorOnBadEncoding = isAscii();
   if (NoErrorOnBadEncoding) {
     memcpy(ResultPtr, Fragment.data(), Fragment.size());

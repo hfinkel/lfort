@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc -verify %s
 // expected-no-diagnostics
 
 typedef struct {

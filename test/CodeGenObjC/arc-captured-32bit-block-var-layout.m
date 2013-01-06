@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple i386-apple-darwin -O0 -emit-llvm %s -o %t-64.s
+// RUN: %lfort_cc1 -fblocks -fobjc-arc -fobjc-runtime-has-weak -triple i386-apple-darwin -O0 -emit-llvm %s -o %t-64.s
 // RUN: FileCheck --input-file=%t-64.s %s
 // rdar://12184410
 

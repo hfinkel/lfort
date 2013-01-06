@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1  %s -emit-llvm -o - | FileCheck %s
 
 void *test1() {
   // CHECK: call i8* @llvm.returnaddress

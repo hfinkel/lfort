@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-store=region -fblocks -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-store=region -fblocks -verify %s
 
 typedef void (^bptr)(void);
 

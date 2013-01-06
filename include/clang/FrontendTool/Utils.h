@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTENDTOOL_UTILS_H
-#define LLVM_CLANG_FRONTENDTOOL_UTILS_H
+#ifndef LLVM_LFORT_FRONTENDTOOL_UTILS_H
+#define LLVM_LFORT_FRONTENDTOOL_UTILS_H
 
-namespace clang {
+namespace lfort {
 
 class CompilerInstance;
 
@@ -23,8 +23,8 @@ class CompilerInstance;
 /// compiler invocation object in the given compiler instance.
 ///
 /// \return - True on success.
-bool ExecuteCompilerInvocation(CompilerInstance *Clang);
+bool ExecuteCompilerInvocation(CompilerInstance *LFort);
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

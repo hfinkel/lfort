@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_EDIT_EDITSRECEIVER_H
-#define LLVM_CLANG_EDIT_EDITSRECEIVER_H
+#ifndef LLVM_LFORT_EDIT_EDITSRECEIVER_H
+#define LLVM_LFORT_EDIT_EDITSRECEIVER_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 
-namespace clang {
+namespace lfort {
   class SourceLocation;
   class CharSourceRange;
 
@@ -30,6 +30,6 @@ public:
 
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

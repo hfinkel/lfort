@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %lfort_cc1 -fsyntax-only %s
 
 // libstdc++ 4.2.x contains a bug where a friend struct template
 // declaration for std::tr1::__detail::_Map base has different
-// template arguments than the real declaration. Clang has an
+// template arguments than the real declaration. LFort has an
 // egregious hack to work around this problem, since we can't modify
 // all of the world's libstdc++'s.
 

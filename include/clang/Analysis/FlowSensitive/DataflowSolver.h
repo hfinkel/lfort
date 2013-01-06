@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSES_DATAFLOW_SOLVER
-#define LLVM_CLANG_ANALYSES_DATAFLOW_SOLVER
+#ifndef LLVM_LFORT_ANALYSES_DATAFLOW_SOLVER
+#define LLVM_LFORT_ANALYSES_DATAFLOW_SOLVER
 
 #include "functional" // STL
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/FlowSensitive/DataflowValues.h"
-#include "clang/Analysis/ProgramPoint.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/FlowSensitive/DataflowValues.h"
+#include "lfort/Analysis/ProgramPoint.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
 
 //===----------------------------------------------------------------------===//
 /// DataflowWorkListTy - Data structure representing the worklist used for
@@ -339,5 +339,5 @@ private:
   TransferFuncsTy TF;
 };
 
-} // end namespace clang
+} // end namespace lfort
 #endif

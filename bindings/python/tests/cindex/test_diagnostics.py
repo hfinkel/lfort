@@ -1,4 +1,4 @@
-from clang.cindex import *
+from lfort.cindex import *
 from .util import get_tu
 
 # FIXME: We need support for invalid translation units to test better.

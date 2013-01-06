@@ -1,4 +1,4 @@
-/* RUN: %clang_cc1 %s -emit-llvm -o - | FileCheck %s
+/* RUN: %lfort_cc1 %s -emit-llvm -o - | FileCheck %s
 
  This should compile into a memcpy from a global, not 128 stores. */
 

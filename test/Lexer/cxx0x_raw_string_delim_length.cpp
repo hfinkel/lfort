@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -verify %s
+// RUN: %lfort_cc1 -std=c++11 -verify %s
 
 const char *str1 = R"(abcdef)"; // ok
 const char *str2 = R"foo()foo"; // ok

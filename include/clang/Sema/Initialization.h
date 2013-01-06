@@ -10,21 +10,21 @@
 // This file provides supporting data types for initialization of objects.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_SEMA_INITIALIZATION_H
-#define LLVM_CLANG_SEMA_INITIALIZATION_H
+#ifndef LLVM_LFORT_SEMA_INITIALIZATION_H
+#define LLVM_LFORT_SEMA_INITIALIZATION_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/UnresolvedSet.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Sema/Overload.h"
-#include "clang/Sema/Ownership.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Type.h"
+#include "lfort/AST/UnresolvedSet.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Sema/Overload.h"
+#include "lfort/Sema/Ownership.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cassert>
 
-namespace clang {
+namespace lfort {
   
 class CXXBaseSpecifier;
 class DeclaratorDecl;
@@ -1003,6 +1003,6 @@ public:
   void dump() const;
 };
   
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_SEMA_INITIALIZATION_H
+#endif // LLVM_LFORT_SEMA_INITIALIZATION_H

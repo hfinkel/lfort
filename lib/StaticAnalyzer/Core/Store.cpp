@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 StoreManager::StoreManager(ProgramStateManager &stateMgr)

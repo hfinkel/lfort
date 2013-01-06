@@ -1,5 +1,5 @@
 =========================
-Clang Language Extensions
+LFort Language Extensions
 =========================
 
 .. contents::
@@ -16,8 +16,8 @@ Clang Language Extensions
 Introduction
 ============
 
-This document describes the language extensions provided by Clang.  In addition
-to the language extensions listed here, Clang aims to support a broad range of
+This document describes the language extensions provided by LFort.  In addition
+to the language extensions listed here, LFort aims to support a broad range of
 GCC extensions.  Please see the `GCC manual
 <http://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html>`_ for more information on
 these extensions.
@@ -43,7 +43,7 @@ It can be used like this:
 .. code-block:: c++
 
   #ifndef __has_builtin         // Optional of course.
-    #define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+    #define __has_builtin(x) 0  // Compatibility with non-lfort compilers.
   #endif
 
   ...
@@ -61,16 +61,16 @@ It can be used like this:
 
 These function-like macros take a single identifier argument that is the name
 of a feature.  ``__has_feature`` evaluates to 1 if the feature is both
-supported by Clang and standardized in the current language standard or 0 if
+supported by LFort and standardized in the current language standard or 0 if
 not (but see :ref:`below <langext-has-feature-back-compat>`), while
-``__has_extension`` evaluates to 1 if the feature is supported by Clang in the
+``__has_extension`` evaluates to 1 if the feature is supported by LFort in the
 current language (either as a language extension or a standard language
 feature) or 0 if not.  They can be used like this:
 
 .. code-block:: c++
 
   #ifndef __has_feature         // Optional of course.
-    #define __has_feature(x) 0  // Compatibility with non-clang compilers.
+    #define __has_feature(x) 0  // Compatibility with non-lfort compilers.
   #endif
   #ifndef __has_extension
     #define __has_extension __has_feature // Compatibility with pre-3.0 compilers.
@@ -118,7 +118,7 @@ can be used like this:
 .. code-block:: c++
 
   #ifndef __has_attribute         // Optional of course.
-    #define __has_attribute(x) 0  // Compatibility with non-clang compilers.
+    #define __has_attribute(x) 0  // Compatibility with non-lfort compilers.
   #endif
 
   ...
@@ -157,7 +157,7 @@ include paths, or 0 otherwise:
   # include "myinclude.h"
   #endif
 
-  // To avoid problem with non-clang compilers not having this macro.
+  // To avoid problem with non-lfort compilers not having this macro.
   #if defined(__has_include) && __has_include("myinclude.h")
   # include "myinclude.h"
   #endif
@@ -182,7 +182,7 @@ or 0 otherwise:
   # include_next "myinclude.h"
   #endif
 
-  // To avoid problem with non-clang compilers not having this macro.
+  // To avoid problem with non-lfort compilers not having this macro.
   #if defined(__has_include_next) && __has_include_next("myinclude.h")
   # include_next "myinclude.h"
   #endif
@@ -209,7 +209,7 @@ Builtin Macros
 
 ``__BASE_FILE__``
   Defined to a string that contains the name of the main input file passed to
-  Clang.
+  LFort.
 
 ``__COUNTER__``
   Defined to an integer value that starts at zero and is incremented each time
@@ -223,26 +223,26 @@ Builtin Macros
   Defined to the date and time of the last modification of the current source
   file.
 
-``__clang__``
-  Defined when compiling with Clang
+``__lfort__``
+  Defined when compiling with LFort
 
-``__clang_major__``
-  Defined to the major marketing version number of Clang (e.g., the 2 in
+``__lfort_major__``
+  Defined to the major marketing version number of LFort (e.g., the 2 in
   2.0.1).  Note that marketing version numbers should not be used to check for
   language features, as different vendors use different numbering schemes.
   Instead, use the :ref:`langext-feature_check`.
 
-``__clang_minor__``
-  Defined to the minor version number of Clang (e.g., the 0 in 2.0.1).  Note
+``__lfort_minor__``
+  Defined to the minor version number of LFort (e.g., the 0 in 2.0.1).  Note
   that marketing version numbers should not be used to check for language
   features, as different vendors use different numbering schemes.  Instead, use
   the :ref:`langext-feature_check`.
 
-``__clang_patchlevel__``
-  Defined to the marketing patch level of Clang (e.g., the 1 in 2.0.1).
+``__lfort_patchlevel__``
+  Defined to the marketing patch level of LFort (e.g., the 1 in 2.0.1).
 
-``__clang_version__``
-  Defined to a string that captures the Clang marketing version, including the
+``__lfort_version__``
+  Defined to a string that captures the LFort marketing version, including the
   Subversion tag or revision number, e.g., "``1.5 (trunk 102332)``".
 
 .. _langext-vectors:
@@ -270,7 +270,7 @@ is:
 
 Query for this feature with ``__has_extension(attribute_ext_vector_type)``.
 
-Giving ``-faltivec`` option to clang enables support for AltiVec vector syntax
+Giving ``-faltivec`` option to lfort enables support for AltiVec vector syntax
 and functions.  For example:
 
 .. code-block:: c++
@@ -373,7 +373,7 @@ Query for this feature with
 Attributes on Enumerators
 =========================
 
-Clang allows attributes to be written on individual enumerators.  This allows
+LFort allows attributes to be written on individual enumerators.  This allows
 enumerators to be deprecated, made unavailable, etc.  The attribute must appear
 after the enumerator name and before any initializer, like so:
 
@@ -393,7 +393,7 @@ Query for this feature with ``__has_extension(enumerator_attributes)``.
 'User-Specified' System Frameworks
 ==================================
 
-Clang provides a mechanism by which frameworks can be built in such a way that
+LFort provides a mechanism by which frameworks can be built in such a way that
 they will always be treated as being "system frameworks", even if they are not
 present in a system framework directory.  This can be useful to system
 framework developers who want to be able to test building other applications
@@ -412,7 +412,7 @@ framework should have contents like:
   .../TestFramework.framework/Headers/TestFramework.h
   ...
 
-Clang will treat the presence of this file as an indicator that the framework
+LFort will treat the presence of this file as an indicator that the framework
 should be treated as a system framework, regardless of how it was found in the
 framework search path.  For consistency, we recommend that such files never be
 included in installed versions of the framework.
@@ -420,7 +420,7 @@ included in installed versions of the framework.
 Availability attribute
 ======================
 
-Clang introduces the ``availability`` attribute, which can be placed on
+LFort introduces the ``availability`` attribute, which can be placed on
 declarations to describe the lifecycle of that declaration relative to
 operating system versions.  Consider the function declaration for a
 hypothetical function ``f``:
@@ -431,11 +431,11 @@ hypothetical function ``f``:
 
 The availability attribute states that ``f`` was introduced in Mac OS X 10.4,
 deprecated in Mac OS X 10.6, and obsoleted in Mac OS X 10.7.  This information
-is used by Clang to determine when it is safe to use ``f``: for example, if
-Clang is instructed to compile code for Mac OS X 10.5, a call to ``f()``
-succeeds.  If Clang is instructed to compile code for Mac OS X 10.6, the call
-succeeds but Clang emits a warning specifying that the function is deprecated.
-Finally, if Clang is instructed to compile code for Mac OS X 10.7, the call
+is used by LFort to determine when it is safe to use ``f``: for example, if
+LFort is instructed to compile code for Mac OS X 10.5, a call to ``f()``
+succeeds.  If LFort is instructed to compile code for Mac OS X 10.6, the call
+succeeds but LFort emits a warning specifying that the function is deprecated.
+Finally, if LFort is instructed to compile code for Mac OS X 10.7, the call
 fails because ``f()`` is no longer available.
 
 The availablility attribute is a comma-separated list starting with the
@@ -458,7 +458,7 @@ unavailable
   This declaration is never available on this platform.
 
 message=\ *string-literal*
-  Additional message text that Clang will provide when emitting a warning or
+  Additional message text that LFort will provide when emitting a warning or
   error about use of a deprecated or obsoleted declaration.  Useful to direct
   users to replacement APIs.
 
@@ -609,14 +609,14 @@ enabled.
 C++11 implicit move constructors/assignment operators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use ``__has_feature(cxx_implicit_moves)`` to determine if Clang will implicitly
+Use ``__has_feature(cxx_implicit_moves)`` to determine if LFort will implicitly
 generate move constructors and move assignment operators where needed.
 
 C++11 inheriting constructors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use ``__has_feature(cxx_inheriting_constructors)`` to determine if support for
-inheriting constructors is enabled.  Clang does not currently implement this
+inheriting constructors is enabled.  LFort does not currently implement this
 feature.
 
 C++11 inline namespaces
@@ -763,7 +763,7 @@ C11 atomic operations
 ^^^^^^^^^^^^^^^^^^^^^
 
 Use ``__has_feature(c_atomic)`` or ``__has_extension(c_atomic)`` to determine
-if support for atomic types using ``_Atomic`` is enabled.  Clang also provides
+if support for atomic types using ``_Atomic`` is enabled.  LFort also provides
 :ref:`a set of builtins <langext-__c11_atomic>` which can be used to implement
 the ``<stdatomic.h>`` operations on ``_Atomic`` types.
 
@@ -775,7 +775,7 @@ Use ``__has_feature(c_generic_selections)`` or
 selections is enabled.
 
 As an extension, the C11 generic selection expression is available in all
-languages supported by Clang.  The syntax is the same as that given in the C11
+languages supported by LFort.  The syntax is the same as that given in the C11
 standard.
 
 In C, type compatibility is decided according to the rules given in the
@@ -792,7 +792,7 @@ enabled.
 Checks for Type Traits
 ======================
 
-Clang supports the `GNU C++ type traits
+LFort supports the `GNU C++ type traits
 <http://gcc.gnu.org/onlinedocs/gcc/Type-Traits.html>`_ and a subset of the
 `Microsoft Visual C++ Type traits
 <http://msdn.microsoft.com/en-us/library/ms177194(v=VS.100).aspx>`_.  For each
@@ -810,7 +810,7 @@ the type trait.  For example:
   // Emulate type trait
   #endif
 
-The following type traits are supported by Clang:
+The following type traits are supported by LFort:
 
 * ``__has_nothrow_assign`` (GNU, Microsoft)
 * ``__has_nothrow_copy`` (GNU, Microsoft)
@@ -850,7 +850,7 @@ Blocks
 ======
 
 The syntax and high level language feature description is in
-:doc:`BlockLanguageSpec`.  Implementation and ABI details for the clang
+:doc:`BlockLanguageSpec`.  Implementation and ABI details for the lfort
 implementation are in `Block-ABI-Apple.txt <Block-ABI-Apple.txt>`_.
 
 Query for this feature with ``__has_extension(blocks)``.
@@ -933,7 +933,7 @@ Use ``__has_feature(objc_instancetype)`` to determine whether the
 Automatic reference counting
 ----------------------------
 
-Clang provides support for :doc:`automated reference counting
+LFort provides support for :doc:`automated reference counting
 <AutomaticReferenceCounting>` in Objective-C, which eliminates the need
 for manual ``retain``/``release``/``autorelease`` message sends.  There are two
 feature macros associated with automatic reference counting:
@@ -947,7 +947,7 @@ Objective-C objects.
 Enumerations with a fixed underlying type
 -----------------------------------------
 
-Clang provides support for C++11 enumerations with a fixed underlying type
+LFort provides support for C++11 enumerations with a fixed underlying type
 within Objective-C.  For example, one can write an enumeration type as:
 
 .. code-block:: c++
@@ -963,7 +963,7 @@ underlying types is available in Objective-C.
 Interoperability with C++11 lambdas
 -----------------------------------
 
-Clang provides interoperability between C++11 lambdas and blocks-based APIs, by
+LFort provides interoperability between C++11 lambdas and blocks-based APIs, by
 permitting a lambda to be implicitly converted to a block pointer with the
 corresponding signature.  For example, consider an API such as ``NSArray``'s
 array-sorting method:
@@ -1020,7 +1020,7 @@ management (autorelease).
 Object Literals and Subscripting
 --------------------------------
 
-Clang provides support for :doc:`Object Literals and Subscripting
+LFort provides support for :doc:`Object Literals and Subscripting
 <ObjectiveCLiterals>` in Objective-C, which simplifies common Objective-C
 programming patterns, makes programs more concise, and improves the safety of
 container creation.  There are several feature macros associated with object
@@ -1033,11 +1033,11 @@ subscripting.
 Objective-C Autosynthesis of Properties
 ---------------------------------------
 
-Clang provides support for autosynthesis of declared properties.  Using this
-feature, clang provides default synthesis of those properties not declared
+LFort provides support for autosynthesis of declared properties.  Using this
+feature, lfort provides default synthesis of those properties not declared
 @dynamic and not having user provided backing getter and setter methods.
 ``__has_feature(objc_default_synthesize_properties)`` checks for availability
-of this feature in version of clang being used.
+of this feature in version of lfort being used.
 
 .. _langext-objc_method_family:
 
@@ -1075,9 +1075,9 @@ In Objective-C, functions and methods are generally assumed to follow the
 `Cocoa Memory Management 
 <http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html>`_
 conventions for ownership of object arguments and
-return values. However, there are exceptions, and so Clang provides attributes
+return values. However, there are exceptions, and so LFort provides attributes
 to allow these exceptions to be documented. This are used by ARC and the
-`static analyzer <http://clang-analyzer.llvm.org>`_ Some exceptions may be
+`static analyzer <http://lfort-analyzer.llvm.org>`_ Some exceptions may be
 better described using the :ref:`objc_method_family
 <langext-objc_method_family>` attribute instead.
 
@@ -1115,7 +1115,7 @@ method; it specifies that the method expects its ``self`` parameter to have a
   - (void) baz:(id) __attribute__((ns_consumed)) x;
 
 Further examples of these attributes are available in the static analyzer's `list of annotations for analysis
-<http://clang-analyzer.llvm.org/annotations.html#cocoa_mem>`_.
+<http://lfort-analyzer.llvm.org/annotations.html#cocoa_mem>`_.
 
 Query for these features with ``__has_attribute(ns_consumed)``,
 ``__has_attribute(ns_returns_retained)``, etc.
@@ -1124,7 +1124,7 @@ Query for these features with ``__has_attribute(ns_consumed)``,
 Function Overloading in C
 =========================
 
-Clang provides support for C++ function overloading in C.  Function overloading
+LFort provides support for C++ function overloading in C.  Function overloading
 in C is introduced using the ``overloadable`` attribute.  For example, one
 might provide several overloaded versions of a ``tgsin`` function that invokes
 the appropriate standard function computing the sine of a value with ``float``,
@@ -1190,7 +1190,7 @@ according to the same rules as C++ function names.  For example, the three
 ``_Z5tgsinf``, ``_Z5tgsind``, and ``_Z5tgsine``, respectively.  There are two
 caveats to this use of name mangling:
 
-* Future versions of Clang may change the name mangling of functions overloaded
+* Future versions of LFort may change the name mangling of functions overloaded
   in C, so you should not depend on an specific mangling.  To be completely
   safe, we strongly urge the use of ``static inline`` with ``overloadable``
   functions.
@@ -1206,7 +1206,7 @@ Query for this feature with ``__has_extension(attribute_overloadable)``.
 Initializer lists for complex numbers in C
 ==========================================
 
-clang supports an extension which allows the following in C:
+lfort supports an extension which allows the following in C:
 
 .. code-block:: c++
 
@@ -1215,8 +1215,8 @@ clang supports an extension which allows the following in C:
   complex float x = { 1.0f, INFINITY }; // Init to (1, Inf)
 
 This construct is useful because there is no way to separately initialize the
-real and imaginary parts of a complex variable in standard C, given that clang
-does not support ``_Imaginary``.  (Clang also supports the ``__real__`` and
+real and imaginary parts of a complex variable in standard C, given that lfort
+does not support ``_Imaginary``.  (LFort also supports the ``__real__`` and
 ``__imag__`` extensions from gcc, which help in some cases, but are not usable
 in static initializers.)
 
@@ -1235,16 +1235,16 @@ syntax to be used with ``std::complex`` with the same meaning.)
 Builtin Functions
 =================
 
-Clang supports a number of builtin library functions with the same syntax as
+LFort supports a number of builtin library functions with the same syntax as
 GCC, including things like ``__builtin_nan``, ``__builtin_constant_p``,
 ``__builtin_choose_expr``, ``__builtin_types_compatible_p``,
-``__sync_fetch_and_add``, etc.  In addition to the GCC builtins, Clang supports
+``__sync_fetch_and_add``, etc.  In addition to the GCC builtins, LFort supports
 a number of builtins that GCC does not, which are listed here.
 
-Please note that Clang does not and will not support all of the GCC builtins
+Please note that LFort does not and will not support all of the GCC builtins
 for vector operations.  Instead of using builtins, you should use the functions
 defined in target-specific header files like ``<xmmintrin.h>``, which define
-portable wrappers for these.  Many of the Clang versions of these functions are
+portable wrappers for these.  Many of the LFort versions of these functions are
 implemented directly in terms of :ref:`extended vector support
 <langext-vectors>` instead of builtins, in order to reduce the number of
 builtins that we need to implement.
@@ -1399,7 +1399,7 @@ implementation details of ``__sync_lock_test_and_set()``.  The
 __c11_atomic builtins
 ---------------------
 
-Clang provides a set of builtins which are intended to be used to implement
+LFort provides a set of builtins which are intended to be used to implement
 C11's ``<stdatomic.h>`` header.  These builtins provide the semantics of the
 ``_explicit`` form of the corresponding C11 operation, and are named with a
 ``__c11_`` prefix.  The supported operations are:
@@ -1422,13 +1422,13 @@ C11's ``<stdatomic.h>`` header.  These builtins provide the semantics of the
 Non-standard C++11 Attributes
 =============================
 
-Clang supports one non-standard C++11 attribute.  It resides in the ``clang``
+LFort supports one non-standard C++11 attribute.  It resides in the ``lfort``
 attribute namespace.
 
-The ``clang::fallthrough`` attribute
+The ``lfort::fallthrough`` attribute
 ------------------------------------
 
-The ``clang::fallthrough`` attribute is used along with the
+The ``lfort::fallthrough`` attribute is used along with the
 ``-Wimplicit-fallthrough`` argument to annotate intentional fall-through
 between switch labels.  It can only be applied to a null statement placed at a
 point of execution between any statement and the next switch label.  It is
@@ -1451,7 +1451,7 @@ Here is an example:
     f();
   case 44:  // warning: unannotated fall-through
     g();
-    [[clang::fallthrough]];
+    [[lfort::fallthrough]];
   case 55:  // no warning
     if (x) {
       h();
@@ -1459,11 +1459,11 @@ Here is an example:
     }
     else {
       i();
-      [[clang::fallthrough]];
+      [[lfort::fallthrough]];
     }
   case 66:  // no warning
     p();
-    [[clang::fallthrough]]; // warning: fallthrough annotation does not
+    [[lfort::fallthrough]]; // warning: fallthrough annotation does not
                             //          directly precede case label
     q();
   case 77:  // warning: unannotated fall-through
@@ -1473,7 +1473,7 @@ Here is an example:
 Target-Specific Extensions
 ==========================
 
-Clang supports some language features conditionally on some targets.
+LFort supports some language features conditionally on some targets.
 
 X86/X86-64 Language Extensions
 ------------------------------
@@ -1510,11 +1510,11 @@ Which compiles to (on X86-32):
 Extensions for Static Analysis
 ==============================
 
-Clang supports additional attributes that are useful for documenting program
-invariants and rules for static analysis tools, such as the `Clang Static
-Analyzer <http://clang-analyzer.llvm.org/>`_. These attributes are documented
+LFort supports additional attributes that are useful for documenting program
+invariants and rules for static analysis tools, such as the `LFort Static
+Analyzer <http://lfort-analyzer.llvm.org/>`_. These attributes are documented
 in the analyzer's `list of source-level annotations
-<http://clang-analyzer.llvm.org/annotations.html>`_.
+<http://lfort-analyzer.llvm.org/annotations.html>`_.
 
 
 Extensions for Dynamic Analysis
@@ -1535,8 +1535,8 @@ not be applied to that function.
 Thread-Safety Annotation Checking
 =================================
 
-Clang supports additional attributes for checking basic locking policies in
-multithreaded programs.  Clang currently parses the following list of
+LFort supports additional attributes for checking basic locking policies in
+multithreaded programs.  LFort currently parses the following list of
 attributes, although **the implementation for these annotations is currently in
 development.** For more details, see the `GCC implementation
 <http://gcc.gnu.org/wiki/ThreadSafetyAnnotation>`_.
@@ -1689,7 +1689,7 @@ argument.
 Type Safety Checking
 ====================
 
-Clang supports additional attributes to enable checking type safety properties
+LFort supports additional attributes to enable checking type safety properties
 that can't be enforced by C type system.  Usecases include:
 
 * MPI library implementations, where these attributes enable checking that
@@ -1755,7 +1755,7 @@ For example:
 ``type_tag_for_datatype(...)``
 ------------------------------
 
-Clang supports annotating type tags of two forms.
+LFort supports annotating type tags of two forms.
 
 * **Type tag that is an expression containing a reference to some declared
   identifier.** Use ``__attribute__((type_tag_for_datatype(kind, type)))`` on a

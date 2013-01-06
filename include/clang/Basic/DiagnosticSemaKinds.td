@@ -2119,7 +2119,7 @@ def err_attribute_regparm_invalid_number : Error<
   "'regparm' parameter must be between 0 and %0 inclusive">;
 
 
-// Clang-Specific Attributes
+// LFort-Specific Attributes
 def warn_attribute_iboutlet : Warning<
   "%0 attribute can only be applied to instance variables or properties">,
   InGroup<IgnoredAttributes>;
@@ -5198,7 +5198,7 @@ let CategoryName = "Inline Assembly Issue" in {
     "ignored asm label '%0' on automatic variable">;
   def warn_invalid_asm_cast_lvalue : Warning<
     "invalid use of a cast in an inline asm context requiring an l-value: "
-    "accepted due to -fheinous-gnu-extensions, but clang may remove support "
+    "accepted due to -fheinous-gnu-extensions, but lfort may remove support "
     "for this in the future">;
   def warn_asm_mismatched_size_modifier : Warning<
     "the value is truncated when put into register, "
@@ -5749,7 +5749,7 @@ def note_insert_fallthrough_fixit : Note<
 def note_insert_break_fixit : Note<
   "insert 'break;' to avoid fall-through">;
 def err_fallthrough_attr_wrong_target : Error<
-  "clang::fallthrough attribute is only allowed on empty statements">;
+  "lfort::fallthrough attribute is only allowed on empty statements">;
 def note_fallthrough_insert_semi_fixit : Note<"did you forget ';'?">;
 def err_fallthrough_attr_outside_switch : Error<
   "fallthrough annotation is outside switch statement">;

@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_FRONTEND_CHECKERREGISTRATION_H
-#define LLVM_CLANG_SA_FRONTEND_CHECKERREGISTRATION_H
+#ifndef LLVM_LFORT_SA_FRONTEND_CHECKERREGISTRATION_H
+#define LLVM_LFORT_SA_FRONTEND_CHECKERREGISTRATION_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
   class AnalyzerOptions;
   class LangOptions;
   class DiagnosticsEngine;
@@ -28,6 +28,6 @@ CheckerManager *createCheckerManager(const AnalyzerOptions &opts,
 
 } // end ento namespace
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

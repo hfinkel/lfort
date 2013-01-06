@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fblocks -triple x86_64-apple-darwin11 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fblocks -triple x86_64-apple-darwin11 -fsyntax-only -std=c++11 -verify %s
 
 @class NSArray;
 

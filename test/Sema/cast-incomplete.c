@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -fsyntax-only %s -verify
 // PR5692
 
 enum x;            // expected-note   {{forward declaration}}

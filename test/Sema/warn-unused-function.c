@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -Wused-but-marked-unused -Wunused-function -Wunneeded-internal-declaration -verify %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wall %s
+// RUN: %lfort_cc1 -fsyntax-only -Wused-but-marked-unused -Wunused-function -Wunneeded-internal-declaration -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wunused %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wall %s
 
 void foo() {}
 static void f2() {} 

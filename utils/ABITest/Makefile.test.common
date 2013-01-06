@@ -15,7 +15,7 @@ CFLAGS := -std=gnu99
 
 X_COMPILER := gcc
 X_LL_CFLAGS := -emit-llvm -S
-Y_COMPILER := clang
+Y_COMPILER := lfort
 Y_LL_CFLAGS := -emit-llvm -S
 CC := gcc
 

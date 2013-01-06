@@ -8,14 +8,14 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::attr::Kind enum.
+/// \brief Defines the lfort::attr::Kind enum.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ATTRKINDS_H
-#define LLVM_CLANG_ATTRKINDS_H
+#ifndef LLVM_LFORT_ATTRKINDS_H
+#define LLVM_LFORT_ATTRKINDS_H
 
-namespace clang {
+namespace lfort {
 
 namespace attr {
 
@@ -24,11 +24,11 @@ enum Kind {
 #define ATTR(X) X,
 #define LAST_INHERITABLE_ATTR(X) X, LAST_INHERITABLE = X,
 #define LAST_INHERITABLE_PARAM_ATTR(X) X, LAST_INHERITABLE_PARAM = X,
-#include "clang/Basic/AttrList.inc"
+#include "lfort/Basic/AttrList.inc"
   NUM_ATTRS
 };
 
 } // end namespace attr
-} // end namespace clang
+} // end namespace lfort
 
 #endif

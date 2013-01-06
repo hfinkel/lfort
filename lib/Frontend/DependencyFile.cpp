@@ -11,20 +11,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/DependencyOutputOptions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Lex/DirectoryLookup.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/DependencyOutputOptions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Lex/DirectoryLookup.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/PPCallbacks.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/StringSet.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 class DependencyFileCallback : public PPCallbacks {
@@ -71,7 +71,7 @@ public:
 };
 }
 
-void clang::AttachDependencyFileGen(Preprocessor &PP,
+void lfort::AttachDependencyFileGen(Preprocessor &PP,
                                     const DependencyOutputOptions &Opts) {
   if (Opts.Targets.empty()) {
     PP.getDiagnostics().Report(diag::err_fe_dependency_file_requires_MT);

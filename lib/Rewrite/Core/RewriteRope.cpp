@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Core/RewriteRope.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/Rewrite/Core/RewriteRope.h"
+#include "lfort/Basic/LLVM.h"
 #include <algorithm>
-using namespace clang;
+using namespace lfort;
 
 /// RewriteRope is a "strong" string class, designed to make insertions and
 /// deletions in the middle of the string nearly constant time (really, they are

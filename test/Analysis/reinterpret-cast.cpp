@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -analyzer-ipa=inlining -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 typedef struct Opaque *Data;
 struct IntWrapper {
@@ -16,5 +16,5 @@ void test(Data data) {
   // Don't crash when upcasting here.
   // We don't actually know if 'data' is a Child.
   wrapper->set();
-  clang_analyzer_eval(wrapper->x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(wrapper->x == 42); // expected-warning{{TRUE}}
 }

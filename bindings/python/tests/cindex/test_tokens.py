@@ -1,8 +1,8 @@
-from clang.cindex import CursorKind
-from clang.cindex import Index
-from clang.cindex import SourceLocation
-from clang.cindex import SourceRange
-from clang.cindex import TokenKind
+from lfort.cindex import CursorKind
+from lfort.cindex import Index
+from lfort.cindex import SourceLocation
+from lfort.cindex import SourceRange
+from lfort.cindex import TokenKind
 from nose.tools import eq_
 from nose.tools import ok_
 

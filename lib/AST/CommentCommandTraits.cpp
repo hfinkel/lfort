@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/CommentCommandTraits.h"
+#include "lfort/AST/CommentCommandTraits.h"
 #include "llvm/ADT/STLExtras.h"
 
-namespace clang {
+namespace lfort {
 namespace comments {
 
-#include "clang/AST/CommentCommandInfo.inc"
+#include "lfort/AST/CommentCommandInfo.inc"
 
 CommandTraits::CommandTraits(llvm::BumpPtrAllocator &Allocator) :
     NextID(llvm::array_lengthof(Commands)), Allocator(Allocator)
@@ -69,5 +69,5 @@ const CommandInfo *CommandTraits::getRegisteredCommandInfo(
 }
 
 } // end namespace comments
-} // end namespace clang
+} // end namespace lfort
 

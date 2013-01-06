@@ -12,28 +12,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTReader.h"
+#include "lfort/Serialization/ASTReader.h"
 #include "ASTCommon.h"
 #include "ASTReaderInternals.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/DeclVisitor.h"
-#include "clang/AST/Expr.h"
-#include "clang/Sema/IdentifierResolver.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/DeclVisitor.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Sema/IdentifierResolver.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/Support/SaveAndRestore.h"
-using namespace clang;
-using namespace clang::serialization;
+using namespace lfort;
+using namespace lfort::serialization;
 
 //===----------------------------------------------------------------------===//
 // Declaration deserialization
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
   class ASTDeclReader : public DeclVisitor<ASTDeclReader, void> {
     ASTReader &Reader;
     ModuleFile &F;
@@ -1637,7 +1637,7 @@ void ASTReader::ReadAttributes(ModuleFile &F, AttrVec &Attrs,
     attr::Kind Kind = (attr::Kind)Record[Idx++];
     SourceRange Range = ReadSourceRange(F, Record, Idx);
 
-#include "clang/Serialization/AttrPCHRead.inc"
+#include "lfort/Serialization/AttrPCHRead.inc"
 
     assert(New && "Unable to decode attribute?");
     Attrs.push_back(New);

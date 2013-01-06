@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -verify -fsyntax-only %s
 
 extern int g0 __attribute__((weak));
 extern int g1 __attribute__((weak_import));

@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fblocks -verify %s
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fblocks -analyzer-config c++-template-inlining=false -DNO_INLINE -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fblocks -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,debug.ExprInspection -fblocks -analyzer-config c++-template-inlining=false -DNO_INLINE -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 // Do not crash on this templated code which uses a block.
 typedef void (^my_block)(void);
@@ -40,7 +40,7 @@ inline unsigned array_lengthof(T (&)[N]) {
 
 void testNonTypeTemplateInstantiation() {
   const char *S[] = { "a", "b" };
-  clang_analyzer_eval(array_lengthof(S) == 2);
+  lfort_analyzer_eval(array_lengthof(S) == 2);
 #ifndef NO_INLINE
   // expected-warning@-2 {{TRUE}}
 #else

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify -fcxx-exceptions
+// RUN: %lfort_cc1 -std=c++11 %s -verify -fcxx-exceptions
 
 // We permit overriding an implicit exception specification with an explicit one
 // as an extension, for compatibility with existing code.

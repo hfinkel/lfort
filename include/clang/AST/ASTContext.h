@@ -8,28 +8,28 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::ASTContext interface.
+/// \brief Defines the lfort::ASTContext interface.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_ASTCONTEXT_H
-#define LLVM_CLANG_AST_ASTCONTEXT_H
+#ifndef LLVM_LFORT_AST_ASTCONTEXT_H
+#define LLVM_LFORT_AST_ASTCONTEXT_H
 
-#include "clang/AST/CanonicalType.h"
-#include "clang/AST/CommentCommandTraits.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/LambdaMangleContext.h"
-#include "clang/AST/NestedNameSpecifier.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/RawCommentList.h"
-#include "clang/AST/TemplateName.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/AddressSpaces.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/VersionTuple.h"
+#include "lfort/AST/CanonicalType.h"
+#include "lfort/AST/CommentCommandTraits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/LambdaMangleContext.h"
+#include "lfort/AST/NestedNameSpecifier.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/RawCommentList.h"
+#include "lfort/AST/TemplateName.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/AddressSpaces.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/VersionTuple.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -43,7 +43,7 @@ namespace llvm {
   struct fltSemantics;
 }
 
-namespace clang {
+namespace lfort {
   class FileManager;
   class ASTRecordLayout;
   class BlockExpr;
@@ -388,7 +388,7 @@ class ASTContext : public RefCountedBase<ASTContext> {
   friend class CXXRecordDecl;
 
   const TargetInfo *Target;
-  clang::PrintingPolicy PrintingPolicy;
+  lfort::PrintingPolicy PrintingPolicy;
   
 public:
   IdentifierTable &Idents;
@@ -398,11 +398,11 @@ public:
   OwningPtr<ExternalASTSource> ExternalSource;
   ASTMutationListener *Listener;
 
-  const clang::PrintingPolicy &getPrintingPolicy() const {
+  const lfort::PrintingPolicy &getPrintingPolicy() const {
     return PrintingPolicy;
   }
 
-  void setPrintingPolicy(const clang::PrintingPolicy &Policy) {
+  void setPrintingPolicy(const lfort::PrintingPolicy &Policy) {
     PrintingPolicy = Policy;
   }
   
@@ -2143,7 +2143,7 @@ static inline Selector GetUnarySelector(StringRef name, ASTContext& Ctx) {
   return Ctx.Selectors.getSelector(1, &II);
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 // operator new and delete aren't allowed inside namespaces.
 
@@ -2152,7 +2152,7 @@ static inline Selector GetUnarySelector(StringRef name, ASTContext& Ctx) {
 /// This placement form of operator new uses the ASTContext's allocator for
 /// obtaining memory.
 ///
-/// IMPORTANT: These are also declared in clang/AST/AttrIterator.h! Any changes
+/// IMPORTANT: These are also declared in lfort/AST/AttrIterator.h! Any changes
 /// here need to also be made there.
 ///
 /// We intentionally avoid using a nothrow specification here so that the calls
@@ -2175,7 +2175,7 @@ static inline Selector GetUnarySelector(StringRef name, ASTContext& Ctx) {
 /// @param Alignment The alignment of the allocated memory (if the underlying
 ///                  allocator supports it).
 /// @return The allocated memory. Could be NULL.
-inline void *operator new(size_t Bytes, const clang::ASTContext &C,
+inline void *operator new(size_t Bytes, const lfort::ASTContext &C,
                           size_t Alignment) {
   return C.Allocate(Bytes, Alignment);
 }
@@ -2185,7 +2185,7 @@ inline void *operator new(size_t Bytes, const clang::ASTContext &C,
 /// invoking it directly; see the new operator for more details. This operator
 /// is called implicitly by the compiler if a placement new expression using
 /// the ASTContext throws in the object constructor.
-inline void operator delete(void *Ptr, const clang::ASTContext &C, size_t) {
+inline void operator delete(void *Ptr, const lfort::ASTContext &C, size_t) {
   C.Deallocate(Ptr);
 }
 
@@ -2212,7 +2212,7 @@ inline void operator delete(void *Ptr, const clang::ASTContext &C, size_t) {
 /// @param Alignment The alignment of the allocated memory (if the underlying
 ///                  allocator supports it).
 /// @return The allocated memory. Could be NULL.
-inline void *operator new[](size_t Bytes, const clang::ASTContext& C,
+inline void *operator new[](size_t Bytes, const lfort::ASTContext& C,
                             size_t Alignment = 8) {
   return C.Allocate(Bytes, Alignment);
 }
@@ -2223,7 +2223,7 @@ inline void *operator new[](size_t Bytes, const clang::ASTContext& C,
 /// invoking it directly; see the new[] operator for more details. This operator
 /// is called implicitly by the compiler if a placement new[] expression using
 /// the ASTContext throws in the object constructor.
-inline void operator delete[](void *Ptr, const clang::ASTContext &C, size_t) {
+inline void operator delete[](void *Ptr, const lfort::ASTContext &C, size_t) {
   C.Deallocate(Ptr);
 }
 

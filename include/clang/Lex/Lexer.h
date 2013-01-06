@@ -11,16 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEXER_H
-#define LLVM_CLANG_LEXER_H
+#ifndef LLVM_LFORT_LEXER_H
+#define LLVM_LFORT_LEXER_H
 
-#include "clang/Basic/LangOptions.h"
-#include "clang/Lex/PreprocessorLexer.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Lex/PreprocessorLexer.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cassert>
 #include <string>
 
-namespace clang {
+namespace lfort {
 class DiagnosticsEngine;
 class SourceManager;
 class Preprocessor;
@@ -576,6 +576,6 @@ private:
 };
 
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

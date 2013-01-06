@@ -1,12 +1,12 @@
-#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma lfort diagnostic ignored "-Wtautological-compare"
 #include "pragma_disable_warning.h"
 
 int main (int argc, const char * argv[])
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wdeprecated-declarations"
   int x=0;
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
   return x;
 }

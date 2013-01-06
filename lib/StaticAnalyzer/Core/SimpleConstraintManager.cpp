@@ -13,11 +13,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "SimpleConstraintManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 
@@ -285,4 +285,4 @@ ProgramStateRef SimpleConstraintManager::assumeSymRel(ProgramStateRef state,
 
 } // end of namespace ento
 
-} // end of namespace clang
+} // end of namespace lfort

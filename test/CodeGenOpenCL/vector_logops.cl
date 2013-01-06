@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -O3 %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -O3 %s -emit-llvm -o - | FileCheck %s
 
 typedef int int2 __attribute((ext_vector_type(2)));
 

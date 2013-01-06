@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fblocks -triple x86_64-apple-darwin -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -fblocks -triple x86_64-apple-darwin -emit-llvm -o - | FileCheck %s
 
 typedef void (^dispatch_block_t)(void);
 

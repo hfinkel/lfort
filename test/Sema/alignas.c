@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c11 -Dalignof=__alignof %s
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c11 -Dalignof=_Alignof %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c11 -Dalignof=__alignof %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c11 -Dalignof=_Alignof %s
 
 _Alignas(3) int align_illegal; //expected-error {{requested alignment is not a power of 2}}
 _Alignas(int) char align_big;

@@ -2,7 +2,7 @@
 
 set(LLVM_LINK_COMPONENTS support)
 
-add_clang_library(clangLex
+add_lfort_library(lfortLex
   HeaderMap.cpp
   HeaderSearch.cpp
   Lexer.cpp
@@ -27,12 +27,12 @@ add_clang_library(clangLex
   TokenLexer.cpp
   )
 
-add_dependencies(clangLex
-  ClangAttrSpellings
-  ClangDiagnosticCommon
-  ClangDiagnosticLex
+add_dependencies(lfortLex
+  LFortAttrSpellings
+  LFortDiagnosticCommon
+  LFortDiagnosticLex
   )
 
-target_link_libraries(clangLex
-  clangBasic
+target_link_libraries(lfortLex
+  lfortBasic
   )

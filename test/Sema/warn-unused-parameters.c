@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fblocks -fsyntax-only -Wunused-parameter %s 2>&1 | FileCheck %s
-// RUN: %clang_cc1 -fblocks -fsyntax-only -Wunused %s 2>&1 | FileCheck -check-prefix=CHECK-unused %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -Wunused-parameter %s 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -Wunused %s 2>&1 | FileCheck -check-prefix=CHECK-unused %s
 
 int f0(int x,
        int y,
@@ -21,9 +21,9 @@ static void achor() {};
 // CHECK: 12:15: warning: unused parameter 'y'
 // CHECK-unused: 1 warning generated
 
-// RUN: %clang_cc1 -fblocks -fsyntax-only -Weverything %s 2>&1 | FileCheck -check-prefix=CHECK-everything %s
-// RUN: %clang_cc1 -fblocks -fsyntax-only -Weverything -Werror %s 2>&1 | FileCheck -check-prefix=CHECK-everything-error %s
-// RUN: %clang_cc1 -fblocks -fsyntax-only -Weverything -Wno-unused %s 2>&1 | FileCheck -check-prefix=CHECK-everything-no-unused %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -Weverything %s 2>&1 | FileCheck -check-prefix=CHECK-everything %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -Weverything -Werror %s 2>&1 | FileCheck -check-prefix=CHECK-everything-error %s
+// RUN: %lfort_cc1 -fblocks -fsyntax-only -Weverything -Wno-unused %s 2>&1 | FileCheck -check-prefix=CHECK-everything-no-unused %s
 // CHECK-everything: 6 warnings generated
 // CHECK-everything-error: 5 errors generated
 // CHECK-everything-no-unused: 5 warnings generated

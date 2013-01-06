@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -verify %s
 
 template<typename T, typename U, U> using alias_ref = T;
 template<typename T, typename U, U> void func_ref() {}

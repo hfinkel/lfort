@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_STATIC_ANALYZER_CHECKER_CATEGORIES_H
-#define LLVM_CLANG_STATIC_ANALYZER_CHECKER_CATEGORIES_H
+#ifndef LLVM_LFORT_STATIC_ANALYZER_CHECKER_CATEGORIES_H
+#define LLVM_LFORT_STATIC_ANALYZER_CHECKER_CATEGORIES_H
 
 // Common strings used for the "category" of many static analyzer issues.
-namespace clang {
+namespace lfort {
   namespace ento {
     namespace categories {
       extern const char *CoreFoundationObjectiveC;

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 %s -triple i686-pc-win32 -fsyntax-only -Wc++11-narrowing -Wmicrosoft -verify -fms-extensions -std=c++11
-// RUN: %clang_cc1 %s -triple i686-pc-win32 -fsyntax-only -Wc++11-narrowing -Wmicrosoft -verify -fms-extensions -std=c++11 -fms-compatibility -DMS_COMPAT
+// RUN: %lfort_cc1 %s -triple i686-pc-win32 -fsyntax-only -Wc++11-narrowing -Wmicrosoft -verify -fms-extensions -std=c++11
+// RUN: %lfort_cc1 %s -triple i686-pc-win32 -fsyntax-only -Wc++11-narrowing -Wmicrosoft -verify -fms-extensions -std=c++11 -fms-compatibility -DMS_COMPAT
 
 
 struct A {

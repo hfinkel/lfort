@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s -verify
+// RUN: %lfort_cc1 -fsyntax-only %s -verify
 #ifndef __has_warning
 #error Should have __has_warning
 #endif

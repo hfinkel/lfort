@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/CodeGen/BackendUtil.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Frontend/CodeGenOptions.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
+#include "lfort/CodeGen/BackendUtil.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetOptions.h"
+#include "lfort/Frontend/CodeGenOptions.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Assembly/PrintModulePass.h"
 #include "llvm/Bitcode/ReaderWriter.h"
@@ -36,7 +36,7 @@
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/Scalar.h"
-using namespace clang;
+using namespace lfort;
 using namespace llvm;
 
 namespace {
@@ -44,7 +44,7 @@ namespace {
 class EmitAssemblyHelper {
   DiagnosticsEngine &Diags;
   const CodeGenOptions &CodeGenOpts;
-  const clang::TargetOptions &TargetOpts;
+  const lfort::TargetOptions &TargetOpts;
   const LangOptions &LangOpts;
   Module *TheModule;
 
@@ -99,8 +99,8 @@ private:
 
   /// CreateTargetMachine - Generates the TargetMachine.
   /// Returns Null if it is unable to create the target machine.
-  /// Some of our clang tests specify triples which are not built
-  /// into clang. This is okay because these tests check the generated
+  /// Some of our lfort tests specify triples which are not built
+  /// into lfort. This is okay because these tests check the generated
   /// IR, and they require DataLayout which depends on the triple.
   /// In this case, we allow this method to fail and not report an error.
   /// When MustCreateTM is used, we print an error if we are unable to load
@@ -116,7 +116,7 @@ private:
 public:
   EmitAssemblyHelper(DiagnosticsEngine &_Diags,
                      const CodeGenOptions &CGOpts,
-                     const clang::TargetOptions &TOpts,
+                     const lfort::TargetOptions &TOpts,
                      const LangOptions &LOpts,
                      Module *M)
     : Diags(_Diags), CodeGenOpts(CGOpts), TargetOpts(TOpts), LangOpts(LOpts),
@@ -345,7 +345,7 @@ TargetMachine *EmitAssemblyHelper::CreateTargetMachine(bool MustCreateTM) {
   }
 
   SmallVector<const char *, 16> BackendArgs;
-  BackendArgs.push_back("clang"); // Fake program name.
+  BackendArgs.push_back("lfort"); // Fake program name.
   if (!CodeGenOpts.DebugPass.empty()) {
     BackendArgs.push_back("-debug-pass");
     BackendArgs.push_back(CodeGenOpts.DebugPass.c_str());
@@ -564,9 +564,9 @@ void EmitAssemblyHelper::EmitAssembly(BackendAction Action, raw_ostream *OS) {
   }
 }
 
-void clang::EmitBackendOutput(DiagnosticsEngine &Diags,
+void lfort::EmitBackendOutput(DiagnosticsEngine &Diags,
                               const CodeGenOptions &CGOpts,
-                              const clang::TargetOptions &TOpts,
+                              const lfort::TargetOptions &TOpts,
                               const LangOptions &LOpts,
                               Module *M,
                               BackendAction Action, raw_ostream *OS) {

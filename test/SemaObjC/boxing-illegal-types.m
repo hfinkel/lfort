@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wattributes %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wattributes %s
 
 typedef long NSInteger;
 typedef unsigned long NSUInteger;

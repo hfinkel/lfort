@@ -1,4 +1,4 @@
-// RUN: %clang -fverbose-asm -g -S %s -o - | grep AT_explicit
+// RUN: %lfort -fverbose-asm -g -S %s -o - | grep AT_explicit
 
 
 class MyClass

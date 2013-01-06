@@ -1,4 +1,4 @@
-add_clang_library(clangParse
+add_lfort_library(lfortParse
   ParseAST.cpp
   ParseCXXInlineMethods.cpp
   ParseDecl.cpp
@@ -14,21 +14,21 @@ add_clang_library(clangParse
   Parser.cpp
   )
 
-add_dependencies(clangParse
-  ClangAttrClasses
-  ClangAttrLateParsed
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDeclNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticParse
-  ClangStmtNodes
+add_dependencies(lfortParse
+  LFortAttrClasses
+  LFortAttrLateParsed
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDeclNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticParse
+  LFortStmtNodes
   )
 
-target_link_libraries(clangParse
-  clangBasic
-  clangAST
-  clangLex
-  clangSema
+target_link_libraries(lfortParse
+  lfortBasic
+  lfortAST
+  lfortLex
+  lfortSema
   )

@@ -7,15 +7,15 @@ int LocalVar2;
 
 // RUN: c-index-test -write-pch %t.h.pch %S/targeted-top.h
 // RUN: env CINDEXTEST_FAILONERROR=1 c-index-test -test-annotate-tokens=%s:1:1:7:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=LOCAL
 
 // RUN: env CINDEXTEST_FAILONERROR=1 CINDEXTEST_EDITING=1 CINDEXTEST_COMPLETION_NO_CACHING=1 \
 // RUN:   c-index-test -test-annotate-tokens=%s:1:1:7:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=PreambleVar  \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=PreambleVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=LOCAL
 
 // LOCAL: Punctuation: "#" [2:1 - 2:2] inclusion directive=targeted-top.h
@@ -32,15 +32,15 @@ int LocalVar2;
 // LOCAL: Punctuation: ";" [6:14 - 6:15]
 
 // RUN: env CINDEXTEST_FAILONERROR=1 c-index-test -test-annotate-tokens=%S/targeted-fields.h:1:1:4:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=FIELD
 
 // RUN: env CINDEXTEST_FAILONERROR=1 CINDEXTEST_EDITING=1 CINDEXTEST_COMPLETION_NO_CACHING=1 \
 // RUN:   c-index-test -test-annotate-tokens=%S/targeted-fields.h:1:1:4:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=PreambleVar  \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=PreambleVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=FIELD
 
 // FIELD: Keyword: "int" [2:3 - 2:6] FieldDecl=z:2:7 (Definition)
@@ -51,13 +51,13 @@ int LocalVar2;
 // FIELD: Punctuation: ";" [3:8 - 3:9] StructDecl=:13:9 (Definition)
 
 // RUN: env CINDEXTEST_FAILONERROR=1 c-index-test -test-annotate-tokens=%S/targeted-nested1.h:1:1:3:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=NESTED
 
 // RUN: env CINDEXTEST_FAILONERROR=1 CINDEXTEST_EDITING=1 CINDEXTEST_COMPLETION_NO_CACHING=1 \
 // RUN:   c-index-test -test-annotate-tokens=%S/targeted-nested1.h:1:1:3:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=PreambleVar  \
-// RUN:    -Xclang -error-on-deserialized-decl=TopVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=PreambleVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=TopVar  \
 // RUN:  | FileCheck %s -check-prefix=NESTED
 
 // NESTED: Keyword: "extern" [2:1 - 2:7]
@@ -66,15 +66,15 @@ int LocalVar2;
 // NESTED: Punctuation: ";" [2:22 - 2:23]
 
 // RUN: env CINDEXTEST_FAILONERROR=1 c-index-test -test-annotate-tokens=%S/targeted-top.h:1:1:12:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=vector_get_x  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=vector_get_x  \
 // RUN:  | FileCheck %s -check-prefix=TOP
 
 // RUN: env CINDEXTEST_FAILONERROR=1 CINDEXTEST_EDITING=1 CINDEXTEST_COMPLETION_NO_CACHING=1 \
 // RUN:   c-index-test -test-annotate-tokens=%S/targeted-top.h:1:1:12:1 %s -include %t.h \
-// RUN:    -Xclang -error-on-deserialized-decl=PreambleVar  \
-// RUN:    -Xclang -error-on-deserialized-decl=NestedVar1  \
-// RUN:    -Xclang -error-on-deserialized-decl=vector_get_x  \
+// RUN:    -Xlfort -error-on-deserialized-decl=PreambleVar  \
+// RUN:    -Xlfort -error-on-deserialized-decl=NestedVar1  \
+// RUN:    -Xlfort -error-on-deserialized-decl=vector_get_x  \
 // RUN:  | FileCheck %s -check-prefix=TOP
 
 // TOP: Punctuation: "#" [2:1 - 2:2] preprocessing directive=

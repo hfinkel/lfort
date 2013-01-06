@@ -12,10 +12,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TYPETRAITS_H
-#define LLVM_CLANG_TYPETRAITS_H
+#ifndef LLVM_LFORT_TYPETRAITS_H
+#define LLVM_LFORT_TYPETRAITS_H
 
-namespace clang {
+namespace lfort {
 
   /// \brief Names for the unary type traits.
   enum UnaryTypeTrait {

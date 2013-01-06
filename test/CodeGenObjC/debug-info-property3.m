@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -S -emit-llvm -g %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -S -emit-llvm -g %s -o - | FileCheck %s
 
 // CHECK: metadata !"p1", metadata !6, i32 5, metadata !"", metadata !"", i32 2316, metadata !9} ; [ DW_TAG_APPLE_property ]
 @interface I1

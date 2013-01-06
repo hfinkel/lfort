@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -mllvm -asm-verbose -S -O2 -g %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -mllvm -asm-verbose -S -O2 -g %s -o - | FileCheck %s
 // Radar 8122864
 
 // Code is not generated for function foo, but preserve type information of

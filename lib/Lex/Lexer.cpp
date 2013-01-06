@@ -24,17 +24,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Lex/Lexer.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/CodeCompletionHandler.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/CodeCompletionHandler.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include <cstring>
-using namespace clang;
+using namespace lfort;
 
 static void InitCharacterInfo();
 

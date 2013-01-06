@@ -8,14 +8,14 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::Module class, which describes a module in the
+/// \brief Defines the lfort::Module class, which describes a module in the
 /// source code.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_MODULE_H
-#define LLVM_CLANG_BASIC_MODULE_H
+#ifndef LLVM_LFORT_BASIC_MODULE_H
+#define LLVM_LFORT_BASIC_MODULE_H
 
-#include "clang/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/ADT/SetVector.h"
@@ -30,7 +30,7 @@ namespace llvm {
   class raw_ostream;
 }
 
-namespace clang {
+namespace lfort {
   
 class DirectoryEntry;
 class FileEntry;
@@ -305,7 +305,7 @@ public:
   void dump() const;
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 
-#endif // LLVM_CLANG_BASIC_MODULE_H
+#endif // LLVM_LFORT_BASIC_MODULE_H

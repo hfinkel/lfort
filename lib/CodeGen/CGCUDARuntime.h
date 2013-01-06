@@ -13,10 +13,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CUDARUNTIME_H
-#define CLANG_CODEGEN_CUDARUNTIME_H
+#ifndef LFORT_CODEGEN_CUDARUNTIME_H
+#define LFORT_CODEGEN_CUDARUNTIME_H
 
-namespace clang {
+namespace lfort {
 
 class CUDAKernelCallExpr;
 

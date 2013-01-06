@@ -7,7 +7,7 @@
 ALL_DIAGS=$(mktemp)
 ALL_SOURCES=$(mktemp)
 
-grep -E --only-matching --no-filename '(err_|warn_|ext_|note_)[a-z_]+ ' ./include/clang/Basic/Diagnostic*.td > $ALL_DIAGS
+grep -E --only-matching --no-filename '(err_|warn_|ext_|note_)[a-z_]+ ' ./include/lfort/Basic/Diagnostic*.td > $ALL_DIAGS
 find lib include tools -name \*.cpp -or -name \*.h > $ALL_SOURCES
 for DIAG in $(cat $ALL_DIAGS); do
   if ! grep -r $DIAG $(cat $ALL_SOURCES) > /dev/null; then

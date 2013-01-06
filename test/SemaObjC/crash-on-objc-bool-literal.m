@@ -1,5 +1,5 @@
-// RUN: %clang_cc1  -fsyntax-only -verify %s
-// RUN: %clang_cc1 -x objective-c++ -fsyntax-only -verify %s
+// RUN: %lfort_cc1  -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -x objective-c++ -fsyntax-only -verify %s
 // rdar://12456743
 
 typedef signed char BOOL; // expected-note 2 {{candidate found by name lookup is 'BOOL'}}

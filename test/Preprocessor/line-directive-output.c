@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E %s 2>&1 | FileCheck %s -strict-whitespace
+// RUN: %lfort_cc1 -E %s 2>&1 | FileCheck %s -strict-whitespace
 // PR6101
 int a;
 // CHECK: # 1 "{{.*}}line-directive-output.c"

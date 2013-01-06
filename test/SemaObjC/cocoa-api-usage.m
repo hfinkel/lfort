@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fobjc-arc %s -fsyntax-only -Wobjc-cocoa-api -verify
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fobjc-arc -x objective-c %s.fixed -fsyntax-only
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fobjc-arc %s -fsyntax-only -Wobjc-cocoa-api -verify
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fobjc-arc -x objective-c %s.fixed -fsyntax-only
 // RUN: cp %s %t.m
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fobjc-arc %t.m -fixit -Wobjc-cocoa-api
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fobjc-arc %t.m -fixit -Wobjc-cocoa-api
 // RUN: diff %s.fixed %t.m
 
 typedef signed char BOOL;

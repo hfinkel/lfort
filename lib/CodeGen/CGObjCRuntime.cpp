@@ -9,7 +9,7 @@
 //
 // This abstract class defines the interface for Objective-C runtime-specific
 // code generation.  It provides some concrete helper methods for functionality
-// shared between all (or most) of the Objective-C runtimes supported by clang.
+// shared between all (or most) of the Objective-C runtimes supported by lfort.
 //
 //===----------------------------------------------------------------------===//
 
@@ -18,11 +18,11 @@
 #include "CGRecordLayout.h"
 #include "CodeGenFunction.h"
 #include "CodeGenModule.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtObjC.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtObjC.h"
 #include "llvm/Support/CallSite.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 static uint64_t LookupFieldBitOffset(CodeGen::CodeGenModule &CGM,

@@ -39,77 +39,77 @@ set(SOURCES
   IndexingContext.cpp
   IndexingContext.h
   SimpleFormatContext.h
-  ../../include/clang-c/Index.h
+  ../../include/lfort-c/Index.h
   )
 
 set(LIBRARIES
-  clangARCMigrate
-  clangRewriteCore
-  clangRewriteFrontend
-  clangFrontend
-  clangDriver
-  clangSerialization
-  clangSema
-  clangEdit
-  clangAST
-  clangLex
-  clangTooling
-  clangBasic
-  clangFormat
+  lfortARCMigrate
+  lfortRewriteCore
+  lfortRewriteFrontend
+  lfortFrontend
+  lfortDriver
+  lfortSerialization
+  lfortSema
+  lfortEdit
+  lfortAST
+  lfortLex
+  lfortTooling
+  lfortBasic
+  lfortFormat
   )
 
 set(GENERATED_HEADERS
-  ClangAttrClasses
-  ClangAttrList
-  ClangAttrParsedAttrList
-  ClangCommentNodes
-  ClangDiagnosticCommon
-  ClangDiagnosticFrontend
-  ClangDeclNodes
-  ClangStmtNodes
+  LFortAttrClasses
+  LFortAttrList
+  LFortAttrParsedAttrList
+  LFortCommentNodes
+  LFortDiagnosticCommon
+  LFortDiagnosticFrontend
+  LFortDeclNodes
+  LFortStmtNodes
   )
 
 if( LLVM_ENABLE_PIC )
   set(SHARED_LIBRARY TRUE)
-  add_clang_library(libclang ${SOURCES})
-  target_link_libraries(libclang ${LIBRARIES})
-  add_dependencies(libclang ${GENERATED_HEADERS})
+  add_lfort_library(liblfort ${SOURCES})
+  target_link_libraries(liblfort ${LIBRARIES})
+  add_dependencies(liblfort ${GENERATED_HEADERS})
 
   if(WIN32)
-    set_target_properties(libclang
+    set_target_properties(liblfort
       PROPERTIES
-      OUTPUT_NAME "libclang"
-      VERSION ${LIBCLANG_LIBRARY_VERSION}
+      OUTPUT_NAME "liblfort"
+      VERSION ${LIBLFORT_LIBRARY_VERSION}
       DEFINE_SYMBOL _CINDEX_LIB_)
   else()
-    set_target_properties(libclang
+    set_target_properties(liblfort
       PROPERTIES
-      OUTPUT_NAME "clang"
-      VERSION ${LIBCLANG_LIBRARY_VERSION}
+      OUTPUT_NAME "lfort"
+      VERSION ${LIBLFORT_LIBRARY_VERSION}
       DEFINE_SYMBOL _CINDEX_LIB_)
   endif()
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(LIBCLANG_LINK_FLAGS
+    set(LIBLFORT_LINK_FLAGS
       "-Wl,-compatibility_version -Wl,1 -Wl,-dead_strip")
-    set_target_properties(libclang
+    set_target_properties(liblfort
       PROPERTIES
-      LINK_FLAGS "${LIBCLANG_LINK_FLAGS}"
+      LINK_FLAGS "${LIBLFORT_LINK_FLAGS}"
       INSTALL_NAME_DIR "@executable_path/../lib")
   endif()
 
 
-  set(LIBCLANG_STATIC_TARGET_NAME libclang_static)
+  set(LIBLFORT_STATIC_TARGET_NAME liblfort_static)
 else()
-  set(LIBCLANG_STATIC_TARGET_NAME libclang)
+  set(LIBLFORT_STATIC_TARGET_NAME liblfort)
 endif()
 
 if( NOT BUILD_SHARED_LIBS AND NOT WIN32 )
-  add_clang_library(${LIBCLANG_STATIC_TARGET_NAME} STATIC ${SOURCES})
-  target_link_libraries(${LIBCLANG_STATIC_TARGET_NAME} ${LIBRARIES})
-  add_dependencies(${LIBCLANG_STATIC_TARGET_NAME} ${GENERATED_HEADERS})
+  add_lfort_library(${LIBLFORT_STATIC_TARGET_NAME} STATIC ${SOURCES})
+  target_link_libraries(${LIBLFORT_STATIC_TARGET_NAME} ${LIBRARIES})
+  add_dependencies(${LIBLFORT_STATIC_TARGET_NAME} ${GENERATED_HEADERS})
 
-  set_target_properties(${LIBCLANG_STATIC_TARGET_NAME}
+  set_target_properties(${LIBLFORT_STATIC_TARGET_NAME}
     PROPERTIES
-    OUTPUT_NAME "clang")
+    OUTPUT_NAME "lfort")
 endif()

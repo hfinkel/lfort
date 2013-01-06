@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -D FOOBAR="\"\"" %s -emit-pch -o %t.pch
-// RUN: %clang_cc1 -D FOOBAR="\"\"" %s -include-pch %t.pch
+// RUN: %lfort_cc1 -D FOOBAR="\"\"" %s -emit-pch -o %t.pch
+// RUN: %lfort_cc1 -D FOOBAR="\"\"" %s -include-pch %t.pch
 
 // rdar://11418366
 

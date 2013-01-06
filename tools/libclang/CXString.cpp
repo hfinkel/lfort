@@ -15,13 +15,13 @@
 
 #include "CXString.h"
 #include "CXTranslationUnit.h"
-#include "clang-c/Index.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort-c/Index.h"
+#include "lfort/Frontend/ASTUnit.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 
-using namespace clang;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxstring;
 
 enum CXStringFlag { CXS_Unmanaged, CXS_Malloc, CXS_StringBuf };
 
@@ -106,18 +106,18 @@ bool cxstring::isManagedByPool(CXString str) {
 }
 
 //===----------------------------------------------------------------------===//
-// libClang public APIs.
+// libLFort public APIs.
 //===----------------------------------------------------------------------===//
 
 extern "C" {
-const char *clang_getCString(CXString string) {
+const char *lfort_getCString(CXString string) {
   if (string.private_flags == (unsigned) CXS_StringBuf) {
     return ((CXStringBuf*)string.data)->Data.data();
   }
   return (const char*) string.data;
 }
 
-void clang_disposeString(CXString string) {
+void lfort_disposeString(CXString string) {
   switch ((CXStringFlag) string.private_flags) {
     case CXS_Unmanaged:
       break;

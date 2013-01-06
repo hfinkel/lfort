@@ -1,4 +1,4 @@
-##===- clang/lib/Frontend/Makefile -------------------------*- Makefile -*-===##
+##===- lfort/lib/Frontend/Makefile -------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,8 +7,8 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangFrontend
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortFrontend
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

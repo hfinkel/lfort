@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple nvptx-unknown-unknown -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple nvptx-unknown-unknown -emit-llvm -o - | FileCheck %s
 
 void device_function() {
 }

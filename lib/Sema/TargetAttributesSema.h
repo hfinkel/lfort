@@ -7,10 +7,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_SEMA_TARGETSEMA_H
-#define CLANG_SEMA_TARGETSEMA_H
+#ifndef LFORT_SEMA_TARGETSEMA_H
+#define LFORT_SEMA_TARGETSEMA_H
 
-namespace clang {
+namespace lfort {
   class Scope;
   class Decl;
   class AttributeList;

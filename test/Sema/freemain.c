@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -ffreestanding %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -ffreestanding %s
 
 // Tests that -ffreestanding disables all special treatment of main().
 

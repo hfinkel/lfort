@@ -8,27 +8,27 @@
 //===----------------------------------------------------------------------===//
 
 #include "RewriterTestContext.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclGroup.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/Tooling/Refactoring.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclGroup.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
+#include "lfort/Tooling/Refactoring.h"
+#include "lfort/Tooling/Tooling.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Path.h"
 #include "gtest/gtest.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
 
 class ReplacementTest : public ::testing::Test {
@@ -207,21 +207,21 @@ TEST_F(FlushRewrittenFilesTest, StoresChangesOnDisk) {
 
 namespace {
 template <typename T>
-class TestVisitor : public clang::RecursiveASTVisitor<T> {
+class TestVisitor : public lfort::RecursiveASTVisitor<T> {
 public:
   bool runOver(StringRef Code) {
     return runToolOnCode(new TestAction(this), Code);
   }
 
 protected:
-  clang::SourceManager *SM;
+  lfort::SourceManager *SM;
 
 private:
-  class FindConsumer : public clang::ASTConsumer {
+  class FindConsumer : public lfort::ASTConsumer {
   public:
     FindConsumer(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+    virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
       Visitor->TraverseDecl(Context.getTranslationUnitDecl());
     }
 
@@ -229,12 +229,12 @@ private:
     TestVisitor *Visitor;
   };
 
-  class TestAction : public clang::ASTFrontendAction {
+  class TestAction : public lfort::ASTFrontendAction {
   public:
     TestAction(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual clang::ASTConsumer* CreateASTConsumer(
-        clang::CompilerInstance& compiler, llvm::StringRef dummy) {
+    virtual lfort::ASTConsumer* CreateASTConsumer(
+        lfort::CompilerInstance& compiler, llvm::StringRef dummy) {
       Visitor->SM = &compiler.getSourceManager();
       /// TestConsumer will be deleted by the framework calling us.
       return new FindConsumer(Visitor);
@@ -302,4 +302,4 @@ TEST(Replacement, TemplatedFunctionCall) {
 }
 
 } // end namespace tooling
-} // end namespace clang
+} // end namespace lfort

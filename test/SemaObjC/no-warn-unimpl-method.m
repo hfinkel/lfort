@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
 // expected-no-diagnostics
 // This program tests that if class implements the forwardInvocation method, then
 // every method possible is implemented in the class and should not issue

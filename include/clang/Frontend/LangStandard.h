@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_LANGSTANDARD_H
-#define LLVM_CLANG_FRONTEND_LANGSTANDARD_H
+#ifndef LLVM_LFORT_FRONTEND_LANGSTANDARD_H
+#define LLVM_LFORT_FRONTEND_LANGSTANDARD_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/StringRef.h"
 
-namespace clang {
+namespace lfort {
 
 namespace frontend {
 
@@ -39,7 +39,7 @@ struct LangStandard {
   enum Kind {
 #define LANGSTANDARD(id, name, desc, features) \
     lang_##id,
-#include "clang/Frontend/LangStandards.def"
+#include "lfort/Frontend/LangStandards.def"
     lang_unspecified
   };
 
@@ -91,6 +91,6 @@ public:
   static const LangStandard *getLangStandardForName(StringRef Name);
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

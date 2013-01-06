@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wunused-label -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wunused-label -verify %s
 
 void f() {
   a:

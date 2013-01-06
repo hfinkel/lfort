@@ -7,22 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_DIAGNOSTICSEMA_H
-#define LLVM_CLANG_DIAGNOSTICSEMA_H
+#ifndef LLVM_LFORT_DIAGNOSTICSEMA_H
+#define LLVM_LFORT_DIAGNOSTICSEMA_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define SEMASTART
-#include "clang/Basic/DiagnosticSemaKinds.inc"
+#include "lfort/Basic/DiagnosticSemaKinds.inc"
 #undef DIAG
       NUM_BUILTIN_SEMA_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

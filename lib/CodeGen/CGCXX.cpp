@@ -16,16 +16,16 @@
 #include "CodeGenModule.h"
 #include "CGCXXABI.h"
 #include "CodeGenFunction.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Mangle.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/StringExtras.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 /// Try to emit a base destructor as an alias to its primary

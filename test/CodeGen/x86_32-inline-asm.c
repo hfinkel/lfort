@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-apple-darwin9 -verify %s
+// RUN: %lfort_cc1 -triple i386-apple-darwin9 -verify %s
 // <rdar://problem/12415959>
 
 typedef unsigned int u_int32_t;

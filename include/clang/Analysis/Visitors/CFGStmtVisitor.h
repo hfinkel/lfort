@@ -14,13 +14,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_CFGSTMTVISITOR_H
-#define LLVM_CLANG_ANALYSIS_CFGSTMTVISITOR_H
+#ifndef LLVM_LFORT_ANALYSIS_CFGSTMTVISITOR_H
+#define LLVM_LFORT_ANALYSIS_CFGSTMTVISITOR_H
 
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/CFG.h"
 
-namespace clang {
+namespace lfort {
 
 #define DISPATCH_CASE(CLASS) \
 case Stmt::CLASS ## Class: return \
@@ -170,6 +170,6 @@ public:
 #undef DEFAULT_BLOCKSTMT_VISIT
 #undef DISPATCH_CASE
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

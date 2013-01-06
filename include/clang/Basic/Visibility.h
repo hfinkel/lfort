@@ -8,14 +8,14 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::Visibility enumeration and various utility
+/// \brief Defines the lfort::Visibility enumeration and various utility
 /// functions.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_VISIBILITY_H
-#define LLVM_CLANG_BASIC_VISIBILITY_H
+#ifndef LLVM_LFORT_BASIC_VISIBILITY_H
+#define LLVM_LFORT_BASIC_VISIBILITY_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief Describes the different kinds of visibility that a declaration
 /// may have.
@@ -48,4 +48,4 @@ inline Visibility minVisibility(Visibility L, Visibility R) {
 
 }
 
-#endif // LLVM_CLANG_BASIC_VISIBILITY_H
+#endif // LLVM_LFORT_BASIC_VISIBILITY_H

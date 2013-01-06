@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fobjc-exceptions -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -fobjc-exceptions -Wno-objc-root-class %s
 
 // rdar://6124613
 void test1() {

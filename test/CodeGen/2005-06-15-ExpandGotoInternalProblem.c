@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c99 %s -emit-llvm -o - | \
+// RUN: %lfort_cc1 -std=c99 %s -emit-llvm -o - | \
 // RUN:    opt -std-compile-opts -disable-output
 // PR580
 

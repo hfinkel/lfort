@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -Wunreachable-code -fblocks -verify %s
+// RUN: %lfort_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -Wunreachable-code -fblocks -verify %s
 
 int j;
 void bar() { }

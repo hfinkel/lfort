@@ -11,15 +11,15 @@
 // code.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/Basic/Module.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/Basic/Module.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 Module::Module(StringRef Name, SourceLocation DefinitionLoc, Module *Parent, 
                bool IsFramework, bool IsExplicit)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -O1 -o -
+// RUN: %lfort_cc1 %s -emit-llvm -O1 -o -
 // REQUIRES: LP64
 
 typedef long intptr_t;

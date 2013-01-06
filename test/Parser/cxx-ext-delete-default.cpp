@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=c++98 %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -std=c++98 %s
 
 struct A {
   A(const A&) = delete; // expected-warning {{C++11 extension}}

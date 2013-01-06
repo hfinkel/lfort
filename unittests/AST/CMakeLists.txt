@@ -1,4 +1,4 @@
-add_clang_unittest(ASTTests
+add_lfort_unittest(ASTTests
   CommentLexer.cpp
   CommentParser.cpp
   DeclPrinterTest.cpp
@@ -7,5 +7,5 @@ add_clang_unittest(ASTTests
   )
 
 target_link_libraries(ASTTests
-  clangAST clangASTMatchers clangTooling
+  lfortAST lfortASTMatchers lfortTooling
   )

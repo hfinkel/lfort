@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/StmtVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/StmtVisitor.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // StmtPrinter Visitor
@@ -32,7 +32,7 @@ namespace  {
   class StmtPrinter : public StmtVisitor<StmtPrinter> {
     raw_ostream &OS;
     unsigned IndentLevel;
-    clang::PrinterHelper* Helper;
+    lfort::PrinterHelper* Helper;
     PrintingPolicy Policy;
 
   public:
@@ -99,7 +99,7 @@ namespace  {
 #define ABSTRACT_STMT(CLASS)
 #define STMT(CLASS, PARENT) \
     void Visit##CLASS(CLASS *Node);
-#include "clang/AST/StmtNodes.inc"
+#include "lfort/AST/StmtNodes.inc"
   };
 }
 
@@ -1099,7 +1099,7 @@ void StmtPrinter::VisitAtomicExpr(AtomicExpr *Node) {
   case AtomicExpr::AO ## ID: \
     Name = #ID "("; \
     break;
-#include "clang/Basic/Builtins.def"
+#include "lfort/Basic/Builtins.def"
   }
   OS << Name;
 
@@ -1136,7 +1136,7 @@ void StmtPrinter::VisitCXXOperatorCallExpr(CXXOperatorCallExpr *Node) {
     "",
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
     Spelling,
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
   };
 
   OverloadedOperatorKind Kind = Node->getOperator();
@@ -1624,7 +1624,7 @@ static const char *getTypeTraitName(BinaryTypeTrait BTT) {
 
 static const char *getTypeTraitName(TypeTrait TT) {
   switch (TT) {
-  case clang::TT_IsTriviallyConstructible:return "__is_trivially_constructible";
+  case lfort::TT_IsTriviallyConstructible:return "__is_trivially_constructible";
   }
   llvm_unreachable("Type trait not covered by switch");
 }

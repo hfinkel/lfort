@@ -1,4 +1,4 @@
-##===- clang/lib/ASTMatchers/Makefile ----------------------*- Makefile -*-===##
+##===- lfort/lib/ASTMatchers/Makefile ----------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,7 +7,7 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangASTMatchers
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortASTMatchers
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

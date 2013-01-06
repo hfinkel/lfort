@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
-// RUN: %clang_cc1 -analyze -DUSE_BUILTINS -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
-// RUN: %clang_cc1 -analyze -DVARIANT -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
-// RUN: %clang_cc1 -analyze -DUSE_BUILTINS -DVARIANT -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -DUSE_BUILTINS -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -DVARIANT -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -DUSE_BUILTINS -DVARIANT -analyzer-checker=core,unix.cstring,alpha.unix.cstring,debug.ExprInspection -analyzer-store=region -verify %s
 
 //===----------------------------------------------------------------------===
 // Declarations
@@ -26,7 +26,7 @@
 
 typedef typeof(sizeof(int)) size_t;
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 //===----------------------------------------------------------------------===
 // memcpy()
@@ -54,11 +54,11 @@ void memcpy0 () {
 
   memcpy(dst, src, 4); // no-warning
 
-  clang_analyzer_eval(memcpy(dst, src, 4) == dst); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcpy(dst, src, 4) == dst); // expected-warning{{TRUE}}
 
   // If we actually model the copy, we can make this known.
   // The important thing for now is that the old value has been invalidated.
-  clang_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
 }
 
 void memcpy1 () {
@@ -139,13 +139,13 @@ void memcpy13() {
 
 void memcpy_unknown_size (size_t n) {
   char a[4], b[4] = {1};
-  clang_analyzer_eval(memcpy(a, b, n) == a); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcpy(a, b, n) == a); // expected-warning{{TRUE}}
 }
 
 void memcpy_unknown_size_warn (size_t n) {
   char a[4];
   void *result = memcpy(a, 0, n); // expected-warning{{Null pointer argument in call to memory copy function}}
-  clang_analyzer_eval(result == a); // no-warning (above is fatal)
+  lfort_analyzer_eval(result == a); // no-warning (above is fatal)
 }
 
 //===----------------------------------------------------------------------===
@@ -174,11 +174,11 @@ void mempcpy0 () {
 
   mempcpy(dst, src, 4); // no-warning
 
-  clang_analyzer_eval(mempcpy(dst, src, 4) == &dst[4]); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(mempcpy(dst, src, 4) == &dst[4]); // expected-warning{{TRUE}}
 
   // If we actually model the copy, we can make this known.
   // The important thing for now is that the old value has been invalidated.
-  clang_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
 }
 
 void mempcpy1 () {
@@ -260,7 +260,7 @@ void mempcpy13() {
 void mempcpy_unknown_size_warn (size_t n) {
   char a[4];
   void *result = mempcpy(a, 0, n); // expected-warning{{Null pointer argument in call to memory copy function}}
-  clang_analyzer_eval(result == a); // no-warning (above is fatal)
+  lfort_analyzer_eval(result == a); // no-warning (above is fatal)
 }
 
 void mempcpy_unknownable_size (char *src, float n) {
@@ -294,11 +294,11 @@ void memmove0 () {
 
   memmove(dst, src, 4); // no-warning
 
-  clang_analyzer_eval(memmove(dst, src, 4) == dst); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memmove(dst, src, 4) == dst); // expected-warning{{TRUE}}
 
   // If we actually model the copy, we can make this known.
   // The important thing for now is that the old value has been invalidated.
-  clang_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
 }
 
 void memmove1 () {
@@ -358,27 +358,27 @@ void memcmp2 () {
 void memcmp3 () {
   char a[] = {1, 2, 3, 4};
 
-  clang_analyzer_eval(memcmp(a, a, 4) == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcmp(a, a, 4) == 0); // expected-warning{{TRUE}}
 }
 
 void memcmp4 (char *input) {
   char a[] = {1, 2, 3, 4};
 
-  clang_analyzer_eval(memcmp(a, input, 4) == 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(memcmp(a, input, 4) == 0); // expected-warning{{UNKNOWN}}
 }
 
 void memcmp5 (char *input) {
   char a[] = {1, 2, 3, 4};
 
-  clang_analyzer_eval(memcmp(a, 0, 0) == 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(memcmp(0, a, 0) == 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(memcmp(a, input, 0) == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcmp(a, 0, 0) == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcmp(0, a, 0) == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(memcmp(a, input, 0) == 0); // expected-warning{{TRUE}}
 }
 
 void memcmp6 (char *a, char *b, size_t n) {
   int result = memcmp(a, b, n);
   if (result != 0)
-    clang_analyzer_eval(n != 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(n != 0); // expected-warning{{TRUE}}
   // else
   //   analyzer_assert_unknown(n == 0);
 
@@ -409,7 +409,7 @@ void bcopy0 () {
 
   // If we actually model the copy, we can make this known.
   // The important thing for now is that the old value has been invalidated.
-  clang_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
+  lfort_analyzer_eval(dst[0] != 0); // expected-warning{{UNKNOWN}}
 }
 
 void bcopy1 () {

@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ARCMigrate/ARCMTActions.h"
-#include "clang/ARCMigrate/ARCMT.h"
-#include "clang/Frontend/CompilerInstance.h"
+#include "lfort/ARCMigrate/ARCMTActions.h"
+#include "lfort/ARCMigrate/ARCMT.h"
+#include "lfort/Frontend/CompilerInstance.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 bool CheckAction::BeginInvocation(CompilerInstance &CI) {

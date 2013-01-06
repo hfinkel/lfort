@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-print %s > %t
+// RUN: %lfort_cc1 -ast-print %s > %t
 // RUN: FileCheck < %t %s -check-prefix=CHECK1
 // RUN: FileCheck < %t %s -check-prefix=CHECK2
 

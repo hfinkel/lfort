@@ -1,4 +1,4 @@
-//===- CommonOptionsParser.h - common options for clang tools -*- C++ -*-=====//
+//===- CommonOptionsParser.h - common options for lfort tools -*- C++ -*-=====//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 //
 //  This file implements the CommonOptionsParser class used to parse common
-//  command-line options for clang tools, so that they can be run as separate
+//  command-line options for lfort tools, so that they can be run as separate
 //  command-line applications with a consistent common interface for handling
 //  compilation database and input files.
 //
@@ -18,20 +18,20 @@
 //
 //  It creates a CompilationDatabase and reads common command-line options.
 //
-//  This class uses the Clang Tooling infrastructure, see
-//    http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html
+//  This class uses the LFort Tooling infrastructure, see
+//    http://lfort.llvm.org/docs/HowToSetupToolingForLLVM.html
 //  for details on setting it up with LLVM source tree.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_TOOLS_CLANG_INCLUDE_CLANG_TOOLING_COMMONOPTIONSPARSER_H
-#define LLVM_TOOLS_CLANG_INCLUDE_CLANG_TOOLING_COMMONOPTIONSPARSER_H
+#ifndef LLVM_TOOLS_LFORT_INCLUDE_LFORT_TOOLING_COMMONOPTIONSPARSER_H
+#define LLVM_TOOLS_LFORT_INCLUDE_LFORT_TOOLING_COMMONOPTIONSPARSER_H
 
-#include "clang/Tooling/CompilationDatabase.h"
+#include "lfort/Tooling/CompilationDatabase.h"
 
-namespace clang {
+namespace lfort {
 namespace tooling {
-/// \brief A parser for options common to all command-line Clang tools.
+/// \brief A parser for options common to all command-line LFort tools.
 ///
 /// Parses a common subset of command-line arguments, locates and loads a
 /// compilation commands database and runs a tool with user-specified action. It
@@ -39,11 +39,11 @@ namespace tooling {
 ///
 /// An example of usage:
 /// \code
-/// #include "clang/Frontend/FrontendActions.h"
-/// #include "clang/Tooling/CommonOptionsParser.h"
+/// #include "lfort/Frontend/FrontendActions.h"
+/// #include "lfort/Tooling/CommonOptionsParser.h"
 /// #include "llvm/Support/CommandLine.h"
 ///
-/// using namespace clang::tooling;
+/// using namespace lfort::tooling;
 /// using namespace llvm;
 ///
 /// static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
@@ -53,9 +53,9 @@ namespace tooling {
 ///
 /// int main(int argc, const char **argv) {
 ///   CommonOptionsParser OptionsParser(argc, argv);
-///   ClangTool Tool(OptionsParser.getCompilations(),
+///   LFortTool Tool(OptionsParser.getCompilations(),
 ///                  OptionsParser.getSourcePathListi());
-///   return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>());
+///   return Tool.run(newFrontendActionFactory<lfort::SyntaxOnlyAction>());
 /// }
 /// \endcode
 class CommonOptionsParser {
@@ -84,6 +84,6 @@ private:
 };
 
 }  // namespace tooling
-}  // namespace clang
+}  // namespace lfort
 
-#endif  // LLVM_TOOLS_CLANG_INCLUDE_CLANG_TOOLING_COMMONOPTIONSPARSER_H
+#endif  // LLVM_TOOLS_LFORT_INCLUDE_LFORT_TOOLING_COMMONOPTIONSPARSER_H

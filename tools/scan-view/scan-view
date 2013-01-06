@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""The clang static analyzer results viewer.
+"""The lfort static analyzer results viewer.
 """
 
 import sys

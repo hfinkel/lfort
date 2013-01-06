@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -pedantic -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -pedantic -verify %s
 struct one {
   int a;
   int values[]; // expected-note 4{{initialized flexible array member 'values' is here}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only
+// RUN: %lfort_cc1 %s -verify -fsyntax-only
 
 __attribute__((visibility("hidden")))  __attribute__((aligned)) struct A; // expected-warning{{attribute 'visibility' is ignored, place it after "struct" to apply attribute to type declaration}} \
 // expected-warning{{attribute 'aligned' is ignored, place it after "struct" to apply attribute to type declaration}}

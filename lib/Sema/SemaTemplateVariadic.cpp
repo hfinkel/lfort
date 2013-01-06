@@ -9,17 +9,17 @@
 //  This file implements semantic analysis for C++0x variadic templates.
 //===----------------------------------------------------------------------===/
 
-#include "clang/Sema/Sema.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/SemaInternal.h"
-#include "clang/Sema/Template.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/SemaInternal.h"
+#include "lfort/Sema/Template.h"
 
-using namespace clang;
+using namespace lfort;
 
 //----------------------------------------------------------------------------
 // Visitor that collects unexpanded parameter packs

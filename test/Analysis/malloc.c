@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.deadcode.UnreachableCode,alpha.core.CastSize,unix.Malloc,debug.ExprInspection -analyzer-store=region -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.deadcode.UnreachableCode,alpha.core.CastSize,unix.Malloc,debug.ExprInspection -analyzer-store=region -verify %s
 
 #include "Inputs/system-header-simulator.h"
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 typedef __typeof(sizeof(int)) size_t;
 void *malloc(size_t);
@@ -883,7 +883,7 @@ int CMPRegionHeapToStack() {
   int x = 0;
   int *x1 = malloc(8);
   int *x2 = &x;
-  clang_analyzer_eval(x1 == x2); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(x1 == x2); // expected-warning{{FALSE}}
   free(x1);
   return x;
 }
@@ -894,7 +894,7 @@ int CMPRegionHeapToHeap2() {
   int *x2 = malloc(8);
   int *x4 = x1;
   int *x5 = x2;
-  clang_analyzer_eval(x4 == x5); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(x4 == x5); // expected-warning{{FALSE}}
   free(x1);
   free(x2);
   return x;
@@ -916,7 +916,7 @@ int HeapAssignment() {
   int *x = malloc(4);
   int *y = x;
   *x = 5;
-  clang_analyzer_eval(*x != *y); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(*x != *y); // expected-warning{{FALSE}}
   free(x);
   return 0;
 }
@@ -928,8 +928,8 @@ int cmpHeapAllocationToUnknown() {
   int *yBefore = retPtr();
   int *m = malloc(8);
   int *yAfter = retPtrMightAlias(m);
-  clang_analyzer_eval(yBefore == m); // expected-warning{{FALSE}}
-  clang_analyzer_eval(yAfter == m); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(yBefore == m); // expected-warning{{FALSE}}
+  lfort_analyzer_eval(yAfter == m); // expected-warning{{FALSE}}
   free(m);
   return 0;
 }

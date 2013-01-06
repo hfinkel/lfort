@@ -1,10 +1,10 @@
-// RUN: %clang_cc1 -std=c99 -DOPEN_MPI -fsyntax-only -verify %s
-// RUN: %clang_cc1 -std=c99 -DMPICH -fsyntax-only -verify %s
-// RUN: %clang_cc1 -x c++ -std=c++98 -DOPEN_MPI -fsyntax-only -verify %s
-// RUN: %clang_cc1 -x c++ -std=c++98 -DMPICH -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -DOPEN_MPI -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -DMPICH -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -x c++ -std=c++98 -DOPEN_MPI -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -x c++ -std=c++98 -DMPICH -fsyntax-only -verify %s
 //
-// RUN: %clang_cc1 -std=c99 -DOPEN_MPI -fno-signed-char -fsyntax-only -verify %s
-// RUN: %clang_cc1 -std=c99 -DMPICH -fno-signed-char -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -DOPEN_MPI -fno-signed-char -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c99 -DMPICH -fno-signed-char -fsyntax-only -verify %s
 
 //===--- limits.h mock ----------------------------------------------------===//
 

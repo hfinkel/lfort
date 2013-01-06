@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MATCHERS_AST_TYPE_TRAITS_H
-#define LLVM_CLANG_AST_MATCHERS_AST_TYPE_TRAITS_H
+#ifndef LLVM_LFORT_AST_MATCHERS_AST_TYPE_TRAITS_H
+#define LLVM_LFORT_AST_MATCHERS_AST_TYPE_TRAITS_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/Stmt.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Stmt.h"
 #include "llvm/Support/AlignOf.h"
 
-namespace clang {
+namespace lfort {
 namespace ast_type_traits {
 
 /// \brief A dynamically typed AST node container.
@@ -204,6 +204,6 @@ inline const void *DynTypedNode::getMemoizationData() const {
 }
 
 } // end namespace ast_type_traits
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_AST_MATCHERS_AST_TYPE_TRAITS_H
+#endif // LLVM_LFORT_AST_MATCHERS_AST_TYPE_TRAITS_H

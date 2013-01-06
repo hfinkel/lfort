@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -w -fblocks -triple i386-pc-linux-gnu -target-cpu pentium4 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -w -fblocks -triple i386-pc-linux-gnu -target-cpu pentium4 -emit-llvm -o %t %s
 // RUN: FileCheck < %t %s
 
 // CHECK: define void @f56(
@@ -20,9 +20,9 @@
 // CHECK: <4 x double> %{{[^ ]*}}, %struct.s56_6* byval align 4 %{{[^ ]*}})
 // CHECK: }
 //
-// <rdar://problem/7964854> [i386] clang misaligns long double in structures
+// <rdar://problem/7964854> [i386] lfort misaligns long double in structures
 // when passed byval
-// <rdar://problem/8431367> clang misaligns parameters on stack
+// <rdar://problem/8431367> lfort misaligns parameters on stack
 typedef int __attribute__((vector_size (8))) t56_v2i;
 typedef double __attribute__((vector_size (8))) t56_v1d;
 typedef int __attribute__((vector_size (16))) t56_v4i;

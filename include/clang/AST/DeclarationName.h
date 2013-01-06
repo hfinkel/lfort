@@ -10,18 +10,18 @@
 // This file declares the DeclarationName and DeclarationNameTable classes.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_DECLARATIONNAME_H
-#define LLVM_CLANG_AST_DECLARATIONNAME_H
+#ifndef LLVM_LFORT_AST_DECLARATIONNAME_H
+#define LLVM_LFORT_AST_DECLARATIONNAME_H
 
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/PartialDiagnostic.h"
 #include "llvm/Support/Compiler.h"
 
 namespace llvm {
   template <typename T> struct DenseMapInfo;
 }
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class CXXLiteralOperatorIdName;
   class CXXOperatorIdName;
@@ -556,33 +556,33 @@ inline raw_ostream &operator<<(raw_ostream &OS,
   return OS;
 }
 
-}  // end namespace clang
+}  // end namespace lfort
 
 namespace llvm {
 /// Define DenseMapInfo so that DeclarationNames can be used as keys
 /// in DenseMap and DenseSets.
 template<>
-struct DenseMapInfo<clang::DeclarationName> {
-  static inline clang::DeclarationName getEmptyKey() {
-    return clang::DeclarationName::getEmptyMarker();
+struct DenseMapInfo<lfort::DeclarationName> {
+  static inline lfort::DeclarationName getEmptyKey() {
+    return lfort::DeclarationName::getEmptyMarker();
   }
 
-  static inline clang::DeclarationName getTombstoneKey() {
-    return clang::DeclarationName::getTombstoneMarker();
+  static inline lfort::DeclarationName getTombstoneKey() {
+    return lfort::DeclarationName::getTombstoneMarker();
   }
 
-  static unsigned getHashValue(clang::DeclarationName Name) {
+  static unsigned getHashValue(lfort::DeclarationName Name) {
     return DenseMapInfo<void*>::getHashValue(Name.getAsOpaquePtr());
   }
 
   static inline bool
-  isEqual(clang::DeclarationName LHS, clang::DeclarationName RHS) {
+  isEqual(lfort::DeclarationName LHS, lfort::DeclarationName RHS) {
     return LHS == RHS;
   }
 };
 
 template <>
-struct isPodLike<clang::DeclarationName> { static const bool value = true; };
+struct isPodLike<lfort::DeclarationName> { static const bool value = true; };
 
 }  // end namespace llvm
 

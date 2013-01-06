@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_DIRECTORYLOOKUP_H
-#define LLVM_CLANG_LEX_DIRECTORYLOOKUP_H
+#ifndef LLVM_LFORT_LEX_DIRECTORYLOOKUP_H
+#define LLVM_LFORT_LEX_DIRECTORYLOOKUP_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/SourceManager.h"
 
-namespace clang {
+namespace lfort {
 class HeaderMap;
 class DirectoryEntry;
 class FileEntry;
@@ -165,6 +165,6 @@ private:
 
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

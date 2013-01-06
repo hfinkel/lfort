@@ -11,19 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/Analyses/PostOrderCFGView.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/Analyses/PostOrderCFGView.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/PostOrderIterator.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <vector>
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 
@@ -47,14 +47,14 @@ public:
 
 }
 
-void DataflowWorklist::enqueueBlock(const clang::CFGBlock *block) {
+void DataflowWorklist::enqueueBlock(const lfort::CFGBlock *block) {
   if (block && !enqueuedBlocks[block->getBlockID()]) {
     enqueuedBlocks[block->getBlockID()] = true;
     worklist.push_back(block);
   }
 }
   
-void DataflowWorklist::enqueueSuccessors(const clang::CFGBlock *block) {
+void DataflowWorklist::enqueueSuccessors(const lfort::CFGBlock *block) {
   const unsigned OldWorklistSize = worklist.size();
   for (CFGBlock::const_succ_iterator I = block->succ_begin(),
        E = block->succ_end(); I != E; ++I) {
@@ -67,7 +67,7 @@ void DataflowWorklist::enqueueSuccessors(const clang::CFGBlock *block) {
   sortWorklist();
 }
 
-void DataflowWorklist::enqueuePredecessors(const clang::CFGBlock *block) {
+void DataflowWorklist::enqueuePredecessors(const lfort::CFGBlock *block) {
   const unsigned OldWorklistSize = worklist.size();
   for (CFGBlock::const_pred_iterator I = block->pred_begin(),
        E = block->pred_end(); I != E; ++I) {

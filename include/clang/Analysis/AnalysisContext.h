@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_ANALYSIS_ANALYSISCONTEXT_H
-#define LLVM_CLANG_ANALYSIS_ANALYSISCONTEXT_H
+#ifndef LLVM_LFORT_ANALYSIS_ANALYSISCONTEXT_H
+#define LLVM_LFORT_ANALYSIS_ANALYSISCONTEXT_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
-#include "clang/Analysis/CFG.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Analysis/CFG.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -25,7 +25,7 @@
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/Support/Allocator.h"
 
-namespace clang {
+namespace lfort {
 
 class Decl;
 class Stmt;
@@ -447,5 +447,5 @@ private:
   }
 };
 
-} // end clang namespace
+} // end lfort namespace
 #endif

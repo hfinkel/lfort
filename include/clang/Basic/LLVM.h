@@ -9,12 +9,12 @@
 //
 /// \file
 /// \brief Forward declares and imports various common LLVM datatypes that
-/// clang wants to use unqualified.
+/// lfort wants to use unqualified.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_BASIC_LLVM_H
-#define CLANG_BASIC_LLVM_H
+#ifndef LFORT_BASIC_LLVM_H
+#define LFORT_BASIC_LLVM_H
 
 // This should be the only #include, force #includes of all the others on
 // clients.
@@ -44,7 +44,7 @@ namespace llvm {
 }
 
 
-namespace clang {
+namespace lfort {
   // Casting operators.
   using llvm::isa;
   using llvm::cast;
@@ -69,6 +69,6 @@ namespace clang {
   using llvm::RefCountedBaseVPTR;
 
   using llvm::raw_ostream;
-} // end namespace clang.
+} // end namespace lfort.
 
 #endif

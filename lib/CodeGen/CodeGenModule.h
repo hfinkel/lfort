@@ -11,18 +11,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_CODEGENMODULE_H
-#define CLANG_CODEGEN_CODEGENMODULE_H
+#ifndef LFORT_CODEGEN_CODEGENMODULE_H
+#define LFORT_CODEGEN_CODEGENMODULE_H
 
 #include "CGVTables.h"
 #include "CodeGenTypes.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/GlobalDecl.h"
-#include "clang/AST/Mangle.h"
-#include "clang/Basic/ABI.h"
-#include "clang/Basic/LangOptions.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/GlobalDecl.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/Basic/ABI.h"
+#include "lfort/Basic/LangOptions.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/StringMap.h"
@@ -40,7 +40,7 @@ namespace llvm {
   class LLVMContext;
 }
 
-namespace clang {
+namespace lfort {
   class TargetCodeGenInfo;
   class ASTContext;
   class FunctionDecl;
@@ -1008,6 +1008,6 @@ private:
   void SimplifyPersonality();
 };
 }  // end namespace CodeGen
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

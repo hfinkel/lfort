@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -fblocks -std=c++11
+// RUN: %lfort_cc1 -fsyntax-only -verify %s -fblocks -std=c++11
 // expected-no-diagnostics
 
 extern "C" int exit(int);

@@ -19,7 +19,7 @@
 #include "llvm/IR/GlobalValue.h"
 #include <assert.h>
 
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CGOpenCLRuntime::~CGOpenCLRuntime() {}

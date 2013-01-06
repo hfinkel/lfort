@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_PARSE_PARSEPRAGMA_H
-#define LLVM_CLANG_PARSE_PARSEPRAGMA_H
+#ifndef LLVM_LFORT_PARSE_PARSEPRAGMA_H
+#define LLVM_LFORT_PARSE_PARSEPRAGMA_H
 
-#include "clang/Lex/Pragma.h"
+#include "lfort/Lex/Pragma.h"
 
-namespace clang {
+namespace lfort {
   class Sema;
   class Parser;
 
@@ -100,6 +100,6 @@ public:
 };
   
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

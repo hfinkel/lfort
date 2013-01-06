@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -C %s | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -E -C %s | FileCheck -strict-whitespace %s
 
 // foo
 // CHECK: // foo

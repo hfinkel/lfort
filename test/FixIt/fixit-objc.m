@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -pedantic -verify %s
+// RUN: %lfort_cc1 -pedantic -verify %s
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -pedantic -fixit -x objective-c %t
-// RUN: %clang_cc1 -pedantic -Werror -x objective-c %t
+// RUN: not %lfort_cc1 -pedantic -fixit -x objective-c %t
+// RUN: %lfort_cc1 -pedantic -Werror -x objective-c %t
 
 /* This is a test of the various code modification hints that are
    provided as part of warning or extension diagnostics. All of the

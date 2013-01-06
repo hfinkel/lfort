@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Parse/Parser.h"
+#include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/PrettyStackTrace.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/PrettyDeclStackTrace.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/TypoCorrection.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/PrettyStackTrace.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/TypoCorrection.h"
 #include "llvm/ADT/SmallString.h"
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // C99 6.8: Statements and Blocks.
@@ -2231,7 +2231,7 @@ void Parser::ParseMicrosoftIfExistsStatement(StmtVector &Stmts) {
 
   // Handle dependent statements by parsing the braces as a compound statement.
   // This is not the same behavior as Visual C++, which don't treat this as a
-  // compound statement, but for Clang's type checking we can't have anything
+  // compound statement, but for LFort's type checking we can't have anything
   // inside these braces escaping to the surrounding code.
   if (Result.Behavior == IEB_Dependent) {
     if (!Tok.is(tok::l_brace)) {

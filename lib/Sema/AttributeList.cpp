@@ -11,13 +11,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/AttributeList.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/Sema/AttributeList.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
-using namespace clang;
+using namespace lfort;
 
 size_t AttributeList::allocated_size() const {
   if (IsAvailability) return AttributeFactory::AvailabilityAllocSize;
@@ -102,7 +102,7 @@ AttributePool::createIntegerAttribute(ASTContext &C, IdentifierInfo *Name,
                 AttributeList::AS_GNU);
 }
 
-#include "clang/Sema/AttrParsedAttrKinds.inc"
+#include "lfort/Sema/AttrParsedAttrKinds.inc"
 
 AttributeList::Kind AttributeList::getKind(const IdentifierInfo *Name,
                                            const IdentifierInfo *ScopeName,

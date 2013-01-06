@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -g %s
+// RUN: %lfort_cc1 -emit-llvm-only -g %s
 template<typename T> struct Identity {
   typedef T Type;
 };

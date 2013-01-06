@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 template<typename T>
 struct X1 {
   static void member() { T* x = 1; } // expected-error{{cannot initialize a variable of type 'int *' with an rvalue of type 'int'}}

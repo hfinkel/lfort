@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x objective-c %s -fsyntax-only -verify
+// RUN: %lfort_cc1 -x objective-c %s -fsyntax-only -verify
 // rdar://8592641
 Class f0() { return objc_getClass("a"); } // expected-warning {{implicitly declaring library function 'objc_getClass' with type 'id (const char *)'}} \
 					  // expected-note {{please include the header <objc/runtime.h> or explicitly provide a declaration for 'objc_getClass'}}

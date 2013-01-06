@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core -analyzer-output=plist -o %t %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core -analyzer-output=plist -o %t %s
 // RUN: FileCheck --input-file %t %s
 
 #include "undef-value-callee.h"

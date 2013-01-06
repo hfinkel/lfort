@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/ARCMigrate/ARCMT.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Frontend/Utils.h"
-#include "clang/Frontend/VerifyDiagnosticConsumer.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/ARCMigrate/ARCMT.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Frontend/VerifyDiagnosticConsumer.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Signals.h"
 #include "llvm/Support/system_error.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 
 static llvm::cl::opt<bool>

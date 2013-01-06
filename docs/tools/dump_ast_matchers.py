@@ -7,7 +7,7 @@ import collections
 import re
 import urllib2
 
-MATCHERS_FILE = '../../include/clang/ASTMatchers/ASTMatchers.h'
+MATCHERS_FILE = '../../include/lfort/ASTMatchers/ASTMatchers.h'
 
 # Each matcher is documented in one row of the form:
 #   result | name | argA
@@ -38,7 +38,7 @@ def esc(text):
   text = re.sub(r'>', '&gt;', text)
   def link_if_exists(m):
     name = m.group(1)
-    url = 'http://clang.llvm.org/doxygen/classclang_1_1%s.html' % name
+    url = 'http://lfort.llvm.org/doxygen/classlfort_1_1%s.html' % name
     if url not in doxygen_probes:
       try:
         print 'Probing %s...' % url

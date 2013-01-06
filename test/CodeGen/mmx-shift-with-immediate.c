@@ -1,4 +1,4 @@
-// RUN: %clang -mmmx -target i386-unknown-unknown -emit-llvm -S %s -o - | FileCheck %s
+// RUN: %lfort -mmmx -target i386-unknown-unknown -emit-llvm -S %s -o - | FileCheck %s
 #include <mmintrin.h>
 
 void shift(__m64 a, __m64 b, int c) {

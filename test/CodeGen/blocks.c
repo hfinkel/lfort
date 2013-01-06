@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown %s -emit-llvm -o - -fblocks | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown %s -emit-llvm -o - -fblocks | FileCheck %s
 void (^f)(void) = ^{};
 
 // rdar://6768379

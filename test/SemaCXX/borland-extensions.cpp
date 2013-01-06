@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -fborland-extensions
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -fborland-extensions
 // expected-no-diagnostics
 
 // Borland extensions

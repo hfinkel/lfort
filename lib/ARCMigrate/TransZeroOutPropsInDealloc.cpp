@@ -15,9 +15,9 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/AST/ASTContext.h"
+#include "lfort/AST/ASTContext.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

@@ -12,21 +12,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Serialization/ASTWriter.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/SemaConsumer.h"
+#include "lfort/Serialization/ASTWriter.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/SemaConsumer.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include <string>
 
-using namespace clang;
+using namespace lfort;
 
 PCHGenerator::PCHGenerator(const Preprocessor &PP,
                            StringRef OutputFile,
-                           clang::Module *Module,
+                           lfort::Module *Module,
                            StringRef isysroot,
                            raw_ostream *OS)
   : PP(PP), OutputFile(OutputFile), Module(Module), 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1  %s -emit-llvm -o - | grep llvm.memset | count 3
+// RUN: %lfort_cc1  %s -emit-llvm -o - | grep llvm.memset | count 3
 
 typedef __SIZE_TYPE__ size_t;
 void *memset(void*, int, size_t);

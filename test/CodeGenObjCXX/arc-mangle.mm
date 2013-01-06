@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fobjc-arc -fobjc-runtime-has-weak -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -fobjc-arc -fobjc-runtime-has-weak -emit-llvm -o - %s | FileCheck %s
 
 // CHECK: define void @_Z1fPU8__strongP11objc_object(i8**)
 void f(__strong id *) {}

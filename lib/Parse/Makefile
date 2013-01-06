@@ -1,4 +1,4 @@
-##===- clang/lib/Parse/Makefile ----------------------------*- Makefile -*-===##
+##===- lfort/lib/Parse/Makefile ----------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,8 +11,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangParse
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortParse
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

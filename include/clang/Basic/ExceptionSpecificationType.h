@@ -12,10 +12,10 @@
 /// utility functions.
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_EXCEPTIONSPECIFICATIONTYPE_H
-#define LLVM_CLANG_BASIC_EXCEPTIONSPECIFICATIONTYPE_H
+#ifndef LLVM_LFORT_BASIC_EXCEPTIONSPECIFICATIONTYPE_H
+#define LLVM_LFORT_BASIC_EXCEPTIONSPECIFICATIONTYPE_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief The various types of exception specifications that exist in C++11.
 enum ExceptionSpecificationType {
@@ -54,6 +54,6 @@ inline CanThrowResult mergeCanThrow(CanThrowResult CT1, CanThrowResult CT2) {
   return CT1 > CT2 ? CT1 : CT2;
 }
 
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_BASIC_EXCEPTIONSPECIFICATIONTYPE_H
+#endif // LLVM_LFORT_BASIC_EXCEPTIONSPECIFICATIONTYPE_H

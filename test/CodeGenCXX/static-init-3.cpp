@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple x86_64-apple-darwin10.0.0 -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -triple x86_64-apple-darwin10.0.0 -o - %s | FileCheck %s
 
 // PR7050
 template<class T> struct X0 : public T { };

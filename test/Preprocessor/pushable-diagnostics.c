@@ -1,17 +1,17 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic %s
 
-#pragma clang diagnostic pop // expected-warning{{pragma diagnostic pop could not pop, no matching push}}
+#pragma lfort diagnostic pop // expected-warning{{pragma diagnostic pop could not pop, no matching push}}
 
-#pragma clang diagnostic puhs // expected-warning {{pragma diagnostic expected 'error', 'warning', 'ignored', 'fatal', 'push', or 'pop'}}
+#pragma lfort diagnostic puhs // expected-warning {{pragma diagnostic expected 'error', 'warning', 'ignored', 'fatal', 'push', or 'pop'}}
 
 int a = 'df'; // expected-warning{{multi-character character constant}}
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmultichar"
+#pragma lfort diagnostic push
+#pragma lfort diagnostic ignored "-Wmultichar"
 
 int b = 'df'; // no warning.
-#pragma clang diagnostic pop
+#pragma lfort diagnostic pop
 
 int c = 'df';  // expected-warning{{multi-character character constant}}
 
-#pragma clang diagnostic pop // expected-warning{{pragma diagnostic pop could not pop, no matching push}}
+#pragma lfort diagnostic pop // expected-warning{{pragma diagnostic pop could not pop, no matching push}}

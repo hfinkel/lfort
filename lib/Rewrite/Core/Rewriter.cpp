@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/Stmt.h"
-#include "clang/Basic/DiagnosticIDs.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/Basic/DiagnosticIDs.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 
 raw_ostream &RewriteBuffer::write(raw_ostream &os) const {
   // FIXME: eliminate the copy by writing out each chunk at a time
@@ -436,7 +436,7 @@ public:
     if (llvm::sys::fs::unique_file(TempFilename.str(), FD, TempFilename,
                                     /*makeAbsolute=*/true, 0664)) {
       AllWritten = false;
-      Diagnostics.Report(clang::diag::err_unable_to_make_temp)
+      Diagnostics.Report(lfort::diag::err_unable_to_make_temp)
         << TempFilename;
     } else {
       FileStream.reset(new llvm::raw_fd_ostream(FD, /*shouldClose=*/true));
@@ -454,7 +454,7 @@ public:
     if (llvm::error_code ec =
           llvm::sys::fs::rename(TempFilename.str(), Filename)) {
       AllWritten = false;
-      Diagnostics.Report(clang::diag::err_unable_to_rename_temp)
+      Diagnostics.Report(lfort::diag::err_unable_to_rename_temp)
         << TempFilename << Filename << ec.message();
       bool existed;
       // If the remove fails, there's not a lot we can do - this is already an

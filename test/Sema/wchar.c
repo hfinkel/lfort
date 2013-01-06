@@ -1,5 +1,5 @@
-// RUN: %clang %s -fsyntax-only -Xclang -verify
-// RUN: %clang %s -fsyntax-only -fshort-wchar -Xclang -verify -DSHORT_WCHAR
+// RUN: %lfort %s -fsyntax-only -Xlfort -verify
+// RUN: %lfort %s -fsyntax-only -fshort-wchar -Xlfort -verify -DSHORT_WCHAR
 
 typedef __WCHAR_TYPE__ wchar_t;
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i686-linux-gnu -fsyntax-only -verify -std=c99 -pedantic %s
+// RUN: %lfort_cc1 -triple i686-linux-gnu -fsyntax-only -verify -std=c99 -pedantic %s
 
 int printf(const char *restrict, ...);
 int scanf(const char * restrict, ...);

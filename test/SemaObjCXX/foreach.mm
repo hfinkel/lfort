@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fblocks -verify -std=c++11 %s
+// RUN: %lfort_cc1 -fsyntax-only -fblocks -verify -std=c++11 %s
 // rdar://9293227
 
 @class NSArray;

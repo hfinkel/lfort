@@ -1,14 +1,14 @@
-clang_tablegen(AttrTemplateInstantiate.inc -gen-clang-attr-template-instantiate
+lfort_tablegen(AttrTemplateInstantiate.inc -gen-lfort-attr-template-instantiate
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrTemplateInstantiate)
+  TARGET LFortAttrTemplateInstantiate)
   
-clang_tablegen(AttrParsedAttrList.inc -gen-clang-attr-parsed-attr-list
+lfort_tablegen(AttrParsedAttrList.inc -gen-lfort-attr-parsed-attr-list
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrParsedAttrList)
+  TARGET LFortAttrParsedAttrList)
 
-clang_tablegen(AttrParsedAttrKinds.inc -gen-clang-attr-parsed-attr-kinds
+lfort_tablegen(AttrParsedAttrKinds.inc -gen-lfort-attr-parsed-attr-kinds
   -I ${CMAKE_CURRENT_SOURCE_DIR}/../../
   SOURCE ../Basic/Attr.td
-  TARGET ClangAttrParsedAttrKinds)
+  TARGET LFortAttrParsedAttrKinds)

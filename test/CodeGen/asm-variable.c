@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-unknown-unknown -emit-llvm %s -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-unknown-unknown -emit-llvm %s -o - | FileCheck %s
 
 unsigned long long foo(unsigned long long addr, unsigned long long a0,
                        unsigned long long a1, unsigned long long a2,

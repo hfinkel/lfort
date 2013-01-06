@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/Rewriters.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/PreprocessorOutputOptions.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Frontend/Rewriters.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/PreprocessorOutputOptions.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace llvm;
 
 namespace {
@@ -306,7 +306,7 @@ bool InclusionRewriter::Process(FileID FileId,
           }
           case tok::pp_pragma: {
             StringRef Identifier = NextIdentifierName(RawLex, RawToken);
-            if (Identifier == "clang" || Identifier == "GCC") {
+            if (Identifier == "lfort" || Identifier == "GCC") {
               if (NextIdentifierName(RawLex, RawToken) == "system_header") {
                 // keep the directive in, commented out
                 CommentOutDirective(RawLex, HashToken, FromFile, EOL,
@@ -338,7 +338,7 @@ bool InclusionRewriter::Process(FileID FileId,
 }
 
 /// InclusionRewriterInInput - Implement -frewrite-includes mode.
-void clang::RewriteIncludesInInput(Preprocessor &PP, raw_ostream *OS,
+void lfort::RewriteIncludesInInput(Preprocessor &PP, raw_ostream *OS,
                                    const PreprocessorOutputOptions &Opts) {
   SourceManager &SM = PP.getSourceManager();
   InclusionRewriter *Rewrite = new InclusionRewriter(PP, *OS,

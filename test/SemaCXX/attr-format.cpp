@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wformat-nonliteral -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wformat-nonliteral -verify %s
 struct S {
   static void f(const char*, ...) __attribute__((format(printf, 1, 2)));
   static const char* f2(const char*) __attribute__((format_arg(1)));

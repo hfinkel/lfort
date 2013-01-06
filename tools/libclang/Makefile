@@ -1,4 +1,4 @@
-##===- tools/libclang/Makefile -----------------------------*- Makefile -*-===##
+##===- tools/liblfort/Makefile -----------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -7,24 +7,24 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME = clang
+LFORT_LEVEL := ../..
+LIBRARYNAME = lfort
 
-EXPORTED_SYMBOL_FILE = $(PROJ_SRC_DIR)/libclang.exports
+EXPORTED_SYMBOL_FILE = $(PROJ_SRC_DIR)/liblfort.exports
 
 LINK_LIBS_IN_SHARED = 1
 SHARED_LIBRARY = 1
 
-include $(CLANG_LEVEL)/../../Makefile.config
+include $(LFORT_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
-USEDLIBS = clangARCMigrate.a clangRewriteCore.a clangRewriteFrontend.a \
-	   clangFrontend.a clangDriver.a \
-	   clangSerialization.a \
-	   clangParse.a clangSema.a clangEdit.a clangAnalysis.a \
-	   clangAST.a clangLex.a clangTooling.a clangBasic.a \
-	   clangFormat.a 
+USEDLIBS = lfortARCMigrate.a lfortRewriteCore.a lfortRewriteFrontend.a \
+	   lfortFrontend.a lfortDriver.a \
+	   lfortSerialization.a \
+	   lfortParse.a lfortSema.a lfortEdit.a lfortAnalysis.a \
+	   lfortAST.a lfortLex.a lfortTooling.a lfortBasic.a \
+	   lfortFormat.a 
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 # Add soname to the library.
 ifeq ($(HOST_OS), $(filter $(HOST_OS), Linux FreeBSD GNU))
@@ -56,7 +56,7 @@ ifeq ($(HOST_OS),Darwin)
 
     # If we're doing an Apple-style build, add the LTO object path.
     ifeq ($(RC_BUILDIT),YES)
-       TempFile        := $(shell mkdir -p ${OBJROOT}/dSYMs ; mktemp ${OBJROOT}/dSYMs/clang-lto.XXXXXX)
+       TempFile        := $(shell mkdir -p ${OBJROOT}/dSYMs ; mktemp ${OBJROOT}/dSYMs/lfort-lto.XXXXXX)
        LLVMLibsOptions += -Wl,-object_path_lto -Wl,$(TempFile)
     endif
 endif

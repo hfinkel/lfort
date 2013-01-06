@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/Support/raw_ostream.h"
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::APSInt;
 

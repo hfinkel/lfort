@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -ast-dump %s | FileCheck %s
+// RUN: %lfort_cc1 -ast-dump %s | FileCheck %s
 
 struct A { int x; };
 struct B { int y; };

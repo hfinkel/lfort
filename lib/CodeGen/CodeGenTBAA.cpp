@@ -16,16 +16,16 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenTBAA.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Mangle.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/Frontend/CodeGenOptions.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Mangle.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Type.h"
-using namespace clang;
+using namespace lfort;
 using namespace CodeGen;
 
 CodeGenTBAA::CodeGenTBAA(ASTContext &Ctx, llvm::LLVMContext& VMContext,

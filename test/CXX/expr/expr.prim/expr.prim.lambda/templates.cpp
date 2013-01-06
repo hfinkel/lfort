@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -Winvalid-noreturn %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -std=c++11 -Winvalid-noreturn %s -verify
 
 template<typename T>
 void test_attributes() {

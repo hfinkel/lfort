@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple=i686-pc-unknown -fsyntax-only -verify %s -std=c++11
+// RUN: %lfort_cc1 -triple=i686-pc-unknown -fsyntax-only -verify %s -std=c++11
 
 namespace PR14339 {
   class A {

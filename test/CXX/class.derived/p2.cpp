@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify
+// RUN: %lfort_cc1 %s -fsyntax-only -verify
 // expected-no-diagnostics
 
 // "During the lookup for a base class name, non-type names are ignored"

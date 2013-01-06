@@ -12,29 +12,29 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "clang/Sema/SemaInternal.h"
+#include "lfort/Sema/SemaInternal.h"
 #include "TypeLocBuilder.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CXXInheritance.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/PartialDiagnostic.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Initialization.h"
-#include "clang/Sema/Lookup.h"
-#include "clang/Sema/ParsedTemplate.h"
-#include "clang/Sema/Scope.h"
-#include "clang/Sema/ScopeInfo.h"
-#include "clang/Sema/TemplateDeduction.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/CXXInheritance.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/PartialDiagnostic.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Initialization.h"
+#include "lfort/Sema/Lookup.h"
+#include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/Scope.h"
+#include "lfort/Sema/ScopeInfo.h"
+#include "lfort/Sema/TemplateDeduction.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/ErrorHandling.h"
-using namespace clang;
+using namespace lfort;
 using namespace sema;
 
 ParsedType Sema::getDestructorName(SourceLocation TildeLoc,
@@ -3055,7 +3055,7 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
     // Type trait expressions which query classes regarding their construction,
     // destruction, and copying. Rather than being based directly on the
     // related type predicates in the standard, they are specified by both
-    // GCC[1] and the Embarcadero C++ compiler[2], and Clang implements those
+    // GCC[1] and the Embarcadero C++ compiler[2], and LFort implements those
     // specifications.
     //
     //   1: http://gcc.gnu/.org/onlinedocs/gcc/Type-Traits.html
@@ -3328,7 +3328,7 @@ static bool evaluateTypeTrait(Sema &S, TypeTrait Kind, SourceLocation KWLoc,
                               ArrayRef<TypeSourceInfo *> Args,
                               SourceLocation RParenLoc) {
   switch (Kind) {
-  case clang::TT_IsTriviallyConstructible: {
+  case lfort::TT_IsTriviallyConstructible: {
     // C++11 [meta.unary.prop]:
     //   is_trivially_constructible is defined as:
     //
@@ -3728,7 +3728,7 @@ ExprResult Sema::BuildArrayTypeTrait(ArrayTypeTrait ATT,
     Value = EvaluateArrayTypeTrait(*this, ATT, T, DimExpr, KWLoc);
 
   // While the specification for these traits from the Embarcadero C++
-  // compiler's documentation says the return type is 'unsigned int', Clang
+  // compiler's documentation says the return type is 'unsigned int', LFort
   // returns 'size_t'. On Windows, the primary platform for the Embarcadero
   // compiler, there is no difference. On several other platforms this is an
   // important distinction.

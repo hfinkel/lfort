@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 void* operator new (__SIZE_TYPE__ size, void* ptr);
 void* operator new[](__SIZE_TYPE__ size, void* ptr);

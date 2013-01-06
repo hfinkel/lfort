@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wself-assign -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -Wself-assign -verify %s
 
 void f() {
   int a = 42, b = 42;

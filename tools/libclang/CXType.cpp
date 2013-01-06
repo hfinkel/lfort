@@ -1,4 +1,4 @@
-//===- CXTypes.cpp - Implements 'CXTypes' aspect of libclang ------------===//
+//===- CXTypes.cpp - Implements 'CXTypes' aspect of liblfort ------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===--------------------------------------------------------------------===//
 //
-// This file implements the 'CXTypes' API hooks in the Clang-C library.
+// This file implements the 'CXTypes' API hooks in the LFort-C library.
 //
 //===--------------------------------------------------------------------===//
 
@@ -16,14 +16,14 @@
 #include "CXString.h"
 #include "CXTranslationUnit.h"
 #include "CXType.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/Type.h"
-#include "clang/Frontend/ASTUnit.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Frontend/ASTUnit.h"
 
-using namespace clang;
+using namespace lfort;
 
 static CXTypeKind GetBuiltinTypeKind(const BuiltinType *BT) {
 #define BTCASE(K) case BuiltinType::K: return CXType_##K
@@ -127,17 +127,17 @@ static inline CXTranslationUnit GetTU(CXType CT) {
 
 extern "C" {
 
-CXType clang_getCursorType(CXCursor C) {
+CXType lfort_getCursorType(CXCursor C) {
   using namespace cxcursor;
   
   CXTranslationUnit TU = cxcursor::getCursorTU(C);
   ASTContext &Context = static_cast<ASTUnit *>(TU->TUData)->getASTContext();
-  if (clang_isExpression(C.kind)) {
+  if (lfort_isExpression(C.kind)) {
     QualType T = cxcursor::getCursorExpr(C)->getType();
     return MakeCXType(T, TU);
   }
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (!D)
       return MakeCXType(QualType(), TU);
@@ -155,7 +155,7 @@ CXType clang_getCursorType(CXCursor C) {
     return MakeCXType(QualType(), TU);
   }
   
-  if (clang_isReference(C.kind)) {
+  if (lfort_isReference(C.kind)) {
     switch (C.kind) {
     case CXCursor_ObjCSuperClassRef: {
       QualType T
@@ -197,11 +197,11 @@ CXType clang_getCursorType(CXCursor C) {
   return MakeCXType(QualType(), TU);
 }
 
-CXType clang_getTypedefDeclUnderlyingType(CXCursor C) {
+CXType lfort_getTypedefDeclUnderlyingType(CXCursor C) {
   using namespace cxcursor;
   CXTranslationUnit TU = cxcursor::getCursorTU(C);
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (TypedefNameDecl *TD = dyn_cast_or_null<TypedefNameDecl>(D)) {
@@ -215,11 +215,11 @@ CXType clang_getTypedefDeclUnderlyingType(CXCursor C) {
   return MakeCXType(QualType(), TU);
 }
 
-CXType clang_getEnumDeclIntegerType(CXCursor C) {
+CXType lfort_getEnumDeclIntegerType(CXCursor C) {
   using namespace cxcursor;
   CXTranslationUnit TU = cxcursor::getCursorTU(C);
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (EnumDecl *TD = dyn_cast_or_null<EnumDecl>(D)) {
@@ -233,10 +233,10 @@ CXType clang_getEnumDeclIntegerType(CXCursor C) {
   return MakeCXType(QualType(), TU);
 }
 
-long long clang_getEnumConstantDeclValue(CXCursor C) {
+long long lfort_getEnumConstantDeclValue(CXCursor C) {
   using namespace cxcursor;
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (EnumConstantDecl *TD = dyn_cast_or_null<EnumConstantDecl>(D)) {
@@ -249,10 +249,10 @@ long long clang_getEnumConstantDeclValue(CXCursor C) {
   return LLONG_MIN;
 }
 
-unsigned long long clang_getEnumConstantDeclUnsignedValue(CXCursor C) {
+unsigned long long lfort_getEnumConstantDeclUnsignedValue(CXCursor C) {
   using namespace cxcursor;
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (EnumConstantDecl *TD = dyn_cast_or_null<EnumConstantDecl>(D)) {
@@ -265,10 +265,10 @@ unsigned long long clang_getEnumConstantDeclUnsignedValue(CXCursor C) {
   return ULLONG_MAX;
 }
 
-int clang_getFieldDeclBitWidth(CXCursor C) {
+int lfort_getFieldDeclBitWidth(CXCursor C) {
   using namespace cxcursor;
 
-  if (clang_isDeclaration(C.kind)) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = getCursorDecl(C);
 
     if (FieldDecl *FD = dyn_cast_or_null<FieldDecl>(D)) {
@@ -280,7 +280,7 @@ int clang_getFieldDeclBitWidth(CXCursor C) {
   return -1;
 }
 
-CXType clang_getCanonicalType(CXType CT) {
+CXType lfort_getCanonicalType(CXType CT) {
   if (CT.kind == CXType_Invalid)
     return CT;
 
@@ -294,22 +294,22 @@ CXType clang_getCanonicalType(CXType CT) {
   return MakeCXType(AU->getASTContext().getCanonicalType(T), TU);
 }
 
-unsigned clang_isConstQualifiedType(CXType CT) {
+unsigned lfort_isConstQualifiedType(CXType CT) {
   QualType T = GetQualType(CT);
   return T.isLocalConstQualified();
 }
 
-unsigned clang_isVolatileQualifiedType(CXType CT) {
+unsigned lfort_isVolatileQualifiedType(CXType CT) {
   QualType T = GetQualType(CT);
   return T.isLocalVolatileQualified();
 }
 
-unsigned clang_isRestrictQualifiedType(CXType CT) {
+unsigned lfort_isRestrictQualifiedType(CXType CT) {
   QualType T = GetQualType(CT);
   return T.isLocalRestrictQualified();
 }
 
-CXType clang_getPointeeType(CXType CT) {
+CXType lfort_getPointeeType(CXType CT) {
   QualType T = GetQualType(CT);
   const Type *TP = T.getTypePtrOrNull();
   
@@ -337,7 +337,7 @@ CXType clang_getPointeeType(CXType CT) {
   return MakeCXType(T, GetTU(CT));
 }
 
-CXCursor clang_getTypeDeclaration(CXType CT) {
+CXCursor lfort_getTypeDeclaration(CXType CT) {
   if (CT.kind == CXType_Invalid)
     return cxcursor::MakeCXCursorInvalid(CXCursor_NoDeclFound);
 
@@ -392,7 +392,7 @@ try_again:
   return cxcursor::MakeCXCursor(D, GetTU(CT));
 }
 
-CXString clang_getTypeKindSpelling(enum CXTypeKind K) {
+CXString lfort_getTypeKindSpelling(enum CXTypeKind K) {
   const char *s = 0;
 #define TKIND(X) case CXType_##X: s = ""  #X  ""; break
   switch (K) {
@@ -445,11 +445,11 @@ CXString clang_getTypeKindSpelling(enum CXTypeKind K) {
   return cxstring::createCXString(s);
 }
 
-unsigned clang_equalTypes(CXType A, CXType B) {
+unsigned lfort_equalTypes(CXType A, CXType B) {
   return A.data[0] == B.data[0] && A.data[1] == B.data[1];;
 }
 
-unsigned clang_isFunctionTypeVariadic(CXType X) {
+unsigned lfort_isFunctionTypeVariadic(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return 0;
@@ -463,7 +463,7 @@ unsigned clang_isFunctionTypeVariadic(CXType X) {
   return 0;
 }
 
-CXCallingConv clang_getFunctionTypeCallingConv(CXType X) {
+CXCallingConv lfort_getFunctionTypeCallingConv(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return CXCallingConv_Invalid;
@@ -488,7 +488,7 @@ CXCallingConv clang_getFunctionTypeCallingConv(CXType X) {
   return CXCallingConv_Invalid;
 }
 
-int clang_getNumArgTypes(CXType X) {
+int lfort_getNumArgTypes(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return -1;
@@ -504,7 +504,7 @@ int clang_getNumArgTypes(CXType X) {
   return -1;
 }
 
-CXType clang_getArgType(CXType X, unsigned i) {
+CXType lfort_getArgType(CXType X, unsigned i) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return MakeCXType(QualType(), GetTU(X));
@@ -520,7 +520,7 @@ CXType clang_getArgType(CXType X, unsigned i) {
   return MakeCXType(QualType(), GetTU(X));
 }
 
-CXType clang_getResultType(CXType X) {
+CXType lfort_getResultType(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return MakeCXType(QualType(), GetTU(X));
@@ -531,19 +531,19 @@ CXType clang_getResultType(CXType X) {
   return MakeCXType(QualType(), GetTU(X));
 }
 
-CXType clang_getCursorResultType(CXCursor C) {
-  if (clang_isDeclaration(C.kind)) {
+CXType lfort_getCursorResultType(CXCursor C) {
+  if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (const ObjCMethodDecl *MD = dyn_cast_or_null<ObjCMethodDecl>(D))
       return MakeCXType(MD->getResultType(), cxcursor::getCursorTU(C));
 
-    return clang_getResultType(clang_getCursorType(C));
+    return lfort_getResultType(lfort_getCursorType(C));
   }
 
   return MakeCXType(QualType(), cxcursor::getCursorTU(C));
 }
 
-unsigned clang_isPODType(CXType X) {
+unsigned lfort_isPODType(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return 0;
@@ -554,7 +554,7 @@ unsigned clang_isPODType(CXType X) {
   return T.isPODType(AU->getASTContext()) ? 1 : 0;
 }
 
-CXType clang_getElementType(CXType CT) {
+CXType lfort_getElementType(CXType CT) {
   QualType ET = QualType();
   QualType T = GetQualType(CT);
   const Type *TP = T.getTypePtrOrNull();
@@ -577,7 +577,7 @@ CXType clang_getElementType(CXType CT) {
   return MakeCXType(ET, GetTU(CT));
 }
 
-long long clang_getNumElements(CXType CT) {
+long long lfort_getNumElements(CXType CT) {
   long long result = -1;
   QualType T = GetQualType(CT);
   const Type *TP = T.getTypePtrOrNull();
@@ -597,7 +597,7 @@ long long clang_getNumElements(CXType CT) {
   return result;
 }
 
-CXType clang_getArrayElementType(CXType CT) {
+CXType lfort_getArrayElementType(CXType CT) {
   QualType ET = QualType();
   QualType T = GetQualType(CT);
   const Type *TP = T.getTypePtrOrNull();
@@ -614,7 +614,7 @@ CXType clang_getArrayElementType(CXType CT) {
   return MakeCXType(ET, GetTU(CT));
 }
 
-long long clang_getArraySize(CXType CT) {
+long long lfort_getArraySize(CXType CT) {
   long long result = -1;
   QualType T = GetQualType(CT);
   const Type *TP = T.getTypePtrOrNull();
@@ -631,8 +631,8 @@ long long clang_getArraySize(CXType CT) {
   return result;
 }
 
-CXString clang_getDeclObjCTypeEncoding(CXCursor C) {
-  if (!clang_isDeclaration(C.kind))
+CXString lfort_getDeclObjCTypeEncoding(CXCursor C) {
+  if (!lfort_isDeclaration(C.kind))
     return cxstring::createCXString("");
 
   Decl *D = static_cast<Decl*>(C.data[0]);

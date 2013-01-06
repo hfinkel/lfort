@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_NSAPI_H
-#define LLVM_CLANG_AST_NSAPI_H
+#ifndef LLVM_LFORT_AST_NSAPI_H
+#define LLVM_LFORT_AST_NSAPI_H
 
-#include "clang/Basic/IdentifierTable.h"
+#include "lfort/Basic/IdentifierTable.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Optional.h"
 
-namespace clang {
+namespace lfort {
   class ASTContext;
   class QualType;
   class Expr;
@@ -215,6 +215,6 @@ private:
   mutable IdentifierInfo *NSASCIIStringEncodingId, *NSUTF8StringEncodingId;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
-#endif // LLVM_CLANG_AST_NSAPI_H
+#endif // LLVM_LFORT_AST_NSAPI_H

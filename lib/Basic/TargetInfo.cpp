@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/AddressSpaces.h"
-#include "clang/Basic/LangOptions.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Basic/AddressSpaces.h"
+#include "lfort/Basic/LangOptions.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cctype>
 #include <cstdlib>
-using namespace clang;
+using namespace lfort;
 
 static const LangAS::Map DefaultAddrSpaceMap = { 0 };
 

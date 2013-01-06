@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fms-extensions -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fms-extensions -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 class C {

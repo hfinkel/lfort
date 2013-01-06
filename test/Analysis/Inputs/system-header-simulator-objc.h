@@ -1,4 +1,4 @@
-#pragma clang system_header
+#pragma lfort system_header
 
 typedef unsigned int UInt32;
 typedef unsigned short UInt16;

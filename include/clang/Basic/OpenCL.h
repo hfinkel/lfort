@@ -12,10 +12,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_OPENCL_H
-#define LLVM_CLANG_BASIC_OPENCL_H
+#ifndef LLVM_LFORT_BASIC_OPENCL_H
+#define LLVM_LFORT_BASIC_OPENCL_H
 
-namespace clang {
+namespace lfort {
 
 /// \brief Names for the OpenCL image access qualifiers (OpenCL 1.1 6.6).
 enum OpenCLImageAccess {

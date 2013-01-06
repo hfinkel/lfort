@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -std=c99 -pedantic -W -verify %s
-// RUN: %clang_cc1 -fsyntax-only -x c++ -std=c++03 -pedantic-errors -W %s
+// RUN: %lfort_cc1 -fsyntax-only -std=c99 -pedantic -W -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -x c++ -std=c++03 -pedantic-errors -W %s
 
 #include "completely-empty-header-file.h"
 // no-warning -- an empty file is OK

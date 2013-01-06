@@ -11,15 +11,15 @@
 //  a C++ nested-name-specifier.
 //
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_AST_NESTEDNAMESPECIFIER_H
-#define LLVM_CLANG_AST_NESTEDNAMESPECIFIER_H
+#ifndef LLVM_LFORT_AST_NESTEDNAMESPECIFIER_H
+#define LLVM_LFORT_AST_NESTEDNAMESPECIFIER_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/Support/Compiler.h"
 
-namespace clang {
+namespace lfort {
 
 class ASTContext;
 class NamespaceAliasDecl;

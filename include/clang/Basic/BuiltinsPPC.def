@@ -15,7 +15,7 @@
 // FIXME: this needs to be the full list supported by GCC.  Right now, I'm just
 // adding stuff on demand.
 
-// The format of this database matches clang/Basic/Builtins.def.
+// The format of this database matches lfort/Basic/Builtins.def.
 
 // This is just a placeholder, the types and attributes are wrong.
 BUILTIN(__builtin_altivec_vaddcuw, "V4UiV4UiV4Ui", "")

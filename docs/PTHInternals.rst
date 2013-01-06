@@ -7,40 +7,40 @@ then briefly elaborates on its design and implementation. If you are
 interested in the end-user view, please see the :ref:`User's Manual
 <usersmanual-precompiled-headers>`.
 
-Using Pretokenized Headers with ``clang`` (Low-level Interface)
+Using Pretokenized Headers with ``lfort`` (Low-level Interface)
 ===============================================================
 
-The Clang compiler frontend, ``clang -cc1``, supports three command line
+The LFort compiler frontend, ``lfort -cc1``, supports three command line
 options for generating and using PTH files.
 
-To generate PTH files using ``clang -cc1``, use the option ``-emit-pth``:
+To generate PTH files using ``lfort -cc1``, use the option ``-emit-pth``:
 
 .. code-block:: console
 
-  $ clang -cc1 test.h -emit-pth -o test.h.pth
+  $ lfort -cc1 test.h -emit-pth -o test.h.pth
 
-This option is transparently used by ``clang`` when generating PTH
+This option is transparently used by ``lfort`` when generating PTH
 files. Similarly, PTH files can be used as prefix headers using the
 ``-include-pth`` option:
 
 .. code-block:: console
 
-  $ clang -cc1 -include-pth test.h.pth test.c -o test.s
+  $ lfort -cc1 -include-pth test.h.pth test.c -o test.s
 
-Alternatively, Clang's PTH files can be used as a raw "token-cache" (or
+Alternatively, LFort's PTH files can be used as a raw "token-cache" (or
 "content" cache) of the source included by the original header file.
 This means that the contents of the PTH file are searched as substitutes
-for *any* source files that are used by ``clang -cc1`` to process a
+for *any* source files that are used by ``lfort -cc1`` to process a
 source file. This is done by specifying the ``-token-cache`` option:
 
 .. code-block:: console
 
   $ cat test.h
   #include <stdio.h>
-  $ clang -cc1 -emit-pth test.h -o test.h.pth
+  $ lfort -cc1 -emit-pth test.h -o test.h.pth
   $ cat test.c
   #include "test.h"
-  $ clang -cc1 test.c -o test -token-cache test.h.pth
+  $ lfort -cc1 test.c -o test -token-cache test.h.pth
 
 In this example the contents of ``stdio.h`` (and the files it includes)
 will be retrieved from ``test.h.pth``, as the PTH file is being used in
@@ -52,7 +52,7 @@ PTH Design and Implementation
 =============================
 
 Unlike GCC's precompiled headers, which cache the full ASTs and
-preprocessor state of a header file, Clang's pretokenized header files
+preprocessor state of a header file, LFort's pretokenized header files
 mainly cache the raw lexer *tokens* that are needed to segment the
 stream of characters in a source file into keywords, identifiers, and
 operators. Consequently, PTH serves to mainly directly speed up the
@@ -63,14 +63,14 @@ Basic Design Tradeoffs
 ----------------------
 
 In the long term there are plans to provide an alternate PCH
-implementation for Clang that also caches the work for parsing and type
+implementation for LFort that also caches the work for parsing and type
 checking the contents of header files. The current implementation of PCH
-in Clang as pretokenized header files was motivated by the following
+in LFort as pretokenized header files was motivated by the following
 factors:
 
 **Language independence**
    PTH files work with any language that
-   Clang's lexer can handle, including C, Objective-C, and (in the early
+   LFort's lexer can handle, including C, Objective-C, and (in the early
    stages) C++. This means development on language features at the
    parsing level or above (which is basically almost all interesting
    pieces) does not require PTH to be modified.
@@ -78,17 +78,17 @@ factors:
 **Simple design**
    Relatively speaking, PTH has a simple design and
    implementation, making it easy to test. Further, because the
-   machinery for PTH resides at the lower-levels of the Clang library
+   machinery for PTH resides at the lower-levels of the LFort library
    stack it is fairly straightforward to profile and optimize.
 
 Further, compared to GCC's PCH implementation (which is the dominate
-precompiled header file implementation that Clang can be directly
-compared against) the PTH design in Clang yields several attractive
+precompiled header file implementation that LFort can be directly
+compared against) the PTH design in LFort yields several attractive
 features:
 
 **Architecture independence**
    In contrast to GCC's PCH files (and
-   those of several other compilers), Clang's PTH files are architecture
+   those of several other compilers), LFort's PTH files are architecture
    independent, requiring only a single PTH file when building a
    program for multiple architectures.
 
@@ -96,17 +96,17 @@ features:
    that runs on PowerPC, 32-bit Intel (i386), and 64-bit Intel
    architectures. In contrast, GCC requires a PCH file for each
    architecture, as the definitions of types in the AST are
-   architecture-specific. Since a Clang PTH file essentially represents
+   architecture-specific. Since a LFort PTH file essentially represents
    a lexical cache of header files, a single PTH file can be safely used
    when compiling for multiple architectures. This can also reduce
    compile times because only a single PTH file needs to be generated
    during a build instead of several.
 
 **Reduced memory pressure**
-   Similar to GCC, Clang reads PTH files
-   via the use of memory mapping (i.e., ``mmap``). Clang, however,
+   Similar to GCC, LFort reads PTH files
+   via the use of memory mapping (i.e., ``mmap``). LFort, however,
    memory maps PTH files as read-only, meaning that multiple invocations
-   of ``clang -cc1`` can share the same pages in memory from a
+   of ``lfort -cc1`` can share the same pages in memory from a
    memory-mapped PTH file. In comparison, GCC also memory maps its PCH
    files but also modifies those pages in memory, incurring the
    copy-on-write costs. The read-only nature of PTH can greatly reduce
@@ -136,7 +136,7 @@ an algorithmic level, especially when one considers header files of
 arbitrary size.
 
 There are plans to potentially implement an complementary PCH
-implementation for Clang based on the lazy deserialization of ASTs. This
+implementation for LFort based on the lazy deserialization of ASTs. This
 approach would theoretically have the same constant-time algorithmic
 advantages just mentioned but would also retain some of the strengths of
 PTH such as reduced memory pressure (ideal for multi-core builds).
@@ -149,7 +149,7 @@ header files by caching pre-lexed tokens, PTH also employs several other
 optimizations to speed up the processing of header files:
 
 -  ``stat`` caching: PTH files cache information obtained via calls to
-   ``stat`` that ``clang -cc1`` uses to resolve which files are included
+   ``stat`` that ``lfort -cc1`` uses to resolve which files are included
    by ``#include`` directives. This greatly reduces the overhead
    involved in context-switching to the kernel to resolve included
    files.
@@ -158,6 +158,6 @@ optimizations to speed up the processing of header files:
    record the basic structure of nested preprocessor blocks. When the
    condition of the preprocessor block is false, all of its tokens are
    immediately skipped instead of requiring them to be handled by
-   Clang's preprocessor.
+   LFort's preprocessor.
 
 

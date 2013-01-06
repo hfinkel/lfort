@@ -17,7 +17,7 @@
 /// \param NAME - The name of the standard.
 /// \param DESC - A short description of the standard.
 /// \param FEATURES - The standard features as flags, these are enums from the
-/// clang::frontend namespace, which is assumed to be be available.
+/// lfort::frontend namespace, which is assumed to be be available.
 
 // C89-ish modes.
 LANGSTANDARD(c89, "c89",

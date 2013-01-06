@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -arcmt-check -verify %s
-// RUN: %clang_cc1 -arcmt-check -verify %t.invalid 2>&1 | FileCheck %s
+// RUN: %lfort_cc1 -arcmt-check -verify %s
+// RUN: %lfort_cc1 -arcmt-check -verify %t.invalid 2>&1 | FileCheck %s
 
 #if 0
 // expected-error {{should be ignored}}

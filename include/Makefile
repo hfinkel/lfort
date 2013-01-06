@@ -1,4 +1,4 @@
-CLANG_LEVEL := ..
-DIRS := clang clang-c
+LFORT_LEVEL := ..
+DIRS := lfort lfort-c
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

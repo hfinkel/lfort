@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s -o /dev/null
 // rdar://12581683
 
 extern "C" {

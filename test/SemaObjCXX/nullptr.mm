@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -fblocks -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -std=c++11 -fblocks -fsyntax-only -verify %s
 // expected-no-diagnostics
 
 @interface A

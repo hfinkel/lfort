@@ -19,7 +19,7 @@
 //  1. A function Matcher<T> MatcherName(<arguments>) which returns a Matcher<T>
 //     based on the arguments and optionally on template type deduction based
 //     on the arguments. Matcher<T>s form an implicit reverse hierarchy
-//     to clang's AST class hierarchy, meaning that you can use a Matcher<Base>
+//     to lfort's AST class hierarchy, meaning that you can use a Matcher<Base>
 //     everywhere a Matcher<Derived> is required.
 //  2. An implementation of a class derived from MatcherInterface<T>.
 //
@@ -32,23 +32,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_INTERNAL_H
-#define LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_INTERNAL_H
+#ifndef LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_INTERNAL_H
+#define LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_INTERNAL_H
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/StmtCXX.h"
-#include "clang/AST/Type.h"
-#include "clang/ASTMatchers/ASTTypeTraits.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/StmtCXX.h"
+#include "lfort/AST/Type.h"
+#include "lfort/ASTMatchers/ASTTypeTraits.h"
 #include "llvm/ADT/VariadicFunction.h"
 #include "llvm/Support/type_traits.h"
 #include <map>
 #include <string>
 #include <vector>
 
-namespace clang {
+namespace lfort {
 namespace ast_matchers {
 
 /// FIXME: Move into the llvm support library.
@@ -1239,6 +1239,6 @@ T makeTypeAllOfComposite(ArrayRef<const Matcher<InnerT> *> InnerMatchers) {
 
 } // end namespace internal
 } // end namespace ast_matchers
-} // end namespace clang
+} // end namespace lfort
 
-#endif // LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_INTERNAL_H
+#endif // LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_INTERNAL_H

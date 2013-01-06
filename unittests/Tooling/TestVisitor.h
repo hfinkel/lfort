@@ -12,19 +12,19 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TEST_VISITOR_H
-#define LLVM_CLANG_TEST_VISITOR_H
+#ifndef LLVM_LFORT_TEST_VISITOR_H
+#define LLVM_LFORT_TEST_VISITOR_H
 
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Tooling/Tooling.h"
+#include "lfort/AST/ASTConsumer.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendAction.h"
+#include "lfort/Tooling/Tooling.h"
 #include "gtest/gtest.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Base class for simple RecursiveASTVisitor based tests.
 ///
@@ -64,7 +64,7 @@ protected:
   public:
     FindConsumer(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+    virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
       Visitor->Context = &Context;
       Visitor->TraverseDecl(Context.getTranslationUnitDecl());
     }
@@ -77,7 +77,7 @@ protected:
   public:
     TestAction(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual clang::ASTConsumer* CreateASTConsumer(
+    virtual lfort::ASTConsumer* CreateASTConsumer(
         CompilerInstance&, llvm::StringRef dummy) {
       /// TestConsumer will be deleted by the framework calling us.
       return new FindConsumer(Visitor);
@@ -213,4 +213,4 @@ protected:
 };
 }
 
-#endif /* LLVM_CLANG_TEST_VISITOR_H */
+#endif /* LLVM_LFORT_TEST_VISITOR_H */

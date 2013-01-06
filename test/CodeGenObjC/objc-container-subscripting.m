@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple x86_64-apple-darwin %s -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm -triple x86_64-apple-darwin %s -o /dev/null
 
 typedef unsigned int size_t;
 @protocol P @end

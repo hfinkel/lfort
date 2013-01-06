@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -triple=i686-apple-darwin9 | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -triple=i686-apple-darwin9 | FileCheck %s
 
 // Also test serialization of atomic operations here, to avoid duplicating the
 // test.
-// RUN: %clang_cc1 %s -emit-pch -o %t -triple=i686-apple-darwin9
-// RUN: %clang_cc1 %s -include-pch %t -triple=i686-apple-darwin9 -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-pch -o %t -triple=i686-apple-darwin9
+// RUN: %lfort_cc1 %s -include-pch %t -triple=i686-apple-darwin9 -emit-llvm -o - | FileCheck %s
 #ifndef ALREADY_INCLUDED
 #define ALREADY_INCLUDED
 

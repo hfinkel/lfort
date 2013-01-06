@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -verify -std=c++11
+// RUN: %lfort_cc1 %s -fsyntax-only -verify -std=c++11
 
 // base-clause:
 //         : base-specifier-list

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core -analyzer-store=region -analyzer-constraints=range -verify -fblocks %s -analyzer-eagerly-assume
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core -analyzer-store=region -analyzer-constraints=range -verify -fblocks %s -analyzer-eagerly-assume
 // expected-no-diagnostics
 
 // Delta-reduced header stuff (needed for test cases).

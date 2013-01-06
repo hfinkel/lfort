@@ -7,12 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_REWRITE_FRONTENDACTIONS_H
-#define LLVM_CLANG_REWRITE_FRONTENDACTIONS_H
+#ifndef LLVM_LFORT_REWRITE_FRONTENDACTIONS_H
+#define LLVM_LFORT_REWRITE_FRONTENDACTIONS_H
 
-#include "clang/Frontend/FrontendAction.h"
+#include "lfort/Frontend/FrontendAction.h"
 
-namespace clang {
+namespace lfort {
 class FixItRewriter;
 class FixItOptions;
 
@@ -78,6 +78,6 @@ protected:
   void ExecuteAction();
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

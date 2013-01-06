@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -triple i386-linux-gnu -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -triple i386-linux-gnu -o %t %s
 // RUN: FileCheck --input-file=%t %s
 
 // CHECK: @test1_f = extern_weak global i32

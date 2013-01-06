@@ -12,22 +12,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/ParentMap.h"
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
+#include "LFortSACheckers.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/Basic/LangOptions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/PathDiagnostic.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/ImmutableList.h"
@@ -37,7 +37,7 @@
 #include "llvm/ADT/StringExtras.h"
 #include <cstdarg>
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::StrInStrNoCase;
 
@@ -2626,13 +2626,13 @@ void RetainCountChecker::checkPostStmt(const CastExpr *CE,
   ArgEffect AE = IncRef;
   
   switch (BE->getBridgeKind()) {
-    case clang::OBC_Bridge:
+    case lfort::OBC_Bridge:
       // Do nothing.
       return;
-    case clang::OBC_BridgeRetained:
+    case lfort::OBC_BridgeRetained:
       AE = IncRef;
       break;      
-    case clang::OBC_BridgeTransfer:
+    case lfort::OBC_BridgeTransfer:
       AE = DecRefBridgedTransfered;
       break;
   }

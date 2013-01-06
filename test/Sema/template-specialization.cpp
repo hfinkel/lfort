@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only %s
+// RUN: %lfort_cc1 -verify -fsyntax-only %s
 // Verify the absence of assertion failures when solving calls to unresolved
 // template member functions.
 

@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclFriend.h"
-#include "clang/AST/DeclTemplate.h"
-using namespace clang;
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclFriend.h"
+#include "lfort/AST/DeclTemplate.h"
+using namespace lfort;
 
 void FriendDecl::anchor() { }
 

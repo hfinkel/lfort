@@ -7,18 +7,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Driver/OptTable.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
+#include "lfort/Driver/OptTable.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 #include <map>
-using namespace clang::driver;
-using namespace clang::driver::options;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort::driver::options;
+using namespace lfort;
 
 // Ordering on Info. The ordering is *almost* lexicographic, with two
 // exceptions. First, '\0' comes at the end of the alphabet instead of
@@ -46,7 +46,7 @@ static int StrCmpOptionName(const char *A, const char *B) {
   return (a < b) ? -1 : 1;
 }
 
-namespace clang {
+namespace lfort {
 namespace driver {
 static inline bool operator<(const OptTable::Info &A, const OptTable::Info &B) {
   if (&A == &B)

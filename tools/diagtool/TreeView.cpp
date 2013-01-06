@@ -13,10 +13,10 @@
 
 #include "DiagTool.h"
 #include "DiagnosticNames.h"
-#include "clang/AST/ASTDiagnostic.h"
-#include "clang/Basic/AllDiagnostics.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticOptions.h"
+#include "lfort/AST/ASTDiagnostic.h"
+#include "lfort/Basic/AllDiagnostics.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/DiagnosticOptions.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/Format.h"
@@ -26,7 +26,7 @@ DEF_DIAGTOOL("tree",
              "Show warning flags in a tree view",
              TreeView)
   
-using namespace clang;
+using namespace lfort;
 using namespace diagtool;
 
 static void printUsage() {
@@ -50,9 +50,9 @@ static void resetColor(bool ShowColors, llvm::raw_ostream &out) {
     out << llvm::sys::Process::ResetColor();
 }
 
-static clang::DiagnosticsEngine::Level getLevel(unsigned DiagID) {
+static lfort::DiagnosticsEngine::Level getLevel(unsigned DiagID) {
   // FIXME: This feels like a hack.
-  static clang::DiagnosticsEngine Diags(new DiagnosticIDs,
+  static lfort::DiagnosticsEngine Diags(new DiagnosticIDs,
                                         new DiagnosticOptions);
   return Diags.getDiagnosticLevel(DiagID, SourceLocation());
 }

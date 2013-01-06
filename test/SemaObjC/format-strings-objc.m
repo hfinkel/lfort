@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin -Wformat-nonliteral -fsyntax-only -fblocks -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin -Wformat-nonliteral -fsyntax-only -fblocks -verify -Wno-objc-root-class %s
 
 //===----------------------------------------------------------------------===//
 // The following code is reduced using delta-debugging from
@@ -35,7 +35,7 @@ extern void CFStringCreateWithFormat(CFStringRef format, ...) __attribute__((for
 
 // This function is used instead of the builtin if -fno-constant-cfstrings.
 // The definition on Mac OS X is NOT annotated with format_arg as of 10.8,
-// but clang will implicitly add the attribute if it's not written.
+// but lfort will implicitly add the attribute if it's not written.
 extern CFStringRef __CFStringMakeConstantString(const char *);
 
 int printf(const char * restrict, ...) ;

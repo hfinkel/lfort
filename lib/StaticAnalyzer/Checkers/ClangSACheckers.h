@@ -1,4 +1,4 @@
-//===--- ClangSACheckers.h - Registration functions for Checkers *- C++ -*-===//
+//===--- LFortSACheckers.h - Registration functions for Checkers *- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,16 +8,16 @@
 //===----------------------------------------------------------------------===//
 //
 // Declares the registation functions for the checkers defined in
-// libclangStaticAnalyzerCheckers.
+// liblfortStaticAnalyzerCheckers.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SA_LIB_CHECKERS_CLANGSACHECKERS_H
-#define LLVM_CLANG_SA_LIB_CHECKERS_CLANGSACHECKERS_H
+#ifndef LLVM_LFORT_SA_LIB_CHECKERS_LFORTSACHECKERS_H
+#define LLVM_LFORT_SA_LIB_CHECKERS_LFORTSACHECKERS_H
 
-#include "clang/StaticAnalyzer/Checkers/CommonBugCategories.h"
+#include "lfort/StaticAnalyzer/Checkers/CommonBugCategories.h"
 
-namespace clang {
+namespace lfort {
 
 namespace ento {
 class CheckerManager;
@@ -32,6 +32,6 @@ class CheckerRegistry;
 
 } // end ento namespace
 
-} // end clang namespace
+} // end lfort namespace
 
 #endif

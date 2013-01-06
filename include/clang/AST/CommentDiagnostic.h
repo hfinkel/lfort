@@ -7,23 +7,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_COMMENTDIAGNOSTIC_H
-#define LLVM_CLANG_COMMENTDIAGNOSTIC_H
+#ifndef LLVM_LFORT_COMMENTDIAGNOSTIC_H
+#define LLVM_LFORT_COMMENTDIAGNOSTIC_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 
-namespace clang {
+namespace lfort {
   namespace diag {
     enum {
 #define DIAG(ENUM,FLAGS,DEFAULT_MAPPING,DESC,GROUP,\
              SFINAE,ACCESS,NOWERROR,SHOWINSYSHEADER,CATEGORY) ENUM,
 #define COMMENTSTART
-#include "clang/Basic/DiagnosticCommentKinds.inc"
+#include "lfort/Basic/DiagnosticCommentKinds.inc"
 #undef DIAG
       NUM_BUILTIN_COMMENT_DIAGNOSTICS
     };
   }  // end namespace diag
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wsign-conversion %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wsign-conversion %s
 
 // PR9345: make a subgroup of -Wconversion for signedness changes
 

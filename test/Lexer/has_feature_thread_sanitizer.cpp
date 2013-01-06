@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -E -fsanitize=thread %s -o - | FileCheck --check-prefix=CHECK-TSAN %s
-// RUN: %clang_cc1 -E  %s -o - | FileCheck --check-prefix=CHECK-NO-TSAN %s
+// RUN: %lfort_cc1 -E -fsanitize=thread %s -o - | FileCheck --check-prefix=CHECK-TSAN %s
+// RUN: %lfort_cc1 -E  %s -o - | FileCheck --check-prefix=CHECK-NO-TSAN %s
 
 #if __has_feature(thread_sanitizer)
 int ThreadSanitizerEnabled();

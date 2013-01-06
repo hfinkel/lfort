@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -Wno-everything -Wsign-compare %s
+// RUN: %lfort_cc1 -verify -Wno-everything -Wsign-compare %s
 
 int f0(int, unsigned);
 int f0(int x, unsigned y) {

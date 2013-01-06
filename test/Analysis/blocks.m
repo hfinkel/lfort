@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core -analyzer-store=region -fblocks -analyzer-opt-analyze-nested-blocks -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core -analyzer-store=region -fblocks -analyzer-opt-analyze-nested-blocks -verify %s
 
 //===----------------------------------------------------------------------===//
 // The following code is reduced using delta-debugging from Mac OS X headers:

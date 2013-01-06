@@ -11,27 +11,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/Decl.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ASTMutationListener.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/PrettyPrinter.h"
-#include "clang/AST/Stmt.h"
-#include "clang/AST/TypeLoc.h"
-#include "clang/Basic/Builtins.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/Module.h"
-#include "clang/Basic/Specifiers.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ASTMutationListener.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/PrettyPrinter.h"
+#include "lfort/AST/Stmt.h"
+#include "lfort/AST/TypeLoc.h"
+#include "lfort/Basic/Builtins.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/Module.h"
+#include "lfort/Basic/Specifiers.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <algorithm>
 
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // NamedDecl Implementation
@@ -1087,7 +1087,7 @@ namespace {
 
 // Helper function: returns true if QT is or contains a type
 // having a postfix component.
-bool typeIsPostfix(clang::QualType QT) {
+bool typeIsPostfix(lfort::QualType QT) {
   while (true) {
     const Type* T = QT.getTypePtr();
     switch (T->getTypeClass()) {
@@ -1513,7 +1513,7 @@ bool VarDecl::checkInitIsICE() const {
   }
 
   // It's an ICE whether or not the definition we found is
-  // out-of-line.  See DR 721 and the discussion in Clang PR
+  // out-of-line.  See DR 721 and the discussion in LFort PR
   // 6206 for details.
 
   if (Eval->CheckingICE)

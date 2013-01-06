@@ -18,13 +18,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "CXXABI.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 class ItaniumCXXABI : public CXXABI {
@@ -64,10 +64,10 @@ public:
 };
 }
 
-CXXABI *clang::CreateItaniumCXXABI(ASTContext &Ctx) {
+CXXABI *lfort::CreateItaniumCXXABI(ASTContext &Ctx) {
   return new ItaniumCXXABI(Ctx);
 }
 
-CXXABI *clang::CreateARMCXXABI(ASTContext &Ctx) {
+CXXABI *lfort::CreateARMCXXABI(ASTContext &Ctx) {
   return new ARMCXXABI(Ctx);
 }

@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -emit-llvm %s -o - -triple=x86_64-apple-darwin10 | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm %s -o - -triple=x86_64-apple-darwin10 | FileCheck %s
 
-// This file tests the clang extension which allows initializing the components
+// This file tests the lfort extension which allows initializing the components
 // of a complex number individually using an initialization list.  (There is a
 // extensive description and test in test/Sema/complex-init-list.c.)
 

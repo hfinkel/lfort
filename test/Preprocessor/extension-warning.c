@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -pedantic %s
 
 // The preprocessor shouldn't warn about extensions within macro bodies that
 // aren't expanded.

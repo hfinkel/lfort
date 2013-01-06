@@ -1,4 +1,4 @@
-// RUN: %clang -S -emit-llvm -m64 -fobjc-abi-version=2 %s -o /dev/null
+// RUN: %lfort -S -emit-llvm -m64 -fobjc-abi-version=2 %s -o /dev/null
 
 typedef unsigned int UInt_t;
 

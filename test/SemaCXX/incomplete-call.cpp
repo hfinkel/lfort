@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 struct A; // expected-note 14 {{forward declaration of 'A'}}
 
 A f(); // expected-note {{'f' declared here}}

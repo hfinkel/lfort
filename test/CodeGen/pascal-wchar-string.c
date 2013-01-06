@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o -  %s -fpascal-strings -fshort-wchar  | FileCheck %s
+// RUN: %lfort_cc1 -emit-llvm -o -  %s -fpascal-strings -fshort-wchar  | FileCheck %s
 // rdar://8020384
 
 #include <stddef.h>

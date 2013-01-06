@@ -19,7 +19,7 @@
 #include "UnwrappedLineParser.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace clang {
+namespace lfort {
 namespace format {
 
 class ScopedMacroState : public FormatTokenSource {
@@ -482,4 +482,4 @@ void UnwrappedLineParser::readToken() {
 }
 
 }  // end namespace format
-}  // end namespace clang
+}  // end namespace lfort

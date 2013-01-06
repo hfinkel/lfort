@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple i386-unknown-unknown %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple i386-unknown-unknown %s -emit-llvm -o - | FileCheck %s
 //
 // CHECK: struct.object_entry = type { [4 x i8] }
 

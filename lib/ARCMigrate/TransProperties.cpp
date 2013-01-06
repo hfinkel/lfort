@@ -32,12 +32,12 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include <map>
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fsyntax-only -Wvector-conversion
+// RUN: %lfort_cc1 %s -verify -fsyntax-only -Wvector-conversion
 typedef unsigned int v2u __attribute__ ((vector_size (8)));
 typedef signed int v2s __attribute__ ((vector_size (8)));
 typedef signed int v1s __attribute__ ((vector_size (4)));

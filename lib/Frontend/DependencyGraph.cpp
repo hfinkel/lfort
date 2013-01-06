@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Frontend/Utils.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Lex/PPCallbacks.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 namespace DOT = llvm::DOT;
 
 namespace {
@@ -64,7 +64,7 @@ public:
 };
 }
 
-void clang::AttachDependencyGraphGen(Preprocessor &PP, StringRef OutputFile,
+void lfort::AttachDependencyGraphGen(Preprocessor &PP, StringRef OutputFile,
                                      StringRef SysRoot) {
   PP.addPPCallbacks(new DependencyGraphCallback(&PP, OutputFile, SysRoot));
 }

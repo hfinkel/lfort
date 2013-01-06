@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -x objective-c -emit-pch -o %t.h.pch %S/selector-warning.h
-// RUN: %clang_cc1 -include-pch %t.h.pch %s
+// RUN: %lfort_cc1 -x objective-c -emit-pch -o %t.h.pch %S/selector-warning.h
+// RUN: %lfort_cc1 -include-pch %t.h.pch %s
 
 @interface Bar 
 + (void) clNotOk;

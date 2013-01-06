@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wconversion \
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wconversion \
 // RUN:   -nostdsysteminc -nobuiltininc -isystem %S/Inputs \
 // RUN:   -triple x86_64-apple-darwin %s -Wno-unreachable-code
 

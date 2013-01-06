@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %lfort_cc1 -emit-llvm %s -o %t
 
 // <rdar://problem/6827047>
 void f(void* arg);

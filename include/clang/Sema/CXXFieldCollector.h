@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_SEMA_CXXFIELDCOLLECTOR_H
-#define LLVM_CLANG_SEMA_CXXFIELDCOLLECTOR_H
+#ifndef LLVM_LFORT_SEMA_CXXFIELDCOLLECTOR_H
+#define LLVM_LFORT_SEMA_CXXFIELDCOLLECTOR_H
 
 #include "llvm/ADT/SmallVector.h"
 
-namespace clang {
+namespace lfort {
   class FieldDecl;
 
 /// CXXFieldCollector - Used to keep track of CXXFieldDecls during parsing of
@@ -74,6 +74,6 @@ public:
   }
 };
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

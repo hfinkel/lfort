@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.cocoa.RetainCount,deadcode -analyzer-store=region -verify -fblocks  -analyzer-opt-analyze-nested-blocks -fobjc-arc %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -analyzer-checker=core,osx.cocoa.RetainCount,deadcode -analyzer-store=region -verify -fblocks  -analyzer-opt-analyze-nested-blocks -fobjc-arc %s
 
 typedef signed char BOOL;
 typedef struct _NSZone NSZone;

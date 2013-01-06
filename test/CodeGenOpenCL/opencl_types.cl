@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm -o - -O0 | FileCheck %s
+// RUN: %lfort_cc1 %s -emit-llvm -o - -O0 | FileCheck %s
 
 void fnc1(image1d_t img) {}
 // CHECK: @fnc1(%opencl.image1d_t*

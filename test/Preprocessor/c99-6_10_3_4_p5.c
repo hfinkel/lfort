@@ -1,5 +1,5 @@
 // Example from C99 6.10.3.4p5
-// RUN: %clang_cc1 -E %s | FileCheck -strict-whitespace %s
+// RUN: %lfort_cc1 -E %s | FileCheck -strict-whitespace %s
 
 #define x 3 
 #define f(a) f(x * (a)) 

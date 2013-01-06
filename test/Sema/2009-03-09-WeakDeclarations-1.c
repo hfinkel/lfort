@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple i686-apple-darwin
+// RUN: %lfort_cc1 %s -triple i686-apple-darwin
 // Insist upon warnings for inappropriate weak attributes.
 
 // O.K.

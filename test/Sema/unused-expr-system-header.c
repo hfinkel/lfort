@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -isystem %S/Inputs -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -isystem %S/Inputs -fsyntax-only -verify %s
 #include <unused-expr-system-header.h>
 void f(int i1, int i2) {
   POSSIBLY_BAD_MACRO(5);

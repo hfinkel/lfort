@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -triple i686-pc-win32 -fdump-record-layouts -cxx-abi microsoft %s 2>&1 \
+// RUN: %lfort_cc1 -emit-llvm-only -triple i686-pc-win32 -fdump-record-layouts -cxx-abi microsoft %s 2>&1 \
 // RUN:            | FileCheck %s
 
 #pragma pack(push, 8)
@@ -142,7 +142,7 @@ struct EV : CV, DV {
 #pragma pack(pop)
 
 // This needs only for building layouts. 
-// Without this clang doesn`t dump record layouts.
+// Without this lfort doesn`t dump record layouts.
 int main() {
   // This avoid "Can't yet mangle constructors!" for MS ABI.
   C* c;

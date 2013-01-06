@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -fobjc-arc -verify -fblocks %s
+// RUN: %lfort_cc1 -fsyntax-only -fobjc-arc -verify -fblocks %s
 // expected-no-diagnostics
 
 struct X0 {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
 
 @interface StopAtAtEnd
 // This used to eat the @end

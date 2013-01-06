@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s 2>&1|FileCheck %s
+// RUN: %lfort_cc1 -fsyntax-only %s 2>&1|FileCheck %s
 
 // <rdar://problem/9221993>
 

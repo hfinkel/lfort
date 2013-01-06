@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/StmtIterator.h"
-#include "clang/AST/Decl.h"
+#include "lfort/AST/StmtIterator.h"
+#include "lfort/AST/Decl.h"
 
-using namespace clang;
+using namespace lfort;
 
 // FIXME: Add support for dependent-sized array types in C++?
 // Does it even make sense to build a CFG for an uninstantiated template?

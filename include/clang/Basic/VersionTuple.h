@@ -8,18 +8,18 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::VersionTuple class, which represents a version in
+/// \brief Defines the lfort::VersionTuple class, which represents a version in
 /// the form major[.minor[.subminor]].
 ///
 //===----------------------------------------------------------------------===//
-#ifndef LLVM_CLANG_BASIC_VERSIONTUPLE_H
-#define LLVM_CLANG_BASIC_VERSIONTUPLE_H
+#ifndef LLVM_LFORT_BASIC_VERSIONTUPLE_H
+#define LLVM_LFORT_BASIC_VERSIONTUPLE_H
 
-#include "clang/Basic/LLVM.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/Optional.h"
 #include <string>
 
-namespace clang {
+namespace lfort {
 
 /// \brief Represents a version number in the form major[.minor[.subminor]].
 class VersionTuple {
@@ -134,5 +134,5 @@ public:
 /// \brief Print a version number.
 raw_ostream& operator<<(raw_ostream &Out, const VersionTuple &V);
 
-} // end namespace clang
-#endif // LLVM_CLANG_BASIC_VERSIONTUPLE_H
+} // end namespace lfort
+#endif // LLVM_LFORT_BASIC_VERSIONTUPLE_H

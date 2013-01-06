@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -analyze -disable-free -analyzer-eagerly-assume -analyzer-checker=core,deadcode,alpha.security.taint,debug.TaintTest,debug.ExprInspection -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -analyze -disable-free -analyzer-eagerly-assume -analyzer-checker=core,deadcode,alpha.security.taint,debug.TaintTest,debug.ExprInspection -verify %s
 
-void clang_analyzer_eval(int);
+void lfort_analyzer_eval(int);
 
 // Note, we do need to include headers here, since the analyzer checks if the function declaration is located in a system header.
 #include "Inputs/system-header-simulator.h"
@@ -15,7 +15,7 @@ int rdar9373039() {
     x = 1;
 
   // strlen doesn't invalidate the value of 'size_rdar9373039'.
-  int extra = (2 + strlen ("Clang") + ((4 - ((unsigned int) (2 + strlen ("Clang")) % 4)) % 4)) + (2 + strlen ("1.0") + ((4 - ((unsigned int) (2 + strlen ("1.0")) % 4)) % 4));
+  int extra = (2 + strlen ("LFort") + ((4 - ((unsigned int) (2 + strlen ("LFort")) % 4)) % 4)) + (2 + strlen ("1.0") + ((4 - ((unsigned int) (2 + strlen ("1.0")) % 4)) % 4));
 
   for (int i = 0 ; i < size_rdar9373039 ; ++i)
     j += x; // no-warning
@@ -79,8 +79,8 @@ int constIntGlobExtern() {
 void testAnalyzerEvalIsPure() {
   extern int someGlobal;
   if (someGlobal == 0) {
-    clang_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
-    clang_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(someGlobal == 0); // expected-warning{{TRUE}}
   }
 }
 

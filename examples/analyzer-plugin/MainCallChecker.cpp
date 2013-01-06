@@ -1,9 +1,9 @@
-#include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
-#include "clang/StaticAnalyzer/Core/CheckerRegistry.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
+#include "lfort/StaticAnalyzer/Core/Checker.h"
+#include "lfort/StaticAnalyzer/Core/BugReporter/BugType.h"
+#include "lfort/StaticAnalyzer/Core/CheckerRegistry.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 namespace {
@@ -45,9 +45,9 @@ void MainCallChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const 
 
 // Register plugin!
 extern "C"
-void clang_registerCheckers (CheckerRegistry &registry) {
+void lfort_registerCheckers (CheckerRegistry &registry) {
   registry.addChecker<MainCallChecker>("example.MainCallChecker", "Disallows calls to functions called main");
 }
 
 extern "C"
-const char clang_analyzerAPIVersionString[] = CLANG_ANALYZER_API_VERSION_STRING;
+const char lfort_analyzerAPIVersionString[] = LFORT_ANALYZER_API_VERSION_STRING;

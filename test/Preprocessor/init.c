@@ -1,15 +1,15 @@
-// RUN: %clang_cc1 -E -dM -x assembler-with-cpp < /dev/null | FileCheck -check-prefix ASM %s
+// RUN: %lfort_cc1 -E -dM -x assembler-with-cpp < /dev/null | FileCheck -check-prefix ASM %s
 //
 // ASM:#define __ASSEMBLER__ 1
 //
 // 
-// RUN: %clang_cc1 -fblocks -E -dM < /dev/null | FileCheck -check-prefix BLOCKS %s
+// RUN: %lfort_cc1 -fblocks -E -dM < /dev/null | FileCheck -check-prefix BLOCKS %s
 //
 // BLOCKS:#define __BLOCKS__ 1
 // BLOCKS:#define __block __attribute__((__blocks__(byref)))
 //
 // 
-// RUN: %clang_cc1 -x c++ -std=c++11 -E -dM < /dev/null | FileCheck -check-prefix CXX11 %s
+// RUN: %lfort_cc1 -x c++ -std=c++11 -E -dM < /dev/null | FileCheck -check-prefix CXX11 %s
 //
 // CXX11:#define __GNUG__
 // CXX11:#define __GXX_EXPERIMENTAL_CXX0X__ 1
@@ -19,7 +19,7 @@
 // CXX11:#define __private_extern__ extern
 //
 // 
-// RUN: %clang_cc1 -x c++ -std=c++98 -E -dM < /dev/null | FileCheck -check-prefix CXX98 %s
+// RUN: %lfort_cc1 -x c++ -std=c++98 -E -dM < /dev/null | FileCheck -check-prefix CXX98 %s
 // 
 // CXX98:#define __GNUG__
 // CXX98:#define __GXX_RTTI 1
@@ -28,18 +28,18 @@
 // CXX98:#define __private_extern__ extern
 //
 // 
-// RUN: %clang_cc1 -fdeprecated-macro -E -dM < /dev/null | FileCheck -check-prefix DEPRECATED %s
+// RUN: %lfort_cc1 -fdeprecated-macro -E -dM < /dev/null | FileCheck -check-prefix DEPRECATED %s
 //
 // DEPRECATED:#define __DEPRECATED 1
 //
 // 
-// RUN: %clang_cc1 -std=c99 -E -dM < /dev/null | FileCheck -check-prefix C99 %s
+// RUN: %lfort_cc1 -std=c99 -E -dM < /dev/null | FileCheck -check-prefix C99 %s
 //
 // C99:#define __STDC_VERSION__ 199901L
 // C99:#define __STRICT_ANSI__ 1
 //
 // 
-// RUN: %clang_cc1 -E -dM < /dev/null | FileCheck -check-prefix COMMON %s
+// RUN: %lfort_cc1 -E -dM < /dev/null | FileCheck -check-prefix COMMON %s
 //
 // COMMON:#define __CONSTANT_CFSTRINGS__ 1
 // COMMON:#define __FINITE_MATH_ONLY__ 0
@@ -55,19 +55,19 @@
 // COMMON:#define __STDC_VERSION__
 // COMMON:#define __STDC__ 1
 // COMMON:#define __VERSION__
-// COMMON:#define __clang__ 1
-// COMMON:#define __clang_major__ {{[0-9]+}}
-// COMMON:#define __clang_minor__ {{[0-9]+}}
-// COMMON:#define __clang_patchlevel__ {{[0-9]+}}
-// COMMON:#define __clang_version__
+// COMMON:#define __lfort__ 1
+// COMMON:#define __lfort_major__ {{[0-9]+}}
+// COMMON:#define __lfort_minor__ {{[0-9]+}}
+// COMMON:#define __lfort_patchlevel__ {{[0-9]+}}
+// COMMON:#define __lfort_version__
 // COMMON:#define __llvm__ 1
 //
 // 
-// RUN: %clang_cc1 -ffreestanding -E -dM < /dev/null | FileCheck -check-prefix FREESTANDING %s
+// RUN: %lfort_cc1 -ffreestanding -E -dM < /dev/null | FileCheck -check-prefix FREESTANDING %s
 // FREESTANDING:#define __STDC_HOSTED__ 0
 //
 //
-// RUN: %clang_cc1 -x c++ -std=gnu++11 -E -dM < /dev/null | FileCheck -check-prefix GXX11 %s
+// RUN: %lfort_cc1 -x c++ -std=gnu++11 -E -dM < /dev/null | FileCheck -check-prefix GXX11 %s
 //
 // GXX11:#define __GNUG__
 // GXX11:#define __GXX_WEAK__ 1
@@ -75,7 +75,7 @@
 // GXX11:#define __private_extern__ extern
 //
 //
-// RUN: %clang_cc1 -x c++ -std=gnu++98 -E -dM < /dev/null | FileCheck -check-prefix GXX98 %s
+// RUN: %lfort_cc1 -x c++ -std=gnu++98 -E -dM < /dev/null | FileCheck -check-prefix GXX98 %s
 //
 // GXX98:#define __GNUG__
 // GXX98:#define __GXX_WEAK__ 1
@@ -83,86 +83,86 @@
 // GXX98:#define __private_extern__ extern
 //
 // 
-// RUN: %clang_cc1 -std=iso9899:199409 -E -dM < /dev/null | FileCheck -check-prefix C94 %s
+// RUN: %lfort_cc1 -std=iso9899:199409 -E -dM < /dev/null | FileCheck -check-prefix C94 %s
 //
 // C94:#define __STDC_VERSION__ 199409L
 //
 // 
-// RUN: %clang_cc1 -fms-extensions -triple i686-pc-win32 -fobjc-runtime=gcc -E -dM < /dev/null | FileCheck -check-prefix MSEXT %s
+// RUN: %lfort_cc1 -fms-extensions -triple i686-pc-win32 -fobjc-runtime=gcc -E -dM < /dev/null | FileCheck -check-prefix MSEXT %s
 //
 // MSEXT-NOT:#define __STDC__
 // MSEXT:#define _INTEGRAL_MAX_BITS 64
 //
 // 
-// RUN: %clang_cc1 -x objective-c -E -dM < /dev/null | FileCheck -check-prefix OBJC %s
+// RUN: %lfort_cc1 -x objective-c -E -dM < /dev/null | FileCheck -check-prefix OBJC %s
 //
 // OBJC:#define OBJC_NEW_PROPERTIES 1
 // OBJC:#define __NEXT_RUNTIME__ 1
 // OBJC:#define __OBJC__ 1
 //
 //
-// RUN: %clang_cc1 -x objective-c -fobjc-gc -E -dM < /dev/null | FileCheck -check-prefix OBJCGC %s
+// RUN: %lfort_cc1 -x objective-c -fobjc-gc -E -dM < /dev/null | FileCheck -check-prefix OBJCGC %s
 //
 // OBJCGC:#define __OBJC_GC__ 1
 //
 // 
-// RUN: %clang_cc1 -x objective-c -fobjc-exceptions -E -dM < /dev/null | FileCheck -check-prefix NONFRAGILE %s
+// RUN: %lfort_cc1 -x objective-c -fobjc-exceptions -E -dM < /dev/null | FileCheck -check-prefix NONFRAGILE %s
 //
 // NONFRAGILE:#define OBJC_ZEROCOST_EXCEPTIONS 1
 // NONFRAGILE:#define __OBJC2__ 1
 //
 //
-// RUN: %clang_cc1 -O0 -E -dM < /dev/null | FileCheck -check-prefix O0 %s
+// RUN: %lfort_cc1 -O0 -E -dM < /dev/null | FileCheck -check-prefix O0 %s
 //
 // O0:#define __NO_INLINE__ 1
 // O0-NOT:#define __OPTIMIZE_SIZE__
 // O0-NOT:#define __OPTIMIZE__
 //
 //
-// RUN: %clang_cc1 -fno-inline -O3 -E -dM < /dev/null | FileCheck -check-prefix NO_INLINE %s
+// RUN: %lfort_cc1 -fno-inline -O3 -E -dM < /dev/null | FileCheck -check-prefix NO_INLINE %s
 //
 // NO_INLINE:#define __NO_INLINE__ 1
 // NO_INLINE-NOT:#define __OPTIMIZE_SIZE__
 // NO_INLINE:#define __OPTIMIZE__
 //
 //
-// RUN: %clang_cc1 -O1 -E -dM < /dev/null | FileCheck -check-prefix O1 %s
+// RUN: %lfort_cc1 -O1 -E -dM < /dev/null | FileCheck -check-prefix O1 %s
 //
 // O1-NOT:#define __OPTIMIZE_SIZE__
 // O1:#define __OPTIMIZE__ 1
 //
 //
-// RUN: %clang_cc1 -Os -E -dM < /dev/null | FileCheck -check-prefix Os %s
+// RUN: %lfort_cc1 -Os -E -dM < /dev/null | FileCheck -check-prefix Os %s
 //
 // Os:#define __OPTIMIZE_SIZE__ 1
 // Os:#define __OPTIMIZE__ 1
 //
 //
-// RUN: %clang_cc1 -Oz -E -dM < /dev/null | FileCheck -check-prefix Oz %s
+// RUN: %lfort_cc1 -Oz -E -dM < /dev/null | FileCheck -check-prefix Oz %s
 //
 // Oz:#define __OPTIMIZE_SIZE__ 1
 // Oz:#define __OPTIMIZE__ 1
 //
 //
-// RUN: %clang_cc1 -fpascal-strings -E -dM < /dev/null | FileCheck -check-prefix PASCAL %s
+// RUN: %lfort_cc1 -fpascal-strings -E -dM < /dev/null | FileCheck -check-prefix PASCAL %s
 //
 // PASCAL:#define __PASCAL_STRINGS__ 1
 //
 // 
-// RUN: %clang_cc1 -E -dM < /dev/null | FileCheck -check-prefix SCHAR %s
+// RUN: %lfort_cc1 -E -dM < /dev/null | FileCheck -check-prefix SCHAR %s
 // 
 // SCHAR:#define __STDC__ 1
 // SCHAR-NOT:#define __UNSIGNED_CHAR__
-// SCHAR:#define __clang__ 1
+// SCHAR:#define __lfort__ 1
 //
-// RUN: %clang_cc1 -E -dM -fshort-wchar < /dev/null | FileCheck -check-prefix SHORTWCHAR %s
+// RUN: %lfort_cc1 -E -dM -fshort-wchar < /dev/null | FileCheck -check-prefix SHORTWCHAR %s
 //
 // SHORTWCHAR: #define __SIZEOF_WCHAR_T__ 2
 // SHORTWCHAR: #define __WCHAR_MAX__ 65535U
 // SHORTWCHAR: #define __WCHAR_TYPE__ unsigned short
 // SHORTWCHAR: #define __WCHAR_WIDTH__ 16
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=arm-none-none < /dev/null | FileCheck -check-prefix ARM %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=arm-none-none < /dev/null | FileCheck -check-prefix ARM %s
 //
 // ARM-NOT:#define _LP64
 // ARM:#define __APCS_32__ 1
@@ -261,7 +261,7 @@
 // ARM:#define __arm 1
 // ARM:#define __arm__ 1
 
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=arm-none-linux-gnueabi -target-feature +soft-float -target-feature +soft-float-abi < /dev/null | FileCheck -check-prefix ARMEABISOFTFP %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=arm-none-linux-gnueabi -target-feature +soft-float -target-feature +soft-float-abi < /dev/null | FileCheck -check-prefix ARMEABISOFTFP %s
 //
 // ARM-NOT:#define _LP64
 // ARMEABISOFTFP:#define __APCS_32__ 1
@@ -365,7 +365,7 @@
 // ARMEABISOFTFP:#define __arm 1
 // ARMEABISOFTFP:#define __arm__ 1
 
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=arm-none-linux-gnueabi < /dev/null | FileCheck -check-prefix ARMEABIHARDFP %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=arm-none-linux-gnueabi < /dev/null | FileCheck -check-prefix ARMEABIHARDFP %s
 //
 // ARM-NOT:#define _LP64
 // ARMEABIHARDFP:#define __APCS_32__ 1
@@ -470,7 +470,7 @@
 // ARMEABIHARDFP:#define __arm__ 1
 
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=i386-none-none < /dev/null | FileCheck -check-prefix I386 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=i386-none-none < /dev/null | FileCheck -check-prefix I386 %s
 //
 // I386-NOT:#define _LP64
 // I386:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -567,7 +567,7 @@
 // I386:#define __i386__ 1
 // I386:#define i386 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=i386-pc-linux-gnu -target-cpu pentium4 < /dev/null | FileCheck -check-prefix I386-LINUX %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=i386-pc-linux-gnu -target-cpu pentium4 < /dev/null | FileCheck -check-prefix I386-LINUX %s
 //
 // I386-LINUX-NOT:#define _LP64
 // I386-LINUX:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -664,7 +664,7 @@
 // I386-LINUX:#define __i386__ 1
 // I386-LINUX:#define i386 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=mips-none-none < /dev/null | FileCheck -check-prefix MIPS32BE %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=mips-none-none < /dev/null | FileCheck -check-prefix MIPS32BE %s
 //
 // MIPS32BE:#define MIPSEB 1
 // MIPS32BE:#define _ABIO32 1
@@ -771,7 +771,7 @@
 // MIPS32BE:#define __WCHAR_WIDTH__ 32
 // MIPS32BE:#define __WINT_TYPE__ int
 // MIPS32BE:#define __WINT_WIDTH__ 32
-// MIPS32BE:#define __clang__ 1
+// MIPS32BE:#define __lfort__ 1
 // MIPS32BE:#define __llvm__ 1
 // MIPS32BE:#define __mips 1
 // MIPS32BE:#define __mips__ 1
@@ -780,7 +780,7 @@
 // MIPS32BE:#define _mips 1
 // MIPS32BE:#define mips 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=mipsel-none-none < /dev/null | FileCheck -check-prefix MIPS32EL %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=mipsel-none-none < /dev/null | FileCheck -check-prefix MIPS32EL %s
 //
 // MIPS32EL:#define MIPSEL 1
 // MIPS32EL:#define _ABIO32 1
@@ -884,7 +884,7 @@
 // MIPS32EL:#define __WCHAR_WIDTH__ 32
 // MIPS32EL:#define __WINT_TYPE__ int
 // MIPS32EL:#define __WINT_WIDTH__ 32
-// MIPS32EL:#define __clang__ 1
+// MIPS32EL:#define __lfort__ 1
 // MIPS32EL:#define __llvm__ 1
 // MIPS32EL:#define __mips 1
 // MIPS32EL:#define __mips__ 1
@@ -893,7 +893,7 @@
 // MIPS32EL:#define _mips 1
 // MIPS32EL:#define mips 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=mips64-none-none < /dev/null | FileCheck -check-prefix MIPS64BE %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=mips64-none-none < /dev/null | FileCheck -check-prefix MIPS64BE %s
 //
 // MIPS64BE:#define MIPSEB 1
 // MIPS64BE:#define _ABI64 3
@@ -997,7 +997,7 @@
 // MIPS64BE:#define __WCHAR_WIDTH__ 32
 // MIPS64BE:#define __WINT_TYPE__ int
 // MIPS64BE:#define __WINT_WIDTH__ 32
-// MIPS64BE:#define __clang__ 1
+// MIPS64BE:#define __lfort__ 1
 // MIPS64BE:#define __llvm__ 1
 // MIPS64BE:#define __mips 1
 // MIPS64BE:#define __mips64 1
@@ -1008,7 +1008,7 @@
 // MIPS64BE:#define _mips 1
 // MIPS64BE:#define mips 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=mips64el-none-none < /dev/null | FileCheck -check-prefix MIPS64EL %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=mips64el-none-none < /dev/null | FileCheck -check-prefix MIPS64EL %s
 //
 // MIPS64EL:#define MIPSEL 1
 // MIPS64EL:#define _ABI64 3
@@ -1112,7 +1112,7 @@
 // MIPS64EL:#define __WCHAR_WIDTH__ 32
 // MIPS64EL:#define __WINT_TYPE__ int
 // MIPS64EL:#define __WINT_WIDTH__ 32
-// MIPS64EL:#define __clang__ 1
+// MIPS64EL:#define __lfort__ 1
 // MIPS64EL:#define __llvm__ 1
 // MIPS64EL:#define __mips 1
 // MIPS64EL:#define __mips64 1
@@ -1125,17 +1125,17 @@
 //
 // Check MIPS float ABI macros
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding \
+// RUN: %lfort_cc1 -E -dM -ffreestanding \
 // RUN:   -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS-FABI-HARD %s
 // MIPS-FABI-HARD:#define __mips_hard_float 1
 //
-// RUN: %clang_cc1 -target-feature +soft-float -E -dM -ffreestanding \
+// RUN: %lfort_cc1 -target-feature +soft-float -E -dM -ffreestanding \
 // RUN:   -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS-FABI-SOFT %s
 // MIPS-FABI-SOFT:#define __mips_soft_float 1
 //
-// RUN: %clang_cc1 -target-feature +single-float -E -dM -ffreestanding \
+// RUN: %lfort_cc1 -target-feature +single-float -E -dM -ffreestanding \
 // RUN:   -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS-FABI-SINGLE %s
 // MIPS-FABI-SINGLE:#define __mips_hard_float 1
@@ -1143,31 +1143,31 @@
 //
 // Check MIPS features macros
 //
-// RUN: %clang_cc1 -target-feature +mips16 \
+// RUN: %lfort_cc1 -target-feature +mips16 \
 // RUN:   -E -dM -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS16 %s
 // MIPS16:#define __mips16 1
 //
-// RUN: %clang_cc1 -target-feature -mips16 \
+// RUN: %lfort_cc1 -target-feature -mips16 \
 // RUN:   -E -dM -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix NOMIPS16 %s
 // NOMIPS16-NOT:#define __mips16 1
 //
-// RUN: %clang_cc1 -target-feature +dsp \
+// RUN: %lfort_cc1 -target-feature +dsp \
 // RUN:   -E -dM -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS-DSP %s
 // MIPS-DSP:#define __mips_dsp 1
 // MIPS-DSP:#define __mips_dsp_rev 1
 // MIPS-DSP-NOT:#define __mips_dspr2 1
 //
-// RUN: %clang_cc1 -target-feature +dspr2 \
+// RUN: %lfort_cc1 -target-feature +dspr2 \
 // RUN:   -E -dM -triple=mips-none-none < /dev/null \
 // RUN:   | FileCheck -check-prefix MIPS-DSPR2 %s
 // MIPS-DSPR2:#define __mips_dsp 1
 // MIPS-DSPR2:#define __mips_dsp_rev 2
 // MIPS-DSPR2:#define __mips_dspr2 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=msp430-none-none < /dev/null | FileCheck -check-prefix MSP430 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=msp430-none-none < /dev/null | FileCheck -check-prefix MSP430 %s
 //
 // MSP430:#define MSP430 1
 // MSP430-NOT:#define _LP64
@@ -1258,9 +1258,9 @@
 // MSP430:#define __WCHAR_WIDTH__ 16
 // MSP430:#define __WINT_TYPE__ int
 // MSP430:#define __WINT_WIDTH__ 16
-// MSP430:#define __clang__ 1
+// MSP430:#define __lfort__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=nvptx-none-none < /dev/null | FileCheck -check-prefix NVPTX32 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=nvptx-none-none < /dev/null | FileCheck -check-prefix NVPTX32 %s
 //
 // NVPTX32-NOT:#define _LP64
 // NVPTX32:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -1356,7 +1356,7 @@
 // NVPTX32:#define __WINT_TYPE__ int
 // NVPTX32:#define __WINT_WIDTH__ 32
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=nvptx64-none-none < /dev/null | FileCheck -check-prefix NVPTX64 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=nvptx64-none-none < /dev/null | FileCheck -check-prefix NVPTX64 %s
 //
 // NVPTX64:#define _LP64 1
 // NVPTX64:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -1452,7 +1452,7 @@
 // NVPTX64:#define __WINT_TYPE__ int
 // NVPTX64:#define __WINT_WIDTH__ 32
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=powerpc-none-none -target-cpu 603e < /dev/null | FileCheck -check-prefix PPC603E %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=powerpc-none-none -target-cpu 603e < /dev/null | FileCheck -check-prefix PPC603E %s
 //
 // PPC603E:#define _ARCH_603 1
 // PPC603E:#define _ARCH_603E 1
@@ -1555,7 +1555,7 @@
 // PPC603E:#define __powerpc__ 1
 // PPC603E:#define __ppc__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=powerpc64-none-none -target-cpu pwr7 -fno-signed-char < /dev/null | FileCheck -check-prefix PPC64 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=powerpc64-none-none -target-cpu pwr7 -fno-signed-char < /dev/null | FileCheck -check-prefix PPC64 %s
 //
 // PPC64:#define _ARCH_PPC 1
 // PPC64:#define _ARCH_PPC64 1
@@ -1663,7 +1663,7 @@
 // PPC64:#define __ppc64__ 1
 // PPC64:#define __ppc__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=powerpc64-unknown-linux-gnu -fno-signed-char < /dev/null | FileCheck -check-prefix PPC64-LINUX %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=powerpc64-unknown-linux-gnu -fno-signed-char < /dev/null | FileCheck -check-prefix PPC64-LINUX %s
 //
 // PPC64-LINUX:#define _ARCH_PPC 1
 // PPC64-LINUX:#define _ARCH_PPC64 1
@@ -1768,7 +1768,7 @@
 // PPC64-LINUX:#define __ppc64__ 1
 // PPC64-LINUX:#define __ppc__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=powerpc-none-none -fno-signed-char < /dev/null | FileCheck -check-prefix PPC %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=powerpc-none-none -fno-signed-char < /dev/null | FileCheck -check-prefix PPC %s
 //
 // PPC:#define _ARCH_PPC 1
 // PPC:#define _BIG_ENDIAN 1
@@ -1868,7 +1868,7 @@
 // PPC:#define __WINT_WIDTH__ 32
 // PPC:#define __ppc__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=powerpc-unknown-linux-gnu -fno-signed-char < /dev/null | FileCheck -check-prefix PPC-LINUX %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=powerpc-unknown-linux-gnu -fno-signed-char < /dev/null | FileCheck -check-prefix PPC-LINUX %s
 //
 // PPC-LINUX:#define _ARCH_PPC 1
 // PPC-LINUX:#define _BIG_ENDIAN 1
@@ -1970,7 +1970,7 @@
 // PPC-LINUX:#define __powerpc__ 1
 // PPC-LINUX:#define __ppc__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=sparc-none-none < /dev/null | FileCheck -check-prefix SPARC %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=sparc-none-none < /dev/null | FileCheck -check-prefix SPARC %s
 //
 // SPARC-NOT:#define _LP64
 // SPARC:#define __BYTE_ORDER__ __ORDER_BIG_ENDIAN__
@@ -2067,7 +2067,7 @@
 // SPARC:#define __sparcv8 1
 // SPARC:#define sparc 1
 // 
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=tce-none-none < /dev/null | FileCheck -check-prefix TCE %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=tce-none-none < /dev/null | FileCheck -check-prefix TCE %s
 //
 // TCE-NOT:#define _LP64
 // TCE:#define __BYTE_ORDER__ __ORDER_BIG_ENDIAN__
@@ -2161,7 +2161,7 @@
 // TCE:#define __tce__ 1
 // TCE:#define tce 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=x86_64-none-none < /dev/null | FileCheck -check-prefix X86_64 %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=x86_64-none-none < /dev/null | FileCheck -check-prefix X86_64 %s
 //
 // X86_64:#define _LP64 1
 // X86_64:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -2264,7 +2264,7 @@
 // X86_64:#define __x86_64 1
 // X86_64:#define __x86_64__ 1
 //
-// RUN: %clang_cc1 -E -dM -ffreestanding -triple=x86_64-pc-linux-gnu < /dev/null | FileCheck -check-prefix X86_64-LINUX %s
+// RUN: %lfort_cc1 -E -dM -ffreestanding -triple=x86_64-pc-linux-gnu < /dev/null | FileCheck -check-prefix X86_64-LINUX %s
 //
 // X86_64-LINUX:#define _LP64 1
 // X86_64-LINUX:#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
@@ -2367,13 +2367,13 @@
 // X86_64-LINUX:#define __x86_64 1
 // X86_64-LINUX:#define __x86_64__ 1
 //
-// RUN: %clang_cc1 -x c++ -triple i686-pc-linux-gnu -fobjc-runtime=gcc -E -dM < /dev/null | FileCheck -check-prefix GNUSOURCE %s
+// RUN: %lfort_cc1 -x c++ -triple i686-pc-linux-gnu -fobjc-runtime=gcc -E -dM < /dev/null | FileCheck -check-prefix GNUSOURCE %s
 // GNUSOURCE:#define _GNU_SOURCE 1
 // 
-// RUN: %clang_cc1 -x c++ -std=c++98 -fno-rtti -E -dM < /dev/null | FileCheck -check-prefix NORTTI %s
+// RUN: %lfort_cc1 -x c++ -std=c++98 -fno-rtti -E -dM < /dev/null | FileCheck -check-prefix NORTTI %s
 // NORTTI: __GXX_ABI_VERSION
 // NORTTI-NOT:#define __GXX_RTTI
 // NORTTI: __STDC__
 //
-// RUN: %clang_cc1 -triple arm-linux-androideabi -E -dM < /dev/null | FileCheck -check-prefix ANDROID %s
+// RUN: %lfort_cc1 -triple arm-linux-androideabi -E -dM < /dev/null | FileCheck -check-prefix ANDROID %s
 // ANDROID: __ANDROID__ 1

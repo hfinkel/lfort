@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only -Wno-unused-value -Wmicrosoft -verify -fms-compatibility
+// RUN: %lfort_cc1 %s -fsyntax-only -Wno-unused-value -Wmicrosoft -verify -fms-compatibility
 
 enum ENUM1; // expected-warning {{forward references to 'enum' types are a Microsoft extension}}
 enum ENUM1 var1 = 3;

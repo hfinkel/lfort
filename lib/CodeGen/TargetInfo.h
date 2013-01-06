@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_CODEGEN_TARGETINFO_H
-#define CLANG_CODEGEN_TARGETINFO_H
+#ifndef LFORT_CODEGEN_TARGETINFO_H
+#define LFORT_CODEGEN_TARGETINFO_H
 
-#include "clang/AST/Type.h"
-#include "clang/Basic/LLVM.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/LLVM.h"
 #include "llvm/ADT/StringRef.h"
 
 namespace llvm {
@@ -25,7 +25,7 @@ namespace llvm {
   class Value;
 }
 
-namespace clang {
+namespace lfort {
   class ABIInfo;
   class Decl;
 
@@ -170,4 +170,4 @@ namespace clang {
   };
 }
 
-#endif // CLANG_CODEGEN_TARGETINFO_H
+#endif // LFORT_CODEGEN_TARGETINFO_H

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 /* GCC was generating PHI nodes with an arity < #pred of the basic block the
  * PHI node lived in.  This was breaking LLVM because the number of entries

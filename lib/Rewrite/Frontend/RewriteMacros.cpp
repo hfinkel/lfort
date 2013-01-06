@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/Rewriters.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include "lfort/Rewrite/Frontend/Rewriters.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Rewrite/Core/Rewriter.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 
 /// isSameToken - Return true if the two specified tokens start have the same
 /// content.
@@ -87,7 +87,7 @@ static void LexRawTokensFromMainFile(Preprocessor &PP,
 
 
 /// RewriteMacrosInInput - Implement -rewrite-macros mode.
-void clang::RewriteMacrosInInput(Preprocessor &PP, raw_ostream *OS) {
+void lfort::RewriteMacrosInInput(Preprocessor &PP, raw_ostream *OS) {
   SourceManager &SM = PP.getSourceManager();
 
   Rewriter Rewrite;

@@ -12,15 +12,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_FRONTEND_MULTIPLEXCONSUMER_H
-#define CLANG_FRONTEND_MULTIPLEXCONSUMER_H
+#ifndef LFORT_FRONTEND_MULTIPLEXCONSUMER_H
+#define LFORT_FRONTEND_MULTIPLEXCONSUMER_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Sema/SemaConsumer.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Sema/SemaConsumer.h"
 #include "llvm/ADT/OwningPtr.h"
 #include <vector>
 
-namespace clang {
+namespace lfort {
 
 class MultiplexASTMutationListener;
 class MultiplexASTDeserializationListener;
@@ -57,6 +57,6 @@ private:
   OwningPtr<MultiplexASTDeserializationListener> DeserializationListener;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 #endif

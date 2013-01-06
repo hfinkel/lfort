@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fobjc-runtime=macosx-fragile-10.5 -fsyntax-only -verify %s
 // rdar://6812436
 
 @interface A @end

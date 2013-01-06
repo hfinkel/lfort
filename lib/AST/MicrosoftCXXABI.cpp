@@ -13,13 +13,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "CXXABI.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclCXX.h"
-#include "clang/AST/RecordLayout.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/TargetInfo.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclCXX.h"
+#include "lfort/AST/RecordLayout.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/TargetInfo.h"
 
-using namespace clang;
+using namespace lfort;
 
 namespace {
 class MicrosoftCXXABI : public CXXABI {
@@ -65,7 +65,7 @@ unsigned MicrosoftCXXABI::getMemberPointerSize(const MemberPointerType *MPT) con
   return 1;
 }
 
-CXXABI *clang::CreateMicrosoftCXXABI(ASTContext &Ctx) {
+CXXABI *lfort::CreateMicrosoftCXXABI(ASTContext &Ctx) {
   return new MicrosoftCXXABI(Ctx);
 }
 

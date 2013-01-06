@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -O1 -emit-llvm -o - -fvisibility hidden %s | FileCheck %s
+// RUN: %lfort_cc1 -O1 -emit-llvm -o - -fvisibility hidden %s | FileCheck %s
 
 template<typename T>
 struct X {

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -emit-llvm-only
+// RUN: %lfort_cc1 %s -emit-llvm-only
 // PR6294
 
 class A {

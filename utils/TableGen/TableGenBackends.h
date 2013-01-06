@@ -1,4 +1,4 @@
-//===- TableGenBackends.h - Declarations for Clang TableGen Backends ------===//
+//===- TableGenBackends.h - Declarations for LFort TableGen Backends ------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file contains the declarations for all of the Clang TableGen
+// This file contains the declarations for all of the LFort TableGen
 // backends. A "TableGen backend" is just a function. See
 // "$LLVM_ROOT/utils/TableGen/TableGenBackends.h" for more info.
 //
@@ -23,34 +23,34 @@ namespace llvm {
 using llvm::raw_ostream;
 using llvm::RecordKeeper;
 
-namespace clang {
+namespace lfort {
 
-void EmitClangDeclContext(RecordKeeper &RK, raw_ostream &OS);
-void EmitClangASTNodes(RecordKeeper &RK, raw_ostream &OS,
+void EmitLFortDeclContext(RecordKeeper &RK, raw_ostream &OS);
+void EmitLFortASTNodes(RecordKeeper &RK, raw_ostream &OS,
                        const std::string &N, const std::string &S);
 
-void EmitClangAttrClass(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrImpl(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrList(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrPCHRead(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrPCHWrite(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrSpellingList(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrLateParsedList(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrTemplateInstantiate(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrParsedAttrList(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangAttrParsedAttrKinds(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrClass(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrImpl(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrList(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrPCHRead(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrPCHWrite(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrSpellingList(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrLateParsedList(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrTemplateInstantiate(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrParsedAttrList(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortAttrParsedAttrKinds(RecordKeeper &Records, raw_ostream &OS);
 
-void EmitClangDiagsDefs(RecordKeeper &Records, raw_ostream &OS,
+void EmitLFortDiagsDefs(RecordKeeper &Records, raw_ostream &OS,
                         const std::string &Component);
-void EmitClangDiagGroups(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangDiagsIndexName(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortDiagGroups(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortDiagsIndexName(RecordKeeper &Records, raw_ostream &OS);
 
-void EmitClangSACheckers(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortSACheckers(RecordKeeper &Records, raw_ostream &OS);
 
-void EmitClangCommentHTMLTags(RecordKeeper &Records, raw_ostream &OS);
-void EmitClangCommentHTMLTagsProperties(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortCommentHTMLTags(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortCommentHTMLTagsProperties(RecordKeeper &Records, raw_ostream &OS);
 
-void EmitClangCommentCommandInfo(RecordKeeper &Records, raw_ostream &OS);
+void EmitLFortCommentCommandInfo(RecordKeeper &Records, raw_ostream &OS);
 
 void EmitNeon(RecordKeeper &Records, raw_ostream &OS);
 void EmitNeonSema(RecordKeeper &Records, raw_ostream &OS);
@@ -58,4 +58,4 @@ void EmitNeonTest(RecordKeeper &Records, raw_ostream &OS);
 
 void EmitOptParser(RecordKeeper &Records, raw_ostream &OS, bool GenDefs);
 
-} // end namespace clang
+} // end namespace lfort

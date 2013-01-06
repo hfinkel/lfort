@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -O1 -emit-llvm %s -o - | grep icmp
+// RUN: %lfort_cc1 -O1 -emit-llvm %s -o - | grep icmp
 // PR1678
 
 extern void B (void);

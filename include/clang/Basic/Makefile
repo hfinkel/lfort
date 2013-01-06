@@ -1,4 +1,4 @@
-CLANG_LEVEL := ../../..
+LFORT_LEVEL := ../../..
 BUILT_SOURCES = \
 	DiagnosticAnalysisKinds.inc DiagnosticASTKinds.inc \
 	DiagnosticCommentKinds.inc \
@@ -11,52 +11,52 @@ BUILT_SOURCES = \
 
 TABLEGEN_INC_FILES_COMMON = 1
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 
 INPUT_TDS = $(wildcard $(PROJ_SRC_DIR)/Diagnostic*.td)
 
-# Compute the Clang version from the LLVM version, unless specified explicitly.
-ifndef CLANG_VERSION
-CLANG_VERSION := $(subst svn,,$(LLVMVersion))
-CLANG_VERSION := $(subst rc,,$(CLANG_VERSION))
+# Compute the LFort version from the LLVM version, unless specified explicitly.
+ifndef LFORT_VERSION
+LFORT_VERSION := $(subst svn,,$(LLVMVersion))
+LFORT_VERSION := $(subst rc,,$(LFORT_VERSION))
 endif
 
-CLANG_VERSION_COMPONENTS := $(subst ., ,$(CLANG_VERSION))
-CLANG_VERSION_MAJOR := $(word 1,$(CLANG_VERSION_COMPONENTS))
-CLANG_VERSION_MINOR := $(word 2,$(CLANG_VERSION_COMPONENTS))
-CLANG_VERSION_PATCHLEVEL := $(word 3,$(CLANG_VERSION_COMPONENTS))
-ifeq ($(CLANG_VERSION_PATCHLEVEL),)
-CLANG_HAS_VERSION_PATCHLEVEL := 0
+LFORT_VERSION_COMPONENTS := $(subst ., ,$(LFORT_VERSION))
+LFORT_VERSION_MAJOR := $(word 1,$(LFORT_VERSION_COMPONENTS))
+LFORT_VERSION_MINOR := $(word 2,$(LFORT_VERSION_COMPONENTS))
+LFORT_VERSION_PATCHLEVEL := $(word 3,$(LFORT_VERSION_COMPONENTS))
+ifeq ($(LFORT_VERSION_PATCHLEVEL),)
+LFORT_HAS_VERSION_PATCHLEVEL := 0
 else
-CLANG_HAS_VERSION_PATCHLEVEL := 1
+LFORT_HAS_VERSION_PATCHLEVEL := 1
 endif
 
-$(ObjDir)/Diagnostic%Kinds.inc.tmp : Diagnostic.td $(INPUT_TDS) $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang $(patsubst Diagnostic%Kinds.inc.tmp,%,$(@F)) diagnostic tables with tblgen"
-	$(Verb) $(ClangTableGen) -gen-clang-diags-defs -clang-component=$(patsubst Diagnostic%Kinds.inc.tmp,%,$(@F)) -o $(call SYSPATH, $@) $<
+$(ObjDir)/Diagnostic%Kinds.inc.tmp : Diagnostic.td $(INPUT_TDS) $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort $(patsubst Diagnostic%Kinds.inc.tmp,%,$(@F)) diagnostic tables with tblgen"
+	$(Verb) $(LFortTableGen) -gen-lfort-diags-defs -lfort-component=$(patsubst Diagnostic%Kinds.inc.tmp,%,$(@F)) -o $(call SYSPATH, $@) $<
 
-$(ObjDir)/DiagnosticIndexName.inc.tmp : Diagnostic.td $(INPUT_TDS) $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang diagnostic name index with tblgen"
-	$(Verb) $(ClangTableGen) -gen-clang-diags-index-name -o $(call SYSPATH, $@) $<
+$(ObjDir)/DiagnosticIndexName.inc.tmp : Diagnostic.td $(INPUT_TDS) $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort diagnostic name index with tblgen"
+	$(Verb) $(LFortTableGen) -gen-lfort-diags-index-name -o $(call SYSPATH, $@) $<
 
-$(ObjDir)/DiagnosticGroups.inc.tmp : Diagnostic.td DiagnosticGroups.td $(INPUT_TDS) $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang diagnostic groups with tblgen"
-	$(Verb) $(ClangTableGen) -gen-clang-diag-groups -o $(call SYSPATH, $@) $<
+$(ObjDir)/DiagnosticGroups.inc.tmp : Diagnostic.td DiagnosticGroups.td $(INPUT_TDS) $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort diagnostic groups with tblgen"
+	$(Verb) $(LFortTableGen) -gen-lfort-diag-groups -o $(call SYSPATH, $@) $<
 
-$(ObjDir)/AttrList.inc.tmp : Attr.td $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang attribute list with tblgen"
-	$(Verb) $(ClangTableGen) -gen-clang-attr-list -o $(call SYSPATH, $@) \
+$(ObjDir)/AttrList.inc.tmp : Attr.td $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort attribute list with tblgen"
+	$(Verb) $(LFortTableGen) -gen-lfort-attr-list -o $(call SYSPATH, $@) \
 	  -I $(PROJ_SRC_DIR)/../.. $<
 
-$(ObjDir)/arm_neon.inc.tmp : arm_neon.td $(CLANG_TBLGEN) $(ObjDir)/.dir
-	$(Echo) "Building Clang arm_neon.inc with tblgen"
-	$(Verb) $(ClangTableGen) -gen-arm-neon-sema -o $(call SYSPATH, $@) $<
+$(ObjDir)/arm_neon.inc.tmp : arm_neon.td $(LFORT_TBLGEN) $(ObjDir)/.dir
+	$(Echo) "Building LFort arm_neon.inc with tblgen"
+	$(Verb) $(LFortTableGen) -gen-arm-neon-sema -o $(call SYSPATH, $@) $<
 
 $(ObjDir)/Version.inc.tmp : Version.inc.in Makefile $(LLVM_OBJ_ROOT)/Makefile.config $(ObjDir)/.dir
-	$(Echo) "Updating Clang version info."
-	$(Verb)sed -e "s#@CLANG_VERSION@#$(CLANG_VERSION)#g" \
-	           -e "s#@CLANG_VERSION_MAJOR@#$(CLANG_VERSION_MAJOR)#g" \
-	           -e "s#@CLANG_VERSION_MINOR@#$(CLANG_VERSION_MINOR)#g" \
-	           -e "s#@CLANG_VERSION_PATCHLEVEL@#$(CLANG_VERSION_PATCHLEVEL)#g" \
-	           -e "s#@CLANG_HAS_VERSION_PATCHLEVEL@#$(CLANG_HAS_VERSION_PATCHLEVEL)#g" \
+	$(Echo) "Updating LFort version info."
+	$(Verb)sed -e "s#@LFORT_VERSION@#$(LFORT_VERSION)#g" \
+	           -e "s#@LFORT_VERSION_MAJOR@#$(LFORT_VERSION_MAJOR)#g" \
+	           -e "s#@LFORT_VERSION_MINOR@#$(LFORT_VERSION_MINOR)#g" \
+	           -e "s#@LFORT_VERSION_PATCHLEVEL@#$(LFORT_VERSION_PATCHLEVEL)#g" \
+	           -e "s#@LFORT_HAS_VERSION_PATCHLEVEL@#$(LFORT_HAS_VERSION_PATCHLEVEL)#g" \
 	           $< > $@

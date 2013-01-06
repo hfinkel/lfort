@@ -12,14 +12,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "MacroArgs.h"
-#include "clang/Lex/LexDiagnostic.h"
-#include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Preprocessor.h"
+#include "lfort/Lex/LexDiagnostic.h"
+#include "lfort/Lex/MacroInfo.h"
+#include "lfort/Lex/Preprocessor.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/SaveAndRestore.h"
 #include <algorithm>
 
-using namespace clang;
+using namespace lfort;
 
 /// MacroArgs ctor function - This destroys the vector passed in.
 MacroArgs *MacroArgs::create(const MacroInfo *MI,

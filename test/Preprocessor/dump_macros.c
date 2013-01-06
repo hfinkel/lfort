@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -E -dM %s -o - | FileCheck %s -strict-whitespace
+// RUN: %lfort_cc1 -E -dM %s -o - | FileCheck %s -strict-whitespace
 
 // Space at end even without expansion tokens
 // CHECK: #define A(x) 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // rdar: //6734520
 
 int foo(int)  __attribute__((__unavailable__("USE IFOO INSTEAD"))); // expected-note {{function has been explicitly marked unavailable here}}

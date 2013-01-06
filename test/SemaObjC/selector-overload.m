@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only
+// RUN: %lfort_cc1 %s -fsyntax-only
 
 @interface NSObject
 + alloc;

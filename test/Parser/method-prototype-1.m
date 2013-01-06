@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -fsyntax-only
+// RUN: %lfort_cc1 %s -fsyntax-only
 @interface MyObject 
 - (void) bycopy  : (int) woodo, ... ;
 - (void) break  : (int) woodo, ... ;

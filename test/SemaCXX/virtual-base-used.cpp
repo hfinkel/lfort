@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 // PR7800
 
 class NoDestroy { ~NoDestroy(); }; // expected-note 3 {{declared private here}}

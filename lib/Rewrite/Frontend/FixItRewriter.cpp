@@ -13,19 +13,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Rewrite/Frontend/FixItRewriter.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Edit/Commit.h"
-#include "clang/Edit/EditsReceiver.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
+#include "lfort/Rewrite/Frontend/FixItRewriter.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceLocation.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Edit/Commit.h"
+#include "lfort/Edit/EditsReceiver.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cstdio>
 
-using namespace clang;
+using namespace lfort;
 
 FixItRewriter::FixItRewriter(DiagnosticsEngine &Diags, SourceManager &SourceMgr,
                              const LangOptions &LangOpts,
@@ -95,7 +95,7 @@ bool FixItRewriter::WriteFixedFiles(
                                         llvm::raw_fd_ostream::F_Binary));
     }
     if (!Err.empty()) {
-      Diags.Report(clang::diag::err_fe_unable_to_open_output)
+      Diags.Report(lfort::diag::err_fe_unable_to_open_output)
           << Filename << Err;
       continue;
     }

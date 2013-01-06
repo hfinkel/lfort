@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/ExprObjC.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaFixItUtils.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/ExprObjC.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaFixItUtils.h"
 
-using namespace clang;
+using namespace lfort;
 
 bool ConversionFixItGenerator::compareTypesSimple(CanQualType From,
                                                   CanQualType To,

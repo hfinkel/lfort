@@ -20,22 +20,22 @@
 //  to only have the functions (which is all the user cares about) in the
 //  'ast_matchers' namespace and hide the boilerplate.
 //
-//  To define a matcher in user code, always put it into the clang::ast_matchers
+//  To define a matcher in user code, always put it into the lfort::ast_matchers
 //  namespace and refer to the internal types via the 'internal::':
 //
-//  namespace clang {
+//  namespace lfort {
 //  namespace ast_matchers {
 //  AST_MATCHER_P(MemberExpr, Member,
 //                internal::Matcher<ValueDecl>, InnerMatcher) {
 //    return InnerMatcher.matches(*Node.getMemberDecl(), Finder, Builder);
 //  }
 //  } // end namespace ast_matchers
-//  } // end namespace clang
+//  } // end namespace lfort
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_MACROS_H
-#define LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_MACROS_H
+#ifndef LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_MACROS_H
+#define LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_MACROS_H
 
 /// \brief AST_MATCHER(Type, DefineMatcher) { ... }
 /// defines a zero parameter function named DefineMatcher() that returns a
@@ -286,4 +286,4 @@ public:                                                                        \
 const Variadic##MatcherName##TypeLocTraverseMatcher MatcherName##Loc;          \
 AST_TYPE_TRAVERSE_MATCHER(MatcherName, FunctionName##Type)
 
-#endif // LLVM_CLANG_AST_MATCHERS_AST_MATCHERS_MACROS_H
+#endif // LLVM_LFORT_AST_MATCHERS_AST_MATCHERS_MACROS_H

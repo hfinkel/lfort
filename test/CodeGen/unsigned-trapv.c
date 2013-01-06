@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -fsanitize=unsigned-integer-overflow | FileCheck %s --check-prefix=UNSIGNED
-// RUN: %clang_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -ftrapv | FileCheck %s --check-prefix=TRAPV
-// RUN: %clang_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -fsanitize=unsigned-integer-overflow -ftrapv | FileCheck %s --check-prefix=BOTH
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -fsanitize=unsigned-integer-overflow | FileCheck %s --check-prefix=UNSIGNED
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -ftrapv | FileCheck %s --check-prefix=TRAPV
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - -fsanitize=unsigned-integer-overflow -ftrapv | FileCheck %s --check-prefix=BOTH
 // Verify that -ftrapv and -fsanitize=unsigned-integer-overflow
 // work together as expected
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s  -o /dev/null
+// RUN: %lfort_cc1 -emit-llvm %s  -o /dev/null
 
 /* This code used to break GCC's SSA computation code.  It would create
    uses of B & C that are not dominated by their definitions.  See:

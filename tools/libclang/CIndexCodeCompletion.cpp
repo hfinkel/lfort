@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the Clang-C Source Indexing library hooks for
+// This file implements the LFort-C Source Indexing library hooks for
 // code completion.
 //
 //===----------------------------------------------------------------------===//
@@ -17,15 +17,15 @@
 #include "CXCursor.h"
 #include "CXString.h"
 #include "CXTranslationUnit.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/Type.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Sema/CodeCompleteConsumer.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/Type.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/FrontendDiagnostic.h"
+#include "lfort/Sema/CodeCompleteConsumer.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/Atomic.h"
@@ -39,20 +39,20 @@
 
 
 #ifdef UDP_CODE_COMPLETION_LOGGER
-#include "clang/Basic/Version.h"
+#include "lfort/Basic/Version.h"
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-using namespace clang;
-using namespace clang::cxstring;
+using namespace lfort;
+using namespace lfort::cxstring;
 
 extern "C" {
 
 enum CXCompletionChunkKind
-clang_getCompletionChunkKind(CXCompletionString completion_string,
+lfort_getCompletionChunkKind(CXCompletionString completion_string,
                              unsigned chunk_number) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   if (!CCStr || chunk_number >= CCStr->size())
@@ -106,7 +106,7 @@ clang_getCompletionChunkKind(CXCompletionString completion_string,
   llvm_unreachable("Invalid CompletionKind!");
 }
 
-CXString clang_getCompletionChunkText(CXCompletionString completion_string,
+CXString lfort_getCompletionChunkText(CXCompletionString completion_string,
                                       unsigned chunk_number) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   if (!CCStr || chunk_number >= CCStr->size())
@@ -145,7 +145,7 @@ CXString clang_getCompletionChunkText(CXCompletionString completion_string,
 
 
 CXCompletionString
-clang_getCompletionChunkCompletionString(CXCompletionString completion_string,
+lfort_getCompletionChunkCompletionString(CXCompletionString completion_string,
                                          unsigned chunk_number) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   if (!CCStr || chunk_number >= CCStr->size())
@@ -182,30 +182,30 @@ clang_getCompletionChunkCompletionString(CXCompletionString completion_string,
   llvm_unreachable("Invalid CompletionKind!");
 }
 
-unsigned clang_getNumCompletionChunks(CXCompletionString completion_string) {
+unsigned lfort_getNumCompletionChunks(CXCompletionString completion_string) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   return CCStr? CCStr->size() : 0;
 }
 
-unsigned clang_getCompletionPriority(CXCompletionString completion_string) {
+unsigned lfort_getCompletionPriority(CXCompletionString completion_string) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   return CCStr? CCStr->getPriority() : unsigned(CCP_Unlikely);
 }
   
 enum CXAvailabilityKind 
-clang_getCompletionAvailability(CXCompletionString completion_string) {
+lfort_getCompletionAvailability(CXCompletionString completion_string) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   return CCStr? static_cast<CXAvailabilityKind>(CCStr->getAvailability())
               : CXAvailability_Available;
 }
 
-unsigned clang_getCompletionNumAnnotations(CXCompletionString completion_string)
+unsigned lfort_getCompletionNumAnnotations(CXCompletionString completion_string)
 {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   return CCStr ? CCStr->getAnnotationCount() : 0;
 }
 
-CXString clang_getCompletionAnnotation(CXCompletionString completion_string,
+CXString lfort_getCompletionAnnotation(CXCompletionString completion_string,
                                        unsigned annotation_number) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
   return CCStr ? createCXString(CCStr->getAnnotation(annotation_number))
@@ -213,7 +213,7 @@ CXString clang_getCompletionAnnotation(CXCompletionString completion_string,
 }
 
 CXString
-clang_getCompletionParent(CXCompletionString completion_string,
+lfort_getCompletionParent(CXCompletionString completion_string,
                           CXCursorKind *kind) {
   if (kind)
     *kind = CXCursor_NotImplemented;
@@ -226,7 +226,7 @@ clang_getCompletionParent(CXCompletionString completion_string,
 }
 
 CXString
-clang_getCompletionBriefComment(CXCompletionString completion_string) {
+lfort_getCompletionBriefComment(CXCompletionString completion_string) {
   CodeCompletionString *CCStr = (CodeCompletionString *)completion_string;
 
   if (!CCStr)
@@ -271,15 +271,15 @@ struct AllocatedCXCodeCompleteResults : public CXCodeCompleteResults {
   SmallVector<const llvm::MemoryBuffer *, 1> TemporaryBuffers;
   
   /// \brief Allocator used to store globally cached code-completion results.
-  IntrusiveRefCntPtr<clang::GlobalCodeCompletionAllocator>
+  IntrusiveRefCntPtr<lfort::GlobalCodeCompletionAllocator>
     CachedCompletionAllocator;
   
   /// \brief Allocator used to store code completion results.
-  IntrusiveRefCntPtr<clang::GlobalCodeCompletionAllocator>
+  IntrusiveRefCntPtr<lfort::GlobalCodeCompletionAllocator>
     CodeCompletionAllocator;
   
   /// \brief Context under which completion occurred.
-  enum clang::CodeCompletionContext::Kind ContextKind;
+  enum lfort::CodeCompletionContext::Kind ContextKind;
   
   /// \brief A bitfield representing the acceptable completions for the
   /// current context.
@@ -316,13 +316,13 @@ AllocatedCXCodeCompleteResults::AllocatedCXCodeCompleteResults(
     FileSystemOpts(FileSystemOpts),
     FileMgr(new FileManager(FileSystemOpts)),
     SourceMgr(new SourceManager(*Diag, *FileMgr)),
-    CodeCompletionAllocator(new clang::GlobalCodeCompletionAllocator),
+    CodeCompletionAllocator(new lfort::GlobalCodeCompletionAllocator),
     Contexts(CXCompletionContext_Unknown),
     ContainerKind(CXCursor_InvalidCode),
     ContainerUSR(createCXString("")),
     ContainerIsIncomplete(1)
 { 
-  if (getenv("LIBCLANG_OBJTRACKING")) {
+  if (getenv("LIBLFORT_OBJTRACKING")) {
     llvm::sys::AtomicIncrement(&CodeCompletionResultObjects);
     fprintf(stderr, "+++ %d completion results\n", CodeCompletionResultObjects);
   }    
@@ -331,14 +331,14 @@ AllocatedCXCodeCompleteResults::AllocatedCXCodeCompleteResults(
 AllocatedCXCodeCompleteResults::~AllocatedCXCodeCompleteResults() {
   delete [] Results;
   
-  clang_disposeString(ContainerUSR);
+  lfort_disposeString(ContainerUSR);
   
   for (unsigned I = 0, N = TemporaryFiles.size(); I != N; ++I)
     TemporaryFiles[I].eraseFromDisk();
   for (unsigned I = 0, N = TemporaryBuffers.size(); I != N; ++I)
     delete TemporaryBuffers[I];
 
-  if (getenv("LIBCLANG_OBJTRACKING")) {
+  if (getenv("LIBLFORT_OBJTRACKING")) {
     llvm::sys::AtomicDecrement(&CodeCompletionResultObjects);
     fprintf(stderr, "--- %d completion results\n", CodeCompletionResultObjects);
   }    
@@ -502,7 +502,7 @@ static unsigned long long getContextsForContextKind(
     case CodeCompletionContext::CCC_PreprocessorExpression:
     case CodeCompletionContext::CCC_PreprocessorDirective:
     case CodeCompletionContext::CCC_TypeQualifiers: {
-      //Only Clang results should be accepted, so we'll set all of the other
+      //Only LFort results should be accepted, so we'll set all of the other
       //context bits to 0 (i.e. the empty set)
       contexts = CXCompletionContext_Unexposed;
       break;
@@ -590,8 +590,8 @@ namespace {
       if (D != NULL) {
         CXCursor cursor = cxcursor::MakeCXCursor(D, *TU);
         
-        CXCursorKind cursorKind = clang_getCursorKind(cursor);
-        CXString cursorUSR = clang_getCursorUSR(cursor);
+        CXCursorKind cursorKind = lfort_getCursorKind(cursor);
+        CXString cursorUSR = lfort_getCursorUSR(cursor);
         
         // Normally, clients of CXString shouldn't care whether or not
         // a CXString is managed by a pool or by explicitly malloc'ed memory.
@@ -599,8 +599,8 @@ namespace {
         // CXTranslationUnit.  This is a workaround that failure mode.
         if (cxstring::isManagedByPool(cursorUSR)) {
           CXString heapStr =
-            cxstring::createCXString(clang_getCString(cursorUSR), true);
-          clang_disposeString(cursorUSR);
+            cxstring::createCXString(lfort_getCString(cursorUSR), true);
+          lfort_disposeString(cursorUSR);
           cursorUSR = heapStr;
         }
         
@@ -666,7 +666,7 @@ struct CodeCompleteAtInfo {
   unsigned options;
   CXCodeCompleteResults *result;
 };
-void clang_codeCompleteAt_Impl(void *UserData) {
+void lfort_codeCompleteAt_Impl(void *UserData) {
   CodeCompleteAtInfo *CCAI = static_cast<CodeCompleteAtInfo*>(UserData);
   CXTranslationUnit TU = CCAI->TU;
   const char *complete_filename = CCAI->complete_filename;
@@ -684,7 +684,7 @@ void clang_codeCompleteAt_Impl(void *UserData) {
 #endif
 #endif
 
-  bool EnableLogging = getenv("LIBCLANG_CODE_COMPLETION_LOGGING") != 0;
+  bool EnableLogging = getenv("LIBLFORT_CODE_COMPLETION_LOGGING") != 0;
   
   ASTUnit *AST = static_cast<ASTUnit *>(TU->TUData);
   if (!AST)
@@ -785,7 +785,7 @@ void clang_codeCompleteAt_Impl(void *UserData) {
   os << ", \"lang\": \"" << (lang ? lang : "<unknown>") << '"';
   const char *name = getlogin();
   os << ", \"user\": \"" << (name ? name : "unknown") << '"';
-  os << ", \"clangVer\": \"" << getClangFullVersion() << '"';
+  os << ", \"lfortVer\": \"" << getLFortFullVersion() << '"';
   os << " }";
 
   StringRef res = os.str();
@@ -814,7 +814,7 @@ void clang_codeCompleteAt_Impl(void *UserData) {
 #endif
   CCAI->result = Results;
 }
-CXCodeCompleteResults *clang_codeCompleteAt(CXTranslationUnit TU,
+CXCodeCompleteResults *lfort_codeCompleteAt(CXTranslationUnit TU,
                                             const char *complete_filename,
                                             unsigned complete_line,
                                             unsigned complete_column,
@@ -825,28 +825,28 @@ CXCodeCompleteResults *clang_codeCompleteAt(CXTranslationUnit TU,
                               complete_column, unsaved_files, num_unsaved_files,
                               options, 0 };
 
-  if (getenv("LIBCLANG_NOTHREADS")) {
-    clang_codeCompleteAt_Impl(&CCAI);
+  if (getenv("LIBLFORT_NOTHREADS")) {
+    lfort_codeCompleteAt_Impl(&CCAI);
     return CCAI.result;
   }
 
   llvm::CrashRecoveryContext CRC;
 
-  if (!RunSafely(CRC, clang_codeCompleteAt_Impl, &CCAI)) {
-    fprintf(stderr, "libclang: crash detected in code completion\n");
+  if (!RunSafely(CRC, lfort_codeCompleteAt_Impl, &CCAI)) {
+    fprintf(stderr, "liblfort: crash detected in code completion\n");
     static_cast<ASTUnit *>(TU->TUData)->setUnsafeToFree(true);
     return 0;
-  } else if (getenv("LIBCLANG_RESOURCE_USAGE"))
-    PrintLibclangResourceUsage(TU);
+  } else if (getenv("LIBLFORT_RESOURCE_USAGE"))
+    PrintLiblfortResourceUsage(TU);
 
   return CCAI.result;
 }
 
-unsigned clang_defaultCodeCompleteOptions(void) {
+unsigned lfort_defaultCodeCompleteOptions(void) {
   return CXCodeComplete_IncludeMacros;
 }
 
-void clang_disposeCodeCompleteResults(CXCodeCompleteResults *ResultsIn) {
+void lfort_disposeCodeCompleteResults(CXCodeCompleteResults *ResultsIn) {
   if (!ResultsIn)
     return;
 
@@ -856,7 +856,7 @@ void clang_disposeCodeCompleteResults(CXCodeCompleteResults *ResultsIn) {
 }
   
 unsigned 
-clang_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *ResultsIn) {
+lfort_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *ResultsIn) {
   AllocatedCXCodeCompleteResults *Results
     = static_cast<AllocatedCXCodeCompleteResults*>(ResultsIn);
   if (!Results)
@@ -866,7 +866,7 @@ clang_codeCompleteGetNumDiagnostics(CXCodeCompleteResults *ResultsIn) {
 }
 
 CXDiagnostic 
-clang_codeCompleteGetDiagnostic(CXCodeCompleteResults *ResultsIn,
+lfort_codeCompleteGetDiagnostic(CXCodeCompleteResults *ResultsIn,
                                 unsigned Index) {
   AllocatedCXCodeCompleteResults *Results
     = static_cast<AllocatedCXCodeCompleteResults*>(ResultsIn);
@@ -877,7 +877,7 @@ clang_codeCompleteGetDiagnostic(CXCodeCompleteResults *ResultsIn,
 }
 
 unsigned long long
-clang_codeCompleteGetContexts(CXCodeCompleteResults *ResultsIn) {
+lfort_codeCompleteGetContexts(CXCodeCompleteResults *ResultsIn) {
   AllocatedCXCodeCompleteResults *Results
     = static_cast<AllocatedCXCodeCompleteResults*>(ResultsIn);
   if (!Results)
@@ -886,7 +886,7 @@ clang_codeCompleteGetContexts(CXCodeCompleteResults *ResultsIn) {
   return Results->Contexts;
 }
 
-enum CXCursorKind clang_codeCompleteGetContainerKind(
+enum CXCursorKind lfort_codeCompleteGetContainerKind(
                                                CXCodeCompleteResults *ResultsIn,
                                                      unsigned *IsIncomplete) {
   AllocatedCXCodeCompleteResults *Results =
@@ -901,17 +901,17 @@ enum CXCursorKind clang_codeCompleteGetContainerKind(
   return Results->ContainerKind;
 }
   
-CXString clang_codeCompleteGetContainerUSR(CXCodeCompleteResults *ResultsIn) {
+CXString lfort_codeCompleteGetContainerUSR(CXCodeCompleteResults *ResultsIn) {
   AllocatedCXCodeCompleteResults *Results =
     static_cast<AllocatedCXCodeCompleteResults *>(ResultsIn);
   if (!Results)
     return createCXString("");
   
-  return createCXString(clang_getCString(Results->ContainerUSR));
+  return createCXString(lfort_getCString(Results->ContainerUSR));
 }
 
   
-CXString clang_codeCompleteGetObjCSelector(CXCodeCompleteResults *ResultsIn) {
+CXString lfort_codeCompleteGetObjCSelector(CXCodeCompleteResults *ResultsIn) {
   AllocatedCXCodeCompleteResults *Results =
     static_cast<AllocatedCXCodeCompleteResults *>(ResultsIn);
   if (!Results)
@@ -995,7 +995,7 @@ namespace {
 }
 
 extern "C" {
-  void clang_sortCodeCompletionResults(CXCompletionResult *Results,
+  void lfort_sortCodeCompletionResults(CXCompletionResult *Results,
                                        unsigned NumResults) {
     std::stable_sort(Results, Results + NumResults, OrderCompletionResults());
   }

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm-only -verify %s
+// RUN: %lfort_cc1 -emit-llvm-only -verify %s
 // expected-no-diagnostics
 // PR5454
 #include <stddef.h>

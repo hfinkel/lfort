@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/ChainedDiagnosticConsumer.h"
+#include "lfort/Frontend/ChainedDiagnosticConsumer.h"
 
-using namespace clang;
+using namespace lfort;
 
 void ChainedDiagnosticConsumer::anchor() { }

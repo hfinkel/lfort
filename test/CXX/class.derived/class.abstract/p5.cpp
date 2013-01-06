@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %lfort_cc1 -fsyntax-only -verify %s
 
 struct A {
   virtual void f() = 0; // expected-note{{unimplemented pure virtual method}}

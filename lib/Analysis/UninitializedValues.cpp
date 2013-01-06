@@ -11,15 +11,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Attr.h"
-#include "clang/AST/Decl.h"
-#include "clang/Analysis/Analyses/PostOrderCFGView.h"
-#include "clang/Analysis/Analyses/UninitializedValues.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/Analysis/DomainSpecific/ObjCNoReturn.h"
-#include "clang/Analysis/Visitors/CFGRecStmtDeclVisitor.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/Analysis/Analyses/PostOrderCFGView.h"
+#include "lfort/Analysis/Analyses/UninitializedValues.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Analysis/CFG.h"
+#include "lfort/Analysis/DomainSpecific/ObjCNoReturn.h"
+#include "lfort/Analysis/Visitors/CFGRecStmtDeclVisitor.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/PackedVector.h"
@@ -28,7 +28,7 @@
 #include "llvm/Support/SaveAndRestore.h"
 #include <utility>
 
-using namespace clang;
+using namespace lfort;
 
 #define DEBUG_LOGGING 0
 
@@ -224,7 +224,7 @@ public:
 };
 }
 
-void DataflowWorklist::enqueueSuccessors(const clang::CFGBlock *block) {
+void DataflowWorklist::enqueueSuccessors(const lfort::CFGBlock *block) {
   for (CFGBlock::const_succ_iterator I = block->succ_begin(),
        E = block->succ_end(); I != E; ++I) {
     const CFGBlock *Successor = *I;
@@ -780,7 +780,7 @@ struct PruneBlocksHandler : public UninitVariablesHandler {
 };
 }
 
-void clang::runUninitializedVariablesAnalysis(
+void lfort::runUninitializedVariablesAnalysis(
     const DeclContext &dc,
     const CFG &cfg,
     AnalysisDeclContext &ac,

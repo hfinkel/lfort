@@ -12,10 +12,10 @@ name.
 Creating a FrontendAction
 =========================
 
-When writing a clang based tool like a Clang Plugin or a standalone tool
+When writing a lfort based tool like a LFort Plugin or a standalone tool
 based on LibTooling, the common entry point is the FrontendAction.
 FrontendAction is an interface that allows execution of user specific
-actions as part of the compilation. To run tools over the AST clang
+actions as part of the compilation. To run tools over the AST lfort
 provides the convenience interface ASTFrontendAction, which takes care
 of executing the action. The only part left is to implement the
 CreateASTConsumer method that returns an ASTConsumer per translation
@@ -23,10 +23,10 @@ unit.
 
 ::
 
-      class FindNamedClassAction : public clang::ASTFrontendAction {
+      class FindNamedClassAction : public lfort::ASTFrontendAction {
       public:
-        virtual clang::ASTConsumer *CreateASTConsumer(
-          clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+        virtual lfort::ASTConsumer *CreateASTConsumer(
+          lfort::CompilerInstance &Compiler, llvm::StringRef InFile) {
           return new FindNamedClassConsumer;
         }
       };
@@ -42,9 +42,9 @@ translation unit.
 
 ::
 
-      class FindNamedClassConsumer : public clang::ASTConsumer {
+      class FindNamedClassConsumer : public lfort::ASTConsumer {
       public:
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
           // Traversing the translation unit decl via a RecursiveASTVisitor
           // will visit all nodes in the AST.
           Visitor.TraverseDecl(Context.getTranslationUnitDecl());
@@ -85,7 +85,7 @@ CXXRecordDecl's.
       };
 
 In the methods of our RecursiveASTVisitor we can now use the full power
-of the Clang AST to drill through to the parts that are interesting for
+of the LFort AST to drill through to the parts that are interesting for
 us. For example, to find all class declaration with a certain name, we
 can check for a specific qualified name:
 
@@ -111,8 +111,8 @@ freshly created FindNamedClassConsumer:
 
 ::
 
-      virtual clang::ASTConsumer *CreateASTConsumer(
-        clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+      virtual lfort::ASTConsumer *CreateASTConsumer(
+        lfort::CompilerInstance &Compiler, llvm::StringRef InFile) {
         return new FindNamedClassConsumer(&Compiler.getASTContext());
       }
 
@@ -142,13 +142,13 @@ Now we can combine all of the above into a small example program:
 
 ::
 
-      #include "clang/AST/ASTConsumer.h"
-      #include "clang/AST/RecursiveASTVisitor.h"
-      #include "clang/Frontend/CompilerInstance.h"
-      #include "clang/Frontend/FrontendAction.h"
-      #include "clang/Tooling/Tooling.h"
+      #include "lfort/AST/ASTConsumer.h"
+      #include "lfort/AST/RecursiveASTVisitor.h"
+      #include "lfort/Frontend/CompilerInstance.h"
+      #include "lfort/Frontend/FrontendAction.h"
+      #include "lfort/Tooling/Tooling.h"
 
-      using namespace clang;
+      using namespace lfort;
 
       class FindNamedClassVisitor
         : public RecursiveASTVisitor<FindNamedClassVisitor> {
@@ -171,29 +171,29 @@ Now we can combine all of the above into a small example program:
         ASTContext *Context;
       };
 
-      class FindNamedClassConsumer : public clang::ASTConsumer {
+      class FindNamedClassConsumer : public lfort::ASTConsumer {
       public:
         explicit FindNamedClassConsumer(ASTContext *Context)
           : Visitor(Context) {}
 
-        virtual void HandleTranslationUnit(clang::ASTContext &Context) {
+        virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
           Visitor.TraverseDecl(Context.getTranslationUnitDecl());
         }
       private:
         FindNamedClassVisitor Visitor;
       };
 
-      class FindNamedClassAction : public clang::ASTFrontendAction {
+      class FindNamedClassAction : public lfort::ASTFrontendAction {
       public:
-        virtual clang::ASTConsumer *CreateASTConsumer(
-          clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+        virtual lfort::ASTConsumer *CreateASTConsumer(
+          lfort::CompilerInstance &Compiler, llvm::StringRef InFile) {
           return new FindNamedClassConsumer(&Compiler.getASTContext());
         }
       };
 
       int main(int argc, char **argv) {
         if (argc > 1) {
-          clang::tooling::runToolOnCode(new FindNamedClassAction, argv[1]);
+          lfort::tooling::runToolOnCode(new FindNamedClassAction, argv[1]);
         }
       }
 
@@ -202,9 +202,9 @@ following CMakeLists.txt to link it:
 
 ::
 
-    set(LLVM_USED_LIBS clangTooling)
+    set(LLVM_USED_LIBS lfortTooling)
 
-    add_clang_executable(find-class-decls FindClassDecls.cpp)
+    add_lfort_executable(find-class-decls FindClassDecls.cpp)
 
 When running this tool over a small code snippet it will output all
 declarations of a class n::m::C it found:

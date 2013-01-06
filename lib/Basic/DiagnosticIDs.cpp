@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Basic/DiagnosticIDs.h"
-#include "clang/Basic/AllDiagnostics.h"
-#include "clang/Basic/DiagnosticCategories.h"
-#include "clang/Basic/SourceManager.h"
+#include "lfort/Basic/DiagnosticIDs.h"
+#include "lfort/Basic/AllDiagnostics.h"
+#include "lfort/Basic/DiagnosticCategories.h"
+#include "lfort/Basic/SourceManager.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <map>
-using namespace clang;
+using namespace lfort;
 
 //===----------------------------------------------------------------------===//
 // Builtin Diagnostic information
@@ -71,16 +71,16 @@ static const StaticDiagInfoRec StaticDiagInfo[] = {
   { diag::ENUM, DEFAULT_MAPPING, CLASS, SFINAE, ACCESS,           \
     NOWERROR, SHOWINSYSHEADER, CATEGORY, GROUP,                   \
     STR_SIZE(DESC, uint16_t), DESC },
-#include "clang/Basic/DiagnosticCommonKinds.inc"
-#include "clang/Basic/DiagnosticDriverKinds.inc"
-#include "clang/Basic/DiagnosticFrontendKinds.inc"
-#include "clang/Basic/DiagnosticSerializationKinds.inc"
-#include "clang/Basic/DiagnosticLexKinds.inc"
-#include "clang/Basic/DiagnosticParseKinds.inc"
-#include "clang/Basic/DiagnosticASTKinds.inc"
-#include "clang/Basic/DiagnosticCommentKinds.inc"
-#include "clang/Basic/DiagnosticSemaKinds.inc"
-#include "clang/Basic/DiagnosticAnalysisKinds.inc"
+#include "lfort/Basic/DiagnosticCommonKinds.inc"
+#include "lfort/Basic/DiagnosticDriverKinds.inc"
+#include "lfort/Basic/DiagnosticFrontendKinds.inc"
+#include "lfort/Basic/DiagnosticSerializationKinds.inc"
+#include "lfort/Basic/DiagnosticLexKinds.inc"
+#include "lfort/Basic/DiagnosticParseKinds.inc"
+#include "lfort/Basic/DiagnosticASTKinds.inc"
+#include "lfort/Basic/DiagnosticCommentKinds.inc"
+#include "lfort/Basic/DiagnosticSemaKinds.inc"
+#include "lfort/Basic/DiagnosticAnalysisKinds.inc"
 #undef DIAG
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
@@ -97,7 +97,7 @@ static const StaticDiagInfoRec *GetDiagInfo(unsigned DiagID) {
   if (IsFirst) {
     for (unsigned i = 1; i != StaticDiagInfoSize; ++i) {
       assert(StaticDiagInfo[i-1].DiagID != StaticDiagInfo[i].DiagID &&
-             "Diag ID conflict, the enums at the start of clang::diag (in "
+             "Diag ID conflict, the enums at the start of lfort::diag (in "
              "DiagnosticIDs.h) probably need to be increased");
 
       assert(StaticDiagInfo[i-1] < StaticDiagInfo[i] &&
@@ -217,7 +217,7 @@ DiagnosticMappingInfo &DiagnosticsEngine::DiagState::getOrAddMappingInfo(
 static const StaticDiagCategoryRec CategoryNameTable[] = {
 #define GET_CATEGORY_TABLE
 #define CATEGORY(X, ENUM) { X, STR_SIZE(X, uint8_t) },
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef GET_CATEGORY_TABLE
   { 0, 0 }
 };
@@ -269,7 +269,7 @@ static unsigned getBuiltinDiagClass(unsigned DiagID) {
 // Custom Diagnostic information
 //===----------------------------------------------------------------------===//
 
-namespace clang {
+namespace lfort {
   namespace diag {
     class CustomDiagInfo {
       typedef std::pair<DiagnosticIDs::Level, std::string> DiagDesc;
@@ -309,7 +309,7 @@ namespace clang {
     };
 
   } // end diag namespace
-} // end clang namespace
+} // end lfort namespace
 
 
 //===----------------------------------------------------------------------===//
@@ -504,7 +504,7 @@ DiagnosticIDs::getDiagnosticLevel(unsigned DiagID, unsigned DiagClass,
   return Result;
 }
 
-struct clang::WarningOption {
+struct lfort::WarningOption {
   // Be safe with the size of 'NameLen' because we don't statically check if
   // the size will fit in the field; the struct size won't decrease with a
   // shorter type anyway.
@@ -519,13 +519,13 @@ struct clang::WarningOption {
 };
 
 #define GET_DIAG_ARRAYS
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef GET_DIAG_ARRAYS
 
 // Second the table of options, sorted by name for fast binary lookup.
 static const WarningOption OptionTable[] = {
 #define GET_DIAG_TABLE
-#include "clang/Basic/DiagnosticGroups.inc"
+#include "lfort/Basic/DiagnosticGroups.inc"
 #undef GET_DIAG_TABLE
 };
 static const size_t OptionTableSize =

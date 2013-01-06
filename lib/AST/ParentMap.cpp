@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/ParentMap.h"
-#include "clang/AST/Decl.h"
-#include "clang/AST/Expr.h"
+#include "lfort/AST/ParentMap.h"
+#include "lfort/AST/Decl.h"
+#include "lfort/AST/Expr.h"
 #include "llvm/ADT/DenseMap.h"
 
-using namespace clang;
+using namespace lfort;
 
 typedef llvm::DenseMap<Stmt*, Stmt*> MapTy;
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple le32-unknown-nacl %s -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 -triple le32-unknown-nacl %s -emit-llvm -o - | FileCheck %s
 
 #define FASTCALL __attribute__((regparm(2)))
 

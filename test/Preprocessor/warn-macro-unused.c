@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -Wunused-macros -Dfoo -Dfoo -verify
+// RUN: %lfort_cc1 %s -Wunused-macros -Dfoo -Dfoo -verify
 
 #include "warn-macro-unused.h"
 

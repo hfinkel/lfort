@@ -7,13 +7,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_CHAINEDDIAGNOSTICCONSUMER_H
-#define LLVM_CLANG_FRONTEND_CHAINEDDIAGNOSTICCONSUMER_H
+#ifndef LLVM_LFORT_FRONTEND_CHAINEDDIAGNOSTICCONSUMER_H
+#define LLVM_LFORT_FRONTEND_CHAINEDDIAGNOSTICCONSUMER_H
 
-#include "clang/Basic/Diagnostic.h"
+#include "lfort/Basic/Diagnostic.h"
 #include "llvm/ADT/OwningPtr.h"
 
-namespace clang {
+namespace lfort {
 class LangOptions;
 
 /// ChainedDiagnosticConsumer - Chain two diagnostic clients so that diagnostics
@@ -68,6 +68,6 @@ public:
 
 };
 
-} // end namspace clang
+} // end namspace lfort
 
 #endif

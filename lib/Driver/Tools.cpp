@@ -11,18 +11,18 @@
 #include "InputInfo.h"
 #include "SanitizerArgs.h"
 #include "ToolChains.h"
-#include "clang/Basic/ObjCRuntime.h"
-#include "clang/Driver/Action.h"
-#include "clang/Driver/Arg.h"
-#include "clang/Driver/ArgList.h"
-#include "clang/Driver/Compilation.h"
-#include "clang/Driver/Driver.h"
-#include "clang/Driver/DriverDiagnostic.h"
-#include "clang/Driver/Job.h"
-#include "clang/Driver/Option.h"
-#include "clang/Driver/Options.h"
-#include "clang/Driver/ToolChain.h"
-#include "clang/Driver/Util.h"
+#include "lfort/Basic/ObjCRuntime.h"
+#include "lfort/Driver/Action.h"
+#include "lfort/Driver/Arg.h"
+#include "lfort/Driver/ArgList.h"
+#include "lfort/Driver/Compilation.h"
+#include "lfort/Driver/Driver.h"
+#include "lfort/Driver/DriverDiagnostic.h"
+#include "lfort/Driver/Job.h"
+#include "lfort/Driver/Option.h"
+#include "lfort/Driver/Options.h"
+#include "lfort/Driver/ToolChain.h"
+#include "lfort/Driver/Util.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Twine.h"
@@ -33,9 +33,9 @@
 #include "llvm/Support/Process.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang::driver;
-using namespace clang::driver::tools;
-using namespace clang;
+using namespace lfort::driver;
+using namespace lfort::driver::tools;
+using namespace lfort;
 
 /// CheckPreprocessingOptions - Perform some validation of preprocessing
 /// arguments that is shared with gcc.
@@ -226,7 +226,7 @@ static bool forwardToGCC(const Option &O) {
          !O.hasFlag(options::LinkerInput);
 }
 
-void Clang::AddPreprocessingOptions(Compilation &C,
+void LFort::AddPreprocessingOptions(Compilation &C,
                                     const Driver &D,
                                     const ArgList &Args,
                                     ArgStringList &CmdArgs,
@@ -323,7 +323,7 @@ void Clang::AddPreprocessingOptions(Compilation &C,
   // replacement into a build system already set up to be generating
   // .gch files.
   bool RenderedImplicitInclude = false;
-  for (arg_iterator it = Args.filtered_begin(options::OPT_clang_i_Group),
+  for (arg_iterator it = Args.filtered_begin(options::OPT_lfort_i_Group),
          ie = Args.filtered_end(); it != ie; ++it) {
     const Arg *A = it;
 
@@ -422,7 +422,7 @@ void Clang::AddPreprocessingOptions(Compilation &C,
     SmallString<128> DefaultModuleCache;
     llvm::sys::path::system_temp_directory(/*erasedOnReboot=*/false, 
                                            DefaultModuleCache);
-    llvm::sys::path::append(DefaultModuleCache, "clang-module-cache");
+    llvm::sys::path::append(DefaultModuleCache, "lfort-module-cache");
     CmdArgs.push_back("-fmodule-cache-path");
     CmdArgs.push_back(Args.MakeArgString(DefaultModuleCache));
   }
@@ -444,10 +444,10 @@ void Clang::AddPreprocessingOptions(Compilation &C,
 
   // Add C++ include arguments, if needed.
   if (types::isCXX(Inputs[0].getType()))
-    getToolChain().AddClangCXXStdlibIncludeArgs(Args, CmdArgs);
+    getToolChain().AddLFortCXXStdlibIncludeArgs(Args, CmdArgs);
 
   // Add system include arguments.
-  getToolChain().AddClangSystemIncludeArgs(Args, CmdArgs);
+  getToolChain().AddLFortSystemIncludeArgs(Args, CmdArgs);
 }
 
 /// getLLVMArchSuffixForARM - Get the LLVM arch name to use for a particular
@@ -594,7 +594,7 @@ static void addFPUArgs(const Driver &D, const Arg *A, const ArgList &Args,
     CmdArgs.push_back("-target-feature");
     CmdArgs.push_back("+neon");
   } else
-    D.Diag(diag::err_drv_clang_unsupported) << A->getAsString(Args);
+    D.Diag(diag::err_drv_lfort_unsupported) << A->getAsString(Args);
 }
 
 // Handle -mfpmath=.
@@ -618,7 +618,7 @@ static void addFPMathArgs(const Driver &D, const Arg *A, const ArgList &Args,
 
     // FIXME: Add warnings when disabling a feature not present for a given CPU.    
   } else
-    D.Diag(diag::err_drv_clang_unsupported) << A->getAsString(Args);
+    D.Diag(diag::err_drv_lfort_unsupported) << A->getAsString(Args);
 }
 
 // Select the float ABI as determined by -msoft-float, -mhard-float, and
@@ -702,12 +702,12 @@ static StringRef getARMFloatABI(const Driver &D,
 }
 
 
-void Clang::AddARMTargetArgs(const ArgList &Args,
+void LFort::AddARMTargetArgs(const ArgList &Args,
                              ArgStringList &CmdArgs,
                              bool KernelOrKext) const {
   const Driver &D = getToolChain().getDriver();
   // Get the effective triple, which takes into account the deployment target.
-  std::string TripleStr = getToolChain().ComputeEffectiveClangTriple(Args);
+  std::string TripleStr = getToolChain().ComputeEffectiveLFortTriple(Args);
   llvm::Triple Triple(TripleStr);
   std::string CPUName = getARMTargetCPU(Args, Triple);
 
@@ -943,7 +943,7 @@ static void AddTargetFeature(const ArgList &Args,
   }
 }
 
-void Clang::AddMIPSTargetArgs(const ArgList &Args,
+void LFort::AddMIPSTargetArgs(const ArgList &Args,
                              ArgStringList &CmdArgs) const {
   const Driver &D = getToolChain().getDriver();
   StringRef CPUName;
@@ -1055,7 +1055,7 @@ static std::string getPPCTargetCPU(const ArgList &Args) {
   return "";
 }
 
-void Clang::AddPPCTargetArgs(const ArgList &Args,
+void LFort::AddPPCTargetArgs(const ArgList &Args,
                              ArgStringList &CmdArgs) const {
   std::string TargetCPUName = getPPCTargetCPU(Args);
 
@@ -1076,7 +1076,7 @@ void Clang::AddPPCTargetArgs(const ArgList &Args,
   }
 }
 
-void Clang::AddSparcTargetArgs(const ArgList &Args,
+void LFort::AddSparcTargetArgs(const ArgList &Args,
                              ArgStringList &CmdArgs) const {
   const Driver &D = getToolChain().getDriver();
 
@@ -1119,7 +1119,7 @@ void Clang::AddSparcTargetArgs(const ArgList &Args,
   }
 }
 
-void Clang::AddX86TargetArgs(const ArgList &Args,
+void LFort::AddX86TargetArgs(const ArgList &Args,
                              ArgStringList &CmdArgs) const {
   const bool isAndroid =
     getToolChain().getTriple().getEnvironment() == llvm::Triple::Android;
@@ -1255,7 +1255,7 @@ static std::string GetHexagonSmallDataThresholdValue(const ArgList &Args) {
   return value;
 }
 
-void Clang::AddHexagonTargetArgs(const ArgList &Args,
+void LFort::AddHexagonTargetArgs(const ArgList &Args,
                                  ArgStringList &CmdArgs) const {
   llvm::Triple Triple = getToolChain().getTriple();
 
@@ -1513,16 +1513,16 @@ static void addAsanRTLinux(const ToolChain &TC, const ArgList &Args,
 
     SmallString<128> LibAsan(TC.getDriver().ResourceDir);
     llvm::sys::path::append(LibAsan, "lib", "linux",
-        (Twine("libclang_rt.asan-") +
+        (Twine("liblfort_rt.asan-") +
             TC.getArchName() + "-android.so"));
     CmdArgs.insert(CmdArgs.begin(), Args.MakeArgString(LibAsan));
   } else {
     if (!Args.hasArg(options::OPT_shared)) {
-      // LibAsan is "libclang_rt.asan-<ArchName>.a" in the Linux library
+      // LibAsan is "liblfort_rt.asan-<ArchName>.a" in the Linux library
       // resource directory.
       SmallString<128> LibAsan(TC.getDriver().ResourceDir);
       llvm::sys::path::append(LibAsan, "lib", "linux",
-                              (Twine("libclang_rt.asan-") +
+                              (Twine("liblfort_rt.asan-") +
                                TC.getArchName() + ".a"));
       // The ASan runtime needs to come before -lstdc++ (or -lc++, libstdc++.a,
       // etc.) so that the linker picks ASan's versions of the global 'operator
@@ -1550,11 +1550,11 @@ static void addTsanRTLinux(const ToolChain &TC, const ArgList &Args,
     if (!Args.hasArg(options::OPT_pie))
       TC.getDriver().Diag(diag::err_drv_argument_only_allowed_with) <<
         "-fsanitize=thread" << "-pie";
-    // LibTsan is "libclang_rt.tsan-<ArchName>.a" in the Linux library
+    // LibTsan is "liblfort_rt.tsan-<ArchName>.a" in the Linux library
     // resource directory.
     SmallString<128> LibTsan(TC.getDriver().ResourceDir);
     llvm::sys::path::append(LibTsan, "lib", "linux",
-                            (Twine("libclang_rt.tsan-") +
+                            (Twine("liblfort_rt.tsan-") +
                              TC.getArchName() + ".a"));
     CmdArgs.push_back(Args.MakeArgString(LibTsan));
     CmdArgs.push_back("-lpthread");
@@ -1571,11 +1571,11 @@ static void addMsanRTLinux(const ToolChain &TC, const ArgList &Args,
     if (!Args.hasArg(options::OPT_pie))
       TC.getDriver().Diag(diag::err_drv_argument_only_allowed_with) <<
         "-fsanitize=memory" << "-pie";
-    // LibMsan is "libclang_rt.msan-<ArchName>.a" in the Linux library
+    // LibMsan is "liblfort_rt.msan-<ArchName>.a" in the Linux library
     // resource directory.
     SmallString<128> LibMsan(TC.getDriver().ResourceDir);
     llvm::sys::path::append(LibMsan, "lib", "linux",
-                            (Twine("libclang_rt.msan-") +
+                            (Twine("liblfort_rt.msan-") +
                              TC.getArchName() + ".a"));
     CmdArgs.push_back(Args.MakeArgString(LibMsan));
     CmdArgs.push_back("-lpthread");
@@ -1589,11 +1589,11 @@ static void addMsanRTLinux(const ToolChain &TC, const ArgList &Args,
 static void addUbsanRTLinux(const ToolChain &TC, const ArgList &Args,
                             ArgStringList &CmdArgs) {
   if (!Args.hasArg(options::OPT_shared)) {
-    // LibUbsan is "libclang_rt.ubsan-<ArchName>.a" in the Linux library
+    // LibUbsan is "liblfort_rt.ubsan-<ArchName>.a" in the Linux library
     // resource directory.
     SmallString<128> LibUbsan(TC.getDriver().ResourceDir);
     llvm::sys::path::append(LibUbsan, "lib", "linux",
-                            (Twine("libclang_rt.ubsan-") +
+                            (Twine("liblfort_rt.ubsan-") +
                              TC.getArchName() + ".a"));
     CmdArgs.push_back(Args.MakeArgString(LibUbsan));
     CmdArgs.push_back("-lpthread");
@@ -1633,7 +1633,7 @@ static void addDebugCompDirArg(const ArgList &Args, ArgStringList &CmdArgs) {
   }
 }
 
-void Clang::ConstructJob(Compilation &C, const JobAction &JA,
+void LFort::ConstructJob(Compilation &C, const JobAction &JA,
                          const InputInfo &Output,
                          const InputInfoList &Inputs,
                          const ArgList &Args,
@@ -1652,7 +1652,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // Add the "effective" target triple.
   CmdArgs.push_back("-triple");
-  std::string TripleStr = getToolChain().ComputeEffectiveClangTriple(Args);
+  std::string TripleStr = getToolChain().ComputeEffectiveLFortTriple(Args);
   CmdArgs.push_back(Args.MakeArgString(TripleStr));
 
   // Select the appropriate action.
@@ -1714,7 +1714,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     else
       CmdArgs.push_back("-emit-pth");
   } else {
-    assert(isa<CompileJobAction>(JA) && "Invalid action for clang tool.");
+    assert(isa<CompileJobAction>(JA) && "Invalid action for lfort tool.");
 
     if (JA.getType() == types::TY_Nothing) {
       CmdArgs.push_back("-fsyntax-only");
@@ -1740,7 +1740,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     }
   }
 
-  // The make clang go fast button.
+  // The make lfort go fast button.
   CmdArgs.push_back("-disable-free");
 
   // Disable the verification pass in -asserts builds.
@@ -1879,7 +1879,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     }
   } else {
     // Currently, LLVM only knows about PIC vs. static; the PIE differences are
-    // handled in Clang's IRGen by the -pie-level flag.
+    // handled in LFort's IRGen by the -pie-level flag.
     CmdArgs.push_back("-mrelocation-model");
     CmdArgs.push_back(PIC ? "pic" : "static");
 
@@ -2085,7 +2085,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                    AsynchronousUnwindTables))
     CmdArgs.push_back("-munwind-tables");
 
-  getToolChain().addClangTargetOptions(Args, CmdArgs);
+  getToolChain().addLFortTargetOptions(Args, CmdArgs);
 
   if (Arg *A = Args.getLastArg(options::OPT_flimited_precision_EQ)) {
     CmdArgs.push_back("-mlimit-float-precision");
@@ -2160,7 +2160,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
         getToolChain().getTriple().getArch() == llvm::Triple::x86) {
       if ((Unsupported = Args.getLastArg(options::OPT_fapple_kext)) ||
           (Unsupported = Args.getLastArg(options::OPT_mkernel)))
-        D.Diag(diag::err_drv_clang_unsupported_opt_cxx_darwin_i386)
+        D.Diag(diag::err_drv_lfort_unsupported_opt_cxx_darwin_i386)
           << Unsupported->getOption().getName();
     }
   }
@@ -2290,13 +2290,13 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (types::getPreprocessedType(InputType) != types::TY_INVALID)
     AddPreprocessingOptions(C, D, Args, CmdArgs, Output, Inputs);
 
-  // Don't warn about "clang -c -DPIC -fPIC test.i" because libtool.m4 assumes
+  // Don't warn about "lfort -c -DPIC -fPIC test.i" because libtool.m4 assumes
   // that "The compiler can only warn and ignore the option if not recognized".
-  // When building with ccache, it will pass -D options to clang even on
+  // When building with ccache, it will pass -D options to lfort even on
   // preprocessed inputs and configure concludes that -fPIC is not supported.
   Args.ClaimAllArgs(options::OPT_D);
 
-  // Manually translate -O to -O2 and -O4 to -O3; let clang reject
+  // Manually translate -O to -O2 and -O4 to -O3; let lfort reject
   // others.
   if (Arg *A = Args.getLastArg(options::OPT_O_Group)) {
     if (A->getOption().matches(options::OPT_O4))
@@ -2339,10 +2339,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   } else {
     // Honor -std-default.
     //
-    // FIXME: Clang doesn't correctly handle -std= when the input language
+    // FIXME: LFort doesn't correctly handle -std= when the input language
     // doesn't match. For the time being just ignore this for C++ inputs;
     // eventually we want to do all the standard defaulting here instead of
-    // splitting it between the driver and clang -cc1.
+    // splitting it between the driver and lfort -cc1.
     if (!types::isCXX(InputType))
       Args.AddAllArgsTranslated(CmdArgs, options::OPT_std_default_EQ,
                                 "-std=", /*Joined=*/true);
@@ -2881,17 +2881,17 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   else if (!Args.hasFlag(options::OPT_fcommon, options::OPT_fno_common))
     CmdArgs.push_back("-fno-common");
 
-  // -fsigned-bitfields is default, and clang doesn't yet support
+  // -fsigned-bitfields is default, and lfort doesn't yet support
   // -funsigned-bitfields.
   if (!Args.hasFlag(options::OPT_fsigned_bitfields,
                     options::OPT_funsigned_bitfields))
-    D.Diag(diag::warn_drv_clang_unsupported)
+    D.Diag(diag::warn_drv_lfort_unsupported)
       << Args.getLastArg(options::OPT_funsigned_bitfields)->getAsString(Args);
 
-  // -fsigned-bitfields is default, and clang doesn't support -fno-for-scope.
+  // -fsigned-bitfields is default, and lfort doesn't support -fno-for-scope.
   if (!Args.hasFlag(options::OPT_ffor_scope,
                     options::OPT_fno_for_scope))
-    D.Diag(diag::err_drv_clang_unsupported)
+    D.Diag(diag::err_drv_lfort_unsupported)
       << Args.getLastArg(options::OPT_fno_for_scope)->getAsString(Args);
 
   // -fcaret-diagnostics is default.
@@ -2989,7 +2989,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (Arg *A = Args.getLastArg(options::OPT_funit_at_a_time,
                                options::OPT_fno_unit_at_a_time)) {
     if (A->getOption().matches(options::OPT_fno_unit_at_a_time))
-      D.Diag(diag::warn_drv_clang_unsupported) << A->getAsString(Args);
+      D.Diag(diag::warn_drv_lfort_unsupported) << A->getAsString(Args);
   }
 
   if (Args.hasFlag(options::OPT_fapple_pragma_pack,
@@ -2998,7 +2998,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // Default to -fno-builtin-str{cat,cpy} on Darwin for ARM.
   //
-  // FIXME: This is disabled until clang -cc1 supports -fno-builtin-foo. PR4941.
+  // FIXME: This is disabled until lfort -cc1 supports -fno-builtin-foo. PR4941.
 #if 0
   if (getToolChain().getTriple().isOSDarwin() &&
       (getToolChain().getTriple().getArch() == llvm::Triple::arm ||
@@ -3016,7 +3016,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     if (isa<PreprocessJobAction>(JA))
       CmdArgs.push_back("-traditional-cpp");
     else
-      D.Diag(diag::err_drv_clang_unsupported) << A->getAsString(Args);
+      D.Diag(diag::err_drv_lfort_unsupported) << A->getAsString(Args);
   }
 
   Args.AddLastArg(CmdArgs, options::OPT_dM);
@@ -3031,9 +3031,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (Args.hasArg(options::OPT_fretain_comments_from_system_headers))
     CmdArgs.push_back("-fretain-comments-from-system-headers");
 
-  // Forward -Xclang arguments to -cc1, and -mllvm arguments to the LLVM option
+  // Forward -Xlfort arguments to -cc1, and -mllvm arguments to the LLVM option
   // parser.
-  Args.AddAllArgValues(CmdArgs, options::OPT_Xclang);
+  Args.AddAllArgValues(CmdArgs, options::OPT_Xlfort);
   for (arg_iterator it = Args.filtered_begin(options::OPT_mllvm),
          ie = Args.filtered_end(); it != ie; ++it) {
     (*it)->claim();
@@ -3071,7 +3071,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   Args.AddAllArgs(CmdArgs, options::OPT_undef);
 
-  const char *Exec = getToolChain().getDriver().getClangProgramPath();
+  const char *Exec = getToolChain().getDriver().getLFortProgramPath();
 
   // Optionally embed the -cc1 level arguments into the debug info, for build
   // analysis.
@@ -3098,24 +3098,24 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
       D.Diag(diag::err_drv_argument_not_allowed_with)
         << "-fomit-frame-pointer" << A->getAsString(Args);
 
-  // Claim some arguments which clang supports automatically.
+  // Claim some arguments which lfort supports automatically.
 
   // -fpch-preprocess is used with gcc to add a special marker in the output to
-  // include the PCH file. Clang's PTH solution is completely transparent, so we
+  // include the PCH file. LFort's PTH solution is completely transparent, so we
   // do not need to deal with it at all.
   Args.ClaimAllArgs(options::OPT_fpch_preprocess);
 
-  // Claim some arguments which clang doesn't support, but we don't
+  // Claim some arguments which lfort doesn't support, but we don't
   // care to warn the user about.
-  Args.ClaimAllArgs(options::OPT_clang_ignored_f_Group);
-  Args.ClaimAllArgs(options::OPT_clang_ignored_m_Group);
+  Args.ClaimAllArgs(options::OPT_lfort_ignored_f_Group);
+  Args.ClaimAllArgs(options::OPT_lfort_ignored_m_Group);
 
-  // Disable warnings for clang -E -use-gold-plugin -emit-llvm foo.c
+  // Disable warnings for lfort -E -use-gold-plugin -emit-llvm foo.c
   Args.ClaimAllArgs(options::OPT_use_gold_plugin);
   Args.ClaimAllArgs(options::OPT_emit_llvm);
 }
 
-void ClangAs::AddARMTargetArgs(const ArgList &Args,
+void LFortAs::AddARMTargetArgs(const ArgList &Args,
                                ArgStringList &CmdArgs) const {
   const Driver &D = getToolChain().getDriver();
   llvm::Triple Triple = getToolChain().getTriple();
@@ -3136,7 +3136,7 @@ void ClangAs::AddARMTargetArgs(const ArgList &Args,
 /// Add options related to the Objective-C runtime/ABI.
 ///
 /// Returns true if the runtime is non-fragile.
-ObjCRuntime Clang::AddObjCRuntimeArgs(const ArgList &args,
+ObjCRuntime LFort::AddObjCRuntimeArgs(const ArgList &args,
                                       ArgStringList &cmdArgs,
                                       RewriteKind rewriteKind) const {
   // Look for the controlling runtime option.
@@ -3175,7 +3175,7 @@ ObjCRuntime Clang::AddObjCRuntimeArgs(const ArgList &args,
     else if (value == "3")
       objcABIVersion = 3;
     else
-      getToolChain().getDriver().Diag(diag::err_drv_clang_unsupported)
+      getToolChain().getDriver().Diag(diag::err_drv_lfort_unsupported)
         << value;
   } else {
     // Otherwise, determine if we are using the non-fragile ABI.
@@ -3201,7 +3201,7 @@ ObjCRuntime Clang::AddObjCRuntimeArgs(const ArgList &args,
         else if (value == "2")
           nonFragileABIVersion = 2;
         else
-          getToolChain().getDriver().Diag(diag::err_drv_clang_unsupported)
+          getToolChain().getDriver().Diag(diag::err_drv_lfort_unsupported)
             << value;
       }
 
@@ -3258,7 +3258,7 @@ ObjCRuntime Clang::AddObjCRuntimeArgs(const ArgList &args,
   return runtime;
 }
 
-void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
+void LFortAs::ConstructJob(Compilation &C, const JobAction &JA,
                            const InputInfo &Output,
                            const InputInfoList &Inputs,
                            const ArgList &Args,
@@ -3268,11 +3268,11 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
   assert(Inputs.size() == 1 && "Unexpected number of inputs.");
   const InputInfo &Input = Inputs[0];
 
-  // Don't warn about "clang -w -c foo.s"
+  // Don't warn about "lfort -w -c foo.s"
   Args.ClaimAllArgs(options::OPT_w);
-  // and "clang -emit-llvm -c foo.s"
+  // and "lfort -emit-llvm -c foo.s"
   Args.ClaimAllArgs(options::OPT_emit_llvm);
-  // and "clang -use-gold-plugin -c foo.s"
+  // and "lfort -use-gold-plugin -c foo.s"
   Args.ClaimAllArgs(options::OPT_use_gold_plugin);
 
   // Invoke ourselves in -cc1as mode.
@@ -3283,7 +3283,7 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
   // Add the "effective" target triple.
   CmdArgs.push_back("-triple");
   std::string TripleStr = 
-    getToolChain().ComputeEffectiveClangTriple(Args, Input.getType());
+    getToolChain().ComputeEffectiveLFortTriple(Args, Input.getType());
   CmdArgs.push_back(Args.MakeArgString(TripleStr));
 
   // Set the output mode, we currently only expect to be used as a real
@@ -3294,7 +3294,7 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
   // Set the main file name, so that debug info works even with
   // -save-temps or preprocessed assembly.
   CmdArgs.push_back("-main-file-name");
-  CmdArgs.push_back(Clang::getBaseInputName(Args, Inputs));
+  CmdArgs.push_back(LFort::getBaseInputName(Args, Inputs));
 
   if (UseRelaxAll(C, Args))
     CmdArgs.push_back("-relax-all");
@@ -3342,7 +3342,7 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
       (*it)->render(Args, OriginalArgs);
 
     SmallString<256> Flags;
-    const char *Exec = getToolChain().getDriver().getClangProgramPath();
+    const char *Exec = getToolChain().getDriver().getLFortProgramPath();
     Flags += Exec;
     for (unsigned i = 0, e = OriginalArgs.size(); i != e; ++i) {
       Flags += " ";
@@ -3365,7 +3365,7 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
   assert(Input.isFilename() && "Invalid input.");
   CmdArgs.push_back(Input.getFilename());
 
-  const char *Exec = getToolChain().getDriver().getClangProgramPath();
+  const char *Exec = getToolChain().getDriver().getLFortProgramPath();
   C.addCommand(new Command(JA, *this, Exec, CmdArgs));
 }
 
@@ -3577,10 +3577,10 @@ void hexagon::Assemble::ConstructJob(Compilation &C, const JobAction &JA,
     // Don't try to pass LLVM or AST inputs to a generic gcc.
     if (II.getType() == types::TY_LLVM_IR || II.getType() == types::TY_LTO_IR ||
         II.getType() == types::TY_LLVM_BC || II.getType() == types::TY_LTO_BC)
-      D.Diag(clang::diag::err_drv_no_linker_llvm_support)
+      D.Diag(lfort::diag::err_drv_no_linker_llvm_support)
         << getToolChain().getTripleString();
     else if (II.getType() == types::TY_AST)
-      D.Diag(clang::diag::err_drv_no_ast_support)
+      D.Diag(lfort::diag::err_drv_no_ast_support)
         << getToolChain().getTripleString();
 
     if (II.isFilename())
@@ -3782,7 +3782,7 @@ llvm::Triple::ArchType darwin::getArchTypeForDarwinArchName(StringRef Str) {
   // handling to the architecture name, so we need to be careful before removing
   // support for it.
 
-  // This code must be kept in sync with Clang's Darwin specific argument
+  // This code must be kept in sync with LFort's Darwin specific argument
   // translation.
 
   return llvm::StringSwitch<llvm::Triple::ArchType>(Str)
@@ -3804,13 +3804,13 @@ llvm::Triple::ArchType darwin::getArchTypeForDarwinArchName(StringRef Str) {
     .Default(llvm::Triple::UnknownArch);
 }
 
-const char *Clang::getBaseInputName(const ArgList &Args,
+const char *LFort::getBaseInputName(const ArgList &Args,
                                     const InputInfoList &Inputs) {
   return Args.MakeArgString(
     llvm::sys::path::filename(Inputs[0].getBaseInput()));
 }
 
-const char *Clang::getBaseInputStem(const ArgList &Args,
+const char *LFort::getBaseInputStem(const ArgList &Args,
                                     const InputInfoList &Inputs) {
   const char *Str = getBaseInputName(Args, Inputs);
 
@@ -3820,7 +3820,7 @@ const char *Clang::getBaseInputStem(const ArgList &Args,
   return Str;
 }
 
-const char *Clang::getDependencyFileName(const ArgList &Args,
+const char *LFort::getDependencyFileName(const ArgList &Args,
                                          const InputInfoList &Inputs) {
   // FIXME: Think about this more.
   std::string Res;
@@ -4682,11 +4682,11 @@ void openbsd::Link::ConstructJob(Compilation &C, const JobAction &JA,
   const Driver &D = getToolChain().getDriver();
   ArgStringList CmdArgs;
 
-  // Silence warning for "clang -g foo.o -o foo"
+  // Silence warning for "lfort -g foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_g_Group);
-  // and "clang -emit-llvm foo.o -o foo"
+  // and "lfort -emit-llvm foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_emit_llvm);
-  // and for "clang -w foo.o -o foo". Other warning options are already
+  // and for "lfort -w foo.o -o foo". Other warning options are already
   // handled somewhere else.
   Args.ClaimAllArgs(options::OPT_w);
 
@@ -4906,7 +4906,7 @@ void bitrig::Link::ConstructJob(Compilation &C, const JobAction &JA,
         CmdArgs.push_back("-lc");
     }
 
-    std::string myarch = "-lclang_rt.";
+    std::string myarch = "-llfort_rt.";
     const llvm::Triple &T = getToolChain().getTriple();
     llvm::Triple::ArchType Arch = T.getArch();
     switch (Arch) {
@@ -5030,11 +5030,11 @@ void freebsd::Link::ConstructJob(Compilation &C, const JobAction &JA,
   const Driver &D = ToolChain.getDriver();
   ArgStringList CmdArgs;
 
-  // Silence warning for "clang -g foo.o -o foo"
+  // Silence warning for "lfort -g foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_g_Group);
-  // and "clang -emit-llvm foo.o -o foo"
+  // and "lfort -emit-llvm foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_emit_llvm);
-  // and for "clang -w foo.o -o foo". Other warning options are already
+  // and for "lfort -w foo.o -o foo". Other warning options are already
   // handled somewhere else.
   Args.ClaimAllArgs(options::OPT_w);
 
@@ -5485,11 +5485,11 @@ void linuxtools::Link::ConstructJob(Compilation &C, const JobAction &JA,
 
   ArgStringList CmdArgs;
 
-  // Silence warning for "clang -g foo.o -o foo"
+  // Silence warning for "lfort -g foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_g_Group);
-  // and "clang -emit-llvm foo.o -o foo"
+  // and "lfort -emit-llvm foo.o -o foo"
   Args.ClaimAllArgs(options::OPT_emit_llvm);
-  // and for "clang -w foo.o -o foo". Other warning options are already
+  // and for "lfort -w foo.o -o foo". Other warning options are already
   // handled somewhere else.
   Args.ClaimAllArgs(options::OPT_w);
 

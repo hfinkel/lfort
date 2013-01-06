@@ -9,20 +9,20 @@
 
 #include "Transforms.h"
 #include "Internals.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Analysis/DomainSpecific/CocoaConventions.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/SemaDiagnostic.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/RecursiveASTVisitor.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Analysis/DomainSpecific/CocoaConventions.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Lex/Lexer.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/StringSwitch.h"
 #include <map>
 
-using namespace clang;
+using namespace lfort;
 using namespace arcmt;
 using namespace trans;
 

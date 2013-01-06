@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -std=c++11 -verify %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,unix.Malloc,debug.ExprInspection -analyzer-ipa=inlining -analyzer-config c++-inlining=constructors -std=c++11 -verify %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 class A {
   int x;
@@ -9,7 +9,7 @@ public:
 };
 
 A::A() : x(0) {
-  clang_analyzer_eval(x == 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x == 0); // expected-warning{{TRUE}}
 }
 
 
@@ -23,7 +23,7 @@ public:
 
 void testDirectMember() {
   DirectMember obj(3);
-  clang_analyzer_eval(obj.getX() == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj.getX() == 3); // expected-warning{{TRUE}}
 }
 
 
@@ -39,7 +39,7 @@ public:
 
 void testIndirectMember() {
   IndirectMember obj(3);
-  clang_analyzer_eval(obj.getX() == 3); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj.getX() == 3); // expected-warning{{TRUE}}
 }
 
 
@@ -51,7 +51,7 @@ struct DelegatingConstructor {
 
 void testDelegatingConstructor() {
   DelegatingConstructor obj;
-  clang_analyzer_eval(obj.x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(obj.x == 42); // expected-warning{{TRUE}}
 }
 
 

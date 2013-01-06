@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-objc-root-class %s
 
 @interface MyClass // expected-note {{required for direct or indirect protocol 'P'}}
 @end
@@ -13,7 +13,7 @@
 - (void)meth2; // expected-note {{method definition for 'meth2' not found}}
 @end
 
-// Add a category to test that clang does not emit warning for this method.
+// Add a category to test that lfort does not emit warning for this method.
 @interface MyClass (Category) 
 - (void)categoryMethod;
 @end

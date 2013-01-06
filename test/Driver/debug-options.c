@@ -1,26 +1,26 @@
-// Check to make sure clang is somewhat picky about -g options.
+// Check to make sure lfort is somewhat picky about -g options.
 // rdar://10383444
 
-// RUN: %clang -### -c -g %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -g2 %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -g3 %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -ggdb %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -ggdb1 %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -ggdb3 %s 2>&1 | FileCheck -check-prefix=G %s
-// RUN: %clang -### -c -gdwarf-2 %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -g %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -g2 %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -g3 %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -ggdb %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -ggdb1 %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -ggdb3 %s 2>&1 | FileCheck -check-prefix=G %s
+// RUN: %lfort -### -c -gdwarf-2 %s 2>&1 | FileCheck -check-prefix=G %s
 //
-// RUN: %clang -### -c -gfoo %s 2>&1 | FileCheck -check-prefix=G_NO %s
-// RUN: %clang -### -c -g -g0 %s 2>&1 | FileCheck -check-prefix=G_NO %s
-// RUN: %clang -### -c -ggdb0 %s 2>&1 | FileCheck -check-prefix=G_NO %s
+// RUN: %lfort -### -c -gfoo %s 2>&1 | FileCheck -check-prefix=G_NO %s
+// RUN: %lfort -### -c -g -g0 %s 2>&1 | FileCheck -check-prefix=G_NO %s
+// RUN: %lfort -### -c -ggdb0 %s 2>&1 | FileCheck -check-prefix=G_NO %s
 //
-// RUN: %clang -### -c -gline-tables-only %s 2>&1 \
+// RUN: %lfort -### -c -gline-tables-only %s 2>&1 \
 // RUN:             | FileCheck -check-prefix=GLTO_ONLY %s
-// RUN: %clang -### -c -gline-tables-only -g %s 2>&1 \
+// RUN: %lfort -### -c -gline-tables-only -g %s 2>&1 \
 // RUN:             | FileCheck -check-prefix=G_ONLY %s
-// RUN: %clang -### -c -gline-tables-only -g0 %s 2>&1 \
+// RUN: %lfort -### -c -gline-tables-only -g0 %s 2>&1 \
 // RUN:             | FileCheck -check-prefix=GLTO_NO %s
 //
-// RUN: %clang -### -c -grecord-gcc-switches -gno-record-gcc-switches \
+// RUN: %lfort -### -c -grecord-gcc-switches -gno-record-gcc-switches \
 // RUN:           -gstrict-dwarf -gno-strict-dwarf %s 2>&1 \
 // RUN:        | not grep "argument unused during compilation"
 //

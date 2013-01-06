@@ -11,12 +11,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/AST/StmtObjC.h"
-#include "clang/StaticAnalyzer/Core/CheckerManager.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+#include "lfort/AST/StmtObjC.h"
+#include "lfort/StaticAnalyzer/Core/CheckerManager.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 
 void ExprEngine::VisitLvalObjCIvarRefExpr(const ObjCIvarRefExpr *Ex, 

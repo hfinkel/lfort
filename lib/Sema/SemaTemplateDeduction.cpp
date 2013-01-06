@@ -10,21 +10,21 @@
 //
 //===----------------------------------------------------------------------===/
 
-#include "clang/Sema/TemplateDeduction.h"
+#include "lfort/Sema/TemplateDeduction.h"
 #include "TreeTransform.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclTemplate.h"
-#include "clang/AST/Expr.h"
-#include "clang/AST/ExprCXX.h"
-#include "clang/AST/StmtVisitor.h"
-#include "clang/Sema/DeclSpec.h"
-#include "clang/Sema/Sema.h"
-#include "clang/Sema/Template.h"
+#include "lfort/AST/ASTContext.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclTemplate.h"
+#include "lfort/AST/Expr.h"
+#include "lfort/AST/ExprCXX.h"
+#include "lfort/AST/StmtVisitor.h"
+#include "lfort/Sema/DeclSpec.h"
+#include "lfort/Sema/Sema.h"
+#include "lfort/Sema/Template.h"
 #include "llvm/ADT/SmallBitVector.h"
 #include <algorithm>
 
-namespace clang {
+namespace lfort {
   using namespace sema;
 
   /// \brief Various flags that control template argument deduction.
@@ -56,7 +56,7 @@ namespace clang {
   };
 }
 
-using namespace clang;
+using namespace lfort;
 
 /// \brief Compare two APSInts, extending and switching the sign as
 /// necessary to compare their values regardless of underlying type.
@@ -1123,7 +1123,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
 #define NON_CANONICAL_TYPE(Class, Base) \
   case Type::Class: llvm_unreachable("deducing non-canonical type: " #Class);
 #define TYPE(Class, Base)
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
       
     case Type::TemplateTypeParm:
     case Type::SubstTemplateTypeParmPack:
@@ -1462,7 +1462,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
                                            TDF & TDF_IgnoreQualifiers);
     }
 
-    //     (clang extension)
+    //     (lfort extension)
     //
     //     type(^)(T)
     //     T(^)()
@@ -1480,7 +1480,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
                                                 Info, Deduced, 0);
     }
 
-    //     (clang extension)
+    //     (lfort extension)
     //
     //     T __attribute__(((ext_vector_type(<integral constant>))))
     case Type::ExtVector: {
@@ -1513,7 +1513,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
       return Sema::TDK_NonDeducedMismatch;
     }
       
-    //     (clang extension)
+    //     (lfort extension)
     //
     //     T __attribute__(((ext_vector_type(N))))
     case Type::DependentSizedExtVector: {
@@ -4520,7 +4520,7 @@ MarkUsedTemplateParameters(ASTContext &Ctx, QualType T,
 #define ABSTRACT_TYPE(Class, Base)
 #define DEPENDENT_TYPE(Class, Base)
 #define NON_CANONICAL_TYPE(Class, Base) case Type::Class:
-#include "clang/AST/TypeNodes.def"
+#include "lfort/AST/TypeNodes.def"
     break;
   }
 }

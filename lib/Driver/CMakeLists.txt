@@ -1,4 +1,4 @@
-add_clang_library(clangDriver
+add_lfort_library(lfortDriver
   Action.cpp
   Arg.cpp
   ArgList.cpp
@@ -18,14 +18,14 @@ add_clang_library(clangDriver
   Types.cpp
   )
 
-add_dependencies(clangDriver
-  ClangAttrList
-  ClangCC1AsOptions
-  ClangDiagnosticCommon
-  ClangDiagnosticDriver
-  ClangDriverOptions
+add_dependencies(lfortDriver
+  LFortAttrList
+  LFortCC1AsOptions
+  LFortDiagnosticCommon
+  LFortDiagnosticDriver
+  LFortDriverOptions
   )
 
-target_link_libraries(clangDriver
-  clangBasic
+target_link_libraries(lfortDriver
+  lfortBasic
   )

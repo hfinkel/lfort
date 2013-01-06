@@ -21,7 +21,7 @@
 
 <h3>What is it?</h3>
 <p><i>Build and Analyze</i> is an Xcode feature (introduced in Xcode 3.2) that
-allows users to run the Clang Static Analyzer <a
+allows users to run the LFort Static Analyzer <a
 href="http://developer.apple.com/mac/library/featuredarticles/StaticAnalysis/index.html">directly
 within Xcode</a>.</p>
 
@@ -57,10 +57,10 @@ for using <i>Build and Analyze</i>.</p>
 
 <h2>Using open source analyzer builds with <i>Build and Analyze</i></h2>
 
-<p>By default, Xcode uses the version of <tt>clang</tt> that came bundled with
+<p>By default, Xcode uses the version of <tt>lfort</tt> that came bundled with
 it to provide the results for <i>Build and Analyze</i>. It is possible to change
-Xcode's behavior to use an alternate version of <tt>clang</tt> for this purpose
-while continuing to use the <tt>clang</tt> that came with Xcode for compiling
+Xcode's behavior to use an alternate version of <tt>lfort</tt> for this purpose
+while continuing to use the <tt>lfort</tt> that came with Xcode for compiling
 projects.</p>
 
 <h3>Why try open source builds?</h3>
@@ -78,7 +78,7 @@ issues.</p>
 
 <p>Starting with analyzer build checker-234, analyzer builds contain a command
 line utility called <tt>set-xcode-analyzer</tt> that allows users to change what
-copy of <tt>clang</tt> that Xcode uses for <i>Build and Analyze</i>:</p>
+copy of <tt>lfort</tt> that Xcode uses for <i>Build and Analyze</i>:</p>
 
 <pre class="code_example">
 $ <b>set-xcode-analyzer -h</b>
@@ -87,18 +87,18 @@ Usage: set-xcode-analyzer [options]
 Options:
   -h, --help            show this help message and exit
   --use-checker-build=PATH
-                        Use the Clang located at the provided absolute path,
+                        Use the LFort located at the provided absolute path,
                         e.g. /Users/foo/checker-1
-  --use-xcode-clang     Use the Clang bundled with Xcode
+  --use-xcode-lfort     Use the LFort bundled with Xcode
 </pre>
 
 <p>Operationally, <b>set-xcode-analyzer</b> edits Xcode's configuration files
-(in <tt>/Developer</tt>) to point it to use the version of <tt>clang</tt> you
+(in <tt>/Developer</tt>) to point it to use the version of <tt>lfort</tt> you
 specify for static analysis.  Within this model it provides you two basic modes:</p>
 
 <ul>
-  <li><b>--use-xcode-clang</b>: Switch Xcode (back) to using the <tt>clang</tt> that came bundled with it for static analysis.</li>
-  <li><b>--use-checker-build</b>: Switch Xcode to using the <tt>clang</tt> provided by the specified analyzer build.</li>
+  <li><b>--use-xcode-lfort</b>: Switch Xcode (back) to using the <tt>lfort</tt> that came bundled with it for static analysis.</li>
+  <li><b>--use-checker-build</b>: Switch Xcode to using the <tt>lfort</tt> provided by the specified analyzer build.</li>
 </ul>
 
 <h4>Things to keep in mind</h4>
@@ -124,16 +124,16 @@ $ sudo checker-235/set-xcode-analyzer --use-checker-build=/tmp/checker-235
 the point of this example is that <tt>set-xcode-analyzer</tt> just wants a full
 path to an untarred analyzer build.</p>
 
-<p><b>Example 2</b>: Telling Xcode to use a very specific version of <tt>clang</tt>:</p>
+<p><b>Example 2</b>: Telling Xcode to use a very specific version of <tt>lfort</tt>:</p>
 
 <pre class="code_example">
-$ sudo set-xcode-analyzer --use-checker-build=~/mycrazyclangbuild/bin/clang
+$ sudo set-xcode-analyzer --use-checker-build=~/mycrazylfortbuild/bin/lfort
 </pre>
 
 <p><b>Example 3</b>: Resetting Xcode to its default behavior:</p>
 
 <pre class="code_example">
-$ sudo set-xcode-analyzer --use-xcode-clang
+$ sudo set-xcode-analyzer --use-xcode-lfort
 </pre>
 
 </div>

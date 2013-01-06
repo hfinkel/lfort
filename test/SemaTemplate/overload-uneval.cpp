@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-unused %s
+// RUN: %lfort_cc1 -fsyntax-only -verify -Wno-unused %s
 // expected-no-diagnostics
 
 // Tests that overload resolution is treated as an unevaluated context.

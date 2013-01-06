@@ -1,6 +1,6 @@
-// RUN: %clang -fsyntax-only -ffreestanding %s
-// RUN: %clang -fsyntax-only -ffreestanding -fno-lax-vector-conversions %s
-// RUN: %clangxx -fsyntax-only -ffreestanding -x c++ %s
+// RUN: %lfort -fsyntax-only -ffreestanding %s
+// RUN: %lfort -fsyntax-only -ffreestanding -fno-lax-vector-conversions %s
+// RUN: %lfortxx -fsyntax-only -ffreestanding -x c++ %s
 
 #if defined(i386) || defined(__x86_64__)
 

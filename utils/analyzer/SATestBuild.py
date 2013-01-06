@@ -135,10 +135,10 @@ def getSBOutputDirName(IsReferenceBuild) :
 # Configuration setup.
 #------------------------------------------------------------------------------
 
-# Find Clang for static analysis.
-Clang = which("clang", os.environ['PATH'])
-if not Clang:
-    print "Error: cannot find 'clang' in PATH"
+# Find LFort for static analysis.
+LFort = which("lfort", os.environ['PATH'])
+if not LFort:
+    print "Error: cannot find 'lfort' in PATH"
     sys.exit(-1)
 
 # Number of jobs.
@@ -203,7 +203,7 @@ def runScanBuild(Dir, SBOutputDir, PBuildLogFile):
     if not os.path.exists(BuildScriptPath):
         print "Error: build script is not defined: %s" % BuildScriptPath
         sys.exit(-1)
-    SBOptions = "--use-analyzer " + Clang + " "
+    SBOptions = "--use-analyzer " + LFort + " "
     SBOptions += "-plist-html -o " + SBOutputDir + " "
     SBOptions += "-enable-checker " + Checkers + " "  
     try:
@@ -248,7 +248,7 @@ def runAnalyzePreprocessed(Dir, SBOutputDir, Mode):
                BuildScript
         raise Exception()       
 
-    CmdPrefix = Clang + " -cc1 -analyze -analyzer-output=plist -w "
+    CmdPrefix = LFort + " -cc1 -analyze -analyzer-output=plist -w "
     CmdPrefix += "-analyzer-checker=" + Checkers +" -fcxx-exceptions -fblocks "   
     
     if (Mode == 2) :

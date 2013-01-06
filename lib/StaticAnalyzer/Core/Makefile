@@ -1,4 +1,4 @@
-##===- clang/lib/StaticAnalyzer/Core/Makefile --------------*- Makefile -*-===##
+##===- lfort/lib/StaticAnalyzer/Core/Makefile --------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,7 +11,7 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../../..
-LIBRARYNAME := clangStaticAnalyzerCore
+LFORT_LEVEL := ../../..
+LIBRARYNAME := lfortStaticAnalyzerCore
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile

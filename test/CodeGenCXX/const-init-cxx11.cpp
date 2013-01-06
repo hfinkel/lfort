@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -triple x86_64-apple-darwin -emit-llvm -o - %s -std=c++11 | FileCheck %s
+// RUN: %lfort_cc1 -verify -triple x86_64-apple-darwin -emit-llvm -o - %s -std=c++11 | FileCheck %s
 
 // FIXME: The padding in all these objects should be zero-initialized.
 namespace StructUnion {

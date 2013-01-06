@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple i386-apple-darwin -emit-llvm -o - | FileCheck %s
+// RUN: %lfort_cc1 %s -triple i386-apple-darwin -emit-llvm -o - | FileCheck %s
 // Misaligned parameter must be memcpy'd to correctly aligned temporary.
 
 struct s { int x; long double y; };

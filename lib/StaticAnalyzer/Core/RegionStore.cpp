@@ -14,21 +14,21 @@
 // parameters are created lazily.
 //
 //===----------------------------------------------------------------------===//
-#include "clang/AST/Attr.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/Analysis/Analyses/LiveVariables.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
-#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
+#include "lfort/AST/Attr.h"
+#include "lfort/AST/CharUnits.h"
+#include "lfort/Analysis/Analyses/LiveVariables.h"
+#include "lfort/Analysis/AnalysisContext.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/ProgramStateTrait.h"
 #include "llvm/ADT/ImmutableList.h"
 #include "llvm/ADT/ImmutableMap.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/Support/raw_ostream.h"
 
-using namespace clang;
+using namespace lfort;
 using namespace ento;
 using llvm::Optional;
 
@@ -1435,7 +1435,7 @@ RegionStoreManager::getBindingForFieldOrElementCommon(RegionBindingsConstRef B,
 
   if (R->hasStackNonParametersStorage()) {
     if (isa<ElementRegion>(R)) {
-      // Currently we don't reason specially about Clang-style vectors.  Check
+      // Currently we don't reason specially about LFort-style vectors.  Check
       // if superR is a vector and if so return Unknown.
       if (const TypedValueRegion *typedSuperR = 
             dyn_cast<TypedValueRegion>(superR)) {

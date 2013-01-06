@@ -1,4 +1,4 @@
-##===- clang/lib/AST/Makefile ------------------------------*- Makefile -*-===##
+##===- lfort/lib/AST/Makefile ------------------------------*- Makefile -*-===##
 # 
 #                     The LLVM Compiler Infrastructure
 #
@@ -11,8 +11,8 @@
 #
 ##===----------------------------------------------------------------------===##
 
-CLANG_LEVEL := ../..
-LIBRARYNAME := clangAST
+LFORT_LEVEL := ../..
+LIBRARYNAME := lfortAST
 
-include $(CLANG_LEVEL)/Makefile
+include $(LFORT_LEVEL)/Makefile
 

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm -o %t %s
+// RUN: %lfort_cc1 -emit-llvm -o %t %s
 
 // RUN: grep '@r = common global \[1 x .*\] zeroinitializer' %t
 

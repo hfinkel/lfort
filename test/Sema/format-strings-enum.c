@@ -1,8 +1,8 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -x c++ -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -x c++ -std=c++11 -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -x objective-c -verify %s
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -x objective-c++ -std=c++11 -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -x c++ -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -x c++ -std=c++11 -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -x objective-c -verify %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10 -x objective-c++ -std=c++11 -verify %s
 
 #ifdef __cplusplus
 # define EXTERN_C extern "C"

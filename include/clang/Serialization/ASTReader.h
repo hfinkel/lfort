@@ -11,26 +11,26 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_FRONTEND_AST_READER_H
-#define LLVM_CLANG_FRONTEND_AST_READER_H
+#ifndef LLVM_LFORT_FRONTEND_AST_READER_H
+#define LLVM_LFORT_FRONTEND_AST_READER_H
 
-#include "clang/AST/DeclObjC.h"
-#include "clang/AST/DeclarationName.h"
-#include "clang/AST/TemplateBase.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/FileSystemOptions.h"
-#include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/ExternalPreprocessorSource.h"
-#include "clang/Lex/HeaderSearch.h"
-#include "clang/Lex/PPMutationListener.h"
-#include "clang/Lex/PreprocessingRecord.h"
-#include "clang/Sema/ExternalSemaSource.h"
-#include "clang/Serialization/ASTBitCodes.h"
-#include "clang/Serialization/ContinuousRangeMap.h"
-#include "clang/Serialization/Module.h"
-#include "clang/Serialization/ModuleManager.h"
+#include "lfort/AST/DeclObjC.h"
+#include "lfort/AST/DeclarationName.h"
+#include "lfort/AST/TemplateBase.h"
+#include "lfort/Basic/Diagnostic.h"
+#include "lfort/Basic/FileManager.h"
+#include "lfort/Basic/FileSystemOptions.h"
+#include "lfort/Basic/IdentifierTable.h"
+#include "lfort/Basic/SourceManager.h"
+#include "lfort/Lex/ExternalPreprocessorSource.h"
+#include "lfort/Lex/HeaderSearch.h"
+#include "lfort/Lex/PPMutationListener.h"
+#include "lfort/Lex/PreprocessingRecord.h"
+#include "lfort/Sema/ExternalSemaSource.h"
+#include "lfort/Serialization/ASTBitCodes.h"
+#include "lfort/Serialization/ContinuousRangeMap.h"
+#include "lfort/Serialization/Module.h"
+#include "lfort/Serialization/ModuleManager.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
@@ -53,7 +53,7 @@ namespace llvm {
   class MemoryBuffer;
 }
 
-namespace clang {
+namespace lfort {
 
 class AddrLabelExpr;
 class ASTConsumer;
@@ -237,7 +237,7 @@ public:
     /// \brief The AST file is out-of-date relative to its input files,
     /// and needs to be regenerated.
     OutOfDate,
-    /// \brief The AST file was written by a different version of Clang.
+    /// \brief The AST file was written by a different version of LFort.
     VersionMismatch,
     /// \brief The AST file was writtten with a different language/target
     /// configuration.
@@ -1097,7 +1097,7 @@ public:
     /// is out-of-date relative to its input files.
     ARR_OutOfDate = 0x1,
     /// \brief The client can handle an AST file that cannot load because it
-    /// was built with a different version of Clang.
+    /// was built with a different version of LFort.
     ARR_VersionMismatch = 0x2,
     /// \brief The client can handle an AST file that cannot load because it's
     /// compiled configuration doesn't match that of the context it was
@@ -1769,6 +1769,6 @@ inline void PCHValidator::Error(const char *Msg) {
   Reader.Error(Msg);
 }
 
-} // end namespace clang
+} // end namespace lfort
 
 #endif

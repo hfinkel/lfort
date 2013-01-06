@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10.0.0 -emit-llvm -o - %s -std=c++11 -g | FileCheck %s
+// RUN: %lfort_cc1 -triple x86_64-apple-darwin10.0.0 -emit-llvm -o - %s -std=c++11 -g | FileCheck %s
 
 void crash() {
   volatile char *ptr = 0;

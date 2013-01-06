@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 -S -triple armv7-none-eabi -emit-llvm -o - %s | FileCheck %s
+// RUN: %lfort_cc1 -std=c++11 -S -triple armv7-none-eabi -emit-llvm -o - %s | FileCheck %s
 
 namespace reference {
   struct A {

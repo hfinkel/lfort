@@ -1,11 +1,11 @@
-# Test runner infrastructure for Clang. This configures the Clang test trees
+# Test runner infrastructure for LFort. This configures the LFort test trees
 # for use by Lit, and delegates to LLVM's lit test handlers.
 #
-# If this is a stand-alone Clang build, we fake up our own Lit support here
+# If this is a stand-alone LFort build, we fake up our own Lit support here
 # rather than relying on LLVM's.
 
-set(CLANG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
-set(CLANG_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/..")
+set(LFORT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+set(LFORT_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/..")
 
 configure_lit_site_cfg(
   ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in
@@ -18,39 +18,39 @@ configure_lit_site_cfg(
   )
 
 if( PATH_TO_LLVM_BUILD )
-  set(CLANG_TEST_EXTRA_ARGS "--path=${CLANG_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
+  set(LFORT_TEST_EXTRA_ARGS "--path=${LFORT_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
 endif()
 
-option(CLANG_TEST_USE_VG "Run Clang tests under Valgrind" OFF)
-if(CLANG_TEST_USE_VG)
-  set(CLANG_TEST_EXTRA_ARGS ${CLANG_TEST_EXTRA_ARGS} "--vg")
+option(LFORT_TEST_USE_VG "Run LFort tests under Valgrind" OFF)
+if(LFORT_TEST_USE_VG)
+  set(LFORT_TEST_EXTRA_ARGS ${LFORT_TEST_EXTRA_ARGS} "--vg")
 endif ()
 
-if( NOT CLANG_BUILT_STANDALONE )
+if( NOT LFORT_BUILT_STANDALONE )
 
-  set(CLANG_TEST_DEPS
-    clang clang-headers
+  set(LFORT_TEST_DEPS
+    lfort lfort-headers
     c-index-test diagtool arcmt-test c-arcmt-test
-    clang-check
+    lfort-check
     llvm-dis llc opt FileCheck count not
     )
-  set(CLANG_TEST_PARAMS
-    clang_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
+  set(LFORT_TEST_PARAMS
+    lfort_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
     )
 
   if(LLVM_INCLUDE_TESTS)
-    list(APPEND CLANG_TEST_DEPS ClangUnitTests)
-    list(APPEND CLANG_TEST_PARAMS
-      clang_unit_site_config=${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg
+    list(APPEND LFORT_TEST_DEPS LFortUnitTests)
+    list(APPEND LFORT_TEST_PARAMS
+      lfort_unit_site_config=${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg
       )
   endif()
-  add_lit_testsuite(check-clang "Running the Clang regression tests"
+  add_lit_testsuite(check-lfort "Running the LFort regression tests"
     ${CMAKE_CURRENT_BINARY_DIR}
-    PARAMS ${CLANG_TEST_PARAMS}
-    DEPENDS ${CLANG_TEST_DEPS}
-    ARGS ${CLANG_TEST_EXTRA_ARGS}
+    PARAMS ${LFORT_TEST_PARAMS}
+    DEPENDS ${LFORT_TEST_DEPS}
+    ARGS ${LFORT_TEST_EXTRA_ARGS}
     )
-  set_target_properties(check-clang PROPERTIES FOLDER "Clang tests")
+  set_target_properties(check-lfort PROPERTIES FOLDER "LFort tests")
 
 else()
 
@@ -66,28 +66,28 @@ else()
       endif()
     endif()
 
-    set(LIT_ARGS "${CLANG_TEST_EXTRA_ARGS} ${LLVM_LIT_ARGS}")
+    set(LIT_ARGS "${LFORT_TEST_EXTRA_ARGS} ${LLVM_LIT_ARGS}")
     separate_arguments(LIT_ARGS)
 
-    add_custom_target(check-clang
+    add_custom_target(check-lfort
       COMMAND ${PYTHON_EXECUTABLE}
               ${LIT}
-              --param clang_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
+              --param lfort_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
               --param build_config=${CMAKE_CFG_INTDIR}
               --param build_mode=${RUNTIME_BUILD_MODE}
               ${LIT_ARGS}
               ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT "Running Clang regression tests"
-      DEPENDS clang clang-headers
+      COMMENT "Running LFort regression tests"
+      DEPENDS lfort lfort-headers
               c-index-test diagtool arcmt-test c-arcmt-test
-              clang-check
+              lfort-check
       )
-    set_target_properties(check-clang PROPERTIES FOLDER "Clang tests")
+    set_target_properties(check-lfort PROPERTIES FOLDER "LFort tests")
   endif()
 
 endif()
 
-# Add a legacy target spelling: clang-test
-add_custom_target(clang-test)
-add_dependencies(clang-test check-clang)
-set_target_properties(clang-test PROPERTIES FOLDER "Clang tests")
+# Add a legacy target spelling: lfort-test
+add_custom_target(lfort-test)
+add_dependencies(lfort-test check-lfort)
+set_target_properties(lfort-test PROPERTIES FOLDER "LFort tests")

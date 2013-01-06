@@ -12,18 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/ChainedIncludesSource.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Frontend/ASTUnit.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseAST.h"
-#include "clang/Serialization/ASTReader.h"
-#include "clang/Serialization/ASTWriter.h"
+#include "lfort/Frontend/ChainedIncludesSource.h"
+#include "lfort/Basic/TargetInfo.h"
+#include "lfort/Frontend/ASTUnit.h"
+#include "lfort/Frontend/CompilerInstance.h"
+#include "lfort/Frontend/TextDiagnosticPrinter.h"
+#include "lfort/Lex/Preprocessor.h"
+#include "lfort/Parse/ParseAST.h"
+#include "lfort/Serialization/ASTReader.h"
+#include "lfort/Serialization/ASTWriter.h"
 #include "llvm/Support/MemoryBuffer.h"
 
-using namespace clang;
+using namespace lfort;
 
 static ASTReader *createASTReader(CompilerInstance &CI,
                                   StringRef pchFile,  
@@ -95,32 +95,32 @@ ChainedIncludesSource *ChainedIncludesSource::create(CompilerInstance &CI) {
     IntrusiveRefCntPtr<DiagnosticsEngine> Diags(
         new DiagnosticsEngine(DiagID, &CI.getDiagnosticOpts(), DiagClient));
 
-    OwningPtr<CompilerInstance> Clang(new CompilerInstance());
-    Clang->setInvocation(CInvok.take());
-    Clang->setDiagnostics(Diags.getPtr());
-    Clang->setTarget(TargetInfo::CreateTargetInfo(Clang->getDiagnostics(),
-                                                  &Clang->getTargetOpts()));
-    Clang->createFileManager();
-    Clang->createSourceManager(Clang->getFileManager());
-    Clang->createPreprocessor();
-    Clang->getDiagnosticClient().BeginSourceFile(Clang->getLangOpts(),
-                                                 &Clang->getPreprocessor());
-    Clang->createASTContext();
+    OwningPtr<CompilerInstance> LFort(new CompilerInstance());
+    LFort->setInvocation(CInvok.take());
+    LFort->setDiagnostics(Diags.getPtr());
+    LFort->setTarget(TargetInfo::CreateTargetInfo(LFort->getDiagnostics(),
+                                                  &LFort->getTargetOpts()));
+    LFort->createFileManager();
+    LFort->createSourceManager(LFort->getFileManager());
+    LFort->createPreprocessor();
+    LFort->getDiagnosticClient().BeginSourceFile(LFort->getLangOpts(),
+                                                 &LFort->getPreprocessor());
+    LFort->createASTContext();
 
     SmallVector<char, 256> serialAST;
     llvm::raw_svector_ostream OS(serialAST);
     OwningPtr<ASTConsumer> consumer;
-    consumer.reset(new PCHGenerator(Clang->getPreprocessor(), "-", 0,
+    consumer.reset(new PCHGenerator(LFort->getPreprocessor(), "-", 0,
                                     /*isysroot=*/"", &OS));
-    Clang->getPreprocessor().setPPMutationListener(
+    LFort->getPreprocessor().setPPMutationListener(
                                             consumer->GetPPMutationListener());
-    Clang->getASTContext().setASTMutationListener(
+    LFort->getASTContext().setASTMutationListener(
                                             consumer->GetASTMutationListener());
-    Clang->setASTConsumer(consumer.take());
-    Clang->createSema(TU_Prefix, 0);
+    LFort->setASTConsumer(consumer.take());
+    LFort->createSema(TU_Prefix, 0);
 
     if (firstInclude) {
-      Preprocessor &PP = Clang->getPreprocessor();
+      Preprocessor &PP = LFort->getPreprocessor();
       PP.getBuiltinInfo().InitializeBuiltins(PP.getIdentifierTable(),
                                              PP.getLangOpts());
     } else {
@@ -140,23 +140,23 @@ ChainedIncludesSource *ChainedIncludesSource::create(CompilerInstance &CI) {
 
       OwningPtr<ExternalASTSource> Reader;
 
-      Reader.reset(createASTReader(*Clang, pchName, bufs, serialBufNames, 
-        Clang->getASTConsumer().GetASTDeserializationListener()));
+      Reader.reset(createASTReader(*LFort, pchName, bufs, serialBufNames, 
+        LFort->getASTConsumer().GetASTDeserializationListener()));
       if (!Reader)
         return 0;
-      Clang->getASTContext().setExternalSource(Reader);
+      LFort->getASTContext().setExternalSource(Reader);
     }
     
-    if (!Clang->InitializeSourceManager(InputFile))
+    if (!LFort->InitializeSourceManager(InputFile))
       return 0;
 
-    ParseAST(Clang->getSema());
+    ParseAST(LFort->getSema());
     OS.flush();
-    Clang->getDiagnosticClient().EndSourceFile();
+    LFort->getDiagnosticClient().EndSourceFile();
     serialBufs.push_back(
       llvm::MemoryBuffer::getMemBufferCopy(StringRef(serialAST.data(),
                                                            serialAST.size())));
-    source->CIs.push_back(Clang.take());
+    source->CIs.push_back(LFort.take());
   }
 
   assert(!serialBufs.empty());

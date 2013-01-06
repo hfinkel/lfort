@@ -8,17 +8,17 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::IdentifierInfo, clang::IdentifierTable, and
-/// clang::Selector interfaces.
+/// \brief Defines the lfort::IdentifierInfo, lfort::IdentifierTable, and
+/// lfort::Selector interfaces.
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_BASIC_IDENTIFIERTABLE_H
-#define LLVM_CLANG_BASIC_IDENTIFIERTABLE_H
+#ifndef LLVM_LFORT_BASIC_IDENTIFIERTABLE_H
+#define LLVM_LFORT_BASIC_IDENTIFIERTABLE_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/Basic/OperatorKinds.h"
-#include "clang/Basic/TokenKinds.h"
+#include "lfort/Basic/LLVM.h"
+#include "lfort/Basic/OperatorKinds.h"
+#include "lfort/Basic/TokenKinds.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/PointerLikeTypeTraits.h"
@@ -29,7 +29,7 @@ namespace llvm {
   template <typename T> struct DenseMapInfo;
 }
 
-namespace clang {
+namespace lfort {
   class LangOptions;
   class IdentifierInfo;
   class IdentifierTable;
@@ -751,7 +751,7 @@ public:
     CXXConversionFunction,
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
     CXXOperator##Name,
-#include "clang/Basic/OperatorKinds.def"
+#include "lfort/Basic/OperatorKinds.def"
     CXXLiteralOperator,
     CXXUsingDirective,
     NUM_EXTRA_KINDS
@@ -769,38 +769,38 @@ public:
   unsigned ExtraKindOrNumArgs;
 };
 
-}  // end namespace clang
+}  // end namespace lfort
 
 namespace llvm {
 /// Define DenseMapInfo so that Selectors can be used as keys in DenseMap and
 /// DenseSets.
 template <>
-struct DenseMapInfo<clang::Selector> {
-  static inline clang::Selector getEmptyKey() {
-    return clang::Selector::getEmptyMarker();
+struct DenseMapInfo<lfort::Selector> {
+  static inline lfort::Selector getEmptyKey() {
+    return lfort::Selector::getEmptyMarker();
   }
-  static inline clang::Selector getTombstoneKey() {
-    return clang::Selector::getTombstoneMarker();
+  static inline lfort::Selector getTombstoneKey() {
+    return lfort::Selector::getTombstoneMarker();
   }
 
-  static unsigned getHashValue(clang::Selector S);
+  static unsigned getHashValue(lfort::Selector S);
 
-  static bool isEqual(clang::Selector LHS, clang::Selector RHS) {
+  static bool isEqual(lfort::Selector LHS, lfort::Selector RHS) {
     return LHS == RHS;
   }
 };
 
 template <>
-struct isPodLike<clang::Selector> { static const bool value = true; };
+struct isPodLike<lfort::Selector> { static const bool value = true; };
 
 template<>
-class PointerLikeTypeTraits<clang::Selector> {
+class PointerLikeTypeTraits<lfort::Selector> {
 public:
-  static inline const void *getAsVoidPointer(clang::Selector P) {
+  static inline const void *getAsVoidPointer(lfort::Selector P) {
     return P.getAsOpaquePtr();
   }
-  static inline clang::Selector getFromVoidPointer(const void *P) {
-    return clang::Selector(reinterpret_cast<uintptr_t>(P));
+  static inline lfort::Selector getFromVoidPointer(const void *P) {
+    return lfort::Selector(reinterpret_cast<uintptr_t>(P));
   }
   enum { NumLowBitsAvailable = 0 };  
 };
@@ -808,25 +808,25 @@ public:
 // Provide PointerLikeTypeTraits for IdentifierInfo pointers, which
 // are not guaranteed to be 8-byte aligned.
 template<>
-class PointerLikeTypeTraits<clang::IdentifierInfo*> {
+class PointerLikeTypeTraits<lfort::IdentifierInfo*> {
 public:
-  static inline void *getAsVoidPointer(clang::IdentifierInfo* P) {
+  static inline void *getAsVoidPointer(lfort::IdentifierInfo* P) {
     return P;
   }
-  static inline clang::IdentifierInfo *getFromVoidPointer(void *P) {
-    return static_cast<clang::IdentifierInfo*>(P);
+  static inline lfort::IdentifierInfo *getFromVoidPointer(void *P) {
+    return static_cast<lfort::IdentifierInfo*>(P);
   }
   enum { NumLowBitsAvailable = 1 };
 };
 
 template<>
-class PointerLikeTypeTraits<const clang::IdentifierInfo*> {
+class PointerLikeTypeTraits<const lfort::IdentifierInfo*> {
 public:
-  static inline const void *getAsVoidPointer(const clang::IdentifierInfo* P) {
+  static inline const void *getAsVoidPointer(const lfort::IdentifierInfo* P) {
     return P;
   }
-  static inline const clang::IdentifierInfo *getFromVoidPointer(const void *P) {
-    return static_cast<const clang::IdentifierInfo*>(P);
+  static inline const lfort::IdentifierInfo *getFromVoidPointer(const void *P) {
+    return static_cast<const lfort::IdentifierInfo*>(P);
   }
   enum { NumLowBitsAvailable = 1 };
 };

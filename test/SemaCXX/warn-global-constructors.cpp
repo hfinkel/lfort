@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wglobal-constructors %s -verify
+// RUN: %lfort_cc1 -fsyntax-only -Wglobal-constructors %s -verify
 
 int opaque_int();
 

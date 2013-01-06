@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -std=c++11 %s -verify
+// RUN: %lfort_cc1 -std=c++11 %s -verify
 
 extern "C" void operator "" _a(const char *); // expected-error {{must have C++ linkage}}
 extern "C" template<char...> void operator "" _b(); // expected-error {{must have C++ linkage}}

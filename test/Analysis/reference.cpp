@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -analyzer-store=region -analyzer-constraints=range -verify -Wno-null-dereference %s
+// RUN: %lfort_cc1 -analyze -analyzer-checker=core,alpha.core,debug.ExprInspection -analyzer-store=region -analyzer-constraints=range -verify -Wno-null-dereference %s
 
-void clang_analyzer_eval(bool);
+void lfort_analyzer_eval(bool);
 
 typedef typeof(sizeof(int)) size_t;
 void malloc (size_t);
@@ -86,8 +86,8 @@ namespace PR13440 {
     if (s2.x != a) return;
 
     a[0] = 42;
-    clang_analyzer_eval(s.x[0] == 42); // expected-warning{{TRUE}}
-    clang_analyzer_eval(s2.x[0] == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(s.x[0] == 42); // expected-warning{{TRUE}}
+    lfort_analyzer_eval(s2.x[0] == 42); // expected-warning{{TRUE}}
   }
 }
 
@@ -100,7 +100,7 @@ void testNullReference() {
 void testRetroactiveNullReference(int *x) {
   // According to the C++ standard, there is no such thing as a
   // "null reference". So the 'if' statement ought to be dead code.
-  // However, Clang (and other compilers) don't actually check that a pointer
+  // However, LFort (and other compilers) don't actually check that a pointer
   // value is non-null in the implementation of references, so it is possible
   // to produce a supposed "null reference" at runtime. The analyzer shoeuld
   // still warn when it can prove such errors.
@@ -111,16 +111,16 @@ void testRetroactiveNullReference(int *x) {
 }
 
 void testReferenceAddress(int &x) {
-  clang_analyzer_eval(&x != 0); // expected-warning{{TRUE}}
-  clang_analyzer_eval(&ref() != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&x != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&ref() != 0); // expected-warning{{TRUE}}
 
   struct S { int &x; };
 
   extern S getS();
-  clang_analyzer_eval(&getS().x != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&getS().x != 0); // expected-warning{{TRUE}}
 
   extern S *getSP();
-  clang_analyzer_eval(&getSP()->x != 0); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(&getSP()->x != 0); // expected-warning{{TRUE}}
 }
 
 
@@ -132,7 +132,7 @@ void testFunctionPointerReturn(void *opaque) {
   // Don't crash writing to or reading from this reference.
   int &x = getRef();
   x = 42;
-  clang_analyzer_eval(x == 42); // expected-warning{{TRUE}}
+  lfort_analyzer_eval(x == 42); // expected-warning{{TRUE}}
 }
 
 
