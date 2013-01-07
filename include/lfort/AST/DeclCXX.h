@@ -2351,7 +2351,10 @@ public:
   /// from the dwarf standard.
   enum LanguageIDs {
     lang_c = /* DW_LANG_C */ 0x0002,
-    lang_cxx = /* DW_LANG_C_plus_plus */ 0x0004
+    lang_cxx = /* DW_LANG_C_plus_plus */ 0x0004,
+    lang_fortran77 = /* DW_LANG_Fortran77 */ 0x0007,
+    lang_fortran90 = /* DW_LANG_Fortran90 */ 0x0008,
+    lang_fortran95 = /* DW_LANG_Fortran95 */ 0x000e
   };
 private:
   /// Language - The language for this linkage specification.

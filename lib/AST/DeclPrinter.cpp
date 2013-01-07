@@ -752,6 +752,12 @@ void DeclPrinter::VisitLinkageSpecDecl(LinkageSpecDecl *D) {
   const char *l;
   if (D->getLanguage() == LinkageSpecDecl::lang_c)
     l = "C";
+  else if (D->getLanguage() == LinkageSpecDecl::lang_fortran77)
+    l = "Fortran 77";
+  else if (D->getLanguage() == LinkageSpecDecl::lang_fortran90)
+    l = "Fortran 90";
+  else if (D->getLanguage() == LinkageSpecDecl::lang_fortran95)
+    l = "Fortran 95";
   else {
     assert(D->getLanguage() == LinkageSpecDecl::lang_cxx &&
            "unknown language in linkage specification");

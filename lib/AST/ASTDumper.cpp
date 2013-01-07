@@ -727,6 +727,9 @@ void ASTDumper::VisitUsingShadowDecl(UsingShadowDecl *D) {
 void ASTDumper::VisitLinkageSpecDecl(LinkageSpecDecl *D) {
   switch (D->getLanguage()) {
   case LinkageSpecDecl::lang_c: OS << " C"; break;
+  case LinkageSpecDecl::lang_fortran77: OS << " Fortran 77"; break;
+  case LinkageSpecDecl::lang_fortran90: OS << " Fortran 90"; break;
+  case LinkageSpecDecl::lang_fortran95: OS << " Fortran 95"; break;
   case LinkageSpecDecl::lang_cxx: OS << " C++"; break;
   }
 }

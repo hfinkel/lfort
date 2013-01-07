@@ -424,6 +424,9 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
     StringRef lang = "";
     switch (D->getLanguage()) {
     case LinkageSpecDecl::lang_c: lang = "C"; break;
+    case LinkageSpecDecl::lang_fortran77: lang = "Fortran 77"; break;
+    case LinkageSpecDecl::lang_fortran90: lang = "Fortran 90"; break;
+    case LinkageSpecDecl::lang_fortran95: lang = "Fortran 95"; break;
     case LinkageSpecDecl::lang_cxx: lang = "C++"; break;
     }
     set("lang", lang);
