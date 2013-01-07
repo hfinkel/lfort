@@ -59,17 +59,6 @@ namespace frontend {
 
 enum InputKind {
   IK_None,
-  IK_Asm,
-  IK_C,
-  IK_CXX,
-  IK_ObjC,
-  IK_ObjCXX,
-  IK_PreprocessedC,
-  IK_PreprocessedCXX,
-  IK_PreprocessedObjC,
-  IK_PreprocessedObjCXX,
-  IK_OpenCL,
-  IK_CUDA,
   IK_Fortran77,
   IK_Fortran90,
   IK_Fortran95,
@@ -224,7 +213,7 @@ public:
   {}
 
   /// getInputKindForExtension - Return the appropriate input kind for a file
-  /// extension. For example, "c" would return IK_C.
+  /// extension. For example, "f" would return IK_Fortran77.
   ///
   /// \return The input kind for the extension, or IK_None if the extension is
   /// not recognized.

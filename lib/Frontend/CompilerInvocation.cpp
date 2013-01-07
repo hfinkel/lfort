@@ -61,9 +61,6 @@ using namespace lfort::driver::options;
 static unsigned getOptimizationLevel(ArgList &Args, InputKind IK,
                                      DiagnosticsEngine &Diags) {
   unsigned DefaultOpt = 0;
-  if (IK == IK_OpenCL && !Args.hasArg(OPT_cl_opt_disable))
-    DefaultOpt = 2;
-
   if (Arg *A = Args.getLastArg(options::OPT_O_Group)) {
     if (A->getOption().matches(options::OPT_O0))
       return 0;
@@ -752,24 +749,6 @@ static InputKind ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
   InputKind DashX = IK_None;
   if (const Arg *A = Args.getLastArg(OPT_x)) {
     DashX = llvm::StringSwitch<InputKind>(A->getValue())
-      .Case("c", IK_C)
-      .Case("cl", IK_OpenCL)
-      .Case("cuda", IK_CUDA)
-      .Case("c++", IK_CXX)
-      .Case("objective-c", IK_ObjC)
-      .Case("objective-c++", IK_ObjCXX)
-      .Case("cpp-output", IK_PreprocessedC)
-      .Case("assembler-with-cpp", IK_Asm)
-      .Case("c++-cpp-output", IK_PreprocessedCXX)
-      .Case("objective-c-cpp-output", IK_PreprocessedObjC)
-      .Case("objc-cpp-output", IK_PreprocessedObjC)
-      .Case("objective-c++-cpp-output", IK_PreprocessedObjCXX)
-      .Case("objc++-cpp-output", IK_PreprocessedObjCXX)
-      .Case("c-header", IK_C)
-      .Case("cl-header", IK_OpenCL)
-      .Case("objective-c-header", IK_ObjC)
-      .Case("c++-header", IK_CXX)
-      .Case("objective-c++-header", IK_ObjCXX)
       .Case("f77-cpp-input", IK_Fortran77)
       .Case("f77", IK_PreprocessedFortran77)
       .Case("f90-cpp-input", IK_Fortran90)
@@ -923,18 +902,6 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args) {
 
 void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
                                          LangStandard::Kind LangStd) {
-  // Set some properties which depend solely on the input kind; it would be nice
-  // to move these to the language standard, and have the driver resolve the
-  // input kind + language standard.
-  if (IK == IK_Asm) {
-    Opts.AsmPreprocessor = 1;
-  } else if (IK == IK_ObjC ||
-             IK == IK_ObjCXX ||
-             IK == IK_PreprocessedObjC ||
-             IK == IK_PreprocessedObjCXX) {
-    Opts.ObjC1 = Opts.ObjC2 = 1;
-  }
-
   if (LangStd == LangStandard::lang_unspecified) {
     // Based on the base language, pick one.
     switch (IK) {
@@ -942,25 +909,6 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     case IK_AST:
     case IK_LLVM_IR:
       llvm_unreachable("Invalid input kind!");
-    case IK_OpenCL:
-      LangStd = LangStandard::lang_opencl;
-      break;
-    case IK_CUDA:
-      LangStd = LangStandard::lang_cuda;
-      break;
-    case IK_Asm:
-    case IK_C:
-    case IK_PreprocessedC:
-    case IK_ObjC:
-    case IK_PreprocessedObjC:
-      LangStd = LangStandard::lang_gnu99;
-      break;
-    case IK_CXX:
-    case IK_PreprocessedCXX:
-    case IK_ObjCXX:
-    case IK_PreprocessedObjCXX:
-      LangStd = LangStandard::lang_gnucxx98;
-      break;
     case IK_Fortran77:
     case IK_PreprocessedFortran77:
       LangStd = LangStandard::lang_f77;
@@ -1056,60 +1004,8 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     if (LangStd == LangStandard::lang_unspecified)
       Diags.Report(diag::err_drv_invalid_value)
         << A->getAsString(Args) << A->getValue();
-    else {
-      // Valid standard, check to make sure language and standard are compatable.    
-      const LangStandard &Std = LangStandard::getLangStandardForKind(LangStd);
-      switch (IK) {
-      case IK_C:
-      case IK_ObjC:
-      case IK_PreprocessedC:
-      case IK_PreprocessedObjC:
-        if (!(Std.isC89() || Std.isC99()))
-          Diags.Report(diag::err_drv_argument_not_allowed_with)
-            << A->getAsString(Args) << "C/ObjC";
-        break;
-      case IK_CXX:
-      case IK_ObjCXX:
-      case IK_PreprocessedCXX:
-      case IK_PreprocessedObjCXX:
-        if (!Std.isCPlusPlus())
-          Diags.Report(diag::err_drv_argument_not_allowed_with)
-            << A->getAsString(Args) << "C++/ObjC++";
-        break;
-      case IK_OpenCL:
-        if (!Std.isC99())
-          Diags.Report(diag::err_drv_argument_not_allowed_with)
-            << A->getAsString(Args) << "OpenCL";
-        break;
-      case IK_CUDA:
-        if (!Std.isCPlusPlus())
-          Diags.Report(diag::err_drv_argument_not_allowed_with)
-            << A->getAsString(Args) << "CUDA";
-        break;
-      default:
-        break;
-      }
-    }
   }
 
-  // -cl-std only applies for OpenCL language standards.
-  // Override the -std option in this case.
-  if (const Arg *A = Args.getLastArg(OPT_cl_std_EQ)) {
-    LangStandard::Kind OpenCLLangStd
-    = llvm::StringSwitch<LangStandard::Kind>(A->getValue())
-    .Case("CL", LangStandard::lang_opencl)
-    .Case("CL1.1", LangStandard::lang_opencl11)
-    .Case("CL1.2", LangStandard::lang_opencl12)
-    .Default(LangStandard::lang_unspecified);
-    
-    if (OpenCLLangStd == LangStandard::lang_unspecified) {
-      Diags.Report(diag::err_drv_invalid_value)
-      << A->getAsString(Args) << A->getValue();
-    }
-    else
-      LangStd = OpenCLLangStd;
-  }
-  
   CompilerInvocation::setLangDefaults(Opts, IK, LangStd);
 
   // We abuse '-f[no-]gnu-keywords' to force overriding all GNU-extension

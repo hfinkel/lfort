@@ -431,12 +431,6 @@ void PrintPreprocessedAction::ExecuteAction() {
 
 void PrintPreambleAction::ExecuteAction() {
   switch (getCurrentFileKind()) {
-  case IK_C:
-  case IK_CXX:
-  case IK_ObjC:
-  case IK_ObjCXX:
-  case IK_OpenCL:
-  case IK_CUDA:
   case IK_Fortran77:
   case IK_Fortran90:
   case IK_Fortran95:
@@ -445,11 +439,6 @@ void PrintPreambleAction::ExecuteAction() {
     break;
       
   case IK_None:
-  case IK_Asm:
-  case IK_PreprocessedC:
-  case IK_PreprocessedCXX:
-  case IK_PreprocessedObjC:
-  case IK_PreprocessedObjCXX:
   case IK_PreprocessedFortran77:
   case IK_PreprocessedFortran90:
   case IK_PreprocessedFortran95:
