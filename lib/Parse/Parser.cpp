@@ -19,7 +19,9 @@
 #include "lfort/Parse/ParseDiagnostic.h"
 #include "lfort/Sema/DeclSpec.h"
 #include "lfort/Sema/ParsedTemplate.h"
+#include "lfort/Sema/PrettyDeclStackTrace.h"
 #include "lfort/Sema/Scope.h"
+#include "llvm/ADT/SmallString.h"
 #include "llvm/Support/raw_ostream.h"
 using namespace lfort;
 
@@ -557,8 +559,286 @@ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result) {
   MaybeParseCXX11Attributes(attrs);
   MaybeParseMicrosoftAttributes(attrs);
 
-  Result = ParseExternalDeclaration(attrs);
+  Result = ParseProgramUnit(attrs);
   return false;
+}
+
+void
+Parser::SkipToNextLine() {
+  if (Tok.isNot(tok::eof) && Tok.isNot(tok::code_completion))
+    ConsumeAnyToken();
+
+  while (Tok.isNot(tok::eof) && Tok.isNot(tok::code_completion) &&
+         !Tok.isAtStartOfLine())
+    ConsumeAnyToken();
+}
+
+/*
+ * R201-F08 program
+ *    is  program-unit 
+ *        [ program-unit ] ... 
+ */
+Parser::DeclGroupPtrTy
+Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
+                                 ParsingDeclSpec *DS) {
+  DestroyTemplateIdAnnotationsRAIIObj CleanupRAII(TemplateIds);
+  ParenBraceBracketBalancer BalancerRAIIObj(*this);
+
+  if (PP.isCodeCompletionReached()) {
+    cutOffParsing();
+    return DeclGroupPtrTy();
+  }
+
+  switch (Tok.getKind()) {
+  case tok::kw_program:
+    return ParseProgram();
+  case tok::kw_subroutine:
+    return ParseSubroutine();
+  case tok::kw_function:
+    return ParseFunction();
+  case tok::kw_submodule:
+    return ParseSubmodule();
+  case tok::kw_blockdata:
+    return ParseBlockData();
+  case tok::kw_block:
+    if (NextToken().is(tok::kw_data))
+      return ParseBlockData();
+  case tok::kw_module:
+    if (NextToken().isNot(tok::kw_procedure))
+      return ParseModule();
+  default:
+    ; // empty
+  }
+
+  return ParseProgram();
+}
+
+/* R1101-F08 main-program
+ *   is  [ program-stmt ]
+ *          [ specification-part ]
+ *          [ execution-part ]
+ *          [ internal-subprogram-part ]
+ *          end-program-stmt
+ */
+Parser::DeclGroupPtrTy
+Parser::ParseProgram() {
+
+  IdentifierInfo *ProgramName = 0;
+  SourceLocation ProgramLoc;
+  /* R1102-F08 program-stmt
+   *   is  PROGRAM [ program-name ]
+   */
+  if (Tok.is(tok::kw_program)) {
+    ProgramLoc = Tok.getLocation();
+    ConsumeToken();
+    if (Tok.is(tok::identifier)) {
+      ProgramName = Tok.getIdentifierInfo();
+      ConsumeToken();
+    }
+  } else {
+    // If there is no program keyword, then this is just whatever the next
+    // token happens to be.
+    ProgramLoc = Tok.getLocation();
+  }
+
+  // The  program is exported as a C-linkage function
+  // that would be declared as: void MAIN__().
+  SmallString<8> LangBuffer(StringRef("\"C\""));
+  ParseScope LinkageScope(this, Scope::DeclScope);
+  Decl *LinkageSpec
+    = Actions.ActOnStartLinkageSpecification(getCurScope(), ProgramLoc,
+                                             ProgramLoc, LangBuffer,
+                                             ProgramLoc);
+
+  ParsingDeclSpec DS(*this);
+  ParsingDeclarator D(*this, DS, Declarator::FileContext);
+  D.SetIdentifier(PP.getIdentifierInfo("MAIN__"), ProgramLoc);
+
+  {
+    const char *PrevSpec;
+    unsigned DiagID;
+    D.getMutableDeclSpec().SetTypeSpecType(DeclSpec::TST_void,
+                                           D.getIdentifierLoc(),
+                                           PrevSpec, DiagID);
+    D.SetRangeBegin(D.getDeclSpec().getSourceRange().getBegin());
+  }
+
+  Actions.ActOnStartFunctionDeclarator();
+
+  {
+    SmallVector<DeclaratorChunk::ParamInfo, 16> ParamInfo;
+    ExceptionSpecificationType ESpecType = EST_None;
+    SmallVector<ParsedType, 2> DynamicExceptions;
+    SmallVector<SourceRange, 2> DynamicExceptionRanges;
+    ParsedType TrailingReturnType;
+    ParsedAttributes FnAttrs(AttrFactory);
+
+    // Remember that we parsed a function type, and remember the attributes.
+    D.AddTypeInfo(DeclaratorChunk::getFunction(true,
+                                               false,
+                                               SourceLocation(),
+                                               ParamInfo.data(),
+                                               ParamInfo.size(),
+                                               SourceLocation(),
+                                               SourceLocation(),
+                                               DS.getTypeQualifiers(),
+                                               false,
+                                               SourceLocation(),
+                                               SourceLocation(),
+                                               SourceLocation(),
+                                               SourceLocation(),
+                                               ESpecType,
+                                               SourceLocation(),
+                                               DynamicExceptions.data(),
+                                               DynamicExceptionRanges.data(),
+                                               DynamicExceptions.size(),
+                                               0,
+                                               ProgramLoc, 
+                                               ProgramLoc,
+                                               D,
+                                               TrailingReturnType),
+                  FnAttrs, ProgramLoc);
+  }
+
+  Actions.ActOnEndFunctionDeclarator();
+
+  // Enter a scope for the MAIN__ function body.
+  ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
+
+  Decl *Res = Actions.ActOnStartOfFunctionDef(getCurScope(), D);
+
+  // Break out of the ParsingDeclarator context before we parse the body.
+  D.complete(Res);
+
+  // Break out of the ParsingDeclSpec context, too.  This const_cast is
+  // safe because we're always the sole owner.
+  D.getMutableDeclSpec().abort();
+
+  PrettyDeclStackTraceEntry CrashInfo(Actions, Res, ProgramLoc,
+                                      "parsing program body");
+
+  StmtResult FnBody(ParseExecutionPart());
+
+  // If the function body could not be parsed, make a bogus compoundstmt.
+  if (FnBody.isInvalid()) {
+    Sema::CompoundScopeRAII CompoundScope(Actions);
+    FnBody = Actions.ActOnCompoundStmt(ProgramLoc, ProgramLoc,
+                                       MultiStmtArg(), false);
+  }
+
+  SourceLocation EndLoc = Tok.getLocation();
+
+  if (Tok.is(tok::kw_end)) {
+    ConsumeToken();
+    // FIXME: TODO: ConsumeToken should insert semi when there is no semi next
+    // and next token starts a new line!
+    if (Tok.is(tok::kw_program) && !Tok.isAtStartOfLine())
+      ConsumeToken();
+  } else {
+    if (ExpectAndConsume(tok::kw_endprogram, diag::err_expected_end_program, ""))
+      SkipToNextLine();
+  }
+
+  if (Tok.is(tok::identifier) && !Tok.isAtStartOfLine()) {
+    IdentifierInfo *EndProgramName = Tok.getIdentifierInfo();
+    if (ProgramName && ProgramName != EndProgramName) {
+      Diag(ConsumeToken(), diag::warn_end_program_name_mismatch)
+           << ProgramName->getName();
+    } else ConsumeToken();
+  }
+
+  BodyScope.Exit();
+
+  Decl *TheDecl = Actions.ActOnFinishFunctionBody(Res, FnBody.take());
+  Actions.ConvertDeclToDeclGroup(TheDecl);
+
+  Decl *LinkageSpecEnd
+    = Actions.ActOnFinishLinkageSpecification(getCurScope(), LinkageSpec,
+                                              EndLoc);
+  return Actions.ConvertDeclToDeclGroup(LinkageSpecEnd);
+}
+
+Parser::StmtResult
+Parser::ParseExecutionPart() {
+  StmtVector Stmts;
+
+  SourceLocation OpenLoc = Tok.getLocation();
+
+  SourceLocation CloseLoc = Tok.getLocation();
+
+  return Actions.ActOnCompoundStmt(OpenLoc, CloseLoc, Stmts, false);
+}
+
+/*
+ * R204 specification-part
+ *    is [ use-stmt ] ... 
+ *       [ import-stmt ] ... 
+ *       [ implicit-part ] 
+ *       [ declaration-construct ] ... 
+ */
+
+Parser::DeclGroupPtrTy
+Parser::ParseSpecificationPart() {
+  while (Tok.is(tok::kw_use))
+    ParseUseStmt();
+
+  while (Tok.is(tok::kw_import))
+    ParseImportStmt();
+
+  if (Tok.is(tok::kw_implicit))
+    ParseImplicit();
+
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseUseStmt() {
+  assert(Tok.is(tok::kw_use) && "Not 'use' token");
+  ConsumeToken();
+
+  if (Tok.is(tok::code_completion)) {
+    Actions.CodeCompleteUsingDirective(getCurScope());
+    cutOffParsing();
+    return DeclGroupPtrTy();
+  }
+
+  // Actions.ConvertDeclToDeclGroup(SingleDecl);
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseSubroutine() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseFunction() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseSubmodule() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseBlockData() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseModule() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseImportStmt() {
+  return DeclGroupPtrTy();
+}
+
+Parser::DeclGroupPtrTy
+Parser::ParseImplicit() {
+  return DeclGroupPtrTy();
 }
 
 /// ParseExternalDeclaration:

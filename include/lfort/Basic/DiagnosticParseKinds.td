@@ -706,6 +706,8 @@ def err_type_safety_unknown_flag : Error<
 // Fortran
 def err_expected_end_program : Error<
   "expected 'endprogram', 'end program', or just 'end'">;
+def warn_end_program_name_mismatch : Warning<
+  "end program name does not match program name '%0'">;
 
 // Language specific pragmas
 // - Generic warnings

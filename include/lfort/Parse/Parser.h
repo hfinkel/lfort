@@ -2181,6 +2181,28 @@ private:
                                          MacroInfo *MacroInfo,
                                          unsigned ArgumentIndex);
   virtual void CodeCompleteNaturalLanguage();
+
+public:
+  //===--------------------------------------------------------------------===//
+  // Fortran
+  void SkipToNextLine();
+
+  DeclGroupPtrTy ParseProgramUnit(ParsedAttributesWithRange &attrs,
+                                          ParsingDeclSpec *DS = 0);
+  DeclGroupPtrTy ParseProgram();
+  DeclGroupPtrTy ParseSpecificationPart();
+  DeclGroupPtrTy ParseUseStmt();
+
+  DeclGroupPtrTy ParseSubroutine();
+  DeclGroupPtrTy ParseFunction();
+  DeclGroupPtrTy ParseSubmodule();
+  DeclGroupPtrTy ParseBlockData();
+  DeclGroupPtrTy ParseModule();
+
+  DeclGroupPtrTy ParseImportStmt();
+  DeclGroupPtrTy ParseImplicit();
+
+  StmtResult ParseExecutionPart();
 };
 
 }  // end namespace lfort
