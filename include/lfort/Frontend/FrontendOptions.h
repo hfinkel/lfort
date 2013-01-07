@@ -70,10 +70,16 @@ enum InputKind {
   IK_PreprocessedObjCXX,
   IK_OpenCL,
   IK_CUDA,
-  IK_Fortran,
   IK_Fortran77,
-  IK_PreprocessedFortran,
+  IK_Fortran90,
+  IK_Fortran95,
+  IK_Fortran03,
+  IK_Fortran08,
   IK_PreprocessedFortran77,
+  IK_PreprocessedFortran90,
+  IK_PreprocessedFortran95,
+  IK_PreprocessedFortran03,
+  IK_PreprocessedFortran08,
   IK_AST,
   IK_LLVM_IR
 };

@@ -914,7 +914,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
           // spurious errors (e.g., no inputs).
           if (!Args.hasArgNoClaim(options::OPT_E) && !CCCIsCPP)
             Diag(lfort::diag::err_drv_unknown_stdin_type);
-          Ty = types::TY_Fortran;
+          Ty = types::TY_Fortran08;
         } else {
           // Otherwise lookup by extension.
           // Fallback is C if invoked as C preprocessor or Object otherwise.
@@ -925,7 +925,7 @@ void Driver::BuildInputs(const ToolChain &TC, const DerivedArgList &Args,
 
           if (Ty == types::TY_INVALID) {
             if (CCCIsCPP)
-              Ty = types::TY_Fortran;
+              Ty = types::TY_Fortran08;
             else
               Ty = types::TY_Object;
           }

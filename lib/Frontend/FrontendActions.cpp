@@ -437,8 +437,11 @@ void PrintPreambleAction::ExecuteAction() {
   case IK_ObjCXX:
   case IK_OpenCL:
   case IK_CUDA:
-  case IK_Fortran:
   case IK_Fortran77:
+  case IK_Fortran90:
+  case IK_Fortran95:
+  case IK_Fortran03:
+  case IK_Fortran08:
     break;
       
   case IK_None:
@@ -447,8 +450,11 @@ void PrintPreambleAction::ExecuteAction() {
   case IK_PreprocessedCXX:
   case IK_PreprocessedObjC:
   case IK_PreprocessedObjCXX:
-  case IK_PreprocessedFortran:
   case IK_PreprocessedFortran77:
+  case IK_PreprocessedFortran90:
+  case IK_PreprocessedFortran95:
+  case IK_PreprocessedFortran03:
+  case IK_PreprocessedFortran08:
   case IK_AST:
   case IK_LLVM_IR:
     // We can't do anything with these.

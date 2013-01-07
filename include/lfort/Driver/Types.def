@@ -66,8 +66,14 @@ TYPE("objective-c++-header",     ObjCXXHeader, PP_ObjCXXHeader, 0,       "pu")
 // Fortran.
 TYPE("f77",                      PP_Fortran77, INVALID,         "f",     "u")
 TYPE("f77-cpp-input",            Fortran77,    PP_Fortran77,    "F",     "u")
-TYPE("f95",                      PP_Fortran,   INVALID,         "f95",   "u")
-TYPE("f95-cpp-input",            Fortran,      PP_Fortran,      "F95",   "u")
+TYPE("f90",                      PP_Fortran90, INVALID,         "f90",   "u")
+TYPE("f90-cpp-input",            Fortran90,    PP_Fortran90,    "F90",   "u")
+TYPE("f95",                      PP_Fortran95, INVALID,         "f95",   "u")
+TYPE("f95-cpp-input",            Fortran95,    PP_Fortran95,    "F95",   "u")
+TYPE("f03",                      PP_Fortran03, INVALID,         "f03",   "u")
+TYPE("f03-cpp-input",            Fortran03,    PP_Fortran03,    "F03",   "u")
+TYPE("f08",                      PP_Fortran08, INVALID,         "f08",   "u")
+TYPE("f08-cpp-input",            Fortran08,    PP_Fortran08,    "F08",   "u")
 
 // Other languages.
 TYPE("ada",                      Ada,          INVALID,         0,       "u")

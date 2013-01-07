@@ -772,8 +772,14 @@ static InputKind ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
       .Case("objective-c++-header", IK_ObjCXX)
       .Case("f77-cpp-input", IK_Fortran77)
       .Case("f77", IK_PreprocessedFortran77)
-      .Case("f95-cpp-input", IK_Fortran)
-      .Case("f95", IK_PreprocessedFortran)
+      .Case("f90-cpp-input", IK_Fortran90)
+      .Case("f90", IK_PreprocessedFortran90)
+      .Case("f95-cpp-input", IK_Fortran95)
+      .Case("f95", IK_PreprocessedFortran95)
+      .Case("f03-cpp-input", IK_Fortran03)
+      .Case("f03", IK_PreprocessedFortran03)
+      .Case("f08-cpp-input", IK_Fortran08)
+      .Case("f08", IK_PreprocessedFortran08)
       .Case("ast", IK_AST)
       .Case("ir", IK_LLVM_IR)
       .Default(IK_None);
@@ -959,8 +965,20 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     case IK_PreprocessedFortran77:
       LangStd = LangStandard::lang_f77;
       break;
-    case IK_Fortran:
-    case IK_PreprocessedFortran:
+    case IK_Fortran90:
+    case IK_PreprocessedFortran90:
+      LangStd = LangStandard::lang_f90;
+      break;
+    case IK_Fortran95:
+    case IK_PreprocessedFortran95:
+      LangStd = LangStandard::lang_f95;
+      break;
+    case IK_Fortran03:
+    case IK_PreprocessedFortran03:
+      LangStd = LangStandard::lang_f03;
+      break;
+    case IK_Fortran08:
+    case IK_PreprocessedFortran08:
       LangStd = LangStandard::lang_f08;
       break;
     }

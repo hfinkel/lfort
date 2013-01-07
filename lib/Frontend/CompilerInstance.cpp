@@ -735,8 +735,18 @@ bool CompilerInstance::ExecuteAction(FrontendAction &Act) {
 /// \brief Determine the appropriate source input kind based on language
 /// options.
 static InputKind getSourceInputKindFromOptions(const LangOptions &LangOpts) {
-  if (LangOpts.F90 || LangOpts.F95 || LangOpts.F03 || LangOpts.F08)
-    return IK_Fortran;
+  if (LangOpts.F08)
+    return IK_Fortran08;
+
+  if (LangOpts.F03)
+    return IK_Fortran03;
+
+  if (LangOpts.F95)
+    return IK_Fortran95;
+
+  if (LangOpts.F90)
+    return IK_Fortran90;
+
   return IK_Fortran77;
 }
 

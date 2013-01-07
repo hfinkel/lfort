@@ -76,8 +76,11 @@ bool types::isAcceptedByLFort(ID Id) {
     return false;
 
   case TY_Asm:
-  case TY_Fortran: case TY_PP_Fortran:
   case TY_Fortran77: case TY_PP_Fortran77:
+  case TY_Fortran90: case TY_PP_Fortran90:
+  case TY_Fortran95: case TY_PP_Fortran95:
+  case TY_Fortran03: case TY_PP_Fortran03:
+  case TY_Fortran08: case TY_PP_Fortran08:
   case TY_AST:
   case TY_LLVM_IR: case TY_LLVM_BC:
     return true;
@@ -133,10 +136,14 @@ types::ID types::lookupTypeForExtension(const char *Ext) {
            .Case("FOR", TY_PP_Fortran77)
            .Case("fpp", TY_Fortran77)
            .Case("FPP", TY_Fortran77)
-           .Case("f90", TY_PP_Fortran)
-           .Case("f95", TY_PP_Fortran)
-           .Case("F90", TY_Fortran)
-           .Case("F95", TY_Fortran)
+           .Case("f90", TY_PP_Fortran90)
+           .Case("f95", TY_PP_Fortran95)
+           .Case("f03", TY_PP_Fortran03)
+           .Case("f08", TY_PP_Fortran08)
+           .Case("F90", TY_Fortran90)
+           .Case("F95", TY_Fortran95)
+           .Case("F03", TY_Fortran03)
+           .Case("F08", TY_Fortran08)
            .Case("mii", TY_PP_ObjCXX)
            .Default(TY_INVALID);
 }
@@ -203,9 +210,15 @@ ID types::lookupF77TypeForFortranType(ID Id) {
   default:
     return Id;
 
-  case types::TY_Fortran:
+  case types::TY_Fortran90:
+  case types::TY_Fortran95:
+  case types::TY_Fortran03:
+  case types::TY_Fortran08:
     return types::TY_Fortran77;
-  case types::TY_PP_Fortran:
+  case types::TY_PP_Fortran90:
+  case types::TY_PP_Fortran95:
+  case types::TY_PP_Fortran03:
+  case types::TY_PP_Fortran08:
     return types::TY_PP_Fortran77;
   }
 }
