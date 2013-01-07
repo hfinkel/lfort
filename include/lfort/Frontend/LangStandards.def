@@ -131,4 +131,39 @@ LANGSTANDARD(cuda, "cuda",
              "NVIDIA CUDA(tm)",
              LineComment | CPlusPlus | Digraphs)
 
+// Fortran
+LANGSTANDARD(f77, "f77",
+             "ANSI Fortran 1977",
+             F77)
+LANGSTANDARD(x3_9_1978, "x3.9-1978",
+             "ANSI Fortran 1977",
+             F77)
+LANGSTANDARD(mil_std_1753, "mil-std-1753",
+             "ANSI Fortran 1977",
+             F77)
+LANGSTANDARD(f90, "f90",
+             "ISO Fortran 1990",
+             F77 | F90)
+LANGSTANDARD(iso1539_1991, "iso1539:1991",
+             "ISO Fortran 1990",
+             F77 | F90)
+LANGSTANDARD(f95, "f95",
+             "ISO Fortran 1995",
+             F77 | F90 | F95)
+LANGSTANDARD(iso1539_1997, "iso1539:1997",
+             "ISO Fortran 1995",
+             F77 | F90 | F95)
+LANGSTANDARD(f03, "f2003",
+             "ISO Fortran 2003",
+             F77 | F90 | F95 | F03)
+LANGSTANDARD(iso1539_2004, "iso1539:2004",
+             "ISO Fortran 2003",
+             F77 | F90 | F95 | F03)
+LANGSTANDARD(f08, "f2008",
+             "ISO Fortran 2008",
+             F77 | F90 | F95 | F03 | F08)
+LANGSTANDARD(iso1539_2010, "iso1539:2010",
+             "ISO Fortran 2008",
+             F77 | F90 | F95 | F03 | F08)
+
 #undef LANGSTANDARD

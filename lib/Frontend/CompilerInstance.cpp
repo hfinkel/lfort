@@ -735,13 +735,9 @@ bool CompilerInstance::ExecuteAction(FrontendAction &Act) {
 /// \brief Determine the appropriate source input kind based on language
 /// options.
 static InputKind getSourceInputKindFromOptions(const LangOptions &LangOpts) {
-  if (LangOpts.OpenCL)
-    return IK_OpenCL;
-  if (LangOpts.CUDA)
-    return IK_CUDA;
-  if (LangOpts.ObjC1)
-    return LangOpts.CPlusPlus? IK_ObjCXX : IK_ObjC;
-  return LangOpts.CPlusPlus? IK_CXX : IK_C;
+  if (LangOpts.F90 || LangOpts.F95 || LangOpts.F03 || LangOpts.F08)
+    return IK_Fortran;
+  return IK_Fortran77;
 }
 
 namespace {

@@ -41,6 +41,12 @@
      ENUM_LANGOPT(Name, Type, Bits, Default, Description)
 #endif
 
+LANGOPT(F77               , 1, 0, "Fortran 1977")
+LANGOPT(F90               , 1, 0, "Fortran 1990")
+LANGOPT(F95               , 1, 0, "Fortran 1995")
+LANGOPT(F03               , 1, 0, "Fortran 2003")
+LANGOPT(F08               , 1, 0, "Fortran 2008")
+LANGOPT(FreeForm          , 1, !F77, "Free-form source")
 LANGOPT(C99               , 1, 0, "C99")
 LANGOPT(C11               , 1, 0, "C11")
 LANGOPT(MicrosoftExt      , 1, 0, "Microsoft extensions")

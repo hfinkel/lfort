@@ -81,7 +81,7 @@ class IdentifierInfo {
   friend class IdentifierTable;
   
 public:
-  IdentifierInfo();
+  IdentifierInfo(bool IsDots = false);
 
 
   /// \brief Return true if this is the identifier for the specified string.
@@ -467,7 +467,7 @@ public:
 
     // Lookups failed, make a new IdentifierInfo.
     void *Mem = getAllocator().Allocate<IdentifierInfo>();
-    II = new (Mem) IdentifierInfo();
+    II = new (Mem) IdentifierInfo(Name.size() > 0 && Name[0] == '.');
     Entry.setValue(II);
 
     // Make sure getName() knows how to find the IdentifierInfo
@@ -499,7 +499,7 @@ public:
 
       // Lookups failed, make a new IdentifierInfo.
       void *Mem = getAllocator().Allocate<IdentifierInfo>();
-      II = new (Mem) IdentifierInfo();
+      II = new (Mem) IdentifierInfo(Name.size() > 0 && Name[0] == '.');
       Entry.setValue(II);
 
       // Make sure getName() knows how to find the IdentifierInfo

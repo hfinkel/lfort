@@ -27,6 +27,10 @@ InputKind FrontendOptions::getInputKindForExtension(StringRef Extension) {
     .Cases("cpp", "CPP", "c++", "cxx", "hpp", IK_CXX)
     .Case("cl", IK_OpenCL)
     .Case("cu", IK_CUDA)
+    .Cases("f90", "f95", "f03", "f08", IK_PreprocessedFortran)
+    .Cases("F90", "F95", "F03", "F08", IK_Fortran)
+    .Cases("f", "for", "fpp", IK_PreprocessedFortran77)
+    .Cases("F", "FOR", "FPP", IK_Fortran77)
     .Cases("ll", "bc", IK_LLVM_IR)
     .Default(IK_C);
 }

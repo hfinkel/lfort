@@ -28,8 +28,8 @@ using namespace lfort;
 // IdentifierInfo Implementation
 //===----------------------------------------------------------------------===//
 
-IdentifierInfo::IdentifierInfo() {
-  TokenID = tok::identifier;
+IdentifierInfo::IdentifierInfo(bool IsDots) {
+  TokenID = IsDots ? tok::dots_identifier : tok::identifier;
   ObjCOrBuiltinID = 0;
   HasMacro = false;
   HadMacro = false;
@@ -106,7 +106,11 @@ namespace {
     KEYARC = 0x800,
     KEYNOMS = 0x01000,
     WCHARSUPPORT = 0x02000,
-    KEYALL = (0xffff & ~KEYNOMS) // Because KEYNOMS is used to exclude.
+    KEYF90 = 0x04000,
+    KEYF95 = 0x08000,
+    KEYF03 = 0x10000,
+    KEYF08 = 0x20000,
+    KEYALL = (0xfffff & ~KEYNOMS) // Because KEYNOMS is used to exclude.
   };
 }
 
@@ -135,6 +139,10 @@ static void AddKeyword(StringRef Keyword,
   else if (LangOpts.OpenCL && (Flags & KEYOPENCL)) AddResult = 2;
   else if (!LangOpts.CPlusPlus && (Flags & KEYNOCXX)) AddResult = 2;
   else if (LangOpts.C11 && (Flags & KEYC11)) AddResult = 2;
+  else if (LangOpts.F90 && (Flags & KEYF90)) AddResult = 2;
+  else if (LangOpts.F95 && (Flags & KEYF95)) AddResult = 2;
+  else if (LangOpts.F03 && (Flags & KEYF03)) AddResult = 2;
+  else if (LangOpts.F08 && (Flags & KEYF08)) AddResult = 2;
   // We treat bridge casts as objective-C keywords so we can warn on them
   // in non-arc mode.
   else if (LangOpts.ObjC2 && (Flags & KEYARC)) AddResult = 2;
@@ -178,6 +186,9 @@ void IdentifierTable::AddKeywords(const LangOptions &LangOpts) {
              FLAGS, LangOpts, *this);
 #define ALIAS(NAME, TOK, FLAGS) \
   AddKeyword(StringRef(NAME), tok::kw_ ## TOK,  \
+             FLAGS, LangOpts, *this);
+#define FORTRAN_DOTS_KEYWORD(NAME, FLAGS) \
+  AddKeyword(StringRef("." #NAME "."), tok::kw_dot ## NAME ## dot,  \
              FLAGS, LangOpts, *this);
 #define CXX_KEYWORD_OPERATOR(NAME, ALIAS) \
   if (LangOpts.CXXOperatorNames)          \

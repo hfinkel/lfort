@@ -703,6 +703,10 @@ def warn_availability_and_unavailable : Warning<
 def err_type_safety_unknown_flag : Error<
   "invalid comparison flag %0; use 'layout_compatible' or 'must_be_null'">;
 
+// Fortran
+def err_expected_end_program : Error<
+  "expected 'endprogram', 'end program', or just 'end'">;
+
 // Language specific pragmas
 // - Generic warnings
 def warn_pragma_expected_lparen : Warning<

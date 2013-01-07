@@ -67,6 +67,10 @@ class Token {
 
   /// Flags - Bits we track about this token, members of the TokenFlags enum.
   unsigned char Flags;
+
+  /// Numeric Statement Label - In Fortran, any statement (and so, essentially,
+  /// any line) can start with a statement label.
+  unsigned StmtLabel;
 public:
 
   // Various flags set per token:
@@ -145,12 +149,23 @@ public:
     return tok::getTokenName( (tok::TokenKind) Kind);
   }
 
+  bool hasStmtLabel() const {
+    return StmtLabel == (unsigned) -1;
+  }
+  unsigned getStmtLabel() const {
+    return StmtLabel;
+  }
+  void setStmtLabel(unsigned SL) {
+    StmtLabel = SL;
+  }
+
   /// \brief Reset all flags to cleared.
   void startToken() {
     Kind = tok::unknown;
     Flags = 0;
     PtrData = 0;
     UintData = 0;
+    StmtLabel = (unsigned) -1;
     Loc = SourceLocation();
   }
 

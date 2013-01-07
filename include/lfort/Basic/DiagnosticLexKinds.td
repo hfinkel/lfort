@@ -182,7 +182,8 @@ def warn_bad_character_encoding : ExtWarn<
   "illegal character encoding in character literal">,
   InGroup<DiagGroup<"invalid-source-encoding">>;
 def err_lexing_string : Error<"failure when lexing a string">;
-
+def err_numeric_constant_has_no_digits : Error<
+  "numeric constant has no digits">;
 
 //===----------------------------------------------------------------------===//
 // PTH Diagnostics

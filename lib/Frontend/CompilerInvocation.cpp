@@ -770,6 +770,10 @@ static InputKind ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
       .Case("objective-c-header", IK_ObjC)
       .Case("c++-header", IK_CXX)
       .Case("objective-c++-header", IK_ObjCXX)
+      .Case("f77-cpp-input", IK_Fortran77)
+      .Case("f77", IK_PreprocessedFortran77)
+      .Case("f95-cpp-input", IK_Fortran)
+      .Case("f95", IK_PreprocessedFortran)
       .Case("ast", IK_AST)
       .Case("ir", IK_LLVM_IR)
       .Default(IK_None);
@@ -951,6 +955,14 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     case IK_PreprocessedObjCXX:
       LangStd = LangStandard::lang_gnucxx98;
       break;
+    case IK_Fortran77:
+    case IK_PreprocessedFortran77:
+      LangStd = LangStandard::lang_f77;
+      break;
+    case IK_Fortran:
+    case IK_PreprocessedFortran:
+      LangStd = LangStandard::lang_f08;
+      break;
     }
   }
 
@@ -1006,6 +1018,11 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
   Opts.Trigraphs = !Opts.GNUMode;
 
   Opts.DollarIdents = !Opts.AsmPreprocessor;
+
+  Opts.F90 = Std.isF90();
+  Opts.F95 = Std.isF95();
+  Opts.F03 = Std.isF03();
+  Opts.F08 = Std.isF08();
 }
 
 static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,

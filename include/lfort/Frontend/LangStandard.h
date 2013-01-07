@@ -28,7 +28,12 @@ enum LangFeatures {
   Digraphs = (1 << 7),
   GNUMode = (1 << 8),
   HexFloat = (1 << 9),
-  ImplicitInt = (1 << 10)
+  ImplicitInt = (1 << 10),
+  F77 = (1 << 11), // includes MIL-STD-1753
+  F90 = (1 << 12),
+  F95 = (1 << 13),
+  F03 = (1 << 14),
+  F08 = (1 << 15)
 };
 
 }
@@ -86,6 +91,21 @@ public:
 
   /// hasImplicitInt - Language allows variables to be typed as int implicitly.
   bool hasImplicitInt() const { return Flags & frontend::ImplicitInt; }
+
+  /// isF77 - Language is a superset of Fortran 1977.
+  bool isF77() const { return Flags & frontend::F77; }
+
+  /// isF90 - Language is a superset of Fortran 1990.
+  bool isF90() const { return Flags & frontend::F90; }
+
+  /// isF95 - Language is a superset of Fortran 1995.
+  bool isF95() const { return Flags & frontend::F95; }
+
+  /// isF03 - Language is a superset of Fortran 2003.
+  bool isF03() const { return Flags & frontend::F03; }
+
+  /// isF08 - Language is a superset of Fortran 2008.
+  bool isF08() const { return Flags & frontend::F08; }
 
   static const LangStandard &getLangStandardForKind(Kind K);
   static const LangStandard *getLangStandardForName(StringRef Name);

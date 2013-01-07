@@ -65,7 +65,8 @@ const char *getTokenSimpleSpelling(enum TokenKind Kind);
 
 /// \brief Return true if this is a raw identifier or an identifier kind.
 inline bool isAnyIdentifier(TokenKind K) {
-  return (K == tok::identifier) || (K == tok::raw_identifier);
+  return (K == tok::identifier) || (K == tok::dots_identifier) ||
+         (K == tok::raw_identifier);
 }
 
 /// \brief Return true if this is a "literal" kind, like a numeric
