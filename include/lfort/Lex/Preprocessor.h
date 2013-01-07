@@ -1174,7 +1174,8 @@ public:
   ///
   /// \returns true if the input filename was in <>'s or false if it was
   /// in ""'s.
-  bool GetIncludeFilenameSpelling(SourceLocation Loc,StringRef &Filename);
+  bool GetIncludeFilenameSpelling(SourceLocation Loc,StringRef &Filename,
+                                  bool isFortranInclude = false);
 
   /// \brief Given a "foo" or \<foo> reference, look up the indicated file.
   ///
@@ -1377,7 +1378,8 @@ private:
   void HandleIncludeDirective(SourceLocation HashLoc,
                               Token &Tok,
                               const DirectoryLookup *LookupFrom = 0,
-                              bool isImport = false);
+                              bool isImport = false,
+                              bool isFortranInclude = false);
   void HandleIncludeNextDirective(SourceLocation HashLoc, Token &Tok);
   void HandleIncludeMacrosDirective(SourceLocation HashLoc, Token &Tok);
   void HandleImportDirective(SourceLocation HashLoc, Token &Tok);

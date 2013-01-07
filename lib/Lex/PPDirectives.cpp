@@ -593,7 +593,8 @@ void Preprocessor::HandleDirective(Token &Result) {
 
   // If this is a Fortran include statement, then run the include logic.
   if (Result.is(tok::kw_include)) {
-     return HandleIncludeDirective(Result.getLocation(), Result);
+     return HandleIncludeDirective(Result.getLocation(), Result,
+                                   0, false, true);
   }
 
   ++NumDirectives;
@@ -1173,7 +1174,8 @@ void Preprocessor::HandleMacroPrivateDirective(Token &Tok) {
 /// spelling of the filename, but is also expected to handle the case when
 /// this method decides to use a different buffer.
 bool Preprocessor::GetIncludeFilenameSpelling(SourceLocation Loc,
-                                              StringRef &Buffer) {
+                                              StringRef &Buffer,
+                                              bool isFortranInclude) {
   // Get the text form of the filename.
   assert(!Buffer.empty() && "Can't have tokens with empty spellings!");
 
@@ -1188,6 +1190,13 @@ bool Preprocessor::GetIncludeFilenameSpelling(SourceLocation Loc,
     isAngled = true;
   } else if (Buffer[0] == '"') {
     if (Buffer.back() != '"') {
+      Diag(Loc, diag::err_pp_expects_filename);
+      Buffer = StringRef();
+      return true;
+    }
+    isAngled = false;
+  } else if (isFortranInclude && Buffer[0] == '\'') {
+    if (Buffer.back() != '\'') {
       Diag(Loc, diag::err_pp_expects_filename);
       Buffer = StringRef();
       return true;
@@ -1281,7 +1290,8 @@ bool Preprocessor::ConcatenateIncludeName(
 void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc, 
                                           Token &IncludeTok,
                                           const DirectoryLookup *LookupFrom,
-                                          bool isImport) {
+                                          bool isImport,
+                                          bool isFortranInclude) {
 
   Token FilenameTok;
   CurPPLexer->LexIncludeFilename(FilenameTok);
@@ -1323,7 +1333,8 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     = CharSourceRange::getCharRange(FilenameTok.getLocation(), CharEnd);
   StringRef OriginalFilename = Filename;
   bool isAngled =
-    GetIncludeFilenameSpelling(FilenameTok.getLocation(), Filename);
+    GetIncludeFilenameSpelling(FilenameTok.getLocation(), Filename,
+                               isFortranInclude);
   // If GetIncludeFilenameSpelling set the start ptr to null, there was an
   // error.
   if (Filename.empty()) {
