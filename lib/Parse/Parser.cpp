@@ -643,7 +643,7 @@ Parser::ParseProgram() {
 
   // The  program is exported as a C-linkage function
   // that would be declared as: void MAIN__().
-  SmallString<8> LangBuffer(StringRef("\"C\""));
+  SmallString<8> LangBuffer(StringRef("\"Fortran 77\""));
   ParseScope LinkageScope(this, Scope::DeclScope);
   Decl *LinkageSpec
     = Actions.ActOnStartLinkageSpecification(getCurScope(), ProgramLoc,
@@ -652,7 +652,7 @@ Parser::ParseProgram() {
 
   ParsingDeclSpec DS(*this);
   ParsingDeclarator D(*this, DS, Declarator::FileContext);
-  D.SetIdentifier(PP.getIdentifierInfo("MAIN__"), ProgramLoc);
+  D.SetIdentifier(PP.getIdentifierInfo("main_"), ProgramLoc);
 
   {
     const char *PrevSpec;

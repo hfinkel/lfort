@@ -138,22 +138,26 @@ public:
 
 }
 
-static bool isInCLinkageSpecification(const Decl *D) {
+static bool isInLinkageSpecification(const Decl *D,
+                                     LinkageSpecDecl::LanguageIDs L) {
   D = D->getCanonicalDecl();
   for (const DeclContext *DC = D->getDeclContext();
        !DC->isTranslationUnit(); DC = DC->getParent()) {
     if (const LinkageSpecDecl *Linkage = dyn_cast<LinkageSpecDecl>(DC))
-      return Linkage->getLanguage() == LinkageSpecDecl::lang_c;
+      return Linkage->getLanguage() == L;
   }
 
   return false;
 }
 
-bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
-  // In C, functions with no attributes never need to be mangled. Fastpath them.
-  if (!getASTContext().getLangOpts().CPlusPlus && !D->hasAttrs())
-    return false;
+static bool isInCLinkageSpecification(const Decl *D) {
+  return isInLinkageSpecification(D, LinkageSpecDecl::lang_c);
+}
 
+static bool isInF77LinkageSpecification(const Decl *D) {
+  return isInLinkageSpecification(D, LinkageSpecDecl::lang_fortran77);
+}
+bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   // Any decl can be declared with __asm("foo") on it, and this takes precedence
   // over all other naming in the .o file.
   if (D->hasAttr<AsmLabelAttr>())
@@ -166,10 +170,6 @@ bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   if (FD && (FD->hasAttr<OverloadableAttr>() || isa<CXXMethodDecl>(FD) ||
              !FD->getDeclName().isIdentifier()))
     return true;
-
-  // Otherwise, no mangling is done outside C++ mode.
-  if (!getASTContext().getLangOpts().CPlusPlus)
-    return false;
 
   // Variables at global scope with internal linkage are not mangled.
   if (!FD) {
@@ -198,6 +198,10 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
   if (const AsmLabelAttr *ALA = D->getAttr<AsmLabelAttr>()) {
     // If we have an asm name, then we use it as the mangling.
     Out << '\01' << ALA->getLabel();
+    return;
+  } else if (isInF77LinkageSpecification(D)) {
+    Out << D->getName();
+    Out << "_";
     return;
   }
 

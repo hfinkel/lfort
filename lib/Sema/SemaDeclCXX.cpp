@@ -10022,6 +10022,8 @@ Decl *Sema::ActOnStartLinkageSpecification(Scope *S, SourceLocation ExternLoc,
     Language = LinkageSpecDecl::lang_c;
   else if (Lang == "\"C++\"")
     Language = LinkageSpecDecl::lang_cxx;
+  else if (Lang == "\"Fortran 77\"")
+    Language = LinkageSpecDecl::lang_fortran77;
   else {
     Diag(LangLoc, diag::err_bad_language);
     return 0;
