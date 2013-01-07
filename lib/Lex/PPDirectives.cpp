@@ -591,6 +591,11 @@ void Preprocessor::HandleDirective(Token &Result) {
   // EOD token (which terminates the directive).
   CurPPLexer->ParsingPreprocessorDirective = true;
 
+  // If this is a Fortran include statement, then run the include logic.
+  if (Result.is(tok::kw_include)) {
+     return HandleIncludeDirective(Result.getLocation(), Result);
+  }
+
   ++NumDirectives;
 
   // We are about to read a token.  For the multiple-include optimization FA to

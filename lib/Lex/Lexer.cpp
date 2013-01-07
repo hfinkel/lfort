@@ -1500,13 +1500,18 @@ void Lexer::SkipBytes(unsigned Bytes, bool StartOfLine) {
 }
 
 void Lexer::LexIdentifier(Token &Result, const char *CurPtr) {
+  bool IsDotOp = (CurPtr[-1] == '.'); // In Fortran, user-defined operators
+                                      // look like identifiers surrounded
+                                      // by dots.
+
   // Match [_A-Za-z0-9]*, we have already matched [_A-Za-z$]
   unsigned Size;
   unsigned char C = *CurPtr++;
   while (isIdentifierBody(C))
     C = *CurPtr++;
 
-  --CurPtr;   // Back up over the skipped character.
+  if (!(IsDotOp && C == '.'))
+    --CurPtr;   // Back up over the skipped character.
 
   // Fast path, no $,\,? in identifier found.  '\' might be an escaped newline
   // or UCN, and ? might be a trigraph for '\', an escaped newline or UCN.
@@ -1527,6 +1532,8 @@ FinishIdentifier:
 
     // Fill in Result.IdentifierInfo and update the token kind,
     // looking up the identifier in the identifier table.
+    // Note: If the name starts with a '.' then this will set
+    // the default token type to tok::dots_identifier.
     IdentifierInfo *II = PP->LookUpIdentifierInfo(Result);
 
     // Finally, now that we know we have an identifier, pass this off to the
@@ -1552,6 +1559,9 @@ FinishIdentifier:
       C = getCharAndSize(CurPtr, Size);
       continue;
     } else if (!isIdentifierBody(C)) { // FIXME: UCNs.
+      if (IsDotOp && C == '.')
+        CurPtr = ConsumeChar(CurPtr, Size, Result);
+
       // Found end of identifier.
       goto FinishIdentifier;
     }
@@ -1621,6 +1631,39 @@ void Lexer::LexNumericConstant(Token &Result, const char *CurPtr) {
   Result.setLiteralData(TokStart);
 }
 
+/// LexFortranIntConstant - Lex the remainder of a Fortran integer
+/// constant. From[-1] is the first character lexed (the 'b', 'o' or 'z').
+void Lexer::LexFortranIntConstant(Token &Result, const char *CurPtr) {
+  unsigned Size;
+  char C = getCharAndSize(CurPtr, Size);
+
+  // This function is called only if the next character is a single or
+  // double quote.
+  char DelimC = C;
+  C = getCharAndSize(CurPtr, Size);
+
+  unsigned Digits = 0;
+  while (C != DelimC) {
+    CurPtr = ConsumeChar(CurPtr, Size, Result);
+    C = getCharAndSize(CurPtr, Size);
+    ++Digits;
+  }
+
+  // Consume the ending delimiter as well.
+  CurPtr = ConsumeChar(CurPtr, Size, Result);
+
+  if (Digits == 0) {
+    Diag(BufferPtr, diag::err_numeric_constant_has_no_digits);
+    FormTokenWithChars(Result, CurPtr, tok::unknown);
+    return;
+  }
+
+  // Update the location of token as well as BufferPtr.
+  const char *TokStart = BufferPtr;
+  FormTokenWithChars(Result, CurPtr, tok::numeric_constant);
+  Result.setLiteralData(TokStart);
+}
+
 /// LexUDSuffix - Lex the ud-suffix production for user-defined literal suffixes
 /// in C++11, or warn on a ud-suffix in C++98.
 const char *Lexer::LexUDSuffix(Token &Result, const char *CurPtr) {
@@ -1666,6 +1709,7 @@ const char *Lexer::LexUDSuffix(Token &Result, const char *CurPtr) {
 void Lexer::LexStringLiteral(Token &Result, const char *CurPtr,
                              tok::TokenKind Kind) {
   const char *NulCharacter = 0; // Does this string contain the \0 character?
+  char DelimC = CurPtr[-1];
 
   if (!isLexingRawMode() &&
       (Kind == tok::utf8_string_literal ||
@@ -1673,10 +1717,18 @@ void Lexer::LexStringLiteral(Token &Result, const char *CurPtr,
        Kind == tok::utf32_string_literal))
     Diag(BufferPtr, diag::warn_cxx98_compat_unicode_literal);
 
+  // In Fortran, the ending ' or " can be escaped by '' or "".
+  bool DelimIsDoubled = false;
+
+InStringLiteral:
   char C = getAndAdvanceChar(CurPtr, Result);
-  while (C != '"') {
+  while (C != DelimC || DelimIsDoubled) {
+    DelimIsDoubled = false;
     // Skip escaped characters.  Escaped newlines will already be processed by
     // getAndAdvanceChar.
+    // Note: Do this in Fortran mode too; this is not part of the Fortran
+    // standard, but most Fortran compilers do this by default, and so we
+    // should as well.
     if (C == '\\')
       C = getAndAdvanceChar(CurPtr, Result);
     
@@ -1698,6 +1750,20 @@ void Lexer::LexStringLiteral(Token &Result, const char *CurPtr,
       NulCharacter = CurPtr-1;
     }
     C = getAndAdvanceChar(CurPtr, Result);
+  }
+
+  // If the next character is also a delimiter, then the first delimiter is
+  // escaping the second one, and the second is part of the string.
+  if (!ParsingPreprocessorDirective && C == DelimC) {
+    unsigned Size;
+    C = getCharAndSize(CurPtr, Size);
+    if (C == DelimC) {
+      // This next character is a delimiter; calling getAndAdvanceChar will
+      // return this character again, so restart the loop allowing this
+      // character.
+      DelimIsDoubled = true;
+      goto InStringLiteral;
+    }
   }
 
   // If we are in C++11, lex the optional ud-suffix.
@@ -2725,7 +2791,69 @@ LexNextToken:
   case '5': case '6': case '7': case '8': case '9':
     // Notify MIOpt that we read a non-whitespace/non-comment token.
     MIOpt.ReadToken();
-    return LexNumericConstant(Result, CurPtr);
+    LexNumericConstant(Result, CurPtr);
+
+    // R312-F08 label
+    //   is  digit [digit [digit [digit [digit ]]]]
+    if (Result.isAtStartOfLine() && Result.getLength() <= 5) {
+      unsigned Val = 0, ValLen = Result.getLength();
+      const char *LabelString = Result.getLiteralData();
+
+      for (unsigned i = 0; i < ValLen; ++i)
+        Val = Val*10+(LabelString[i]-'0');
+
+      Result.setStmtLabel(Val);
+      goto LexNextToken;
+    }
+
+    return;
+
+  case 'B':
+  case 'O':
+  case 'Z':
+  case 'b':
+  case 'o':
+  case 'z':
+    // Notify MIOpt that we read a non-whitespace/non-comment token.
+    MIOpt.ReadToken();
+
+    // Fortran binary, octal or hex constant.
+    Char = getCharAndSize(CurPtr, SizeTmp);
+    if (Char == '\'' || Char == '"')
+      return LexFortranIntConstant(Result, CurPtr);
+
+    return LexIdentifier(Result, CurPtr);
+
+  case 'i':
+  case 'I':
+    // Notify MIOpt that we read a non-whitespace/non-comment token.
+    MIOpt.ReadToken();
+
+    LexIdentifier(Result, CurPtr);
+
+    // In Fortran, we need to handle the include statement here.
+    if (!ParsingPreprocessorDirective && !LexingRawMode &&
+        Result.is(tok::kw_include)) {
+      PP->HandleDirective(Result);
+
+      // As an optimization, if the preprocessor didn't switch lexers, tail
+      // recurse.
+      if (PP->isCurrentLexer(this)) {
+        // Start a new token.  If this is a #include or something, the PP may
+        // want us starting at the beginning of the line again.  If so, set
+        // the StartOfLine flag and clear LeadingSpace.
+        if (IsAtStartOfLine) {
+          Result.setFlag(Token::StartOfLine);
+          Result.clearFlag(Token::LeadingSpace);
+          IsAtStartOfLine = false;
+        }
+        goto LexNextToken;   // GCC isn't tail call eliminating.
+      }
+
+      return PP->Lex(Result);
+    }
+
+    return;
 
   case 'u':   // Identifier (uber) or C++0x UTF-8 or UTF-16 string literal
     // Notify MIOpt that we read a non-whitespace/non-comment token.
@@ -2826,6 +2954,11 @@ LexNextToken:
   case 'L':   // Identifier (Loony) or wide literal (L'x' or L"xyz").
     // Notify MIOpt that we read a non-whitespace/non-comment token.
     MIOpt.ReadToken();
+
+    // In Fortran, this is always the start of an identifier.
+    if (!ParsingPreprocessorDirective)
+      return LexIdentifier(Result, CurPtr);
+
     Char = getCharAndSize(CurPtr, SizeTmp);
 
     // Wide string literal.
@@ -2848,18 +2981,30 @@ LexNextToken:
     // FALL THROUGH, treating L like the start of an identifier.
 
   // C99 6.4.2: Identifiers.
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G':
-  case 'H': case 'I': case 'J': case 'K':    /*'L'*/case 'M': case 'N':
-  case 'O': case 'P': case 'Q':    /*'R'*/case 'S': case 'T':    /*'U'*/
-  case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
-  case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
-  case 'o': case 'p': case 'q': case 'r': case 's': case 't':    /*'u'*/
-  case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '_':
+  case 'A':    /*'B'*/case 'C': case 'D': case 'E': case 'F': case 'G':
+  case 'H':    /*'I'*/case 'J': case 'K':    /*'L'*/case 'M': case 'N':
+     /*'O'*/case 'P': case 'Q':    /*'R'*/case 'S': case 'T':    /*'U'*/
+  case 'V': case 'W': case 'X': case 'Y':    /*'Z'*/
+  case 'a':    /*'b'*/case 'c': case 'd': case 'e': case 'f': case 'g':
+  case 'h':    /*'i'*/case 'j': case 'k': case 'l': case 'm': case 'n':
+     /*'o'*/case 'p': case 'q': case 'r': case 's': case 't':    /*'u'*/
+  case 'v': case 'w': case 'x': case 'y':    /*'z'*/
     // Notify MIOpt that we read a non-whitespace/non-comment token.
     MIOpt.ReadToken();
     return LexIdentifier(Result, CurPtr);
+
+   case '_':
+     // In Fortran, identifiers cannot start with an underscore.
+     // If we're preprocessing, however, then we can have an underscore start
+     // an identifier.
+     if (!ParsingPreprocessorDirective) {
+       Kind = tok::underscore;
+       break;
+     }
+
+     // Notify MIOpt that we read a non-whitespace/non-comment token.
+     MIOpt.ReadToken();
+     return LexIdentifier(Result, CurPtr);
 
   case '$':   // $ in identifiers.
     if (LangOpts.DollarIdents) {
@@ -2877,6 +3022,10 @@ LexNextToken:
   case '\'':
     // Notify MIOpt that we read a non-whitespace/non-comment token.
     MIOpt.ReadToken();
+
+    if (!(ParsingPreprocessorDirective && !ParsingFilename))
+      return LexStringLiteral(Result, CurPtr, tok::string_literal);
+
     return LexCharConstant(Result, CurPtr, tok::char_constant);
 
   // C99 6.4.5: String Literals.
@@ -2887,7 +3036,10 @@ LexNextToken:
 
   // C99 6.4.6: Punctuators.
   case '?':
-    Kind = tok::question;
+    if (!ParsingPreprocessorDirective)
+      Kind = tok::unknown;
+    else
+      Kind = tok::question;
     break;
   case '[':
     Kind = tok::l_square;
@@ -2902,10 +3054,16 @@ LexNextToken:
     Kind = tok::r_paren;
     break;
   case '{':
-    Kind = tok::l_brace;
+    if (!ParsingPreprocessorDirective)
+      Kind = tok::unknown;
+    else
+      Kind = tok::l_brace;
     break;
   case '}':
-    Kind = tok::r_brace;
+    if (!ParsingPreprocessorDirective)
+      Kind = tok::unknown;
+    else
+      Kind = tok::r_brace;
     break;
   case '.':
     Char = getCharAndSize(CurPtr, SizeTmp);
@@ -2923,10 +3081,20 @@ LexNextToken:
       CurPtr = ConsumeChar(ConsumeChar(CurPtr, SizeTmp, Result),
                            SizeTmp2, Result);
     } else {
-      Kind = tok::period;
+      // If Fortran, these are operators (which can be user defined) or
+      // logical contants (like .eq. and .true.)
+      return LexIdentifier(Result, CurPtr);
     }
     break;
   case '&':
+    if (!ParsingPreprocessorDirective) {
+      // In Fortran, this is the line continuation character, and it is
+      // essentially whitespace. The following token acts as if it were
+      // not the first on a line.
+      Result.clearFlag(Token::StartOfLine);
+      goto LexNextToken;
+    }
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '&') {
       Kind = tok::ampamp;
@@ -2939,14 +3107,20 @@ LexNextToken:
     }
     break;
   case '*':
+    Kind = tok::star;
+    if (!ParsingPreprocessorDirective)
+      break;
+
     if (getCharAndSize(CurPtr, SizeTmp) == '=') {
       Kind = tok::starequal;
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
-    } else {
-      Kind = tok::star;
     }
     break;
   case '+':
+    Kind = tok::plus;
+    if (!ParsingPreprocessorDirective)
+      break;
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '+') {
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
@@ -2954,11 +3128,13 @@ LexNextToken:
     } else if (Char == '=') {
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
       Kind = tok::plusequal;
-    } else {
-      Kind = tok::plus;
     }
     break;
   case '-':
+    Kind = tok::minus;
+    if (!ParsingPreprocessorDirective)
+      break;
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '-') {      // --
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
@@ -2974,15 +3150,25 @@ LexNextToken:
     } else if (Char == '=') {   // -=
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
       Kind = tok::minusequal;
-    } else {
-      Kind = tok::minus;
     }
     break;
   case '~':
-    Kind = tok::tilde;
+    if (!ParsingPreprocessorDirective)
+      Kind = tok::unknown;
+    else
+      Kind = tok::tilde;
     break;
   case '!':
-    if (getCharAndSize(CurPtr, SizeTmp) == '=') {
+    if (!ParsingPreprocessorDirective) {
+      // This is a Fortran "BCPL comment"
+      if (SkipLineComment(Result, CurPtr))
+        return; // There is a token to return.
+
+      // It is common for the tokens immediately after a comment to be
+      // whitespace (indentation for the next line).  Instead of going through
+      // the big switch, handle it efficiently now.
+      goto SkipIgnoredUnits;
+    } else if (getCharAndSize(CurPtr, SizeTmp) == '=') {
       Kind = tok::exclaimequal;
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
     } else {
@@ -2992,42 +3178,22 @@ LexNextToken:
   case '/':
     // 6.4.9: Comments
     Char = getCharAndSize(CurPtr, SizeTmp);
-    if (Char == '/') {         // Line comment.
-      // Even if Line comments are disabled (e.g. in C89 mode), we generally
-      // want to lex this as a comment.  There is one problem with this though,
-      // that in one particular corner case, this can change the behavior of the
-      // resultant program.  For example, In  "foo //**/ bar", C89 would lex
-      // this as "foo / bar" and langauges with Line comments would lex it as
-      // "foo".  Check to see if the character after the second slash is a '*'.
-      // If so, we will lex that as a "/" instead of the start of a comment.
-      // However, we never do this in -traditional-cpp mode.
-      if ((LangOpts.LineComment ||
-           getCharAndSize(CurPtr+SizeTmp, SizeTmp2) != '*') &&
-          !LangOpts.TraditionalCPP) {
-        if (SkipLineComment(Result, ConsumeChar(CurPtr, SizeTmp, Result)))
-          return; // There is a token to return.
-
-        // It is common for the tokens immediately after a // comment to be
-        // whitespace (indentation for the next line).  Instead of going through
-        // the big switch, handle it efficiently now.
-        goto SkipIgnoredUnits;
-      }
-    }
-
-    if (Char == '*') {  // /**/ comment.
-      if (SkipBlockComment(Result, ConsumeChar(CurPtr, SizeTmp, Result)))
-        return; // There is a token to return.
-      goto LexNextToken;   // GCC isn't tail call eliminating.
-    }
-
-    if (Char == '=') {
+    // BCPL comments must be excluded in Fortran, even during preprocessing,
+    // because // in Fortran is a valid operator token.
+    if (ParsingPreprocessorDirective && Char == '=') {
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
       Kind = tok::slashequal;
+    } else if (Char == '/') {
+      Kind = tok::slashslash;
     } else {
       Kind = tok::slash;
     }
     break;
   case '%':
+    Kind = tok::percent;
+    if (!ParsingPreprocessorDirective)
+      break;
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '=') {
       Kind = tok::percentequal;
@@ -3057,8 +3223,6 @@ LexNextToken:
 
         Kind = tok::hash;
       }
-    } else {
-      Kind = tok::percent;
     }
     break;
   case '<':
@@ -3149,6 +3313,11 @@ LexNextToken:
     }
     break;
   case '^':
+    if (!ParsingPreprocessorDirective) {
+      Kind = tok::unknown;
+      break;
+    }
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '=') {
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
@@ -3158,6 +3327,11 @@ LexNextToken:
     }
     break;
   case '|':
+    if (!ParsingPreprocessorDirective) {
+      Kind = tok::unknown;
+      break;
+    }
+
     Char = getCharAndSize(CurPtr, SizeTmp);
     if (Char == '=') {
       Kind = tok::pipeequal;
@@ -3177,7 +3351,7 @@ LexNextToken:
     if (LangOpts.Digraphs && Char == '>') {
       Kind = tok::r_square; // ':>' -> ']'
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
-    } else if (LangOpts.CPlusPlus && Char == ':') {
+    } else if (Char == ':') {
       Kind = tok::coloncolon;
       CurPtr = ConsumeChar(CurPtr, SizeTmp, Result);
     } else {
