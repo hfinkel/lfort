@@ -75,7 +75,6 @@ bool types::isAcceptedByLFort(ID Id) {
   default:
     return false;
 
-  case TY_Asm:
   case TY_Fortran77: case TY_PP_Fortran77:
   case TY_Fortran90: case TY_PP_Fortran90:
   case TY_Fortran95: case TY_PP_Fortran95:
