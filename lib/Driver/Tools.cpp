@@ -2837,6 +2837,15 @@ void LFort::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-fno-dollars-in-identifiers");
   }
 
+  // -ffree-form/-ffixed-form.
+  if (Arg *A = Args.getLastArg(options::OPT_ffixed_form,
+                               options::OPT_ffree_form)) {
+    if (A->getOption().matches(options::OPT_ffixed_form))
+      CmdArgs.push_back("-ffixed-form");
+    else
+      CmdArgs.push_back("-ffree-form");
+  }
+
   // -funit-at-a-time is default, and we don't support -fno-unit-at-a-time for
   // practical purposes.
   if (Arg *A = Args.getLastArg(options::OPT_funit_at_a_time,

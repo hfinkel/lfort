@@ -359,6 +359,9 @@ def fdiagnostics_show_template_tree : Flag<["-"], "fdiagnostics-show-template-tr
     HelpText<"Print a template comparison tree for differing templates">;
 def fdollars_in_identifiers : Flag<["-"], "fdollars-in-identifiers">, Group<f_Group>,
   HelpText<"Allow '$' in identifiers">, Flags<[CC1Option]>;
+def ffixed_form : Flag<["-"], "ffixed-form">, Group<f_Group>,
+  HelpText<"Use Fixed-Form Fortran Parsing">, Flags<[CC1Option]>;
+def fno_free_form : Flag<["-"], "fno-free-form">, Alias<ffixed_form>;
 def fdwarf2_cfi_asm : Flag<["-"], "fdwarf2-cfi-asm">, Group<f_Group>;
 def fno_dwarf2_cfi_asm : Flag<["-"], "fno-dwarf2-cfi-asm">, Group<f_Group>,  Flags<[CC1Option]>;
 def fdwarf_directory_asm : Flag<["-"], "fdwarf-directory-asm">, Group<f_Group>;
@@ -523,6 +526,9 @@ def fno_diagnostics_show_note_include_stack : Flag<["-"], "fno-diagnostics-show-
     Flags<[CC1Option]>, Group<f_Group>, HelpText<"Display include stacks for diagnostic notes">;
 def fno_dollars_in_identifiers : Flag<["-"], "fno-dollars-in-identifiers">, Group<f_Group>,
   HelpText<"Disallow '$' in identifiers">, Flags<[CC1Option]>;
+def ffree_form : Flag<["-"], "ffree-form">, Group<f_Group>,
+  HelpText<"Use Free-Form Fortran Parsing">, Flags<[CC1Option]>;
+def fno_fixed_form : Flag<["-"], "fno-fixed-form">, Alias<ffree_form>;
 def fno_elide_constructors : Flag<["-"], "fno-elide-constructors">, Group<f_Group>,
   HelpText<"Disable C++ copy constructor elision">, Flags<[CC1Option]>;
 def fno_eliminate_unused_debug_symbols : Flag<["-"], "fno-eliminate-unused-debug-symbols">, Group<f_Group>;

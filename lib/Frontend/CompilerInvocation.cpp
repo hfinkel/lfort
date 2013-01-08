@@ -1100,6 +1100,9 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   Opts.DollarIdents = Args.hasFlag(OPT_fdollars_in_identifiers,
                                    OPT_fno_dollars_in_identifiers,
                                    Opts.DollarIdents);
+  Opts.FreeForm = Args.hasFlag(OPT_ffree_form, OPT_ffixed_form,
+                                   Opts.FreeForm);
+
   Opts.PascalStrings = Args.hasArg(OPT_fpascal_strings);
   Opts.MicrosoftExt
     = Args.hasArg(OPT_fms_extensions) || Args.hasArg(OPT_fms_compatibility);
