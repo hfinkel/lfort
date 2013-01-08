@@ -2653,6 +2653,66 @@ LexNextToken:
   // CurPtr - Cache BufferPtr in an automatic variable.
   const char *CurPtr = BufferPtr;
 
+  // Handle the first 6 characters in fixed-form mode.
+  if (!LangOpts.FreeForm && Result.isAtStartOfLine() &&
+        !ParsingPreprocessorDirective) {
+    unsigned Col = 1;
+    do {
+      if ((*CurPtr == '!' && Col != 6) ||
+          (Col == 1 && (*CurPtr == 'C' || *CurPtr == 'c' || *CurPtr == '*'))) {
+        // This is a Fortran "BCPL comment"
+        if (SkipLineComment(Result, CurPtr))
+          return; // There is a token to return.
+
+        goto LexNextToken;
+      } else if (Col == 6 && *CurPtr != ' ' && *CurPtr != '0') {
+        // This is a continuation.
+        Result.clearFlag(Token::StartOfLine);
+
+        BufferPtr = ++CurPtr;
+        Result.setFlag(Token::LeadingSpace);
+
+        goto LexNextToken;
+      } else if (Col == 5) {
+        // The characters in columns 1 through 5 may be a numeric statement label.
+        unsigned Val = 0;
+        bool HasVal = false;
+        for (unsigned i = 0; i < 5; ++i) {
+          if (BufferPtr[i] == ' ')
+            continue;
+
+          HasVal = true;
+          Val = Val*10+(BufferPtr[i]-'0');
+        }
+
+        if (HasVal)
+          Result.setStmtLabel(Val);
+      }
+
+      if (*CurPtr == '#') {
+        // If there has been nothing but spaces before this # character, then
+        // break into the regular loop for PP directive handling.
+        bool HasNonSpace = false;
+        for (unsigned i = 0; i < Col-1; ++i)
+          if (BufferPtr[i] != ' ') {
+            HasNonSpace = true;
+            break;
+          }
+
+        if (!HasNonSpace)
+          break;
+      }
+
+      if (*CurPtr != 0)
+        ++CurPtr;
+
+      ++Col;
+    } while (*CurPtr != 0 && Col < 7);
+
+    BufferPtr = CurPtr;
+    Result.setFlag(Token::LeadingSpace);
+  }
+
   // Small amounts of horizontal whitespace is very common between tokens.
   if ((*CurPtr == ' ') || (*CurPtr == '\t')) {
     ++CurPtr;
@@ -2814,24 +2874,6 @@ LexNextToken:
 
     return LexIdentifier(Result, CurPtr);
 
-  case 'C':
-  case 'c':
-    if (!LangOpts.FreeForm && Result.isAtStartOfLine() &&
-        !ParsingPreprocessorDirective) {
-      // This is a Fortran "BCPL comment"
-      if (SkipLineComment(Result, CurPtr))
-        return; // There is a token to return.
-
-      // It is common for the tokens immediately after a comment to be
-      // whitespace (indentation for the next line).  Instead of going through
-      // the big switch, handle it efficiently now.
-      goto SkipIgnoredUnits;      
-    }
-
-    // Notify MIOpt that we read a non-whitespace/non-comment token.
-    MIOpt.ReadToken();
-    return LexIdentifier(Result, CurPtr);
-
   case 'i':
   case 'I':
     // Notify MIOpt that we read a non-whitespace/non-comment token.
@@ -2989,11 +3031,11 @@ LexNextToken:
     // FALL THROUGH, treating L like the start of an identifier.
 
   // C99 6.4.2: Identifiers.
-  case 'A':    /*'B'*/   /*'C'*/case 'D': case 'E': case 'F': case 'G':
+  case 'A':    /*'B'*/case 'C': case 'D': case 'E': case 'F': case 'G':
   case 'H':    /*'I'*/case 'J': case 'K':    /*'L'*/case 'M': case 'N':
      /*'O'*/case 'P': case 'Q':    /*'R'*/case 'S': case 'T':    /*'U'*/
   case 'V': case 'W': case 'X': case 'Y':    /*'Z'*/
-  case 'a':    /*'b'*/   /*'c'*/case 'd': case 'e': case 'f': case 'g':
+  case 'a':    /*'b'*/case 'c': case 'd': case 'e': case 'f': case 'g':
   case 'h':    /*'i'*/case 'j': case 'k': case 'l': case 'm': case 'n':
      /*'o'*/case 'p': case 'q': case 'r': case 's': case 't':    /*'u'*/
   case 'v': case 'w': case 'x': case 'y':    /*'z'*/
@@ -3115,18 +3157,6 @@ LexNextToken:
     }
     break;
   case '*':
-    if (!LangOpts.FreeForm && Result.isAtStartOfLine() &&
-        !ParsingPreprocessorDirective) {
-      // This is a Fortran "BCPL comment"
-      if (SkipLineComment(Result, CurPtr))
-        return; // There is a token to return.
-
-      // It is common for the tokens immediately after a comment to be
-      // whitespace (indentation for the next line).  Instead of going through
-      // the big switch, handle it efficiently now.
-      goto SkipIgnoredUnits;
-    }
-
     Kind = tok::star;
     if (!ParsingPreprocessorDirective)
       break;
