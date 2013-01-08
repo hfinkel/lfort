@@ -2004,16 +2004,6 @@ bool Lexer::SkipWhitespace(Token &Result, const char *CurPtr) {
 /// If we're in KeepCommentMode or any CommentHandler has inserted
 /// some tokens, this will store the first token and return true.
 bool Lexer::SkipLineComment(Token &Result, const char *CurPtr) {
-  // If Line comments aren't explicitly enabled for this language, emit an
-  // extension warning.
-  if (!LangOpts.LineComment && !isLexingRawMode()) {
-    Diag(BufferPtr, diag::ext_line_comment);
-
-    // Mark them enabled so we only emit one warning for this translation
-    // unit.
-    LangOpts.LineComment = true;
-  }
-
   // Scan over the body of the comment.  The common case, when scanning, is that
   // the comment contains normal ascii characters with nothing interesting in
   // them.  As such, optimize for this case with the inner loop.
@@ -2824,6 +2814,24 @@ LexNextToken:
 
     return LexIdentifier(Result, CurPtr);
 
+  case 'C':
+  case 'c':
+    if (!LangOpts.FreeForm && Result.isAtStartOfLine() &&
+        !ParsingPreprocessorDirective) {
+      // This is a Fortran "BCPL comment"
+      if (SkipLineComment(Result, CurPtr))
+        return; // There is a token to return.
+
+      // It is common for the tokens immediately after a comment to be
+      // whitespace (indentation for the next line).  Instead of going through
+      // the big switch, handle it efficiently now.
+      goto SkipIgnoredUnits;      
+    }
+
+    // Notify MIOpt that we read a non-whitespace/non-comment token.
+    MIOpt.ReadToken();
+    return LexIdentifier(Result, CurPtr);
+
   case 'i':
   case 'I':
     // Notify MIOpt that we read a non-whitespace/non-comment token.
@@ -2981,11 +2989,11 @@ LexNextToken:
     // FALL THROUGH, treating L like the start of an identifier.
 
   // C99 6.4.2: Identifiers.
-  case 'A':    /*'B'*/case 'C': case 'D': case 'E': case 'F': case 'G':
+  case 'A':    /*'B'*/   /*'C'*/case 'D': case 'E': case 'F': case 'G':
   case 'H':    /*'I'*/case 'J': case 'K':    /*'L'*/case 'M': case 'N':
      /*'O'*/case 'P': case 'Q':    /*'R'*/case 'S': case 'T':    /*'U'*/
   case 'V': case 'W': case 'X': case 'Y':    /*'Z'*/
-  case 'a':    /*'b'*/case 'c': case 'd': case 'e': case 'f': case 'g':
+  case 'a':    /*'b'*/   /*'c'*/case 'd': case 'e': case 'f': case 'g':
   case 'h':    /*'i'*/case 'j': case 'k': case 'l': case 'm': case 'n':
      /*'o'*/case 'p': case 'q': case 'r': case 's': case 't':    /*'u'*/
   case 'v': case 'w': case 'x': case 'y':    /*'z'*/
@@ -3107,6 +3115,18 @@ LexNextToken:
     }
     break;
   case '*':
+    if (!LangOpts.FreeForm && Result.isAtStartOfLine() &&
+        !ParsingPreprocessorDirective) {
+      // This is a Fortran "BCPL comment"
+      if (SkipLineComment(Result, CurPtr))
+        return; // There is a token to return.
+
+      // It is common for the tokens immediately after a comment to be
+      // whitespace (indentation for the next line).  Instead of going through
+      // the big switch, handle it efficiently now.
+      goto SkipIgnoredUnits;
+    }
+
     Kind = tok::star;
     if (!ParsingPreprocessorDirective)
       break;
