@@ -458,6 +458,8 @@ bool PrintPPOutputPPCallbacks::HandleFirstTokOnLine(Token &Tok) {
     AddContinuation = true;
   }
 
+  // FIXME: Handle Fortran statement labels here too!
+
   // Otherwise, indent the appropriate number of spaces.
   for (; ColNo > 1; --ColNo)
     OS << ' ';
