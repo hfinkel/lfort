@@ -139,10 +139,13 @@ public:
                                 diag::Mapping Map, StringRef Str);
 
   bool HandleFirstTokOnLine(Token &Tok);
-  bool MoveToLine(SourceLocation Loc) {
+  bool MoveToLine(SourceLocation Loc, bool *FirstLine = 0) {
     PresumedLoc PLoc = SM.getPresumedLoc(Loc);
-    if (PLoc.isInvalid())
+    if (PLoc.isInvalid()) {
+      if (FirstLine) *FirstLine = false;
       return false;
+    }
+    if (FirstLine) *FirstLine = PLoc.getLine() == 1;
     return MoveToLine(PLoc.getLine());
   }
   bool MoveToLine(unsigned LineNo);
@@ -430,8 +433,11 @@ PragmaDiagnostic(SourceLocation Loc, StringRef Namespace,
 bool PrintPPOutputPPCallbacks::HandleFirstTokOnLine(Token &Tok) {
   // Figure out what line we went to and insert the appropriate number of
   // newline characters.
-  if (!MoveToLine(Tok.getLocation()))
-    return false;
+  bool FirstLine;
+  if (!MoveToLine(Tok.getLocation(), &FirstLine)) {
+    if (!FirstLine)
+      return false;
+  }
 
   // Print out space characters so that the first token on a line is
   // indented for easy reading.
