@@ -452,9 +452,18 @@ bool PrintPPOutputPPCallbacks::HandleFirstTokOnLine(Token &Tok) {
   if (ColNo <= 1 && Tok.is(tok::hash))
     OS << ' ';
 
+  bool AddContinuation = false;
+  if (!PP.getLangOpts().FreeForm && Tok.hadContinuation()) {
+    --ColNo;
+    AddContinuation = true;
+  }
+
   // Otherwise, indent the appropriate number of spaces.
   for (; ColNo > 1; --ColNo)
     OS << ' ';
+
+  if (AddContinuation)
+    OS << '&';
 
   return true;
 }
