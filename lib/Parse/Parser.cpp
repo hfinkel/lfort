@@ -569,7 +569,7 @@ Parser::SkipToNextLine() {
     ConsumeAnyToken();
 
   while (Tok.isNot(tok::eof) && Tok.isNot(tok::code_completion) &&
-         !Tok.isAtStartOfLine())
+         !Tok.isAtStartOfNonContinuationLine())
     ConsumeAnyToken();
 }
 
@@ -731,7 +731,7 @@ Parser::ParseProgram() {
     ConsumeToken();
     // FIXME: TODO: ConsumeToken should insert semi when there is no semi next
     // and next token starts a new line!
-    if (Tok.is(tok::kw_program) && !Tok.isAtStartOfLine())
+    if (Tok.is(tok::kw_program) && !Tok.isAtStartOfNonContinuationLine())
       ConsumeToken();
   } else {
     if (ExpectAndConsume(tok::kw_endprogram, diag::err_expected_end_program, ""))

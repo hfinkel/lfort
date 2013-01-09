@@ -80,7 +80,8 @@ public:
     DisableExpand = 0x04,  // This identifier may never be macro expanded.
     NeedsCleaning = 0x08,   // Contained an escaped newline or trigraph.
     LeadingEmptyMacro = 0x10, // Empty macro exists before this token.
-    HasUDSuffix = 0x20     // This string or character literal has a ud-suffix.
+    HasUDSuffix = 0x20,    // This string or character literal has a ud-suffix.
+    HadContinuation = 0x40 // Start of a line with a Fortran continuation.
   };
 
   tok::TokenKind getKind() const { return (tok::TokenKind)Kind; }
@@ -272,6 +273,16 @@ public:
   /// \brief Return true if this token is a string or character literal which
   /// has a ud-suffix.
   bool hasUDSuffix() const { return (Flags & HasUDSuffix) ? true : false; }
+
+  /// \brief Return true if this token is at the start of continuation a line.
+  ///
+  bool hadContinuation() const { return (Flags & HadContinuation) ? true : false; }
+
+  /// \brief Return true if this token is at the start of a
+  /// non-continuation line.
+  bool isAtStartOfNonContinuationLine() const {
+    return isAtStartOfLine() && !hadContinuation();
+  }
 };
 
 /// \brief Information about the conditional stack (\#if directives)

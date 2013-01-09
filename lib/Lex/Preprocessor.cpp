@@ -199,6 +199,8 @@ void Preprocessor::DumpToken(const Token &Tok, bool DumpFlags) const {
     llvm::errs() << " [LeadingSpace]";
   if (Tok.isExpandDisabled())
     llvm::errs() << " [ExpandDisabled]";
+  if (Tok.hadContinuation())
+    llvm::errs() << " [HadContinuation]";
   if (Tok.needsCleaning()) {
     const char *Start = SourceMgr.getCharacterData(Tok.getLocation());
     llvm::errs() << " [UnClean='" << StringRef(Start, Tok.getLength())

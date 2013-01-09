@@ -1980,6 +1980,9 @@ bool Lexer::SkipWhitespace(Token &Result, const char *CurPtr) {
     // No leading whitespace seen so far.
     Result.clearFlag(Token::LeadingSpace);
     Char = *++CurPtr;
+
+    if (!LangOpts.FreeForm)
+      break;
   }
 
   // If this isn't immediately after a newline, there is leading space.
@@ -2134,7 +2137,8 @@ bool Lexer::SaveLineComment(Token &Result, const char *CurPtr) {
   std::string Spelling = PP->getSpelling(Result, &Invalid);
   if (Invalid)
     return true;
-  
+
+  // FIXME: TODO: Update for Fortran comments  
   assert(Spelling[0] == '/' && Spelling[1] == '/' && "Not line comment?");
   Spelling[1] = '*';   // Change prefix to "/*".
   Spelling += "*/";    // add suffix.
@@ -2667,12 +2671,7 @@ LexNextToken:
         goto LexNextToken;
       } else if (Col == 6 && *CurPtr != ' ' && *CurPtr != '0') {
         // This is a continuation.
-        Result.clearFlag(Token::StartOfLine);
-
-        BufferPtr = ++CurPtr;
-        Result.setFlag(Token::LeadingSpace);
-
-        goto LexNextToken;
+        Result.setFlag(Token::HadContinuation);
       } else if (Col == 5) {
         // The characters in columns 1 through 5 may be a numeric statement label.
         unsigned Val = 0;
@@ -2699,8 +2698,10 @@ LexNextToken:
             break;
           }
 
-        if (!HasNonSpace)
+        if (!HasNonSpace) {
+          CurPtr = BufferPtr;
           break;
+        }
       }
 
       if (*CurPtr != 0)
@@ -2709,8 +2710,18 @@ LexNextToken:
       ++Col;
     } while (*CurPtr != 0 && Col < 7);
 
-    BufferPtr = CurPtr;
-    Result.setFlag(Token::LeadingSpace);
+    if (CurPtr != BufferPtr) {
+      // If we are keeping whitespace and other tokens, just return what we just
+      // skipped.  The next lexer invocation will return the token after the
+      // whitespace.
+      if (isKeepWhitespaceMode()) {
+        FormTokenWithChars(Result, CurPtr, tok::unknown);
+        return;
+      }
+
+      BufferPtr = CurPtr;
+      Result.setFlag(Token::LeadingSpace);
+    }
   }
 
   // Small amounts of horizontal whitespace is very common between tokens.
@@ -2804,7 +2815,9 @@ LexNextToken:
     // No leading whitespace seen so far.
     Result.clearFlag(Token::LeadingSpace);
 
-    if (SkipWhitespace(Result, CurPtr))
+    if (!LangOpts.FreeForm)
+      BufferPtr = CurPtr;
+    else if (SkipWhitespace(Result, CurPtr))
       return; // KeepWhitespaceMode
     goto LexNextToken;   // GCC isn't tail call eliminating.
   case ' ':
@@ -3137,11 +3150,11 @@ LexNextToken:
     }
     break;
   case '&':
-    if (!ParsingPreprocessorDirective) {
+    if (!ParsingPreprocessorDirective && !isKeepWhitespaceMode()) {
       // In Fortran, this is the line continuation character, and it is
       // essentially whitespace. The following token acts as if it were
       // not the first on a line.
-      Result.clearFlag(Token::StartOfLine);
+      Result.setFlag(Token::HadContinuation);
       goto LexNextToken;
     }
 
