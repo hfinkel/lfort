@@ -14,7 +14,7 @@ LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser support mc
 USEDLIBS = lfortFrontendTool.a lfortFrontend.a lfortDriver.a \
            lfortSerialization.a lfortCodeGen.a lfortParse.a lfortSema.a \
            lfortStaticAnalyzerCheckers.a lfortStaticAnalyzerCore.a \
-           lfortARCMigrate.a lfortRewriteCore.a \
+           lfortRewriteCore.a \
 		   lfortRewriteFrontend.a lfortEdit.a \
            lfortAnalysis.a lfortAST.a lfortLex.a lfortBasic.a
 
