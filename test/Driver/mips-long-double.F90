@@ -4,6 +4,9 @@
 ! RUN: %lfort_cc1 -triple mips64-unknown-linux-std=c11 -verify %s
 ! expected-no-diagnostics
 
+! FIXME: convert tests to Fortran
+! XFAIL: *
+
 #ifdef _ABI64
 #  ifdef __FreeBSD__
 _Static_assert(sizeof(long double) == 8, "sizeof long double is wrong");
