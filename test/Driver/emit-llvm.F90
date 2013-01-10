@@ -4,7 +4,7 @@
 ! RUN: %lfort -ccc-print-phases -c -O4 -O0 %s 2> %t
 ! RUN: FileCheck --check-prefix=O4_AND_O0 %s < %t
 
-! O4_AND_O0: 0: input, "{{.*}}", c
-! O4_AND_O0: 1: preprocessor, {0}, cpp-output
+! O4_AND_O0: 0: input, "{{.*}}", f90-cpp-input
+! O4_AND_O0: 1: preprocessor, {0}, f90
 ! O4_AND_O0: 2: compiler, {1}, assembler
 ! O4_AND_O0: 3: assembler, {2}, object
