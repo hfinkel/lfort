@@ -1,6 +1,9 @@
 ! RUN: %lfort_cc1 -triple x86_64-unknown-nacl -std=c++11 -verify %s
 ! expected-no-diagnostics
 
+! FIXME: convert to Fortran
+! XFAIL: *
+
 #include <stddef.h>
 #include <stdarg.h>
 

@@ -5,5 +5,5 @@
 ! RUN: %lfort     -target i386-unknown-unknown -fsanitize=thread  %s -S -emit-llvm -o - | FileCheck %s
 ! Verify that -fsanitize=thread invokes tsan instrumentation.
 
-int foo(int *a) { return *a; }
+end
 ! CHECK: __tsan_init
