@@ -4,11 +4,13 @@
 ! RUN: %lfort -Wfoobar -no-canonical-prefixes -target x86_64-apple-darwin10 -fsyntax-only %s
 ! RUN: FileCheck %s < %t.log
 
-int f0() {}
+program test
+
+end program bar
 
 ! CHECK: <dict>
 ! CHECK:   <key>main-file</key>
-! CHECK:   <string>{{.*}}cc-log-diagnostics.c</string>
+! CHECK:   <string>{{.*}}cc-log-diagnostics.F90</string>
 ! CHECK:   <key>dwarf-debug-flags</key>
 ! CHECK:   <string>{{.*}}lfort{{.*}}-fsyntax-only{{.*}}</string>
 ! CHECK:   <key>diagnostics</key>
@@ -23,13 +25,13 @@ int f0() {}
 ! CHECK:       <key>level</key>
 ! CHECK:       <string>warning</string>
 ! CHECK:       <key>filename</key>
-! CHECK:       <string>{{.*}}cc-log-diagnostics.c</string>
+! CHECK:       <string>{{.*}}cc-log-diagnostics.F90</string>
 ! CHECK:       <key>line</key>
-! CHECK:       <integer>7</integer>
+! CHECK:       <integer>9</integer>
 ! CHECK:       <key>column</key>
-! CHECK:       <integer>11</integer>
+! CHECK:       <integer>13</integer>
 ! CHECK:       <key>message</key>
-! CHECK:       <string>control reaches end of non-void function</string>
+! CHECK:       <string>end program name does not match program name &apos;test&apos;</string>
 ! CHECK:     </dict>
 ! CHECK:   </array>
 ! CHECK: </dict>
