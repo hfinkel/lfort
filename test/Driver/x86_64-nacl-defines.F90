@@ -4,6 +4,9 @@
 
 ! ECHO: {{.*}} -cc1 {{.*}}x86_64-nacl-defines.c
 
+! FIXME: convert to Fortran
+! XFAIL: *
+
 ! Check platform defines
 
 ! CHECK: __LITTLE_ENDIAN__defined
