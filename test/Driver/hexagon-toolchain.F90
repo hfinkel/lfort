@@ -13,18 +13,8 @@
 ! CHECK001:   "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include"
 ! CHECK001-NEXT: "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/bin/hexagon-as"
 
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK002 %s
-! CHECK002: "-cc1" {{.*}} "-internal-isystem" "[[INSTALL_DIR:.*]]/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include/c++/4.4.0"
-! CHECK002:   "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/lib/gcc/hexagon/4.4.0/include"
-! CHECK002:   "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/lib/gcc/hexagon/4.4.0/include-fixed"
-! CHECK002:   "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include"
-! CHECK002-NEXT: "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/bin/hexagon-as"
-
 ! -----------------------------------------------------------------------------
-! Test -nostdinc, -nostdlibinc, -nostdinc++
+! Test -nostdinc, -nostdlibinc
 ! -----------------------------------------------------------------------------
 
 ! RUN: %lfort -### -target hexagon-unknown-linux     \
@@ -48,27 +38,6 @@
 ! CHECK004-NOT: "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/lib/gcc/hexagon/4.4.0/include-fixed"
 ! CHECK004-NOT: "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include"
 ! CHECK004-NEXT: "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/bin/hexagon-as"
-
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -nostdlibinc \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK005 %s
-! CHECK005: "-cc1"
-! CHECK005-NOT: "-internal-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include/c++/4.4.0"
-! CHECK005-NOT: "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/lib/gcc/hexagon/4.4.0/include"
-! CHECK005-NOT: "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/lib/gcc/hexagon/4.4.0/include-fixed"
-! CHECK005-NOT: "-internal-externc-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include"
-! CHECK005-NEXT: "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/bin/hexagon-as"
-
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -nostdinc++ \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK006 %s
-! CHECK006: "-cc1"
-! CHECK006-NOT: "-internal-isystem" "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/hexagon/include/c++/4.4.0"
-! CHECK006-NEXT: "{{.*}}/Inputs/hexagon_tree/qc/bin/../../gnu/bin/hexagon-as"
 
 ! -----------------------------------------------------------------------------
 ! Test -march=<archname> -mcpu=<archname> -mv<number>
@@ -135,31 +104,6 @@
 ! CHECK011: "{{[^"]+}}.o"
 ! CHECK011: "--start-group" "-lstandalone" "-lc" "-lgcc" "--end-group"
 ! CHECK011: "{{.*}}/hexagon/lib/v4/fini.o"
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! Defaults for C++
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK012 %s
-! CHECK012: "{{.*}}lfort{{.*}}" "-cc1"
-! CHECK012-NEXT: "{{.*}}/bin/hexagon-as"{{.*}}
-! CHECK012-NEXT: "{{.*}}/bin/hexagon-ld"
-! CHECK012-NOT: "-static"
-! CHECK012-NOT: "-shared"
-! CHECK012: "{{.*}}/hexagon/lib/v4/crt0_standalone.o"
-! CHECK012: "{{.*}}/hexagon/lib/v4/crt0.o"
-! CHECK012: "{{.*}}/hexagon/lib/v4/init.o"
-! CHECK012: "-L{{.*}}/lib/gcc/hexagon/4.4.0/v4"
-! CHECK012: "-L{{.*}}/lib/gcc/hexagon/4.4.0"
-! CHECK012: "-L{{.*}}/lib/gcc"
-! CHECK012: "-L{{.*}}/hexagon/lib/v4"
-! CHECK012: "-L{{.*}}/hexagon/lib"
-! CHECK012: "{{[^"]+}}.o"
-! CHECK012: "-lstdc++" "-lm"
-! CHECK012: "--start-group" "-lstandalone" "-lc" "-lgcc" "--end-group"
-! CHECK012: "{{.*}}/hexagon/lib/v4/fini.o"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! Additional Libraries (-L)
@@ -269,87 +213,6 @@
 ! CHECK016: "{{.*}}/hexagon/lib/v4/G0/fini.o"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! -nostdlib, -nostartfiles, -nodefaultlibs
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -nostdlib \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK017 %s
-! CHECK017: "{{.*}}lfort{{.*}}" "-cc1"
-! CHECK017-NEXT: "{{.*}}/bin/hexagon-as"{{.*}}
-! CHECK017-NEXT: "{{.*}}/bin/hexagon-ld"
-! CHECK017-NOT: crt0_standalone.o
-! CHECK017-NOT: crt0.o
-! CHECK017-NOT: init.o
-! CHECK017: "-L{{.*}}/lib/gcc/hexagon/4.4.0/v4"
-! CHECK017: "-L{{.*}}/lib/gcc/hexagon/4.4.0"
-! CHECK017: "-L{{.*}}/lib/gcc"
-! CHECK017: "-L{{.*}}/hexagon/lib/v4"
-! CHECK017: "-L{{.*}}/hexagon/lib"
-! CHECK017: "{{[^"]+}}.o"
-! CHECK017-NOT: "-lstdc++"
-! CHECK017-NOT: "-lm"
-! CHECK017-NOT: "--start-group"
-! CHECK017-NOT: "-lstandalone"
-! CHECK017-NOT: "-lc"
-! CHECK017-NOT: "-lgcc"
-! CHECK017-NOT: "--end-group"
-! CHECK017-NOT: fini.o
-
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -nostartfiles \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK018 %s
-! CHECK018: "{{.*}}lfort{{.*}}" "-cc1"
-! CHECK018-NEXT: "{{.*}}/bin/hexagon-as"{{.*}}
-! CHECK018-NEXT: "{{.*}}/bin/hexagon-ld"
-! CHECK018-NOT: crt0_standalone.o
-! CHECK018-NOT: crt0.o
-! CHECK018-NOT: init.o
-! CHECK018: "-L{{.*}}/lib/gcc/hexagon/4.4.0/v4"
-! CHECK018: "-L{{.*}}/lib/gcc/hexagon/4.4.0"
-! CHECK018: "-L{{.*}}/lib/gcc"
-! CHECK018: "-L{{.*}}/hexagon/lib/v4"
-! CHECK018: "-L{{.*}}/hexagon/lib"
-! CHECK018: "{{[^"]+}}.o"
-! CHECK018: "-lstdc++"
-! CHECK018: "-lm"
-! CHECK018: "--start-group"
-! CHECK018: "-lstandalone"
-! CHECK018: "-lc"
-! CHECK018: "-lgcc"
-! CHECK018: "--end-group"
-! CHECK018-NOT: fini.o
-
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -nodefaultlibs \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK019 %s
-! CHECK019: "{{.*}}lfort{{.*}}" "-cc1"
-! CHECK019-NEXT: "{{.*}}/bin/hexagon-as"{{.*}}
-! CHECK019-NEXT: "{{.*}}/bin/hexagon-ld"
-! CHECK019: "{{.*}}/hexagon/lib/v4/crt0_standalone.o"
-! CHECK019: "{{.*}}/hexagon/lib/v4/crt0.o"
-! CHECK019: "{{.*}}/hexagon/lib/v4/init.o"
-! CHECK019: "-L{{.*}}/lib/gcc/hexagon/4.4.0/v4"
-! CHECK019: "-L{{.*}}/lib/gcc/hexagon/4.4.0"
-! CHECK019: "-L{{.*}}/lib/gcc"
-! CHECK019: "-L{{.*}}/hexagon/lib/v4"
-! CHECK019: "-L{{.*}}/hexagon/lib"
-! CHECK019: "{{[^"]+}}.o"
-! CHECK019-NOT: "-lstdc++"
-! CHECK019-NOT: "-lm"
-! CHECK019-NOT: "--start-group"
-! CHECK019-NOT: "-lstandalone"
-! CHECK019-NOT: "-lc"
-! CHECK019-NOT: "-lgcc"
-! CHECK019-NOT: "--end-group"
-! CHECK019: "{{.*}}/hexagon/lib/v4/fini.o"
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! -moslib
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! RUN: %lfort -### -target hexagon-unknown-linux     \
@@ -401,38 +264,6 @@
 ! CHECK021: "-lstandalone"
 ! CHECK021: "-lc" "-lgcc" "--end-group"
 ! CHECK021: "{{.*}}/hexagon/lib/v4/fini.o"
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! Other args to pass to linker
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! RUN: %lfort -ccc-cxx -x c++ -### -target hexagon-unknown-linux     \
-! RUN:   -ccc-install-dir %S/Inputs/hexagon_tree/qc/bin \
-! RUN:   -s \
-! RUN:   -Tbss 0xdead -Tdata 0xbeef -Ttext 0xcafe \
-! RUN:   -t \
-! RUN:   -e start_here \
-! RUN:   -uFoo -undefined Bar \
-! RUN:   %s 2>&1 \
-! RUN:   | FileCheck -check-prefix=CHECK022 %s
-! CHECK022: "{{.*}}lfort{{.*}}" "-cc1"
-! CHECK022-NEXT: "{{.*}}/bin/hexagon-as"{{.*}}
-! CHECK022-NEXT: "{{.*}}/bin/hexagon-ld"
-! CHECK022: "{{.*}}/hexagon/lib/v4/crt0_standalone.o"
-! CHECK022: "{{.*}}/hexagon/lib/v4/crt0.o"
-! CHECK022: "{{.*}}/hexagon/lib/v4/init.o"
-! CHECK022: "-L{{.*}}/lib/gcc/hexagon/4.4.0/v4"
-! CHECK022: "-L{{.*}}/lib/gcc/hexagon/4.4.0"
-! CHECK022: "-L{{.*}}/lib/gcc"
-! CHECK022: "-L{{.*}}/hexagon/lib/v4"
-! CHECK022: "-L{{.*}}/hexagon/lib"
-! CHECK022: "-Tbss" "0xdead" "-Tdata" "0xbeef" "-Ttext" "0xcafe"
-! CHECK022: "-s"
-! CHECK022: "-t"
-! CHECK022: "-u" "Foo" "-undefined" "Bar"
-! CHECK022: "{{[^"]+}}.o"
-! CHECK022: "-lstdc++" "-lm"
-! CHECK022: "--start-group" "-lstandalone" "-lc" "-lgcc" "--end-group"
-! CHECK022: "{{.*}}/hexagon/lib/v4/fini.o"
 
 ! -----------------------------------------------------------------------------
 ! pic, small data threshold
