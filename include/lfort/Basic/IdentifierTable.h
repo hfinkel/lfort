@@ -450,7 +450,7 @@ public:
   /// identifier.
   IdentifierInfo &get(StringRef Name) {
     llvm::StringMapEntry<IdentifierInfo*> &Entry =
-      HashTable.GetOrCreateValue(Name.lower());
+      HashTable.GetOrCreateValue(Name);
 
     IdentifierInfo *II = Entry.getValue();
     if (II) return *II;
@@ -492,7 +492,7 @@ public:
   /// likely end up in a recursion.
   IdentifierInfo &getOwn(StringRef Name) {
     llvm::StringMapEntry<IdentifierInfo*> &Entry =
-      HashTable.GetOrCreateValue(Name.lower());
+      HashTable.GetOrCreateValue(Name);
 
     IdentifierInfo *II = Entry.getValue();
     if (!II) {
