@@ -2858,7 +2858,8 @@ LexNextToken:
 
     // R312-F08 label
     //   is  digit [digit [digit [digit [digit ]]]]
-    if (Result.isAtStartOfLine() && Result.getLength() <= 5) {
+    if (!isLexingRawMode() && Result.isAtStartOfLine() &&
+        Result.getLength() <= 5) {
       unsigned Val = 0, ValLen = Result.getLength();
       const char *LabelString = Result.getLiteralData();
 
