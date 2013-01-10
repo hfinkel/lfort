@@ -2899,8 +2899,8 @@ LexNextToken:
 
     if (!ParsingPreprocessorDirective && !LexingRawMode &&
         Result.isAtStartOfLine() &&
-        (Result.is(tok::kw_include) ||
-         StringRef(Result.getName()).equals_lower("include"))) {
+        (Result.is(tok::kw_include) || (Result.is(tok::identifier) &&
+         Result.getIdentifierInfo()->getName().equals_lower("include")))) {
       PP->HandleDirective(Result);
 
       // As an optimization, if the preprocessor didn't switch lexers, tail
