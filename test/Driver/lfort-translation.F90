@@ -27,7 +27,6 @@
 ! ARMV7_DEFAULT-NOT: "-msoft-float"
 ! ARMV7_DEFAULT: "-mfloat-abi" "soft"
 ! ARMV7_DEFAULT-NOT: "-msoft-float"
-! ARMV7_DEFAULT: "-x" "c"
 
 ! RUN: %lfort -target x86_64-apple-darwin10 -### -S %s -arch armv7 \
 ! RUN: -msoft-float 2>&1 | FileCheck -check-prefix=ARMV7_SOFTFLOAT %s
@@ -37,7 +36,6 @@
 ! ARMV7_SOFTFLOAT: "-mfloat-abi" "soft"
 ! ARMV7_SOFTFLOAT: "-target-feature"
 ! ARMV7_SOFTFLOAT: "-neon"
-! ARMV7_SOFTFLOAT: "-x" "c"
 
 ! RUN: %lfort -target x86_64-apple-darwin10 -### -S %s -arch armv7 \
 ! RUN: -mhard-float 2>&1 | FileCheck -check-prefix=ARMV7_HARDFLOAT %s
@@ -46,7 +44,6 @@
 ! ARMV7_HARDFLOAT-NOT: "-msoft-float"
 ! ARMV7_HARDFLOAT: "-mfloat-abi" "hard"
 ! ARMV7_HARDFLOAT-NOT: "-msoft-float"
-! ARMV7_HARDFLOAT: "-x" "c"
 
 ! RUN: %lfort -target arm-linux -### -S %s -march=armv5e 2>&1 | \
 ! RUN: FileCheck -check-prefix=ARMV5E %s
