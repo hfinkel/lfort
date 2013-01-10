@@ -8,6 +8,6 @@
 ! CHECK: -mmacosx-version-min=10.5.0
 ! CHECK: [ DW_TAG_compile_unit ]
 
-int x;
+end
 
 ! S: "-dwarf-debug-flags"

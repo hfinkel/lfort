@@ -4,8 +4,8 @@
 ! RUN:   -arch i386 -arch x86_64 %s -g 2> %t
 ! RUN: FileCheck -check-prefix=CHECK-MULTIARCH-ACTIONS < %t %s
 !
-! CHECK-MULTIARCH-ACTIONS: 0: input, "{{.*}}darwin-dsymutil.c", c
-! CHECK-MULTIARCH-ACTIONS: 1: preprocessor, {0}, cpp-output
+! CHECK-MULTIARCH-ACTIONS: 0: input, "{{.*}}darwin-dsymutil.F90", f90-cpp-input
+! CHECK-MULTIARCH-ACTIONS: 1: preprocessor, {0}, f90
 ! CHECK-MULTIARCH-ACTIONS: 2: compiler, {1}, assembler
 ! CHECK-MULTIARCH-ACTIONS: 3: assembler, {2}, object
 ! CHECK-MULTIARCH-ACTIONS: 4: linker, {3}, image
