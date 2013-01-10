@@ -1,5 +1,8 @@
 ! Test transparent PTH support.
 
+! FIXME: Revisit this test when PCH support is enabled.
+! XFAIL: *
+
 ! RUN: %lfort -no-canonical-prefixes -ccc-pch-is-pth -x c-header %s -o %t.h.pth -### 2> %t.log
 ! RUN: FileCheck -check-prefix CHECK1 -input-file %t.log %s
 

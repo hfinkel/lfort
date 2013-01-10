@@ -3,4 +3,4 @@
 ! RUN: %lfort -target i386-unknown-unknown -mred-zone %s -S -emit-llvm -o %t.log
 ! RUN: grep -v 'noredzone' %t.log 
 
-int foo() { return 42; }
+end
