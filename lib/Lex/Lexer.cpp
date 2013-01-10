@@ -3158,6 +3158,7 @@ LexNextToken:
       // essentially whitespace. The following token acts as if it were
       // not the first on a line.
       Result.setFlag(Token::HadContinuation);
+      BufferPtr = CurPtr;
       goto LexNextToken;
     }
 
