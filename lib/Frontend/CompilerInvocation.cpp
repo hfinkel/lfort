@@ -989,7 +989,7 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
   Opts.F95 = Std.isF95();
   Opts.F03 = Std.isF03();
   Opts.F08 = Std.isF08();
-  Opts.FreeForm = !Std.isF77();
+  Opts.FreeForm = Std.isF90();
 }
 
 static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
