@@ -592,7 +592,8 @@ void Preprocessor::HandleDirective(Token &Result) {
   CurPPLexer->ParsingPreprocessorDirective = true;
 
   // If this is a Fortran include statement, then run the include logic.
-  if (Result.is(tok::kw_include)) {
+  if (Result.is(tok::kw_include) ||
+      StringRef(Result.getName()).equals_lower("include")) {
      return HandleIncludeDirective(Result.getLocation(), Result,
                                    0, false, true);
   }

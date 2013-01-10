@@ -2895,8 +2895,11 @@ LexNextToken:
     LexIdentifier(Result, CurPtr);
 
     // In Fortran, we need to handle the include statement here.
+
     if (!ParsingPreprocessorDirective && !LexingRawMode &&
-        Result.is(tok::kw_include)) {
+        Result.isAtStartOfLine() &&
+        (Result.is(tok::kw_include) ||
+         StringRef(Result.getName()).equals_lower("include"))) {
       PP->HandleDirective(Result);
 
       // As an optimization, if the preprocessor didn't switch lexers, tail

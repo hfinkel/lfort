@@ -255,6 +255,7 @@ public:
 
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -262,6 +263,22 @@ private:
   //===--------------------------------------------------------------------===//
   // Low-Level token peeking and consumption methods.
   //
+
+  Token &lowerToken(Token &T) {
+    if (IdentifierInfo *II = T.getIdentifierInfo()) {
+        II = &PP.getIdentifierTable().get(II->getName().lower());
+        T.setIdentifierInfo(II);
+        T.setKind(II->getTokenID());
+    }
+
+    return T;
+  }
+
+  Token LoweredTok;
+  const Token &lowerToken(const Token &T) {
+    LoweredTok = T;
+    return lowerToken(T);
+  }
 
   /// isTokenParen - Return true if the cur token is '(' or ')'.
   bool isTokenParen() const {
@@ -316,6 +333,7 @@ private:
       --ParenCount;       // Don't let unbalanced )'s drive the count negative.
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -330,6 +348,7 @@ private:
 
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -344,6 +363,7 @@ private:
 
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -356,6 +376,7 @@ private:
            "Should only consume string literals with this method");
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -367,6 +388,7 @@ private:
     assert(Tok.is(tok::code_completion));
     PrevTokLocation = Tok.getLocation();
     PP.Lex(Tok);
+    lowerToken(Tok);
     return PrevTokLocation;
   }
 
@@ -433,14 +455,14 @@ private:
   ///
   const Token &GetLookAheadToken(unsigned N) {
     if (N == 0 || Tok.is(tok::eof)) return Tok;
-    return PP.LookAhead(N-1);
+    return lowerToken(PP.LookAhead(N-1));
   }
 
 public:
   /// NextToken - This peeks ahead one token and returns it without
   /// consuming it.
   const Token &NextToken() {
-    return PP.LookAhead(0);
+    return lowerToken(PP.LookAhead(0));
   }
 
   /// getTypeAnnotation - Read a parsed type out of an annotation token.
