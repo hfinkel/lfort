@@ -5,7 +5,7 @@
 ! RUN:   -verify -arch i386 -arch x86_64 %s -g 2> %t
 ! RUN: FileCheck -check-prefix=CHECK-MULTIARCH-ACTIONS < %t %s
 !
-! CHECK-MULTIARCH-ACTIONS: 0: input, "{{.*}}darwin-verify-debug.c", c
+! CHECK-MULTIARCH-ACTIONS: 0: input, "{{.*}}darwin-verify-debug.F90", f90-cpp-input
 ! CHECK-MULTIARCH-ACTIONS: 8: dsymutil, {7}, dSYM
 ! CHECK-MULTIARCH-ACTIONS: 9: verify, {8}, none
 !

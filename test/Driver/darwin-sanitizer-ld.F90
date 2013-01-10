@@ -1,5 +1,8 @@
 ! Test sanitizer link flags on Darwin.
 
+! FIXME: c++ stdlibs for asan
+! XFAIL: *
+
 ! RUN: %lfort -no-canonical-prefixes -### -target x86_64-darwin \
 ! RUN:   -fsanitize=address %s -o %t.o 2>&1 \
 ! RUN:   | FileCheck --check-prefix=CHECK-ASAN %s
