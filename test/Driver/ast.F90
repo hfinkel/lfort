@@ -3,8 +3,8 @@
 ! RUN: FileCheck -check-prefix EMIT-AST-PHASES -input-file %t %s
 
 ! EMIT-AST-PHASES: 0: input,
-! EMIT-AST-PHASES: , c
-! EMIT-AST-PHASES: 1: preprocessor, {0}, cpp-output
+! EMIT-AST-PHASES: , f90-cpp-input
+! EMIT-AST-PHASES: 1: preprocessor, {0}, f90
 ! EMIT-AST-PHASES: 2: compiler, {1}, ast
 ! EMIT-AST-PHASES-NOT: 3:
 ! EMIT-AST-PHASES: END
