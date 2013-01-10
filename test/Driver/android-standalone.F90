@@ -7,8 +7,6 @@
 ! RUN:     --sysroot=%S/Inputs/basic_android_tree/sysroot \
 ! RUN:   | FileCheck  %s
 ! CHECK: {{.*}}lfort{{.*}}" "-cc1"
-! CHECK: "-internal-isystem" "{{.*}}/arm-linux-androideabi/include/c++/4.4.3"
-! CHECK: "-internal-isystem" "{{.*}}/arm-linux-androideabi/include/c++/4.4.3/arm-linux-androideabi"
 ! CHECK: "-internal-externc-isystem" "{{.*}}/sysroot/include"
 ! CHECK: "-internal-externc-isystem" "{{.*}}/sysroot/usr/include"
 ! CHECK: "{{.*}}ld{{(.exe)?}}" "--sysroot=[[SYSROOT:[^"]+]]"
@@ -23,8 +21,6 @@
 ! RUN:     --sysroot=%S/Inputs/basic_android_tree/sysroot \
 ! RUN:   | FileCheck --check-prefix=CHECK-MIPS %s
 ! CHECK-MIPS: {{.*}}lfort{{.*}}" "-cc1"
-! CHECK-MIPS: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3"
-! CHECK-MIPS: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3/mipsel-linux-android"
 ! CHECK-MIPS: "-internal-externc-isystem" "{{.*}}/sysroot/include"
 ! CHECK-MIPS: "-internal-externc-isystem" "{{.*}}/sysroot/usr/include"
 ! CHECK-MIPS: "{{.*}}ld{{(.exe)?}}" "--sysroot=[[SYSROOT:[^"]+]]"
@@ -39,8 +35,6 @@
 ! RUN:     --sysroot=%S/Inputs/basic_android_tree/sysroot \
 ! RUN:   | FileCheck --check-prefix=CHECK-MIPSR2 %s
 ! CHECK-MIPSR2: {{.*}}lfort{{.*}}" "-cc1"
-! CHECK-MIPSR2: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3"
-! CHECK-MIPSR2: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3/mipsel-linux-android"
 ! CHECK-MIPSR2: "-internal-externc-isystem" "{{.*}}/sysroot/include"
 ! CHECK-MIPSR2: "-internal-externc-isystem" "{{.*}}/sysroot/usr/include"
 ! CHECK-MIPSR2: "{{.*}}ld{{(.exe)?}}" "--sysroot=[[SYSROOT:[^"]+]]"
@@ -55,8 +49,6 @@
 ! RUN:     --sysroot=%S/Inputs/basic_android_tree/sysroot \
 ! RUN:   | FileCheck --check-prefix=CHECK-MIPSR2-A %s
 ! CHECK-MIPSR2-A: {{.*}}lfort{{.*}}" "-cc1"
-! CHECK-MIPSR2-A: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3"
-! CHECK-MIPSR2-A: "-internal-isystem" "{{.*}}/mipsel-linux-android/include/c++/4.4.3/mipsel-linux-android"
 ! CHECK-MIPSR2-A: "-internal-externc-isystem" "{{.*}}/sysroot/include"
 ! CHECK-MIPSR2-A: "-internal-externc-isystem" "{{.*}}/sysroot/usr/include"
 ! CHECK-MIPSR2-A: "{{.*}}ld{{(.exe)?}}" "--sysroot=[[SYSROOT:[^"]+]]"
