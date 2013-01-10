@@ -20,11 +20,6 @@
 ! RUN: %lfort -### -S -Wwrite-strings -w %s 2>&1 | FileCheck -check-prefix=WRITE-STRINGS3 %s
 ! WRITE-STRINGS3: -fconst-strings
 
-! RUN: %lfort -### -x c++ -c %s 2>&1 | FileCheck -check-prefix=DEPRECATED-ON-CHECK %s
-! RUN: %lfort -### -x c++ -c -Wdeprecated %s 2>&1 | FileCheck -check-prefix=DEPRECATED-ON-CHECK %s
-! RUN: %lfort -### -x c++ -c -Wno-deprecated %s 2>&1 | FileCheck -check-prefix=DEPRECATED-OFF-CHECK %s
-! RUN: %lfort -### -x c++ -c -Wno-deprecated -Wdeprecated %s 2>&1 | FileCheck -check-prefix=DEPRECATED-ON-CHECK %s
-! RUN: %lfort -### -x c++ -c -w %s 2>&1 | FileCheck -check-prefix=DEPRECATED-ON-CHECK %s
 ! RUN: %lfort -### -c %s 2>&1 | FileCheck -check-prefix=DEPRECATED-OFF-CHECK %s
 ! RUN: %lfort -### -c -Wdeprecated %s 2>&1 | FileCheck -check-prefix=DEPRECATED-OFF-CHECK %s
 ! DEPRECATED-ON-CHECK: -fdeprecated-macro
