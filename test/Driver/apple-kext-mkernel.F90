@@ -19,5 +19,5 @@
 ! CHECK-ARM: "-fno-common"
 
 ! RUN: %lfort -target x86_64-apple-darwin10 \
-! RUN:   -Werror -fno-builtin -fno-exceptions -fno-common -fno-rtti \
+! RUN:   -Werror -fno-builtin -fno-common -fno-rtti \
 ! RUN:   -mkernel -fsyntax-only %s
