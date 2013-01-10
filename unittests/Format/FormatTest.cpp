@@ -82,6 +82,9 @@ protected:
   }
 };
 
+// FIXME: Convert to Fortran
+#if 0
+
 //===----------------------------------------------------------------------===//
 // Basic function tests.
 //===----------------------------------------------------------------------===//
@@ -978,6 +981,13 @@ TEST_F(FormatTest, FormatForObjectiveCMethodDecls) {
                    "outRange6:(NSRange) out_range6  outRange7:(NSRange) out_range7  "
                    "outRange8:(NSRange) out_range8  outRange9:(NSRange) out_range9;"));
 }
+
+#endif
+
+TEST_F(FormatTest, EmptyProgram) {
+  verifyFormat("end");
+}
+
 
 }  // end namespace tooling
 }  // end namespace lfort

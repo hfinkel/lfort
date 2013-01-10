@@ -18,6 +18,9 @@ namespace tooling {
 
 using namespace ast_matchers;
 
+// FIXME: Convert to Fortran
+#if 0
+
 template <typename T>
 void expectRewritten(const std::string &Code,
                      const std::string &Expected,
@@ -95,6 +98,8 @@ TEST(RefactoringCallbacksTest, RemovesEntireIfOnEmptyElse) {
       id("id", ifStmt(hasCondition(boolLiteral(equals(false))))),
       Callback);
 }
+
+#endif
 
 } // end namespace ast_matchers
 } // end namespace lfort

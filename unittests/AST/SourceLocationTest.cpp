@@ -29,6 +29,9 @@ using lfort::tooling::newFrontendActionFactory;
 using lfort::tooling::runToolOnCodeWithArgs;
 using lfort::tooling::FrontendActionFactory;
 
+// FIXME: Convert to Fortran where relevent
+#if 0
+
 enum Language { Lang_C, Lang_C89, Lang_CXX };
 
 /// \brief Base class for verifying some property of nodes found by a matcher.
@@ -284,6 +287,8 @@ TEST(CXXConstructorDecl, NoRetFunTypeLocRange) {
   Verifier.expectRange(1, 11, 1, 13);
   EXPECT_TRUE(Verifier.match("class C { C(); };", functionDecl()));
 }
+
+#endif
 
 } // end namespace ast_matchers
 } // end namespace lfort

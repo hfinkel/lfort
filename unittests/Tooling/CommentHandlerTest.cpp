@@ -12,6 +12,9 @@
 
 namespace lfort {
 
+// FIXME: Convert to Fortran
+#if 0
+
 struct Comment {
   Comment(const std::string &Message, unsigned Line, unsigned Col)
     : Message(Message), Line(Line), Col(Col) { }
@@ -217,5 +220,7 @@ TEST(CommentHandlerTest, PPDirectives) {
   Verifier.Match("// visible_2", 2, 14);
   Verifier.Match("// visible_3", 3, 14);
 }
+
+#endif
 
 } // end namespace lfort

@@ -95,6 +95,9 @@ public:
   return ::testing::AssertionSuccess();
 }
 
+// FIXME: Convert to Fortran where relevent
+#if 0
+
 ::testing::AssertionResult PrintedStmtCXX98Matches(
                                               StringRef Code,
                                               StringRef ContainingFunction,
@@ -124,7 +127,11 @@ public:
                             ExpectedPrinted);
 }
 
+#endif
+
 } // unnamed namespace
+
+#if 0
 
 TEST(StmtPrinter, TestIntegerLiteral) {
   ASSERT_TRUE(PrintedStmtCXX98Matches(
@@ -163,3 +170,6 @@ TEST(StmtPrinter, TestFloatingPointLiteral) {
     "1.F , -1.F , 1. , -1. , 1.L , -1.L"));
     // Should be: with semicolon
 }
+
+#endif
+

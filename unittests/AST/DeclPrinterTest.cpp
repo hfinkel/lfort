@@ -96,6 +96,9 @@ public:
   return ::testing::AssertionSuccess();
 }
 
+// FIXME: Convert to Fortran where relevant
+#if 0
+
 ::testing::AssertionResult PrintedDeclCXX98Matches(StringRef Code,
                                                    StringRef DeclName,
                                                    StringRef ExpectedPrinted) {
@@ -154,7 +157,11 @@ public:
                             "input.m");
 }
 
+#endif
+
 } // unnamed namespace
+
+#if 0
 
 TEST(DeclPrinter, TestNamespace1) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
@@ -1255,3 +1262,6 @@ TEST(DeclPrinter, TestObjCProtocol2) {
     namedDecl(hasName("P1")).bind("id"),
     "@protocol P1<P2>\n@end"));
 }
+
+#endif
+

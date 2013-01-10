@@ -11,6 +11,9 @@
 
 namespace lfort {
 
+// FIXME: Convert to Fortran
+#if 0
+
 class TypeLocVisitor : public ExpectedLocationVisitor<TypeLocVisitor> {
 public:
   bool VisitTypeLoc(TypeLoc TypeLocation) {
@@ -459,5 +462,7 @@ TEST(RecursiveASTVisitor, VisitsCompoundLiteralType) {
       "int f() { return (struct S { int a; }){.a = 0}.a; }",
       TypeLocVisitor::Lang_C));
 }
+
+#endif
 
 } // end namespace lfort

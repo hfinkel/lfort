@@ -54,6 +54,8 @@ class FindTopLevelDeclConsumer : public lfort::ASTConsumer {
 };
 } // end namespace
 
+// FIXME: Convert to Fortran
+#if 0
 TEST(runToolOnCode, FindsNoTopLevelDeclOnEmptyCode) {
   bool FoundTopLevelDecl = false;
   EXPECT_TRUE(runToolOnCode(
@@ -65,6 +67,7 @@ TEST(runToolOnCode, FindsNoTopLevelDeclOnEmptyCode) {
   EXPECT_TRUE(FoundTopLevelDecl);
 #endif
 }
+#endif
 
 namespace {
 class FindClassDeclXConsumer : public lfort::ASTConsumer {
@@ -85,6 +88,8 @@ class FindClassDeclXConsumer : public lfort::ASTConsumer {
 };
 } // end namespace
 
+// FIXME: Convert to Fortran
+#if 0
 TEST(runToolOnCode, FindsClassDecl) {
   bool FoundClassDeclX = false;
   EXPECT_TRUE(runToolOnCode(new TestAction(
@@ -96,6 +101,7 @@ TEST(runToolOnCode, FindsClassDecl) {
       new FindClassDeclXConsumer(&FoundClassDeclX)), "class Y;"));
   EXPECT_FALSE(FoundClassDeclX);
 }
+#endif
 
 TEST(newFrontendActionFactory, CreatesFrontendActionFactoryFromType) {
   llvm::OwningPtr<FrontendActionFactory> Factory(
@@ -124,9 +130,9 @@ TEST(ToolInvocation, TestMapVirtualFile) {
   Args.push_back("tool-executable");
   Args.push_back("-Idef");
   Args.push_back("-fsyntax-only");
-  Args.push_back("test.cpp");
+  Args.push_back("test.F90");
   lfort::tooling::ToolInvocation Invocation(Args, new SyntaxOnlyAction, &Files);
-  Invocation.mapVirtualFile("test.cpp", "#include <abc>\n");
+  Invocation.mapVirtualFile("test.F90", "#include <abc>\n");
   Invocation.mapVirtualFile("def/abc", "\n");
   EXPECT_TRUE(Invocation.run());
 }
@@ -149,12 +155,12 @@ TEST(newFrontendActionFactory, InjectsEndOfSourceFileCallback) {
 
   FixedCompilationDatabase Compilations("/", std::vector<std::string>());
   std::vector<std::string> Sources;
-  Sources.push_back("/a.cc");
-  Sources.push_back("/b.cc");
+  Sources.push_back("/a.f90");
+  Sources.push_back("/b.f90");
   LFortTool Tool(Compilations, Sources);
 
-  Tool.mapVirtualFile("/a.cc", "void a() {}");
-  Tool.mapVirtualFile("/b.cc", "void b() {}");
+  Tool.mapVirtualFile("/a.f90", "end");
+  Tool.mapVirtualFile("/b.f90", "end");
 
   Tool.run(newFrontendActionFactory(&EndCallback, &EndCallback));
 
@@ -179,12 +185,15 @@ struct SkipBodyAction : public lfort::ASTFrontendAction {
   }
 };
 
-TEST(runToolOnCode, TestSkipFunctionBoddy) {
+// FIXME: Convert to Fortran
+#if 0
+TEST(runToolOnCode, TestSkipFunctionBody) {
   EXPECT_TRUE(runToolOnCode(new SkipBodyAction,
                             "int skipMe() { an_error_here }"));
   EXPECT_FALSE(runToolOnCode(new SkipBodyAction,
                              "int skipMeNot() { an_error_here }"));
 }
+#endif
 
 } // end namespace tooling
 } // end namespace lfort
