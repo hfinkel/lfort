@@ -8,9 +8,6 @@
 ! RUN:   | FileCheck --check-prefix=CHECK-UBUNTU-11-04 %s
 ! CHECK-UBUNTU-11-04: "{{.*}}lfort{{.*}}" "-cc1"
 ! CHECK-UBUNTU-11-04: "-isysroot" "[[SYSROOT:[^"]+]]"
-! CHECK-UBUNTU-11-04: "-internal-isystem" "[[SYSROOT]]/usr/lib/i386-linux-gnu/gcc/i686-linux-gnu/4.5/../../../../../include/c++/4.5"
-! CHECK-UBUNTU-11-04: "-internal-isystem" "[[SYSROOT]]/usr/lib/i386-linux-gnu/gcc/i686-linux-gnu/4.5/../../../../../include/c++/4.5/i686-linux-gnu"
-! CHECK-UBUNTU-11-04: "-internal-isystem" "[[SYSROOT]]/usr/lib/i386-linux-gnu/gcc/i686-linux-gnu/4.5/../../../../../include/c++/4.5/backward"
 ! CHECK-UBUNTU-11-04: "-internal-isystem" "[[SYSROOT]]/usr/local/include"
 ! CHECK-UBUNTU-11-04: "-internal-isystem" "{{.*}}/lib{{(64|32)?}}/lfort/{{[0-9]\.[0-9]}}/include"
 ! CHECK-UBUNTU-11-04: "-internal-externc-isystem" "[[SYSROOT]]/include"
@@ -23,9 +20,6 @@
 ! RUN:   | FileCheck --check-prefix=CHECK-DEBIAN-X86 %s
 ! CHECK-DEBIAN-X86: "{{[^"]*}}lfort{{[^"]*}}" "-cc1"
 ! CHECK-DEBIAN-X86: "-isysroot" "[[SYSROOT:[^"]+]]"
-! CHECK-DEBIAN-X86: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/i686-linux-gnu/4.5/../../../../include/c++/4.5"
-! CHECK-DEBIAN-X86: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/i686-linux-gnu/4.5/../../../../include/c++/4.5/i686-linux-gnu"
-! CHECK-DEBIAN-X86: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/i686-linux-gnu/4.5/../../../../include/c++/4.5/backward"
 ! CHECK-DEBIAN-X86: "-internal-isystem" "[[SYSROOT]]/usr/local/include"
 ! CHECK-DEBIAN-X86: "-internal-isystem" "{{.*}}/lib{{(64|32)?}}/lfort/{{[0-9]\.[0-9]}}/include"
 ! CHECK-DEBIAN-X86: "-internal-externc-isystem" "[[SYSROOT]]/usr/include/i386-linux-gnu"
@@ -37,9 +31,6 @@
 ! RUN:   | FileCheck --check-prefix=CHECK-DEBIAN-X86-64 %s
 ! CHECK-DEBIAN-X86-64: "{{[^"]*}}lfort{{[^"]*}}" "-cc1"
 ! CHECK-DEBIAN-X86-64: "-isysroot" "[[SYSROOT:[^"]+]]"
-! CHECK-DEBIAN-X86-64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/x86_64-linux-gnu/4.5/../../../../include/c++/4.5"
-! CHECK-DEBIAN-X86-64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/x86_64-linux-gnu/4.5/../../../../include/c++/4.5/x86_64-linux-gnu"
-! CHECK-DEBIAN-X86-64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/x86_64-linux-gnu/4.5/../../../../include/c++/4.5/backward"
 ! CHECK-DEBIAN-X86-64: "-internal-isystem" "[[SYSROOT]]/usr/local/include"
 ! CHECK-DEBIAN-X86-64: "-internal-isystem" "{{.*}}/lib{{(64|32)?}}/lfort/{{[0-9]\.[0-9]}}/include"
 ! CHECK-DEBIAN-X86-64: "-internal-externc-isystem" "[[SYSROOT]]/usr/include/x86_64-linux-gnu"
@@ -51,9 +42,6 @@
 ! RUN:   | FileCheck --check-prefix=CHECK-DEBIAN-PPC %s
 ! CHECK-DEBIAN-PPC: "{{[^"]*}}lfort{{[^"]*}}" "-cc1"
 ! CHECK-DEBIAN-PPC: "-isysroot" "[[SYSROOT:[^"]+]]"
-! CHECK-DEBIAN-PPC: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc-linux-gnu/4.5/../../../../include/c++/4.5"
-! CHECK-DEBIAN-PPC: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc-linux-gnu/4.5/../../../../include/c++/4.5/powerpc-linux-gnu"
-! CHECK-DEBIAN-PPC: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc-linux-gnu/4.5/../../../../include/c++/4.5/backward"
 ! CHECK-DEBIAN-PPC: "-internal-isystem" "[[SYSROOT]]/usr/local/include"
 ! CHECK-DEBIAN-PPC: "-internal-isystem" "{{.*}}/lib{{(64|32)?}}/lfort/{{[0-9]\.[0-9]}}/include"
 ! CHECK-DEBIAN-PPC: "-internal-externc-isystem" "[[SYSROOT]]/usr/include/powerpc-linux-gnu"
@@ -65,9 +53,6 @@
 ! RUN:   | FileCheck --check-prefix=CHECK-DEBIAN-PPC64 %s
 ! CHECK-DEBIAN-PPC64: "{{[^"]*}}lfort{{[^"]*}}" "-cc1"
 ! CHECK-DEBIAN-PPC64: "-isysroot" "[[SYSROOT:[^"]+]]"
-! CHECK-DEBIAN-PPC64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc64-linux-gnu/4.5/../../../../include/c++/4.5"
-! CHECK-DEBIAN-PPC64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc64-linux-gnu/4.5/../../../../include/c++/4.5/powerpc64-linux-gnu"
-! CHECK-DEBIAN-PPC64: "-internal-isystem" "[[SYSROOT]]/usr/lib/gcc/powerpc64-linux-gnu/4.5/../../../../include/c++/4.5/backward"
 ! CHECK-DEBIAN-PPC64: "-internal-isystem" "[[SYSROOT]]/usr/local/include"
 ! CHECK-DEBIAN-PPC64: "-internal-isystem" "{{.*}}/lib{{(64|32)?}}/lfort/{{[0-9]\.[0-9]}}/include"
 ! CHECK-DEBIAN-PPC64: "-internal-externc-isystem" "[[SYSROOT]]/usr/include/powerpc64-linux-gnu"

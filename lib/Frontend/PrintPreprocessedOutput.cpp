@@ -546,7 +546,9 @@ static void PrintPreprocessedTokens(Preprocessor &PP, Token &Tok,
       OS << ' ';
     }
 
-    if (IdentifierInfo *II = Tok.getIdentifierInfo()) {
+    if (Tok.isAnnotation()) {
+      // Do nothing.
+    } else if (IdentifierInfo *II = Tok.getIdentifierInfo()) {
       OS << II->getName();
     } else if (Tok.isLiteral() && !Tok.needsCleaning() &&
                Tok.getLiteralData()) {

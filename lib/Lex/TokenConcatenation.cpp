@@ -153,6 +153,9 @@ static char GetFirstChar(Preprocessor &PP, const Token &Tok) {
 bool TokenConcatenation::AvoidConcat(const Token &PrevPrevTok,
                                      const Token &PrevTok,
                                      const Token &Tok) const {
+  if (PrevTok.isAnnotation())
+    return false;
+
   // First, check to see if the tokens were directly adjacent in the original
   // source.  If they were, it must be okay to stick them together: if there
   // were an issue, the tokens would have been lexed differently.

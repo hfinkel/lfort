@@ -265,11 +265,12 @@ private:
   //
 
   Token &lowerToken(Token &T) {
-    if (IdentifierInfo *II = T.getIdentifierInfo()) {
-        II = &PP.getIdentifierTable().get(II->getName().lower());
-        T.setIdentifierInfo(II);
-        T.setKind(II->getTokenID());
-    }
+    if (!T.isAnnotation())
+      if (IdentifierInfo *II = T.getIdentifierInfo()) {
+          II = &PP.getIdentifierTable().get(II->getName().lower());
+          T.setIdentifierInfo(II);
+          T.setKind(II->getTokenID());
+      }
 
     return T;
   }

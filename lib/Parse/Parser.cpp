@@ -606,6 +606,8 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
   case tok::kw_module:
     if (NextToken().isNot(tok::kw_procedure))
       return ParseModule();
+  case tok::annot_pragma_parser_crash:
+    LLVM_BUILTIN_TRAP;
   default:
     ; // empty
   }

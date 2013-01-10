@@ -5,15 +5,15 @@
 ! RUN:  -iprefix /the/prefix -iwithprefix /tmp -iwithprefixbefore /tmp/ \
 ! RUN:  -internal-isystem /tmp/ -internal-externc-isystem /tmp/ \
 ! RUN:  -DFOO=BAR 2>&1 | FileCheck %s
-! RUN: cat %t/crash-report-*.c | FileCheck --check-prefix=CHECKSRC %s
+! RUN: cat %t/crash-report-*.F90 | FileCheck --check-prefix=CHECKSRC %s
 ! RUN: cat %t/crash-report-*.sh | FileCheck --check-prefix=CHECKSH %s
 ! REQUIRES: crash-recovery
 
-! RUN: env FORCE_LFORT_DIAGNOSTICS_CRASH=1 %lfort -fsyntax-only -x c /dev/null 2>&1 | FileCheck %s
+! RUN: env FORCE_LFORT_DIAGNOSTICS_CRASH=1 %lfort -fsyntax-only -x f90-cpp-input /dev/null 2>&1 | FileCheck %s
 
 #pragma lfort __debug parser_crash
 ! CHECK: Preprocessed source(s) and associated run script(s) are located at:
-! CHECK-NEXT: note: diagnostic msg: {{.*}}.c
+! CHECK-NEXT: note: diagnostic msg: {{.*}}.F90
 FOO
 ! CHECKSRC: FOO
 ! CHECKSH: -D "FOO=BAR"
