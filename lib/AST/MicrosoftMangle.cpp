@@ -199,7 +199,15 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
     // If we have an asm name, then we use it as the mangling.
     Out << '\01' << ALA->getLabel();
     return;
-  } else if (isInF77LinkageSpecification(D)) {
+  }
+
+  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+    if (FD->isProgram()) {
+      Out << "MAIN__";
+      return;
+    }
+
+  if (isInF77LinkageSpecification(D)) {
     Out << D->getName();
     Out << "_";
     return;

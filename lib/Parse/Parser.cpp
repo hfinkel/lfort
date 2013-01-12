@@ -626,7 +626,7 @@ Parser::DeclGroupPtrTy
 Parser::ParseProgram() {
 
   IdentifierInfo *ProgramName = 0;
-  SourceLocation ProgramLoc;
+  SourceLocation ProgramLoc, ProgramNameLoc;
   /* R1102-F08 program-stmt
    *   is  PROGRAM [ program-name ]
    */
@@ -635,6 +635,7 @@ Parser::ParseProgram() {
     ConsumeToken();
     if (Tok.is(tok::identifier)) {
       ProgramName = Tok.getIdentifierInfo();
+      ProgramNameLoc = Tok.getLocation();
       ConsumeToken();
     }
   } else {
@@ -643,17 +644,12 @@ Parser::ParseProgram() {
     ProgramLoc = Tok.getLocation();
   }
 
-  // The  program is exported as a C-linkage function
-  // that would be declared as: void MAIN__().
-  ParseScope LinkageScope(this, Scope::DeclScope);
-  Decl *LinkageSpec
-    = Actions.ActOnStartLinkageSpecification(getCurScope(), ProgramLoc,
-                                             ProgramLoc, "\"Fortran 77\"",
-                                             ProgramLoc);
-
   ParsingDeclSpec DS(*this);
   ParsingDeclarator D(*this, DS, Declarator::FileContext);
-  D.SetIdentifier(PP.getIdentifierInfo("main_"), ProgramLoc);
+  if (ProgramName)
+    D.SetIdentifier(ProgramName, ProgramNameLoc);
+  else
+    D.SetIdentifier(PP.getIdentifierInfo("program"), ProgramLoc);
 
   {
     const char *PrevSpec;
@@ -707,6 +703,7 @@ Parser::ParseProgram() {
   ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
 
   Decl *Res = Actions.ActOnStartOfFunctionDef(getCurScope(), D);
+  cast<FunctionDecl>(Res)->setIsProgram();
 
   // Break out of the ParsingDeclarator context before we parse the body.
   D.complete(Res);
@@ -731,8 +728,6 @@ Parser::ParseProgram() {
 
   if (Tok.is(tok::kw_end)) {
     ConsumeToken();
-    // FIXME: TODO: ConsumeToken should insert semi when there is no semi next
-    // and next token starts a new line!
     if (Tok.is(tok::kw_program) && !Tok.isAtStartOfNonContinuationLine())
       ConsumeToken();
   } else {
@@ -740,7 +735,7 @@ Parser::ParseProgram() {
       SkipToNextLine();
   }
 
-  if (Tok.is(tok::identifier) && !Tok.isAtStartOfLine()) {
+  if (Tok.is(tok::identifier) && !Tok.isAtStartOfNonContinuationLine()) {
     IdentifierInfo *EndProgramName = Tok.getIdentifierInfo();
     if (ProgramName && ProgramName != EndProgramName) {
       Diag(ConsumeToken(), diag::warn_end_program_name_mismatch)
@@ -751,12 +746,7 @@ Parser::ParseProgram() {
   BodyScope.Exit();
 
   Decl *TheDecl = Actions.ActOnFinishFunctionBody(Res, FnBody.take());
-  Actions.ConvertDeclToDeclGroup(TheDecl);
-
-  Decl *LinkageSpecEnd
-    = Actions.ActOnFinishLinkageSpecification(getCurScope(), LinkageSpec,
-                                              EndLoc);
-  return Actions.ConvertDeclToDeclGroup(LinkageSpecEnd);
+  return Actions.ConvertDeclToDeclGroup(TheDecl);
 }
 
 Parser::StmtResult

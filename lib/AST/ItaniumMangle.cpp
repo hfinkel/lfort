@@ -431,7 +431,15 @@ void CXXNameMangler::mangle(const NamedDecl *D, StringRef Prefix) {
 
     Out << ALA->getLabel();
     return;
-  } else if (isInF77LinkageSpecification(D)) {
+  }
+
+  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+    if (FD->isProgram()) {
+      Out << "MAIN__";
+      return;
+    }
+
+  if (isInF77LinkageSpecification(D)) {
     Out << D->getName();
     Out << "_";
     return;

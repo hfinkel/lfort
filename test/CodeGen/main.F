@@ -4,5 +4,4 @@ C RUN: %lfort_cc1  %s -emit-llvm -o - | FileCheck %s
 C this is a comment
       enD
      @program hello
-C FIXME: This should be @MAIN__
-C CHECK: @main__
+C CHECK: @MAIN__
