@@ -633,7 +633,7 @@ Parser::ParseProgram() {
   if (Tok.is(tok::kw_program)) {
     ProgramLoc = Tok.getLocation();
     ConsumeToken();
-    if (Tok.is(tok::identifier)) {
+    if (Tok.is(tok::identifier) && !Tok.isAtStartOfNonContinuationLine()) {
       ProgramName = Tok.getIdentifierInfo();
       ProgramNameLoc = Tok.getLocation();
       ConsumeToken();
