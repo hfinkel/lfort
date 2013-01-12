@@ -651,53 +651,45 @@ Parser::ParseProgram() {
   else
     D.SetIdentifier(PP.getIdentifierInfo("program"), ProgramLoc);
 
-  {
-    const char *PrevSpec;
-    unsigned DiagID;
-    D.getMutableDeclSpec().SetTypeSpecType(DeclSpec::TST_void,
-                                           D.getIdentifierLoc(),
-                                           PrevSpec, DiagID);
-    D.SetRangeBegin(D.getDeclSpec().getSourceRange().getBegin());
-  }
+  const char *PrevSpec;
+  unsigned DiagID;
+  D.getMutableDeclSpec().SetTypeSpecType(DeclSpec::TST_void,
+                                         D.getIdentifierLoc(),
+                                         PrevSpec, DiagID);
+  D.SetRangeBegin(D.getDeclSpec().getSourceRange().getBegin());
 
-  Actions.ActOnStartFunctionDeclarator();
+  SmallVector<DeclaratorChunk::ParamInfo, 16> ParamInfo;
+  ExceptionSpecificationType ESpecType = EST_None;
+  SmallVector<ParsedType, 2> DynamicExceptions;
+  SmallVector<SourceRange, 2> DynamicExceptionRanges;
+  ParsedType TrailingReturnType;
+  ParsedAttributes FnAttrs(AttrFactory);
 
-  {
-    SmallVector<DeclaratorChunk::ParamInfo, 16> ParamInfo;
-    ExceptionSpecificationType ESpecType = EST_None;
-    SmallVector<ParsedType, 2> DynamicExceptions;
-    SmallVector<SourceRange, 2> DynamicExceptionRanges;
-    ParsedType TrailingReturnType;
-    ParsedAttributes FnAttrs(AttrFactory);
-
-    // Remember that we parsed a function type, and remember the attributes.
-    D.AddTypeInfo(DeclaratorChunk::getFunction(true,
-                                               false,
-                                               SourceLocation(),
-                                               ParamInfo.data(),
-                                               ParamInfo.size(),
-                                               SourceLocation(),
-                                               SourceLocation(),
-                                               DS.getTypeQualifiers(),
-                                               false,
-                                               SourceLocation(),
-                                               SourceLocation(),
-                                               SourceLocation(),
-                                               SourceLocation(),
-                                               ESpecType,
-                                               SourceLocation(),
-                                               DynamicExceptions.data(),
-                                               DynamicExceptionRanges.data(),
-                                               DynamicExceptions.size(),
-                                               0,
-                                               ProgramLoc, 
-                                               ProgramLoc,
-                                               D,
-                                               TrailingReturnType),
-                  FnAttrs, ProgramLoc);
-  }
-
-  Actions.ActOnEndFunctionDeclarator();
+  // Remember that we parsed a function type, and remember the attributes.
+  D.AddTypeInfo(DeclaratorChunk::getFunction(true,
+                                             false,
+                                             SourceLocation(),
+                                             ParamInfo.data(),
+                                             ParamInfo.size(),
+                                             SourceLocation(),
+                                             SourceLocation(),
+                                             DS.getTypeQualifiers(),
+                                             false,
+                                             SourceLocation(),
+                                             SourceLocation(),
+                                             SourceLocation(),
+                                             SourceLocation(),
+                                             ESpecType,
+                                             SourceLocation(),
+                                             DynamicExceptions.data(),
+                                             DynamicExceptionRanges.data(),
+                                             DynamicExceptions.size(),
+                                             0,
+                                             ProgramLoc, 
+                                             ProgramLoc,
+                                             D,
+                                             TrailingReturnType),
+                FnAttrs, ProgramLoc);
 
   // Enter a scope for the MAIN__ function body.
   ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
