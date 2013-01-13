@@ -151,7 +151,7 @@ public:
   }
 
   bool hasStmtLabel() const {
-    return StmtLabel == (unsigned) -1;
+    return StmtLabel != (unsigned) -1;
   }
   unsigned getStmtLabel() const {
     return StmtLabel;

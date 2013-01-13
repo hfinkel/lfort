@@ -23,6 +23,7 @@
 #include "lfort/Lex/TokenConcatenation.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
@@ -458,7 +459,13 @@ bool PrintPPOutputPPCallbacks::HandleFirstTokOnLine(Token &Tok) {
     AddContinuation = true;
   }
 
-  // FIXME: Handle Fortran statement labels here too!
+  if (Tok.hasStmtLabel()) {
+    std::string SL = llvm::utostr_32(Tok.getStmtLabel());
+    OS << SL;
+
+    assert(SL.length() <= ColNo && "Statement label past the column number?");
+    ColNo -= SL.length();
+  }
 
   // Otherwise, indent the appropriate number of spaces.
   for (; ColNo > 1; --ColNo)
