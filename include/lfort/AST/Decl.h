@@ -1483,7 +1483,6 @@ private:
   bool HasImplicitReturnZero : 1;
   bool IsLateTemplateParsed : 1;
   bool IsConstexpr : 1;
-  bool IsProgram : 1; // is a Fortran program
 
   /// \brief Indicates if the function was a definition but its body was
   /// skipped.
@@ -1561,7 +1560,7 @@ protected:
                const DeclarationNameInfo &NameInfo,
                QualType T, TypeSourceInfo *TInfo,
                StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
-               bool isConstexprSpecified, bool isProgram = false)
+               bool isConstexprSpecified)
     : DeclaratorDecl(DK, DC, NameInfo.getLoc(), NameInfo.getName(), T, TInfo,
                      StartLoc),
       DeclContext(DK),
@@ -1572,7 +1571,7 @@ protected:
       HasWrittenPrototype(true), IsDeleted(false), IsTrivial(false),
       IsDefaulted(false), IsExplicitlyDefaulted(false),
       HasImplicitReturnZero(false), IsLateTemplateParsed(false),
-      IsConstexpr(isConstexprSpecified), IsProgram(isProgram),
+      IsConstexpr(isConstexprSpecified),
       HasSkippedBody(false),
       EndRangeLoc(NameInfo.getEndLoc()),
       TemplateOrSpecialization(),
@@ -1602,13 +1601,12 @@ public:
                               StorageClass SCAsWritten = SC_None,
                               bool isInlineSpecified = false,
                               bool hasWrittenPrototype = true,
-                              bool isConstexprSpecified = false,
-                              bool isProgram = false) {
+                              bool isConstexprSpecified = false) {
     DeclarationNameInfo NameInfo(N, NLoc);
     return FunctionDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
                                 SC, SCAsWritten,
                                 isInlineSpecified, hasWrittenPrototype,
-                                isConstexprSpecified, isProgram);
+                                isConstexprSpecified);
   }
 
   static FunctionDecl *Create(ASTContext &C, DeclContext *DC,
@@ -1619,8 +1617,7 @@ public:
                               StorageClass SCAsWritten = SC_None,
                               bool isInlineSpecified = false,
                               bool hasWrittenPrototype = true,
-                              bool isConstexprSpecified = false,
-                              bool isProgram = false);
+                              bool isConstexprSpecified = false);
 
   static FunctionDecl *CreateDeserialized(ASTContext &C, unsigned ID);
                        
@@ -1783,11 +1780,6 @@ public:
   /// \brief Determines whether this function is "main", which is the
   /// entry point into an executable program.
   bool isMain() const;
-
-  /// Whether this a Fortran program (there should be at most one of
-  /// these in any context).
-  bool isProgram() const { return IsProgram; }
-  void setIsProgram(bool P = true) { IsProgram = P; }
 
   /// \brief Determines whether this operator new or delete is one
   /// of the reserved global placement operators:
@@ -2124,9 +2116,9 @@ protected:
                const DeclarationNameInfo &NameInfo,
                QualType T, TypeSourceInfo *TInfo,
                StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
-               bool isConstexprSpecified, bool isProgram = true) :
+               bool isConstexprSpecified) :
     FunctionDecl(DK, DC, StartLoc, NameInfo, T, TInfo, S, SCAsWritten,
-                 isInlineSpecified, isConstexprSpecified, isProgram) {}
+                 isInlineSpecified, isConstexprSpecified) {}
 
 public:
   static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
@@ -2137,13 +2129,12 @@ public:
                               StorageClass SCAsWritten = SC_None,
                               bool isInlineSpecified = false,
                               bool hasWrittenPrototype = true,
-                              bool isConstexprSpecified = false,
-                              bool isProgram = true) {
+                              bool isConstexprSpecified = false) {
     DeclarationNameInfo NameInfo(N, NLoc);
     return ProgramDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
                                 SC, SCAsWritten,
                                 isInlineSpecified, hasWrittenPrototype,
-                                isConstexprSpecified, isProgram);
+                                isConstexprSpecified);
   }
 
   static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
@@ -2154,8 +2145,7 @@ public:
                               StorageClass SCAsWritten = SC_None,
                               bool isInlineSpecified = false,
                               bool hasWrittenPrototype = true,
-                              bool isConstexprSpecified = false,
-                              bool isProgram = true);
+                              bool isConstexprSpecified = false);
 
   static ProgramDecl *CreateDeserialized(ASTContext &C, unsigned ID);
 

@@ -2935,12 +2935,11 @@ FunctionDecl *FunctionDecl::Create(ASTContext &C, DeclContext *DC,
                                    StorageClass SC, StorageClass SCAsWritten,
                                    bool isInlineSpecified, 
                                    bool hasWrittenPrototype,
-                                   bool isConstexprSpecified,
-                                   bool isProgram) {
+                                   bool isConstexprSpecified) {
   FunctionDecl *New = new (C) FunctionDecl(Function, DC, StartLoc, NameInfo,
                                            T, TInfo, SC, SCAsWritten,
                                            isInlineSpecified,
-                                           isConstexprSpecified, isProgram);
+                                           isConstexprSpecified);
   New->HasWrittenPrototype = hasWrittenPrototype;
   return New;
 }
@@ -2959,12 +2958,11 @@ ProgramDecl *ProgramDecl::Create(ASTContext &C, DeclContext *DC,
                                    StorageClass SC, StorageClass SCAsWritten,
                                    bool isInlineSpecified, 
                                    bool hasWrittenPrototype,
-                                   bool isConstexprSpecified,
-                                   bool isProgram) {
+                                   bool isConstexprSpecified) {
   ProgramDecl *New = new (C) ProgramDecl(Program, DC, StartLoc, NameInfo,
                                            T, TInfo, SC, SCAsWritten,
                                            isInlineSpecified,
-                                           isConstexprSpecified, isProgram);
+                                           isConstexprSpecified);
   // FIXME: Make this a constructor parameter.
   New->setHasWrittenPrototype(hasWrittenPrototype);
   return New;

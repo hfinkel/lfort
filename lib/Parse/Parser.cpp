@@ -696,7 +696,6 @@ Parser::ParseProgram() {
   ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
 
   Decl *Res = Actions.ActOnStartOfFunctionDef(getCurScope(), D);
-  cast<FunctionDecl>(Res)->setIsProgram();
 
   // Break out of the ParsingDeclarator context before we parse the body.
   D.complete(Res);

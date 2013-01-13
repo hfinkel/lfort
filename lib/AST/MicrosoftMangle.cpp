@@ -201,11 +201,10 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
     return;
   }
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    if (FD->isProgram()) {
-      Out << "MAIN__";
-      return;
-    }
+  if (isa<ProgramDecl>(D)) {
+    Out << "MAIN__";
+    return;
+  }
 
   if (isInF77LinkageSpecification(D)) {
     Out << D->getName();
