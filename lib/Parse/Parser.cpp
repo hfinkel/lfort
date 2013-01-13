@@ -688,7 +688,8 @@ Parser::ParseProgram() {
                                              ProgramLoc, 
                                              ProgramLoc,
                                              D,
-                                             TrailingReturnType),
+                                             TrailingReturnType,
+                                             /* IsProgram */ true),
                 FnAttrs, ProgramLoc);
 
   // Enter a scope for the MAIN__ function body.

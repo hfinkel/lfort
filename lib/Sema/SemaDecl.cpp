@@ -5141,6 +5141,29 @@ static FunctionDecl::StorageClass getFunctionStorageClass(Sema &SemaRef,
   return SC_None;
 }
 
+static ProgramDecl* CreateNewProgramDecl(Sema &SemaRef, Declarator &D,
+                                         DeclContext *DC, QualType &R,
+                                         TypeSourceInfo *TInfo,
+                                         FunctionDecl::StorageClass SC) {
+  DeclarationNameInfo NameInfo = SemaRef.GetNameForDeclarator(D);
+  DeclSpec::SCS SCSpec = D.getDeclSpec().getStorageClassSpecAsWritten();
+  FunctionDecl::StorageClass SCAsWritten
+    = StorageClassSpecToFunctionDeclStorageClass(SCSpec);
+
+  ProgramDecl *NewPD = ProgramDecl::Create(SemaRef.Context, DC, 
+                         D.getLocStart(), NameInfo, R, 
+                         TInfo, SC, SCAsWritten, false /* isInline */,
+                         false /* HasPrototype */);
+  if (D.isInvalidType())
+    NewPD->setInvalidDecl();
+
+  // Set the lexical context.
+  NewPD->setLexicalDeclContext(SemaRef.CurContext);
+
+  return NewPD;
+}
+       
+
 static FunctionDecl* CreateNewFunctionDecl(Sema &SemaRef, Declarator &D,
                                            DeclContext *DC, QualType &R,
                                            TypeSourceInfo *TInfo,
@@ -5362,8 +5385,12 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   bool isVirtualOkay = false;
 
-  FunctionDecl *NewFD = CreateNewFunctionDecl(*this, D, DC, R, TInfo, SC,
-                                              isVirtualOkay);
+  FunctionDecl *NewFD;
+  if (D.isFunctionDeclarator() && D.getFunctionTypeInfo().isProgram())
+    NewFD = CreateNewProgramDecl(*this, D, DC, R, TInfo, SC);
+  else
+    NewFD = CreateNewFunctionDecl(*this, D, DC, R, TInfo, SC,
+                                  isVirtualOkay);
   if (!NewFD) return 0;
 
   if (OriginalLexicalContext && OriginalLexicalContext->isObjCContainer())
