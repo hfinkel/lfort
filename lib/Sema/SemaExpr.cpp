@@ -2478,7 +2478,10 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
       
       break;
     }
-        
+ 
+    case Decl::Program:
+      llvm_unreachable("forming a reference to the program?");
+       
     case Decl::Function: {
       if (unsigned BID = cast<FunctionDecl>(VD)->getBuiltinID()) {
         if (!Context.BuiltinInfo.isPredefinedLibFunction(BID)) {

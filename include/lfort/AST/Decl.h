@@ -1744,7 +1744,10 @@ public:
   }
 
   bool hasWrittenPrototype() const { return HasWrittenPrototype; }
+protected:
+  void setHasWrittenPrototype(bool P = true) { HasWrittenPrototype = P; }
 
+public:
   /// \brief Whether this function inherited its prototype from a
   /// previous declaration.
   bool hasInheritedPrototype() const { return HasInheritedPrototype; }
@@ -2113,6 +2116,52 @@ public:
   friend class ASTDeclWriter;
 };
 
+/// A Fortran program.
+class ProgramDecl : public FunctionDecl {
+protected:
+  // FIXME: Minimize this argument list.
+  ProgramDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
+               const DeclarationNameInfo &NameInfo,
+               QualType T, TypeSourceInfo *TInfo,
+               StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
+               bool isConstexprSpecified, bool isProgram = true) :
+    FunctionDecl(DK, DC, StartLoc, NameInfo, T, TInfo, S, SCAsWritten,
+                 isInlineSpecified, isConstexprSpecified, isProgram) {}
+
+public:
+  static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
+                              SourceLocation StartLoc, SourceLocation NLoc,
+                              DeclarationName N, QualType T,
+                              TypeSourceInfo *TInfo,
+                              StorageClass SC = SC_None,
+                              StorageClass SCAsWritten = SC_None,
+                              bool isInlineSpecified = false,
+                              bool hasWrittenPrototype = true,
+                              bool isConstexprSpecified = false,
+                              bool isProgram = true) {
+    DeclarationNameInfo NameInfo(N, NLoc);
+    return ProgramDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
+                                SC, SCAsWritten,
+                                isInlineSpecified, hasWrittenPrototype,
+                                isConstexprSpecified, isProgram);
+  }
+
+  static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
+                              SourceLocation StartLoc,
+                              const DeclarationNameInfo &NameInfo,
+                              QualType T, TypeSourceInfo *TInfo,
+                              StorageClass SC = SC_None,
+                              StorageClass SCAsWritten = SC_None,
+                              bool isInlineSpecified = false,
+                              bool hasWrittenPrototype = true,
+                              bool isConstexprSpecified = false,
+                              bool isProgram = true);
+
+  static ProgramDecl *CreateDeserialized(ASTContext &C, unsigned ID);
+
+  friend class ASTDeclReader;
+  friend class ASTDeclWriter;
+};
 
 /// FieldDecl - An instance of this class is created by Sema::ActOnField to
 /// represent a member of a struct/union/class.

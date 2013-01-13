@@ -2952,6 +2952,31 @@ FunctionDecl *FunctionDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
                                 SC_None, SC_None, false, false);
 }
 
+ProgramDecl *ProgramDecl::Create(ASTContext &C, DeclContext *DC,
+                                   SourceLocation StartLoc,
+                                   const DeclarationNameInfo &NameInfo,
+                                   QualType T, TypeSourceInfo *TInfo,
+                                   StorageClass SC, StorageClass SCAsWritten,
+                                   bool isInlineSpecified, 
+                                   bool hasWrittenPrototype,
+                                   bool isConstexprSpecified,
+                                   bool isProgram) {
+  ProgramDecl *New = new (C) ProgramDecl(Program, DC, StartLoc, NameInfo,
+                                           T, TInfo, SC, SCAsWritten,
+                                           isInlineSpecified,
+                                           isConstexprSpecified, isProgram);
+  // FIXME: Make this a constructor parameter.
+  New->setHasWrittenPrototype(hasWrittenPrototype);
+  return New;
+}
+
+ProgramDecl *ProgramDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
+  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(ProgramDecl));
+  return new (Mem) ProgramDecl(Program, 0, SourceLocation(), 
+                                DeclarationNameInfo(), QualType(), 0,
+                                SC_None, SC_None, false, false);
+}
+
 BlockDecl *BlockDecl::Create(ASTContext &C, DeclContext *DC, SourceLocation L) {
   return new (C) BlockDecl(DC, L);
 }

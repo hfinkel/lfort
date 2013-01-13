@@ -1761,6 +1761,12 @@ DEF_TRAVERSE_DECL(CXXDestructorDecl, {
     return TraverseFunctionHelper(D);
   })
 
+DEF_TRAVERSE_DECL(ProgramDecl, {
+    // We skip decls_begin/decls_end, which are already covered by
+    // TraverseFunctionHelper().
+    return TraverseFunctionHelper(D);
+  })
+
 template<typename Derived>
 bool RecursiveASTVisitor<Derived>::TraverseVarHelper(VarDecl *D) {
   TRY_TO(TraverseDeclaratorHelper(D));
