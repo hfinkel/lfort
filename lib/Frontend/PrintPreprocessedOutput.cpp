@@ -432,6 +432,11 @@ PragmaDiagnostic(SourceLocation Loc, StringRef Namespace,
 /// This may not be the start of a logical line because the "start of line"
 /// marker is set for spelling lines, not expansion ones.
 bool PrintPPOutputPPCallbacks::HandleFirstTokOnLine(Token &Tok) {
+
+  if (PP.getLangOpts().FreeForm && Tok.hadContinuation()) {
+    OS << '&';
+  }
+
   // Figure out what line we went to and insert the appropriate number of
   // newline characters.
   bool FirstLine;
