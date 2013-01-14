@@ -758,9 +758,9 @@ namespace lfort {
       /// \brief An ExtVectorType record.
       TYPE_EXT_VECTOR               = 13,
       /// \brief A SubprogramNoProtoType record.
-      TYPE_FUNCTION_NO_PROTO        = 14,
+      TYPE_SUBPROGRAM_NO_PROTO        = 14,
       /// \brief A SubprogramProtoType record.
-      TYPE_FUNCTION_PROTO           = 15,
+      TYPE_SUBPROGRAM_PROTO           = 15,
       /// \brief A TypedefType record.
       TYPE_TYPEDEF                  = 16,
       /// \brief A TypeOfExprType record.
@@ -902,7 +902,7 @@ namespace lfort {
       /// \brief An EnumConstantDecl record.
       DECL_ENUM_CONSTANT,
       /// \brief A SubprogramDecl record.
-      DECL_FUNCTION,
+      DECL_SUBPROGRAM,
       /// \brief A ObjCMethodDecl record.
       DECL_OBJC_METHOD,
       /// \brief A ObjCInterfaceDecl record.
@@ -996,7 +996,7 @@ namespace lfort {
       /// \brief A ClassTemplatePartialSpecializationDecl record.
       DECL_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION,
       /// \brief A SubprogramTemplateDecl record.
-      DECL_FUNCTION_TEMPLATE,
+      DECL_SUBPROGRAM_TEMPLATE,
       /// \brief A TemplateTypeParmDecl record.
       DECL_TEMPLATE_TYPE_PARM,
       /// \brief A NonTypeTemplateParmDecl record.
@@ -1019,7 +1019,7 @@ namespace lfort {
       DECL_EXPANDED_TEMPLATE_TEMPLATE_PARM_PACK,
       /// \brief A ClassScopeSubprogramSpecializationDecl record a class scope
       /// function specialization. (Microsoft extension).
-      DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION,
+      DECL_CLASS_SCOPE_SUBPROGRAM_SPECIALIZATION,
       /// \brief An ImportDecl recording a module import.
       DECL_IMPORT
     };
@@ -1222,7 +1222,7 @@ namespace lfort {
       /// \brief A CXXConstCastExpr record.
       EXPR_CXX_CONST_CAST,
       /// \brief A CXXSubprogramalCastExpr record.
-      EXPR_CXX_FUNCTIONAL_CAST,
+      EXPR_CXX_SUBPROGRAMAL_CAST,
       /// \brief A UserDefinedLiteral record.
       EXPR_USER_DEFINED_LITERAL,
       /// \brief A CXXBoolLiteralExpr record.
@@ -1262,7 +1262,7 @@ namespace lfort {
       EXPR_SIZEOF_PACK,           // SizeOfPackExpr
       EXPR_SUBST_NON_TYPE_TEMPLATE_PARM, // SubstNonTypeTemplateParmExpr
       EXPR_SUBST_NON_TYPE_TEMPLATE_PARM_PACK,// SubstNonTypeTemplateParmPackExpr
-      EXPR_FUNCTION_PARM_PACK,    // SubprogramParmPackExpr
+      EXPR_SUBPROGRAM_PARM_PACK,    // SubprogramParmPackExpr
       EXPR_MATERIALIZE_TEMPORARY, // MaterializeTemporaryExpr
       
       // CUDA

@@ -4288,7 +4288,7 @@ QualType ASTReader::readTypeRecord(unsigned Index) {
     return Context.getExtVectorType(ElementType, NumElements);
   }
 
-  case TYPE_FUNCTION_NO_PROTO: {
+  case TYPE_SUBPROGRAM_NO_PROTO: {
     if (Record.size() != 6) {
       Error("incorrect encoding of no-proto function type");
       return QualType();
@@ -4299,7 +4299,7 @@ QualType ASTReader::readTypeRecord(unsigned Index) {
     return Context.getSubprogramNoProtoType(ResultType, Info);
   }
 
-  case TYPE_FUNCTION_PROTO: {
+  case TYPE_SUBPROGRAM_PROTO: {
     QualType ResultType = readType(*Loc.F, Record, Idx);
 
     SubprogramProtoType::ExtProtoInfo EPI;

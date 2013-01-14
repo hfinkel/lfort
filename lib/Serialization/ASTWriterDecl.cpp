@@ -400,7 +400,7 @@ void ASTDeclWriter::VisitSubprogramDecl(SubprogramDecl *D) {
   for (SubprogramDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
        P != PEnd; ++P)
     Writer.AddDeclRef(*P, Record);
-  Code = serialization::DECL_FUNCTION;
+  Code = serialization::DECL_SUBPROGRAM;
 }
 
 void ASTDeclWriter::VisitObjCMethodDecl(ObjCMethodDecl *D) {
@@ -1150,7 +1150,7 @@ void ASTDeclWriter::VisitClassScopeSubprogramSpecializationDecl(
                                     ClassScopeSubprogramSpecializationDecl *D) {
   VisitDecl(D);
   Writer.AddDeclRef(D->getSpecialization(), Record);
-  Code = serialization::DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION;
+  Code = serialization::DECL_CLASS_SCOPE_SUBPROGRAM_SPECIALIZATION;
 }
 
 
@@ -1170,7 +1170,7 @@ void ASTDeclWriter::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
       Writer.AddDeclRef(I->Subprogram, Record);
     }
   }
-  Code = serialization::DECL_FUNCTION_TEMPLATE;
+  Code = serialization::DECL_SUBPROGRAM_TEMPLATE;
 }
 
 void ASTDeclWriter::VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D) {

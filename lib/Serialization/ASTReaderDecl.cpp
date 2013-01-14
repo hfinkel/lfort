@@ -1956,7 +1956,7 @@ Decl *ASTReader::ReadDeclRecord(DeclID ID) {
   case DECL_ENUM_CONSTANT:
     D = EnumConstantDecl::CreateDeserialized(Context, ID);
     break;
-  case DECL_FUNCTION:
+  case DECL_SUBPROGRAM:
     D = SubprogramDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_LINKAGE_SPEC:
@@ -2019,10 +2019,10 @@ Decl *ASTReader::ReadDeclRecord(DeclID ID) {
   case DECL_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION:
     D = ClassTemplatePartialSpecializationDecl::CreateDeserialized(Context, ID);
     break;
-  case DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION:
+  case DECL_CLASS_SCOPE_SUBPROGRAM_SPECIALIZATION:
     D = ClassScopeSubprogramSpecializationDecl::CreateDeserialized(Context, ID);
     break;
-  case DECL_FUNCTION_TEMPLATE:
+  case DECL_SUBPROGRAM_TEMPLATE:
     D = SubprogramTemplateDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_TEMPLATE_TYPE_PARM:

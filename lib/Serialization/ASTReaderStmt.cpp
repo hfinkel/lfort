@@ -2051,7 +2051,7 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
       S = CXXConstCastExpr::CreateEmpty(Context);
       break;
 
-    case EXPR_CXX_FUNCTIONAL_CAST:
+    case EXPR_CXX_SUBPROGRAMAL_CAST:
       S = CXXSubprogramalCastExpr::CreateEmpty(Context,
                        /*PathSize*/ Record[ASTStmtReader::NumExprFields]);
       break;
@@ -2194,7 +2194,7 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
       S = new (Context) SubstNonTypeTemplateParmPackExpr(Empty);
       break;
 
-    case EXPR_FUNCTION_PARM_PACK:
+    case EXPR_SUBPROGRAM_PARM_PACK:
       S = SubprogramParmPackExpr::CreateEmpty(Context,
                                           Record[ASTStmtReader::NumExprFields]);
       break;

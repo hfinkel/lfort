@@ -1149,7 +1149,7 @@ void ASTStmtWriter::VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *E) {
   VisitExplicitCastExpr(E);
   Writer.AddSourceLocation(E->getTypeBeginLoc(), Record);
   Writer.AddSourceLocation(E->getRParenLoc(), Record);
-  Code = serialization::EXPR_CXX_FUNCTIONAL_CAST;
+  Code = serialization::EXPR_CXX_SUBPROGRAMAL_CAST;
 }
 
 void ASTStmtWriter::VisitUserDefinedLiteral(UserDefinedLiteral *E) {
@@ -1490,7 +1490,7 @@ void ASTStmtWriter::VisitSubprogramParmPackExpr(SubprogramParmPackExpr *E) {
   for (SubprogramParmPackExpr::iterator I = E->begin(), End = E->end();
        I != End; ++I)
     Writer.AddDeclRef(*I, Record);
-  Code = serialization::EXPR_FUNCTION_PARM_PACK;
+  Code = serialization::EXPR_SUBPROGRAM_PARM_PACK;
 }
 
 void ASTStmtWriter::VisitMaterializeTemporaryExpr(MaterializeTemporaryExpr *E) {
