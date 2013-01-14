@@ -1825,9 +1825,9 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
     return EmitUnsupportedLValue(E, "predefined expression");
 
   case PredefinedExpr::Func:
-  case PredefinedExpr::Subprogram:
-  case PredefinedExpr::LSubprogram:
-  case PredefinedExpr::PrettySubprogram: {
+  case PredefinedExpr::Function:
+  case PredefinedExpr::LFunction:
+  case PredefinedExpr::PrettyFunction: {
     unsigned IdentType = E->getIdentType();
     std::string GlobalVarName;
 
@@ -1836,13 +1836,13 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
     case PredefinedExpr::Func:
       GlobalVarName = "__func__.";
       break;
-    case PredefinedExpr::Subprogram:
+    case PredefinedExpr::Function:
       GlobalVarName = "__FUNCTION__.";
       break;
-    case PredefinedExpr::LSubprogram:
+    case PredefinedExpr::LFunction:
       GlobalVarName = "L__FUNCTION__.";
       break;
-    case PredefinedExpr::PrettySubprogram:
+    case PredefinedExpr::PrettyFunction:
       GlobalVarName = "__PRETTY_FUNCTION__.";
       break;
     }

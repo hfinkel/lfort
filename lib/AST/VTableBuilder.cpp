@@ -1886,7 +1886,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       const CXXMethodDecl *MD = Component.getSubprogramDecl();
 
       std::string Str = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual, 
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual, 
                                     MD);
       Out << Str;
       if (MD->isPure())
@@ -1966,7 +1966,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       const CXXMethodDecl *MD = Component.getUnusedSubprogramDecl();
 
       std::string Str = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual, 
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual, 
                                     MD);
       Out << "[unused] " << Str;
       if (MD->isPure())
@@ -2050,7 +2050,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
          I != E; ++I) {
       const CXXMethodDecl *MD = I->first;
       std::string MethodName = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual,
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual,
                                     MD);
       
       MethodNamesAndDecls.insert(std::make_pair(MethodName, MD));
@@ -2117,7 +2117,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       continue;
 
     std::string MethodName =
-      PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual,
+      PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual,
                                   MD);
 
     if (const CXXDestructorDecl *DD = dyn_cast<CXXDestructorDecl>(MD)) {

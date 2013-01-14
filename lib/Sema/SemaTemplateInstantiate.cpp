@@ -1100,7 +1100,7 @@ TemplateInstantiator::TransformPredefinedExpr(PredefinedExpr *E) {
 
   llvm::APInt LengthI(32, Length + 1);
   QualType ResTy;
-  if (IT == PredefinedExpr::LSubprogram)
+  if (IT == PredefinedExpr::LFunction)
     ResTy = getSema().Context.WCharTy.withConst();
   else
     ResTy = getSema().Context.CharTy.withConst();

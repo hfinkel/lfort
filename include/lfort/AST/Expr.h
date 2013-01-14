@@ -1130,12 +1130,12 @@ class PredefinedExpr : public Expr {
 public:
   enum IdentType {
     Func,
-    Subprogram,
-    LSubprogram,  // Same as Subprogram, but as wide string.
-    PrettySubprogram,
-    /// PrettySubprogramNoVirtual - The same as PrettySubprogram, except that the
+    Function,
+    LFunction,  // Same as Function, but as wide string.
+    PrettyFunction,
+    /// PrettyFunctionNoVirtual - The same as PrettyFunction, except that the
     /// 'virtual' keyword is omitted for virtual member functions.
-    PrettySubprogramNoVirtual
+    PrettyFunctionNoVirtual
   };
 
 private:

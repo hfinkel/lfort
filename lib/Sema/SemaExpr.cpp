@@ -2558,9 +2558,9 @@ ExprResult Sema::ActOnPredefinedExpr(SourceLocation Loc, tok::TokenKind Kind) {
   switch (Kind) {
   default: llvm_unreachable("Unknown simple primary expr!");
   case tok::kw___func__: IT = PredefinedExpr::Func; break; // [C99 6.4.2.2]
-  case tok::kw___FUNCTION__: IT = PredefinedExpr::Subprogram; break;
-  case tok::kw_L__FUNCTION__: IT = PredefinedExpr::LSubprogram; break;
-  case tok::kw___PRETTY_FUNCTION__: IT = PredefinedExpr::PrettySubprogram; break;
+  case tok::kw___FUNCTION__: IT = PredefinedExpr::Function; break;
+  case tok::kw_L__FUNCTION__: IT = PredefinedExpr::LFunction; break;
+  case tok::kw___PRETTY_FUNCTION__: IT = PredefinedExpr::PrettyFunction; break;
   }
 
   // Pre-defined identifiers are of type char[x], where x is the length of the
@@ -2587,7 +2587,7 @@ ExprResult Sema::ActOnPredefinedExpr(SourceLocation Loc, tok::TokenKind Kind) {
     unsigned Length = PredefinedExpr::ComputeName(IT, currentDecl).length();
 
     llvm::APInt LengthI(32, Length + 1);
-    if (IT == PredefinedExpr::LSubprogram)
+    if (IT == PredefinedExpr::LFunction)
       ResTy = Context.WCharTy.withConst();
     else
       ResTy = Context.CharTy.withConst();

@@ -462,14 +462,14 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
   ASTContext &Context = CurrentDecl->getASTContext();
 
   if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CurrentDecl)) {
-    if (IT != PrettySubprogram && IT != PrettySubprogramNoVirtual)
+    if (IT != PrettyFunction && IT != PrettyFunctionNoVirtual)
       return FD->getNameAsString();
 
     SmallString<256> Name;
     llvm::raw_svector_ostream Out(Name);
 
     if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD)) {
-      if (MD->isVirtual() && IT != PrettySubprogramNoVirtual)
+      if (MD->isVirtual() && IT != PrettyFunctionNoVirtual)
         Out << "virtual ";
       if (MD->isStatic())
         Out << "static ";
@@ -597,7 +597,7 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
     Out.flush();
     return Name.str().str();
   }
-  if (isa<TranslationUnitDecl>(CurrentDecl) && IT == PrettySubprogram) {
+  if (isa<TranslationUnitDecl>(CurrentDecl) && IT == PrettyFunction) {
     // __PRETTY_FUNCTION__ -> "top level", the others produce an empty string.
     return "top level";
   }

@@ -1083,9 +1083,9 @@ void ASTDumper::VisitPredefinedExpr(PredefinedExpr *Node) {
   switch (Node->getIdentType()) {
   default: llvm_unreachable("unknown case");
   case PredefinedExpr::Func:           OS <<  " __func__"; break;
-  case PredefinedExpr::Subprogram:       OS <<  " __FUNCTION__"; break;
-  case PredefinedExpr::LSubprogram:      OS <<  " L__FUNCTION__"; break;
-  case PredefinedExpr::PrettySubprogram: OS <<  " __PRETTY_FUNCTION__";break;
+  case PredefinedExpr::Function:       OS <<  " __FUNCTION__"; break;
+  case PredefinedExpr::LFunction:      OS <<  " L__FUNCTION__"; break;
+  case PredefinedExpr::PrettyFunction: OS <<  " __PRETTY_FUNCTION__";break;
   }
 }
 

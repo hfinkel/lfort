@@ -946,7 +946,7 @@ public:
       if (CGF) {
         LValue Res = CGF->EmitPredefinedLValue(cast<PredefinedExpr>(E));
         return cast<llvm::Constant>(Res.getAddress());
-      } else if (Type == PredefinedExpr::PrettySubprogram) {
+      } else if (Type == PredefinedExpr::PrettyFunction) {
         return CGM.GetAddrOfConstantCString("top level", ".tmp");
       }
 
