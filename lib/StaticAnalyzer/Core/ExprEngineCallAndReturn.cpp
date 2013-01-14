@@ -153,7 +153,7 @@ static SVal adjustReturnValue(SVal V, QualType ExpectedTy, QualType ActualTy,
   return UnknownVal();
 }
 
-void ExprEngine::removeDeadOnEndOfFunction(NodeBuilderContext& BC,
+void ExprEngine::removeDeadOnEndOfSubprogram(NodeBuilderContext& BC,
                                            ExplodedNode *Pred,
                                            ExplodedNodeSet &Dst) {
   // Find the last statement in the function and the corresponding basic block.
@@ -366,7 +366,7 @@ void ExprEngine::examineStackFrames(const Decl *D, const LocationContext *LCtx,
 
 }
 
-static bool IsInStdNamespace(const FunctionDecl *FD) {
+static bool IsInStdNamespace(const SubprogramDecl *FD) {
   const DeclContext *DC = FD->getEnclosingNamespaceContext();
   const NamespaceDecl *ND = dyn_cast<NamespaceDecl>(DC);
   if (!ND)
@@ -399,10 +399,10 @@ bool ExprEngine::shouldInlineDecl(const Decl *D, ExplodedNode *Pred) {
          || IsRecursive))
     return false;
 
-  if (Engine.FunctionSummaries->hasReachedMaxBlockCount(D))
+  if (Engine.SubprogramSummaries->hasReachedMaxBlockCount(D))
     return false;
 
-  if (CalleeCFG->getNumBlockIDs() > AMgr.options.InlineMaxFunctionSize)
+  if (CalleeCFG->getNumBlockIDs() > AMgr.options.InlineMaxSubprogramSize)
     return false;
 
   // Do not inline variadic calls (for now).
@@ -410,16 +410,16 @@ bool ExprEngine::shouldInlineDecl(const Decl *D, ExplodedNode *Pred) {
     if (BD->isVariadic())
       return false;
   }
-  else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->isVariadic())
       return false;
   }
 
   if (getContext().getLangOpts().CPlusPlus) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       // Conditionally allow the inlining of template functions.
-      if (!AMgr.options.mayInlineTemplateFunctions())
-        if (FD->getTemplatedKind() != FunctionDecl::TK_NonTemplate)
+      if (!AMgr.options.mayInlineTemplateSubprograms())
+        if (FD->getTemplatedKind() != SubprogramDecl::TK_NonTemplate)
           return false;
 
       // Conditionally allow the inlining of C++ standard library functions.
@@ -435,13 +435,13 @@ bool ExprEngine::shouldInlineDecl(const Decl *D, ExplodedNode *Pred) {
   if (!CalleeADC->getAnalysis<RelaxedLiveVariables>())
     return false;
 
-  if (Engine.FunctionSummaries->getNumTimesInlined(D) >
+  if (Engine.SubprogramSummaries->getNumTimesInlined(D) >
         AMgr.options.getMaxTimesInlineLarge() &&
       CalleeCFG->getNumBlockIDs() > 13) {
     NumReachedInlineCountMax++;
     return false;
   }
-  Engine.FunctionSummaries->bumpNumTimesInlined(D);
+  Engine.SubprogramSummaries->bumpNumTimesInlined(D);
 
   return true;
 }
@@ -475,15 +475,15 @@ bool ExprEngine::inlineCall(const CallEvent &Call, const Decl *D,
 
   // FIXME: Refactor this check into a hypothetical CallEvent::canInline.
   switch (Call.getKind()) {
-  case CE_Function:
+  case CE_Subprogram:
     break;
   case CE_CXXMember:
   case CE_CXXMemberOperator:
-    if (!Opts.mayInlineCXXMemberFunction(CIMK_MemberFunctions))
+    if (!Opts.mayInlineCXXMemberSubprogram(CIMK_MemberSubprograms))
       return false;
     break;
   case CE_CXXConstructor: {
-    if (!Opts.mayInlineCXXMemberFunction(CIMK_Constructors))
+    if (!Opts.mayInlineCXXMemberSubprogram(CIMK_Constructors))
       return false;
 
     const CXXConstructorCall &Ctor = cast<CXXConstructorCall>(Call);
@@ -513,7 +513,7 @@ bool ExprEngine::inlineCall(const CallEvent &Call, const Decl *D,
     
     // For other types, only inline constructors if destructor inlining is
     // also enabled.
-    if (!Opts.mayInlineCXXMemberFunction(CIMK_Destructors))
+    if (!Opts.mayInlineCXXMemberSubprogram(CIMK_Destructors))
       return false;
 
     // FIXME: This is a hack. We don't handle temporary destructors
@@ -525,7 +525,7 @@ bool ExprEngine::inlineCall(const CallEvent &Call, const Decl *D,
     break;
   }
   case CE_CXXDestructor: {
-    if (!Opts.mayInlineCXXMemberFunction(CIMK_Destructors))
+    if (!Opts.mayInlineCXXMemberSubprogram(CIMK_Destructors))
       return false;
 
     // Inlining destructors requires building the CFG correctly.

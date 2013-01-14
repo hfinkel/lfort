@@ -36,7 +36,7 @@ class BlockCounter;
 class BranchNodeBuilder;
 class IndirectGotoNodeBuilder;
 class SwitchNodeBuilder;
-class EndOfFunctionNodeBuilder;
+class EndOfSubprogramNodeBuilder;
 class NodeBuilderWithSinks;
 class MemRegion;
 
@@ -82,7 +82,7 @@ public:
 
   /// Called by CoreEngine.  Used to generate end-of-path
   /// nodes when the control reaches the end of a function.
-  virtual void processEndOfFunction(NodeBuilderContext& BC,
+  virtual void processEndOfSubprogram(NodeBuilderContext& BC,
                                     ExplodedNode *Pred) = 0;
 
   // Generate the entry node of the callee.

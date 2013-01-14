@@ -53,8 +53,8 @@ namespace lfort {
     // FIXME: DependentSizedExtVectorType
     QualType VisitVectorType(const VectorType *T);
     QualType VisitExtVectorType(const ExtVectorType *T);
-    QualType VisitFunctionNoProtoType(const FunctionNoProtoType *T);
-    QualType VisitFunctionProtoType(const FunctionProtoType *T);
+    QualType VisitSubprogramNoProtoType(const SubprogramNoProtoType *T);
+    QualType VisitSubprogramProtoType(const SubprogramProtoType *T);
     // FIXME: UnresolvedUsingType
     QualType VisitParenType(const ParenType *T);
     QualType VisitTypedefType(const TypedefType *T);
@@ -132,7 +132,7 @@ namespace lfort {
     Decl *VisitEnumDecl(EnumDecl *D);
     Decl *VisitRecordDecl(RecordDecl *D);
     Decl *VisitEnumConstantDecl(EnumConstantDecl *D);
-    Decl *VisitFunctionDecl(FunctionDecl *D);
+    Decl *VisitSubprogramDecl(SubprogramDecl *D);
     Decl *VisitCXXMethodDecl(CXXMethodDecl *D);
     Decl *VisitCXXConstructorDecl(CXXConstructorDecl *D);
     Decl *VisitCXXDestructorDecl(CXXDestructorDecl *D);
@@ -376,12 +376,12 @@ static bool IsStructurallyEquivalent(StructuralEquivalenceContext &Context,
   if (T1->getTypeClass() != T2->getTypeClass()) {
     // Compare function types with prototypes vs. without prototypes as if
     // both did not have prototypes.
-    if (T1->getTypeClass() == Type::FunctionProto &&
-        T2->getTypeClass() == Type::FunctionNoProto)
-      TC = Type::FunctionNoProto;
-    else if (T1->getTypeClass() == Type::FunctionNoProto &&
-             T2->getTypeClass() == Type::FunctionProto)
-      TC = Type::FunctionNoProto;
+    if (T1->getTypeClass() == Type::SubprogramProto &&
+        T2->getTypeClass() == Type::SubprogramNoProto)
+      TC = Type::SubprogramNoProto;
+    else if (T1->getTypeClass() == Type::SubprogramNoProto &&
+             T2->getTypeClass() == Type::SubprogramProto)
+      TC = Type::SubprogramNoProto;
     else
       return false;
   }
@@ -517,9 +517,9 @@ static bool IsStructurallyEquivalent(StructuralEquivalenceContext &Context,
     break;
   }
 
-  case Type::FunctionProto: {
-    const FunctionProtoType *Proto1 = cast<FunctionProtoType>(T1);
-    const FunctionProtoType *Proto2 = cast<FunctionProtoType>(T2);
+  case Type::SubprogramProto: {
+    const SubprogramProtoType *Proto1 = cast<SubprogramProtoType>(T1);
+    const SubprogramProtoType *Proto2 = cast<SubprogramProtoType>(T2);
     if (Proto1->getNumArgs() != Proto2->getNumArgs())
       return false;
     for (unsigned I = 0, N = Proto1->getNumArgs(); I != N; ++I) {
@@ -550,17 +550,17 @@ static bool IsStructurallyEquivalent(StructuralEquivalenceContext &Context,
     if (Proto1->getTypeQuals() != Proto2->getTypeQuals())
       return false;
     
-    // Fall through to check the bits common with FunctionNoProtoType.
+    // Fall through to check the bits common with SubprogramNoProtoType.
   }
       
-  case Type::FunctionNoProto: {
-    const FunctionType *Function1 = cast<FunctionType>(T1);
-    const FunctionType *Function2 = cast<FunctionType>(T2);
+  case Type::SubprogramNoProto: {
+    const SubprogramType *Subprogram1 = cast<SubprogramType>(T1);
+    const SubprogramType *Subprogram2 = cast<SubprogramType>(T2);
     if (!IsStructurallyEquivalent(Context, 
-                                  Function1->getResultType(),
-                                  Function2->getResultType()))
+                                  Subprogram1->getResultType(),
+                                  Subprogram2->getResultType()))
       return false;
-      if (Function1->getExtInfo() != Function2->getExtInfo())
+      if (Subprogram1->getExtInfo() != Subprogram2->getExtInfo())
         return false;
     break;
   }
@@ -1566,25 +1566,25 @@ QualType ASTNodeImporter::VisitExtVectorType(const ExtVectorType *T) {
 }
 
 QualType
-ASTNodeImporter::VisitFunctionNoProtoType(const FunctionNoProtoType *T) {
+ASTNodeImporter::VisitSubprogramNoProtoType(const SubprogramNoProtoType *T) {
   // FIXME: What happens if we're importing a function without a prototype 
   // into C++? Should we make it variadic?
   QualType ToResultType = Importer.Import(T->getResultType());
   if (ToResultType.isNull())
     return QualType();
 
-  return Importer.getToContext().getFunctionNoProtoType(ToResultType,
+  return Importer.getToContext().getSubprogramNoProtoType(ToResultType,
                                                         T->getExtInfo());
 }
 
-QualType ASTNodeImporter::VisitFunctionProtoType(const FunctionProtoType *T) {
+QualType ASTNodeImporter::VisitSubprogramProtoType(const SubprogramProtoType *T) {
   QualType ToResultType = Importer.Import(T->getResultType());
   if (ToResultType.isNull())
     return QualType();
   
   // Import argument types
   SmallVector<QualType, 4> ArgTypes;
-  for (FunctionProtoType::arg_type_iterator A = T->arg_type_begin(),
+  for (SubprogramProtoType::arg_type_iterator A = T->arg_type_begin(),
                                          AEnd = T->arg_type_end();
        A != AEnd; ++A) {
     QualType ArgType = Importer.Import(*A);
@@ -1595,7 +1595,7 @@ QualType ASTNodeImporter::VisitFunctionProtoType(const FunctionProtoType *T) {
   
   // Import exception types
   SmallVector<QualType, 4> ExceptionTypes;
-  for (FunctionProtoType::exception_iterator E = T->exception_begin(),
+  for (SubprogramProtoType::exception_iterator E = T->exception_begin(),
                                           EEnd = T->exception_end();
        E != EEnd; ++E) {
     QualType ExceptionType = Importer.Import(*E);
@@ -1604,8 +1604,8 @@ QualType ASTNodeImporter::VisitFunctionProtoType(const FunctionProtoType *T) {
     ExceptionTypes.push_back(ExceptionType);
   }
 
-  FunctionProtoType::ExtProtoInfo FromEPI = T->getExtProtoInfo();
-  FunctionProtoType::ExtProtoInfo ToEPI;
+  SubprogramProtoType::ExtProtoInfo FromEPI = T->getExtProtoInfo();
+  SubprogramProtoType::ExtProtoInfo ToEPI;
 
   ToEPI.ExtInfo = FromEPI.ExtInfo;
   ToEPI.Variadic = FromEPI.Variadic;
@@ -1617,12 +1617,12 @@ QualType ASTNodeImporter::VisitFunctionProtoType(const FunctionProtoType *T) {
   ToEPI.ConsumedArguments = FromEPI.ConsumedArguments;
   ToEPI.ExceptionSpecType = FromEPI.ExceptionSpecType;
   ToEPI.NoexceptExpr = Importer.Import(FromEPI.NoexceptExpr);
-  ToEPI.ExceptionSpecDecl = cast_or_null<FunctionDecl>(
+  ToEPI.ExceptionSpecDecl = cast_or_null<SubprogramDecl>(
                                 Importer.Import(FromEPI.ExceptionSpecDecl));
-  ToEPI.ExceptionSpecTemplate = cast_or_null<FunctionDecl>(
+  ToEPI.ExceptionSpecTemplate = cast_or_null<SubprogramDecl>(
                                 Importer.Import(FromEPI.ExceptionSpecTemplate));
 
-  return Importer.getToContext().getFunctionType(ToResultType, ArgTypes.data(),
+  return Importer.getToContext().getSubprogramType(ToResultType, ArgTypes.data(),
                                                  ArgTypes.size(), ToEPI);
 }
 
@@ -1877,7 +1877,7 @@ ASTNodeImporter::ImportDeclarationNameLoc(const DeclarationNameInfo &From,
   }
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName: {
+  case DeclarationName::CXXConversionSubprogramName: {
     TypeSourceInfo *FromTInfo = From.getNamedTypeInfo();
     To.setNamedTypeInfo(Importer.Import(FromTInfo));
     return;
@@ -2273,7 +2273,7 @@ Decl *ASTNodeImporter::VisitTypedefNameDecl(TypedefNameDecl *D, bool IsAlias) {
   // If this typedef is not in block scope, determine whether we've
   // seen a typedef with the same name (that we can merge with) or any
   // other entity by that name (which name lookup could conflict with).
-  if (!DC->isFunctionOrMethod()) {
+  if (!DC->isSubprogramOrMethod()) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     unsigned IDNS = Decl::IDNS_Ordinary;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
@@ -2354,7 +2354,7 @@ Decl *ASTNodeImporter::VisitEnumDecl(EnumDecl *D) {
     IDNS |= Decl::IDNS_Ordinary;
   
   // We may already have an enum of the same name; try to find and match it.
-  if (!DC->isFunctionOrMethod() && SearchName) {
+  if (!DC->isSubprogramOrMethod() && SearchName) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
     DC->localUncachedLookup(SearchName, FoundDecls);
@@ -2440,7 +2440,7 @@ Decl *ASTNodeImporter::VisitRecordDecl(RecordDecl *D) {
 
   // We may already have a record of the same name; try to find and match it.
   RecordDecl *AdoptDecl = 0;
-  if (!DC->isFunctionOrMethod()) {
+  if (!DC->isSubprogramOrMethod()) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
     DC->localUncachedLookup(SearchName, FoundDecls);
@@ -2546,7 +2546,7 @@ Decl *ASTNodeImporter::VisitEnumConstantDecl(EnumConstantDecl *D) {
 
   // Determine whether there are any other declarations with the same name and 
   // in the same context.
-  if (!LexicalDC->isFunctionOrMethod()) {
+  if (!LexicalDC->isSubprogramOrMethod()) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     unsigned IDNS = Decl::IDNS_Ordinary;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
@@ -2588,7 +2588,7 @@ Decl *ASTNodeImporter::VisitEnumConstantDecl(EnumConstantDecl *D) {
   return ToEnumerator;
 }
 
-Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
+Decl *ASTNodeImporter::VisitSubprogramDecl(SubprogramDecl *D) {
   // Import the major distinguishing characteristics of this function.
   DeclContext *DC, *LexicalDC;
   DeclarationName Name;
@@ -2598,7 +2598,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
 
   // Try to find a function in our own ("to") context with the same name, same
   // type, and in the same context as the function we're importing.
-  if (!LexicalDC->isFunctionOrMethod()) {
+  if (!LexicalDC->isSubprogramOrMethod()) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     unsigned IDNS = Decl::IDNS_Ordinary;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
@@ -2607,28 +2607,28 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
       if (!FoundDecls[I]->isInIdentifierNamespace(IDNS))
         continue;
     
-      if (FunctionDecl *FoundFunction = dyn_cast<FunctionDecl>(FoundDecls[I])) {
-        if (isExternalLinkage(FoundFunction->getLinkage()) &&
+      if (SubprogramDecl *FoundSubprogram = dyn_cast<SubprogramDecl>(FoundDecls[I])) {
+        if (isExternalLinkage(FoundSubprogram->getLinkage()) &&
             isExternalLinkage(D->getLinkage())) {
           if (Importer.IsStructurallyEquivalent(D->getType(), 
-                                                FoundFunction->getType())) {
+                                                FoundSubprogram->getType())) {
             // FIXME: Actually try to merge the body and other attributes.
-            return Importer.Imported(D, FoundFunction);
+            return Importer.Imported(D, FoundSubprogram);
           }
         
           // FIXME: Check for overloading more carefully, e.g., by boosting
           // Sema::IsOverload out to the AST library.
           
-          // Function overloading is okay in C++.
+          // Subprogram overloading is okay in C++.
           if (Importer.getToContext().getLangOpts().CPlusPlus)
             continue;
           
           // Complain about inconsistent function types.
           Importer.ToDiag(Loc, diag::err_odr_function_type_inconsistent)
-            << Name << D->getType() << FoundFunction->getType();
-          Importer.ToDiag(FoundFunction->getLocation(), 
+            << Name << D->getType() << FoundSubprogram->getType();
+          Importer.ToDiag(FoundSubprogram->getLocation(), 
                           diag::note_odr_value_here)
-            << FoundFunction->getType();
+            << FoundSubprogram->getType();
         }
       }
       
@@ -2651,17 +2651,17 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
   QualType FromTy = D->getType();
   bool usedDifferentExceptionSpec = false;
 
-  if (const FunctionProtoType *
-        FromFPT = D->getType()->getAs<FunctionProtoType>()) {
-    FunctionProtoType::ExtProtoInfo FromEPI = FromFPT->getExtProtoInfo();
-    // FunctionProtoType::ExtProtoInfo's ExceptionSpecDecl can point to the
-    // FunctionDecl that we are importing the FunctionProtoType for.
-    // To avoid an infinite recursion when importing, create the FunctionDecl
+  if (const SubprogramProtoType *
+        FromFPT = D->getType()->getAs<SubprogramProtoType>()) {
+    SubprogramProtoType::ExtProtoInfo FromEPI = FromFPT->getExtProtoInfo();
+    // SubprogramProtoType::ExtProtoInfo's ExceptionSpecDecl can point to the
+    // SubprogramDecl that we are importing the SubprogramProtoType for.
+    // To avoid an infinite recursion when importing, create the SubprogramDecl
     // with a simplified function type and update it afterwards.
     if (FromEPI.ExceptionSpecDecl || FromEPI.ExceptionSpecTemplate ||
         FromEPI.NoexceptExpr) {
-      FunctionProtoType::ExtProtoInfo DefaultEPI;
-      FromTy = Importer.getFromContext().getFunctionType(
+      SubprogramProtoType::ExtProtoInfo DefaultEPI;
+      FromTy = Importer.getFromContext().getSubprogramType(
                             FromFPT->getResultType(),
                             FromFPT->arg_type_begin(),
                             FromFPT->arg_type_end() - FromFPT->arg_type_begin(),
@@ -2677,7 +2677,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
   
   // Import the function parameters.
   SmallVector<ParmVarDecl *, 8> Parameters;
-  for (FunctionDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
+  for (SubprogramDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
        P != PEnd; ++P) {
     ParmVarDecl *ToP = cast_or_null<ParmVarDecl>(Importer.Import(*P));
     if (!ToP)
@@ -2688,9 +2688,9 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
   
   // Create the imported function.
   TypeSourceInfo *TInfo = Importer.Import(D->getTypeSourceInfo());
-  FunctionDecl *ToFunction = 0;
+  SubprogramDecl *ToSubprogram = 0;
   if (CXXConstructorDecl *FromConstructor = dyn_cast<CXXConstructorDecl>(D)) {
-    ToFunction = CXXConstructorDecl::Create(Importer.getToContext(),
+    ToSubprogram = CXXConstructorDecl::Create(Importer.getToContext(),
                                             cast<CXXRecordDecl>(DC),
                                             D->getInnerLocStart(),
                                             NameInfo, T, TInfo, 
@@ -2699,7 +2699,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
                                             D->isImplicit(),
                                             D->isConstexpr());
   } else if (isa<CXXDestructorDecl>(D)) {
-    ToFunction = CXXDestructorDecl::Create(Importer.getToContext(),
+    ToSubprogram = CXXDestructorDecl::Create(Importer.getToContext(),
                                            cast<CXXRecordDecl>(DC),
                                            D->getInnerLocStart(),
                                            NameInfo, T, TInfo,
@@ -2707,7 +2707,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
                                            D->isImplicit());
   } else if (CXXConversionDecl *FromConversion
                                            = dyn_cast<CXXConversionDecl>(D)) {
-    ToFunction = CXXConversionDecl::Create(Importer.getToContext(), 
+    ToSubprogram = CXXConversionDecl::Create(Importer.getToContext(), 
                                            cast<CXXRecordDecl>(DC),
                                            D->getInnerLocStart(),
                                            NameInfo, T, TInfo,
@@ -2716,7 +2716,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
                                            D->isConstexpr(),
                                            Importer.Import(D->getLocEnd()));
   } else if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
-    ToFunction = CXXMethodDecl::Create(Importer.getToContext(), 
+    ToSubprogram = CXXMethodDecl::Create(Importer.getToContext(), 
                                        cast<CXXRecordDecl>(DC),
                                        D->getInnerLocStart(),
                                        NameInfo, T, TInfo,
@@ -2726,7 +2726,7 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
                                        D->isConstexpr(),
                                        Importer.Import(D->getLocEnd()));
   } else {
-    ToFunction = FunctionDecl::Create(Importer.getToContext(), DC,
+    ToSubprogram = SubprogramDecl::Create(Importer.getToContext(), DC,
                                       D->getInnerLocStart(),
                                       NameInfo, T, TInfo, D->getStorageClass(),
                                       D->getStorageClassAsWritten(),
@@ -2736,39 +2736,39 @@ Decl *ASTNodeImporter::VisitFunctionDecl(FunctionDecl *D) {
   }
 
   // Import the qualifier, if any.
-  ToFunction->setQualifierInfo(Importer.Import(D->getQualifierLoc()));
-  ToFunction->setAccess(D->getAccess());
-  ToFunction->setLexicalDeclContext(LexicalDC);
-  ToFunction->setVirtualAsWritten(D->isVirtualAsWritten());
-  ToFunction->setTrivial(D->isTrivial());
-  ToFunction->setPure(D->isPure());
-  Importer.Imported(D, ToFunction);
+  ToSubprogram->setQualifierInfo(Importer.Import(D->getQualifierLoc()));
+  ToSubprogram->setAccess(D->getAccess());
+  ToSubprogram->setLexicalDeclContext(LexicalDC);
+  ToSubprogram->setVirtualAsWritten(D->isVirtualAsWritten());
+  ToSubprogram->setTrivial(D->isTrivial());
+  ToSubprogram->setPure(D->isPure());
+  Importer.Imported(D, ToSubprogram);
 
   // Set the parameters.
   for (unsigned I = 0, N = Parameters.size(); I != N; ++I) {
-    Parameters[I]->setOwningFunction(ToFunction);
-    ToFunction->addDeclInternal(Parameters[I]);
+    Parameters[I]->setOwningSubprogram(ToSubprogram);
+    ToSubprogram->addDeclInternal(Parameters[I]);
   }
-  ToFunction->setParams(Parameters);
+  ToSubprogram->setParams(Parameters);
 
   if (usedDifferentExceptionSpec) {
-    // Update FunctionProtoType::ExtProtoInfo.
+    // Update SubprogramProtoType::ExtProtoInfo.
     QualType T = Importer.Import(D->getType());
     if (T.isNull())
       return 0;
-    ToFunction->setType(T);
+    ToSubprogram->setType(T);
   }
 
   // FIXME: Other bits to merge?
 
   // Add this function to the lexical context.
-  LexicalDC->addDeclInternal(ToFunction);
+  LexicalDC->addDeclInternal(ToSubprogram);
 
-  return ToFunction;
+  return ToSubprogram;
 }
 
 Decl *ASTNodeImporter::VisitCXXMethodDecl(CXXMethodDecl *D) {
-  return VisitFunctionDecl(D);
+  return VisitSubprogramDecl(D);
 }
 
 Decl *ASTNodeImporter::VisitCXXConstructorDecl(CXXConstructorDecl *D) {
@@ -3264,7 +3264,7 @@ Decl *ASTNodeImporter::VisitObjCMethodDecl(ObjCMethodDecl *D) {
   
   // Set the parameters.
   for (unsigned I = 0, N = ToParams.size(); I != N; ++I) {
-    ToParams[I]->setOwningFunction(ToMethod);
+    ToParams[I]->setOwningSubprogram(ToMethod);
     ToMethod->addDeclInternal(ToParams[I]);
   }
   SmallVector<SourceLocation, 12> SelLocs;
@@ -3940,7 +3940,7 @@ Decl *ASTNodeImporter::VisitClassTemplateDecl(ClassTemplateDecl *D) {
     return 0;
   
   // We may already have a template of the same name; try to find and match it.
-  if (!DC->isFunctionOrMethod()) {
+  if (!DC->isSubprogramOrMethod()) {
     SmallVector<NamedDecl *, 4> ConflictingDecls;
     llvm::SmallVector<NamedDecl *, 2> FoundDecls;
     DC->localUncachedLookup(Name, FoundDecls);
@@ -4780,12 +4780,12 @@ DeclarationName ASTImporter::Import(DeclarationName FromName) {
                                                ToContext.getCanonicalType(T));
   }
 
-  case DeclarationName::CXXConversionFunctionName: {
+  case DeclarationName::CXXConversionSubprogramName: {
     QualType T = Import(FromName.getCXXNameType());
     if (T.isNull())
       return DeclarationName();
 
-    return ToContext.DeclarationNames.getCXXConversionFunctionName(
+    return ToContext.DeclarationNames.getCXXConversionSubprogramName(
                                                ToContext.getCanonicalType(T));
   }
 

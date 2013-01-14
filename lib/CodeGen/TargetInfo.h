@@ -33,7 +33,7 @@ namespace lfort {
     class CallArgList;
     class CodeGenModule;
     class CodeGenSubprogram;
-    class CGFunctionInfo;
+    class CGSubprogramInfo;
   }
 
   /// TargetCodeGenInfo - This class organizes various target-specific
@@ -166,7 +166,7 @@ namespace lfort {
     /// call unprototyped functions using the variadic convention so
     /// that unprototyped calls to varargs functions still succeed.
     virtual bool isNoProtoCallVariadic(const CodeGen::CallArgList &args,
-                                       const FunctionNoProtoType *fnType) const;
+                                       const SubprogramNoProtoType *fnType) const;
   };
 }
 

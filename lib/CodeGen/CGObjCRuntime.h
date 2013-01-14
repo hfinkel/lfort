@@ -23,7 +23,7 @@
 
 namespace llvm {
   class Constant;
-  class Function;
+  class Subprogram;
   class Module;
   class StructLayout;
   class StructType;
@@ -114,7 +114,7 @@ public:
 
   /// Generate the function required to register all Objective-C components in
   /// this compilation unit with the runtime library.
-  virtual llvm::Function *ModuleInitFunction() = 0;
+  virtual llvm::Function *ModuleInitSubprogram() = 0;
 
   /// Get a selector for the specified name and type values. The
   /// return value should have the LLVM type for pointer-to
@@ -189,32 +189,32 @@ public:
   /// Generate a function preamble for a method with the specified
   /// types.
 
-  // FIXME: Current this just generates the Function definition, but really this
+  // FIXME: Current this just generates the Subprogram definition, but really this
   // should also be generating the loads of the parameters, as the runtime
   // should have full control over how parameters are passed.
   virtual llvm::Function *GenerateMethod(const ObjCMethodDecl *OMD,
                                          const ObjCContainerDecl *CD) = 0;
 
   /// Return the runtime function for getting properties.
-  virtual llvm::Constant *GetPropertyGetFunction() = 0;
+  virtual llvm::Constant *GetPropertyGetSubprogram() = 0;
 
   /// Return the runtime function for setting properties.
-  virtual llvm::Constant *GetPropertySetFunction() = 0;
+  virtual llvm::Constant *GetPropertySetSubprogram() = 0;
 
   /// Return the runtime function for optimized setting properties.
-  virtual llvm::Constant *GetOptimizedPropertySetFunction(bool atomic, 
+  virtual llvm::Constant *GetOptimizedPropertySetSubprogram(bool atomic, 
                                                           bool copy) = 0;
 
   // API for atomic copying of qualified aggregates in getter.
-  virtual llvm::Constant *GetGetStructFunction() = 0;
+  virtual llvm::Constant *GetGetStructSubprogram() = 0;
   // API for atomic copying of qualified aggregates in setter.
-  virtual llvm::Constant *GetSetStructFunction() = 0;
+  virtual llvm::Constant *GetSetStructSubprogram() = 0;
   /// API for atomic copying of qualified aggregates with non-trivial copy
   /// assignment (c++) in setter.
-  virtual llvm::Constant *GetCppAtomicObjectSetFunction() = 0;
+  virtual llvm::Constant *GetCppAtomicObjectSetSubprogram() = 0;
   /// API for atomic copying of qualified aggregates with non-trivial copy
   /// assignment (c++) in getter.
-  virtual llvm::Constant *GetCppAtomicObjectGetFunction() = 0;
+  virtual llvm::Constant *GetCppAtomicObjectGetSubprogram() = 0;
   
   /// GetClass - Return a reference to the class for the given
   /// interface decl.
@@ -226,9 +226,9 @@ public:
     llvm_unreachable("autoreleasepool unsupported in this ABI");
   }
   
-  /// EnumerationMutationFunction - Return the function that's called by the
+  /// EnumerationMutationSubprogram - Return the function that's called by the
   /// compiler when a mutation is detected during foreach iteration.
-  virtual llvm::Constant *EnumerationMutationFunction() = 0;
+  virtual llvm::Constant *EnumerationMutationSubprogram() = 0;
 
   virtual void EmitSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                     const ObjCAtSynchronizedStmt &S) = 0;
@@ -270,10 +270,10 @@ public:
   virtual llvm::GlobalVariable *GetClassGlobal(const std::string &Name) = 0;
 
   struct MessageSendInfo {
-    const CGFunctionInfo &CallInfo;
+    const CGSubprogramInfo &CallInfo;
     llvm::PointerType *MessengerType;
 
-    MessageSendInfo(const CGFunctionInfo &callInfo,
+    MessageSendInfo(const CGSubprogramInfo &callInfo,
                     llvm::PointerType *messengerType)
       : CallInfo(callInfo), MessengerType(messengerType) {}
   };

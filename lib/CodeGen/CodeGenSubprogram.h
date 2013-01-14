@@ -1,4 +1,4 @@
-//===-- CodeGenSubprogram.h - Per-Function state for LLVM CodeGen -*- C++ -*-===//
+//===-- CodeGenSubprogram.h - Per-Subprogram state for LLVM CodeGen -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -51,8 +51,8 @@ namespace lfort {
   class Decl;
   class LabelDecl;
   class EnumConstantDecl;
-  class FunctionDecl;
-  class FunctionProtoType;
+  class SubprogramDecl;
+  class SubprogramProtoType;
   class LabelStmt;
   class ObjCContainerDecl;
   class ObjCInterfaceDecl;
@@ -71,7 +71,7 @@ namespace lfort {
 
 namespace CodeGen {
   class CodeGenTypes;
-  class CGFunctionInfo;
+  class CGSubprogramInfo;
   class CGRecordLayout;
   class CGBlockInfo;
   class CGFortranABI;
@@ -568,7 +568,7 @@ public:
   const Decl *CurFuncDecl;
   /// CurCodeDecl - This is the inner-most code context, which includes blocks.
   const Decl *CurCodeDecl;
-  const CGFunctionInfo *CurFnInfo;
+  const CGSubprogramInfo *CurFnInfo;
   QualType FnRetTy;
   llvm::Function *CurFn;
 
@@ -1006,7 +1006,7 @@ public:
       // r-values in C.
       return expr->isGLValue() ||
              expr->getType()->isRecordType() ||
-             expr->getType()->isFunctionType();
+             expr->getType()->isSubprogramType();
     }
 
     static OpaqueValueMappingData bind(CodeGenSubprogram &CGF,
@@ -1204,7 +1204,7 @@ private:
   ///   "work_group_size_hint", and three 32-bit integers X, Y and Z.
   /// - A node for the reqd_work_group_size(X,Y,Z) qualifier contains string 
   ///   "reqd_work_group_size", and three 32-bit integers X, Y and Z.
-  void EmitOpenCLKernelMetadata(const FunctionDecl *FD, 
+  void EmitOpenCLKernelMetadata(const SubprogramDecl *FD, 
                                 llvm::Function *Fn);
 
 public:
@@ -1341,7 +1341,7 @@ public:
   void generateObjCSetterBody(const ObjCImplementationDecl *classImpl,
                               const ObjCPropertyImplDecl *propImpl,
                               llvm::Constant *AtomicHelperFn);
-  bool IndirectObjCSetterArg(const CGFunctionInfo &FI);
+  bool IndirectObjCSetterArg(const CGSubprogramInfo &FI);
   bool IvarTypeWithAggrGCObjects(QualType Ty);
 
   //===--------------------------------------------------------------------===//
@@ -1356,17 +1356,17 @@ public:
                                            llvm::StructType *,
                                            llvm::Constant *BlockVarLayout);
 
-  llvm::Function *GenerateBlockFunction(GlobalDecl GD,
+  llvm::Function *GenerateBlockSubprogram(GlobalDecl GD,
                                         const CGBlockInfo &Info,
                                         const Decl *OuterFuncDecl,
                                         const DeclMapTy &ldm,
                                         bool IsLambdaConversionToBlock);
 
-  llvm::Constant *GenerateCopyHelperFunction(const CGBlockInfo &blockInfo);
-  llvm::Constant *GenerateDestroyHelperFunction(const CGBlockInfo &blockInfo);
-  llvm::Constant *GenerateObjCAtomicSetterCopyHelperFunction(
+  llvm::Constant *GenerateCopyHelperSubprogram(const CGBlockInfo &blockInfo);
+  llvm::Constant *GenerateDestroyHelperSubprogram(const CGBlockInfo &blockInfo);
+  llvm::Constant *GenerateObjCAtomicSetterCopyHelperSubprogram(
                                              const ObjCPropertyImplDecl *PID);
-  llvm::Constant *GenerateObjCAtomicGetterCopyHelperFunction(
+  llvm::Constant *GenerateObjCAtomicGetterCopyHelperSubprogram(
                                              const ObjCPropertyImplDecl *PID);
   llvm::Value *EmitBlockCopyAndAutorelease(llvm::Value *Block, QualType Ty);
 
@@ -1388,41 +1388,41 @@ public:
   llvm::Type *BuildByRefType(const VarDecl *var);
 
   void GenerateCode(GlobalDecl GD, llvm::Function *Fn,
-                    const CGFunctionInfo &FnInfo);
-  void StartFunction(GlobalDecl GD, QualType RetTy,
+                    const CGSubprogramInfo &FnInfo);
+  void StartSubprogram(GlobalDecl GD, QualType RetTy,
                      llvm::Function *Fn,
-                     const CGFunctionInfo &FnInfo,
-                     const FunctionArgList &Args,
+                     const CGSubprogramInfo &FnInfo,
+                     const SubprogramArgList &Args,
                      SourceLocation StartLoc);
 
-  void EmitConstructorBody(FunctionArgList &Args);
-  void EmitDestructorBody(FunctionArgList &Args);
-  void EmitFunctionBody(FunctionArgList &Args);
+  void EmitConstructorBody(SubprogramArgList &Args);
+  void EmitDestructorBody(SubprogramArgList &Args);
+  void EmitSubprogramBody(SubprogramArgList &Args);
 
   void EmitForwardingCallToLambda(const CXXRecordDecl *Lambda,
                                   CallArgList &CallArgs);
-  void EmitLambdaToBlockPointerBody(FunctionArgList &Args);
+  void EmitLambdaToBlockPointerBody(SubprogramArgList &Args);
   void EmitLambdaBlockInvokeBody();
   void EmitLambdaDelegatingInvokeBody(const CXXMethodDecl *MD);
-  void EmitLambdaStaticInvokeFunction(const CXXMethodDecl *MD);
+  void EmitLambdaStaticInvokeSubprogram(const CXXMethodDecl *MD);
 
   /// EmitReturnBlock - Emit the unified return block, trying to avoid its
   /// emission when possible.
   void EmitReturnBlock();
 
-  /// FinishFunction - Complete IR generation of the current function. It is
+  /// FinishSubprogram - Complete IR generation of the current function. It is
   /// legal to call this function even if there is no current insertion point.
-  void FinishFunction(SourceLocation EndLoc=SourceLocation());
+  void FinishSubprogram(SourceLocation EndLoc=SourceLocation());
 
   /// GenerateThunk - Generate a thunk for the given method.
-  void GenerateThunk(llvm::Function *Fn, const CGFunctionInfo &FnInfo,
+  void GenerateThunk(llvm::Function *Fn, const CGSubprogramInfo &FnInfo,
                      GlobalDecl GD, const ThunkInfo &Thunk);
 
-  void GenerateVarArgsThunk(llvm::Function *Fn, const CGFunctionInfo &FnInfo,
+  void GenerateVarArgsThunk(llvm::Function *Fn, const CGSubprogramInfo &FnInfo,
                             GlobalDecl GD, const ThunkInfo &Thunk);
 
   void EmitCtorPrologue(const CXXConstructorDecl *CD, CXXCtorType Type,
-                        FunctionArgList &Args);
+                        SubprogramArgList &Args);
 
   void EmitInitializerForField(FieldDecl *Field, LValue LHS, Expr *Init,
                                ArrayRef<VarDecl *> ArrayIndexes);
@@ -1457,28 +1457,28 @@ public:
   /// order of their construction.
   void EnterDtorCleanups(const CXXDestructorDecl *Dtor, CXXDtorType Type);
 
-  /// ShouldInstrumentFunction - Return true if the current function should be
+  /// ShouldInstrumentSubprogram - Return true if the current function should be
   /// instrumented with __cyg_profile_func_* calls
-  bool ShouldInstrumentFunction();
+  bool ShouldInstrumentSubprogram();
 
-  /// EmitFunctionInstrumentation - Emit LLVM code to call the specified
+  /// EmitSubprogramInstrumentation - Emit LLVM code to call the specified
   /// instrumentation function with the current function and the call site, if
   /// function instrumentation is enabled.
-  void EmitFunctionInstrumentation(const char *Fn);
+  void EmitSubprogramInstrumentation(const char *Fn);
 
   /// EmitMCountInstrumentation - Emit call to .mcount.
   void EmitMCountInstrumentation();
 
-  /// EmitFunctionProlog - Emit the target specific LLVM code to load the
+  /// EmitSubprogramProlog - Emit the target specific LLVM code to load the
   /// arguments for the given function. This is also responsible for naming the
   /// LLVM function arguments.
-  void EmitFunctionProlog(const CGFunctionInfo &FI,
+  void EmitSubprogramProlog(const CGSubprogramInfo &FI,
                           llvm::Function *Fn,
-                          const FunctionArgList &Args);
+                          const SubprogramArgList &Args);
 
-  /// EmitFunctionEpilog - Emit the target specific LLVM code to return the
+  /// EmitSubprogramEpilog - Emit the target specific LLVM code to return the
   /// given temporary.
-  void EmitFunctionEpilog(const CGFunctionInfo &FI);
+  void EmitSubprogramEpilog(const CGSubprogramInfo &FI);
 
   /// EmitStartEHSpec - Emit the start of the exception spec.
   void EmitStartEHSpec(const Decl *D);
@@ -1795,13 +1795,13 @@ public:
 
   void EmitDelegateCXXConstructorCall(const CXXConstructorDecl *Ctor,
                                       CXXCtorType CtorType,
-                                      const FunctionArgList &Args);
+                                      const SubprogramArgList &Args);
   // It's important not to confuse this and the previous function. Delegating
   // constructors are the C++0x feature. The constructor delegate optimization
   // is used to reduce duplication in the base and complete consturctors where
   // they are substantially the same.
   void EmitDelegatingCXXConstructorCall(const CXXConstructorDecl *Ctor,
-                                        const FunctionArgList &Args);
+                                        const SubprogramArgList &Args);
   void EmitCXXConstructorCall(const CXXConstructorDecl *D, CXXCtorType Type,
                               bool ForVirtualBase, llvm::Value *This,
                               CallExpr::const_arg_iterator ArgBeg,
@@ -1840,7 +1840,7 @@ public:
   llvm::Value *EmitCXXNewExpr(const CXXNewExpr *E);
   void EmitCXXDeleteExpr(const CXXDeleteExpr *E);
 
-  void EmitDeleteCall(const FunctionDecl *DeleteFD, llvm::Value *Ptr,
+  void EmitDeleteCall(const SubprogramDecl *DeleteFD, llvm::Value *Ptr,
                       QualType DeleteTy);
 
   llvm::Value* EmitCXXTypeidExpr(const CXXTypeidExpr *E);
@@ -2236,7 +2236,7 @@ public:
   ///
   /// \param TargetDecl - If given, the decl of the function in a direct call;
   /// used to set attributes on the call (noreturn, etc.).
-  RValue EmitCall(const CGFunctionInfo &FnInfo,
+  RValue EmitCall(const CGSubprogramInfo &FnInfo,
                   llvm::Value *Callee,
                   ReturnValueSlot ReturnValue,
                   const CallArgList &Args,
@@ -2293,7 +2293,7 @@ public:
                                 ReturnValueSlot ReturnValue);
 
 
-  RValue EmitBuiltinExpr(const FunctionDecl *FD,
+  RValue EmitBuiltinExpr(const SubprogramDecl *FD,
                          unsigned BuiltinID, const CallExpr *E);
 
   RValue EmitBlockCallExpr(const CallExpr *E, ReturnValueSlot ReturnValue);

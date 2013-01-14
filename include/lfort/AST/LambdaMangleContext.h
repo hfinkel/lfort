@@ -20,12 +20,12 @@
 namespace lfort {
 
 class CXXMethodDecl;
-class FunctionProtoType;
+class SubprogramProtoType;
 
 /// \brief Keeps track of the mangled names of lambda expressions within a
 /// particular context.
 class LambdaMangleContext : public llvm::RefCountedBase<LambdaMangleContext> {
-  llvm::DenseMap<const FunctionProtoType *, unsigned> ManglingNumbers;
+  llvm::DenseMap<const SubprogramProtoType *, unsigned> ManglingNumbers;
   
 public:
   /// \brief Retrieve the mangling number of a new lambda expression with the

@@ -709,9 +709,9 @@ public:
   virtual void AddedCXXImplicitMember(const CXXRecordDecl *RD, const Decl *D);
   virtual void AddedCXXTemplateSpecialization(const ClassTemplateDecl *TD,
                                     const ClassTemplateSpecializationDecl *D);
-  virtual void AddedCXXTemplateSpecialization(const FunctionTemplateDecl *TD,
-                                              const FunctionDecl *D);
-  virtual void CompletedImplicitDefinition(const FunctionDecl *D);
+  virtual void AddedCXXTemplateSpecialization(const SubprogramTemplateDecl *TD,
+                                              const SubprogramDecl *D);
+  virtual void CompletedImplicitDefinition(const SubprogramDecl *D);
   virtual void StaticDataMemberInstantiated(const VarDecl *D);
   virtual void AddedObjCCategoryToInterface(const ObjCCategoryDecl *CatD,
                                             const ObjCInterfaceDecl *IFD);

@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines FunctionScopeInfo and its subclasses, which contain
+// This file defines SubprogramScopeInfo and its subclasses, which contain
 // information about a single function, block, lambda, or method body.
 //
 //===----------------------------------------------------------------------===//
@@ -68,10 +68,10 @@ public:
     
 /// \brief Retains information about a function, method, or block that is
 /// currently being parsed.
-class FunctionScopeInfo {
+class SubprogramScopeInfo {
 protected:
   enum ScopeKind {
-    SK_Function,
+    SK_Subprogram,
     SK_Block,
     SK_Lambda
   };
@@ -193,7 +193,7 @@ public:
 
     // For use in DenseMap.
     // We can't specialize the usual llvm::DenseMapInfo at the end of the file
-    // because by that point the DenseMap in FunctionScopeInfo has already been
+    // because by that point the DenseMap in SubprogramScopeInfo has already been
     // instantiated.
     class DenseMapInfo {
     public:
@@ -292,22 +292,22 @@ public:
           (HasBranchProtectedScope && HasBranchIntoScope);
   }
   
-  FunctionScopeInfo(DiagnosticsEngine &Diag)
-    : Kind(SK_Function),
+  SubprogramScopeInfo(DiagnosticsEngine &Diag)
+    : Kind(SK_Subprogram),
       HasBranchProtectedScope(false),
       HasBranchIntoScope(false),
       HasIndirectGoto(false),
       ObjCShouldCallSuper(false),
       ErrorTrap(Diag) { }
 
-  virtual ~FunctionScopeInfo();
+  virtual ~SubprogramScopeInfo();
 
   /// \brief Clear out the information in this function scope, making it
   /// suitable for reuse.
   void Clear();
 };
 
-class CapturingScopeInfo : public FunctionScopeInfo {
+class CapturingScopeInfo : public SubprogramScopeInfo {
 public:
   enum ImplicitCaptureStyle {
     ImpCap_None, ImpCap_LambdaByval, ImpCap_LambdaByref, ImpCap_Block
@@ -390,7 +390,7 @@ public:
   };
 
   CapturingScopeInfo(DiagnosticsEngine &Diag, ImplicitCaptureStyle Style)
-    : FunctionScopeInfo(Diag), ImpCaptureStyle(Style), CXXThisCaptureIndex(0),
+    : SubprogramScopeInfo(Diag), ImpCaptureStyle(Style), CXXThisCaptureIndex(0),
       HasImplicitReturnType(false)
      {}
 
@@ -451,7 +451,7 @@ public:
     return Captures[Known->second - 1];
   }
 
-  static bool classof(const FunctionScopeInfo *FSI) { 
+  static bool classof(const SubprogramScopeInfo *FSI) { 
     return FSI->Kind == SK_Block || FSI->Kind == SK_Lambda; 
   }
 };
@@ -467,7 +467,7 @@ public:
 
   /// BlockType - The function type of the block, if one was given.
   /// Its return type may be BuiltinType::Dependent.
-  QualType FunctionType;
+  QualType SubprogramType;
 
   BlockScopeInfo(DiagnosticsEngine &Diag, Scope *BlockScope, BlockDecl *Block)
     : CapturingScopeInfo(Diag, ImpCap_Block), TheDecl(Block),
@@ -478,7 +478,7 @@ public:
 
   virtual ~BlockScopeInfo();
 
-  static bool classof(const FunctionScopeInfo *FSI) { 
+  static bool classof(const SubprogramScopeInfo *FSI) { 
     return FSI->Kind == SK_Block; 
   }
 };
@@ -533,24 +533,24 @@ public:
     NumExplicitCaptures = Captures.size();
   }
 
-  static bool classof(const FunctionScopeInfo *FSI) {
+  static bool classof(const SubprogramScopeInfo *FSI) {
     return FSI->Kind == SK_Lambda; 
   }
 };
 
 
-FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy()
+SubprogramScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy()
   : Base(0, false), Property(0) {}
 
-FunctionScopeInfo::WeakObjectProfileTy
-FunctionScopeInfo::WeakObjectProfileTy::getSentinel() {
-  FunctionScopeInfo::WeakObjectProfileTy Result;
+SubprogramScopeInfo::WeakObjectProfileTy
+SubprogramScopeInfo::WeakObjectProfileTy::getSentinel() {
+  SubprogramScopeInfo::WeakObjectProfileTy Result;
   Result.Base.setInt(true);
   return Result;
 }
 
 template <typename ExprT>
-void FunctionScopeInfo::recordUseOfWeak(const ExprT *E, bool IsRead) {
+void SubprogramScopeInfo::recordUseOfWeak(const ExprT *E, bool IsRead) {
   assert(E);
   WeakUseVector &Uses = WeakObjectUses[WeakObjectProfileTy(E)];
   Uses.push_back(WeakUseTy(E, IsRead));

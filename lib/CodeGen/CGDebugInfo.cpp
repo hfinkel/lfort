@@ -114,13 +114,13 @@ llvm::DIDescriptor CGDebugInfo::getContextDescriptor(const Decl *Context) {
   return TheCU;
 }
 
-/// getFunctionName - Get function name for the given FunctionDecl. If the
+/// getSubprogramName - Get function name for the given SubprogramDecl. If the
 /// name is constructred on demand (e.g. C++ destructor) then the name
 /// is stored on the side.
-StringRef CGDebugInfo::getFunctionName(const FunctionDecl *FD) {
-  assert (FD && "Invalid FunctionDecl!");
+StringRef CGDebugInfo::getSubprogramName(const SubprogramDecl *FD) {
+  assert (FD && "Invalid SubprogramDecl!");
   IdentifierInfo *FII = FD->getIdentifier();
-  FunctionTemplateSpecializationInfo *Info
+  SubprogramTemplateSpecializationInfo *Info
     = FD->getTemplateSpecializationInfo();
   if (!Info && FII)
     return FII->getName();
@@ -726,7 +726,7 @@ llvm::DIType CGDebugInfo::CreateType(const TypedefType *Ty, llvm::DIFile Unit) {
     DBuilder.createTypedef(Src, TyDecl->getName(), Unit, Line, TypedefContext);
 }
 
-llvm::DIType CGDebugInfo::CreateType(const FunctionType *Ty,
+llvm::DIType CGDebugInfo::CreateType(const SubprogramType *Ty,
                                      llvm::DIFile Unit) {
   SmallVector<llvm::Value *, 16> EltTys;
 
@@ -735,9 +735,9 @@ llvm::DIType CGDebugInfo::CreateType(const FunctionType *Ty,
 
   // Set up remainder of arguments if there is a prototype.
   // FIXME: IF NOT, HOW IS THIS REPRESENTED?  llvm-gcc doesn't represent '...'!
-  if (isa<FunctionNoProtoType>(Ty))
+  if (isa<SubprogramNoProtoType>(Ty))
     EltTys.push_back(DBuilder.createUnspecifiedParameter());
-  else if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(Ty)) {
+  else if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(Ty)) {
     for (unsigned i = 0, e = FPT->getNumArgs(); i != e; ++i)
       EltTys.push_back(getOrCreateType(FPT->getArgType(i), Unit));
   }
@@ -898,14 +898,14 @@ CollectRecordFields(const RecordDecl *record, llvm::DIFile tunit,
   }
 }
 
-/// getOrCreateMethodType - CXXMethodDecl's type is a FunctionType. This
+/// getOrCreateMethodType - CXXMethodDecl's type is a SubprogramType. This
 /// function type is not updated to include implicit "this" pointer. Use this
 /// routine to get a method type which includes "this" pointer.
 llvm::DIType
 CGDebugInfo::getOrCreateMethodType(const CXXMethodDecl *Method,
                                    llvm::DIFile Unit) {
   llvm::DIType FnTy
-    = getOrCreateType(QualType(Method->getType()->getAs<FunctionProtoType>(),
+    = getOrCreateType(QualType(Method->getType()->getAs<SubprogramProtoType>(),
                                0),
                       Unit);
 
@@ -955,32 +955,32 @@ CGDebugInfo::getOrCreateMethodType(const CXXMethodDecl *Method,
   return DBuilder.createSubroutineType(Unit, EltTypeArray);
 }
 
-/// isFunctionLocalClass - Return true if CXXRecordDecl is defined 
+/// isSubprogramLocalClass - Return true if CXXRecordDecl is defined 
 /// inside a function.
-static bool isFunctionLocalClass(const CXXRecordDecl *RD) {
+static bool isSubprogramLocalClass(const CXXRecordDecl *RD) {
   if (const CXXRecordDecl *NRD = dyn_cast<CXXRecordDecl>(RD->getDeclContext()))
-    return isFunctionLocalClass(NRD);
-  if (isa<FunctionDecl>(RD->getDeclContext()))
+    return isSubprogramLocalClass(NRD);
+  if (isa<SubprogramDecl>(RD->getDeclContext()))
     return true;
   return false;
 }
 
-/// CreateCXXMemberFunction - A helper function to create a DISubprogram for
+/// CreateCXXMemberSubprogram - A helper function to create a DISubprogram for
 /// a single member function GlobalDecl.
 llvm::DISubprogram
-CGDebugInfo::CreateCXXMemberFunction(const CXXMethodDecl *Method,
+CGDebugInfo::CreateCXXMemberSubprogram(const CXXMethodDecl *Method,
                                      llvm::DIFile Unit,
                                      llvm::DIType RecordTy) {
   bool IsCtorOrDtor = 
     isa<CXXConstructorDecl>(Method) || isa<CXXDestructorDecl>(Method);
   
-  StringRef MethodName = getFunctionName(Method);
+  StringRef MethodName = getSubprogramName(Method);
   llvm::DIType MethodTy = getOrCreateMethodType(Method, Unit);
 
   // Since a single ctor/dtor corresponds to multiple functions, it doesn't
   // make sense to give a single ctor/dtor a linkage name.
   StringRef MethodLinkageName;
-  if (!IsCtorOrDtor && !isFunctionLocalClass(Method->getParent()))
+  if (!IsCtorOrDtor && !isSubprogramLocalClass(Method->getParent()))
     MethodLinkageName = CGM.getMangledName(Method);
 
   // Get the location for the method.
@@ -1024,7 +1024,7 @@ CGDebugInfo::CreateCXXMemberFunction(const CXXMethodDecl *Method,
   if (Method->hasPrototype())
     Flags |= llvm::DIDescriptor::FlagPrototyped;
 
-  llvm::DIArray TParamsArray = CollectFunctionTemplateParams(Method, Unit);
+  llvm::DIArray TParamsArray = CollectSubprogramTemplateParams(Method, Unit);
   llvm::DISubprogram SP =
     DBuilder.createMethod(RecordTy, MethodName, MethodLinkageName, 
                           MethodDefUnit, MethodLine,
@@ -1039,11 +1039,11 @@ CGDebugInfo::CreateCXXMemberFunction(const CXXMethodDecl *Method,
   return SP;
 }
 
-/// CollectCXXMemberFunctions - A helper function to collect debug info for
+/// CollectCXXMemberSubprograms - A helper function to collect debug info for
 /// C++ member functions. This is used while creating debug info entry for 
 /// a Record.
 void CGDebugInfo::
-CollectCXXMemberFunctions(const CXXRecordDecl *RD, llvm::DIFile Unit,
+CollectCXXMemberSubprograms(const CXXRecordDecl *RD, llvm::DIFile Unit,
                           SmallVectorImpl<llvm::Value *> &EltTys,
                           llvm::DIType RecordTy) {
 
@@ -1057,11 +1057,11 @@ CollectCXXMemberFunctions(const CXXRecordDecl *RD, llvm::DIFile Unit,
       continue;
 
     if (const CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D))
-      EltTys.push_back(CreateCXXMemberFunction(Method, Unit, RecordTy));
-    else if (FunctionTemplateDecl *FTD = dyn_cast<FunctionTemplateDecl>(D))
-      for (FunctionTemplateDecl::spec_iterator SI = FTD->spec_begin(),
+      EltTys.push_back(CreateCXXMemberSubprogram(Method, Unit, RecordTy));
+    else if (SubprogramTemplateDecl *FTD = dyn_cast<SubprogramTemplateDecl>(D))
+      for (SubprogramTemplateDecl::spec_iterator SI = FTD->spec_begin(),
              SE = FTD->spec_end(); SI != SE; ++SI)
-        EltTys.push_back(CreateCXXMemberFunction(cast<CXXMethodDecl>(*SI), Unit,
+        EltTys.push_back(CreateCXXMemberSubprogram(cast<CXXMethodDecl>(*SI), Unit,
                                                  RecordTy));
   }
 }                                 
@@ -1152,12 +1152,12 @@ CollectTemplateParams(const TemplateParameterList *TPList,
   return DBuilder.getOrCreateArray(TemplateParams);
 }
 
-/// CollectFunctionTemplateParams - A helper function to collect debug
+/// CollectSubprogramTemplateParams - A helper function to collect debug
 /// info for function template parameters.
 llvm::DIArray CGDebugInfo::
-CollectFunctionTemplateParams(const FunctionDecl *FD, llvm::DIFile Unit) {
+CollectSubprogramTemplateParams(const SubprogramDecl *FD, llvm::DIFile Unit) {
   if (FD->getTemplatedKind() ==
-      FunctionDecl::TK_FunctionTemplateSpecialization) {
+      SubprogramDecl::TK_SubprogramTemplateSpecialization) {
     const TemplateParameterList *TList =
       FD->getTemplateSpecializationInfo()->getTemplate()
       ->getTemplateParameters();
@@ -1190,7 +1190,7 @@ llvm::DIType CGDebugInfo::getOrCreateVTablePtrType(llvm::DIFile Unit) {
 
   ASTContext &Context = CGM.getContext();
 
-  /* Function type */
+  /* Subprogram type */
   llvm::Value *STy = getOrCreateType(Context.IntTy, Unit);
   llvm::DIArray SElements = DBuilder.getOrCreateArray(STy);
   llvm::DIType SubTy = DBuilder.createSubroutineType(Unit, SElements);
@@ -1300,7 +1300,7 @@ llvm::DIType CGDebugInfo::CreateType(const RecordType *Ty) {
   CollectRecordFields(RD, DefUnit, EltTys, FwdDecl);
   llvm::DIArray TParamsArray;
   if (CXXDecl) {
-    CollectCXXMemberFunctions(CXXDecl, DefUnit, EltTys, FwdDecl);
+    CollectCXXMemberSubprograms(CXXDecl, DefUnit, EltTys, FwdDecl);
     CollectCXXFriends(CXXDecl, DefUnit, EltTys, FwdDecl);
     if (const ClassTemplateSpecializationDecl *TSpecial
         = dyn_cast<ClassTemplateSpecializationDecl>(RD))
@@ -1592,7 +1592,7 @@ llvm::DIType CGDebugInfo::CreateType(const MemberPointerType *Ty,
   QualType PointerDiffTy = CGM.getContext().getPointerDiffType();
   llvm::DIType PointerDiffDITy = getOrCreateType(PointerDiffTy, U);
   
-  if (!Ty->getPointeeType()->isFunctionType()) {
+  if (!Ty->getPointeeType()->isSubprogramType()) {
     // We have a data member pointer type.
     return PointerDiffDITy;
   }
@@ -1837,9 +1837,9 @@ llvm::DIType CGDebugInfo::CreateTypeNode(QualType Ty, llvm::DIFile Unit) {
     return CreateType(cast<RecordType>(Ty));
   case Type::Enum:
     return CreateEnumType(cast<EnumType>(Ty)->getDecl());
-  case Type::FunctionProto:
-  case Type::FunctionNoProto:
-    return CreateType(cast<FunctionType>(Ty), Unit);
+  case Type::SubprogramProto:
+  case Type::SubprogramNoProto:
+    return CreateType(cast<SubprogramType>(Ty), Unit);
   case Type::ConstantArray:
   case Type::VariableArray:
   case Type::IncompleteArray:
@@ -2007,16 +2007,16 @@ llvm::DIType CGDebugInfo::CreateMemberType(llvm::DIFile Unit, QualType FType,
   return Ty;
 }
 
-/// getFunctionDeclaration - Return debug info descriptor to describe method
+/// getSubprogramDeclaration - Return debug info descriptor to describe method
 /// declaration for the given method definition.
-llvm::DISubprogram CGDebugInfo::getFunctionDeclaration(const Decl *D) {
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+llvm::DISubprogram CGDebugInfo::getSubprogramDeclaration(const Decl *D) {
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD) return llvm::DISubprogram();
 
   // Setup context.
   getContextDescriptor(cast<Decl>(D->getDeclContext()));
 
-  llvm::DenseMap<const FunctionDecl *, llvm::WeakVH>::iterator
+  llvm::DenseMap<const SubprogramDecl *, llvm::WeakVH>::iterator
     MI = SPCache.find(FD->getCanonicalDecl());
   if (MI != SPCache.end()) {
     llvm::Value *V = MI->second;
@@ -2025,10 +2025,10 @@ llvm::DISubprogram CGDebugInfo::getFunctionDeclaration(const Decl *D) {
       return SP;
   }
 
-  for (FunctionDecl::redecl_iterator I = FD->redecls_begin(),
+  for (SubprogramDecl::redecl_iterator I = FD->redecls_begin(),
          E = FD->redecls_end(); I != E; ++I) {
-    const FunctionDecl *NextFD = *I;
-    llvm::DenseMap<const FunctionDecl *, llvm::WeakVH>::iterator
+    const SubprogramDecl *NextFD = *I;
+    llvm::DenseMap<const SubprogramDecl *, llvm::WeakVH>::iterator
       MI = SPCache.find(NextFD->getCanonicalDecl());
     if (MI != SPCache.end()) {
       llvm::Value *V = MI->second;
@@ -2040,9 +2040,9 @@ llvm::DISubprogram CGDebugInfo::getFunctionDeclaration(const Decl *D) {
   return llvm::DISubprogram();
 }
 
-// getOrCreateFunctionType - Construct DIType. If it is a c++ method, include
+// getOrCreateSubprogramType - Construct DIType. If it is a c++ method, include
 // implicit parameter "this".
-llvm::DIType CGDebugInfo::getOrCreateFunctionType(const Decl *D,
+llvm::DIType CGDebugInfo::getOrCreateSubprogramType(const Decl *D,
                                                   QualType FnType,
                                                   llvm::DIFile F) {
 
@@ -2071,8 +2071,8 @@ llvm::DIType CGDebugInfo::getOrCreateFunctionType(const Decl *D,
   return getOrCreateType(FnType, F);
 }
 
-/// EmitFunctionStart - Constructs the debug code for entering a function.
-void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
+/// EmitSubprogramStart - Constructs the debug code for entering a function.
+void CGDebugInfo::EmitSubprogramStart(GlobalDecl GD, QualType FnType,
                                     llvm::Function *Fn,
                                     CGBuilderTy &Builder) {
 
@@ -2082,7 +2082,7 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
   FnBeginRegionCount.push_back(LexicalBlockStack.size());
 
   const Decl *D = GD.getDecl();
-  // Function may lack declaration in source code if it is created by LFort
+  // Subprogram may lack declaration in source code if it is created by LFort
   // CodeGen (examples: _GLOBAL__I_a, __cxx_global_array_dtor, thunk).
   bool HasDecl = (D != 0);
   // Use the location of the declaration.
@@ -2097,9 +2097,9 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
   if (!HasDecl) {
     // Use llvm function name.
     Name = Fn->getName();
-  } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // If there is a DISubprogram for this function available then use it.
-    llvm::DenseMap<const FunctionDecl *, llvm::WeakVH>::iterator
+    llvm::DenseMap<const SubprogramDecl *, llvm::WeakVH>::iterator
       FI = SPCache.find(FD->getCanonicalDecl());
     if (FI != SPCache.end()) {
       llvm::Value *V = FI->second;
@@ -2111,7 +2111,7 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
         return;
       }
     }
-    Name = getFunctionName(FD);
+    Name = getSubprogramName(FD);
     // Use mangled name as linkage name for c/c++ functions.
     if (FD->hasPrototype()) {
       LinkageName = CGM.getMangledName(GD);
@@ -2130,7 +2130,7 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
         FDContext = getContextDescriptor(cast<Decl>(RDecl->getDeclContext()));
 
       // Collect template parameters.
-      TParamsArray = CollectFunctionTemplateParams(FD, Unit);
+      TParamsArray = CollectSubprogramTemplateParams(FD, Unit);
     }
   } else if (const ObjCMethodDecl *OMD = dyn_cast<ObjCMethodDecl>(D)) {
     Name = getObjCMethodName(OMD);
@@ -2151,8 +2151,8 @@ void CGDebugInfo::EmitFunctionStart(GlobalDecl GD, QualType FnType,
   llvm::DISubprogram SPDecl;
   if (HasDecl &&
       CGM.getCodeGenOpts().getDebugInfo() >= CodeGenOptions::LimitedDebugInfo) {
-    DIFnType = getOrCreateFunctionType(D, FnType, Unit);
-    SPDecl = getFunctionDeclaration(D);
+    DIFnType = getOrCreateSubprogramType(D, FnType, Unit);
+    SPDecl = getSubprogramDeclaration(D);
   } else {
     // Create fake but valid subroutine type. Otherwise
     // llvm::DISubprogram::Verify() would return false, and
@@ -2243,8 +2243,8 @@ void CGDebugInfo::EmitLexicalBlockEnd(CGBuilderTy &Builder, SourceLocation Loc) 
   LexicalBlockStack.pop_back();
 }
 
-/// EmitFunctionEnd - Constructs the debug code for exiting a function.
-void CGDebugInfo::EmitFunctionEnd(CGBuilderTy &Builder) {
+/// EmitSubprogramEnd - Constructs the debug code for exiting a function.
+void CGDebugInfo::EmitSubprogramEnd(CGBuilderTy &Builder) {
   assert(!LexicalBlockStack.empty() && "Region stack mismatch, stack empty!");
   unsigned RCount = FnBeginRegionCount.back();
   assert(RCount <= LexicalBlockStack.size() && "Region stack mismatch");
@@ -2730,7 +2730,7 @@ void CGDebugInfo::EmitGlobalVariable(llvm::GlobalVariable *Var,
   }
   StringRef DeclName = D->getName();
   StringRef LinkageName;
-  if (D->getDeclContext() && !isa<FunctionDecl>(D->getDeclContext())
+  if (D->getDeclContext() && !isa<SubprogramDecl>(D->getDeclContext())
       && !isa<ObjCMethodDecl>(D->getDeclContext()))
     LinkageName = Var->getName();
   if (LinkageName == DeclName)

@@ -1674,13 +1674,13 @@ AccessSpecifier Parser::getAccessSpecifierIfPresent() const {
 /// \brief If the given declarator has any parts for which parsing has to be
 /// delayed, e.g., default arguments, create a late-parsed method declaration
 /// record to handle the parsing at the end of the class definition.
-void Parser::HandleMemberFunctionDeclDelays(Declarator& DeclaratorInfo,
+void Parser::HandleMemberSubprogramDeclDelays(Declarator& DeclaratorInfo,
                                             Decl *ThisDecl) {
   // We just declared a member function. If this member function
   // has any default arguments, we'll need to parse them later.
   LateParsedMethodDeclaration *LateMethod = 0;
-  DeclaratorChunk::FunctionTypeInfo &FTI
-    = DeclaratorInfo.getFunctionTypeInfo();
+  DeclaratorChunk::SubprogramTypeInfo &FTI
+    = DeclaratorInfo.getSubprogramTypeInfo();
 
   for (unsigned ParamIdx = 0; ParamIdx < FTI.NumArgs; ++ParamIdx) {
     if (LateMethod || FTI.ArgInfo[ParamIdx].DefaultArgTokens) {
@@ -2004,7 +2004,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
     // MSVC permits pure specifier on inline functions declared at class scope.
     // Hence check for =0 before checking for function definition.
     if (getLangOpts().MicrosoftExt && Tok.is(tok::equal) &&
-        DeclaratorInfo.isFunctionDeclarator() && 
+        DeclaratorInfo.isSubprogramDeclarator() && 
         NextToken().is(tok::numeric_constant)) {
       EqualLoc = ConsumeToken();
       Init = ParseInitializer();
@@ -2014,7 +2014,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
         HasInitializer = true;
     }
 
-    FunctionDefinitionKind DefinitionKind = FDK_Declaration;
+    SubprogramDefinitionKind DefinitionKind = FDK_Declaration;
     // function-definition:
     //
     // In C++11, a non-function declarator followed by an open brace is a
@@ -2022,7 +2022,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
     // erroneous function definition.
     if (Tok.is(tok::l_brace) && !getLangOpts().CPlusPlus11) {
       DefinitionKind = FDK_Definition;
-    } else if (DeclaratorInfo.isFunctionDeclarator()) {
+    } else if (DeclaratorInfo.isSubprogramDeclarator()) {
       if (Tok.is(tok::l_brace) || Tok.is(tok::colon) || Tok.is(tok::kw_try)) {
         DefinitionKind = FDK_Definition;
       } else if (Tok.is(tok::equal)) {
@@ -2036,7 +2036,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
 
     // C++11 [dcl.attr.grammar] p4: If an attribute-specifier-seq appertains 
     // to a friend declaration, that declaration shall be a definition.
-    if (DeclaratorInfo.isFunctionDeclarator() && 
+    if (DeclaratorInfo.isSubprogramDeclarator() && 
         DefinitionKind != FDK_Definition && DS.isFriendSpecified()) {
       // Diagnose attributes that appear before decl specifier:
       // [[]] friend int foo();
@@ -2044,7 +2044,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
     }
 
     if (DefinitionKind) {
-      if (!DeclaratorInfo.isFunctionDeclarator()) {
+      if (!DeclaratorInfo.isSubprogramDeclarator()) {
         Diag(DeclaratorInfo.getIdentifierLoc(), diag::err_func_def_no_params);
         ConsumeBrace();
         SkipUntil(tok::r_brace, /*StopAtSemi*/false);
@@ -2077,7 +2077,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
 
       // Consume the ';' - it's optional unless we have a delete or default
       if (Tok.is(tok::semi))
-        ConsumeExtraSemi(AfterMemberFunctionDefinition);
+        ConsumeExtraSemi(AfterMemberSubprogramDefinition);
 
       return;
     }
@@ -2128,7 +2128,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
         SkipUntil(tok::comma, true, true);
       } else {
         HasInitializer = true;
-        if (!DeclaratorInfo.isDeclarationOfFunction() &&
+        if (!DeclaratorInfo.isDeclarationOfSubprogram() &&
             DeclaratorInfo.getDeclSpec().getStorageClassSpec()
               != DeclSpec::SCS_static &&
             DeclaratorInfo.getDeclSpec().getStorageClassSpec()
@@ -2159,7 +2159,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
       }
 
       // TODO: handle initializers, bitfields, 'delete'
-      ThisDecl = Actions.ActOnFriendFunctionDecl(getCurScope(), DeclaratorInfo,
+      ThisDecl = Actions.ActOnFriendSubprogramDecl(getCurScope(), DeclaratorInfo,
                                                  TemplateParams);
     } else {
       ThisDecl = Actions.ActOnCXXMemberDeclarator(getCurScope(), AS,
@@ -2205,7 +2205,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
       // Normal initializer.
       if (!Init.isUsable())
         Init = ParseCXXMemberInitializer(ThisDecl,
-                 DeclaratorInfo.isDeclarationOfFunction(), EqualLoc);
+                 DeclaratorInfo.isDeclarationOfSubprogram(), EqualLoc);
       
       if (Init.isInvalid())
         SkipUntil(tok::comma, true, true);
@@ -2223,10 +2223,10 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
       DeclsInGroup.push_back(ThisDecl);
     }
     
-    if (ThisDecl && DeclaratorInfo.isFunctionDeclarator() &&
+    if (ThisDecl && DeclaratorInfo.isSubprogramDeclarator() &&
         DeclaratorInfo.getDeclSpec().getStorageClassSpec()
           != DeclSpec::SCS_typedef) {
-      HandleMemberFunctionDeclDelays(DeclaratorInfo, ThisDecl);
+      HandleMemberSubprogramDeclDelays(DeclaratorInfo, ThisDecl);
     }
 
     DeclaratorInfo.complete(ThisDecl);
@@ -2300,7 +2300,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
 ///
 /// Prior to C++0x, the assignment-expression in an initializer-clause must
 /// be a constant-expression.
-ExprResult Parser::ParseCXXMemberInitializer(Decl *D, bool IsFunction,
+ExprResult Parser::ParseCXXMemberInitializer(Decl *D, bool IsSubprogram,
                                              SourceLocation &EqualLoc) {
   assert((Tok.is(tok::equal) || Tok.is(tok::l_brace))
          && "Data member initializer not starting with '=' or '{'");
@@ -2317,9 +2317,9 @@ ExprResult Parser::ParseCXXMemberInitializer(Decl *D, bool IsFunction,
       // An initializer of '= delete p, foo' will never be parsed, because
       // a top-level comma always ends the initializer expression.
       const Token &Next = NextToken();
-      if (IsFunction || Next.is(tok::semi) || Next.is(tok::comma) ||
+      if (IsSubprogram || Next.is(tok::semi) || Next.is(tok::comma) ||
            Next.is(tok::eof)) {
-        if (IsFunction)
+        if (IsSubprogram)
           Diag(ConsumeToken(), diag::err_default_delete_in_multiple_declaration)
             << 1 /* delete */;
         else
@@ -2327,7 +2327,7 @@ ExprResult Parser::ParseCXXMemberInitializer(Decl *D, bool IsFunction,
         return ExprResult();
       }
     } else if (Tok.is(tok::kw_default)) {
-      if (IsFunction)
+      if (IsSubprogram)
         Diag(Tok, diag::err_default_delete_in_multiple_declaration)
           << 0 /* default */;
       else

@@ -38,8 +38,8 @@ bool CodeGenVTables::ShouldEmitVTableInThisTU(const CXXRecordDecl *RD) {
   if (TSK == TSK_ExplicitInstantiationDeclaration)
     return false;
 
-  const CXXMethodDecl *KeyFunction = CGM.getContext().getKeyFunction(RD);
-  if (!KeyFunction)
+  const CXXMethodDecl *KeySubprogram = CGM.getContext().getKeySubprogram(RD);
+  if (!KeySubprogram)
     return true;
 
   // Itanium C++ ABI, 5.2.6 Instantiated Templates:
@@ -55,7 +55,7 @@ bool CodeGenVTables::ShouldEmitVTableInThisTU(const CXXRecordDecl *RD) {
   if (CGM.getCodeGenOpts().OptimizationLevel && !CGM.getLangOpts().AppleKext)
     return true;
 
-  return KeyFunction->hasBody();
+  return KeySubprogram->hasBody();
 }
 
 llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD, 
@@ -72,8 +72,8 @@ llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
     getFortranABI().getMangleContext().mangleThunk(MD, Thunk, Out);
   Out.flush();
 
-  llvm::Type *Ty = getTypes().GetFunctionTypeForVTable(GD);
-  return GetOrCreateLLVMFunction(Name, Ty, GD, /*ForVTable=*/true);
+  llvm::Type *Ty = getTypes().GetSubprogramTypeForVTable(GD);
+  return GetOrCreateLLVMSubprogram(Name, Ty, GD, /*ForVTable=*/true);
 }
 
 static llvm::Value *PerformTypeAdjustment(CodeGenSubprogram &CGF,
@@ -163,7 +163,7 @@ static void setThunkVisibility(CodeGenModule &CGM, const CXXMethodDecl *MD,
   // If there's an explicit definition, and that definition is
   // out-of-line, then we can't assume that all users will have a
   // definition to emit.
-  const FunctionDecl *Def = 0;
+  const SubprogramDecl *Def = 0;
   if (MD->hasBody(Def) && Def->isOutOfLine())
     return;
 
@@ -241,16 +241,16 @@ static RValue PerformReturnAdjustment(CodeGenSubprogram &CGF,
 //           better for codesize if the definition is long.
 void CodeGenSubprogram::GenerateVarArgsThunk(
                                       llvm::Function *Fn,
-                                      const CGFunctionInfo &FnInfo,
+                                      const CGSubprogramInfo &FnInfo,
                                       GlobalDecl GD, const ThunkInfo &Thunk) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
-  const FunctionProtoType *FPT = MD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = MD->getType()->getAs<SubprogramProtoType>();
   QualType ResultType = FPT->getResultType();
 
   // Get the original function
   assert(FnInfo.isVariadic());
-  llvm::Type *Ty = CGM.getTypes().GetFunctionType(FnInfo);
-  llvm::Value *Callee = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
+  llvm::Type *Ty = CGM.getTypes().GetSubprogramType(FnInfo);
+  llvm::Value *Callee = CGM.GetAddrOfSubprogram(GD, Ty, /*ForVTable=*/true);
   llvm::Function *BaseFn = cast<llvm::Function>(Callee);
 
   // Clone to thunk.
@@ -310,37 +310,37 @@ void CodeGenSubprogram::GenerateVarArgsThunk(
 }
 
 void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
-                                    const CGFunctionInfo &FnInfo,
+                                    const CGSubprogramInfo &FnInfo,
                                     GlobalDecl GD, const ThunkInfo &Thunk) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
-  const FunctionProtoType *FPT = MD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = MD->getType()->getAs<SubprogramProtoType>();
   QualType ResultType = FPT->getResultType();
   QualType ThisType = MD->getThisType(getContext());
 
-  FunctionArgList FunctionArgs;
+  SubprogramArgList SubprogramArgs;
 
   // FIXME: It would be nice if more of this code could be shared with 
   // CodeGenSubprogram::GenerateCode.
 
   // Create the implicit 'this' parameter declaration.
   CurGD = GD;
-  CGM.getFortranABI().BuildInstanceFunctionParams(*this, ResultType, FunctionArgs);
+  CGM.getFortranABI().BuildInstanceSubprogramParams(*this, ResultType, SubprogramArgs);
 
   // Add the rest of the parameters.
-  for (FunctionDecl::param_const_iterator I = MD->param_begin(),
+  for (SubprogramDecl::param_const_iterator I = MD->param_begin(),
        E = MD->param_end(); I != E; ++I) {
     ParmVarDecl *Param = *I;
     
-    FunctionArgs.push_back(Param);
+    SubprogramArgs.push_back(Param);
   }
 
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
 
-  StartFunction(GlobalDecl(), ResultType, Fn, FnInfo, FunctionArgs,
+  StartSubprogram(GlobalDecl(), ResultType, Fn, FnInfo, SubprogramArgs,
                 SourceLocation());
 
-  CGM.getFortranABI().EmitInstanceFunctionProlog(*this);
+  CGM.getFortranABI().EmitInstanceSubprogramProlog(*this);
   CXXThisValue = FortranABIThisValue;
 
   // Adjust the 'this' pointer if necessary.
@@ -356,7 +356,7 @@ void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
   CallArgs.add(RValue::get(AdjustedThisPtr), ThisType);
 
   // Add the rest of the parameters.
-  for (FunctionDecl::param_const_iterator I = MD->param_begin(),
+  for (SubprogramDecl::param_const_iterator I = MD->param_begin(),
        E = MD->param_end(); I != E; ++I) {
     ParmVarDecl *param = *I;
     EmitDelegateCallArg(CallArgs, param);
@@ -364,11 +364,11 @@ void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
 
   // Get our callee.
   llvm::Type *Ty =
-    CGM.getTypes().GetFunctionType(CGM.getTypes().arrangeGlobalDeclaration(GD));
-  llvm::Value *Callee = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
+    CGM.getTypes().GetSubprogramType(CGM.getTypes().arrangeGlobalDeclaration(GD));
+  llvm::Value *Callee = CGM.GetAddrOfSubprogram(GD, Ty, /*ForVTable=*/true);
 
 #ifndef NDEBUG
-  const CGFunctionInfo &CallFnInfo =
+  const CGSubprogramInfo &CallFnInfo =
     CGM.getTypes().arrangeCXXMethodCall(CallArgs, FPT,
                                        RequiredArgs::forPrototypePlus(FPT, 1));
   assert(CallFnInfo.getRegParm() == FnInfo.getRegParm() &&
@@ -403,10 +403,10 @@ void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
   // Disable the final ARC autorelease.
   AutoreleaseResult = false;
 
-  FinishFunction();
+  FinishSubprogram();
 
   // Set the right linkage.
-  CGM.setFunctionLinkage(MD, Fn);
+  CGM.setSubprogramLinkage(MD, Fn);
   
   // Set the right visibility.
   setThunkVisibility(CGM, MD, Thunk, Fn);
@@ -415,7 +415,7 @@ void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
 void CodeGenVTables::EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk, 
                                bool UseAvailableExternallyLinkage)
 {
-  const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(GD);
+  const CGSubprogramInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(GD);
 
   // FIXME: re-use FnInfo in this computation.
   llvm::Constant *Entry = CGM.GetAddrOfThunk(GD, Thunk);
@@ -429,7 +429,7 @@ void CodeGenVTables::EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk,
   // There's already a declaration with the same name, check if it has the same
   // type or if we need to replace it.
   if (cast<llvm::GlobalValue>(Entry)->getType()->getElementType() != 
-      CGM.getTypes().GetFunctionTypeForVTable(GD)) {
+      CGM.getTypes().GetSubprogramTypeForVTable(GD)) {
     llvm::GlobalValue *OldThunkFn = cast<llvm::GlobalValue>(Entry);
     
     // If the types mismatch then we have to rewrite the definition.
@@ -461,14 +461,14 @@ void CodeGenVTables::EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk,
 
     // If a function has a body, it should have available_externally linkage.
     assert(ThunkFn->hasAvailableExternallyLinkage() &&
-           "Function should have available_externally linkage!");
+           "Subprogram should have available_externally linkage!");
 
     // Change the linkage.
-    CGM.setFunctionLinkage(cast<CXXMethodDecl>(GD.getDecl()), ThunkFn);
+    CGM.setSubprogramLinkage(cast<CXXMethodDecl>(GD.getDecl()), ThunkFn);
     return;
   }
 
-  CGM.SetLLVMFunctionAttributesForDefinition(GD.getDecl(), ThunkFn);
+  CGM.SetLLVMSubprogramAttributesForDefinition(GD.getDecl(), ThunkFn);
 
   if (ThunkFn->isVarArg()) {
     // Varargs thunks are special; we can't just generate a call because
@@ -496,7 +496,7 @@ void CodeGenVTables::MaybeEmitThunkAvailableExternally(GlobalDecl GD,
   // We can't emit thunks for member functions with incomplete types.
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
   if (!CGM.getTypes().isFuncTypeConvertible(
-                                cast<FunctionType>(MD->getType().getTypePtr())))
+                                cast<SubprogramType>(MD->getType().getTypePtr())))
     return;
 
   EmitThunk(GD, Thunk, /*UseAvailableExternallyLinkage=*/true);
@@ -565,7 +565,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
     case VTableComponent::CK_RTTI:
       Init = llvm::ConstantExpr::getBitCast(RTTI, Int8PtrTy);
       break;
-    case VTableComponent::CK_FunctionPointer:
+    case VTableComponent::CK_SubprogramPointer:
     case VTableComponent::CK_CompleteDtorPointer:
     case VTableComponent::CK_DeletingDtorPointer: {
       GlobalDecl GD;
@@ -574,8 +574,8 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
       switch (Component.getKind()) {
       default:
         llvm_unreachable("Unexpected vtable component kind");
-      case VTableComponent::CK_FunctionPointer:
-        GD = Component.getFunctionDecl();
+      case VTableComponent::CK_SubprogramPointer:
+        GD = Component.getSubprogramDecl();
         break;
       case VTableComponent::CK_CompleteDtorPointer:
         GD = GlobalDecl(Component.getDestructorDecl(), Dtor_Complete);
@@ -591,7 +591,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
           llvm::FunctionType *Ty = 
             llvm::FunctionType::get(CGM.VoidTy, /*isVarArg=*/false);
           StringRef PureCallName = CGM.getFortranABI().GetPureVirtualCallName();
-          PureVirtualFn = CGM.CreateRuntimeFunction(Ty, PureCallName);
+          PureVirtualFn = CGM.CreateRuntimeSubprogram(Ty, PureCallName);
           PureVirtualFn = llvm::ConstantExpr::getBitCast(PureVirtualFn,
                                                          CGM.Int8PtrTy);
         }
@@ -602,7 +602,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
             llvm::FunctionType::get(CGM.VoidTy, /*isVarArg=*/false);
           StringRef DeletedCallName =
             CGM.getFortranABI().GetDeletedVirtualCallName();
-          DeletedVirtualFn = CGM.CreateRuntimeFunction(Ty, DeletedCallName);
+          DeletedVirtualFn = CGM.CreateRuntimeSubprogram(Ty, DeletedCallName);
           DeletedVirtualFn = llvm::ConstantExpr::getBitCast(DeletedVirtualFn,
                                                          CGM.Int8PtrTy);
         }
@@ -618,9 +618,9 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
 
           NextVTableThunkIndex++;
         } else {
-          llvm::Type *Ty = CGM.getTypes().GetFunctionTypeForVTable(GD);
+          llvm::Type *Ty = CGM.getTypes().GetSubprogramTypeForVTable(GD);
         
-          Init = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
+          Init = CGM.GetAddrOfSubprogram(GD, Ty, /*ForVTable=*/true);
         }
 
         Init = llvm::ConstantExpr::getBitCast(Init, Int8PtrTy);
@@ -628,7 +628,7 @@ CodeGenVTables::CreateVTableInitializer(const CXXRecordDecl *RD,
       break;
     }
 
-    case VTableComponent::CK_UnusedFunctionPointer:
+    case VTableComponent::CK_UnusedSubprogramPointer:
       Init = llvm::ConstantExpr::getNullValue(Int8PtrTy);
       break;
     };

@@ -116,10 +116,10 @@ public:
   /// hasConjuredSymbol - If this SVal wraps a conjured symbol, return true;
   bool hasConjuredSymbol() const;
 
-  /// getAsFunctionDecl - If this SVal is a MemRegionVal and wraps a
-  /// CodeTextRegion wrapping a FunctionDecl, return that FunctionDecl.
+  /// getAsSubprogramDecl - If this SVal is a MemRegionVal and wraps a
+  /// CodeTextRegion wrapping a SubprogramDecl, return that SubprogramDecl.
   /// Otherwise return 0.
-  const FunctionDecl *getAsFunctionDecl() const;
+  const SubprogramDecl *getAsSubprogramDecl() const;
 
   /// If this SVal is a location (subclasses Loc) and
   /// wraps a symbol, return that SymbolRef.  Otherwise return 0.

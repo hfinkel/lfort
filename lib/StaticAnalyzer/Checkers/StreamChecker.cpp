@@ -104,8 +104,8 @@ REGISTER_MAP_WITH_PROGRAMSTATE(StreamMap, SymbolRef, StreamState)
 
 
 bool StreamChecker::evalCall(const CallExpr *CE, CheckerContext &C) const {
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
-  if (!FD || FD->getKind() != Decl::Function)
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
+  if (!FD || FD->getKind() != Decl::Subprogram)
     return false;
 
   ASTContext &Ctx = C.getASTContext();

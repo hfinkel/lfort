@@ -19,7 +19,7 @@
 #include "lfort/Analysis/AnalysisContext.h"
 #include "lfort/StaticAnalyzer/Core/PathSensitive/BlockCounter.h"
 #include "lfort/StaticAnalyzer/Core/PathSensitive/ExplodedGraph.h"
-#include "lfort/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SubprogramSummary.h"
 #include "lfort/StaticAnalyzer/Core/PathSensitive/WorkList.h"
 #include "llvm/ADT/OwningPtr.h"
 
@@ -47,7 +47,7 @@ class CoreEngine {
   friend class CommonNodeBuilder;
   friend class IndirectGotoNodeBuilder;
   friend class SwitchNodeBuilder;
-  friend class EndOfFunctionNodeBuilder;
+  friend class EndOfSubprogramNodeBuilder;
 public:
   typedef std::vector<std::pair<BlockEdge, const ExplodedNode*> >
             BlocksExhausted;
@@ -82,7 +82,7 @@ private:
 
   /// The information about functions shared by the whole translation unit.
   /// (This data is owned by AnalysisConsumer.)
-  FunctionSummariesTy *FunctionSummaries;
+  SubprogramSummariesTy *SubprogramSummaries;
 
   void generateNode(const ProgramPoint &Loc,
                     ProgramStateRef State,
@@ -105,11 +105,11 @@ private:
 public:
   /// Construct a CoreEngine object to analyze the provided CFG.
   CoreEngine(SubEngine& subengine,
-             FunctionSummariesTy *FS)
+             SubprogramSummariesTy *FS)
     : SubEng(subengine), G(new ExplodedGraph()),
       WList(WorkList::makeDFS()),
       BCounterFactory(G->getAllocator()),
-      FunctionSummaries(FS){}
+      SubprogramSummaries(FS){}
 
   /// getGraph - Returns the exploded graph.
   ExplodedGraph& getGraph() { return *G.get(); }
@@ -133,7 +133,7 @@ public:
   void dispatchWorkItem(ExplodedNode* Pred, ProgramPoint Loc,
                         const WorkListUnit& WU);
 
-  // Functions for external checking of whether we have unfinished work
+  // Subprograms for external checking of whether we have unfinished work
   bool wasBlockAborted() const { return !blocksAborted.empty(); }
   bool wasBlocksExhausted() const { return !blocksExhausted.empty(); }
   bool hasWorkRemaining() const { return wasBlocksExhausted() || 
@@ -170,7 +170,7 @@ public:
 
   /// \brief enqueue the nodes corresponding to the end of function onto the
   /// end of path / work list.
-  void enqueueEndOfFunction(ExplodedNodeSet &Set);
+  void enqueueEndOfSubprogram(ExplodedNodeSet &Set);
 
   /// \brief Enqueue a single node created as a result of statement processing.
   void enqueueStmtNode(ExplodedNode *N, const CFGBlock *Block, unsigned Idx);

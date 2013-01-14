@@ -25,7 +25,7 @@ CXXRecordDecl *Sema::createLambdaClosureType(SourceRange IntroducerRange,
                                              TypeSourceInfo *Info,
                                              bool KnownDependent) {
   DeclContext *DC = CurContext;
-  while (!(DC->isFunctionOrMethod() || DC->isRecord() || DC->isFileContext()))
+  while (!(DC->isSubprogramOrMethod() || DC->isRecord() || DC->isFileContext()))
     DC = DC->getParent();
   
   // Start constructing the lambda class.
@@ -39,9 +39,9 @@ CXXRecordDecl *Sema::createLambdaClosureType(SourceRange IntroducerRange,
 
 /// \brief Determine whether the given context is or is enclosed in an inline
 /// function.
-static bool isInInlineFunction(const DeclContext *DC) {
+static bool isInInlineSubprogram(const DeclContext *DC) {
   while (!DC->isFileContext()) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(DC))
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(DC))
       if (FD->isInlined())
         return true;
     
@@ -88,14 +88,14 @@ CXXMethodDecl *Sema::startLambdaDefinition(CXXRecordDecl *Class,
   // Add parameters.
   if (!Params.empty()) {
     Method->setParams(Params);
-    CheckParmsForFunctionDef(const_cast<ParmVarDecl **>(Params.begin()),
+    CheckParmsForSubprogramDef(const_cast<ParmVarDecl **>(Params.begin()),
                              const_cast<ParmVarDecl **>(Params.end()),
                              /*CheckParameterNames=*/false);
     
     for (CXXMethodDecl::param_iterator P = Method->param_begin(), 
                                     PEnd = Method->param_end();
          P != PEnd; ++P)
-      (*P)->setOwningFunction(Method);
+      (*P)->setOwningSubprogram(Method);
   }
 
   // Allocate a mangling number for this lambda expression, if the ABI
@@ -138,7 +138,7 @@ CXXMethodDecl *Sema::startLambdaDefinition(CXXRecordDecl *Class,
     //  -- the bodies of inline functions
     if ((IsInNonspecializedTemplate &&
          !(ContextDecl && isa<ParmVarDecl>(ContextDecl))) ||
-        isInInlineFunction(CurContext))
+        isInInlineSubprogram(CurContext))
       ManglingNumber = Context.getLambdaManglingNumber(Method);
     else
       ManglingNumber = 0;
@@ -381,19 +381,19 @@ void Sema::ActOnStartOfLambdaDefinition(LambdaIntroducer &Intro,
     // C++11 [expr.prim.lambda]p4:
     //   If a lambda-expression does not include a lambda-declarator, it is as 
     //   if the lambda-declarator were ().
-    FunctionProtoType::ExtProtoInfo EPI;
+    SubprogramProtoType::ExtProtoInfo EPI;
     EPI.HasTrailingReturn = true;
     EPI.TypeQuals |= DeclSpec::TQ_const;
-    QualType MethodTy = Context.getFunctionType(Context.DependentTy,
+    QualType MethodTy = Context.getSubprogramType(Context.DependentTy,
                                                 /*Args=*/0, /*NumArgs=*/0, EPI);
     MethodTyInfo = Context.getTrivialTypeSourceInfo(MethodTy);
     ExplicitParams = false;
     ExplicitResultType = false;
     EndLoc = Intro.Range.getEnd();
   } else {
-    assert(ParamInfo.isFunctionDeclarator() &&
+    assert(ParamInfo.isSubprogramDeclarator() &&
            "lambda-declarator is a function");
-    DeclaratorChunk::FunctionTypeInfo &FTI = ParamInfo.getFunctionTypeInfo();
+    DeclaratorChunk::SubprogramTypeInfo &FTI = ParamInfo.getSubprogramTypeInfo();
     
     // C++11 [expr.prim.lambda]p5:
     //   This function call operator is declared const (9.3.1) if and only if 
@@ -407,7 +407,7 @@ void Sema::ActOnStartOfLambdaDefinition(LambdaIntroducer &Intro,
     EndLoc = ParamInfo.getSourceRange().getEnd();
     
     ExplicitResultType
-      = MethodTyInfo->getType()->getAs<FunctionType>()->getResultType() 
+      = MethodTyInfo->getType()->getAs<SubprogramType>()->getResultType() 
                                                         != Context.DependentTy;
 
     if (FTI.NumArgs == 1 && !FTI.isVariadic && FTI.ArgInfo[0].Ident == 0 &&
@@ -611,40 +611,40 @@ void Sema::ActOnLambdaError(SourceLocation StartLoc, Scope *CurScope,
               SourceLocation(), SourceLocation(), 0);
   CheckCompletedCXXClass(Class);
 
-  PopFunctionScopeInfo();
+  PopSubprogramScopeInfo();
 }
 
 /// \brief Add a lambda's conversion to function pointer, as described in
 /// C++11 [expr.prim.lambda]p6.
-static void addFunctionPointerConversion(Sema &S, 
+static void addSubprogramPointerConversion(Sema &S, 
                                          SourceRange IntroducerRange,
                                          CXXRecordDecl *Class,
                                          CXXMethodDecl *CallOperator) {
   // Add the conversion to function pointer.
-  const FunctionProtoType *Proto
-    = CallOperator->getType()->getAs<FunctionProtoType>(); 
-  QualType FunctionPtrTy;
-  QualType FunctionTy;
+  const SubprogramProtoType *Proto
+    = CallOperator->getType()->getAs<SubprogramProtoType>(); 
+  QualType SubprogramPtrTy;
+  QualType SubprogramTy;
   {
-    FunctionProtoType::ExtProtoInfo ExtInfo = Proto->getExtProtoInfo();
+    SubprogramProtoType::ExtProtoInfo ExtInfo = Proto->getExtProtoInfo();
     ExtInfo.TypeQuals = 0;
-    FunctionTy = S.Context.getFunctionType(Proto->getResultType(),
+    SubprogramTy = S.Context.getSubprogramType(Proto->getResultType(),
                                            Proto->arg_type_begin(),
                                            Proto->getNumArgs(),
                                            ExtInfo);
-    FunctionPtrTy = S.Context.getPointerType(FunctionTy);
+    SubprogramPtrTy = S.Context.getPointerType(SubprogramTy);
   }
   
-  FunctionProtoType::ExtProtoInfo ExtInfo;
+  SubprogramProtoType::ExtProtoInfo ExtInfo;
   ExtInfo.TypeQuals = Qualifiers::Const;
-  QualType ConvTy = S.Context.getFunctionType(FunctionPtrTy, 0, 0, ExtInfo);
+  QualType ConvTy = S.Context.getSubprogramType(SubprogramPtrTy, 0, 0, ExtInfo);
   
   SourceLocation Loc = IntroducerRange.getBegin();
   DeclarationName Name
-    = S.Context.DeclarationNames.getCXXConversionFunctionName(
-        S.Context.getCanonicalType(FunctionPtrTy));
+    = S.Context.DeclarationNames.getCXXConversionSubprogramName(
+        S.Context.getCanonicalType(SubprogramPtrTy));
   DeclarationNameLoc NameLoc;
-  NameLoc.NamedType.TInfo = S.Context.getTrivialTypeSourceInfo(FunctionPtrTy,
+  NameLoc.NamedType.TInfo = S.Context.getTrivialTypeSourceInfo(SubprogramPtrTy,
                                                                Loc);
   CXXConversionDecl *Conversion 
     = CXXConversionDecl::Create(S.Context, Class, Loc, 
@@ -664,7 +664,7 @@ static void addFunctionPointerConversion(Sema &S,
   Name = &S.Context.Idents.get("__invoke");
   CXXMethodDecl *Invoke
     = CXXMethodDecl::Create(S.Context, Class, Loc, 
-                            DeclarationNameInfo(Name, Loc), FunctionTy, 
+                            DeclarationNameInfo(Name, Loc), SubprogramTy, 
                             CallOperator->getTypeSourceInfo(),
                             /*IsStatic=*/true, SC_Static, /*IsInline=*/true,
                             /*IsConstexpr=*/false, 
@@ -693,27 +693,27 @@ static void addBlockPointerConversion(Sema &S,
                                       SourceRange IntroducerRange,
                                       CXXRecordDecl *Class,
                                       CXXMethodDecl *CallOperator) {
-  const FunctionProtoType *Proto
-    = CallOperator->getType()->getAs<FunctionProtoType>(); 
+  const SubprogramProtoType *Proto
+    = CallOperator->getType()->getAs<SubprogramProtoType>(); 
   QualType BlockPtrTy;
   {
-    FunctionProtoType::ExtProtoInfo ExtInfo = Proto->getExtProtoInfo();
+    SubprogramProtoType::ExtProtoInfo ExtInfo = Proto->getExtProtoInfo();
     ExtInfo.TypeQuals = 0;
-    QualType FunctionTy
-      = S.Context.getFunctionType(Proto->getResultType(),
+    QualType SubprogramTy
+      = S.Context.getSubprogramType(Proto->getResultType(),
                                   Proto->arg_type_begin(),
                                   Proto->getNumArgs(),
                                   ExtInfo);
-    BlockPtrTy = S.Context.getBlockPointerType(FunctionTy);
+    BlockPtrTy = S.Context.getBlockPointerType(SubprogramTy);
   }
   
-  FunctionProtoType::ExtProtoInfo ExtInfo;
+  SubprogramProtoType::ExtProtoInfo ExtInfo;
   ExtInfo.TypeQuals = Qualifiers::Const;
-  QualType ConvTy = S.Context.getFunctionType(BlockPtrTy, 0, 0, ExtInfo);
+  QualType ConvTy = S.Context.getSubprogramType(BlockPtrTy, 0, 0, ExtInfo);
   
   SourceLocation Loc = IntroducerRange.getBegin();
   DeclarationName Name
-    = S.Context.DeclarationNames.getCXXConversionFunctionName(
+    = S.Context.DeclarationNames.getCXXConversionSubprogramName(
         S.Context.getCanonicalType(BlockPtrTy));
   DeclarationNameLoc NameLoc;
   NameLoc.NamedType.TInfo = S.Context.getTrivialTypeSourceInfo(BlockPtrTy, Loc);
@@ -817,20 +817,20 @@ ExprResult Sema::ActOnLambdaExpr(SourceLocation StartLoc, Stmt *Body,
       }
 
       // Create a function type with the inferred return type.
-      const FunctionProtoType *Proto
-        = CallOperator->getType()->getAs<FunctionProtoType>();
-      QualType FunctionTy
-        = Context.getFunctionType(LSI->ReturnType,
+      const SubprogramProtoType *Proto
+        = CallOperator->getType()->getAs<SubprogramProtoType>();
+      QualType SubprogramTy
+        = Context.getSubprogramType(LSI->ReturnType,
                                   Proto->arg_type_begin(),
                                   Proto->getNumArgs(),
                                   Proto->getExtProtoInfo());
-      CallOperator->setType(FunctionTy);
+      CallOperator->setType(SubprogramTy);
     }
 
     // C++ [expr.prim.lambda]p7:
     //   The lambda-expression's compound-statement yields the
     //   function-body (8.4) of the function call operator [...].
-    ActOnFinishFunctionBody(CallOperator, Body, IsInstantiation);
+    ActOnFinishSubprogramBody(CallOperator, Body, IsInstantiation);
     CallOperator->setLexicalDeclContext(Class);
     Class->addDecl(CallOperator);
     PopExpressionEvaluationContext();
@@ -841,7 +841,7 @@ ExprResult Sema::ActOnLambdaExpr(SourceLocation StartLoc, Stmt *Body,
     //   to pointer to function having the same parameter and return
     //   types as the closure type's function call operator.
     if (Captures.empty() && CaptureDefault == LCD_None)
-      addFunctionPointerConversion(*this, IntroducerRange, Class,
+      addSubprogramPointerConversion(*this, IntroducerRange, Class,
                                    CallOperator);
 
     // Objective-C++:

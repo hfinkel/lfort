@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements FunctionScopeInfo and its subclasses, which contain
+// This file implements SubprogramScopeInfo and its subclasses, which contain
 // information about a single function, block, lambda, or method body.
 //
 //===----------------------------------------------------------------------===//
@@ -22,7 +22,7 @@
 using namespace lfort;
 using namespace sema;
 
-void FunctionScopeInfo::Clear() {
+void SubprogramScopeInfo::Clear() {
   HasBranchProtectedScope = false;
   HasBranchIntoScope = false;
   HasIndirectGoto = false;
@@ -41,8 +41,8 @@ static const NamedDecl *getBestPropertyDecl(const ObjCPropertyRefExpr *PropE) {
   return PropE->getImplicitPropertyGetter();
 }
 
-FunctionScopeInfo::WeakObjectProfileTy::BaseInfoTy
-FunctionScopeInfo::WeakObjectProfileTy::getBaseInfo(const Expr *E) {
+SubprogramScopeInfo::WeakObjectProfileTy::BaseInfoTy
+SubprogramScopeInfo::WeakObjectProfileTy::getBaseInfo(const Expr *E) {
   E = E->IgnoreParenCasts();
 
   const NamedDecl *D = 0;
@@ -88,7 +88,7 @@ FunctionScopeInfo::WeakObjectProfileTy::getBaseInfo(const Expr *E) {
 }
 
 
-FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
+SubprogramScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
                                           const ObjCPropertyRefExpr *PropE)
     : Base(0, true), Property(getBestPropertyDecl(PropE)) {
 
@@ -103,7 +103,7 @@ FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
   }
 }
 
-FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(const Expr *BaseE,
+SubprogramScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(const Expr *BaseE,
                                                 const ObjCPropertyDecl *Prop)
     : Base(0, true), Property(Prop) {
   if (BaseE)
@@ -111,18 +111,18 @@ FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(const Expr *BaseE,
   // else, this is a message accessing a property on super.
 }
 
-FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
+SubprogramScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
                                                       const DeclRefExpr *DRE)
   : Base(0, true), Property(DRE->getDecl()) {
   assert(isa<VarDecl>(Property));
 }
 
-FunctionScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
+SubprogramScopeInfo::WeakObjectProfileTy::WeakObjectProfileTy(
                                                   const ObjCIvarRefExpr *IvarE)
   : Base(getBaseInfo(IvarE->getBase())), Property(IvarE->getDecl()) {
 }
 
-void FunctionScopeInfo::recordUseOfWeak(const ObjCMessageExpr *Msg,
+void SubprogramScopeInfo::recordUseOfWeak(const ObjCMessageExpr *Msg,
                                         const ObjCPropertyDecl *Prop) {
   assert(Msg && Prop);
   WeakUseVector &Uses =
@@ -130,7 +130,7 @@ void FunctionScopeInfo::recordUseOfWeak(const ObjCMessageExpr *Msg,
   Uses.push_back(WeakUseTy(Msg, Msg->getNumArgs() == 0));
 }
 
-void FunctionScopeInfo::markSafeWeakUse(const Expr *E) {
+void SubprogramScopeInfo::markSafeWeakUse(const Expr *E) {
   E = E->IgnoreParenCasts();
 
   if (const PseudoObjectExpr *POE = dyn_cast<PseudoObjectExpr>(E)) {
@@ -152,7 +152,7 @@ void FunctionScopeInfo::markSafeWeakUse(const Expr *E) {
   }
 
   // Has this weak object been seen before?
-  FunctionScopeInfo::WeakObjectUseMap::iterator Uses;
+  SubprogramScopeInfo::WeakObjectUseMap::iterator Uses;
   if (const ObjCPropertyRefExpr *RefExpr = dyn_cast<ObjCPropertyRefExpr>(E))
     Uses = WeakObjectUses.find(WeakObjectProfileTy(RefExpr));
   else if (const ObjCIvarRefExpr *IvarE = dyn_cast<ObjCIvarRefExpr>(E))
@@ -176,7 +176,7 @@ void FunctionScopeInfo::markSafeWeakUse(const Expr *E) {
     return;
 
   // Has there been a read from the object using this Expr?
-  FunctionScopeInfo::WeakUseVector::reverse_iterator ThisUse =
+  SubprogramScopeInfo::WeakUseVector::reverse_iterator ThisUse =
     std::find(Uses->second.rbegin(), Uses->second.rend(), WeakUseTy(E, true));
   if (ThisUse == Uses->second.rend())
     return;
@@ -184,6 +184,6 @@ void FunctionScopeInfo::markSafeWeakUse(const Expr *E) {
   ThisUse->markSafe();
 }
 
-FunctionScopeInfo::~FunctionScopeInfo() { }
+SubprogramScopeInfo::~SubprogramScopeInfo() { }
 BlockScopeInfo::~BlockScopeInfo() { }
 LambdaScopeInfo::~LambdaScopeInfo() { }

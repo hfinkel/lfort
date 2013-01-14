@@ -94,7 +94,7 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
   if (!Loc.isValid())
     return;
 
-  if (isa<FunctionDecl>(D) || isa<ObjCMethodDecl>(D)) {
+  if (isa<SubprogramDecl>(D) || isa<ObjCMethodDecl>(D)) {
     const NamedDecl *ND = cast<NamedDecl>(D);
     output << *ND;
   }
@@ -104,7 +104,7 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
   
   NumBlocksUnreachable += unreachable;
   NumBlocks += total;
-  std::string NameOfRootFunction = output.str();
+  std::string NameOfRootSubprogram = output.str();
 
   output << " -> Total CFGBlocks: " << total << " | Unreachable CFGBlocks: "
       << unreachable << " | Exhausted Block: "
@@ -126,7 +126,7 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
     if (const CFGStmt *CS = dyn_cast<CFGStmt>(&CE)) {
       SmallString<128> bufI;
       llvm::raw_svector_ostream outputI(bufI);
-      outputI << "(" << NameOfRootFunction << ")" <<
+      outputI << "(" << NameOfRootSubprogram << ")" <<
                  ": The analyzer generated a sink at this point";
       B.EmitBasicReport(D, "Sink Point", "Internal Statistics", outputI.str(),
                         PathDiagnosticLocation::createBegin(CS->getStmt(),

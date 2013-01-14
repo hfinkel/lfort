@@ -450,7 +450,7 @@ getRequiredQualification(ASTContext &Context,
        CommonAncestor && !CommonAncestor->Encloses(CurContext);
        CommonAncestor = CommonAncestor->getLookupParent()) {
     if (CommonAncestor->isTransparentContext() ||
-        CommonAncestor->isFunctionOrMethod())
+        CommonAncestor->isSubprogramOrMethod())
       continue;
     
     TargetParents.push_back(CommonAncestor);
@@ -557,7 +557,7 @@ bool ResultBuilder::CheckHiddenResult(Result &R, DeclContext *CurContext,
   DeclContext *HiddenCtx = R.Declaration->getDeclContext()->getRedeclContext();
   
   // There is no way to qualify a name declared in a function or method.
-  if (HiddenCtx->isFunctionOrMethod())
+  if (HiddenCtx->isSubprogramOrMethod())
     return true;
   
   if (HiddenCtx == Hiding->getDeclContext()->getRedeclContext())
@@ -623,9 +623,9 @@ SimplifiedTypeClass lfort::getSimplifiedTypeClass(CanQualType T) {
   case Type::ExtVector:
     return STC_Arithmetic;
     
-  case Type::FunctionProto:
-  case Type::FunctionNoProto:
-    return STC_Function;
+  case Type::SubprogramProto:
+  case Type::SubprogramNoProto:
+    return STC_Subprogram;
     
   case Type::Record:
     return STC_Record;
@@ -654,11 +654,11 @@ QualType lfort::getDeclUsageType(ASTContext &C, NamedDecl *ND) {
     return C.getObjCInterfaceType(Iface);
   
   QualType T;
-  if (FunctionDecl *Function = dyn_cast<FunctionDecl>(ND))
-    T = Function->getCallResultType();
+  if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(ND))
+    T = Subprogram->getCallResultType();
   else if (ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(ND))
     T = Method->getSendResultType();
-  else if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(ND))
+  else if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(ND))
     T = FunTmpl->getTemplatedDecl()->getCallResultType();
   else if (EnumConstantDecl *Enumerator = dyn_cast<EnumConstantDecl>(ND))
     T = C.getTypeDeclType(cast<EnumDecl>(Enumerator->getDeclContext()));
@@ -679,7 +679,7 @@ QualType lfort::getDeclUsageType(ASTContext &C, NamedDecl *ND) {
     }
 
     if (const PointerType *Pointer = T->getAs<PointerType>()) {
-      if (Pointer->getPointeeType()->isFunctionType()) {
+      if (Pointer->getPointeeType()->isSubprogramType()) {
         T = Pointer->getPointeeType();
         continue;
       }
@@ -692,8 +692,8 @@ QualType lfort::getDeclUsageType(ASTContext &C, NamedDecl *ND) {
       continue;
     }
 
-    if (const FunctionType *Function = T->getAs<FunctionType>()) {
-      T = Function->getResultType();
+    if (const SubprogramType *Subprogram = T->getAs<SubprogramType>()) {
+      T = Subprogram->getResultType();
       continue;
     }
 
@@ -1036,7 +1036,7 @@ bool ResultBuilder::IsOrdinaryNonValueName(NamedDecl *ND) const {
     IDNS |= Decl::IDNS_Tag | Decl::IDNS_Namespace;
   
   return (ND->getIdentifierNamespace() & IDNS) && 
-    !isa<ValueDecl>(ND) && !isa<FunctionTemplateDecl>(ND) && 
+    !isa<ValueDecl>(ND) && !isa<SubprogramTemplateDecl>(ND) && 
     !isa<ObjCPropertyDecl>(ND);
 }
 
@@ -1108,7 +1108,7 @@ bool ResultBuilder::IsMember(NamedDecl *ND) const {
   if (UsingShadowDecl *Using = dyn_cast<UsingShadowDecl>(ND))
     ND = Using->getTargetDecl();
 
-  return isa<ValueDecl>(ND) || isa<FunctionTemplateDecl>(ND) ||
+  return isa<ValueDecl>(ND) || isa<SubprogramTemplateDecl>(ND) ||
     isa<ObjCPropertyDecl>(ND);
 }
 
@@ -1301,7 +1301,7 @@ static void AddStorageSpecifiers(Sema::ParserCompletionContext CCC,
   Results.AddResult(Result("static"));
 }
 
-static void AddFunctionSpecifiers(Sema::ParserCompletionContext CCC,
+static void AddSubprogramSpecifiers(Sema::ParserCompletionContext CCC,
                                   const LangOptions &LangOpts, 
                                   ResultBuilder &Results) {
   typedef CodeCompletionResult Result;
@@ -1329,7 +1329,7 @@ static void AddFunctionSpecifiers(Sema::ParserCompletionContext CCC,
   case Sema::PCC_Statement:
   case Sema::PCC_ForInit:
   case Sema::PCC_Condition:
-  case Sema::PCC_RecoveryInFunction:
+  case Sema::PCC_RecoveryInSubprogram:
   case Sema::PCC_Type:
   case Sema::PCC_ParenthesizedExpression:
   case Sema::PCC_LocalDeclarationSpecifiers:
@@ -1370,7 +1370,7 @@ static bool WantTypesInContext(Sema::ParserCompletionContext CCC,
   case Sema::PCC_Template:
   case Sema::PCC_MemberTemplate:
   case Sema::PCC_Statement:
-  case Sema::PCC_RecoveryInFunction:
+  case Sema::PCC_RecoveryInSubprogram:
   case Sema::PCC_Type:
   case Sema::PCC_ParenthesizedExpression:
   case Sema::PCC_LocalDeclarationSpecifiers:
@@ -1577,26 +1577,26 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
     }
 
     AddStorageSpecifiers(CCC, SemaRef.getLangOpts(), Results);
-    AddFunctionSpecifiers(CCC, SemaRef.getLangOpts(), Results);
+    AddSubprogramSpecifiers(CCC, SemaRef.getLangOpts(), Results);
     break;
 
   case Sema::PCC_ObjCInterface:
     AddObjCInterfaceResults(SemaRef.getLangOpts(), Results, true);
     AddStorageSpecifiers(CCC, SemaRef.getLangOpts(), Results);
-    AddFunctionSpecifiers(CCC, SemaRef.getLangOpts(), Results);
+    AddSubprogramSpecifiers(CCC, SemaRef.getLangOpts(), Results);
     break;
       
   case Sema::PCC_ObjCImplementation:
     AddObjCImplementationResults(SemaRef.getLangOpts(), Results, true);
     AddStorageSpecifiers(CCC, SemaRef.getLangOpts(), Results);
-    AddFunctionSpecifiers(CCC, SemaRef.getLangOpts(), Results);
+    AddSubprogramSpecifiers(CCC, SemaRef.getLangOpts(), Results);
     break;
       
   case Sema::PCC_ObjCInstanceVariableList:
     AddObjCVisibilityResults(SemaRef.getLangOpts(), Results, true);
     break;
       
-  case Sema::PCC_RecoveryInFunction:
+  case Sema::PCC_RecoveryInSubprogram:
   case Sema::PCC_Statement: {
     AddTypedefResult(Results);
 
@@ -1650,7 +1650,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
     }
     
     // Switch-specific statements.
-    if (!SemaRef.getCurFunction()->SwitchStack.empty()) {
+    if (!SemaRef.getCurSubprogram()->SwitchStack.empty()) {
       // case expression:
       Builder.AddTypedTextChunk("case");
       Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
@@ -1726,8 +1726,8 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
     // "return expression ;" or "return ;", depending on whether we
     // know the function is void or not.
     bool isVoid = false;
-    if (FunctionDecl *Function = dyn_cast<FunctionDecl>(SemaRef.CurContext))
-      isVoid = Function->getResultType()->isVoidType();
+    if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(SemaRef.CurContext))
+      isVoid = Subprogram->getResultType()->isVoidType();
     else if (ObjCMethodDecl *Method
                                  = dyn_cast<ObjCMethodDecl>(SemaRef.CurContext))
       isVoid = Method->getResultType()->isVoidType();
@@ -2010,11 +2010,11 @@ static void AddResultTypeChunk(ASTContext &Context,
 
   // Determine the type of the declaration (if it has a type).
   QualType T;  
-  if (FunctionDecl *Function = dyn_cast<FunctionDecl>(ND))
-    T = Function->getResultType();
+  if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(ND))
+    T = Subprogram->getResultType();
   else if (ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(ND))
     T = Method->getResultType();
-  else if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(ND))
+  else if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(ND))
     T = FunTmpl->getTemplatedDecl()->getResultType();
   else if (EnumConstantDecl *Enumerator = dyn_cast<EnumConstantDecl>(ND))
     T = Context.getTypeDeclType(cast<TypeDecl>(Enumerator->getDeclContext()));
@@ -2032,9 +2032,9 @@ static void AddResultTypeChunk(ASTContext &Context,
                                                     Result.getAllocator()));
 }
 
-static void MaybeAddSentinel(ASTContext &Context, NamedDecl *FunctionOrMethod,
+static void MaybeAddSentinel(ASTContext &Context, NamedDecl *SubprogramOrMethod,
                              CodeCompletionBuilder &Result) {
-  if (SentinelAttr *Sentinel = FunctionOrMethod->getAttr<SentinelAttr>())
+  if (SentinelAttr *Sentinel = SubprogramOrMethod->getAttr<SentinelAttr>())
     if (Sentinel->getSentinel() == 0) {
       if (Context.getLangOpts().ObjC1 &&
           Context.Idents.get("nil").hasMacroDefinition())
@@ -2063,7 +2063,7 @@ static std::string formatObjCParamQualifiers(unsigned ObjCQuals) {
   return Result;
 }
 
-static std::string FormatFunctionParameter(ASTContext &Context,
+static std::string FormatSubprogramParameter(ASTContext &Context,
                                            const PrintingPolicy &Policy,
                                            ParmVarDecl *Param,
                                            bool SuppressName = false,
@@ -2091,8 +2091,8 @@ static std::string FormatFunctionParameter(ASTContext &Context,
   
   // The argument for a block pointer parameter is a block literal with
   // the appropriate type.
-  FunctionTypeLoc *Block = 0;
-  FunctionProtoTypeLoc *BlockProto = 0;
+  SubprogramTypeLoc *Block = 0;
+  SubprogramProtoTypeLoc *BlockProto = 0;
   TypeLoc TL;
   if (TypeSourceInfo *TSInfo = Param->getTypeSourceInfo()) {
     TL = TSInfo->getTypeLoc().getUnqualifiedLoc();
@@ -2119,15 +2119,15 @@ static std::string FormatFunctionParameter(ASTContext &Context,
       if (BlockPointerTypeLoc *BlockPtr
           = dyn_cast<BlockPointerTypeLoc>(&TL)) {
         TL = BlockPtr->getPointeeLoc().IgnoreParens();
-        Block = dyn_cast<FunctionTypeLoc>(&TL);
-        BlockProto = dyn_cast<FunctionProtoTypeLoc>(&TL);
+        Block = dyn_cast<SubprogramTypeLoc>(&TL);
+        BlockProto = dyn_cast<SubprogramProtoTypeLoc>(&TL);
       }
       break;
     }
   }
 
   if (!Block) {
-    // We were unable to find a FunctionProtoTypeLoc with parameter names
+    // We were unable to find a SubprogramProtoTypeLoc with parameter names
     // for the block; just use the parameter type as a placeholder.
     std::string Result;
     if (!ObjCMethodParam && Param->getIdentifier())
@@ -2164,7 +2164,7 @@ static std::string FormatFunctionParameter(ASTContext &Context,
     for (unsigned I = 0, N = Block->getNumArgs(); I != N; ++I) {
       if (I)
         Params += ", ";
-      Params += FormatFunctionParameter(Context, Policy, Block->getArg(I),
+      Params += FormatSubprogramParameter(Context, Policy, Block->getArg(I),
                                         /*SuppressName=*/false, 
                                         /*SuppressBlock=*/true);
       
@@ -2194,16 +2194,16 @@ static std::string FormatFunctionParameter(ASTContext &Context,
 }
 
 /// \brief Add function parameter chunks to the given code completion string.
-static void AddFunctionParameterChunks(ASTContext &Context,
+static void AddSubprogramParameterChunks(ASTContext &Context,
                                        const PrintingPolicy &Policy,
-                                       FunctionDecl *Function,
+                                       SubprogramDecl *Subprogram,
                                        CodeCompletionBuilder &Result,
                                        unsigned Start = 0,
                                        bool InOptional = false) {
   bool FirstParameter = true;
   
-  for (unsigned P = Start, N = Function->getNumParams(); P != N; ++P) {
-    ParmVarDecl *Param = Function->getParamDecl(P);
+  for (unsigned P = Start, N = Subprogram->getNumParams(); P != N; ++P) {
+    ParmVarDecl *Param = Subprogram->getParamDecl(P);
     
     if (Param->hasDefaultArg() && !InOptional) {
       // When we see an optional default argument, put that argument and
@@ -2212,7 +2212,7 @@ static void AddFunctionParameterChunks(ASTContext &Context,
                                 Result.getCodeCompletionTUInfo());
       if (!FirstParameter)
         Opt.AddChunk(CodeCompletionString::CK_Comma);
-      AddFunctionParameterChunks(Context, Policy, Function, Opt, P, true);
+      AddSubprogramParameterChunks(Context, Policy, Subprogram, Opt, P, true);
       Result.AddOptionalChunk(Opt.TakeString());
       break;
     }
@@ -2225,10 +2225,10 @@ static void AddFunctionParameterChunks(ASTContext &Context,
     InOptional = false;
     
     // Format the placeholder string.
-    std::string PlaceholderStr = FormatFunctionParameter(Context, Policy, 
+    std::string PlaceholderStr = FormatSubprogramParameter(Context, Policy, 
                                                          Param);
         
-    if (Function->isVariadic() && P == N - 1)
+    if (Subprogram->isVariadic() && P == N - 1)
       PlaceholderStr += ", ...";
 
     // Add the placeholder string.
@@ -2236,13 +2236,13 @@ static void AddFunctionParameterChunks(ASTContext &Context,
                              Result.getAllocator().CopyString(PlaceholderStr));
   }
   
-  if (const FunctionProtoType *Proto 
-        = Function->getType()->getAs<FunctionProtoType>())
+  if (const SubprogramProtoType *Proto 
+        = Subprogram->getType()->getAs<SubprogramProtoType>())
     if (Proto->isVariadic()) {
       if (Proto->getNumArgs() == 0)
         Result.AddPlaceholderChunk("...");
 
-      MaybeAddSentinel(Context, Function, Result);
+      MaybeAddSentinel(Context, Subprogram, Result);
     }
 }
 
@@ -2346,10 +2346,10 @@ AddQualifierToCompletionString(CodeCompletionBuilder &Result,
 }
 
 static void 
-AddFunctionTypeQualsToCompletionString(CodeCompletionBuilder &Result,
-                                       FunctionDecl *Function) {
-  const FunctionProtoType *Proto
-    = Function->getType()->getAs<FunctionProtoType>();
+AddSubprogramTypeQualsToCompletionString(CodeCompletionBuilder &Result,
+                                       SubprogramDecl *Subprogram) {
+  const SubprogramProtoType *Proto
+    = Subprogram->getType()->getAs<SubprogramProtoType>();
   if (!Proto || !Proto->getTypeQuals())
     return;
 
@@ -2416,7 +2416,7 @@ static void AddTypedNameChunk(ASTContext &Context, const PrintingPolicy &Policy,
     }
       
   case DeclarationName::Identifier:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
   case DeclarationName::CXXDestructorName:
   case DeclarationName::CXXLiteralOperatorName:
     Result.AddTypedTextChunk(
@@ -2566,22 +2566,22 @@ CodeCompletionResult::CreateCodeCompletionString(ASTContext &Ctx,
   
   AddResultTypeChunk(Ctx, Policy, ND, Result);
   
-  if (FunctionDecl *Function = dyn_cast<FunctionDecl>(ND)) {
+  if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(ND)) {
     AddQualifierToCompletionString(Result, Qualifier, QualifierIsInformative, 
                                    Ctx, Policy);
     AddTypedNameChunk(Ctx, Policy, ND, Result);
     Result.AddChunk(CodeCompletionString::CK_LeftParen);
-    AddFunctionParameterChunks(Ctx, Policy, Function, Result);
+    AddSubprogramParameterChunks(Ctx, Policy, Subprogram, Result);
     Result.AddChunk(CodeCompletionString::CK_RightParen);
-    AddFunctionTypeQualsToCompletionString(Result, Function);
+    AddSubprogramTypeQualsToCompletionString(Result, Subprogram);
     return Result.TakeString();
   }
   
-  if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(ND)) {
+  if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(ND)) {
     AddQualifierToCompletionString(Result, Qualifier, QualifierIsInformative, 
                                    Ctx, Policy);
-    FunctionDecl *Function = FunTmpl->getTemplatedDecl();
-    AddTypedNameChunk(Ctx, Policy, Function, Result);
+    SubprogramDecl *Subprogram = FunTmpl->getTemplatedDecl();
+    AddTypedNameChunk(Ctx, Policy, Subprogram, Result);
 
     // Figure out which template parameters are deduced (or have default
     // arguments).
@@ -2625,9 +2625,9 @@ CodeCompletionResult::CreateCodeCompletionString(ASTContext &Ctx,
     
     // Add the function parameters
     Result.AddChunk(CodeCompletionString::CK_LeftParen);
-    AddFunctionParameterChunks(Ctx, Policy, Function, Result);
+    AddSubprogramParameterChunks(Ctx, Policy, Subprogram, Result);
     Result.AddChunk(CodeCompletionString::CK_RightParen);
-    AddFunctionTypeQualsToCompletionString(Result, Function);
+    AddSubprogramTypeQualsToCompletionString(Result, Subprogram);
     return Result.TakeString();
   }
   
@@ -2686,7 +2686,7 @@ CodeCompletionResult::CreateCodeCompletionString(ASTContext &Ctx,
       std::string Arg;
       
       if ((*P)->getType()->isBlockPointerType() && !DeclaringEntity)
-        Arg = FormatFunctionParameter(Ctx, Policy, *P, true);
+        Arg = FormatSubprogramParameter(Ctx, Policy, *P, true);
       else {
         (*P)->getType().getAsStringInternal(Arg, Policy);
         Arg = "(" + formatObjCParamQualifiers((*P)->getObjCDeclQualifier()) 
@@ -2742,14 +2742,14 @@ CodeCompleteConsumer::OverloadCandidate::CreateSignatureString(
 
   // FIXME: Set priority, availability appropriately.
   CodeCompletionBuilder Result(Allocator,CCTUInfo, 1, CXAvailability_Available);
-  FunctionDecl *FDecl = getFunction();
+  SubprogramDecl *FDecl = getSubprogram();
   AddResultTypeChunk(S.Context, Policy, FDecl, Result);
-  const FunctionProtoType *Proto 
-    = dyn_cast<FunctionProtoType>(getFunctionType());
+  const SubprogramProtoType *Proto 
+    = dyn_cast<SubprogramProtoType>(getSubprogramType());
   if (!FDecl && !Proto) {
-    // Function without a prototype. Just give the return type and a 
+    // Subprogram without a prototype. Just give the return type and a 
     // highlighted ellipsis.
-    const FunctionType *FT = getFunctionType();
+    const SubprogramType *FT = getSubprogramType();
     Result.AddTextChunk(GetCompletionTypeString(FT->getResultType(),
                                                 S.Context, Policy, 
                                                 Result.getAllocator()));
@@ -2836,8 +2836,8 @@ CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
     case Decl::Enum:               return CXCursor_EnumDecl;
     case Decl::EnumConstant:       return CXCursor_EnumConstantDecl;
     case Decl::Field:              return CXCursor_FieldDecl;
-    case Decl::Function:  
-      return CXCursor_FunctionDecl;
+    case Decl::Subprogram:  
+      return CXCursor_SubprogramDecl;
     case Decl::ObjCCategory:       return CXCursor_ObjCCategoryDecl;
     case Decl::ObjCCategoryImpl:   return CXCursor_ObjCCategoryImplDecl;
     case Decl::ObjCImplementation: return CXCursor_ObjCImplementationDecl;
@@ -2850,7 +2850,7 @@ CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
     case Decl::CXXMethod:          return CXCursor_CXXMethod;
     case Decl::CXXConstructor:     return CXCursor_Constructor;
     case Decl::CXXDestructor:      return CXCursor_Destructor;
-    case Decl::CXXConversion:      return CXCursor_ConversionFunction;
+    case Decl::CXXConversion:      return CXCursor_ConversionSubprogram;
     case Decl::ObjCProperty:       return CXCursor_ObjCPropertyDecl;
     case Decl::ObjCProtocol:       return CXCursor_ObjCProtocolDecl;
     case Decl::ParmVar:            return CXCursor_ParmDecl;
@@ -2862,7 +2862,7 @@ CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
     case Decl::TemplateTypeParm:   return CXCursor_TemplateTypeParameter;
     case Decl::NonTypeTemplateParm:return CXCursor_NonTypeTemplateParameter;
     case Decl::TemplateTemplateParm:return CXCursor_TemplateTemplateParameter;
-    case Decl::FunctionTemplate:   return CXCursor_FunctionTemplate;
+    case Decl::SubprogramTemplate:   return CXCursor_SubprogramTemplate;
     case Decl::ClassTemplate:      return CXCursor_ClassTemplate;
     case Decl::AccessSpec:         return CXCursor_CXXAccessSpecifier;
     case Decl::ClassTemplatePartialSpecialization:
@@ -2923,7 +2923,7 @@ static void AddMacroResults(Preprocessor &PP, ResultBuilder &Results,
   
 }
 
-static void AddPrettyFunctionResults(const LangOptions &LangOpts, 
+static void AddPrettySubprogramResults(const LangOptions &LangOpts, 
                                      ResultBuilder &Results) {
   typedef CodeCompletionResult Result;
   
@@ -2971,7 +2971,7 @@ static enum CodeCompletionContext::Kind mapCodeCompletionContext(Sema &S,
       return CodeCompletionContext::CCC_ClassStructUnion;
     return CodeCompletionContext::CCC_Other;
       
-  case Sema::PCC_RecoveryInFunction:
+  case Sema::PCC_RecoveryInSubprogram:
     return CodeCompletionContext::CCC_Recovery;
 
   case Sema::PCC_ForInit:
@@ -3169,7 +3169,7 @@ void Sema::CodeCompleteOrdinaryName(Scope *S,
       MaybeAddOverrideCalls(*this, /*InContext=*/0, Results);
     break;
       
-  case PCC_RecoveryInFunction:
+  case PCC_RecoveryInSubprogram:
     // Unfiltered
     break;
   }
@@ -3192,9 +3192,9 @@ void Sema::CodeCompleteOrdinaryName(Scope *S,
   case PCC_ParenthesizedExpression:
   case PCC_Expression:
   case PCC_Statement:
-  case PCC_RecoveryInFunction:
+  case PCC_RecoveryInSubprogram:
     if (S->getFnParent())
-      AddPrettyFunctionResults(PP.getLangOpts(), Results);        
+      AddPrettySubprogramResults(PP.getLangOpts(), Results);        
     break;
     
   case PCC_Namespace:
@@ -3274,7 +3274,7 @@ void Sema::CodeCompleteDeclSpec(Scope *S, DeclSpec &DS,
       S && 
       (S->getFlags() & Scope::DeclScope) != 0 &&
       (S->getFlags() & (Scope::ClassScope | Scope::TemplateParamScope |
-                        Scope::FunctionPrototypeScope | 
+                        Scope::SubprogramPrototypeScope | 
                         Scope::AtCatchScope)) == 0) {
     ParsedType T = DS.getRepAsType();
     if (!T.get().isNull() && T.get()->isObjCObjectOrInterfaceType())
@@ -3340,7 +3340,7 @@ void Sema::CodeCompleteExpression(Scope *S,
   if (S->getFnParent() && 
       !Data.ObjCCollection && 
       !Data.IntegralConstantExpression)
-    AddPrettyFunctionResults(PP.getLangOpts(), Results);        
+    AddPrettySubprogramResults(PP.getLangOpts(), Results);        
 
   if (CodeCompleter->includeMacros())
     AddMacroResults(PP, Results, false, PreferredTypeIsPointer);
@@ -3352,7 +3352,7 @@ void Sema::CodeCompleteExpression(Scope *S,
 
 void Sema::CodeCompletePostfixExpression(Scope *S, ExprResult E) {
   if (E.isInvalid())
-    CodeCompleteOrdinaryName(S, PCC_RecoveryInFunction);
+    CodeCompleteOrdinaryName(S, PCC_RecoveryInSubprogram);
   else if (getLangOpts().ObjC1)
     CodeCompleteObjCInstanceMessage(S, E.take(), 0, 0, false);
 }
@@ -3650,10 +3650,10 @@ void Sema::CodeCompleteTypeQualifiers(DeclSpec &DS) {
 }
 
 void Sema::CodeCompleteCase(Scope *S) {
-  if (getCurFunction()->SwitchStack.empty() || !CodeCompleter)
+  if (getCurSubprogram()->SwitchStack.empty() || !CodeCompleter)
     return;
 
-  SwitchStmt *Switch = getCurFunction()->SwitchStack.back();
+  SwitchStmt *Switch = getCurSubprogram()->SwitchStack.back();
   QualType type = Switch->getCond()->IgnoreImplicit()->getType();
   if (!type->isEnumeralType()) {
     CodeCompleteExpressionData Data(type);
@@ -3806,10 +3806,10 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
     AddOverloadedCallCandidates(ULE, Args, CandidateSet,
                                 /*PartialOverloading=*/ true);
   else if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(NakedFn)) {
-    FunctionDecl *FDecl = dyn_cast<FunctionDecl>(DRE->getDecl());
+    SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(DRE->getDecl());
     if (FDecl) {
       if (!getLangOpts().CPlusPlus || 
-          !FDecl->getType()->getAs<FunctionProtoType>())
+          !FDecl->getType()->getAs<SubprogramProtoType>())
         Results.push_back(ResultCandidate(FDecl));
       else
         // FIXME: access?
@@ -3830,13 +3830,13 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
                                      CandEnd = CandidateSet.end();
          Cand != CandEnd; ++Cand) {
       if (Cand->Viable)
-        Results.push_back(ResultCandidate(Cand->Function));
+        Results.push_back(ResultCandidate(Cand->Subprogram));
     }
 
     // From the viable candidates, try to determine the type of this parameter.
     for (unsigned I = 0, N = Results.size(); I != N; ++I) {
-      if (const FunctionType *FType = Results[I].getFunctionType())
-        if (const FunctionProtoType *Proto = dyn_cast<FunctionProtoType>(FType))
+      if (const SubprogramType *FType = Results[I].getSubprogramType())
+        if (const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FType))
           if (Args.size() < Proto->getNumArgs()) {
             if (ParamType.isNull())
               ParamType = Proto->getArgType(Args.size());
@@ -3851,18 +3851,18 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
   } else {
     // Try to determine the parameter type from the type of the expression
     // being called.
-    QualType FunctionType = Fn->getType();
-    if (const PointerType *Ptr = FunctionType->getAs<PointerType>())
-      FunctionType = Ptr->getPointeeType();
+    QualType SubprogramType = Fn->getType();
+    if (const PointerType *Ptr = SubprogramType->getAs<PointerType>())
+      SubprogramType = Ptr->getPointeeType();
     else if (const BlockPointerType *BlockPtr
-                                    = FunctionType->getAs<BlockPointerType>())
-      FunctionType = BlockPtr->getPointeeType();
+                                    = SubprogramType->getAs<BlockPointerType>())
+      SubprogramType = BlockPtr->getPointeeType();
     else if (const MemberPointerType *MemPtr
-                                    = FunctionType->getAs<MemberPointerType>())
-      FunctionType = MemPtr->getPointeeType();
+                                    = SubprogramType->getAs<MemberPointerType>())
+      SubprogramType = MemPtr->getPointeeType();
     
-    if (const FunctionProtoType *Proto
-                                  = FunctionType->getAs<FunctionProtoType>()) {
+    if (const SubprogramProtoType *Proto
+                                  = SubprogramType->getAs<SubprogramProtoType>()) {
       if (Args.size() < Proto->getNumArgs())
         ParamType = Proto->getArgType(Args.size());
     }
@@ -3893,8 +3893,8 @@ void Sema::CodeCompleteReturn(Scope *S) {
   if (isa<BlockDecl>(CurContext)) {
     if (BlockScopeInfo *BSI = getCurBlock())
       ResultType = BSI->ReturnType;
-  } else if (FunctionDecl *Function = dyn_cast<FunctionDecl>(CurContext))
-    ResultType = Function->getResultType();
+  } else if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(CurContext))
+    ResultType = Subprogram->getResultType();
   else if (ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(CurContext))
     ResultType = Method->getResultType();
   
@@ -3955,7 +3955,7 @@ void Sema::CodeCompleteAfterIf(Scope *S) {
   Results.ExitScope();
   
   if (S->getFnParent())
-    AddPrettyFunctionResults(PP.getLangOpts(), Results);        
+    AddPrettySubprogramResults(PP.getLangOpts(), Results);        
   
   if (CodeCompleter->includeMacros())
     AddMacroResults(PP, Results, false);
@@ -5422,7 +5422,7 @@ void Sema::CodeCompleteObjCInstanceMessage(Scope *S, Expr *Receiver,
   // If necessary, apply function/array conversion to the receiver.
   // C99 6.7.5.3p[7,8].
   if (RecExpr) {
-    ExprResult Conv = DefaultFunctionArrayLvalueConversion(RecExpr);
+    ExprResult Conv = DefaultSubprogramArrayLvalueConversion(RecExpr);
     if (Conv.isInvalid()) // conversion failed. bail.
       return;
     RecExpr = Conv.take();
@@ -7151,7 +7151,7 @@ void Sema::CodeCompletePreprocessorDirective(bool InConditional) {
 
 void Sema::CodeCompleteInPreprocessorConditionalExclusion(Scope *S) {
   CodeCompleteOrdinaryName(S,
-                           S->getFnParent()? Sema::PCC_RecoveryInFunction 
+                           S->getFnParent()? Sema::PCC_RecoveryInSubprogram 
                                            : Sema::PCC_Namespace);
 }
 

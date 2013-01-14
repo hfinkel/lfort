@@ -388,7 +388,7 @@ bool CXXRecordDecl::isTriviallyCopyable() const {
   return true;
 }
 
-void CXXRecordDecl::markedVirtualFunctionPure() {
+void CXXRecordDecl::markedVirtualSubprogramPure() {
   // C++ [class.abstract]p2: 
   //   A class is abstract if it has at least one pure virtual function.
   data().Abstract = true;
@@ -406,7 +406,7 @@ void CXXRecordDecl::addedMember(Decl *D) {
   if (D->getFriendObjectKind() || D->isInvalidDecl())
     return;
   
-  FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(D);
+  SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(D);
   if (FunTmpl)
     D = FunTmpl->getTemplatedDecl();
   
@@ -863,7 +863,7 @@ void CXXRecordDecl::addedMember(Decl *D) {
   // Handle using declarations of conversion functions.
   if (UsingShadowDecl *Shadow = dyn_cast<UsingShadowDecl>(D))
     if (Shadow->getDeclName().getNameKind()
-          == DeclarationName::CXXConversionFunctionName)
+          == DeclarationName::CXXConversionSubprogramName)
       data().Conversions.addDecl(getASTContext(), Shadow, Shadow->getAccess());
 }
 
@@ -935,7 +935,7 @@ static CanQualType GetConversionType(ASTContext &Context, NamedDecl *Conv) {
   QualType T;
   if (isa<UsingShadowDecl>(Conv))
     Conv = cast<UsingShadowDecl>(Conv)->getTargetDecl();
-  if (FunctionTemplateDecl *ConvTemp = dyn_cast<FunctionTemplateDecl>(Conv))
+  if (SubprogramTemplateDecl *ConvTemp = dyn_cast<SubprogramTemplateDecl>(Conv))
     T = ConvTemp->getTemplatedDecl()->getResultType();
   else 
     T = cast<CXXConversionDecl>(Conv)->getConversionType();
@@ -1062,10 +1062,10 @@ static void CollectVisibleConversions(ASTContext &Context,
   }
 }
 
-/// getVisibleConversionFunctions - get all conversion functions visible
+/// getVisibleConversionSubprograms - get all conversion functions visible
 /// in current class; including conversion function templates.
 std::pair<CXXRecordDecl::conversion_iterator,CXXRecordDecl::conversion_iterator>
-CXXRecordDecl::getVisibleConversionFunctions() {
+CXXRecordDecl::getVisibleConversionSubprograms() {
   // If root class, all conversions are visible.
   if (bases_begin() == bases_end())
     return std::make_pair(data().Conversions.begin(), data().Conversions.end());
@@ -1321,7 +1321,7 @@ CXXMethodDecl *CXXMethodDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
                                  SourceLocation());
 }
 
-bool CXXMethodDecl::isUsualDeallocationFunction() const {
+bool CXXMethodDecl::isUsualDeallocationSubprogram() const {
   if (getOverloadedOperator() != OO_Delete &&
       getOverloadedOperator() != OO_Array_Delete)
     return false;
@@ -1355,7 +1355,7 @@ bool CXXMethodDecl::isUsualDeallocationFunction() const {
   DeclContext::lookup_const_result R = getDeclContext()->lookup(getDeclName());
   for (DeclContext::lookup_const_result::iterator I = R.begin(), E = R.end();
        I != E; ++I) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(*I))
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(*I))
       if (FD->getNumParams() == 1)
         return false;
   }
@@ -1370,7 +1370,7 @@ bool CXXMethodDecl::isCopyAssignmentOperator() const {
   //  type X, X&, const X&, volatile X& or const volatile X&.
   if (/*operator=*/getOverloadedOperator() != OO_Equal ||
       /*non-static*/ isStatic() || 
-      /*non-template*/getPrimaryTemplate() || getDescribedFunctionTemplate())
+      /*non-template*/getPrimaryTemplate() || getDescribedSubprogramTemplate())
     return false;
       
   QualType ParamType = getParamDecl(0)->getType();
@@ -1389,7 +1389,7 @@ bool CXXMethodDecl::isMoveAssignmentOperator() const {
   //  non-template member function of class X with exactly one parameter of type
   //  X&&, const X&&, volatile X&&, or const volatile X&&.
   if (getOverloadedOperator() != OO_Equal || isStatic() ||
-      getPrimaryTemplate() || getDescribedFunctionTemplate())
+      getPrimaryTemplate() || getDescribedSubprogramTemplate())
     return false;
 
   QualType ParamType = getParamDecl(0)->getType();
@@ -1445,11 +1445,11 @@ QualType CXXMethodDecl::getThisType(ASTContext &C) const {
 bool CXXMethodDecl::hasInlineBody() const {
   // If this function is a template instantiation, look at the template from 
   // which it was instantiated.
-  const FunctionDecl *CheckFn = getTemplateInstantiationPattern();
+  const SubprogramDecl *CheckFn = getTemplateInstantiationPattern();
   if (!CheckFn)
     CheckFn = this;
   
-  const FunctionDecl *fn;
+  const SubprogramDecl *fn;
   return CheckFn->hasBody(fn) && !fn->isOutOfLine();
 }
 
@@ -1636,7 +1636,7 @@ bool CXXConstructorDecl::isCopyOrMoveConstructor(unsigned &TypeQuals) const {
   if ((getNumParams() < 1) ||
       (getNumParams() > 1 && !getParamDecl(1)->hasDefaultArg()) ||
       (getPrimaryTemplate() != 0) ||
-      (getDescribedFunctionTemplate() != 0))
+      (getDescribedSubprogramTemplate() != 0))
     return false;
   
   const ParmVarDecl *Param = getParamDecl(0);
@@ -1674,7 +1674,7 @@ bool CXXConstructorDecl::isConvertingConstructor(bool AllowExplicit) const {
     return false;
 
   return (getNumParams() == 0 &&
-          getType()->getAs<FunctionProtoType>()->isVariadic()) ||
+          getType()->getAs<SubprogramProtoType>()->isVariadic()) ||
          (getNumParams() == 1) ||
          (getNumParams() > 1 &&
           (getParamDecl(1)->hasDefaultArg() ||
@@ -1685,7 +1685,7 @@ bool CXXConstructorDecl::isSpecializationCopyingObject() const {
   if ((getNumParams() < 1) ||
       (getNumParams() > 1 && !getParamDecl(1)->hasDefaultArg()) ||
       (getPrimaryTemplate() == 0) ||
-      (getDescribedFunctionTemplate() != 0))
+      (getDescribedSubprogramTemplate() != 0))
     return false;
 
   const ParmVarDecl *Param = getParamDecl(0);
@@ -1759,7 +1759,7 @@ CXXConversionDecl::Create(ASTContext &C, CXXRecordDecl *RD,
                           bool isInline, bool isExplicit,
                           bool isConstexpr, SourceLocation EndLocation) {
   assert(NameInfo.getName().getNameKind()
-         == DeclarationName::CXXConversionFunctionName &&
+         == DeclarationName::CXXConversionSubprogramName &&
          "Name must refer to a conversion function");
   return new (C) CXXConversionDecl(RD, StartLoc, NameInfo, T, TInfo,
                                    isInline, isExplicit, isConstexpr,

@@ -107,7 +107,7 @@ bool CodeGenModule::TryEmitDefinitionAsAlias(GlobalDecl AliasDecl,
   // The alias will use the linkage of the referrent.  If we can't
   // support aliases with that linkage, fail.
   llvm::GlobalValue::LinkageTypes Linkage
-    = getFunctionLinkage(cast<FunctionDecl>(AliasDecl.getDecl()));
+    = getSubprogramLinkage(cast<SubprogramDecl>(AliasDecl.getDecl()));
 
   switch (Linkage) {
   // We can definitely emit aliases to definitions with external linkage.
@@ -132,14 +132,14 @@ bool CodeGenModule::TryEmitDefinitionAsAlias(GlobalDecl AliasDecl,
   }
 
   llvm::GlobalValue::LinkageTypes TargetLinkage
-    = getFunctionLinkage(cast<FunctionDecl>(TargetDecl.getDecl()));
+    = getSubprogramLinkage(cast<SubprogramDecl>(TargetDecl.getDecl()));
 
   if (llvm::GlobalValue::isWeakForLinker(TargetLinkage))
     return true;
 
   // Derive the type for the alias.
   llvm::PointerType *AliasType
-    = getTypes().GetFunctionType(AliasDecl)->getPointerTo();
+    = getTypes().GetSubprogramType(AliasDecl)->getPointerTo();
 
   // Find the referrent.  Some aliases might require a bitcast, in
   // which case the caller is responsible for ensuring the soundness
@@ -196,23 +196,23 @@ void CodeGenModule::EmitCXXConstructor(const CXXConstructorDecl *ctor,
                                 GlobalDecl(ctor, Ctor_Base)))
     return;
 
-  const CGFunctionInfo &fnInfo =
+  const CGSubprogramInfo &fnInfo =
     getTypes().arrangeCXXConstructorDeclaration(ctor, ctorType);
 
   llvm::Function *fn =
     cast<llvm::Function>(GetAddrOfCXXConstructor(ctor, ctorType, &fnInfo));
-  setFunctionLinkage(ctor, fn);
+  setSubprogramLinkage(ctor, fn);
 
   CodeGenSubprogram(*this).GenerateCode(GlobalDecl(ctor, ctorType), fn, fnInfo);
 
-  SetFunctionDefinitionAttributes(ctor, fn);
-  SetLLVMFunctionAttributesForDefinition(ctor, fn);
+  SetSubprogramDefinitionAttributes(ctor, fn);
+  SetLLVMSubprogramAttributesForDefinition(ctor, fn);
 }
 
 llvm::GlobalValue *
 CodeGenModule::GetAddrOfCXXConstructor(const CXXConstructorDecl *ctor,
                                        CXXCtorType ctorType,
-                                       const CGFunctionInfo *fnInfo) {
+                                       const CGSubprogramInfo *fnInfo) {
   GlobalDecl GD(ctor, ctorType);
   
   StringRef name = getMangledName(GD);
@@ -222,8 +222,8 @@ CodeGenModule::GetAddrOfCXXConstructor(const CXXConstructorDecl *ctor,
   if (!fnInfo)
     fnInfo = &getTypes().arrangeCXXConstructorDeclaration(ctor, ctorType);
 
-  llvm::FunctionType *fnType = getTypes().GetFunctionType(*fnInfo);
-  return cast<llvm::Function>(GetOrCreateLLVMFunction(name, fnType, GD,
+  llvm::FunctionType *fnType = getTypes().GetSubprogramType(*fnInfo);
+  return cast<llvm::Function>(GetOrCreateLLVMSubprogram(name, fnType, GD,
                                                       /*ForVTable=*/false));
 }
 
@@ -260,23 +260,23 @@ void CodeGenModule::EmitCXXDestructor(const CXXDestructorDecl *dtor,
   if (dtorType == Dtor_Base && !TryEmitBaseDestructorAsAlias(dtor))
     return;
 
-  const CGFunctionInfo &fnInfo =
+  const CGSubprogramInfo &fnInfo =
     getTypes().arrangeCXXDestructor(dtor, dtorType);
 
   llvm::Function *fn =
     cast<llvm::Function>(GetAddrOfCXXDestructor(dtor, dtorType, &fnInfo));
-  setFunctionLinkage(dtor, fn);
+  setSubprogramLinkage(dtor, fn);
 
   CodeGenSubprogram(*this).GenerateCode(GlobalDecl(dtor, dtorType), fn, fnInfo);
 
-  SetFunctionDefinitionAttributes(dtor, fn);
-  SetLLVMFunctionAttributesForDefinition(dtor, fn);
+  SetSubprogramDefinitionAttributes(dtor, fn);
+  SetLLVMSubprogramAttributesForDefinition(dtor, fn);
 }
 
 llvm::GlobalValue *
 CodeGenModule::GetAddrOfCXXDestructor(const CXXDestructorDecl *dtor,
                                       CXXDtorType dtorType,
-                                      const CGFunctionInfo *fnInfo) {
+                                      const CGSubprogramInfo *fnInfo) {
   GlobalDecl GD(dtor, dtorType);
 
   StringRef name = getMangledName(GD);
@@ -285,8 +285,8 @@ CodeGenModule::GetAddrOfCXXDestructor(const CXXDestructorDecl *dtor,
 
   if (!fnInfo) fnInfo = &getTypes().arrangeCXXDestructor(dtor, dtorType);
 
-  llvm::FunctionType *fnType = getTypes().GetFunctionType(*fnInfo);
-  return cast<llvm::Function>(GetOrCreateLLVMFunction(name, fnType, GD,
+  llvm::FunctionType *fnType = getTypes().GetSubprogramType(*fnInfo);
+  return cast<llvm::Function>(GetOrCreateLLVMSubprogram(name, fnType, GD,
                                                       /*ForVTable=*/false));
 }
 
@@ -358,10 +358,10 @@ CodeGenSubprogram::BuildAppleKextVirtualDestructorCall(
   // -O does that. But need to support -O0 as well.
   if (MD->isVirtual() && Type != Dtor_Base) {
     // Compute the function type we're calling.
-    const CGFunctionInfo &FInfo = 
+    const CGSubprogramInfo &FInfo = 
       CGM.getTypes().arrangeCXXDestructor(cast<CXXDestructorDecl>(MD),
                                           Dtor_Complete);
-    llvm::Type *Ty = CGM.getTypes().GetFunctionType(FInfo);
+    llvm::Type *Ty = CGM.getTypes().GetSubprogramType(FInfo);
 
     llvm::Value *VTable = CGM.getVTables().GetAddrOfVTable(RD);
     Ty = Ty->getPointerTo()->getPointerTo();

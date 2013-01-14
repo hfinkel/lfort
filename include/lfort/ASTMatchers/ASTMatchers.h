@@ -433,7 +433,7 @@ const internal::VariadicDynCastAllOfMatcher<Decl, FieldDecl> fieldDecl;
 /// \code
 ///   void f();
 /// \endcode
-const internal::VariadicDynCastAllOfMatcher<Decl, FunctionDecl> functionDecl;
+const internal::VariadicDynCastAllOfMatcher<Decl, SubprogramDecl> functionDecl;
 
 /// \brief Matches C++ function template declarations.
 ///
@@ -443,7 +443,7 @@ const internal::VariadicDynCastAllOfMatcher<Decl, FunctionDecl> functionDecl;
 /// \endcode
 const internal::VariadicDynCastAllOfMatcher<
   Decl,
-  FunctionTemplateDecl> functionTemplateDecl;
+  SubprogramTemplateDecl> functionTemplateDecl;
 
 /// \brief Matches statements.
 ///
@@ -560,11 +560,11 @@ const internal::VariadicDynCastAllOfMatcher<Stmt, CXXThisExpr> thisExpr;
 
 /// \brief Matches nodes where temporaries are created.
 ///
-/// Example matches FunctionTakesString(GetStringByValue())
+/// Example matches SubprogramTakesString(GetStringByValue())
 ///     (matcher = bindTemporaryExpr())
 /// \code
-///   FunctionTakesString(GetStringByValue());
-///   FunctionTakesStringByPointer(GetStringPointer());
+///   SubprogramTakesString(GetStringByValue());
+///   SubprogramTakesStringByPointer(GetStringPointer());
 /// \endcode
 const internal::VariadicDynCastAllOfMatcher<
   Stmt,
@@ -1084,7 +1084,7 @@ const internal::VariadicDynCastAllOfMatcher<Stmt, CastExpr> castExpr;
 /// \endcode
 const internal::VariadicDynCastAllOfMatcher<
   Stmt,
-  CXXFunctionalCastExpr> functionalCastExpr;
+  CXXSubprogramalCastExpr> functionalCastExpr;
 
 /// \brief Matches \c QualTypes in the lfort AST.
 const internal::VariadicAllOfMatcher<QualType> qualType;
@@ -1944,7 +1944,7 @@ AST_POLYMORPHIC_MATCHER_P(hasAnyArgument, internal::Matcher<Expr>,
 ///   matches f(int x) {}
 /// with hasParameter(...)
 ///   matching int x
-AST_MATCHER_P2(FunctionDecl, hasParameter,
+AST_MATCHER_P2(SubprogramDecl, hasParameter,
                unsigned, N, internal::Matcher<ParmVarDecl>,
                InnerMatcher) {
   return (N < Node.getNumParams() &&
@@ -1964,7 +1964,7 @@ AST_MATCHER_P2(FunctionDecl, hasParameter,
 ///   matches f(int x, int y, int z) {}
 /// with hasAnyParameter(...)
 ///   matching int y
-AST_MATCHER_P(FunctionDecl, hasAnyParameter,
+AST_MATCHER_P(SubprogramDecl, hasAnyParameter,
               internal::Matcher<ParmVarDecl>, InnerMatcher) {
   for (unsigned I = 0; I < Node.getNumParams(); ++I) {
     if (InnerMatcher.matches(*Node.getParamDecl(I), Finder, Builder)) {
@@ -1974,7 +1974,7 @@ AST_MATCHER_P(FunctionDecl, hasAnyParameter,
   return false;
 }
 
-/// \brief Matches \c FunctionDecls that have a specific parameter count.
+/// \brief Matches \c SubprogramDecls that have a specific parameter count.
 ///
 /// Given
 /// \code
@@ -1983,7 +1983,7 @@ AST_MATCHER_P(FunctionDecl, hasAnyParameter,
 /// \endcode
 /// functionDecl(parameterCountIs(2))
 ///   matches g(int i, int j) {}
-AST_MATCHER_P(FunctionDecl, parameterCountIs, unsigned, N) {
+AST_MATCHER_P(SubprogramDecl, parameterCountIs, unsigned, N) {
   return Node.getNumParams() == N;
 }
 
@@ -1995,7 +1995,7 @@ AST_MATCHER_P(FunctionDecl, parameterCountIs, unsigned, N) {
 /// \endcode
 /// methodDecl(returns(asString("int")))
 ///   matches int f() { return 1; }
-AST_MATCHER_P(FunctionDecl, returns,
+AST_MATCHER_P(SubprogramDecl, returns,
               internal::Matcher<QualType>, InnerMatcher) {
   return InnerMatcher.matches(Node.getResultType(), Finder, Builder);
 }
@@ -2010,7 +2010,7 @@ AST_MATCHER_P(FunctionDecl, returns,
 /// \endcode
 /// functionDecl(isExternC())
 ///   matches the declaration of f and g, but not the declaration h
-AST_MATCHER(FunctionDecl, isExternC) {
+AST_MATCHER(SubprogramDecl, isExternC) {
   return Node.isExternC();
 }
 
@@ -2291,7 +2291,7 @@ AST_MATCHER_P(ConditionalOperator, hasFalseExpression,
 ///   void fb();  // Doesn't match, as it has no body.
 /// \endcode
 ///
-/// Usable as: Matcher<TagDecl>, Matcher<VarDecl>, Matcher<FunctionDecl>
+/// Usable as: Matcher<TagDecl>, Matcher<VarDecl>, Matcher<SubprogramDecl>
 inline internal::PolymorphicMatcherWithParam0<internal::IsDefinitionMatcher>
 isDefinition() {
   return internal::PolymorphicMatcherWithParam0<
@@ -2466,7 +2466,7 @@ AST_MATCHER_P(UsingShadowDecl, hasTargetDecl,
 /// recordDecl(hasName("::X"), isTemplateInstantiation())
 ///   does not match, as X<A> is an explicit template specialization.
 ///
-/// Usable as: Matcher<FunctionDecl>, Matcher<VarDecl>, Matcher<CXXRecordDecl>
+/// Usable as: Matcher<SubprogramDecl>, Matcher<VarDecl>, Matcher<CXXRecordDecl>
 inline internal::PolymorphicMatcherWithParam0<
   internal::IsTemplateInstantiationMatcher>
 isTemplateInstantiation() {
@@ -2485,7 +2485,7 @@ isTemplateInstantiation() {
 /// functionDecl(isExplicitTemplateSpecialization())
 ///   matches the specialization A<int>().
 ///
-/// Usable as: Matcher<FunctionDecl>, Matcher<VarDecl>, Matcher<CXXRecordDecl>
+/// Usable as: Matcher<SubprogramDecl>, Matcher<VarDecl>, Matcher<CXXRecordDecl>
 inline internal::PolymorphicMatcherWithParam0<
   internal::IsExplicitTemplateSpecializationMatcher>
 isExplicitTemplateSpecialization() {
@@ -2687,7 +2687,7 @@ AST_TYPE_MATCHER(AutoType, autoType);
 /// Usable as: Matcher<AutoType>
 AST_TYPE_TRAVERSE_MATCHER(hasDeducedType, getDeducedType);
 
-/// \brief Matches \c FunctionType nodes.
+/// \brief Matches \c SubprogramType nodes.
 ///
 /// Given
 /// \code
@@ -2696,12 +2696,12 @@ AST_TYPE_TRAVERSE_MATCHER(hasDeducedType, getDeducedType);
 /// \endcode
 /// functionType()
 ///   matches "int (*f)(int)" and the type of "g".
-AST_TYPE_MATCHER(FunctionType, functionType);
+AST_TYPE_MATCHER(SubprogramType, functionType);
 
 /// \brief Matches block pointer types, i.e. types syntactically represented as
 /// "void (^)(int)".
 ///
-/// The \c pointee is always required to be a \c FunctionType.
+/// The \c pointee is always required to be a \c SubprogramType.
 AST_TYPE_MATCHER(BlockPointerType, blockPointerType);
 
 /// \brief Matches member pointer types.

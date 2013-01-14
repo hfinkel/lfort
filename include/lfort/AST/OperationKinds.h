@@ -88,9 +88,9 @@ enum CastKind {
   ///   char[5][6] -> char(*)[6]
   CK_ArrayToPointerDecay,
 
-  /// CK_FunctionToPointerDecay - Function to pointer decay.
+  /// CK_SubprogramToPointerDecay - Subprogram to pointer decay.
   ///   void(int) -> void(*)(int)
-  CK_FunctionToPointerDecay,
+  CK_SubprogramToPointerDecay,
 
   /// CK_NullToPointer - Null pointer constant to pointer, ObjC
   /// pointer, or block pointer.

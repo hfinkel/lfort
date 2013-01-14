@@ -425,8 +425,8 @@ void RTTIBuilder::BuildVTablePointer(const Type *Ty) {
     VTableName = "_ZTVN10__cxxabiv117__array_type_infoE";
     break;
 
-  case Type::FunctionNoProto:
-  case Type::FunctionProto:
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto:
     // abi::__function_type_info.
     VTableName = "_ZTVN10__cxxabiv120__function_type_infoE";
     break;
@@ -620,8 +620,8 @@ llvm::Constant *RTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
     // abi::__array_type_info adds no data members to std::type_info.
     break;
 
-  case Type::FunctionNoProto:
-  case Type::FunctionProto:
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto:
     // Itanium C++ ABI 2.9.5p5:
     // abi::__function_type_info adds no data members to std::type_info.
     break;

@@ -353,15 +353,15 @@ void ElementRegion::Profile(llvm::FoldingSetNodeID& ID) const {
   ElementRegion::ProfileRegion(ID, ElementType, Index, superRegion);
 }
 
-void FunctionTextRegion::ProfileRegion(llvm::FoldingSetNodeID& ID,
+void SubprogramTextRegion::ProfileRegion(llvm::FoldingSetNodeID& ID,
                                        const NamedDecl *FD,
                                        const MemRegion*) {
-  ID.AddInteger(MemRegion::FunctionTextRegionKind);
+  ID.AddInteger(MemRegion::SubprogramTextRegionKind);
   ID.AddPointer(FD);
 }
 
-void FunctionTextRegion::Profile(llvm::FoldingSetNodeID& ID) const {
-  FunctionTextRegion::ProfileRegion(ID, FD, superRegion);
+void SubprogramTextRegion::Profile(llvm::FoldingSetNodeID& ID) const {
+  SubprogramTextRegion::ProfileRegion(ID, FD, superRegion);
 }
 
 void BlockTextRegion::ProfileRegion(llvm::FoldingSetNodeID& ID,
@@ -449,7 +449,7 @@ void AllocaRegion::dumpToStream(raw_ostream &os) const {
   os << "alloca{" << (const void*) Ex << ',' << Cnt << '}';
 }
 
-void FunctionTextRegion::dumpToStream(raw_ostream &os) const {
+void SubprogramTextRegion::dumpToStream(raw_ostream &os) const {
   os << "code{" << getDecl()->getDeclName().getAsString() << '}';
 }
 
@@ -751,9 +751,9 @@ const VarRegion* MemRegionManager::getVarRegion(const VarDecl *D,
       else {
         assert(D->isStaticLocal());
         const Decl *STCD = STC->getDecl();
-        if (isa<FunctionDecl>(STCD) || isa<ObjCMethodDecl>(STCD))
+        if (isa<SubprogramDecl>(STCD) || isa<ObjCMethodDecl>(STCD))
           sReg = getGlobalsRegion(MemRegion::StaticGlobalSpaceRegionKind,
-                                  getFunctionTextRegion(cast<NamedDecl>(STCD)));
+                                  getSubprogramTextRegion(cast<NamedDecl>(STCD)));
         else if (const BlockDecl *BD = dyn_cast<BlockDecl>(STCD)) {
           const BlockTextRegion *BTR =
             getBlockTextRegion(BD,
@@ -844,9 +844,9 @@ MemRegionManager::getElementRegion(QualType elementType, NonLoc Idx,
   return R;
 }
 
-const FunctionTextRegion *
-MemRegionManager::getFunctionTextRegion(const NamedDecl *FD) {
-  return getSubRegion<FunctionTextRegion>(FD, getCodeRegion());
+const SubprogramTextRegion *
+MemRegionManager::getSubprogramTextRegion(const NamedDecl *FD) {
+  return getSubRegion<SubprogramTextRegion>(FD, getCodeRegion());
 }
 
 const BlockTextRegion *

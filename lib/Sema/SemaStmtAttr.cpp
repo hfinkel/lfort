@@ -37,7 +37,7 @@ static Attr *handleFallThroughAttr(Sema &S, Stmt *St, const AttributeList &A,
     }
     return 0;
   }
-  if (S.getCurFunction()->SwitchStack.empty()) {
+  if (S.getCurSubprogram()->SwitchStack.empty()) {
     S.Diag(A.getRange().getBegin(), diag::err_fallthrough_attr_outside_switch);
     return 0;
   }

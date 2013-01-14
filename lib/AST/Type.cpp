@@ -345,8 +345,8 @@ bool Type::isDerivedType() const {
   case VariableArray:
   case ConstantArray:
   case IncompleteArray:
-  case FunctionProto:
-  case FunctionNoProto:
+  case SubprogramProto:
+  case SubprogramNoProto:
   case LValueReference:
   case RValueReference:
   case Record:
@@ -577,7 +577,7 @@ namespace {
     AutoType *VisitVectorType(const VectorType *T) {
       return Visit(T->getElementType());
     }
-    AutoType *VisitFunctionType(const FunctionType *T) {
+    AutoType *VisitSubprogramType(const SubprogramType *T) {
       return Visit(T->getResultType());
     }
     AutoType *VisitParenType(const ParenType *T) {
@@ -1539,7 +1539,7 @@ QualType QualType::getNonLValueExprType(ASTContext &Context) const {
   return *this;
 }
 
-StringRef FunctionType::getNameForCallConv(CallingConv CC) {
+StringRef SubprogramType::getNameForCallConv(CallingConv CC) {
   switch (CC) {
   case CC_Default: 
     llvm_unreachable("no name for default cc");
@@ -1558,10 +1558,10 @@ StringRef FunctionType::getNameForCallConv(CallingConv CC) {
   llvm_unreachable("Invalid calling convention.");
 }
 
-FunctionProtoType::FunctionProtoType(QualType result, const QualType *args,
+SubprogramProtoType::SubprogramProtoType(QualType result, const QualType *args,
                                      unsigned numArgs, QualType canonical,
                                      const ExtProtoInfo &epi)
-  : FunctionType(FunctionProto, result, epi.TypeQuals, epi.RefQualifier,
+  : SubprogramType(SubprogramProto, result, epi.TypeQuals, epi.RefQualifier,
                  canonical,
                  result->isDependentType(),
                  result->isInstantiationDependentType(),
@@ -1616,7 +1616,7 @@ FunctionProtoType::FunctionProtoType(QualType result, const QualType *args,
   } else if (getExceptionSpecType() == EST_Uninstantiated) {
     // Store the function decl from which we will resolve our
     // exception specification.
-    FunctionDecl **slot = reinterpret_cast<FunctionDecl**>(argSlot + numArgs);
+    SubprogramDecl **slot = reinterpret_cast<SubprogramDecl**>(argSlot + numArgs);
     slot[0] = epi.ExceptionSpecDecl;
     slot[1] = epi.ExceptionSpecTemplate;
     // This exception specification doesn't make the type dependent, because
@@ -1624,7 +1624,7 @@ FunctionProtoType::FunctionProtoType(QualType result, const QualType *args,
   } else if (getExceptionSpecType() == EST_Unevaluated) {
     // Store the function decl from which we will resolve our
     // exception specification.
-    FunctionDecl **slot = reinterpret_cast<FunctionDecl**>(argSlot + numArgs);
+    SubprogramDecl **slot = reinterpret_cast<SubprogramDecl**>(argSlot + numArgs);
     slot[0] = epi.ExceptionSpecDecl;
   }
 
@@ -1635,8 +1635,8 @@ FunctionProtoType::FunctionProtoType(QualType result, const QualType *args,
   }
 }
 
-FunctionProtoType::NoexceptResult
-FunctionProtoType::getNoexceptSpec(ASTContext &ctx) const {
+SubprogramProtoType::NoexceptResult
+SubprogramProtoType::getNoexceptSpec(ASTContext &ctx) const {
   ExceptionSpecificationType est = getExceptionSpecType();
   if (est == EST_BasicNoexcept)
     return NR_Nothrow;
@@ -1659,7 +1659,7 @@ FunctionProtoType::getNoexceptSpec(ASTContext &ctx) const {
   return value.getBoolValue() ? NR_Nothrow : NR_Throw;
 }
 
-bool FunctionProtoType::isTemplateVariadic() const {
+bool SubprogramProtoType::isTemplateVariadic() const {
   for (unsigned ArgIdx = getNumArgs(); ArgIdx; --ArgIdx)
     if (isa<PackExpansionType>(getArgType(ArgIdx - 1)))
       return true;
@@ -1667,7 +1667,7 @@ bool FunctionProtoType::isTemplateVariadic() const {
   return false;
 }
 
-void FunctionProtoType::Profile(llvm::FoldingSetNodeID &ID, QualType Result,
+void SubprogramProtoType::Profile(llvm::FoldingSetNodeID &ID, QualType Result,
                                 const QualType *ArgTys, unsigned NumArgs,
                                 const ExtProtoInfo &epi,
                                 const ASTContext &Context) {
@@ -1721,7 +1721,7 @@ void FunctionProtoType::Profile(llvm::FoldingSetNodeID &ID, QualType Result,
   ID.AddBoolean(epi.HasTrailingReturn);
 }
 
-void FunctionProtoType::Profile(llvm::FoldingSetNodeID &ID,
+void SubprogramProtoType::Profile(llvm::FoldingSetNodeID &ID,
                                 const ASTContext &Ctx) {
   Profile(ID, getResultType(), arg_type_begin(), NumArgs, getExtProtoInfo(),
           Ctx);
@@ -2105,7 +2105,7 @@ static CachedProperties computeCachedProperties(const Type *T) {
     //     -  it is a specialization of a class template (14); or
     NamedDecl::LinkageInfo LV = Tag->getLinkageAndVisibility();
     bool IsLocalOrUnnamed =
-      Tag->getDeclContext()->isFunctionOrMethod() ||
+      Tag->getDeclContext()->isSubprogramOrMethod() ||
       (!Tag->getIdentifier() && !Tag->getTypedefNameForAnonDecl());
     return CachedProperties(LV, IsLocalOrUnnamed);
   }
@@ -2134,12 +2134,12 @@ static CachedProperties computeCachedProperties(const Type *T) {
   case Type::Vector:
   case Type::ExtVector:
     return Cache::get(cast<VectorType>(T)->getElementType());
-  case Type::FunctionNoProto:
-    return Cache::get(cast<FunctionType>(T)->getResultType());
-  case Type::FunctionProto: {
-    const FunctionProtoType *FPT = cast<FunctionProtoType>(T);
+  case Type::SubprogramNoProto:
+    return Cache::get(cast<SubprogramType>(T)->getResultType());
+  case Type::SubprogramProto: {
+    const SubprogramProtoType *FPT = cast<SubprogramProtoType>(T);
     CachedProperties result = Cache::get(FPT->getResultType());
-    for (FunctionProtoType::arg_type_iterator ai = FPT->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator ai = FPT->arg_type_begin(),
            ae = FPT->arg_type_end(); ai != ae; ++ai)
       result = merge(result, Cache::get(*ai));
     return result;

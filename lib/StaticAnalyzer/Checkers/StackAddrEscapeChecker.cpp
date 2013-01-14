@@ -27,13 +27,13 @@ using namespace ento;
 
 namespace {
 class StackAddrEscapeChecker : public Checker< check::PreStmt<ReturnStmt>,
-                                               check::EndFunction > {
+                                               check::EndSubprogram > {
   mutable OwningPtr<BuiltinBug> BT_stackleak;
   mutable OwningPtr<BuiltinBug> BT_returnstack;
 
 public:
   void checkPreStmt(const ReturnStmt *RS, CheckerContext &C) const;
-  void checkEndFunction(CheckerContext &Ctx) const;
+  void checkEndSubprogram(CheckerContext &Ctx) const;
 private:
   void EmitStackError(CheckerContext &C, const MemRegion *R,
                       const Expr *RetE) const;
@@ -157,7 +157,7 @@ void StackAddrEscapeChecker::checkPreStmt(const ReturnStmt *RS,
   EmitStackError(C, R, RetE);
 }
 
-void StackAddrEscapeChecker::checkEndFunction(CheckerContext &Ctx) const {
+void StackAddrEscapeChecker::checkEndSubprogram(CheckerContext &Ctx) const {
   ProgramStateRef state = Ctx.getState();
 
   // Iterate over all bindings to global variables and see if it contains

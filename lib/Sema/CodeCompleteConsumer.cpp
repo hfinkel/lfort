@@ -284,7 +284,7 @@ StringRef CodeCompletionTUInfo::getParentName(DeclContext *DC) {
 
   // Find the interesting names.
   llvm::SmallVector<DeclContext *, 2> Contexts;
-  while (DC && !DC->isFunctionOrMethod()) {
+  while (DC && !DC->isSubprogramOrMethod()) {
     if (NamedDecl *ND = dyn_cast<NamedDecl>(DC)) {
       if (ND->getIdentifier())
         Contexts.push_back(DC);
@@ -382,7 +382,7 @@ void CodeCompletionBuilder::addParentContext(DeclContext *DC) {
     return;
   }
   
-  if (DC->isFunctionOrMethod())
+  if (DC->isSubprogramOrMethod())
     return;
   
   NamedDecl *ND = dyn_cast<NamedDecl>(DC);
@@ -402,7 +402,7 @@ unsigned CodeCompletionResult::getPriorityFromDecl(NamedDecl *ND) {
   
   // Context-based decisions.
   DeclContext *DC = ND->getDeclContext()->getRedeclContext();
-  if (DC->isFunctionOrMethod() || isa<BlockDecl>(DC)) {
+  if (DC->isSubprogramOrMethod() || isa<BlockDecl>(DC)) {
     // _cmd is relatively rare
     if (ImplicitParamDecl *ImplicitParam = dyn_cast<ImplicitParamDecl>(ND))
       if (ImplicitParam->getIdentifier() &&
@@ -426,27 +426,27 @@ unsigned CodeCompletionResult::getPriorityFromDecl(NamedDecl *ND) {
 //===----------------------------------------------------------------------===//
 // Code completion overload candidate implementation
 //===----------------------------------------------------------------------===//
-FunctionDecl *
-CodeCompleteConsumer::OverloadCandidate::getFunction() const {
-  if (getKind() == CK_Function)
-    return Function;
-  else if (getKind() == CK_FunctionTemplate)
-    return FunctionTemplate->getTemplatedDecl();
+SubprogramDecl *
+CodeCompleteConsumer::OverloadCandidate::getSubprogram() const {
+  if (getKind() == CK_Subprogram)
+    return Subprogram;
+  else if (getKind() == CK_SubprogramTemplate)
+    return SubprogramTemplate->getTemplatedDecl();
   else
     return 0;
 }
 
-const FunctionType *
-CodeCompleteConsumer::OverloadCandidate::getFunctionType() const {
+const SubprogramType *
+CodeCompleteConsumer::OverloadCandidate::getSubprogramType() const {
   switch (Kind) {
-  case CK_Function:
-    return Function->getType()->getAs<FunctionType>();
+  case CK_Subprogram:
+    return Subprogram->getType()->getAs<SubprogramType>();
       
-  case CK_FunctionTemplate:
-    return FunctionTemplate->getTemplatedDecl()->getType()
-             ->getAs<FunctionType>();
+  case CK_SubprogramTemplate:
+    return SubprogramTemplate->getTemplatedDecl()->getType()
+             ->getAs<SubprogramType>();
       
-  case CK_FunctionType:
+  case CK_SubprogramType:
     return Type;
   }
 
@@ -559,8 +559,8 @@ void CodeCompletionResult::computeCursorKindAndAvailability(bool Accessible) {
       break;
     }
 
-    if (FunctionDecl *Function = dyn_cast<FunctionDecl>(Declaration))
-      if (Function->isDeleted())
+    if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(Declaration))
+      if (Subprogram->isDeleted())
         Availability = CXAvailability_NotAvailable;
       
     CursorKind = getCursorKindForDecl(Declaration);

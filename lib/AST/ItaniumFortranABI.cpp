@@ -35,7 +35,7 @@ public:
 
   unsigned getMemberPointerSize(const MemberPointerType *MPT) const {
     QualType Pointee = MPT->getPointeeType();
-    if (Pointee->isFunctionType()) return 2;
+    if (Pointee->isSubprogramType()) return 2;
     return 1;
   }
 

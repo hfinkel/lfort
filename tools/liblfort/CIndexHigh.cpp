@@ -223,7 +223,7 @@ static void findIdRefsInFile(CXTranslationUnit TU, CXCursor declCursor,
                               cxcursor::getSelectorIdentifierIndex(declCursor),
                               Visitor);
 
-  if (DeclContext *DC = Dcl->getParentFunctionOrMethod()) {
+  if (DeclContext *DC = Dcl->getParentSubprogramOrMethod()) {
     lfort_visitChildren(cxcursor::MakeCXCursor(cast<Decl>(DC), TU),
                         findFileIdRefVisit, &data);
     return;

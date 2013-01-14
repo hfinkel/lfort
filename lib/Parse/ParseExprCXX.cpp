@@ -282,7 +282,7 @@ bool Parser::ParseOptionalCXXScopeSpecifier(CXXScopeSpec &SS,
           break;
         }
         
-        if (TemplateName.getKind() != UnqualifiedId::IK_OperatorFunctionId &&
+        if (TemplateName.getKind() != UnqualifiedId::IK_OperatorSubprogramId &&
             TemplateName.getKind() != UnqualifiedId::IK_LiteralOperatorId) {
           Diag(TemplateName.getSourceRange().getBegin(),
                diag::err_id_after_template_in_nested_name_spec)
@@ -796,7 +796,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
 
   if (Tok.is(tok::l_paren)) {
     ParseScope PrototypeScope(this,
-                              Scope::FunctionPrototypeScope |
+                              Scope::SubprogramPrototypeScope |
                               Scope::DeclScope);
 
     SourceLocation DeclEndLoc;
@@ -855,7 +855,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
     PrototypeScope.Exit();
 
     SourceLocation NoLoc;
-    D.AddTypeInfo(DeclaratorChunk::getFunction(/*hasProto=*/true,
+    D.AddTypeInfo(DeclaratorChunk::getSubprogram(/*hasProto=*/true,
                                            /*isAmbiguous=*/false,
                                            LParenLoc,
                                            ParamInfo.data(), ParamInfo.size(),
@@ -902,7 +902,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
 
     ParsedAttributes Attr(AttrFactory);
     SourceLocation NoLoc;
-    D.AddTypeInfo(DeclaratorChunk::getFunction(/*hasProto=*/true,
+    D.AddTypeInfo(DeclaratorChunk::getSubprogram(/*hasProto=*/true,
                                                /*isAmbiguous=*/false,
                                                /*LParenLoc=*/NoLoc,
                                                /*Params=*/0,
@@ -1640,7 +1640,7 @@ bool Parser::ParseUnqualifiedIdTemplateId(CXXScopeSpec &SS,
   TemplateNameKind TNK = TNK_Non_template;
   switch (Id.getKind()) {
   case UnqualifiedId::IK_Identifier:
-  case UnqualifiedId::IK_OperatorFunctionId:
+  case UnqualifiedId::IK_OperatorSubprogramId:
   case UnqualifiedId::IK_LiteralOperatorId:
     if (AssumeTemplateId) {
       TNK = Actions.ActOnDependentTemplateName(getCurScope(), SS, TemplateKWLoc,
@@ -1666,8 +1666,8 @@ bool Parser::ParseUnqualifiedIdTemplateId(CXXScopeSpec &SS,
           Name = Id.Identifier->getName();
         else {
           Name = "operator ";
-          if (Id.getKind() == UnqualifiedId::IK_OperatorFunctionId)
-            Name += getOperatorSpelling(Id.OperatorFunctionId.Operator);
+          if (Id.getKind() == UnqualifiedId::IK_OperatorSubprogramId)
+            Name += getOperatorSpelling(Id.OperatorSubprogramId.Operator);
           else
             Name += Id.Identifier->getName();
         }
@@ -1739,7 +1739,7 @@ bool Parser::ParseUnqualifiedIdTemplateId(CXXScopeSpec &SS,
     return true;
   
   if (Id.getKind() == UnqualifiedId::IK_Identifier ||
-      Id.getKind() == UnqualifiedId::IK_OperatorFunctionId ||
+      Id.getKind() == UnqualifiedId::IK_OperatorSubprogramId ||
       Id.getKind() == UnqualifiedId::IK_LiteralOperatorId) {
     // Form a parsed representation of the template-id to be stored in the
     // UnqualifiedId.
@@ -1752,7 +1752,7 @@ bool Parser::ParseUnqualifiedIdTemplateId(CXXScopeSpec &SS,
       TemplateId->TemplateNameLoc = Id.StartLocation;
     } else {
       TemplateId->Name = 0;
-      TemplateId->Operator = Id.OperatorFunctionId.Operator;
+      TemplateId->Operator = Id.OperatorSubprogramId.Operator;
       TemplateId->TemplateNameLoc = Id.StartLocation;
     }
 
@@ -1918,7 +1918,7 @@ bool Parser::ParseUnqualifiedIdOperator(CXXScopeSpec &SS, bool EnteringContext,
   
   if (Op != OO_None) {
     // We have parsed an operator-function-id.
-    Result.setOperatorFunctionId(KeywordLoc, Op, SymbolLocations);
+    Result.setOperatorSubprogramId(KeywordLoc, Op, SymbolLocations);
     return false;
   }
 
@@ -2024,7 +2024,7 @@ bool Parser::ParseUnqualifiedIdOperator(CXXScopeSpec &SS, bool EnteringContext,
     return true;
   
   // Note that this is a conversion-function-id.
-  Result.setConversionFunctionId(KeywordLoc, Ty.get(), 
+  Result.setConversionSubprogramId(KeywordLoc, Ty.get(), 
                                  D.getSourceRange().getEnd());
   return false;  
 }
@@ -2169,7 +2169,7 @@ bool Parser::ParseUnqualifiedId(CXXScopeSpec &SS, bool EnteringContext,
     // 
     //   template-id:
     //     operator-function-id < template-argument-list[opt] >
-    if ((Result.getKind() == UnqualifiedId::IK_OperatorFunctionId ||
+    if ((Result.getKind() == UnqualifiedId::IK_OperatorSubprogramId ||
          Result.getKind() == UnqualifiedId::IK_LiteralOperatorId) &&
         (TemplateSpecified || Tok.is(tok::less)))
       return ParseUnqualifiedIdTemplateId(SS, TemplateKWLoc,
@@ -2512,12 +2512,12 @@ static UnaryTypeTrait UnaryTypeTraitFromTokKind(tok::TokenKind kind) {
   case tok::kw___is_enum:                 return UTT_IsEnum;
   case tok::kw___is_final:                 return UTT_IsFinal;
   case tok::kw___is_floating_point:          return UTT_IsFloatingPoint;
-  case tok::kw___is_function:                return UTT_IsFunction;
+  case tok::kw___is_function:                return UTT_IsSubprogram;
   case tok::kw___is_fundamental:             return UTT_IsFundamental;
   case tok::kw___is_integral:                return UTT_IsIntegral;
   case tok::kw___is_interface_class:         return UTT_IsInterfaceClass;
   case tok::kw___is_lvalue_reference:        return UTT_IsLvalueReference;
-  case tok::kw___is_member_function_pointer: return UTT_IsMemberFunctionPointer;
+  case tok::kw___is_member_function_pointer: return UTT_IsMemberSubprogramPointer;
   case tok::kw___is_member_object_pointer:   return UTT_IsMemberObjectPointer;
   case tok::kw___is_member_pointer:          return UTT_IsMemberPointer;
   case tok::kw___is_object:                  return UTT_IsObject;

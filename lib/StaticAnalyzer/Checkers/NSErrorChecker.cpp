@@ -81,23 +81,23 @@ void NSErrorMethodChecker::checkASTDecl(const ObjCMethodDecl *D,
 }
 
 //===----------------------------------------------------------------------===//
-// CFErrorFunctionChecker
+// CFErrorSubprogramChecker
 //===----------------------------------------------------------------------===//
 
 namespace {
-class CFErrorFunctionChecker
-    : public Checker< check::ASTDecl<FunctionDecl> > {
+class CFErrorSubprogramChecker
+    : public Checker< check::ASTDecl<SubprogramDecl> > {
   mutable IdentifierInfo *II;
 
 public:
-  CFErrorFunctionChecker() : II(0) { }
+  CFErrorSubprogramChecker() : II(0) { }
 
-  void checkASTDecl(const FunctionDecl *D,
+  void checkASTDecl(const SubprogramDecl *D,
                     AnalysisManager &mgr, BugReporter &BR) const;
 };
 }
 
-void CFErrorFunctionChecker::checkASTDecl(const FunctionDecl *D,
+void CFErrorSubprogramChecker::checkASTDecl(const SubprogramDecl *D,
                                         AnalysisManager &mgr,
                                         BugReporter &BR) const {
   if (!D->doesThisDeclarationHaveABody())
@@ -109,7 +109,7 @@ void CFErrorFunctionChecker::checkASTDecl(const FunctionDecl *D,
     II = &D->getASTContext().Idents.get("CFErrorRef"); 
 
   bool hasCFError = false;
-  for (FunctionDecl::param_const_iterator
+  for (SubprogramDecl::param_const_iterator
          I = D->param_begin(), E = D->param_end(); I != E; ++I)  {
     if (IsCFError((*I)->getType(), II)) {
       hasCFError = true;
@@ -118,7 +118,7 @@ void CFErrorFunctionChecker::checkASTDecl(const FunctionDecl *D,
   }
 
   if (hasCFError) {
-    const char *err = "Function accepting CFErrorRef* "
+    const char *err = "Subprogram accepting CFErrorRef* "
         "should have a non-void return value to indicate whether or not an "
         "error occurred";
     PathDiagnosticLocation L =
@@ -311,7 +311,7 @@ void ento::registerNSErrorChecker(CheckerManager &mgr) {
 }
 
 void ento::registerCFErrorChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CFErrorFunctionChecker>();
+  mgr.registerChecker<CFErrorSubprogramChecker>();
   NSOrCFErrorDerefChecker *
     checker = mgr.registerChecker<NSOrCFErrorDerefChecker>();
   checker->ShouldCheckCFError = true;

@@ -39,7 +39,7 @@ private:
 public:
   CGNVCUDARuntime(CodeGenModule &CGM);
 
-  void EmitDeviceStubBody(CodeGenSubprogram &CGF, FunctionArgList &Args);
+  void EmitDeviceStubBody(CodeGenSubprogram &CGF, SubprogramArgList &Args);
 };
 
 }
@@ -61,7 +61,7 @@ llvm::Constant *CGNVCUDARuntime::getSetupArgumentFn() const {
   Params.push_back(VoidPtrTy);
   Params.push_back(SizeTy);
   Params.push_back(SizeTy);
-  return CGM.CreateRuntimeFunction(llvm::FunctionType::get(IntTy,
+  return CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IntTy,
                                                            Params, false),
                                    "cudaSetupArgument");
 }
@@ -70,17 +70,17 @@ llvm::Constant *CGNVCUDARuntime::getLaunchFn() const {
   // cudaError_t cudaLaunch(char *)
   std::vector<llvm::Type*> Params;
   Params.push_back(CharPtrTy);
-  return CGM.CreateRuntimeFunction(llvm::FunctionType::get(IntTy,
+  return CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IntTy,
                                                            Params, false),
                                    "cudaLaunch");
 }
 
 void CGNVCUDARuntime::EmitDeviceStubBody(CodeGenSubprogram &CGF,
-                                         FunctionArgList &Args) {
+                                         SubprogramArgList &Args) {
   // Build the argument value list and the argument stack struct type.
   llvm::SmallVector<llvm::Value *, 16> ArgValues;
   std::vector<llvm::Type *> ArgTypes;
-  for (FunctionArgList::const_iterator I = Args.begin(), E = Args.end();
+  for (SubprogramArgList::const_iterator I = Args.begin(), E = Args.end();
        I != E; ++I) {
     llvm::Value *V = CGF.GetAddrOfLocalVar(*I);
     ArgValues.push_back(V);

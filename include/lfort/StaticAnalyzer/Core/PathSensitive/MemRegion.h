@@ -101,7 +101,7 @@ public:
     AllocaRegionKind,
     // Typed regions.
     BEG_TYPED_REGIONS,
-    FunctionTextRegionKind = BEG_TYPED_REGIONS,
+    SubprogramTextRegionKind = BEG_TYPED_REGIONS,
     BlockTextRegionKind,
     BlockDataRegionKind,
     BEG_TYPED_VALUE_REGIONS,
@@ -525,22 +525,22 @@ public:
     
   static bool classof(const MemRegion* R) {
     Kind k = R->getKind();
-    return k >= FunctionTextRegionKind && k <= BlockTextRegionKind;
+    return k >= SubprogramTextRegionKind && k <= BlockTextRegionKind;
   }
 };
 
-/// FunctionTextRegion - A region that represents code texts of function.
-class FunctionTextRegion : public CodeTextRegion {
+/// SubprogramTextRegion - A region that represents code texts of function.
+class SubprogramTextRegion : public CodeTextRegion {
   const NamedDecl *FD;
 public:
-  FunctionTextRegion(const NamedDecl *fd, const MemRegion* sreg)
-    : CodeTextRegion(sreg, FunctionTextRegionKind), FD(fd) {
-    assert(isa<ObjCMethodDecl>(fd) || isa<FunctionDecl>(fd));
+  SubprogramTextRegion(const NamedDecl *fd, const MemRegion* sreg)
+    : CodeTextRegion(sreg, SubprogramTextRegionKind), FD(fd) {
+    assert(isa<ObjCMethodDecl>(fd) || isa<SubprogramDecl>(fd));
   }
   
   QualType getLocationType() const {
     const ASTContext &Ctx = getContext();
-    if (const FunctionDecl *D = dyn_cast<FunctionDecl>(FD)) {
+    if (const SubprogramDecl *D = dyn_cast<SubprogramDecl>(FD)) {
       return Ctx.getPointerType(D->getType());
     }
 
@@ -564,7 +564,7 @@ public:
                             const MemRegion*);
   
   static bool classof(const MemRegion* R) {
-    return R->getKind() == FunctionTextRegionKind;
+    return R->getKind() == SubprogramTextRegionKind;
   }
 };
   
@@ -1221,7 +1221,7 @@ public:
     return getCXXBaseObjectRegion(baseReg->getDecl(), superRegion);
   }
 
-  const FunctionTextRegion *getFunctionTextRegion(const NamedDecl *FD);
+  const SubprogramTextRegion *getSubprogramTextRegion(const NamedDecl *FD);
   const BlockTextRegion *getBlockTextRegion(const BlockDecl *BD,
                                             CanQualType locTy,
                                             AnalysisDeclContext *AC);

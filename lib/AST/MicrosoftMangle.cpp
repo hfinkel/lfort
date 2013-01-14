@@ -53,7 +53,7 @@ public:
 
   void mangle(const NamedDecl *D, StringRef Prefix = "\01?");
   void mangleName(const NamedDecl *ND);
-  void mangleFunctionEncoding(const FunctionDecl *FD);
+  void mangleSubprogramEncoding(const SubprogramDecl *FD);
   void mangleVariableEncoding(const VarDecl *VD);
   void mangleNumber(int64_t Number);
   void mangleNumber(const llvm::APSInt &Value);
@@ -66,7 +66,7 @@ private:
   }
   void mangleUnqualifiedName(const NamedDecl *ND, DeclarationName Name);
   void mangleSourceName(const IdentifierInfo *II);
-  void manglePostfix(const DeclContext *DC, bool NoFunction=false);
+  void manglePostfix(const DeclContext *DC, bool NoSubprogram=false);
   void mangleOperatorName(OverloadedOperatorKind OO, SourceLocation Loc);
   void mangleQualifiers(Qualifiers Quals, bool IsMember);
   void manglePointerQualifiers(Qualifiers Quals);
@@ -75,7 +75,7 @@ private:
   void mangleTemplateInstantiationName(const TemplateDecl *TD,
                       const SmallVectorImpl<TemplateArgumentLoc> &TemplateArgs);
   void mangleObjCMethodName(const ObjCMethodDecl *MD);
-  void mangleLocalName(const FunctionDecl *FD);
+  void mangleLocalName(const SubprogramDecl *FD);
 
   void mangleArgumentType(QualType T, SourceRange Range);
 
@@ -90,15 +90,15 @@ private:
 #undef TYPE
   
   void mangleType(const TagType*);
-  void mangleType(const FunctionType *T, const FunctionDecl *D,
+  void mangleType(const SubprogramType *T, const SubprogramDecl *D,
                   bool IsStructor, bool IsInstMethod);
   void mangleType(const ArrayType *T, bool IsGlobal);
   void mangleExtraDimensions(QualType T);
-  void mangleFunctionClass(const FunctionDecl *FD);
-  void mangleCallingConvention(const FunctionType *T, bool IsInstMethod = false);
+  void mangleSubprogramClass(const SubprogramDecl *FD);
+  void mangleCallingConvention(const SubprogramType *T, bool IsInstMethod = false);
   void mangleIntegerLiteral(const llvm::APSInt &Number, bool IsBoolean);
   void mangleExpression(const Expr *E);
-  void mangleThrowSpecification(const FunctionProtoType *T);
+  void mangleThrowSpecification(const SubprogramProtoType *T);
 
   void mangleTemplateArgs(
                       const SmallVectorImpl<TemplateArgumentLoc> &TemplateArgs);
@@ -166,7 +166,7 @@ bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   // LFort's "overloadable" attribute extension to C/C++ implies name mangling
   // (always) as does passing a C++ member function and a function
   // whose name is not a simple identifier.
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (FD && (FD->hasAttr<OverloadableAttr>() || isa<CXXMethodDecl>(FD) ||
              !FD->getDeclName().isIdentifier()))
     return true;
@@ -215,8 +215,8 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
   // <mangled-name> ::= ? <name> <type-encoding>
   Out << Prefix;
   mangleName(D);
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    mangleFunctionEncoding(FD);
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    mangleSubprogramEncoding(FD);
   else if (const VarDecl *VD = dyn_cast<VarDecl>(D))
     mangleVariableEncoding(VD);
   else {
@@ -230,16 +230,16 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
   }
 }
 
-void MicrosoftCXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
+void MicrosoftCXXNameMangler::mangleSubprogramEncoding(const SubprogramDecl *FD) {
   // <type-encoding> ::= <function-class> <function-type>
 
   // Don't mangle in the type if this isn't a decl we should typically mangle.
   if (!Context.shouldMangleDeclName(FD))
     return;
   
-  // We should never ever see a FunctionNoProtoType at this point.
+  // We should never ever see a SubprogramNoProtoType at this point.
   // We don't even know how to mangle their types anyway :).
-  const FunctionProtoType *FT = FD->getType()->castAs<FunctionProtoType>();
+  const SubprogramProtoType *FT = FD->getType()->castAs<SubprogramProtoType>();
 
   bool InStructor = false, InInstMethod = false;
   const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD);
@@ -251,7 +251,7 @@ void MicrosoftCXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
   }
 
   // First, the function class.
-  mangleFunctionClass(FD);
+  mangleSubprogramClass(FD);
 
   mangleType(FT, FD, InStructor, InInstMethod);
 }
@@ -307,7 +307,7 @@ void MicrosoftCXXNameMangler::mangleName(const NamedDecl *ND) {
 
   // If this is an extern variable declared locally, the relevant DeclContext
   // is that of the containing namespace, or the translation unit.
-  if (isa<FunctionDecl>(DC) && ND->hasLinkage())
+  if (isa<SubprogramDecl>(DC) && ND->hasLinkage())
     while (!DC->isNamespace() && !DC->isTranslationUnit())
       DC = DC->getParent();
 
@@ -359,7 +359,7 @@ static const TemplateDecl *
 isTemplate(const NamedDecl *ND,
            SmallVectorImpl<TemplateArgumentLoc> &TemplateArgs) {
   // Check if we have a function template.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(ND)){
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND)){
     if (const TemplateDecl *TD = FD->getPrimaryTemplate()) {
       if (FD->getTemplateSpecializationArgsAsWritten()) {
         const ASTTemplateArgumentListInfo *ArgList =
@@ -499,7 +499,7 @@ MicrosoftCXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
       Out << "?1";
       break;
       
-    case DeclarationName::CXXConversionFunctionName:
+    case DeclarationName::CXXConversionSubprogramName:
       // <operator-name> ::= ?B # (cast)
       // The target type is encoded as the return type.
       Out << "?B";
@@ -524,7 +524,7 @@ MicrosoftCXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
 }
 
 void MicrosoftCXXNameMangler::manglePostfix(const DeclContext *DC,
-                                            bool NoFunction) {
+                                            bool NoSubprogram) {
   // <postfix> ::= <unqualified-name> [<postfix>]
   //           ::= <substitution> [<postfix>]
 
@@ -539,18 +539,18 @@ void MicrosoftCXXNameMangler::manglePostfix(const DeclContext *DC,
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(DC)) {
     Context.mangleBlock(BD, Out);
     Out << '@';
-    return manglePostfix(DC->getParent(), NoFunction);
+    return manglePostfix(DC->getParent(), NoSubprogram);
   }
 
-  if (NoFunction && (isa<FunctionDecl>(DC) || isa<ObjCMethodDecl>(DC)))
+  if (NoSubprogram && (isa<SubprogramDecl>(DC) || isa<ObjCMethodDecl>(DC)))
     return;
   else if (const ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(DC))
     mangleObjCMethodName(Method);
-  else if (const FunctionDecl *Func = dyn_cast<FunctionDecl>(DC))
+  else if (const SubprogramDecl *Func = dyn_cast<SubprogramDecl>(DC))
     mangleLocalName(Func);
   else {
     mangleUnqualifiedName(cast<NamedDecl>(DC));
-    manglePostfix(DC->getParent(), NoFunction);
+    manglePostfix(DC->getParent(), NoSubprogram);
   }
 }
 
@@ -710,19 +710,19 @@ void MicrosoftCXXNameMangler::mangleObjCMethodName(const ObjCMethodDecl *MD) {
 // Find out how many function decls live above this one and return an integer
 // suitable for use as the number in a numbered anonymous scope.
 // TODO: Memoize.
-static unsigned getLocalNestingLevel(const FunctionDecl *FD) {
+static unsigned getLocalNestingLevel(const SubprogramDecl *FD) {
   const DeclContext *DC = FD->getParent();
   int level = 1;
 
   while (DC && !DC->isTranslationUnit()) {
-    if (isa<FunctionDecl>(DC) || isa<ObjCMethodDecl>(DC)) level++;
+    if (isa<SubprogramDecl>(DC) || isa<ObjCMethodDecl>(DC)) level++;
     DC = DC->getParent();
   }
 
   return 2*level;
 }
 
-void MicrosoftCXXNameMangler::mangleLocalName(const FunctionDecl *FD) {
+void MicrosoftCXXNameMangler::mangleLocalName(const SubprogramDecl *FD) {
   // <nested-name> ::= <numbered-anonymous-scope> ? <mangled-name>
   // <numbered-anonymous-scope> ::= ? <number>
   // Even though the name is rendered in reverse order (e.g.
@@ -1089,7 +1089,7 @@ void MicrosoftCXXNameMangler::mangleType(const BuiltinType *T,
 }
 
 // <type>          ::= <function-type>
-void MicrosoftCXXNameMangler::mangleType(const FunctionProtoType *T,
+void MicrosoftCXXNameMangler::mangleType(const SubprogramProtoType *T,
                                          SourceRange) {
   // Structors only appear in decls, so at this point we know it's not a
   // structor type.
@@ -1097,18 +1097,18 @@ void MicrosoftCXXNameMangler::mangleType(const FunctionProtoType *T,
   Out << "$$A6";
   mangleType(T, NULL, false, false);
 }
-void MicrosoftCXXNameMangler::mangleType(const FunctionNoProtoType *T,
+void MicrosoftCXXNameMangler::mangleType(const SubprogramNoProtoType *T,
                                          SourceRange) {
   llvm_unreachable("Can't mangle K&R function prototypes");
 }
 
-void MicrosoftCXXNameMangler::mangleType(const FunctionType *T,
-                                         const FunctionDecl *D,
+void MicrosoftCXXNameMangler::mangleType(const SubprogramType *T,
+                                         const SubprogramDecl *D,
                                          bool IsStructor,
                                          bool IsInstMethod) {
   // <function-type> ::= <this-cvr-qualifiers> <calling-convention>
   //                     <return-type> <argument-list> <throw-spec>
-  const FunctionProtoType *Proto = cast<FunctionProtoType>(T);
+  const SubprogramProtoType *Proto = cast<SubprogramProtoType>(T);
 
   // If this is a C++ instance method, mangle the CVR qualifiers for the
   // this pointer.
@@ -1149,7 +1149,7 @@ void MicrosoftCXXNameMangler::mangleType(const FunctionType *T,
       // If we got a decl, use the type-as-written to make sure arrays
       // get mangled right.  Note that we can't rely on the TSI
       // existing if (for example) the parameter was synthesized.
-      for (FunctionDecl::param_const_iterator Parm = D->param_begin(),
+      for (SubprogramDecl::param_const_iterator Parm = D->param_begin(),
              ParmEnd = D->param_end(); Parm != ParmEnd; ++Parm) {
         TypeSourceInfo *TSI = (*Parm)->getTypeSourceInfo();
         QualType Type = TSI ? TSI->getType() : (*Parm)->getType();
@@ -1157,7 +1157,7 @@ void MicrosoftCXXNameMangler::mangleType(const FunctionType *T,
       }
     } else {
       // Happens for function pointer type arguments for example.
-      for (FunctionProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
+      for (SubprogramProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
            ArgEnd = Proto->arg_type_end();
            Arg != ArgEnd; ++Arg)
         mangleArgumentType(*Arg, SourceRange());
@@ -1172,7 +1172,7 @@ void MicrosoftCXXNameMangler::mangleType(const FunctionType *T,
   mangleThrowSpecification(Proto);
 }
 
-void MicrosoftCXXNameMangler::mangleFunctionClass(const FunctionDecl *FD) {
+void MicrosoftCXXNameMangler::mangleSubprogramClass(const SubprogramDecl *FD) {
   // <function-class> ::= A # private: near
   //                  ::= B # private: far
   //                  ::= C # private: static near
@@ -1229,7 +1229,7 @@ void MicrosoftCXXNameMangler::mangleFunctionClass(const FunctionDecl *FD) {
   } else
     Out << 'Y';
 }
-void MicrosoftCXXNameMangler::mangleCallingConvention(const FunctionType *T,
+void MicrosoftCXXNameMangler::mangleCallingConvention(const SubprogramType *T,
                                                       bool IsInstMethod) {
   // <calling-convention> ::= A # __cdecl
   //                      ::= B # __export __cdecl
@@ -1249,8 +1249,8 @@ void MicrosoftCXXNameMangler::mangleCallingConvention(const FunctionType *T,
   CallingConv CC = T->getCallConv();
   if (CC == CC_Default) {
     if (IsInstMethod) {
-      const FunctionProtoType *FPT =
-        T->getCanonicalTypeUnqualified().castAs<FunctionProtoType>();
+      const SubprogramProtoType *FPT =
+        T->getCanonicalTypeUnqualified().castAs<SubprogramProtoType>();
       bool isVariadic = FPT->isVariadic();
       CC = getASTContext().getDefaultCXXMethodCallConv(isVariadic);
     } else {
@@ -1269,7 +1269,7 @@ void MicrosoftCXXNameMangler::mangleCallingConvention(const FunctionType *T,
   }
 }
 void MicrosoftCXXNameMangler::mangleThrowSpecification(
-                                                const FunctionProtoType *FT) {
+                                                const SubprogramProtoType *FT) {
   // <throw-spec> ::= Z # throw(...) (default)
   //              ::= @ # throw() or __declspec/__attribute__((nothrow))
   //              ::= <type>+
@@ -1405,7 +1405,7 @@ void MicrosoftCXXNameMangler::mangleExtraDimensions(QualType ElementTy) {
 void MicrosoftCXXNameMangler::mangleType(const MemberPointerType *T,
                                          SourceRange Range) {
   QualType PointeeType = T->getPointeeType();
-  if (const FunctionProtoType *FPT = PointeeType->getAs<FunctionProtoType>()) {
+  if (const SubprogramProtoType *FPT = PointeeType->getAs<SubprogramProtoType>()) {
     Out << '8';
     mangleName(T->getClass()->castAs<RecordType>()->getDecl());
     mangleType(FPT, NULL, false, true);
@@ -1443,8 +1443,8 @@ void MicrosoftCXXNameMangler::mangleType(const PointerType *T,
   if (PointeeTy->isArrayType()) {
     // Pointers to arrays are mangled like arrays.
     mangleExtraDimensions(PointeeTy);
-  } else if (const FunctionType *FT = PointeeTy->getAs<FunctionType>()) {
-    // Function pointers are special.
+  } else if (const SubprogramType *FT = PointeeTy->getAs<SubprogramType>()) {
+    // Subprogram pointers are special.
     Out << '6';
     mangleType(FT, NULL, false, false);
   } else {
@@ -1536,7 +1536,7 @@ void MicrosoftCXXNameMangler::mangleType(const BlockPointerType *T,
   Out << "_E";
 
   QualType pointee = T->getPointeeType();
-  mangleType(pointee->castAs<FunctionProtoType>(), NULL, false, false);
+  mangleType(pointee->castAs<SubprogramProtoType>(), NULL, false, false);
 }
 
 void MicrosoftCXXNameMangler::mangleType(const InjectedClassNameType *T,
@@ -1640,7 +1640,7 @@ void MicrosoftCXXNameMangler::mangleType(const AtomicType *T,
 
 void MicrosoftMangleContext::mangleName(const NamedDecl *D,
                                         raw_ostream &Out) {
-  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D)) &&
+  assert((isa<SubprogramDecl>(D) || isa<VarDecl>(D)) &&
          "Invalid mangleName() call, argument is not a variable or function!");
   assert(!isa<CXXConstructorDecl>(D) && !isa<CXXDestructorDecl>(D) &&
          "Invalid mangleName() call on 'structor decl!");

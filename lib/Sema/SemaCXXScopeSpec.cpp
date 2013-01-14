@@ -665,7 +665,7 @@ bool Sema::BuildCXXNestedNameSpecifier(Scope *S,
   // };
   if (getLangOpts().MicrosoftExt) {
     DeclContext *DC = LookupCtx ? LookupCtx : CurContext;
-    if (DC->isDependentContext() && DC->isFunctionOrMethod()) {
+    if (DC->isDependentContext() && DC->isSubprogramOrMethod()) {
       SS.Extend(Context, &Identifier, IdentifierLoc, CCLoc);
       return false;
     }
@@ -796,7 +796,7 @@ bool Sema::ActOnCXXNestedNameSpecifier(Scope *S,
   
   
   if (Template.get().getAsOverloadedTemplate() ||
-      isa<FunctionTemplateDecl>(Template.get().getAsTemplateDecl())) {
+      isa<SubprogramTemplateDecl>(Template.get().getAsTemplateDecl())) {
     SourceRange R(TemplateNameLoc, RAngleLoc);
     if (SS.getRange().isValid())
       R.setBegin(SS.getRange().getBegin());

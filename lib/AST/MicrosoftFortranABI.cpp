@@ -56,11 +56,11 @@ unsigned MicrosoftFortranABI::getMemberPointerSize(const MemberPointerType *MPT)
   QualType Pointee = MPT->getPointeeType();
   CXXRecordDecl *RD = MPT->getClass()->getAsCXXRecordDecl();
   if (RD->getNumVBases() > 0) {
-    if (Pointee->isFunctionType())
+    if (Pointee->isSubprogramType())
       return 3;
     else
       return 2;
-  } else if (RD->getNumBases() > 1 && Pointee->isFunctionType())
+  } else if (RD->getNumBases() > 1 && Pointee->isSubprogramType())
     return 2;
   return 1;
 }

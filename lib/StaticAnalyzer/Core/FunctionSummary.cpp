@@ -1,4 +1,4 @@
-//== FunctionSummary.h - Stores summaries of functions. ------------*- C++ -*-//
+//== SubprogramSummary.h - Stores summaries of functions. ------------*- C++ -*-//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "lfort/StaticAnalyzer/Core/PathSensitive/FunctionSummary.h"
+#include "lfort/StaticAnalyzer/Core/PathSensitive/SubprogramSummary.h"
 using namespace lfort;
 using namespace ento;
 
-FunctionSummariesTy::~FunctionSummariesTy() {
+SubprogramSummariesTy::~SubprogramSummariesTy() {
   for (MapTy::iterator I = Map.begin(), E = Map.end(); I != E; ++I) {
     delete(I->second);
   }
 }
 
-unsigned FunctionSummariesTy::getTotalNumBasicBlocks() {
+unsigned SubprogramSummariesTy::getTotalNumBasicBlocks() {
   unsigned Total = 0;
   for (MapTy::iterator I = Map.begin(), E = Map.end(); I != E; ++I) {
     Total += I->second->TotalBasicBlocks;
@@ -29,7 +29,7 @@ unsigned FunctionSummariesTy::getTotalNumBasicBlocks() {
   return Total;
 }
 
-unsigned FunctionSummariesTy::getTotalNumVisitedBasicBlocks() {
+unsigned SubprogramSummariesTy::getTotalNumVisitedBasicBlocks() {
   unsigned Total = 0;
   for (MapTy::iterator I = Map.begin(), E = Map.end(); I != E; ++I) {
     Total += I->second->VisitedBasicBlocks.count();

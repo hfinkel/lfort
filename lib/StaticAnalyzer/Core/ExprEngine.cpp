@@ -56,7 +56,7 @@ STATISTIC(NumTimesRetriedWithoutInlining,
 
 ExprEngine::ExprEngine(AnalysisManager &mgr, bool gcEnabled,
                        SetOfConstDecls *VisitedCalleesIn,
-                       FunctionSummariesTy *FS,
+                       SubprogramSummariesTy *FS,
                        InliningModes HowToInlineIn)
   : AMgr(mgr),
     AnalysisDeclContexts(mgr.getAnalysisDeclContextManager()),
@@ -97,7 +97,7 @@ ProgramStateRef ExprEngine::getInitialState(const LocationContext *InitLoc) {
   // such preconditions.  Some day.
   do {
 
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       // Precondition: the first argument of 'main' is an integer guaranteed
       //  to be > 0.
       const IdentifierInfo *II = FD->getIdentifier();
@@ -544,7 +544,7 @@ void ExprEngine::Visit(const Stmt *S, ExplodedNode *Pred,
     case Stmt::CXXNoexceptExprClass:
     case Stmt::PackExpansionExprClass:
     case Stmt::SubstNonTypeTemplateParmPackExprClass:
-    case Stmt::FunctionParmPackExprClass:
+    case Stmt::SubprogramParmPackExprClass:
     case Stmt::SEHTryStmtClass:
     case Stmt::SEHExceptStmtClass:
     case Stmt::LambdaExprClass:
@@ -861,7 +861,7 @@ void ExprEngine::Visit(const Stmt *S, ExplodedNode *Pred,
     case Stmt::CXXDynamicCastExprClass:
     case Stmt::CXXReinterpretCastExprClass:
     case Stmt::CXXConstCastExprClass:
-    case Stmt::CXXFunctionalCastExprClass: 
+    case Stmt::CXXSubprogramalCastExprClass: 
     case Stmt::ObjCBridgedCastExprClass: {
       Bldr.takeNodes(Pred);
       const CastExpr *C = cast<CastExpr>(S);
@@ -1080,7 +1080,7 @@ void ExprEngine::processCFGBlockEntrance(const BlockEdge &L,
     const LocationContext *RootLC =
                         (*G.roots_begin())->getLocation().getLocationContext();
     if (RootLC->getCurrentStackFrame() != CalleeSF) {
-      Engine.FunctionSummaries->markReachedMaxBlockCount(CalleeSF->getDecl());
+      Engine.SubprogramSummaries->markReachedMaxBlockCount(CalleeSF->getDecl());
 
       // Re-run the call evaluation without inlining it, by storing the
       // no-inlining policy in the state and enqueuing the new work item on
@@ -1324,7 +1324,7 @@ void ExprEngine::processIndirectGoto(IndirectGotoNodeBuilder &builder) {
 
 /// ProcessEndPath - Called by CoreEngine.  Used to generate end-of-path
 ///  nodes when the control reaches the end of a function.
-void ExprEngine::processEndOfFunction(NodeBuilderContext& BC,
+void ExprEngine::processEndOfSubprogram(NodeBuilderContext& BC,
                                       ExplodedNode *Pred) {
   StateMgr.EndPath(Pred->getState());
 
@@ -1332,18 +1332,18 @@ void ExprEngine::processEndOfFunction(NodeBuilderContext& BC,
   if (Pred->getLocationContext()->inTopFrame()) {
     // Remove dead symbols.
     ExplodedNodeSet AfterRemovedDead;
-    removeDeadOnEndOfFunction(BC, Pred, AfterRemovedDead);
+    removeDeadOnEndOfSubprogram(BC, Pred, AfterRemovedDead);
 
     // Notify checkers.
     for (ExplodedNodeSet::iterator I = AfterRemovedDead.begin(),
         E = AfterRemovedDead.end(); I != E; ++I) {
-      getCheckerManager().runCheckersForEndFunction(BC, Dst, *I, *this);
+      getCheckerManager().runCheckersForEndSubprogram(BC, Dst, *I, *this);
     }
   } else {
-    getCheckerManager().runCheckersForEndFunction(BC, Dst, Pred, *this);
+    getCheckerManager().runCheckersForEndSubprogram(BC, Dst, Pred, *this);
   }
 
-  Engine.enqueueEndOfFunction(Dst);
+  Engine.enqueueEndOfSubprogram(Dst);
 }
 
 /// ProcessSwitch - Called by CoreEngine.  Used to generate successor
@@ -1484,8 +1484,8 @@ void ExprEngine::VisitCommonDeclRefExpr(const Expr *Ex, const NamedDecl *D,
     Bldr.generateNode(Ex, Pred, state->BindExpr(Ex, LCtx, V));
     return;
   }
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    SVal V = svalBuilder.getFunctionPointer(FD);
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    SVal V = svalBuilder.getSubprogramPointer(FD);
     Bldr.generateNode(Ex, Pred, state->BindExpr(Ex, LCtx, V), 0,
                       ProgramPoint::PostLValueKind);
     return;
@@ -1558,7 +1558,7 @@ void ExprEngine::VisitMemberExpr(const MemberExpr *M, ExplodedNode *Pred,
     if (MD->isInstance())
       state = createTemporaryRegionIfNeeded(state, LCtx, BaseExpr);
 
-    SVal MDVal = svalBuilder.getFunctionPointer(MD);
+    SVal MDVal = svalBuilder.getSubprogramPointer(MD);
     state = state->BindExpr(M, LCtx, MDVal);
 
     Bldr.generateNode(M, Pred, state);

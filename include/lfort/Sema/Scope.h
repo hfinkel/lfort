@@ -66,9 +66,9 @@ public:
     /// template declaration ends.
     TemplateParamScope = 0x80,
 
-    /// FunctionPrototypeScope - This is a scope that corresponds to the
+    /// SubprogramPrototypeScope - This is a scope that corresponds to the
     /// parameters within a function prototype.
-    FunctionPrototypeScope = 0x100,
+    SubprogramPrototypeScope = 0x100,
 
     /// AtCatchScope - This is a scope that corresponds to the Objective-C
     /// \@catch statement.
@@ -201,14 +201,14 @@ public:
 
   /// Returns the number of function prototype scopes in this scope
   /// chain.
-  unsigned getFunctionPrototypeDepth() const {
+  unsigned getSubprogramPrototypeDepth() const {
     return PrototypeDepth;
   }
 
   /// Return the number of parameters declared in this function
   /// prototype, increasing it by one for the next call.
-  unsigned getNextFunctionPrototypeIndex() {
-    assert(isFunctionPrototypeScope());
+  unsigned getNextSubprogramPrototypeIndex() {
+    assert(isSubprogramPrototypeScope());
     return PrototypeIndex++;
   }
 
@@ -268,10 +268,10 @@ public:
     return getFlags() & Scope::TemplateParamScope;
   }
 
-  /// isFunctionPrototypeScope - Return true if this scope is a
+  /// isSubprogramPrototypeScope - Return true if this scope is a
   /// function prototype scope.
-  bool isFunctionPrototypeScope() const {
-    return getFlags() & Scope::FunctionPrototypeScope;
+  bool isSubprogramPrototypeScope() const {
+    return getFlags() & Scope::SubprogramPrototypeScope;
   }
 
   /// isAtCatchScope - Return true if this scope is \@catch.
@@ -286,7 +286,7 @@ public:
         return true;
       else if (S->getFlags() & (Scope::FnScope | Scope::ClassScope |
                                 Scope::BlockScope | Scope::TemplateParamScope |
-                                Scope::FunctionPrototypeScope |
+                                Scope::SubprogramPrototypeScope |
                                 Scope::AtCatchScope | Scope::ObjCMethodScope))
         return false;
     }
@@ -297,7 +297,7 @@ public:
   bool isTryScope() const { return getFlags() & Scope::TryScope; }
 
   /// containedInPrototypeScope - Return true if this or a parent scope
-  /// is a FunctionPrototypeScope.
+  /// is a SubprogramPrototypeScope.
   bool containedInPrototypeScope() const;
 
   typedef UsingDirectivesTy::iterator udir_iterator;

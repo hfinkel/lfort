@@ -21,7 +21,7 @@ using namespace lfort;
 using namespace llvm;
 
 bool
-AnalyzerOptions::mayInlineCXXMemberFunction(CXXInlineableMemberKind K) {
+AnalyzerOptions::mayInlineCXXMemberSubprogram(CXXInlineableMemberKind K) {
   if (IPAMode < Inlining)
     return false;
 
@@ -38,7 +38,7 @@ AnalyzerOptions::mayInlineCXXMemberFunction(CXXInlineableMemberKind K) {
       .Case("constructors", CIMK_Constructors)
       .Case("destructors", CIMK_Destructors)
       .Case("none", CIMK_None)
-      .Case("methods", CIMK_MemberFunctions)
+      .Case("methods", CIMK_MemberSubprograms)
       .Default(CXXInlineableMemberKind());
 
     if (!MutableMode) {
@@ -84,8 +84,8 @@ bool AnalyzerOptions::mayInlineCXXStandardLibrary() {
                           /*Default=*/true);
 }
 
-bool AnalyzerOptions::mayInlineTemplateFunctions() {
-  return getBooleanOption(InlineTemplateFunctions,
+bool AnalyzerOptions::mayInlineTemplateSubprograms() {
+  return getBooleanOption(InlineTemplateSubprograms,
                           "c++-template-inlining",
                           /*Default=*/true);
 }

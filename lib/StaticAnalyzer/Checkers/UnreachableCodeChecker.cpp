@@ -89,7 +89,7 @@ void UnreachableCodeChecker::checkEndAnalysis(ExplodedGraph &G,
   // Don't do anything for template instantiations.  Proving that code
   // in a template instantiation is unreachable means proving that it is
   // unreachable in all instantiations.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
     if (FD->isTemplateInstantiation())
       return;
 

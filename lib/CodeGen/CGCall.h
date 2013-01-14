@@ -26,7 +26,7 @@
 
 namespace llvm {
   struct AttributeWithIndex;
-  class Function;
+  class Subprogram;
   class Type;
   class Value;
 
@@ -36,7 +36,7 @@ namespace llvm {
 namespace lfort {
   class ASTContext;
   class Decl;
-  class FunctionDecl;
+  class SubprogramDecl;
   class ObjCMethodDecl;
   class VarDecl;
 
@@ -114,21 +114,21 @@ namespace CodeGen {
     /// Compute the arguments required by the given formal prototype,
     /// given that there may be some additional, non-formal arguments
     /// in play.
-    static RequiredArgs forPrototypePlus(const FunctionProtoType *prototype,
+    static RequiredArgs forPrototypePlus(const SubprogramProtoType *prototype,
                                          unsigned additional) {
       if (!prototype->isVariadic()) return All;
       return RequiredArgs(prototype->getNumArgs() + additional);
     }
 
-    static RequiredArgs forPrototype(const FunctionProtoType *prototype) {
+    static RequiredArgs forPrototype(const SubprogramProtoType *prototype) {
       return forPrototypePlus(prototype, 0);
     }
 
-    static RequiredArgs forPrototype(CanQual<FunctionProtoType> prototype) {
+    static RequiredArgs forPrototype(CanQual<SubprogramProtoType> prototype) {
       return forPrototype(prototype.getTypePtr());
     }
 
-    static RequiredArgs forPrototypePlus(CanQual<FunctionProtoType> prototype,
+    static RequiredArgs forPrototypePlus(CanQual<SubprogramProtoType> prototype,
                                          unsigned additional) {
       return forPrototypePlus(prototype.getTypePtr(), additional);
     }
@@ -146,15 +146,15 @@ namespace CodeGen {
     }
   };
 
-  /// FunctionArgList - Type for representing both the decl and type
+  /// SubprogramArgList - Type for representing both the decl and type
   /// of parameters to a function. The decl must be either a
   /// ParmVarDecl or ImplicitParamDecl.
-  class FunctionArgList : public SmallVector<const VarDecl*, 16> {
+  class SubprogramArgList : public SmallVector<const VarDecl*, 16> {
   };
 
-  /// CGFunctionInfo - Class to encapsulate the information about a
+  /// CGSubprogramInfo - Class to encapsulate the information about a
   /// function definition.
-  class CGFunctionInfo : public llvm::FoldingSetNode {
+  class CGSubprogramInfo : public llvm::FoldingSetNode {
     struct ArgInfo {
       CanQualType type;
       ABIArgInfo info;
@@ -191,11 +191,11 @@ namespace CodeGen {
       return reinterpret_cast<const ArgInfo*>(this + 1);
     }
 
-    CGFunctionInfo() : Required(RequiredArgs::All) {}
+    CGSubprogramInfo() : Required(RequiredArgs::All) {}
 
   public:
-    static CGFunctionInfo *create(unsigned llvmCC,
-                                  const FunctionType::ExtInfo &extInfo,
+    static CGSubprogramInfo *create(unsigned llvmCC,
+                                  const SubprogramType::ExtInfo &extInfo,
                                   CanQualType resultType,
                                   ArrayRef<CanQualType> argTypes,
                                   RequiredArgs required);
@@ -241,8 +241,8 @@ namespace CodeGen {
     bool getHasRegParm() const { return HasRegParm; }
     unsigned getRegParm() const { return RegParm; }
 
-    FunctionType::ExtInfo getExtInfo() const {
-      return FunctionType::ExtInfo(isNoReturn(),
+    SubprogramType::ExtInfo getExtInfo() const {
+      return SubprogramType::ExtInfo(isNoReturn(),
                                    getHasRegParm(), getRegParm(),
                                    getASTCallingConvention(),
                                    isReturnsRetained());
@@ -265,7 +265,7 @@ namespace CodeGen {
         it->type.Profile(ID);
     }
     static void Profile(llvm::FoldingSetNodeID &ID,
-                        const FunctionType::ExtInfo &info,
+                        const SubprogramType::ExtInfo &info,
                         RequiredArgs required,
                         CanQualType resultType,
                         ArrayRef<CanQualType> argTypes) {

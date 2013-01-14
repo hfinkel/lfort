@@ -58,7 +58,7 @@ class ExplodedNode : public llvm::FoldingSetNode {
   friend class BranchNodeBuilder;
   friend class IndirectGotoNodeBuilder;
   friend class SwitchNodeBuilder;
-  friend class EndOfFunctionNodeBuilder;
+  friend class EndOfSubprogramNodeBuilder;
 
   /// Efficiently stores a list of ExplodedNodes, or an optional flag.
   ///

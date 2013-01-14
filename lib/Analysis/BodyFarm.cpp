@@ -33,8 +33,8 @@ static bool isDispatchBlock(QualType Ty) {
 
   // Check if the block pointer type takes no arguments and
   // returns void.
-  const FunctionProtoType *FT =
-  BPT->getPointeeType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FT =
+  BPT->getPointeeType()->getAs<SubprogramProtoType>();
   if (!FT || !FT->getResultType()->isVoidType()  ||
       FT->getNumArgs() != 0)
     return false;
@@ -155,10 +155,10 @@ ReturnStmt *ASTMaker::makeReturn(const Expr *RetVal) {
 // Creation functions for faux ASTs.
 //===----------------------------------------------------------------------===//
 
-typedef Stmt *(*FunctionFarmer)(ASTContext &C, const FunctionDecl *D);
+typedef Stmt *(*SubprogramFarmer)(ASTContext &C, const SubprogramDecl *D);
 
 /// Create a fake body for dispatch_once.
-static Stmt *create_dispatch_once(ASTContext &C, const FunctionDecl *D) {
+static Stmt *create_dispatch_once(ASTContext &C, const SubprogramDecl *D) {
   // Check if we have at least two parameters.
   if (D->param_size() != 2)
     return 0;
@@ -236,7 +236,7 @@ static Stmt *create_dispatch_once(ASTContext &C, const FunctionDecl *D) {
 }
 
 /// Create a fake body for dispatch_sync.
-static Stmt *create_dispatch_sync(ASTContext &C, const FunctionDecl *D) {
+static Stmt *create_dispatch_sync(ASTContext &C, const SubprogramDecl *D) {
   // Check if we have at least two parameters.
   if (D->param_size() != 2)
     return 0;
@@ -262,7 +262,7 @@ static Stmt *create_dispatch_sync(ASTContext &C, const FunctionDecl *D) {
   return CE;
 }
 
-static Stmt *create_OSAtomicCompareAndSwap(ASTContext &C, const FunctionDecl *D)
+static Stmt *create_OSAtomicCompareAndSwap(ASTContext &C, const SubprogramDecl *D)
 {
   // There are exactly 3 arguments.
   if (D->param_size() != 3)
@@ -337,7 +337,7 @@ static Stmt *create_OSAtomicCompareAndSwap(ASTContext &C, const FunctionDecl *D)
   return If;  
 }
 
-Stmt *BodyFarm::getBody(const FunctionDecl *D) {
+Stmt *BodyFarm::getBody(const SubprogramDecl *D) {
   D = D->getCanonicalDecl();
   
   llvm::Optional<Stmt *> &Val = Bodies[D];
@@ -353,14 +353,14 @@ Stmt *BodyFarm::getBody(const FunctionDecl *D) {
   if (Name.empty())
     return 0;
 
-  FunctionFarmer FF;
+  SubprogramFarmer FF;
 
   if (Name.startswith("OSAtomicCompareAndSwap") ||
       Name.startswith("objc_atomicCompareAndSwap")) {
     FF = create_OSAtomicCompareAndSwap;
   }
   else {
-    FF = llvm::StringSwitch<FunctionFarmer>(Name)
+    FF = llvm::StringSwitch<SubprogramFarmer>(Name)
           .Case("dispatch_sync", create_dispatch_sync)
           .Case("dispatch_once", create_dispatch_once)
         .Default(NULL);

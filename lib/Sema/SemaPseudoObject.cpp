@@ -851,7 +851,7 @@ ExprResult ObjCPropertyOpBuilder::complete(Expr *SyntacticForm) {
       S.Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak,
                                  SyntacticForm->getLocStart());
     if (Level != DiagnosticsEngine::Ignored)
-      S.getCurFunction()->recordUseOfWeak(SyntacticRefExpr,
+      S.getCurSubprogram()->recordUseOfWeak(SyntacticRefExpr,
                                          SyntacticRefExpr->isMessagingGetter());
   }
 
@@ -955,7 +955,7 @@ Sema::ObjCSubscriptKind
   UnresolvedSet<4> ExplicitConversions;
   std::pair<CXXRecordDecl::conversion_iterator,
             CXXRecordDecl::conversion_iterator> Conversions
-    = cast<CXXRecordDecl>(RecordTy->getDecl())->getVisibleConversionFunctions();
+    = cast<CXXRecordDecl>(RecordTy->getDecl())->getVisibleConversionSubprograms();
   
   int NoIntegrals=0, NoObjCIdPointers=0;
   SmallVector<CXXConversionDecl *, 4> ConversionDecls;

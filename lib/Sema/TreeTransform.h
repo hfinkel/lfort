@@ -273,7 +273,7 @@ public:
 
   /// \brief Note to the derived class when a function parameter pack is
   /// being expanded.
-  void ExpandingFunctionParameterPack(ParmVarDecl *Pack) { }
+  void ExpandingSubprogramParameterPack(ParmVarDecl *Pack) { }
 
   /// \brief Transforms the given type into another type.
   ///
@@ -528,8 +528,8 @@ public:
   QualType Transform##CLASS##Type(TypeLocBuilder &TLB, CLASS##TypeLoc T);
 #include "lfort/AST/TypeLocNodes.def"
 
-  QualType TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                      FunctionProtoTypeLoc TL,
+  QualType TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                      SubprogramProtoTypeLoc TL,
                                       CXXRecordDecl *ThisContext,
                                       unsigned ThisTypeQuals);
 
@@ -559,7 +559,7 @@ public:
   /// variables vector are acceptable.
   ///
   /// Return true on error.
-  bool TransformFunctionTypeParams(SourceLocation Loc,
+  bool TransformSubprogramTypeParams(SourceLocation Loc,
                                    ParmVarDecl **Params, unsigned NumParams,
                                    const QualType *ParamTypes,
                                    SmallVectorImpl<QualType> &PTypes,
@@ -570,7 +570,7 @@ public:
   ///
   /// \param indexAdjustment - A number to add to the parameter's
   ///   scope index;  can be negative
-  ParmVarDecl *TransformFunctionTypeParam(ParmVarDecl *OldParm,
+  ParmVarDecl *TransformSubprogramTypeParam(ParmVarDecl *OldParm,
                                           int indexAdjustment,
                                         llvm::Optional<unsigned> NumExpansions,
                                           bool ExpectParameterPack);
@@ -712,16 +712,16 @@ public:
   ///
   /// By default, performs semantic analysis when building the function type.
   /// Subclasses may override this routine to provide different behavior.
-  QualType RebuildFunctionProtoType(QualType T,
+  QualType RebuildSubprogramProtoType(QualType T,
                                     QualType *ParamTypes,
                                     unsigned NumParamTypes,
                                     bool Variadic, bool HasTrailingReturn,
                                     unsigned Quals,
                                     RefQualifierKind RefQualifier,
-                                    const FunctionType::ExtInfo &Info);
+                                    const SubprogramType::ExtInfo &Info);
 
   /// \brief Build a new unprototyped function type.
-  QualType RebuildFunctionNoProtoType(QualType ResultType);
+  QualType RebuildSubprogramNoProtoType(QualType ResultType);
 
   /// \brief Rebuild an unresolved typename type, given the decl that
   /// the UnresolvedUsingTypenameDecl was transformed to.
@@ -1878,7 +1878,7 @@ public:
   ///
   /// By default, performs semantic analysis to build the new expression.
   /// Subclasses may override this routine to provide different behavior.
-  ExprResult RebuildCXXFunctionalCastExpr(TypeSourceInfo *TInfo,
+  ExprResult RebuildCXXSubprogramalCastExpr(TypeSourceInfo *TInfo,
                                           SourceLocation LParenLoc,
                                           Expr *Sub,
                                           SourceLocation RParenLoc) {
@@ -2430,7 +2430,7 @@ public:
     assert(!Lookup.empty() && "No __builtin_shufflevector?");
 
     // Build a reference to the __builtin_shufflevector builtin
-    FunctionDecl *Builtin = cast<FunctionDecl>(Lookup.front());
+    SubprogramDecl *Builtin = cast<SubprogramDecl>(Lookup.front());
     Expr *Callee = new (SemaRef.Context) DeclRefExpr(Builtin, false,
                                                   SemaRef.Context.BuiltinFnTy,
                                                   VK_RValue, BuiltinLoc);
@@ -2866,7 +2866,7 @@ TreeTransform<Derived>
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName: {
+  case DeclarationName::CXXConversionSubprogramName: {
     TypeSourceInfo *NewTInfo;
     CanQualType NewCanTy;
     if (TypeSourceInfo *OldTInfo = NameInfo.getNamedTypeInfo()) {
@@ -3353,7 +3353,7 @@ TreeTransform<Derived>::TransformQualifiedType(TypeLocBuilder &TLB,
   // Silently suppress qualifiers if the result type can't be qualified.
   // FIXME: this is the right thing for template instantiation, but
   // probably not for other clients.
-  if (Result->isFunctionType() || Result->isReferenceType())
+  if (Result->isSubprogramType() || Result->isReferenceType())
     return Result;
 
   // Suppress Objective-C lifetime qualifiers if they don't make sense for the
@@ -3938,7 +3938,7 @@ QualType TreeTransform<Derived>::TransformExtVectorType(TypeLocBuilder &TLB,
 
 template<typename Derived>
 ParmVarDecl *
-TreeTransform<Derived>::TransformFunctionTypeParam(ParmVarDecl *OldParm,
+TreeTransform<Derived>::TransformSubprogramTypeParam(ParmVarDecl *OldParm,
                                                    int indexAdjustment,
                                          llvm::Optional<unsigned> NumExpansions,
                                                    bool ExpectParameterPack) {
@@ -3989,14 +3989,14 @@ TreeTransform<Derived>::TransformFunctionTypeParam(ParmVarDecl *OldParm,
                                              OldParm->getStorageClass(),
                                              OldParm->getStorageClassAsWritten(),
                                              /* DefArg */ NULL);
-  newParm->setScopeInfo(OldParm->getFunctionScopeDepth(),
-                        OldParm->getFunctionScopeIndex() + indexAdjustment);
+  newParm->setScopeInfo(OldParm->getSubprogramScopeDepth(),
+                        OldParm->getSubprogramScopeIndex() + indexAdjustment);
   return newParm;
 }
 
 template<typename Derived>
 bool TreeTransform<Derived>::
-  TransformFunctionTypeParams(SourceLocation Loc,
+  TransformSubprogramTypeParams(SourceLocation Loc,
                               ParmVarDecl **Params, unsigned NumParams,
                               const QualType *ParamTypes,
                               SmallVectorImpl<QualType> &OutParamTypes,
@@ -4005,7 +4005,7 @@ bool TreeTransform<Derived>::
 
   for (unsigned i = 0; i != NumParams; ++i) {
     if (ParmVarDecl *OldParm = Params[i]) {
-      assert(OldParm->getFunctionScopeIndex() == i);
+      assert(OldParm->getSubprogramScopeIndex() == i);
 
       llvm::Optional<unsigned> NumExpansions;
       ParmVarDecl *NewParm = 0;
@@ -4038,11 +4038,11 @@ bool TreeTransform<Derived>::
         if (ShouldExpand) {
           // Expand the function parameter pack into multiple, separate
           // parameters.
-          getDerived().ExpandingFunctionParameterPack(OldParm);
+          getDerived().ExpandingSubprogramParameterPack(OldParm);
           for (unsigned I = 0; I != *NumExpansions; ++I) {
             Sema::ArgumentPackSubstitutionIndexRAII SubstIndex(getSema(), I);
             ParmVarDecl *NewParm
-              = getDerived().TransformFunctionTypeParam(OldParm,
+              = getDerived().TransformSubprogramTypeParam(OldParm,
                                                         indexAdjustment++,
                                                         OrigNumExpansions,
                                                 /*ExpectParameterPack=*/false);
@@ -4059,7 +4059,7 @@ bool TreeTransform<Derived>::
           if (RetainExpansion) {
             ForgetPartiallySubstitutedPackRAII Forget(getDerived());
             ParmVarDecl *NewParm
-              = getDerived().TransformFunctionTypeParam(OldParm,
+              = getDerived().TransformSubprogramTypeParam(OldParm,
                                                         indexAdjustment++,
                                                         OrigNumExpansions,
                                                 /*ExpectParameterPack=*/false);
@@ -4084,12 +4084,12 @@ bool TreeTransform<Derived>::
         // We'll substitute the parameter now without expanding the pack
         // expansion.
         Sema::ArgumentPackSubstitutionIndexRAII SubstIndex(getSema(), -1);
-        NewParm = getDerived().TransformFunctionTypeParam(OldParm,
+        NewParm = getDerived().TransformSubprogramTypeParam(OldParm,
                                                           indexAdjustment,
                                                           NumExpansions,
                                                   /*ExpectParameterPack=*/true);
       } else {
-        NewParm = getDerived().TransformFunctionTypeParam(OldParm,
+        NewParm = getDerived().TransformSubprogramTypeParam(OldParm,
                                                           indexAdjustment,
                                                           llvm::Optional<unsigned>(),
                                                 /*ExpectParameterPack=*/false);
@@ -4185,7 +4185,7 @@ bool TreeTransform<Derived>::
   if (PVars) {
     for (unsigned i = 0, e = PVars->size(); i != e; ++i)
       if (ParmVarDecl *parm = (*PVars)[i])
-        assert(parm->getFunctionScopeIndex() == i);
+        assert(parm->getSubprogramScopeIndex() == i);
   }
 #endif
 
@@ -4194,15 +4194,15 @@ bool TreeTransform<Derived>::
 
 template<typename Derived>
 QualType
-TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                                   FunctionProtoTypeLoc TL) {
-  return getDerived().TransformFunctionProtoType(TLB, TL, 0, 0);
+TreeTransform<Derived>::TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                                   SubprogramProtoTypeLoc TL) {
+  return getDerived().TransformSubprogramProtoType(TLB, TL, 0, 0);
 }
 
 template<typename Derived>
 QualType
-TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                                   FunctionProtoTypeLoc TL,
+TreeTransform<Derived>::TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                                   SubprogramProtoTypeLoc TL,
                                                    CXXRecordDecl *ThisContext,
                                                    unsigned ThisTypeQuals) {
   // Transform the parameters and return type.
@@ -4214,12 +4214,12 @@ TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
   //
   SmallVector<QualType, 4> ParamTypes;
   SmallVector<ParmVarDecl*, 4> ParamDecls;
-  const FunctionProtoType *T = TL.getTypePtr();
+  const SubprogramProtoType *T = TL.getTypePtr();
 
   QualType ResultType;
 
   if (T->hasTrailingReturn()) {
-    if (getDerived().TransformFunctionTypeParams(TL.getBeginLoc(),
+    if (getDerived().TransformSubprogramTypeParams(TL.getBeginLoc(),
                                                  TL.getParmArray(),
                                                  TL.getNumArgs(),
                                              TL.getTypePtr()->arg_type_begin(),
@@ -4245,7 +4245,7 @@ TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
     if (ResultType.isNull())
       return QualType();
 
-    if (getDerived().TransformFunctionTypeParams(TL.getBeginLoc(),
+    if (getDerived().TransformSubprogramTypeParams(TL.getBeginLoc(),
                                                  TL.getParmArray(),
                                                  TL.getNumArgs(),
                                              TL.getTypePtr()->arg_type_begin(),
@@ -4260,7 +4260,7 @@ TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
       ResultType != T->getResultType() ||
       T->getNumArgs() != ParamTypes.size() ||
       !std::equal(T->arg_type_begin(), T->arg_type_end(), ParamTypes.begin())) {
-    Result = getDerived().RebuildFunctionProtoType(ResultType,
+    Result = getDerived().RebuildSubprogramProtoType(ResultType,
                                                    ParamTypes.data(),
                                                    ParamTypes.size(),
                                                    T->isVariadic(),
@@ -4272,7 +4272,7 @@ TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
       return QualType();
   }
 
-  FunctionProtoTypeLoc NewTL = TLB.push<FunctionProtoTypeLoc>(Result);
+  SubprogramProtoTypeLoc NewTL = TLB.push<SubprogramProtoTypeLoc>(Result);
   NewTL.setLocalRangeBegin(TL.getLocalRangeBegin());
   NewTL.setLParenLoc(TL.getLParenLoc());
   NewTL.setRParenLoc(TL.getRParenLoc());
@@ -4284,10 +4284,10 @@ TreeTransform<Derived>::TransformFunctionProtoType(TypeLocBuilder &TLB,
 }
 
 template<typename Derived>
-QualType TreeTransform<Derived>::TransformFunctionNoProtoType(
+QualType TreeTransform<Derived>::TransformSubprogramNoProtoType(
                                                  TypeLocBuilder &TLB,
-                                                 FunctionNoProtoTypeLoc TL) {
-  const FunctionNoProtoType *T = TL.getTypePtr();
+                                                 SubprogramNoProtoTypeLoc TL) {
+  const SubprogramNoProtoType *T = TL.getTypePtr();
   QualType ResultType = getDerived().TransformType(TLB, TL.getResultLoc());
   if (ResultType.isNull())
     return QualType();
@@ -4295,9 +4295,9 @@ QualType TreeTransform<Derived>::TransformFunctionNoProtoType(
   QualType Result = TL.getType();
   if (getDerived().AlwaysRebuild() ||
       ResultType != T->getResultType())
-    Result = getDerived().RebuildFunctionNoProtoType(ResultType);
+    Result = getDerived().RebuildSubprogramNoProtoType(ResultType);
 
-  FunctionNoProtoTypeLoc NewTL = TLB.push<FunctionNoProtoTypeLoc>(Result);
+  SubprogramNoProtoTypeLoc NewTL = TLB.push<SubprogramNoProtoTypeLoc>(Result);
   NewTL.setLocalRangeBegin(TL.getLocalRangeBegin());
   NewTL.setLParenLoc(TL.getLParenLoc());
   NewTL.setRParenLoc(TL.getRParenLoc());
@@ -7058,8 +7058,8 @@ TreeTransform<Derived>::TransformCXXConstCastExpr(CXXConstCastExpr *E) {
 
 template<typename Derived>
 ExprResult
-TreeTransform<Derived>::TransformCXXFunctionalCastExpr(
-                                                     CXXFunctionalCastExpr *E) {
+TreeTransform<Derived>::TransformCXXSubprogramalCastExpr(
+                                                     CXXSubprogramalCastExpr *E) {
   TypeSourceInfo *Type = getDerived().TransformType(E->getTypeInfoAsWritten());
   if (!Type)
     return ExprError();
@@ -7074,7 +7074,7 @@ TreeTransform<Derived>::TransformCXXFunctionalCastExpr(
       SubExpr.get() == E->getSubExpr())
     return SemaRef.Owned(E);
 
-  return getDerived().RebuildCXXFunctionalCastExpr(Type,
+  return getDerived().RebuildCXXSubprogramalCastExpr(Type,
                                       /*FIXME:*/E->getSubExpr()->getLocStart(),
                                                    SubExpr.get(),
                                                    E->getRParenLoc());
@@ -7171,7 +7171,7 @@ TreeTransform<Derived>::TransformCXXNullPtrLiteralExpr(
 template<typename Derived>
 ExprResult
 TreeTransform<Derived>::TransformCXXThisExpr(CXXThisExpr *E) {
-  DeclContext *DC = getSema().getFunctionLevelDeclContext();
+  DeclContext *DC = getSema().getSubprogramLevelDeclContext();
   QualType T;
   if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(DC))
     T = MD->getThisType(getSema().Context);
@@ -7267,18 +7267,18 @@ TreeTransform<Derived>::TransformCXXNewExpr(CXXNewExpr *E) {
     return ExprError();
 
   // Transform new operator and delete operator.
-  FunctionDecl *OperatorNew = 0;
+  SubprogramDecl *OperatorNew = 0;
   if (E->getOperatorNew()) {
-    OperatorNew = cast_or_null<FunctionDecl>(
+    OperatorNew = cast_or_null<SubprogramDecl>(
                                  getDerived().TransformDecl(E->getLocStart(),
                                                          E->getOperatorNew()));
     if (!OperatorNew)
       return ExprError();
   }
 
-  FunctionDecl *OperatorDelete = 0;
+  SubprogramDecl *OperatorDelete = 0;
   if (E->getOperatorDelete()) {
-    OperatorDelete = cast_or_null<FunctionDecl>(
+    OperatorDelete = cast_or_null<SubprogramDecl>(
                                    getDerived().TransformDecl(E->getLocStart(),
                                                        E->getOperatorDelete()));
     if (!OperatorDelete)
@@ -7295,9 +7295,9 @@ TreeTransform<Derived>::TransformCXXNewExpr(CXXNewExpr *E) {
     // Mark any declarations we need as referenced.
     // FIXME: instantiation-specific.
     if (OperatorNew)
-      SemaRef.MarkFunctionReferenced(E->getLocStart(), OperatorNew);
+      SemaRef.MarkSubprogramReferenced(E->getLocStart(), OperatorNew);
     if (OperatorDelete)
-      SemaRef.MarkFunctionReferenced(E->getLocStart(), OperatorDelete);
+      SemaRef.MarkSubprogramReferenced(E->getLocStart(), OperatorDelete);
 
     if (E->isArray() && !E->getAllocatedType()->isDependentType()) {
       QualType ElementType
@@ -7305,7 +7305,7 @@ TreeTransform<Derived>::TransformCXXNewExpr(CXXNewExpr *E) {
       if (const RecordType *RecordT = ElementType->getAs<RecordType>()) {
         CXXRecordDecl *Record = cast<CXXRecordDecl>(RecordT->getDecl());
         if (CXXDestructorDecl *Destructor = SemaRef.LookupDestructor(Record)) {
-          SemaRef.MarkFunctionReferenced(E->getLocStart(), Destructor);
+          SemaRef.MarkSubprogramReferenced(E->getLocStart(), Destructor);
         }
       }
     }
@@ -7361,9 +7361,9 @@ TreeTransform<Derived>::TransformCXXDeleteExpr(CXXDeleteExpr *E) {
     return ExprError();
 
   // Transform the delete operator, if known.
-  FunctionDecl *OperatorDelete = 0;
+  SubprogramDecl *OperatorDelete = 0;
   if (E->getOperatorDelete()) {
-    OperatorDelete = cast_or_null<FunctionDecl>(
+    OperatorDelete = cast_or_null<SubprogramDecl>(
                                    getDerived().TransformDecl(E->getLocStart(),
                                                        E->getOperatorDelete()));
     if (!OperatorDelete)
@@ -7376,14 +7376,14 @@ TreeTransform<Derived>::TransformCXXDeleteExpr(CXXDeleteExpr *E) {
     // Mark any declarations we need as referenced.
     // FIXME: instantiation-specific.
     if (OperatorDelete)
-      SemaRef.MarkFunctionReferenced(E->getLocStart(), OperatorDelete);
+      SemaRef.MarkSubprogramReferenced(E->getLocStart(), OperatorDelete);
 
     if (!E->getArgument()->isTypeDependent()) {
       QualType Destroyed = SemaRef.Context.getBaseElementType(
                                                          E->getDestroyedType());
       if (const RecordType *DestroyedRec = Destroyed->getAs<RecordType>()) {
         CXXRecordDecl *Record = cast<CXXRecordDecl>(DestroyedRec->getDecl());
-        SemaRef.MarkFunctionReferenced(E->getLocStart(),
+        SemaRef.MarkSubprogramReferenced(E->getLocStart(),
                                        SemaRef.LookupDestructor(Record));
       }
     }
@@ -7851,7 +7851,7 @@ TreeTransform<Derived>::TransformCXXConstructExpr(CXXConstructExpr *E) {
       !ArgumentChanged) {
     // Mark the constructor as referenced.
     // FIXME: Instantiation-specific
-    SemaRef.MarkFunctionReferenced(E->getLocStart(), Constructor);
+    SemaRef.MarkSubprogramReferenced(E->getLocStart(), Constructor);
     return SemaRef.Owned(E);
   }
 
@@ -7913,7 +7913,7 @@ TreeTransform<Derived>::TransformCXXTemporaryObjectExpr(
       Constructor == E->getConstructor() &&
       !ArgumentChanged) {
     // FIXME: Instantiation-specific
-    SemaRef.MarkFunctionReferenced(E->getLocStart(), Constructor);
+    SemaRef.MarkSubprogramReferenced(E->getLocStart(), Constructor);
     return SemaRef.MaybeBindToTemporary(E);
   }
 
@@ -7944,7 +7944,7 @@ TreeTransform<Derived>::TransformLambdaExpr(LambdaExpr *E) {
   // Transform lambda parameters.
   llvm::SmallVector<QualType, 4> ParamTypes;
   llvm::SmallVector<ParmVarDecl *, 4> Params;
-  if (getDerived().TransformFunctionTypeParams(E->getLocStart(),
+  if (getDerived().TransformSubprogramTypeParams(E->getLocStart(),
         E->getCallOperator()->param_begin(),
         E->getCallOperator()->param_size(),
         0, ParamTypes, &Params))
@@ -8393,7 +8393,7 @@ TreeTransform<Derived>::TransformSubstNonTypeTemplateParmExpr(
 
 template<typename Derived>
 ExprResult
-TreeTransform<Derived>::TransformFunctionParmPackExpr(FunctionParmPackExpr *E) {
+TreeTransform<Derived>::TransformSubprogramParmPackExpr(SubprogramParmPackExpr *E) {
   // Default behavior is to do nothing with this transformation.
   return SemaRef.Owned(E);
 }
@@ -8825,7 +8825,7 @@ TreeTransform<Derived>::TransformBlockExpr(BlockExpr *E) {
   SmallVector<QualType, 4> paramTypes;
 
   // Parameter substitution.
-  if (getDerived().TransformFunctionTypeParams(E->getCaretLocation(),
+  if (getDerived().TransformSubprogramTypeParams(E->getCaretLocation(),
                                                oldBlock->param_begin(),
                                                oldBlock->param_size(),
                                                0, paramTypes, &params)) {
@@ -8833,9 +8833,9 @@ TreeTransform<Derived>::TransformBlockExpr(BlockExpr *E) {
     return ExprError();
   }
 
-  const FunctionType *exprFunctionType = E->getFunctionType();
+  const SubprogramType *exprSubprogramType = E->getSubprogramType();
   QualType exprResultType =
-      getDerived().TransformType(exprFunctionType->getResultType());
+      getDerived().TransformType(exprSubprogramType->getResultType());
 
   // Don't allow returning a objc interface by value.
   if (exprResultType->isObjCObjectType()) {
@@ -8846,14 +8846,14 @@ TreeTransform<Derived>::TransformBlockExpr(BlockExpr *E) {
     return ExprError();
   }
 
-  QualType functionType = getDerived().RebuildFunctionProtoType(
+  QualType functionType = getDerived().RebuildSubprogramProtoType(
                                                         exprResultType,
                                                         paramTypes.data(),
                                                         paramTypes.size(),
                                                         oldBlock->isVariadic(),
                                                         false, 0, RQ_None,
-                                               exprFunctionType->getExtInfo());
-  blockScope->FunctionType = functionType;
+                                               exprSubprogramType->getExtInfo());
+  blockScope->SubprogramType = functionType;
 
   // Set the parameters on the block decl.
   if (!params.empty())
@@ -9068,15 +9068,15 @@ TreeTransform<Derived>::RebuildDependentSizedExtVectorType(QualType ElementType,
 }
 
 template<typename Derived>
-QualType TreeTransform<Derived>::RebuildFunctionProtoType(QualType T,
+QualType TreeTransform<Derived>::RebuildSubprogramProtoType(QualType T,
                                                           QualType *ParamTypes,
                                                         unsigned NumParamTypes,
                                                           bool Variadic,
                                                          bool HasTrailingReturn,
                                                           unsigned Quals,
                                                   RefQualifierKind RefQualifier,
-                                            const FunctionType::ExtInfo &Info) {
-  return SemaRef.BuildFunctionType(T, ParamTypes, NumParamTypes, Variadic,
+                                            const SubprogramType::ExtInfo &Info) {
+  return SemaRef.BuildSubprogramType(T, ParamTypes, NumParamTypes, Variadic,
                                    HasTrailingReturn, Quals, RefQualifier,
                                    getDerived().getBaseLocation(),
                                    getDerived().getBaseEntity(),
@@ -9084,8 +9084,8 @@ QualType TreeTransform<Derived>::RebuildFunctionProtoType(QualType T,
 }
 
 template<typename Derived>
-QualType TreeTransform<Derived>::RebuildFunctionNoProtoType(QualType T) {
-  return SemaRef.Context.getFunctionNoProtoType(T);
+QualType TreeTransform<Derived>::RebuildSubprogramNoProtoType(QualType T) {
+  return SemaRef.Context.getSubprogramNoProtoType(T);
 }
 
 template<typename Derived>
@@ -9188,7 +9188,7 @@ TreeTransform<Derived>::RebuildTemplateName(CXXScopeSpec &SS,
   UnqualifiedId Name;
   // FIXME: Bogus location information.
   SourceLocation SymbolLocations[3] = { NameLoc, NameLoc, NameLoc };
-  Name.setOperatorFunctionId(NameLoc, Operator, SymbolLocations);
+  Name.setOperatorSubprogramId(NameLoc, Operator, SymbolLocations);
   SourceLocation TemplateKWLoc; // FIXME: retrieve it from caller.
   Sema::TemplateTy Template;
   getSema().ActOnDependentTemplateName(/*Scope=*/0,
@@ -9245,21 +9245,21 @@ TreeTransform<Derived>::RebuildCXXOperatorCallExpr(OverloadedOperatorKind Op,
 
   // Compute the transformed set of functions (and function templates) to be
   // used during overload resolution.
-  UnresolvedSet<16> Functions;
+  UnresolvedSet<16> Subprograms;
 
   if (UnresolvedLookupExpr *ULE = dyn_cast<UnresolvedLookupExpr>(Callee)) {
     assert(ULE->requiresADL());
 
     // FIXME: Do we have to check
     // IsAcceptableNonMemberOperatorCandidate for each of these?
-    Functions.append(ULE->decls_begin(), ULE->decls_end());
+    Subprograms.append(ULE->decls_begin(), ULE->decls_end());
   } else {
     // If we've resolved this to a particular non-member function, just call
     // that function. If we resolved it to a member function,
     // CreateOverloaded* will find that function for us.
     NamedDecl *ND = cast<DeclRefExpr>(Callee)->getDecl();
     if (!isa<CXXMethodDecl>(ND))
-      Functions.addDecl(ND);
+      Subprograms.addDecl(ND);
   }
 
   // Add any functions found via argument-dependent lookup.
@@ -9270,7 +9270,7 @@ TreeTransform<Derived>::RebuildCXXOperatorCallExpr(OverloadedOperatorKind Op,
   if (NumArgs == 1 || isPostIncDec) {
     UnaryOperatorKind Opc
       = UnaryOperator::getOverloadedOpcode(Op, isPostIncDec);
-    return SemaRef.CreateOverloadedUnaryOp(OpLoc, Opc, Functions, First);
+    return SemaRef.CreateOverloadedUnaryOp(OpLoc, Opc, Subprograms, First);
   }
 
   if (Op == OO_Subscript) {
@@ -9295,7 +9295,7 @@ TreeTransform<Derived>::RebuildCXXOperatorCallExpr(OverloadedOperatorKind Op,
   // Create the overloaded operator invocation for binary operators.
   BinaryOperatorKind Opc = BinaryOperator::getOverloadedOpcode(Op);
   ExprResult Result
-    = SemaRef.CreateOverloadedBinOp(OpLoc, Opc, Functions, Args[0], Args[1]);
+    = SemaRef.CreateOverloadedBinOp(OpLoc, Opc, Subprograms, Args[0], Args[1]);
   if (Result.isInvalid())
     return ExprError();
 

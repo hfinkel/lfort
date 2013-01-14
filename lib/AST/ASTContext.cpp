@@ -69,7 +69,7 @@ RawComment *ASTContext::getRawCommentForDeclNoCache(const Decl *D) const {
     return NULL;
 
   // User can not attach documentation to implicit instantiations.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->getTemplateSpecializationKind() == TSK_ImplicitInstantiation)
       return NULL;
   }
@@ -216,22 +216,22 @@ namespace {
 /// refer to the actual template.
 /// If we have an implicit instantiation, adjust 'D' to refer to template.
 const Decl *adjustDeclToTemplate(const Decl *D) {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // Is this function declaration part of a function template?
-    if (const FunctionTemplateDecl *FTD = FD->getDescribedFunctionTemplate())
+    if (const SubprogramTemplateDecl *FTD = FD->getDescribedSubprogramTemplate())
       return FTD;
 
     // Nothing to do if function is not an implicit instantiation.
     if (FD->getTemplateSpecializationKind() != TSK_ImplicitInstantiation)
       return D;
 
-    // Function is an implicit instantiation of a function template?
-    if (const FunctionTemplateDecl *FTD = FD->getPrimaryTemplate())
+    // Subprogram is an implicit instantiation of a function template?
+    if (const SubprogramTemplateDecl *FTD = FD->getPrimaryTemplate())
       return FTD;
 
-    // Function is instantiated from a member definition of a class template?
-    if (const FunctionDecl *MemberDecl =
-            FD->getInstantiatedFromMemberFunction())
+    // Subprogram is instantiated from a member definition of a class template?
+    if (const SubprogramDecl *MemberDecl =
+            FD->getInstantiatedFromMemberSubprogram())
       return MemberDecl;
 
     return D;
@@ -411,7 +411,7 @@ comments::FullComment *ASTContext::getCommentForDecl(
   
   const RawComment *RC = getRawCommentForAnyRedecl(D, &OriginalDecl);
   if (!RC) {
-    if (isa<ObjCMethodDecl>(D) || isa<FunctionDecl>(D)) {
+    if (isa<ObjCMethodDecl>(D) || isa<SubprogramDecl>(D)) {
       SmallVector<const NamedDecl*, 8> Overridden;
       if (const ObjCMethodDecl *OMD = dyn_cast<ObjCMethodDecl>(D))
         addRedeclaredMethods(OMD, Overridden);
@@ -608,7 +608,7 @@ ASTContext::ASTContext(LangOptions& LOpts, SourceManager &SM,
                        Builtin::Context &builtins,
                        unsigned size_reserve,
                        bool DelayInitialization) 
-  : FunctionProtoTypes(this_()),
+  : SubprogramProtoTypes(this_()),
     TemplateSpecializationTypes(this_()),
     DependentTemplateSpecializationTypes(this_()),
     SubstTemplateTemplateParmPacks(this_()),
@@ -951,10 +951,10 @@ ASTContext::setInstantiatedFromStaticDataMember(VarDecl *Inst, VarDecl *Tmpl,
     = new (*this) MemberSpecializationInfo(Tmpl, TSK, PointOfInstantiation);
 }
 
-FunctionDecl *ASTContext::getClassScopeSpecializationPattern(
-                                                     const FunctionDecl *FD){
+SubprogramDecl *ASTContext::getClassScopeSpecializationPattern(
+                                                     const SubprogramDecl *FD){
   assert(FD && "Specialization is 0");
-  llvm::DenseMap<const FunctionDecl*, FunctionDecl *>::const_iterator Pos
+  llvm::DenseMap<const SubprogramDecl*, SubprogramDecl *>::const_iterator Pos
     = ClassScopeSpecializationPattern.find(FD);
   if (Pos == ClassScopeSpecializationPattern.end())
     return 0;
@@ -962,8 +962,8 @@ FunctionDecl *ASTContext::getClassScopeSpecializationPattern(
   return Pos->second;
 }
 
-void ASTContext::setClassScopeSpecializationPattern(FunctionDecl *FD,
-                                        FunctionDecl *Pattern) {
+void ASTContext::setClassScopeSpecializationPattern(SubprogramDecl *FD,
+                                        SubprogramDecl *Pattern) {
   assert(FD && "Specialization is 0");
   assert(Pattern && "Class scope specialization pattern is 0");
   ClassScopeSpecializationPattern[FD] = Pattern;
@@ -1187,7 +1187,7 @@ CharUnits ASTContext::getDeclAlign(const Decl *D, bool RefAsPointee) const {
       else
         T = getPointerType(RT->getPointeeType());
     }
-    if (!T->isIncompleteType() && !T->isFunctionType()) {
+    if (!T->isIncompleteType() && !T->isSubprogramType()) {
       // Adjust alignments of declarations with array type by the
       // large-array alignment on the target.
       unsigned MinWidth = Target->getLargeArrayMinWidth();
@@ -1295,8 +1295,8 @@ ASTContext::getTypeInfoImpl(const Type *T) const {
 #include "lfort/AST/TypeNodes.def"
     llvm_unreachable("Should not see dependent types");
 
-  case Type::FunctionNoProto:
-  case Type::FunctionProto:
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto:
     // GCC extension: alignof(function) = 32 bits
     Width = 0;
     Align = 32;
@@ -1916,23 +1916,23 @@ QualType ASTContext::getObjCGCQualType(QualType T,
   return getExtQualType(TypeNode, Quals);
 }
 
-const FunctionType *ASTContext::adjustFunctionType(const FunctionType *T,
-                                                   FunctionType::ExtInfo Info) {
+const SubprogramType *ASTContext::adjustSubprogramType(const SubprogramType *T,
+                                                   SubprogramType::ExtInfo Info) {
   if (T->getExtInfo() == Info)
     return T;
 
   QualType Result;
-  if (const FunctionNoProtoType *FNPT = dyn_cast<FunctionNoProtoType>(T)) {
-    Result = getFunctionNoProtoType(FNPT->getResultType(), Info);
+  if (const SubprogramNoProtoType *FNPT = dyn_cast<SubprogramNoProtoType>(T)) {
+    Result = getSubprogramNoProtoType(FNPT->getResultType(), Info);
   } else {
-    const FunctionProtoType *FPT = cast<FunctionProtoType>(T);
-    FunctionProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
+    const SubprogramProtoType *FPT = cast<SubprogramProtoType>(T);
+    SubprogramProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
     EPI.ExtInfo = Info;
-    Result = getFunctionType(FPT->getResultType(), FPT->arg_type_begin(),
+    Result = getSubprogramType(FPT->getResultType(), FPT->arg_type_begin(),
                              FPT->getNumArgs(), EPI);
   }
 
-  return cast<FunctionType>(Result.getTypePtr());
+  return cast<SubprogramType>(Result.getTypePtr());
 }
 
 /// getComplexType - Return the uniqued reference to the type for a complex
@@ -1994,7 +1994,7 @@ QualType ASTContext::getPointerType(QualType T) const {
 /// getBlockPointerType - Return the uniqued reference to the type for
 /// a pointer to the specified block.
 QualType ASTContext::getBlockPointerType(QualType T) const {
-  assert(T->isFunctionType() && "block of function types only");
+  assert(T->isSubprogramType() && "block of function types only");
   // Unique pointers, to guarantee there is only one block of a particular
   // structure.
   llvm::FoldingSetNodeID ID;
@@ -2222,8 +2222,8 @@ QualType ASTContext::getVariableArrayDecayedType(QualType type) const {
 
   // These types can be variably-modified but should never need to
   // further decay.
-  case Type::FunctionNoProto:
-  case Type::FunctionProto:
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto:
   case Type::BlockPointer:
   case Type::MemberPointer:
     return type;
@@ -2545,59 +2545,59 @@ ASTContext::getDependentSizedExtVectorType(QualType vecType,
   return QualType(New, 0);
 }
 
-/// getFunctionNoProtoType - Return a K&R style C function type like 'int()'.
+/// getSubprogramNoProtoType - Return a K&R style C function type like 'int()'.
 ///
 QualType
-ASTContext::getFunctionNoProtoType(QualType ResultTy,
-                                   const FunctionType::ExtInfo &Info) const {
+ASTContext::getSubprogramNoProtoType(QualType ResultTy,
+                                   const SubprogramType::ExtInfo &Info) const {
   const CallingConv DefaultCC = Info.getCC();
   const CallingConv CallConv = (LangOpts.MRTD && DefaultCC == CC_Default) ?
                                CC_X86StdCall : DefaultCC;
   // Unique functions, to guarantee there is only one function of a particular
   // structure.
   llvm::FoldingSetNodeID ID;
-  FunctionNoProtoType::Profile(ID, ResultTy, Info);
+  SubprogramNoProtoType::Profile(ID, ResultTy, Info);
 
   void *InsertPos = 0;
-  if (FunctionNoProtoType *FT =
-        FunctionNoProtoTypes.FindNodeOrInsertPos(ID, InsertPos))
+  if (SubprogramNoProtoType *FT =
+        SubprogramNoProtoTypes.FindNodeOrInsertPos(ID, InsertPos))
     return QualType(FT, 0);
 
   QualType Canonical;
   if (!ResultTy.isCanonical() ||
       getCanonicalCallConv(CallConv) != CallConv) {
     Canonical =
-      getFunctionNoProtoType(getCanonicalType(ResultTy),
+      getSubprogramNoProtoType(getCanonicalType(ResultTy),
                      Info.withCallingConv(getCanonicalCallConv(CallConv)));
 
     // Get the new insert position for the node we care about.
-    FunctionNoProtoType *NewIP =
-      FunctionNoProtoTypes.FindNodeOrInsertPos(ID, InsertPos);
+    SubprogramNoProtoType *NewIP =
+      SubprogramNoProtoTypes.FindNodeOrInsertPos(ID, InsertPos);
     assert(NewIP == 0 && "Shouldn't be in the map!"); (void)NewIP;
   }
 
-  FunctionProtoType::ExtInfo newInfo = Info.withCallingConv(CallConv);
-  FunctionNoProtoType *New = new (*this, TypeAlignment)
-    FunctionNoProtoType(ResultTy, Canonical, newInfo);
+  SubprogramProtoType::ExtInfo newInfo = Info.withCallingConv(CallConv);
+  SubprogramNoProtoType *New = new (*this, TypeAlignment)
+    SubprogramNoProtoType(ResultTy, Canonical, newInfo);
   Types.push_back(New);
-  FunctionNoProtoTypes.InsertNode(New, InsertPos);
+  SubprogramNoProtoTypes.InsertNode(New, InsertPos);
   return QualType(New, 0);
 }
 
-/// getFunctionType - Return a normal function type with a typed argument
+/// getSubprogramType - Return a normal function type with a typed argument
 /// list.  isVariadic indicates whether the argument list includes '...'.
 QualType
-ASTContext::getFunctionType(QualType ResultTy,
+ASTContext::getSubprogramType(QualType ResultTy,
                             const QualType *ArgArray, unsigned NumArgs,
-                            const FunctionProtoType::ExtProtoInfo &EPI) const {
+                            const SubprogramProtoType::ExtProtoInfo &EPI) const {
   // Unique functions, to guarantee there is only one function of a particular
   // structure.
   llvm::FoldingSetNodeID ID;
-  FunctionProtoType::Profile(ID, ResultTy, ArgArray, NumArgs, EPI, *this);
+  SubprogramProtoType::Profile(ID, ResultTy, ArgArray, NumArgs, EPI, *this);
 
   void *InsertPos = 0;
-  if (FunctionProtoType *FTP =
-        FunctionProtoTypes.FindNodeOrInsertPos(ID, InsertPos))
+  if (SubprogramProtoType *FTP =
+        SubprogramProtoTypes.FindNodeOrInsertPos(ID, InsertPos))
     return QualType(FTP, 0);
 
   // Determine whether the type being created is already canonical or not.
@@ -2621,24 +2621,24 @@ ASTContext::getFunctionType(QualType ResultTy,
     for (unsigned i = 0; i != NumArgs; ++i)
       CanonicalArgs.push_back(getCanonicalParamType(ArgArray[i]));
 
-    FunctionProtoType::ExtProtoInfo CanonicalEPI = EPI;
+    SubprogramProtoType::ExtProtoInfo CanonicalEPI = EPI;
     CanonicalEPI.HasTrailingReturn = false;
     CanonicalEPI.ExceptionSpecType = EST_None;
     CanonicalEPI.NumExceptions = 0;
     CanonicalEPI.ExtInfo
       = CanonicalEPI.ExtInfo.withCallingConv(getCanonicalCallConv(CallConv));
 
-    Canonical = getFunctionType(getCanonicalType(ResultTy),
+    Canonical = getSubprogramType(getCanonicalType(ResultTy),
                                 CanonicalArgs.data(), NumArgs,
                                 CanonicalEPI);
 
     // Get the new insert position for the node we care about.
-    FunctionProtoType *NewIP =
-      FunctionProtoTypes.FindNodeOrInsertPos(ID, InsertPos);
+    SubprogramProtoType *NewIP =
+      SubprogramProtoTypes.FindNodeOrInsertPos(ID, InsertPos);
     assert(NewIP == 0 && "Shouldn't be in the map!"); (void)NewIP;
   }
 
-  // FunctionProtoType objects are allocated with extra bytes after
+  // SubprogramProtoType objects are allocated with extra bytes after
   // them for three variable size arrays at the end:
   //  - parameter types
   //  - exception types
@@ -2646,26 +2646,26 @@ ASTContext::getFunctionType(QualType ResultTy,
   // Instead of the exception types, there could be a noexcept
   // expression, or information used to resolve the exception
   // specification.
-  size_t Size = sizeof(FunctionProtoType) +
+  size_t Size = sizeof(SubprogramProtoType) +
                 NumArgs * sizeof(QualType);
   if (EPI.ExceptionSpecType == EST_Dynamic) {
     Size += EPI.NumExceptions * sizeof(QualType);
   } else if (EPI.ExceptionSpecType == EST_ComputedNoexcept) {
     Size += sizeof(Expr*);
   } else if (EPI.ExceptionSpecType == EST_Uninstantiated) {
-    Size += 2 * sizeof(FunctionDecl*);
+    Size += 2 * sizeof(SubprogramDecl*);
   } else if (EPI.ExceptionSpecType == EST_Unevaluated) {
-    Size += sizeof(FunctionDecl*);
+    Size += sizeof(SubprogramDecl*);
   }
   if (EPI.ConsumedArguments)
     Size += NumArgs * sizeof(bool);
 
-  FunctionProtoType *FTP = (FunctionProtoType*) Allocate(Size, TypeAlignment);
-  FunctionProtoType::ExtProtoInfo newEPI = EPI;
+  SubprogramProtoType *FTP = (SubprogramProtoType*) Allocate(Size, TypeAlignment);
+  SubprogramProtoType::ExtProtoInfo newEPI = EPI;
   newEPI.ExtInfo = EPI.ExtInfo.withCallingConv(CallConv);
-  new (FTP) FunctionProtoType(ResultTy, ArgArray, NumArgs, Canonical, newEPI);
+  new (FTP) SubprogramProtoType(ResultTy, ArgArray, NumArgs, Canonical, newEPI);
   Types.push_back(FTP);
-  FunctionProtoTypes.InsertNode(FTP, InsertPos);
+  SubprogramProtoTypes.InsertNode(FTP, InsertPos);
   return QualType(FTP, 0);
 }
 
@@ -3575,7 +3575,7 @@ CanQualType ASTContext::getCanonicalParamType(QualType T) const {
   QualType Result;
   if (isa<ArrayType>(Ty)) {
     Result = getArrayDecayedType(QualType(Ty,0));
-  } else if (isa<FunctionType>(Ty)) {
+  } else if (isa<SubprogramType>(Ty)) {
     Result = getPointerType(QualType(Ty, 0));
   } else {
     Result = QualType(Ty, 0);
@@ -3959,7 +3959,7 @@ QualType ASTContext::getAdjustedParameterType(QualType T) const {
   //   A declaration of a parameter as "function returning type"
   //   shall be adjusted to "pointer to function returning type", as
   //   in 6.3.2.1.
-  if (T->isFunctionType())
+  if (T->isSubprogramType())
     return getPointerType(T);
   
   return T;  
@@ -4512,10 +4512,10 @@ std::string ASTContext::getObjCEncodingForBlock(const BlockExpr *Expr) const {
   // Encode result type.
   if (getLangOpts().EncodeExtendedBlockSig)
     getObjCEncodingForMethodParameter(Decl::OBJC_TQ_None,
-                            BlockTy->getAs<FunctionType>()->getResultType(),
+                            BlockTy->getAs<SubprogramType>()->getResultType(),
                             S, true /*Extended*/);
   else
-    getObjCEncodingForType(BlockTy->getAs<FunctionType>()->getResultType(),
+    getObjCEncodingForType(BlockTy->getAs<SubprogramType>()->getResultType(),
                            S);
   // Compute size of all parameters.
   // Start with computing size of a pointer in number of bytes.
@@ -4549,7 +4549,7 @@ std::string ASTContext::getObjCEncodingForBlock(const BlockExpr *Expr) const {
       // elements.
       if (!isa<ConstantArrayType>(AT))
         PType = PVDecl->getType();
-    } else if (PType->isFunctionType())
+    } else if (PType->isSubprogramType())
       PType = PVDecl->getType();
     if (getLangOpts().EncodeExtendedBlockSig)
       getObjCEncodingForMethodParameter(Decl::OBJC_TQ_None, PType,
@@ -4563,13 +4563,13 @@ std::string ASTContext::getObjCEncodingForBlock(const BlockExpr *Expr) const {
   return S;
 }
 
-bool ASTContext::getObjCEncodingForFunctionDecl(const FunctionDecl *Decl,
+bool ASTContext::getObjCEncodingForSubprogramDecl(const SubprogramDecl *Decl,
                                                 std::string& S) {
   // Encode result type.
   getObjCEncodingForType(Decl->getResultType(), S);
   CharUnits ParmOffset;
   // Compute size of all parameters.
-  for (FunctionDecl::param_const_iterator PI = Decl->param_begin(),
+  for (SubprogramDecl::param_const_iterator PI = Decl->param_begin(),
        E = Decl->param_end(); PI != E; ++PI) {
     QualType PType = (*PI)->getType();
     CharUnits sz = getObjCEncodingTypeSize(PType);
@@ -4577,14 +4577,14 @@ bool ASTContext::getObjCEncodingForFunctionDecl(const FunctionDecl *Decl,
       continue;
  
     assert (sz.isPositive() && 
-        "getObjCEncodingForFunctionDecl - Incomplete param type");
+        "getObjCEncodingForSubprogramDecl - Incomplete param type");
     ParmOffset += sz;
   }
   S += charUnitsToString(ParmOffset);
   ParmOffset = CharUnits::Zero();
 
   // Argument types.
-  for (FunctionDecl::param_const_iterator PI = Decl->param_begin(),
+  for (SubprogramDecl::param_const_iterator PI = Decl->param_begin(),
        E = Decl->param_end(); PI != E; ++PI) {
     ParmVarDecl *PVDecl = *PI;
     QualType PType = PVDecl->getOriginalType();
@@ -4594,7 +4594,7 @@ bool ASTContext::getObjCEncodingForFunctionDecl(const FunctionDecl *Decl,
       // elements.
       if (!isa<ConstantArrayType>(AT))
         PType = PVDecl->getType();
-    } else if (PType->isFunctionType())
+    } else if (PType->isSubprogramType())
       PType = PVDecl->getType();
     getObjCEncodingForType(PType, S);
     S += charUnitsToString(ParmOffset);
@@ -4665,7 +4665,7 @@ bool ASTContext::getObjCEncodingForMethodDecl(const ObjCMethodDecl *Decl,
       // elements.
       if (!isa<ConstantArrayType>(AT))
         PType = PVDecl->getType();
-    } else if (PType->isFunctionType())
+    } else if (PType->isSubprogramType())
       PType = PVDecl->getType();
     getObjCEncodingForMethodParameter(PVDecl->getObjCDeclQualifier(), 
                                       PType, S, Extended);
@@ -5058,8 +5058,8 @@ void ASTContext::getObjCEncodingForTypeImpl(QualType T, std::string& S,
     return;
   }
 
-  case Type::FunctionNoProto:
-  case Type::FunctionProto:
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto:
     S += '?';
     return;
 
@@ -5120,7 +5120,7 @@ void ASTContext::getObjCEncodingForTypeImpl(QualType T, std::string& S,
     const BlockPointerType *BT = T->castAs<BlockPointerType>();
     S += "@?"; // Unlike a pointer-to-function, which is "^?".
     if (EncodeBlockParameters) {
-      const FunctionType *FT = BT->getPointeeType()->castAs<FunctionType>();
+      const SubprogramType *FT = BT->getPointeeType()->castAs<SubprogramType>();
       
       S += '<';
       // Block return type
@@ -5135,8 +5135,8 @@ void ASTContext::getObjCEncodingForTypeImpl(QualType T, std::string& S,
       // Block self
       S += "@?";
       // Block parameters
-      if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT)) {
-        for (FunctionProtoType::arg_type_iterator I = FPT->arg_type_begin(),
+      if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(FT)) {
+        for (SubprogramProtoType::arg_type_iterator I = FPT->arg_type_begin(),
                E = FPT->arg_type_end(); I && (I != E); ++I) {
           getObjCEncodingForTypeImpl(*I, S, 
                                      ExpandPointedToStructures, 
@@ -5473,7 +5473,7 @@ ObjCInterfaceDecl *ASTContext::getObjCProtocolDecl() const {
 }
 
 //===----------------------------------------------------------------------===//
-// __builtin_va_list Construction Functions
+// __builtin_va_list Construction Subprograms
 //===----------------------------------------------------------------------===//
 
 static TypedefDecl *CreateCharPtrBuiltinVaListDecl(const ASTContext *Context) {
@@ -5784,15 +5784,15 @@ ASTContext::getOverloadedTemplateName(UnresolvedSetIterator Begin,
   assert(size > 1 && "set is not overloaded!");
 
   void *memory = Allocate(sizeof(OverloadedTemplateStorage) +
-                          size * sizeof(FunctionTemplateDecl*));
+                          size * sizeof(SubprogramTemplateDecl*));
   OverloadedTemplateStorage *OT = new(memory) OverloadedTemplateStorage(size);
 
   NamedDecl **Storage = OT->getStorage();
   for (UnresolvedSetIterator I = Begin; I != End; ++I) {
     NamedDecl *D = *I;
-    assert(isa<FunctionTemplateDecl>(D) ||
+    assert(isa<SubprogramTemplateDecl>(D) ||
            (isa<UsingShadowDecl>(D) &&
-            isa<FunctionTemplateDecl>(D->getUnderlyingDecl())));
+            isa<SubprogramTemplateDecl>(D->getUnderlyingDecl())));
     *Storage++ = D;
   }
 
@@ -6495,9 +6495,9 @@ QualType ASTContext::mergeTransparentUnionType(QualType T, QualType SubType,
   return QualType();
 }
 
-/// mergeFunctionArgumentTypes - merge two types which appear as function
+/// mergeSubprogramArgumentTypes - merge two types which appear as function
 /// argument types
-QualType ASTContext::mergeFunctionArgumentTypes(QualType lhs, QualType rhs, 
+QualType ASTContext::mergeSubprogramArgumentTypes(QualType lhs, QualType rhs, 
                                                 bool OfBlockPointer,
                                                 bool Unqualified) {
   // GNU extension: two types are compatible if they appear as a function
@@ -6516,13 +6516,13 @@ QualType ASTContext::mergeFunctionArgumentTypes(QualType lhs, QualType rhs,
   return mergeTypes(lhs, rhs, OfBlockPointer, Unqualified);
 }
 
-QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs, 
+QualType ASTContext::mergeSubprogramTypes(QualType lhs, QualType rhs, 
                                         bool OfBlockPointer,
                                         bool Unqualified) {
-  const FunctionType *lbase = lhs->getAs<FunctionType>();
-  const FunctionType *rbase = rhs->getAs<FunctionType>();
-  const FunctionProtoType *lproto = dyn_cast<FunctionProtoType>(lbase);
-  const FunctionProtoType *rproto = dyn_cast<FunctionProtoType>(rbase);
+  const SubprogramType *lbase = lhs->getAs<SubprogramType>();
+  const SubprogramType *rbase = rhs->getAs<SubprogramType>();
+  const SubprogramProtoType *lproto = dyn_cast<SubprogramProtoType>(lbase);
+  const SubprogramProtoType *rproto = dyn_cast<SubprogramProtoType>(rbase);
   bool allLTypes = true;
   bool allRTypes = true;
 
@@ -6560,8 +6560,8 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
   // FIXME: should we error if lbase->getRegParmAttr() != 0 &&
   //                           rbase->getRegParmAttr() != 0 &&
   //                           lbase->getRegParmAttr() != rbase->getRegParmAttr()?
-  FunctionType::ExtInfo lbaseInfo = lbase->getExtInfo();
-  FunctionType::ExtInfo rbaseInfo = rbase->getExtInfo();
+  SubprogramType::ExtInfo lbaseInfo = lbase->getExtInfo();
+  SubprogramType::ExtInfo rbaseInfo = rbase->getExtInfo();
 
   // Compatible functions must have compatible calling conventions
   if (!isSameCallConv(lbaseInfo.getCC(), rbaseInfo.getCC()))
@@ -6584,7 +6584,7 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
   if (rbaseInfo.getNoReturn() != NoReturn)
     allRTypes = false;
 
-  FunctionType::ExtInfo einfo = lbaseInfo.withNoReturn(NoReturn);
+  SubprogramType::ExtInfo einfo = lbaseInfo.withNoReturn(NoReturn);
 
   if (lproto && rproto) { // two C99 style function prototypes
     assert(!lproto->hasExceptionSpec() && !rproto->hasExceptionSpec() &&
@@ -6604,7 +6604,7 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
       return QualType();
 
     if (LangOpts.ObjCAutoRefCount &&
-        !FunctionTypesMatchOnNSConsumedAttrs(rproto, lproto))
+        !SubprogramTypesMatchOnNSConsumedAttrs(rproto, lproto))
       return QualType();
       
     // Check argument compatibility
@@ -6612,7 +6612,7 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
     for (unsigned i = 0; i < lproto_nargs; i++) {
       QualType largtype = lproto->getArgType(i).getUnqualifiedType();
       QualType rargtype = rproto->getArgType(i).getUnqualifiedType();
-      QualType argtype = mergeFunctionArgumentTypes(largtype, rargtype,
+      QualType argtype = mergeSubprogramArgumentTypes(largtype, rargtype,
                                                     OfBlockPointer,
                                                     Unqualified);
       if (argtype.isNull()) return QualType();
@@ -6635,15 +6635,15 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
     if (allLTypes) return lhs;
     if (allRTypes) return rhs;
 
-    FunctionProtoType::ExtProtoInfo EPI = lproto->getExtProtoInfo();
+    SubprogramProtoType::ExtProtoInfo EPI = lproto->getExtProtoInfo();
     EPI.ExtInfo = einfo;
-    return getFunctionType(retType, types.begin(), types.size(), EPI);
+    return getSubprogramType(retType, types.begin(), types.size(), EPI);
   }
 
   if (lproto) allRTypes = false;
   if (rproto) allLTypes = false;
 
-  const FunctionProtoType *proto = lproto ? lproto : rproto;
+  const SubprogramProtoType *proto = lproto ? lproto : rproto;
   if (proto) {
     assert(!proto->hasExceptionSpec() && "C++ shouldn't be here");
     if (proto->isVariadic()) return QualType();
@@ -6672,15 +6672,15 @@ QualType ASTContext::mergeFunctionTypes(QualType lhs, QualType rhs,
     if (allLTypes) return lhs;
     if (allRTypes) return rhs;
 
-    FunctionProtoType::ExtProtoInfo EPI = proto->getExtProtoInfo();
+    SubprogramProtoType::ExtProtoInfo EPI = proto->getExtProtoInfo();
     EPI.ExtInfo = einfo;
-    return getFunctionType(retType, proto->arg_type_begin(),
+    return getSubprogramType(retType, proto->arg_type_begin(),
                            proto->getNumArgs(), EPI);
   }
 
   if (allLTypes) return lhs;
   if (allRTypes) return rhs;
-  return getFunctionNoProtoType(retType, einfo);
+  return getSubprogramNoProtoType(retType, einfo);
 }
 
 QualType ASTContext::mergeTypes(QualType LHS, QualType RHS, 
@@ -6745,8 +6745,8 @@ QualType ASTContext::mergeTypes(QualType LHS, QualType RHS,
 
   // We want to consider the two function types to be the same for these
   // comparisons, just force one to the other.
-  if (LHSClass == Type::FunctionProto) LHSClass = Type::FunctionNoProto;
-  if (RHSClass == Type::FunctionProto) RHSClass = Type::FunctionNoProto;
+  if (LHSClass == Type::SubprogramProto) LHSClass = Type::SubprogramNoProto;
+  if (RHSClass == Type::SubprogramProto) RHSClass = Type::SubprogramNoProto;
 
   // Same as above for arrays
   if (LHSClass == Type::VariableArray || LHSClass == Type::IncompleteArray)
@@ -6807,7 +6807,7 @@ QualType ASTContext::mergeTypes(QualType LHS, QualType RHS,
   case Type::ObjCInterface:
   case Type::IncompleteArray:
   case Type::VariableArray:
-  case Type::FunctionProto:
+  case Type::SubprogramProto:
   case Type::ExtVector:
     llvm_unreachable("Types are eliminated above");
 
@@ -6912,8 +6912,8 @@ QualType ASTContext::mergeTypes(QualType LHS, QualType RHS,
     return getIncompleteArrayType(ResultType,
                                   ArrayType::ArraySizeModifier(), 0);
   }
-  case Type::FunctionNoProto:
-    return mergeFunctionTypes(LHS, RHS, OfBlockPointer, Unqualified);
+  case Type::SubprogramNoProto:
+    return mergeSubprogramTypes(LHS, RHS, OfBlockPointer, Unqualified);
   case Type::Record:
   case Type::Enum:
     return QualType();
@@ -6960,18 +6960,18 @@ QualType ASTContext::mergeTypes(QualType LHS, QualType RHS,
   llvm_unreachable("Invalid Type::Class!");
 }
 
-bool ASTContext::FunctionTypesMatchOnNSConsumedAttrs(
-                   const FunctionProtoType *FromFunctionType,
-                   const FunctionProtoType *ToFunctionType) {
-  if (FromFunctionType->hasAnyConsumedArgs() != 
-      ToFunctionType->hasAnyConsumedArgs())
+bool ASTContext::SubprogramTypesMatchOnNSConsumedAttrs(
+                   const SubprogramProtoType *FromSubprogramType,
+                   const SubprogramProtoType *ToSubprogramType) {
+  if (FromSubprogramType->hasAnyConsumedArgs() != 
+      ToSubprogramType->hasAnyConsumedArgs())
     return false;
-  FunctionProtoType::ExtProtoInfo FromEPI = 
-    FromFunctionType->getExtProtoInfo();
-  FunctionProtoType::ExtProtoInfo ToEPI = 
-    ToFunctionType->getExtProtoInfo();
+  SubprogramProtoType::ExtProtoInfo FromEPI = 
+    FromSubprogramType->getExtProtoInfo();
+  SubprogramProtoType::ExtProtoInfo ToEPI = 
+    ToSubprogramType->getExtProtoInfo();
   if (FromEPI.ConsumedArguments && ToEPI.ConsumedArguments)
-    for (unsigned ArgIdx = 0, NumArgs = FromFunctionType->getNumArgs();
+    for (unsigned ArgIdx = 0, NumArgs = FromSubprogramType->getNumArgs();
          ArgIdx != NumArgs; ++ArgIdx)  {
       if (FromEPI.ConsumedArguments[ArgIdx] != 
           ToEPI.ConsumedArguments[ArgIdx])
@@ -6989,13 +6989,13 @@ QualType ASTContext::mergeObjCGCQualifiers(QualType LHS, QualType RHS) {
   // If two types are identical, they are compatible.
   if (LHSCan == RHSCan)
     return LHS;
-  if (RHSCan->isFunctionType()) {
-    if (!LHSCan->isFunctionType())
+  if (RHSCan->isSubprogramType()) {
+    if (!LHSCan->isSubprogramType())
       return QualType();
     QualType OldReturnType = 
-      cast<FunctionType>(RHSCan.getTypePtr())->getResultType();
+      cast<SubprogramType>(RHSCan.getTypePtr())->getResultType();
     QualType NewReturnType =
-      cast<FunctionType>(LHSCan.getTypePtr())->getResultType();
+      cast<SubprogramType>(LHSCan.getTypePtr())->getResultType();
     QualType ResReturnType = 
       mergeObjCGCQualifiers(NewReturnType, OldReturnType);
     if (ResReturnType.isNull())
@@ -7003,12 +7003,12 @@ QualType ASTContext::mergeObjCGCQualifiers(QualType LHS, QualType RHS) {
     if (ResReturnType == NewReturnType || ResReturnType == OldReturnType) {
       // id foo(); ... __strong id foo(); or: __strong id foo(); ... id foo();
       // In either case, use OldReturnType to build the new function type.
-      const FunctionType *F = LHS->getAs<FunctionType>();
-      if (const FunctionProtoType *FPT = cast<FunctionProtoType>(F)) {
-        FunctionProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
-        EPI.ExtInfo = getFunctionExtInfo(LHS);
+      const SubprogramType *F = LHS->getAs<SubprogramType>();
+      if (const SubprogramProtoType *FPT = cast<SubprogramProtoType>(F)) {
+        SubprogramProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
+        EPI.ExtInfo = getSubprogramExtInfo(LHS);
         QualType ResultType
-          = getFunctionType(OldReturnType, FPT->arg_type_begin(),
+          = getSubprogramType(OldReturnType, FPT->arg_type_begin(),
                             FPT->getNumArgs(), EPI);
         return ResultType;
       }
@@ -7388,23 +7388,23 @@ QualType ASTContext::GetBuiltinType(unsigned Id,
   assert((TypeStr[0] != '.' || TypeStr[1] == 0) &&
          "'.' should only occur at end of builtin type list!");
 
-  FunctionType::ExtInfo EI;
+  SubprogramType::ExtInfo EI;
   if (BuiltinInfo.isNoReturn(Id)) EI = EI.withNoReturn(true);
 
   bool Variadic = (TypeStr[0] == '.');
 
   // We really shouldn't be making a no-proto type here, especially in C++.
   if (ArgTypes.empty() && Variadic)
-    return getFunctionNoProtoType(ResType, EI);
+    return getSubprogramNoProtoType(ResType, EI);
 
-  FunctionProtoType::ExtProtoInfo EPI;
+  SubprogramProtoType::ExtProtoInfo EPI;
   EPI.ExtInfo = EI;
   EPI.Variadic = Variadic;
 
-  return getFunctionType(ResType, ArgTypes.data(), ArgTypes.size(), EPI);
+  return getSubprogramType(ResType, ArgTypes.data(), ArgTypes.size(), EPI);
 }
 
-GVALinkage ASTContext::GetGVALinkageForFunction(const FunctionDecl *FD) {
+GVALinkage ASTContext::GetGVALinkageForSubprogram(const SubprogramDecl *FD) {
   GVALinkage External = GVA_StrongExternal;
 
   Linkage L = FD->getLinkage();
@@ -7500,7 +7500,7 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
   if (const VarDecl *VD = dyn_cast<VarDecl>(D)) {
     if (!VD->isFileVarDecl())
       return false;
-  } else if (!isa<FunctionDecl>(D))
+  } else if (!isa<SubprogramDecl>(D))
     return false;
 
   // Weak references don't produce any output by themselves.
@@ -7511,7 +7511,7 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
   if (D->hasAttr<AliasAttr>() || D->hasAttr<UsedAttr>())
     return true;
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // Forward declarations aren't required.
     if (!FD->doesThisDeclarationHaveABody())
       return FD->doesDeclarationForceExternallyVisibleDefinition();
@@ -7524,13 +7524,13 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
     if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD)) {
       const CXXRecordDecl *RD = MD->getParent();
       if (MD->isOutOfLine() && RD->isDynamicClass()) {
-        const CXXMethodDecl *KeyFunc = getKeyFunction(RD);
+        const CXXMethodDecl *KeyFunc = getKeySubprogram(RD);
         if (KeyFunc && KeyFunc->getCanonicalDecl() == MD->getCanonicalDecl())
           return true;
       }
     }
 
-    GVALinkage Linkage = GetGVALinkageForFunction(FD);
+    GVALinkage Linkage = GetGVALinkageForSubprogram(FD);
 
     // static, static inline, always_inline, and extern inline functions can
     // always be deferred.  Normal inline functions can be deferred in C99/C++.
@@ -7595,7 +7595,7 @@ FortranABI::~FortranABI() {}
 size_t ASTContext::getSideTableAllocatedMemory() const {
   return ASTRecordLayouts.getMemorySize()
     + llvm::capacity_in_bytes(ObjCLayouts)
-    + llvm::capacity_in_bytes(KeyFunctions)
+    + llvm::capacity_in_bytes(KeySubprograms)
     + llvm::capacity_in_bytes(ObjCImpls)
     + llvm::capacity_in_bytes(BlockVarCopyInits)
     + llvm::capacity_in_bytes(DeclAttrs)

@@ -24,7 +24,7 @@ namespace lfort {
 /// GlobalDecl - represents a global declaration. This can either be a
 /// CXXConstructorDecl and the constructor type (Base, Complete).
 /// a CXXDestructorDecl and the destructor type (Base, Complete) or
-/// a VarDecl, a FunctionDecl or a BlockDecl.
+/// a VarDecl, a SubprogramDecl or a BlockDecl.
 class GlobalDecl {
   llvm::PointerIntPair<const Decl*, 2> Value;
 
@@ -39,7 +39,7 @@ public:
   GlobalDecl() {}
 
   GlobalDecl(const VarDecl *D) { Init(D);}
-  GlobalDecl(const FunctionDecl *D) { Init(D); }
+  GlobalDecl(const SubprogramDecl *D) { Init(D); }
   GlobalDecl(const BlockDecl *D) { Init(D); }
   GlobalDecl(const ObjCMethodDecl *D) { Init(D); }
 

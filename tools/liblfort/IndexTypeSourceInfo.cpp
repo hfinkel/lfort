@@ -40,7 +40,7 @@ public:
 
   bool VisitTagTypeLoc(TagTypeLoc TL) {
     TagDecl *D = TL.getDecl();
-    if (D->getParentFunctionOrMethod())
+    if (D->getParentSubprogramOrMethod())
       return true;
 
     if (TL.isDefinition()) {

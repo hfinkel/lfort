@@ -208,11 +208,11 @@ public:
   bool VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D);
   bool VisitEnumConstantDecl(EnumConstantDecl *D);
   bool VisitDeclaratorDecl(DeclaratorDecl *DD);
-  bool VisitFunctionDecl(FunctionDecl *ND);
+  bool VisitSubprogramDecl(SubprogramDecl *ND);
   bool VisitFieldDecl(FieldDecl *D);
   bool VisitVarDecl(VarDecl *);
   bool VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D);
-  bool VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+  bool VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
   bool VisitClassTemplateDecl(ClassTemplateDecl *D);
   bool VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D);
   bool VisitObjCMethodDecl(ObjCMethodDecl *ND);
@@ -252,7 +252,7 @@ public:
 
   bool VisitTagTypeLoc(TagTypeLoc TL);
   bool VisitArrayTypeLoc(ArrayTypeLoc TL);
-  bool VisitFunctionTypeLoc(FunctionTypeLoc TL, bool SkipResultType = false);
+  bool VisitSubprogramTypeLoc(SubprogramTypeLoc TL, bool SkipResultType = false);
 
   // Data-recursive visitor functions.
   bool IsInRegionOfInterest(CXCursor C);

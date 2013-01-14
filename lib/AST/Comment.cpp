@@ -163,13 +163,13 @@ void DeclInfo::fill() {
   default:
     // Defaults are should be good for declarations we don't handle explicitly.
     break;
-  case Decl::Function:
+  case Decl::Subprogram:
   case Decl::CXXMethod:
   case Decl::CXXConstructor:
   case Decl::CXXDestructor:
   case Decl::CXXConversion: {
-    const FunctionDecl *FD = cast<FunctionDecl>(CommentDecl);
-    Kind = FunctionKind;
+    const SubprogramDecl *FD = cast<SubprogramDecl>(CommentDecl);
+    Kind = SubprogramKind;
     ParamVars = ArrayRef<const ParmVarDecl *>(FD->param_begin(),
                                               FD->getNumParams());
     ResultType = FD->getResultType();
@@ -190,7 +190,7 @@ void DeclInfo::fill() {
   }
   case Decl::ObjCMethod: {
     const ObjCMethodDecl *MD = cast<ObjCMethodDecl>(CommentDecl);
-    Kind = FunctionKind;
+    Kind = SubprogramKind;
     ParamVars = ArrayRef<const ParmVarDecl *>(MD->param_begin(),
                                               MD->param_size());
     ResultType = MD->getResultType();
@@ -199,11 +199,11 @@ void DeclInfo::fill() {
     IsClassMethod = !IsInstanceMethod;
     break;
   }
-  case Decl::FunctionTemplate: {
-    const FunctionTemplateDecl *FTD = cast<FunctionTemplateDecl>(CommentDecl);
-    Kind = FunctionKind;
+  case Decl::SubprogramTemplate: {
+    const SubprogramTemplateDecl *FTD = cast<SubprogramTemplateDecl>(CommentDecl);
+    Kind = SubprogramKind;
     TemplateKind = Template;
-    const FunctionDecl *FD = FTD->getTemplatedDecl();
+    const SubprogramDecl *FD = FTD->getTemplatedDecl();
     ParamVars = ArrayRef<const ParmVarDecl *>(FD->param_begin(),
                                               FD->getNumParams());
     ResultType = FD->getResultType();
@@ -275,8 +275,8 @@ void DeclInfo::fill() {
         continue;
       }
       // Is this a typedef for a function type?
-      if (FunctionTypeLoc *FTL = dyn_cast<FunctionTypeLoc>(&TL)) {
-        Kind = FunctionKind;
+      if (SubprogramTypeLoc *FTL = dyn_cast<SubprogramTypeLoc>(&TL)) {
+        Kind = SubprogramKind;
         ArrayRef<ParmVarDecl *> Params = FTL->getParams();
         ParamVars = ArrayRef<const ParmVarDecl *>(Params.data(),
                                                   Params.size());

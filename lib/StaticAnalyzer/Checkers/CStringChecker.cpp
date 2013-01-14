@@ -40,7 +40,7 @@ class CStringChecker : public Checker< eval::Call,
                              BT_NotCString,
                              BT_AdditionOverflow;
 
-  mutable const char *CurrentFunctionDescription;
+  mutable const char *CurrentSubprogramDescription;
 
 public:
   /// The filter is used to filter out the diagnostics which are not enabled by
@@ -233,8 +233,8 @@ ProgramStateRef CStringChecker::checkNonNull(CheckerContext &C,
 
     SmallString<80> buf;
     llvm::raw_svector_ostream os(buf);
-    assert(CurrentFunctionDescription);
-    os << "Null pointer argument in call to " << CurrentFunctionDescription;
+    assert(CurrentSubprogramDescription);
+    os << "Null pointer argument in call to " << CurrentSubprogramDescription;
 
     // Generate a report for this bug.
     BuiltinBug *BT = static_cast<BuiltinBug*>(BT_Null.get());
@@ -300,13 +300,13 @@ ProgramStateRef CStringChecker::CheckLocation(CheckerContext &C,
     if (warningMsg) {
       report = new BugReport(*BT, warningMsg, N);
     } else {
-      assert(CurrentFunctionDescription);
-      assert(CurrentFunctionDescription[0] != '\0');
+      assert(CurrentSubprogramDescription);
+      assert(CurrentSubprogramDescription[0] != '\0');
 
       SmallString<80> buf;
       llvm::raw_svector_ostream os(buf);
-      os << (char)toupper(CurrentFunctionDescription[0])
-         << &CurrentFunctionDescription[1]
+      os << (char)toupper(CurrentSubprogramDescription[0])
+         << &CurrentSubprogramDescription[1]
          << " accesses out-of-bound array element";
       report = new BugReport(*BT, os.str(), N);      
     }
@@ -693,8 +693,8 @@ SVal CStringChecker::getCStringLength(CheckerContext &C, ProgramStateRef &state,
 
         SmallString<120> buf;
         llvm::raw_svector_ostream os(buf);
-        assert(CurrentFunctionDescription);
-        os << "Argument to " << CurrentFunctionDescription
+        assert(CurrentSubprogramDescription);
+        os << "Argument to " << CurrentSubprogramDescription
            << " is the address of the label '" << Label->getLabel()->getName()
            << "', which is not a null-terminated string";
 
@@ -754,8 +754,8 @@ SVal CStringChecker::getCStringLength(CheckerContext &C, ProgramStateRef &state,
       SmallString<120> buf;
       llvm::raw_svector_ostream os(buf);
 
-      assert(CurrentFunctionDescription);
-      os << "Argument to " << CurrentFunctionDescription << " is ";
+      assert(CurrentSubprogramDescription);
+      os << "Argument to " << CurrentSubprogramDescription << " is ";
 
       if (SummarizeRegion(os, C.getASTContext(), MR))
         os << ", which is not a null-terminated string";
@@ -831,8 +831,8 @@ bool CStringChecker::SummarizeRegion(raw_ostream &os, ASTContext &Ctx,
   const TypedValueRegion *TVR = dyn_cast<TypedValueRegion>(MR);
 
   switch (MR->getKind()) {
-  case MemRegion::FunctionTextRegionKind: {
-    const NamedDecl *FD = cast<FunctionTextRegion>(MR)->getDecl();
+  case MemRegion::SubprogramTextRegionKind: {
+    const NamedDecl *FD = cast<SubprogramTextRegion>(MR)->getDecl();
     if (FD)
       os << "the address of the function '" << *FD << '\'';
     else
@@ -873,7 +873,7 @@ void CStringChecker::evalCopyCommon(CheckerContext &C,
                                     const Expr *Size, const Expr *Dest,
                                     const Expr *Source, bool Restricted,
                                     bool IsMempcpy) const {
-  CurrentFunctionDescription = "memory copy function";
+  CurrentSubprogramDescription = "memory copy function";
 
   // See if the size argument is zero.
   const LocationContext *LCtx = C.getLocationContext();
@@ -1019,7 +1019,7 @@ void CStringChecker::evalMemcmp(CheckerContext &C, const CallExpr *CE) const {
     return;
 
   // int memcmp(const void *s1, const void *s2, size_t n);
-  CurrentFunctionDescription = "memory comparison function";
+  CurrentSubprogramDescription = "memory comparison function";
 
   const Expr *Left = CE->getArg(0);
   const Expr *Right = CE->getArg(1);
@@ -1109,7 +1109,7 @@ void CStringChecker::evalstrnLength(CheckerContext &C,
 
 void CStringChecker::evalstrLengthCommon(CheckerContext &C, const CallExpr *CE,
                                          bool IsStrnlen) const {
-  CurrentFunctionDescription = "string length function";
+  CurrentSubprogramDescription = "string length function";
   ProgramStateRef state = C.getState();
   const LocationContext *LCtx = C.getLocationContext();
 
@@ -1288,7 +1288,7 @@ void CStringChecker::evalStrncat(CheckerContext &C, const CallExpr *CE) const {
 void CStringChecker::evalStrcpyCommon(CheckerContext &C, const CallExpr *CE,
                                       bool returnEnd, bool isBounded,
                                       bool isAppending) const {
-  CurrentFunctionDescription = "string copy function";
+  CurrentSubprogramDescription = "string copy function";
   ProgramStateRef state = C.getState();
   const LocationContext *LCtx = C.getLocationContext();
 
@@ -1641,7 +1641,7 @@ void CStringChecker::evalStrncasecmp(CheckerContext &C,
 
 void CStringChecker::evalStrcmpCommon(CheckerContext &C, const CallExpr *CE,
                                       bool isBounded, bool ignoreCase) const {
-  CurrentFunctionDescription = "string comparison function";
+  CurrentSubprogramDescription = "string comparison function";
   ProgramStateRef state = C.getState();
   const LocationContext *LCtx = C.getLocationContext();
 
@@ -1767,57 +1767,57 @@ void CStringChecker::evalStrcmpCommon(CheckerContext &C, const CallExpr *CE,
 //===----------------------------------------------------------------------===//
 
 bool CStringChecker::evalCall(const CallExpr *CE, CheckerContext &C) const {
-  const FunctionDecl *FDecl = C.getCalleeDecl(CE);
+  const SubprogramDecl *FDecl = C.getCalleeDecl(CE);
 
   if (!FDecl)
     return false;
 
-  FnCheck evalFunction = 0;
-  if (C.isCLibraryFunction(FDecl, "memcpy"))
-    evalFunction =  &CStringChecker::evalMemcpy;
-  else if (C.isCLibraryFunction(FDecl, "mempcpy"))
-    evalFunction =  &CStringChecker::evalMempcpy;
-  else if (C.isCLibraryFunction(FDecl, "memcmp"))
-    evalFunction =  &CStringChecker::evalMemcmp;
-  else if (C.isCLibraryFunction(FDecl, "memmove"))
-    evalFunction =  &CStringChecker::evalMemmove;
-  else if (C.isCLibraryFunction(FDecl, "strcpy"))
-    evalFunction =  &CStringChecker::evalStrcpy;
-  else if (C.isCLibraryFunction(FDecl, "strncpy"))
-    evalFunction =  &CStringChecker::evalStrncpy;
-  else if (C.isCLibraryFunction(FDecl, "stpcpy"))
-    evalFunction =  &CStringChecker::evalStpcpy;
-  else if (C.isCLibraryFunction(FDecl, "strcat"))
-    evalFunction =  &CStringChecker::evalStrcat;
-  else if (C.isCLibraryFunction(FDecl, "strncat"))
-    evalFunction =  &CStringChecker::evalStrncat;
-  else if (C.isCLibraryFunction(FDecl, "strlen"))
-    evalFunction =  &CStringChecker::evalstrLength;
-  else if (C.isCLibraryFunction(FDecl, "strnlen"))
-    evalFunction =  &CStringChecker::evalstrnLength;
-  else if (C.isCLibraryFunction(FDecl, "strcmp"))
-    evalFunction =  &CStringChecker::evalStrcmp;
-  else if (C.isCLibraryFunction(FDecl, "strncmp"))
-    evalFunction =  &CStringChecker::evalStrncmp;
-  else if (C.isCLibraryFunction(FDecl, "strcasecmp"))
-    evalFunction =  &CStringChecker::evalStrcasecmp;
-  else if (C.isCLibraryFunction(FDecl, "strncasecmp"))
-    evalFunction =  &CStringChecker::evalStrncasecmp;
-  else if (C.isCLibraryFunction(FDecl, "bcopy"))
-    evalFunction =  &CStringChecker::evalBcopy;
-  else if (C.isCLibraryFunction(FDecl, "bcmp"))
-    evalFunction =  &CStringChecker::evalMemcmp;
+  FnCheck evalSubprogram = 0;
+  if (C.isCLibrarySubprogram(FDecl, "memcpy"))
+    evalSubprogram =  &CStringChecker::evalMemcpy;
+  else if (C.isCLibrarySubprogram(FDecl, "mempcpy"))
+    evalSubprogram =  &CStringChecker::evalMempcpy;
+  else if (C.isCLibrarySubprogram(FDecl, "memcmp"))
+    evalSubprogram =  &CStringChecker::evalMemcmp;
+  else if (C.isCLibrarySubprogram(FDecl, "memmove"))
+    evalSubprogram =  &CStringChecker::evalMemmove;
+  else if (C.isCLibrarySubprogram(FDecl, "strcpy"))
+    evalSubprogram =  &CStringChecker::evalStrcpy;
+  else if (C.isCLibrarySubprogram(FDecl, "strncpy"))
+    evalSubprogram =  &CStringChecker::evalStrncpy;
+  else if (C.isCLibrarySubprogram(FDecl, "stpcpy"))
+    evalSubprogram =  &CStringChecker::evalStpcpy;
+  else if (C.isCLibrarySubprogram(FDecl, "strcat"))
+    evalSubprogram =  &CStringChecker::evalStrcat;
+  else if (C.isCLibrarySubprogram(FDecl, "strncat"))
+    evalSubprogram =  &CStringChecker::evalStrncat;
+  else if (C.isCLibrarySubprogram(FDecl, "strlen"))
+    evalSubprogram =  &CStringChecker::evalstrLength;
+  else if (C.isCLibrarySubprogram(FDecl, "strnlen"))
+    evalSubprogram =  &CStringChecker::evalstrnLength;
+  else if (C.isCLibrarySubprogram(FDecl, "strcmp"))
+    evalSubprogram =  &CStringChecker::evalStrcmp;
+  else if (C.isCLibrarySubprogram(FDecl, "strncmp"))
+    evalSubprogram =  &CStringChecker::evalStrncmp;
+  else if (C.isCLibrarySubprogram(FDecl, "strcasecmp"))
+    evalSubprogram =  &CStringChecker::evalStrcasecmp;
+  else if (C.isCLibrarySubprogram(FDecl, "strncasecmp"))
+    evalSubprogram =  &CStringChecker::evalStrncasecmp;
+  else if (C.isCLibrarySubprogram(FDecl, "bcopy"))
+    evalSubprogram =  &CStringChecker::evalBcopy;
+  else if (C.isCLibrarySubprogram(FDecl, "bcmp"))
+    evalSubprogram =  &CStringChecker::evalMemcmp;
   
   // If the callee isn't a string function, let another checker handle it.
-  if (!evalFunction)
+  if (!evalSubprogram)
     return false;
 
   // Make sure each function sets its own description.
   // (But don't bother in a release build.)
-  assert(!(CurrentFunctionDescription = NULL));
+  assert(!(CurrentSubprogramDescription = NULL));
 
   // Check and evaluate the call.
-  (this->*evalFunction)(C, CE);
+  (this->*evalSubprogram)(C, CE);
 
   // If the evaluate call resulted in no change, chain to the next eval call
   // handler.

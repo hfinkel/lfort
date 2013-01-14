@@ -82,8 +82,8 @@ static CXTypeKind GetTypeKind(QualType T) {
     TKCASE(Typedef);
     TKCASE(ObjCInterface);
     TKCASE(ObjCObjectPointer);
-    TKCASE(FunctionNoProto);
-    TKCASE(FunctionProto);
+    TKCASE(SubprogramNoProto);
+    TKCASE(SubprogramProto);
     TKCASE(ConstantArray);
     TKCASE(Vector);
     default:
@@ -150,7 +150,7 @@ CXType lfort_getCursorType(CXCursor C) {
       return MakeCXType(VD->getType(), TU);
     if (ObjCPropertyDecl *PD = dyn_cast<ObjCPropertyDecl>(D))
       return MakeCXType(PD->getType(), TU);
-    if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+    if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
       return MakeCXType(FD->getType(), TU);
     return MakeCXType(QualType(), TU);
   }
@@ -436,8 +436,8 @@ CXString lfort_getTypeKindSpelling(enum CXTypeKind K) {
     TKIND(Typedef);
     TKIND(ObjCInterface);
     TKIND(ObjCObjectPointer);
-    TKIND(FunctionNoProto);
-    TKIND(FunctionProto);
+    TKIND(SubprogramNoProto);
+    TKIND(SubprogramProto);
     TKIND(ConstantArray);
     TKIND(Vector);
   }
@@ -449,26 +449,26 @@ unsigned lfort_equalTypes(CXType A, CXType B) {
   return A.data[0] == B.data[0] && A.data[1] == B.data[1];;
 }
 
-unsigned lfort_isFunctionTypeVariadic(CXType X) {
+unsigned lfort_isSubprogramTypeVariadic(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return 0;
 
-  if (const FunctionProtoType *FD = T->getAs<FunctionProtoType>())
+  if (const SubprogramProtoType *FD = T->getAs<SubprogramProtoType>())
     return (unsigned)FD->isVariadic();
 
-  if (T->getAs<FunctionNoProtoType>())
+  if (T->getAs<SubprogramNoProtoType>())
     return 1;
   
   return 0;
 }
 
-CXCallingConv lfort_getFunctionTypeCallingConv(CXType X) {
+CXCallingConv lfort_getSubprogramTypeCallingConv(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
     return CXCallingConv_Invalid;
   
-  if (const FunctionType *FD = T->getAs<FunctionType>()) {
+  if (const SubprogramType *FD = T->getAs<SubprogramType>()) {
 #define TCALLINGCONV(X) case CC_##X: return CXCallingConv_##X
     switch (FD->getCallConv()) {
       TCALLINGCONV(Default);
@@ -493,11 +493,11 @@ int lfort_getNumArgTypes(CXType X) {
   if (T.isNull())
     return -1;
   
-  if (const FunctionProtoType *FD = T->getAs<FunctionProtoType>()) {
+  if (const SubprogramProtoType *FD = T->getAs<SubprogramProtoType>()) {
     return FD->getNumArgs();
   }
   
-  if (T->getAs<FunctionNoProtoType>()) {
+  if (T->getAs<SubprogramNoProtoType>()) {
     return 0;
   }
   
@@ -509,7 +509,7 @@ CXType lfort_getArgType(CXType X, unsigned i) {
   if (T.isNull())
     return MakeCXType(QualType(), GetTU(X));
 
-  if (const FunctionProtoType *FD = T->getAs<FunctionProtoType>()) {
+  if (const SubprogramProtoType *FD = T->getAs<SubprogramProtoType>()) {
     unsigned numArgs = FD->getNumArgs();
     if (i >= numArgs)
       return MakeCXType(QualType(), GetTU(X));
@@ -525,7 +525,7 @@ CXType lfort_getResultType(CXType X) {
   if (T.isNull())
     return MakeCXType(QualType(), GetTU(X));
   
-  if (const FunctionType *FD = T->getAs<FunctionType>())
+  if (const SubprogramType *FD = T->getAs<SubprogramType>())
     return MakeCXType(FD->getResultType(), GetTU(X));
   
   return MakeCXType(QualType(), GetTU(X));
@@ -646,8 +646,8 @@ CXString lfort_getDeclObjCTypeEncoding(CXCursor C) {
       return cxstring::createCXString("?");
   } else if (ObjCPropertyDecl *OPD = dyn_cast<ObjCPropertyDecl>(D)) 
     Ctx.getObjCEncodingForPropertyDecl(OPD, NULL, encoding);
-  else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    Ctx.getObjCEncodingForFunctionDecl(FD, encoding);
+  else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    Ctx.getObjCEncodingForSubprogramDecl(FD, encoding);
   else {
     QualType Ty;
     if (TypeDecl *TD = dyn_cast<TypeDecl>(D))

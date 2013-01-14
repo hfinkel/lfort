@@ -422,7 +422,7 @@ void Parser::ParseObjCInterfaceDeclList(tok::ObjCKeywordKind contextKey,
       if (Tok.is(tok::r_brace))
         break;
       ParsedAttributesWithRange attrs(AttrFactory);
-      allTUVariables.push_back(ParseDeclarationOrFunctionDefinition(attrs));
+      allTUVariables.push_back(ParseDeclarationOrSubprogramDefinition(attrs));
       continue;
     }
 
@@ -1029,7 +1029,7 @@ Decl *Parser::ParseObjCMethodDecl(SourceLocation mLoc,
   SmallVector<SourceLocation, 12> KeyLocs;
   SmallVector<Sema::ObjCArgInfo, 12> ArgInfos;
   ParseScope PrototypeScope(this,
-                            Scope::FunctionPrototypeScope|Scope::DeclScope);
+                            Scope::SubprogramPrototypeScope|Scope::DeclScope);
 
   AttributePool allParamAttrs(AttrFactory);
   while (1) {
@@ -1584,7 +1584,7 @@ void Parser::ObjCImplParsingDataRAII::finish(SourceRange AtEnd) {
 
   P.Actions.ActOnAtEnd(P.getCurScope(), AtEnd);
 
-  if (HasCFunction)
+  if (HasCSubprogram)
     for (size_t i = 0; i < LateParsedObjCMethods.size(); ++i)
       P.ParseLexedObjCMethodDefs(*LateParsedObjCMethods[i], 
                                  false/*c-functions*/);
@@ -1925,9 +1925,9 @@ Parser::ParseObjCAutoreleasePoolStmt(SourceLocation atLoc) {
                                                 AutoreleasePoolBody.take());
 }
 
-/// StashAwayMethodOrFunctionBodyTokens -  Consume the tokens and store them 
+/// StashAwayMethodOrSubprogramBodyTokens -  Consume the tokens and store them 
 /// for later parsing.
-void Parser::StashAwayMethodOrFunctionBodyTokens(Decl *MDecl) {
+void Parser::StashAwayMethodOrSubprogramBodyTokens(Decl *MDecl) {
   LexedMethod* LM = new LexedMethod(this, MDecl);
   CurParsedObjCImpl->LateParsedObjCMethods.push_back(LM);
   CachedTokens &Toks = LM->Toks;
@@ -2002,7 +2002,7 @@ Decl *Parser::ParseObjCMethodDefinition() {
   assert (CurParsedObjCImpl 
           && "ParseObjCMethodDefinition - Method out of @implementation");
   // Consume the tokens and store them for later parsing.
-  StashAwayMethodOrFunctionBodyTokens(MDecl);
+  StashAwayMethodOrSubprogramBodyTokens(MDecl);
   return MDecl;
 }
 
@@ -2893,13 +2893,13 @@ void Parser::ParseLexedObjCMethodDefs(LexedMethod &LM, bool parseMethod) {
   if (parseMethod)
     Actions.ActOnStartOfObjCMethodDef(getCurScope(), MCDecl);
   else
-    Actions.ActOnStartOfFunctionDef(getCurScope(), MCDecl);
+    Actions.ActOnStartOfSubprogramDef(getCurScope(), MCDecl);
   if (Tok.is(tok::kw_try))
-    MCDecl = ParseFunctionTryBlock(MCDecl, BodyScope);
+    MCDecl = ParseSubprogramTryBlock(MCDecl, BodyScope);
   else {
     if (Tok.is(tok::colon))
       ParseConstructorInitializer(MCDecl);
-    MCDecl = ParseFunctionStatementBody(MCDecl, BodyScope);
+    MCDecl = ParseSubprogramStatementBody(MCDecl, BodyScope);
   }
   
   if (Tok.getLocation() != OrigLoc) {

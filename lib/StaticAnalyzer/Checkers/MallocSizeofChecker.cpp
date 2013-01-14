@@ -91,7 +91,7 @@ public:
 
   TypeCallPair VisitCallExpr(const CallExpr *E) {
     VisitChildren(E);
-    const FunctionDecl *FD = E->getDirectCallee();
+    const SubprogramDecl *FD = E->getDirectCallee();
     if (FD) {
       IdentifierInfo *II = FD->getIdentifier();
       if (II == II_malloc || II == II_calloc || II == II_realloc)
@@ -218,7 +218,7 @@ public:
         llvm::raw_svector_ostream OS(buf);
 
         OS << "Result of ";
-        const FunctionDecl *Callee = i->AllocCall->getDirectCallee();
+        const SubprogramDecl *Callee = i->AllocCall->getDirectCallee();
         if (Callee && Callee->getIdentifier())
           OS << '\'' << Callee->getIdentifier()->getName() << '\'';
         else

@@ -80,22 +80,22 @@ public:
   void VisitChildren(Stmt *S);
 
   // Helpers.
-  bool checkCall_strCommon(const CallExpr *CE, const FunctionDecl *FD);
+  bool checkCall_strCommon(const CallExpr *CE, const SubprogramDecl *FD);
 
   typedef void (WalkAST::*FnCheck)(const CallExpr *,
-				   const FunctionDecl *);
+				   const SubprogramDecl *);
 
   // Checker-specific methods.
   void checkLoopConditionForFloat(const ForStmt *FS);
-  void checkCall_gets(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_getpw(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_mktemp(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_mkstemp(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_strcpy(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_strcat(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_rand(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_random(const CallExpr *CE, const FunctionDecl *FD);
-  void checkCall_vfork(const CallExpr *CE, const FunctionDecl *FD);
+  void checkCall_gets(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_getpw(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_mktemp(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_mkstemp(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_strcpy(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_strcat(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_rand(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_random(const CallExpr *CE, const SubprogramDecl *FD);
+  void checkCall_vfork(const CallExpr *CE, const SubprogramDecl *FD);
   void checkUncheckedReturnValue(CallExpr *CE);
 };
 } // end anonymous namespace
@@ -112,7 +112,7 @@ void WalkAST::VisitChildren(Stmt *S) {
 
 void WalkAST::VisitCallExpr(CallExpr *CE) {
   // Get the callee.  
-  const FunctionDecl *FD = CE->getDirectCallee();
+  const SubprogramDecl *FD = CE->getDirectCallee();
 
   if (!FD)
     return;
@@ -126,7 +126,7 @@ void WalkAST::VisitCallExpr(CallExpr *CE) {
     Name = Name.substr(10);
 
   // Set the evaluation function by switching on the callee name.
-  FnCheck evalFunction = llvm::StringSwitch<FnCheck>(Name)
+  FnCheck evalSubprogram = llvm::StringSwitch<FnCheck>(Name)
     .Case("gets", &WalkAST::checkCall_gets)
     .Case("getpw", &WalkAST::checkCall_getpw)
     .Case("mktemp", &WalkAST::checkCall_mktemp)
@@ -150,8 +150,8 @@ void WalkAST::VisitCallExpr(CallExpr *CE) {
 
   // If the callee isn't defined, it is not of security concern.
   // Check and evaluate the call.
-  if (evalFunction)
-    (this->*evalFunction)(CE, FD);
+  if (evalSubprogram)
+    (this->*evalSubprogram)(CE, FD);
 
   // Recurse and check children.
   VisitChildren(CE);
@@ -297,15 +297,15 @@ void WalkAST::checkLoopConditionForFloat(const ForStmt *FS) {
 // Check: Any use of 'gets' is insecure.
 // Originally: <rdar://problem/6335715>
 // Implements (part of): 300-BSI (buildsecurityin.us-cert.gov)
-// CWE-242: Use of Inherently Dangerous Function
+// CWE-242: Use of Inherently Dangerous Subprogram
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_gets(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_gets(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_gets)
     return;
   
-  const FunctionProtoType *FPT
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FPT
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FPT)
     return;
 
@@ -335,15 +335,15 @@ void WalkAST::checkCall_gets(const CallExpr *CE, const FunctionDecl *FD) {
 
 //===----------------------------------------------------------------------===//
 // Check: Any use of 'getpwd' is insecure.
-// CWE-477: Use of Obsolete Functions
+// CWE-477: Use of Obsolete Subprograms
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_getpw(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_getpw(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_getpw)
     return;
 
-  const FunctionProtoType *FPT
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FPT
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FPT)
     return;
 
@@ -380,7 +380,7 @@ void WalkAST::checkCall_getpw(const CallExpr *CE, const FunctionDecl *FD) {
 // CWE-377: Insecure Temporary File
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_mktemp(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_mktemp(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_mktemp) {
     // Fall back to the security check of looking for enough 'X's in the
     // format string, since that is a less severe warning.
@@ -388,8 +388,8 @@ void WalkAST::checkCall_mktemp(const CallExpr *CE, const FunctionDecl *FD) {
     return;
   }
 
-  const FunctionProtoType *FPT
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FPT
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if(!FPT)
     return;
 
@@ -424,7 +424,7 @@ void WalkAST::checkCall_mktemp(const CallExpr *CE, const FunctionDecl *FD) {
 // Check: Use of 'mkstemp', 'mktemp', 'mkdtemp' should contain at least 6 X's.
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_mkstemp(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_mkstemp(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_mkstemp)
     return;
 
@@ -508,7 +508,7 @@ void WalkAST::checkCall_mkstemp(const CallExpr *CE, const FunctionDecl *FD) {
 // CWE-119: Improper Restriction of Operations within 
 // the Bounds of a Memory Buffer 
 //===----------------------------------------------------------------------===//
-void WalkAST::checkCall_strcpy(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_strcpy(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_strcpy)
     return;
   
@@ -536,7 +536,7 @@ void WalkAST::checkCall_strcpy(const CallExpr *CE, const FunctionDecl *FD) {
 // CWE-119: Improper Restriction of Operations within 
 // the Bounds of a Memory Buffer 
 //===----------------------------------------------------------------------===//
-void WalkAST::checkCall_strcat(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_strcat(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_strcpy)
     return;
 
@@ -561,9 +561,9 @@ void WalkAST::checkCall_strcat(const CallExpr *CE, const FunctionDecl *FD) {
 //===----------------------------------------------------------------------===//
 // Common check for str* functions with no bounds parameters.
 //===----------------------------------------------------------------------===//
-bool WalkAST::checkCall_strCommon(const CallExpr *CE, const FunctionDecl *FD) {
-  const FunctionProtoType *FPT
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+bool WalkAST::checkCall_strCommon(const CallExpr *CE, const SubprogramDecl *FD) {
+  const SubprogramProtoType *FPT
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FPT)
     return false;
 
@@ -593,12 +593,12 @@ bool WalkAST::checkCall_strCommon(const CallExpr *CE, const FunctionDecl *FD) {
 // CWE-338: Use of cryptographically weak prng
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_rand(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_rand(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_rand || !CheckRand)
     return;
 
-  const FunctionProtoType *FTP
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FTP
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FTP)
     return;
 
@@ -622,7 +622,7 @@ void WalkAST::checkCall_rand(const CallExpr *CE, const FunctionDecl *FD) {
 
   SmallString<256> buf2;
   llvm::raw_svector_ostream os2(buf2);
-  os2 << "Function '" << *FD
+  os2 << "Subprogram '" << *FD
       << "' is obsolete because it implements a poor random number generator."
       << "  Use 'arc4random' instead";
 
@@ -638,12 +638,12 @@ void WalkAST::checkCall_rand(const CallExpr *CE, const FunctionDecl *FD) {
 // Originally: <rdar://problem/63371000>
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_random(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_random(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!CheckRand || !filter.check_rand)
     return;
 
-  const FunctionProtoType *FTP
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FTP
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FTP)
     return;
 
@@ -668,7 +668,7 @@ void WalkAST::checkCall_random(const CallExpr *CE, const FunctionDecl *FD) {
 // POS33-C: Do not use vfork().
 //===----------------------------------------------------------------------===//
 
-void WalkAST::checkCall_vfork(const CallExpr *CE, const FunctionDecl *FD) {
+void WalkAST::checkCall_vfork(const CallExpr *CE, const SubprogramDecl *FD) {
   if (!filter.check_vfork)
     return;
 
@@ -696,7 +696,7 @@ void WalkAST::checkUncheckedReturnValue(CallExpr *CE) {
   if (!filter.check_UncheckedReturn)
     return;
   
-  const FunctionDecl *FD = CE->getDirectCallee();
+  const SubprogramDecl *FD = CE->getDirectCallee();
   if (!FD)
     return;
 
@@ -720,8 +720,8 @@ void WalkAST::checkUncheckedReturnValue(CallExpr *CE) {
   if (identifierid >= num_setids)
     return;
 
-  const FunctionProtoType *FTP
-    = dyn_cast<FunctionProtoType>(FD->getType().IgnoreParens());
+  const SubprogramProtoType *FTP
+    = dyn_cast<SubprogramProtoType>(FD->getType().IgnoreParens());
   if (!FTP)
     return;
 

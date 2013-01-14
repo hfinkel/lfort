@@ -196,7 +196,7 @@ public:
       const void *symbolTag, const MemRegion *region,
       const Expr *expr, QualType type, unsigned count);
 
-  DefinedSVal getFunctionPointer(const FunctionDecl *func);
+  DefinedSVal getSubprogramPointer(const SubprogramDecl *func);
   
   DefinedSVal getBlockPointer(const BlockDecl *block, CanQualType locTy,
                               const LocationContext *locContext);

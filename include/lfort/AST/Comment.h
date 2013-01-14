@@ -928,7 +928,7 @@ struct DeclInfo {
   /// that we consider a "function".
   ArrayRef<const ParmVarDecl *> ParamVars;
 
-  /// Function result type if \c CommentDecl is something that we consider
+  /// Subprogram result type if \c CommentDecl is something that we consider
   /// a "function".
   QualType ResultType;
 
@@ -953,7 +953,7 @@ struct DeclInfo {
     /// \li ObjC method,
     /// \li a typedef for a function pointer, member function pointer,
     ///     ObjC block.
-    FunctionKind,
+    SubprogramKind,
 
     /// Something that we consider a "class":
     /// \li class/struct,
@@ -1000,12 +1000,12 @@ struct DeclInfo {
 
   /// Is \c CommentDecl a non-static member function of C++ class or
   /// instance method of ObjC class.
-  /// Can be true only if \c IsFunctionDecl is true.
+  /// Can be true only if \c IsSubprogramDecl is true.
   unsigned IsInstanceMethod : 1;
 
   /// Is \c CommentDecl a static member function of C++ class or
   /// class method of ObjC class.
-  /// Can be true only if \c IsFunctionDecl is true.
+  /// Can be true only if \c IsSubprogramDecl is true.
   unsigned IsClassMethod : 1;
 
   void fill();

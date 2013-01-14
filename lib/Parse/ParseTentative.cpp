@@ -654,7 +654,7 @@ Parser::TPResult Parser::TryParseDeclarator(bool mayBeAbstract,
          isDeclarationSpecifier())) {   // 'int(int)' is a function.
       // '(' parameter-declaration-clause ')' cv-qualifier-seq[opt]
       //        exception-specification[opt]
-      TPResult TPR = TryParseFunctionDeclarator();
+      TPResult TPR = TryParseSubprogramDeclarator();
       if (TPR != TPResult::Ambiguous())
         return TPR;
     } else {
@@ -692,13 +692,13 @@ Parser::TPResult Parser::TryParseDeclarator(bool mayBeAbstract,
       // initializer that follows the declarator. Note that ctor-style
       // initializers are not possible in contexts where abstract declarators
       // are allowed.
-      if (!mayBeAbstract && !isCXXFunctionDeclarator())
+      if (!mayBeAbstract && !isCXXSubprogramDeclarator())
         break;
 
       // direct-declarator '(' parameter-declaration-clause ')'
       //        cv-qualifier-seq[opt] exception-specification[opt]
       ConsumeParen();
-      TPR = TryParseFunctionDeclarator();
+      TPR = TryParseSubprogramDeclarator();
     } else if (Tok.is(tok::l_square)) {
       // direct-declarator '[' constant-expression[opt] ']'
       // direct-abstract-declarator[opt] '[' constant-expression[opt] ']'
@@ -1362,7 +1362,7 @@ Parser::TryParseDeclarationSpecifier(bool *HasMissingTypename) {
   return TPResult::Ambiguous();
 }
 
-/// isCXXFunctionDeclarator - Disambiguates between a function declarator or
+/// isCXXSubprogramDeclarator - Disambiguates between a function declarator or
 /// a constructor-style initializer, when parsing declaration statements.
 /// Returns true for function declarator and false for constructor-style
 /// initializer.
@@ -1372,7 +1372,7 @@ Parser::TryParseDeclarationSpecifier(bool *HasMissingTypename) {
 /// '(' parameter-declaration-clause ')' cv-qualifier-seq[opt]
 ///         exception-specification[opt]
 ///
-bool Parser::isCXXFunctionDeclarator(bool *IsAmbiguous) {
+bool Parser::isCXXSubprogramDeclarator(bool *IsAmbiguous) {
 
   // C++ 8.2p1:
   // The ambiguity arising from the similarity between a function-style cast and
@@ -1507,9 +1507,9 @@ Parser::TryParseParameterDeclarationClause(bool *InvalidAsDeclaration) {
   return TPResult::Ambiguous();
 }
 
-/// TryParseFunctionDeclarator - We parsed a '(' and we want to try to continue
+/// TryParseSubprogramDeclarator - We parsed a '(' and we want to try to continue
 /// parsing as a function declarator.
-/// If TryParseFunctionDeclarator fully parsed the function declarator, it will
+/// If TryParseSubprogramDeclarator fully parsed the function declarator, it will
 /// return TPResult::Ambiguous(), otherwise it will return either False() or
 /// Error().
 ///
@@ -1519,7 +1519,7 @@ Parser::TryParseParameterDeclarationClause(bool *InvalidAsDeclaration) {
 /// exception-specification:
 ///   'throw' '(' type-id-list[opt] ')'
 ///
-Parser::TPResult Parser::TryParseFunctionDeclarator() {
+Parser::TPResult Parser::TryParseSubprogramDeclarator() {
 
   // The '(' is already parsed.
 

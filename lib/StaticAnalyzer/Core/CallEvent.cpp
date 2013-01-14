@@ -56,7 +56,7 @@ static bool isCallbackArg(SVal V, QualType T) {
 
   // If a parameter is a block or a callback, assume it can modify pointer.
   if (T->isBlockPointerType() ||
-      T->isFunctionPointerType() ||
+      T->isSubprogramPointerType() ||
       T->isObjCSelType())
     return true;
 
@@ -71,7 +71,7 @@ static bool isCallbackArg(SVal V, QualType T) {
     for (RecordDecl::field_iterator I = RD->field_begin(), E = RD->field_end();
          I != E; ++I) {
       QualType FieldT = I->getType();
-      if (FieldT->isBlockPointerType() || FieldT->isFunctionPointerType())
+      if (FieldT->isBlockPointerType() || FieldT->isSubprogramPointerType())
         return true;
     }
   }
@@ -101,12 +101,12 @@ bool CallEvent::hasNonZeroCallbackArg() const {
   return false;
 }
 
-bool CallEvent::isGlobalCFunction(StringRef FunctionName) const {
-  const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(getDecl());
+bool CallEvent::isGlobalCSubprogram(StringRef SubprogramName) const {
+  const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(getDecl());
   if (!FD)
     return false;
 
-  return CheckerContext::isCLibraryFunction(FD, FunctionName);
+  return CheckerContext::isCLibrarySubprogram(FD, SubprogramName);
 }
 
 /// \brief Returns true if a type is a pointer-to-const or reference-to-const
@@ -273,7 +273,7 @@ bool CallEvent::isCallStmt(const Stmt *S) {
 /// \brief Returns the result type, adjusted for references.
 QualType CallEvent::getDeclaredResultType(const Decl *D) {
   assert(D);
-  if (const FunctionDecl* FD = dyn_cast<FunctionDecl>(D))
+  if (const SubprogramDecl* FD = dyn_cast<SubprogramDecl>(D))
     return FD->getResultType();
   else if (const ObjCMethodDecl* MD = dyn_cast<ObjCMethodDecl>(D))
     return MD->getResultType();
@@ -304,36 +304,36 @@ static void addParameterValuesToBindings(const StackFrameContext *CalleeCtx,
 }
 
 
-CallEvent::param_iterator AnyFunctionCall::param_begin() const {
-  const FunctionDecl *D = getDecl();
+CallEvent::param_iterator AnySubprogramCall::param_begin() const {
+  const SubprogramDecl *D = getDecl();
   if (!D)
     return 0;
 
   return D->param_begin();
 }
 
-CallEvent::param_iterator AnyFunctionCall::param_end() const {
-  const FunctionDecl *D = getDecl();
+CallEvent::param_iterator AnySubprogramCall::param_end() const {
+  const SubprogramDecl *D = getDecl();
   if (!D)
     return 0;
 
   return D->param_end();
 }
 
-void AnyFunctionCall::getInitialStackFrameContents(
+void AnySubprogramCall::getInitialStackFrameContents(
                                         const StackFrameContext *CalleeCtx,
                                         BindingsTy &Bindings) const {
-  const FunctionDecl *D = cast<FunctionDecl>(CalleeCtx->getDecl());
+  const SubprogramDecl *D = cast<SubprogramDecl>(CalleeCtx->getDecl());
   SValBuilder &SVB = getState()->getStateManager().getSValBuilder();
   addParameterValuesToBindings(CalleeCtx, Bindings, SVB, *this,
                                D->param_begin(), D->param_end());
 }
 
-bool AnyFunctionCall::argumentsMayEscape() const {
+bool AnySubprogramCall::argumentsMayEscape() const {
   if (hasNonZeroCallbackArg())
     return true;
 
-  const FunctionDecl *D = getDecl();
+  const SubprogramDecl *D = getDecl();
   if (!D)
     return true;
 
@@ -386,25 +386,25 @@ bool AnyFunctionCall::argumentsMayEscape() const {
 }
 
 
-const FunctionDecl *SimpleCall::getDecl() const {
-  const FunctionDecl *D = getOriginExpr()->getDirectCallee();
+const SubprogramDecl *SimpleCall::getDecl() const {
+  const SubprogramDecl *D = getOriginExpr()->getDirectCallee();
   if (D)
     return D;
 
-  return getSVal(getOriginExpr()->getCallee()).getAsFunctionDecl();
+  return getSVal(getOriginExpr()->getCallee()).getAsSubprogramDecl();
 }
 
 
-const FunctionDecl *CXXInstanceCall::getDecl() const {
+const SubprogramDecl *CXXInstanceCall::getDecl() const {
   const CallExpr *CE = cast_or_null<CallExpr>(getOriginExpr());
   if (!CE)
-    return AnyFunctionCall::getDecl();
+    return AnySubprogramCall::getDecl();
 
-  const FunctionDecl *D = CE->getDirectCallee();
+  const SubprogramDecl *D = CE->getDirectCallee();
   if (D)
     return D;
 
-  return getSVal(CE->getCallee()).getAsFunctionDecl();
+  return getSVal(CE->getCallee()).getAsSubprogramDecl();
 }
 
 void CXXInstanceCall::getExtraInvalidatedRegions(RegionList &Regions) const {
@@ -433,7 +433,7 @@ RuntimeDefinition CXXInstanceCall::getRuntimeDefinition() const {
   // If the method is non-virtual, we know we can inline it.
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(D);
   if (!MD->isVirtual())
-    return AnyFunctionCall::getRuntimeDefinition();
+    return AnySubprogramCall::getRuntimeDefinition();
 
   // Do we know the implicit 'this' object being called?
   const MemRegion *R = getCXXThisVal().getAsRegion();
@@ -473,7 +473,7 @@ RuntimeDefinition CXXInstanceCall::getRuntimeDefinition() const {
   }
 
   // Does the decl that we found have an implementation?
-  const FunctionDecl *Definition;
+  const SubprogramDecl *Definition;
   if (!Result->hasBody(Definition))
     return RuntimeDefinition();
 
@@ -488,7 +488,7 @@ RuntimeDefinition CXXInstanceCall::getRuntimeDefinition() const {
 void CXXInstanceCall::getInitialStackFrameContents(
                                             const StackFrameContext *CalleeCtx,
                                             BindingsTy &Bindings) const {
-  AnyFunctionCall::getInitialStackFrameContents(CalleeCtx, Bindings);
+  AnySubprogramCall::getInitialStackFrameContents(CalleeCtx, Bindings);
 
   // Handle the binding of 'this' in the new stack frame.
   SVal ThisVal = getCXXThisVal();
@@ -530,7 +530,7 @@ RuntimeDefinition CXXMemberCall::getRuntimeDefinition() const {
   // of the object expression is called.
   if (const MemberExpr *ME = dyn_cast<MemberExpr>(getOriginExpr()->getCallee()))
     if (ME->hasQualifier())
-      return AnyFunctionCall::getRuntimeDefinition();
+      return AnySubprogramCall::getRuntimeDefinition();
   
   return CXXInstanceCall::getRuntimeDefinition();
 }
@@ -591,7 +591,7 @@ void CXXConstructorCall::getExtraInvalidatedRegions(RegionList &Regions) const {
 void CXXConstructorCall::getInitialStackFrameContents(
                                              const StackFrameContext *CalleeCtx,
                                              BindingsTy &Bindings) const {
-  AnyFunctionCall::getInitialStackFrameContents(CalleeCtx, Bindings);
+  AnySubprogramCall::getInitialStackFrameContents(CalleeCtx, Bindings);
 
   SVal ThisVal = getCXXThisVal();
   if (!ThisVal.isUnknown()) {
@@ -614,7 +614,7 @@ RuntimeDefinition CXXDestructorCall::getRuntimeDefinition() const {
   // Base destructors are always called non-virtually.
   // Skip CXXInstanceCall's devirtualization logic in this case.
   if (isBaseDestructor())
-    return AnyFunctionCall::getRuntimeDefinition();
+    return AnySubprogramCall::getRuntimeDefinition();
 
   return CXXInstanceCall::getRuntimeDefinition();
 }
@@ -908,7 +908,7 @@ CallEventManager::getSimpleCall(const CallExpr *CE, ProgramStateRef State,
     return create<CXXMemberCall>(MCE, State, LCtx);
 
   if (const CXXOperatorCallExpr *OpCE = dyn_cast<CXXOperatorCallExpr>(CE)) {
-    const FunctionDecl *DirectCallee = OpCE->getDirectCallee();
+    const SubprogramDecl *DirectCallee = OpCE->getDirectCallee();
     if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(DirectCallee))
       if (MD->isInstance())
         return create<CXXMemberOperatorCall>(OpCE, State, LCtx);
@@ -919,7 +919,7 @@ CallEventManager::getSimpleCall(const CallExpr *CE, ProgramStateRef State,
 
   // Otherwise, it's a normal function call, static member function call, or
   // something we can't reason about.
-  return create<FunctionCall>(CE, State, LCtx);
+  return create<SubprogramCall>(CE, State, LCtx);
 }
 
 

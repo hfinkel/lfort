@@ -21,7 +21,7 @@
 #include <vector>
 
 namespace llvm {
-  class FunctionType;
+  class SubprogramType;
   class Module;
   class DataLayout;
   class Type;
@@ -38,7 +38,7 @@ namespace lfort {
   class CXXMethodDecl;
   class CodeGenOptions;
   class FieldDecl;
-  class FunctionProtoType;
+  class SubprogramProtoType;
   class ObjCInterfaceDecl;
   class ObjCIvarDecl;
   class PointerType;
@@ -84,8 +84,8 @@ private:
   /// RecordDecl.
   llvm::DenseMap<const Type*, llvm::StructType *> RecordDeclTypes;
   
-  /// FunctionInfos - Hold memoized CGFunctionInfo results.
-  llvm::FoldingSet<CGFunctionInfo> FunctionInfos;
+  /// SubprogramInfos - Hold memoized CGSubprogramInfo results.
+  llvm::FoldingSet<CGSubprogramInfo> SubprogramInfos;
 
   /// RecordsBeingLaidOut - This set keeps track of records that we're currently
   /// converting to an IR type.  For example, when converting:
@@ -93,7 +93,7 @@ private:
   /// types will be in this set.
   llvm::SmallPtrSet<const Type*, 4> RecordsBeingLaidOut;
   
-  llvm::SmallPtrSet<const CGFunctionInfo*, 4> FunctionsBeingProcessed;
+  llvm::SmallPtrSet<const CGSubprogramInfo*, 4> SubprogramsBeingProcessed;
   
   /// SkippedLayout - True if we didn't layout a function due to a being inside
   /// a recursive struct conversion, set this to true.
@@ -127,21 +127,21 @@ public:
   /// memory representation is usually i8 or i32, depending on the target.
   llvm::Type *ConvertTypeForMem(QualType T);
 
-  /// GetFunctionType - Get the LLVM function type for \arg Info.
-  llvm::FunctionType *GetFunctionType(const CGFunctionInfo &Info);
+  /// GetSubprogramType - Get the LLVM function type for \arg Info.
+  llvm::FunctionType *GetSubprogramType(const CGSubprogramInfo &Info);
 
-  llvm::FunctionType *GetFunctionType(GlobalDecl GD);
+  llvm::FunctionType *GetSubprogramType(GlobalDecl GD);
 
   /// isFuncTypeConvertible - Utility to check whether a function type can
   /// be converted to an LLVM type (i.e. doesn't depend on an incomplete tag
   /// type).
-  bool isFuncTypeConvertible(const FunctionType *FT);
+  bool isFuncTypeConvertible(const SubprogramType *FT);
   bool isFuncTypeArgumentConvertible(QualType Ty);
   
-  /// GetFunctionTypeForVTable - Get the LLVM function type for use in a vtable,
+  /// GetSubprogramTypeForVTable - Get the LLVM function type for use in a vtable,
   /// given a CXXMethodDecl. If the method to has an incomplete return type,
   /// and/or incomplete argument types, this will return the opaque type.
-  llvm::Type *GetFunctionTypeForVTable(GlobalDecl GD);
+  llvm::Type *GetSubprogramTypeForVTable(GlobalDecl GD);
 
   const CGRecordLayout &getCGRecordLayout(const RecordDecl*);
 
@@ -149,9 +149,9 @@ public:
   /// replace the 'opaque' type we previously made for it if applicable.
   void UpdateCompletedType(const TagDecl *TD);
 
-  /// getNullaryFunctionInfo - Get the function info for a void()
+  /// getNullarySubprogramInfo - Get the function info for a void()
   /// function with standard CC.
-  const CGFunctionInfo &arrangeNullaryFunction();
+  const CGSubprogramInfo &arrangeNullarySubprogram();
 
   // The arrangement methods are split into three families:
   //   - those meant to drive the signature and prologue/epilogue
@@ -163,7 +163,7 @@ public:
   // arguments, as well as unprototyped functions.
   //
   // Key points:
-  // - The CGFunctionInfo for emitting a specific call site must include
+  // - The CGSubprogramInfo for emitting a specific call site must include
   //   entries for the optional arguments.
   // - The function type used at the call site must reflect the formal
   //   signature of the declaration being called, or else the call will
@@ -173,41 +173,41 @@ public:
   //   at the call-site.  However, some targets (e.g. x86-64) screw with
   //   this for compatibility reasons.
 
-  const CGFunctionInfo &arrangeGlobalDeclaration(GlobalDecl GD);
-  const CGFunctionInfo &arrangeFunctionDeclaration(const FunctionDecl *FD);
-  const CGFunctionInfo &arrangeFunctionDeclaration(QualType ResTy,
-                                                   const FunctionArgList &Args,
-                                             const FunctionType::ExtInfo &Info,
+  const CGSubprogramInfo &arrangeGlobalDeclaration(GlobalDecl GD);
+  const CGSubprogramInfo &arrangeSubprogramDeclaration(const SubprogramDecl *FD);
+  const CGSubprogramInfo &arrangeSubprogramDeclaration(QualType ResTy,
+                                                   const SubprogramArgList &Args,
+                                             const SubprogramType::ExtInfo &Info,
                                                    bool isVariadic);
 
-  const CGFunctionInfo &arrangeObjCMethodDeclaration(const ObjCMethodDecl *MD);
-  const CGFunctionInfo &arrangeObjCMessageSendSignature(const ObjCMethodDecl *MD,
+  const CGSubprogramInfo &arrangeObjCMethodDeclaration(const ObjCMethodDecl *MD);
+  const CGSubprogramInfo &arrangeObjCMessageSendSignature(const ObjCMethodDecl *MD,
                                                         QualType receiverType);
 
-  const CGFunctionInfo &arrangeCXXMethodDeclaration(const CXXMethodDecl *MD);
-  const CGFunctionInfo &arrangeCXXConstructorDeclaration(
+  const CGSubprogramInfo &arrangeCXXMethodDeclaration(const CXXMethodDecl *MD);
+  const CGSubprogramInfo &arrangeCXXConstructorDeclaration(
                                                     const CXXConstructorDecl *D,
                                                     CXXCtorType Type);
-  const CGFunctionInfo &arrangeCXXDestructor(const CXXDestructorDecl *D,
+  const CGSubprogramInfo &arrangeCXXDestructor(const CXXDestructorDecl *D,
                                              CXXDtorType Type);
 
-  const CGFunctionInfo &arrangeFreeFunctionCall(const CallArgList &Args,
-                                                const FunctionType *Ty);
-  const CGFunctionInfo &arrangeFreeFunctionCall(QualType ResTy,
+  const CGSubprogramInfo &arrangeFreeSubprogramCall(const CallArgList &Args,
+                                                const SubprogramType *Ty);
+  const CGSubprogramInfo &arrangeFreeSubprogramCall(QualType ResTy,
                                                 const CallArgList &args,
-                                                FunctionType::ExtInfo info,
+                                                SubprogramType::ExtInfo info,
                                                 RequiredArgs required);
-  const CGFunctionInfo &arrangeBlockFunctionCall(const CallArgList &args,
-                                                 const FunctionType *type);
+  const CGSubprogramInfo &arrangeBlockSubprogramCall(const CallArgList &args,
+                                                 const SubprogramType *type);
 
-  const CGFunctionInfo &arrangeCXXMethodCall(const CallArgList &args,
-                                             const FunctionProtoType *type,
+  const CGSubprogramInfo &arrangeCXXMethodCall(const CallArgList &args,
+                                             const SubprogramProtoType *type,
                                              RequiredArgs required);
 
-  const CGFunctionInfo &arrangeFreeFunctionType(CanQual<FunctionProtoType> Ty);
-  const CGFunctionInfo &arrangeFreeFunctionType(CanQual<FunctionNoProtoType> Ty);
-  const CGFunctionInfo &arrangeCXXMethodType(const CXXRecordDecl *RD,
-                                             const FunctionProtoType *FTP);
+  const CGSubprogramInfo &arrangeFreeSubprogramType(CanQual<SubprogramProtoType> Ty);
+  const CGSubprogramInfo &arrangeFreeSubprogramType(CanQual<SubprogramNoProtoType> Ty);
+  const CGSubprogramInfo &arrangeCXXMethodType(const CXXRecordDecl *RD,
+                                             const SubprogramProtoType *FTP);
 
   /// "Arrange" the LLVM information for a call or type with the given
   /// signature.  This is largely an internal method; other clients
@@ -215,9 +215,9 @@ public:
   /// this.
   ///
   /// \param argTypes - must all actually be canonical as params
-  const CGFunctionInfo &arrangeLLVMFunctionInfo(CanQualType returnType,
+  const CGSubprogramInfo &arrangeLLVMSubprogramInfo(CanQualType returnType,
                                                 ArrayRef<CanQualType> argTypes,
-                                                FunctionType::ExtInfo info,
+                                                SubprogramType::ExtInfo info,
                                                 RequiredArgs args);
 
   /// \brief Compute a new LLVM record layout object for the given record.

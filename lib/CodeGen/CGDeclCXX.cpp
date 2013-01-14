@@ -147,7 +147,7 @@ void CodeGenSubprogram::EmitCXXGlobalVarDeclInit(const VarDecl &D,
 }
 
 static llvm::Function *
-CreateGlobalInitOrDestructFunction(CodeGenModule &CGM,
+CreateGlobalInitOrDestructSubprogram(CodeGenModule &CGM,
                                    llvm::FunctionType *ty,
                                    const Twine &name);
 
@@ -159,7 +159,7 @@ static llvm::Constant *createAtExitStub(CodeGenModule &CGM,
   // Get the destructor function type, void(*)(void).
   llvm::FunctionType *ty = llvm::FunctionType::get(CGM.VoidTy, false);
   llvm::Function *fn =
-    CreateGlobalInitOrDestructFunction(CGM, ty,
+    CreateGlobalInitOrDestructSubprogram(CGM, ty,
                                        Twine("__dtor_", addr->getName()));
 
   CodeGenSubprogram CGF(CGM);
@@ -167,9 +167,9 @@ static llvm::Constant *createAtExitStub(CodeGenModule &CGM,
   // Initialize debug info if needed.
   CGF.maybeInitializeDebugInfo();
 
-  CGF.StartFunction(GlobalDecl(), CGM.getContext().VoidTy, fn,
-                    CGM.getTypes().arrangeNullaryFunction(),
-                    FunctionArgList(), SourceLocation());
+  CGF.StartSubprogram(GlobalDecl(), CGM.getContext().VoidTy, fn,
+                    CGM.getTypes().arrangeNullarySubprogram(),
+                    SubprogramArgList(), SourceLocation());
 
   llvm::CallInst *call = CGF.Builder.CreateCall(dtor, addr);
  
@@ -178,7 +178,7 @@ static llvm::Constant *createAtExitStub(CodeGenModule &CGM,
         dyn_cast<llvm::Function>(dtor->stripPointerCasts()))
     call->setCallingConv(dtorFn->getCallingConv());
 
-  CGF.FinishFunction();
+  CGF.FinishSubprogram();
 
   return fn;
 }
@@ -194,7 +194,7 @@ void CodeGenSubprogram::registerGlobalDtorWithAtExit(llvm::Constant *dtor,
     llvm::FunctionType::get(IntTy, dtorStub->getType(), false);
 
   llvm::Constant *atexit =
-    CGM.CreateRuntimeFunction(atexitTy, "atexit");
+    CGM.CreateRuntimeSubprogram(atexitTy, "atexit");
   if (llvm::Function *atexitFn = dyn_cast<llvm::Function>(atexit))
     atexitFn->setDoesNotThrow();
 
@@ -216,7 +216,7 @@ void CodeGenSubprogram::EmitCXXGuardedInit(const VarDecl &D,
 }
 
 static llvm::Function *
-CreateGlobalInitOrDestructFunction(CodeGenModule &CGM,
+CreateGlobalInitOrDestructSubprogram(CodeGenModule &CGM,
                                    llvm::FunctionType *FTy,
                                    const Twine &Name) {
   llvm::Function *Fn =
@@ -246,7 +246,7 @@ CodeGenModule::EmitCXXGlobalVarDeclInitFunc(const VarDecl *D,
 
   // Create a variable initialization function.
   llvm::Function *Fn =
-    CreateGlobalInitOrDestructFunction(*this, FTy, "__cxx_global_var_init");
+    CreateGlobalInitOrDestructSubprogram(*this, FTy, "__cxx_global_var_init");
 
   CodeGenSubprogram(*this).GenerateCXXGlobalVarDeclInitFunc(Fn, D, Addr,
                                                           PerformInit);
@@ -302,7 +302,7 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
       // Priority is always <= 65535 (enforced by sema)..
       PrioritySuffix = std::string(6-PrioritySuffix.size(), '0')+PrioritySuffix;
       llvm::Function *Fn = 
-        CreateGlobalInitOrDestructFunction(*this, FTy,
+        CreateGlobalInitOrDestructSubprogram(*this, FTy,
                                            "_GLOBAL__I_" + PrioritySuffix);
       
       for (; I < PrioE; ++I)
@@ -316,7 +316,7 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
   }
   
   llvm::Function *Fn = 
-    CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__I_a");
+    CreateGlobalInitOrDestructSubprogram(*this, FTy, "_GLOBAL__I_a");
 
   CodeGenSubprogram(*this).GenerateCXXGlobalInitFunc(Fn,
                                                    &CXXGlobalInits[0],
@@ -335,7 +335,7 @@ void CodeGenModule::EmitCXXGlobalDtorFunc() {
 
   // Create our global destructor function.
   llvm::Function *Fn =
-    CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__D_a");
+    CreateGlobalInitOrDestructSubprogram(*this, FTy, "_GLOBAL__D_a");
 
   CodeGenSubprogram(*this).GenerateCXXGlobalDtorsFunc(Fn, CXXGlobalDtors);
   AddGlobalDtor(Fn);
@@ -350,9 +350,9 @@ void CodeGenSubprogram::GenerateCXXGlobalVarDeclInitFunc(llvm::Function *Fn,
   if (!D->hasAttr<NoDebugAttr>())
     maybeInitializeDebugInfo();
 
-  StartFunction(GlobalDecl(D), getContext().VoidTy, Fn,
-                getTypes().arrangeNullaryFunction(),
-                FunctionArgList(), D->getInit()->getExprLoc());
+  StartSubprogram(GlobalDecl(D), getContext().VoidTy, Fn,
+                getTypes().arrangeNullarySubprogram(),
+                SubprogramArgList(), D->getInit()->getExprLoc());
 
   // Use guarded initialization if the global variable is weak. This
   // occurs for, e.g., instantiated static data members and
@@ -364,7 +364,7 @@ void CodeGenSubprogram::GenerateCXXGlobalVarDeclInitFunc(llvm::Function *Fn,
     EmitCXXGlobalVarDeclInit(*D, Addr, PerformInit);
   }
 
-  FinishFunction();
+  FinishSubprogram();
 }
 
 void CodeGenSubprogram::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
@@ -373,9 +373,9 @@ void CodeGenSubprogram::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
 
-  StartFunction(GlobalDecl(), getContext().VoidTy, Fn,
-                getTypes().arrangeNullaryFunction(),
-                FunctionArgList(), SourceLocation());
+  StartSubprogram(GlobalDecl(), getContext().VoidTy, Fn,
+                getTypes().arrangeNullarySubprogram(),
+                SubprogramArgList(), SourceLocation());
 
   RunCleanupsScope Scope(*this);
 
@@ -392,7 +392,7 @@ void CodeGenSubprogram::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
 
   Scope.ForceCleanup();
   
-  FinishFunction();
+  FinishSubprogram();
 }
 
 void CodeGenSubprogram::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
@@ -401,9 +401,9 @@ void CodeGenSubprogram::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
 
-  StartFunction(GlobalDecl(), getContext().VoidTy, Fn,
-                getTypes().arrangeNullaryFunction(),
-                FunctionArgList(), SourceLocation());
+  StartSubprogram(GlobalDecl(), getContext().VoidTy, Fn,
+                getTypes().arrangeNullarySubprogram(),
+                SubprogramArgList(), SourceLocation());
 
   // Emit the dtors, in reverse order from construction.
   for (unsigned i = 0, e = DtorsAndObjects.size(); i != e; ++i) {
@@ -415,7 +415,7 @@ void CodeGenSubprogram::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
       CI->setCallingConv(F->getCallingConv());
   }
 
-  FinishFunction();
+  FinishSubprogram();
 }
 
 /// generateDestroyHelper - Generates a helper function which, when
@@ -425,27 +425,27 @@ CodeGenSubprogram::generateDestroyHelper(llvm::Constant *addr,
                                        QualType type,
                                        Destroyer *destroyer,
                                        bool useEHCleanupForArray) {
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl dst(0, SourceLocation(), 0, getContext().VoidPtrTy);
   args.push_back(&dst);
   
-  const CGFunctionInfo &FI = 
-    CGM.getTypes().arrangeFunctionDeclaration(getContext().VoidTy, args,
-                                              FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI = 
+    CGM.getTypes().arrangeSubprogramDeclaration(getContext().VoidTy, args,
+                                              SubprogramType::ExtInfo(),
                                               /*variadic*/ false);
-  llvm::FunctionType *FTy = CGM.getTypes().GetFunctionType(FI);
+  llvm::FunctionType *FTy = CGM.getTypes().GetSubprogramType(FI);
   llvm::Function *fn = 
-    CreateGlobalInitOrDestructFunction(CGM, FTy, "__cxx_global_array_dtor");
+    CreateGlobalInitOrDestructSubprogram(CGM, FTy, "__cxx_global_array_dtor");
 
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
 
-  StartFunction(GlobalDecl(), getContext().VoidTy, fn, FI, args,
+  StartSubprogram(GlobalDecl(), getContext().VoidTy, fn, FI, args,
                 SourceLocation());
 
   emitDestroy(addr, type, destroyer, useEHCleanupForArray);
   
-  FinishFunction();
+  FinishSubprogram();
   
   return fn;
 }

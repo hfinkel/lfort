@@ -238,14 +238,14 @@ namespace lfort {
                                             ClassTemplateSpecializationDecl *D);
     void VisitClassTemplatePartialSpecializationDecl(
                                      ClassTemplatePartialSpecializationDecl *D);
-    void VisitClassScopeFunctionSpecializationDecl(
-                                       ClassScopeFunctionSpecializationDecl *D);
+    void VisitClassScopeSubprogramSpecializationDecl(
+                                       ClassScopeSubprogramSpecializationDecl *D);
     void VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D);
     void VisitValueDecl(ValueDecl *VD);
     void VisitEnumConstantDecl(EnumConstantDecl *ECD);
     void VisitUnresolvedUsingValueDecl(UnresolvedUsingValueDecl *D);
     void VisitDeclaratorDecl(DeclaratorDecl *DD);
-    void VisitFunctionDecl(FunctionDecl *FD);
+    void VisitSubprogramDecl(SubprogramDecl *FD);
     void VisitCXXMethodDecl(CXXMethodDecl *D);
     void VisitCXXConstructorDecl(CXXConstructorDecl *D);
     void VisitCXXDestructorDecl(CXXDestructorDecl *D);
@@ -259,7 +259,7 @@ namespace lfort {
     void VisitTemplateDecl(TemplateDecl *D);
     RedeclarableResult VisitRedeclarableTemplateDecl(RedeclarableTemplateDecl *D);
     void VisitClassTemplateDecl(ClassTemplateDecl *D);
-    void VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+    void VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
     void VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D);
     void VisitTypeAliasTemplateDecl(TypeAliasTemplateDecl *D);
     void VisitUsingDecl(UsingDecl *D);
@@ -323,8 +323,8 @@ void ASTDeclReader::Visit(Decl *D) {
   } else if (ObjCInterfaceDecl *ID = dyn_cast<ObjCInterfaceDecl>(D)) {
     // if we have a fully initialized TypeDecl, we can safely read its type now.
     ID->TypeForDecl = Reader.GetType(TypeIDForTypeDecl).getTypePtrOrNull();
-  } else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    // FunctionDecl's body was written last after all other Stmts/Exprs.
+  } else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    // SubprogramDecl's body was written last after all other Stmts/Exprs.
     // We only read it if FD doesn't already have a body (e.g., from another
     // module).
     // FIXME: Also consider = default and = delete.
@@ -504,14 +504,14 @@ void ASTDeclReader::VisitDeclaratorDecl(DeclaratorDecl *DD) {
   }
 }
 
-void ASTDeclReader::VisitFunctionDecl(FunctionDecl *FD) {
+void ASTDeclReader::VisitSubprogramDecl(SubprogramDecl *FD) {
   RedeclarableResult Redecl = VisitRedeclarable(FD);
   VisitDeclaratorDecl(FD);
 
   ReadDeclarationNameLoc(FD->DNLoc, FD->getDeclName(), Record, Idx);
   FD->IdentifierNamespace = Record[Idx++];
   
-  // FunctionDecl's body is handled last at ASTDeclReader::Visit,
+  // SubprogramDecl's body is handled last at ASTDeclReader::Visit,
   // after everything else is read.
   
   FD->SClass = (StorageClass)Record[Idx++];
@@ -531,24 +531,24 @@ void ASTDeclReader::VisitFunctionDecl(FunctionDecl *FD) {
   FD->HasSkippedBody = Record[Idx++];
   FD->EndRangeLoc = ReadSourceLocation(Record, Idx);
 
-  switch ((FunctionDecl::TemplatedKind)Record[Idx++]) {
-  case FunctionDecl::TK_NonTemplate:
+  switch ((SubprogramDecl::TemplatedKind)Record[Idx++]) {
+  case SubprogramDecl::TK_NonTemplate:
     mergeRedeclarable(FD, Redecl);      
     break;
-  case FunctionDecl::TK_FunctionTemplate:
-    FD->setDescribedFunctionTemplate(ReadDeclAs<FunctionTemplateDecl>(Record, 
+  case SubprogramDecl::TK_SubprogramTemplate:
+    FD->setDescribedSubprogramTemplate(ReadDeclAs<SubprogramTemplateDecl>(Record, 
                                                                       Idx));
     break;
-  case FunctionDecl::TK_MemberSpecialization: {
-    FunctionDecl *InstFD = ReadDeclAs<FunctionDecl>(Record, Idx);
+  case SubprogramDecl::TK_MemberSpecialization: {
+    SubprogramDecl *InstFD = ReadDeclAs<SubprogramDecl>(Record, Idx);
     TemplateSpecializationKind TSK = (TemplateSpecializationKind)Record[Idx++];
     SourceLocation POI = ReadSourceLocation(Record, Idx);
-    FD->setInstantiationOfMemberFunction(Reader.getContext(), InstFD, TSK);
+    FD->setInstantiationOfMemberSubprogram(Reader.getContext(), InstFD, TSK);
     FD->getMemberSpecializationInfo()->setPointOfInstantiation(POI);
     break;
   }
-  case FunctionDecl::TK_FunctionTemplateSpecialization: {
-    FunctionTemplateDecl *Template = ReadDeclAs<FunctionTemplateDecl>(Record, 
+  case SubprogramDecl::TK_SubprogramTemplateSpecialization: {
+    SubprogramTemplateDecl *Template = ReadDeclAs<SubprogramTemplateDecl>(Record, 
                                                                       Idx);
     TemplateSpecializationKind TSK = (TemplateSpecializationKind)Record[Idx++];
     
@@ -579,8 +579,8 @@ void ASTDeclReader::VisitFunctionDecl(FunctionDecl *FD) {
     TemplateArgumentListInfo TemplArgsInfo(LAngleLoc, RAngleLoc);
     for (unsigned i=0, e = TemplArgLocs.size(); i != e; ++i)
       TemplArgsInfo.addArgument(TemplArgLocs[i]);
-    FunctionTemplateSpecializationInfo *FTInfo
-        = FunctionTemplateSpecializationInfo::Create(C, FD, Template, TSK,
+    SubprogramTemplateSpecializationInfo *FTInfo
+        = SubprogramTemplateSpecializationInfo::Create(C, FD, Template, TSK,
                                                      TemplArgList,
                              HasTemplateArgumentsAsWritten ? &TemplArgsInfo : 0,
                                                      POI);
@@ -589,15 +589,15 @@ void ASTDeclReader::VisitFunctionDecl(FunctionDecl *FD) {
     if (FD->isCanonicalDecl()) { // if canonical add to template's set.
       // The template that contains the specializations set. It's not safe to
       // use getCanonicalDecl on Template since it may still be initializing.
-      FunctionTemplateDecl *CanonTemplate
-        = ReadDeclAs<FunctionTemplateDecl>(Record, Idx);
+      SubprogramTemplateDecl *CanonTemplate
+        = ReadDeclAs<SubprogramTemplateDecl>(Record, Idx);
       // Get the InsertPos by FindNodeOrInsertPos() instead of calling
       // InsertNode(FTInfo) directly to avoid the getASTContext() call in
-      // FunctionTemplateSpecializationInfo's Profile().
+      // SubprogramTemplateSpecializationInfo's Profile().
       // We avoid getASTContext because a decl in the parent hierarchy may
       // be initializing.
       llvm::FoldingSetNodeID ID;
-      FunctionTemplateSpecializationInfo::Profile(ID, TemplArgs.data(),
+      SubprogramTemplateSpecializationInfo::Profile(ID, TemplArgs.data(),
                                                   TemplArgs.size(), C);
       void *InsertPos = 0;
       CanonTemplate->getSpecializations().FindNodeOrInsertPos(ID, InsertPos);
@@ -608,7 +608,7 @@ void ASTDeclReader::VisitFunctionDecl(FunctionDecl *FD) {
     }
     break;
   }
-  case FunctionDecl::TK_DependentFunctionTemplateSpecialization: {
+  case SubprogramDecl::TK_DependentSubprogramTemplateSpecialization: {
     // Templates.
     UnresolvedSet<8> TemplDecls;
     unsigned NumTemplates = Record[Idx++];
@@ -1212,12 +1212,12 @@ void ASTDeclReader::VisitCXXRecordDecl(CXXRecordDecl *D) {
   // compute it.
   if (D->IsCompleteDefinition) {
     if (CXXMethodDecl *Key = ReadDeclAs<CXXMethodDecl>(Record, Idx))
-      C.KeyFunctions[D] = Key;
+      C.KeySubprograms[D] = Key;
   }
 }
 
 void ASTDeclReader::VisitCXXMethodDecl(CXXMethodDecl *D) {
-  VisitFunctionDecl(D);
+  VisitSubprogramDecl(D);
   unsigned NumOverridenMethods = Record[Idx++];
   while (NumOverridenMethods--) {
     // Avoid invariant checking of CXXMethodDecl::addOverriddenMethod,
@@ -1240,7 +1240,7 @@ void ASTDeclReader::VisitCXXDestructorDecl(CXXDestructorDecl *D) {
   VisitCXXMethodDecl(D);
 
   D->ImplicitlyDefined = Record[Idx++];
-  D->OperatorDelete = ReadDeclAs<FunctionDecl>(Record, Idx);
+  D->OperatorDelete = ReadDeclAs<SubprogramDecl>(Record, Idx);
 }
 
 void ASTDeclReader::VisitCXXConversionDecl(CXXConversionDecl *D) {
@@ -1447,21 +1447,21 @@ void ASTDeclReader::VisitClassTemplatePartialSpecializationDecl(
   }
 }
 
-void ASTDeclReader::VisitClassScopeFunctionSpecializationDecl(
-                                    ClassScopeFunctionSpecializationDecl *D) {
+void ASTDeclReader::VisitClassScopeSubprogramSpecializationDecl(
+                                    ClassScopeSubprogramSpecializationDecl *D) {
   VisitDecl(D);
   D->Specialization = ReadDeclAs<CXXMethodDecl>(Record, Idx);
 }
 
-void ASTDeclReader::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
+void ASTDeclReader::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
   RedeclarableResult Redecl = VisitRedeclarableTemplateDecl(D);
 
   if (ThisDeclID == Redecl.getFirstID()) {
-    // This FunctionTemplateDecl owns a CommonPtr; read it.
+    // This SubprogramTemplateDecl owns a CommonPtr; read it.
 
     // Read the function specialization declarations.
-    // FunctionTemplateDecl's FunctionTemplateSpecializationInfos are filled
-    // when reading the specialized FunctionDecl.
+    // SubprogramTemplateDecl's SubprogramTemplateSpecializationInfos are filled
+    // when reading the specialized SubprogramDecl.
     unsigned NumSpecs = Record[Idx++];
     while (NumSpecs--)
       (void)ReadDecl(Record, Idx);
@@ -1677,7 +1677,7 @@ static bool isConsumerInterestedIn(Decl *D, bool HasBody) {
   if (VarDecl *Var = dyn_cast<VarDecl>(D))
     return Var->isFileVarDecl() &&
            Var->isThisDeclarationADefinition() == VarDecl::Definition;
-  if (FunctionDecl *Func = dyn_cast<FunctionDecl>(D))
+  if (SubprogramDecl *Func = dyn_cast<SubprogramDecl>(D))
     return Func->doesThisDeclarationHaveABody() || HasBody;
   
   return false;
@@ -1751,11 +1751,11 @@ static bool isSameEntity(NamedDecl *X, NamedDecl *Y) {
         TagY->getTagKind() == TTK_Interface));
   }
   
-  // Functions with the same type and linkage match.
+  // Subprograms with the same type and linkage match.
   // FIXME: This needs to cope with function templates, merging of 
   //prototyped/non-prototyped functions, etc.
-  if (FunctionDecl *FuncX = dyn_cast<FunctionDecl>(X)) {
-    FunctionDecl *FuncY = cast<FunctionDecl>(Y);
+  if (SubprogramDecl *FuncX = dyn_cast<SubprogramDecl>(X)) {
+    SubprogramDecl *FuncY = cast<SubprogramDecl>(Y);
     return (FuncX->getLinkage() == FuncY->getLinkage()) &&
       FuncX->getASTContext().hasSameType(FuncX->getType(), FuncY->getType());
   }
@@ -1834,8 +1834,8 @@ void ASTDeclReader::attachPreviousDecl(Decl *D, Decl *previous) {
   assert(D && previous);
   if (TagDecl *TD = dyn_cast<TagDecl>(D)) {
     TD->RedeclLink.setNext(cast<TagDecl>(previous));
-  } else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    FD->RedeclLink.setNext(cast<FunctionDecl>(previous));
+  } else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    FD->RedeclLink.setNext(cast<SubprogramDecl>(previous));
   } else if (VarDecl *VD = dyn_cast<VarDecl>(D)) {
     VD->RedeclLink.setNext(cast<VarDecl>(previous));
   } else if (TypedefNameDecl *TD = dyn_cast<TypedefNameDecl>(D)) {
@@ -1857,9 +1857,9 @@ void ASTDeclReader::attachLatestDecl(Decl *D, Decl *Latest) {
   if (TagDecl *TD = dyn_cast<TagDecl>(D)) {
     TD->RedeclLink
       = Redeclarable<TagDecl>::LatestDeclLink(cast<TagDecl>(Latest));
-  } else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  } else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     FD->RedeclLink 
-      = Redeclarable<FunctionDecl>::LatestDeclLink(cast<FunctionDecl>(Latest));
+      = Redeclarable<SubprogramDecl>::LatestDeclLink(cast<SubprogramDecl>(Latest));
   } else if (VarDecl *VD = dyn_cast<VarDecl>(D)) {
     VD->RedeclLink
       = Redeclarable<VarDecl>::LatestDeclLink(cast<VarDecl>(Latest));
@@ -1957,7 +1957,7 @@ Decl *ASTReader::ReadDeclRecord(DeclID ID) {
     D = EnumConstantDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_FUNCTION:
-    D = FunctionDecl::CreateDeserialized(Context, ID);
+    D = SubprogramDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_LINKAGE_SPEC:
     D = LinkageSpecDecl::CreateDeserialized(Context, ID);
@@ -2020,10 +2020,10 @@ Decl *ASTReader::ReadDeclRecord(DeclID ID) {
     D = ClassTemplatePartialSpecializationDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION:
-    D = ClassScopeFunctionSpecializationDecl::CreateDeserialized(Context, ID);
+    D = ClassScopeSubprogramSpecializationDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_FUNCTION_TEMPLATE:
-    D = FunctionTemplateDecl::CreateDeserialized(Context, ID);
+    D = SubprogramTemplateDecl::CreateDeserialized(Context, ID);
     break;
   case DECL_TEMPLATE_TYPE_PARM:
     D = TemplateTypeParmDecl::CreateDeserialized(Context, ID);

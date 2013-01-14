@@ -610,7 +610,7 @@ void AggExprEmitter::VisitCastExpr(CastExpr *E) {
   case CK_Dependent:
   case CK_BitCast:
   case CK_ArrayToPointerDecay:
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
   case CK_NullToPointer:
   case CK_NullToMemberPointer:
   case CK_BaseToDerivedMemberPointer:

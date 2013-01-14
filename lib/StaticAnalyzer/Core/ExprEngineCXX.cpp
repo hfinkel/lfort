@@ -234,10 +234,10 @@ void ExprEngine::VisitCXXNewExpr(const CXXNewExpr *CNE, ExplodedNode *Pred,
   // is not declared as non-throwing, failures /must/ be signalled by
   // exceptions, and thus the return value will never be NULL.
   // C++11 [basic.stc.dynamic.allocation]p3.
-  FunctionDecl *FD = CNE->getOperatorNew();
+  SubprogramDecl *FD = CNE->getOperatorNew();
   if (FD && getContext().getLangOpts().CXXExceptions) {
     QualType Ty = FD->getType();
-    if (const FunctionProtoType *ProtoType = Ty->getAs<FunctionProtoType>())
+    if (const SubprogramProtoType *ProtoType = Ty->getAs<SubprogramProtoType>())
       if (!ProtoType->isNothrow(getContext()))
         State = State->assume(symVal, true);
   }

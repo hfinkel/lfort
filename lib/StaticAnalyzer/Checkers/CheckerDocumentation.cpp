@@ -44,7 +44,7 @@ class CheckerDocumentation : public Checker< check::PreStmt<ReturnStmt>,
                                        check::Location,
                                        check::Bind,
                                        check::DeadSymbols,
-                                       check::EndFunction,
+                                       check::EndSubprogram,
                                        check::EndAnalysis,
                                        check::EndOfTranslationUnit,
                                        eval::Call,
@@ -53,7 +53,7 @@ class CheckerDocumentation : public Checker< check::PreStmt<ReturnStmt>,
                                        check::RegionChanges,
                                        check::PointerEscape,
                                        check::Event<ImplicitNullDerefEvent>,
-                                       check::ASTDecl<FunctionDecl> > {
+                                       check::ASTDecl<SubprogramDecl> > {
 public:
 
   /// \brief Pre-visit the Statement.
@@ -156,8 +156,8 @@ public:
   /// \brief Called when the analyzer core reaches the end of a
   /// function being analyzed.
   ///
-  /// check::EndFunction
-  void checkEndFunction(CheckerContext &Ctx) const {}
+  /// check::EndSubprogram
+  void checkEndSubprogram(CheckerContext &Ctx) const {}
 
   /// \brief Called after all the paths in the ExplodedGraph reach end of path
   /// - the symbolic execution graph is fully explored.
@@ -280,10 +280,10 @@ public:
   /// An AST traversal callback, which should only be used when the checker is
   /// not path sensitive. It will be called for every Declaration in the AST and
   /// can be specialized to only be called on subclasses of Decl, for example,
-  /// FunctionDecl.
+  /// SubprogramDecl.
   ///
-  /// check::ASTDecl<FunctionDecl>
-  void checkASTDecl(const FunctionDecl *D,
+  /// check::ASTDecl<SubprogramDecl>
+  void checkASTDecl(const SubprogramDecl *D,
                     AnalysisManager &Mgr,
                     BugReporter &BR) const {}
 

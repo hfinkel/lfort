@@ -438,15 +438,15 @@ struct FinishARCDealloc : EHScopeStack::Cleanup {
 void CodeGenSubprogram::StartObjCMethod(const ObjCMethodDecl *OMD,
                                       const ObjCContainerDecl *CD,
                                       SourceLocation StartLoc) {
-  FunctionArgList args;
+  SubprogramArgList args;
   // Check if we should generate debug info for this method.
   if (!OMD->hasAttr<NoDebugAttr>())
     maybeInitializeDebugInfo();
 
   llvm::Function *Fn = CGM.getObjCRuntime().GenerateMethod(OMD, CD);
 
-  const CGFunctionInfo &FI = CGM.getTypes().arrangeObjCMethodDeclaration(OMD);
-  CGM.SetInternalFunctionAttributes(OMD, Fn, FI);
+  const CGSubprogramInfo &FI = CGM.getTypes().arrangeObjCMethodDeclaration(OMD);
+  CGM.SetInternalSubprogramAttributes(OMD, Fn, FI);
 
   args.push_back(OMD->getSelfDecl());
   args.push_back(OMD->getCmdDecl());
@@ -457,7 +457,7 @@ void CodeGenSubprogram::StartObjCMethod(const ObjCMethodDecl *OMD,
 
   CurGD = OMD;
 
-  StartFunction(OMD, OMD->getResultType(), Fn, FI, args, StartLoc);
+  StartSubprogram(OMD, OMD->getResultType(), Fn, FI, args, StartLoc);
 
   // In ARC, certain methods get an extra cleanup.
   if (CGM.getLangOpts().ObjCAutoRefCount &&
@@ -478,7 +478,7 @@ static llvm::Value *emitARCRetainLoadOfScalar(CodeGenSubprogram &CGF,
 void CodeGenSubprogram::GenerateObjCMethod(const ObjCMethodDecl *OMD) {
   StartObjCMethod(OMD, OMD->getClassInterface(), OMD->getLocStart());
   EmitStmt(OMD->getBody());
-  FinishFunction(OMD->getBodyRBrace());
+  FinishSubprogram(OMD->getBodyRBrace());
 }
 
 /// emitStructGetterCall - Call the runtime function to load a property
@@ -506,9 +506,9 @@ static void emitStructGetterCall(CodeGenSubprogram &CGF, ObjCIvarDecl *ivar,
   args.add(RValue::get(CGF.Builder.getInt1(isAtomic)), Context.BoolTy);
   args.add(RValue::get(CGF.Builder.getInt1(hasStrong)), Context.BoolTy);
 
-  llvm::Value *fn = CGF.CGM.getObjCRuntime().GetGetStructFunction();
-  CGF.EmitCall(CGF.getTypes().arrangeFreeFunctionCall(Context.VoidTy, args,
-                                                      FunctionType::ExtInfo(),
+  llvm::Value *fn = CGF.CGM.getObjCRuntime().GetGetStructSubprogram();
+  CGF.EmitCall(CGF.getTypes().arrangeFreeSubprogramCall(Context.VoidTy, args,
+                                                      SubprogramType::ExtInfo(),
                                                       RequiredArgs::All),
                fn, ReturnValueSlot(), args);
 }
@@ -714,7 +714,7 @@ PropertyImplStrategy::PropertyImplStrategy(CodeGenModule &CGM,
 void CodeGenSubprogram::GenerateObjCGetter(ObjCImplementationDecl *IMP,
                                          const ObjCPropertyImplDecl *PID) {
   llvm::Constant *AtomicHelperFn = 
-    GenerateObjCAtomicGetterCopyHelperFunction(PID);
+    GenerateObjCAtomicGetterCopyHelperSubprogram(PID);
   const ObjCPropertyDecl *PD = PID->getPropertyDecl();
   ObjCMethodDecl *OMD = PD->getGetterMethodDecl();
   assert(OMD && "Invalid call to generate getter (empty method)");
@@ -722,7 +722,7 @@ void CodeGenSubprogram::GenerateObjCGetter(ObjCImplementationDecl *IMP,
 
   generateObjCGetterBody(IMP, PID, OMD, AtomicHelperFn);
 
-  FinishFunction();
+  FinishSubprogram();
 }
 
 static bool hasTrivialGetExpr(const ObjCPropertyImplDecl *propImpl) {
@@ -772,10 +772,10 @@ static void emitCPPObjectAtomicGetterCall(CodeGenSubprogram &CGF,
   args.add(RValue::get(AtomicHelperFn), CGF.getContext().VoidPtrTy);
   
   llvm::Value *copyCppAtomicObjectFn = 
-    CGF.CGM.getObjCRuntime().GetCppAtomicObjectGetFunction();
-  CGF.EmitCall(CGF.getTypes().arrangeFreeFunctionCall(CGF.getContext().VoidTy,
+    CGF.CGM.getObjCRuntime().GetCppAtomicObjectGetSubprogram();
+  CGF.EmitCall(CGF.getTypes().arrangeFreeSubprogramCall(CGF.getContext().VoidTy,
                                                       args,
-                                                      FunctionType::ExtInfo(),
+                                                      SubprogramType::ExtInfo(),
                                                       RequiredArgs::All),
                copyCppAtomicObjectFn, ReturnValueSlot(), args);
 }
@@ -842,7 +842,7 @@ CodeGenSubprogram::generateObjCGetterBody(const ObjCImplementationDecl *classImp
 
   case PropertyImplStrategy::GetSetProperty: {
     llvm::Value *getPropertyFn =
-      CGM.getObjCRuntime().GetPropertyGetFunction();
+      CGM.getObjCRuntime().GetPropertyGetSubprogram();
     if (!getPropertyFn) {
       CGM.ErrorUnsupported(propImpl, "Obj-C getter requiring atomic copy");
       return;
@@ -866,8 +866,8 @@ CodeGenSubprogram::generateObjCGetterBody(const ObjCImplementationDecl *classImp
 
     // FIXME: We shouldn't need to get the function info here, the
     // runtime already should have computed it to build the function.
-    RValue RV = EmitCall(getTypes().arrangeFreeFunctionCall(propType, args,
-                                                       FunctionType::ExtInfo(),
+    RValue RV = EmitCall(getTypes().arrangeFreeSubprogramCall(propType, args,
+                                                       SubprogramType::ExtInfo(),
                                                             RequiredArgs::All),
                          getPropertyFn, ReturnValueSlot(), args);
 
@@ -969,10 +969,10 @@ static void emitStructSetterCall(CodeGenSubprogram &CGF, ObjCMethodDecl *OMD,
   // FIXME: should this really always be false?
   args.add(RValue::get(CGF.Builder.getFalse()), CGF.getContext().BoolTy);
 
-  llvm::Value *copyStructFn = CGF.CGM.getObjCRuntime().GetSetStructFunction();
-  CGF.EmitCall(CGF.getTypes().arrangeFreeFunctionCall(CGF.getContext().VoidTy,
+  llvm::Value *copyStructFn = CGF.CGM.getObjCRuntime().GetSetStructSubprogram();
+  CGF.EmitCall(CGF.getTypes().arrangeFreeSubprogramCall(CGF.getContext().VoidTy,
                                                       args,
-                                                      FunctionType::ExtInfo(),
+                                                      SubprogramType::ExtInfo(),
                                                       RequiredArgs::All),
                copyStructFn, ReturnValueSlot(), args);
 }
@@ -1007,10 +1007,10 @@ static void emitCPPObjectAtomicSetterCall(CodeGenSubprogram &CGF,
   args.add(RValue::get(AtomicHelperFn), CGF.getContext().VoidPtrTy);
   
   llvm::Value *copyCppAtomicObjectFn = 
-    CGF.CGM.getObjCRuntime().GetCppAtomicObjectSetFunction();
-  CGF.EmitCall(CGF.getTypes().arrangeFreeFunctionCall(CGF.getContext().VoidTy,
+    CGF.CGM.getObjCRuntime().GetCppAtomicObjectSetSubprogram();
+  CGF.EmitCall(CGF.getTypes().arrangeFreeSubprogramCall(CGF.getContext().VoidTy,
                                                       args,
-                                                      FunctionType::ExtInfo(),
+                                                      SubprogramType::ExtInfo(),
                                                       RequiredArgs::All),
                copyCppAtomicObjectFn, ReturnValueSlot(), args);
   
@@ -1031,8 +1031,8 @@ static bool hasTrivialSetExpr(const ObjCPropertyImplDecl *PID) {
   // synthesized assignment operator and therefore both parameters are
   // references.
   if (CallExpr *call = dyn_cast<CallExpr>(setter)) {
-    if (const FunctionDecl *callee
-          = dyn_cast_or_null<FunctionDecl>(call->getCalleeDecl()))
+    if (const SubprogramDecl *callee
+          = dyn_cast_or_null<SubprogramDecl>(call->getCalleeDecl()))
       if (callee->isTrivial())
         return true;
     return false;
@@ -1112,7 +1112,7 @@ CodeGenSubprogram::generateObjCSetterBody(const ObjCImplementationDecl *classImp
       // 10.8 and iOS 6.0 code and GC is off
       setOptimizedPropertyFn = 
         CGM.getObjCRuntime()
-           .GetOptimizedPropertySetFunction(strategy.isAtomic(),
+           .GetOptimizedPropertySetSubprogram(strategy.isAtomic(),
                                             strategy.isCopy());
       if (!setOptimizedPropertyFn) {
         CGM.ErrorUnsupported(propImpl, "Obj-C optimized setter - NYI");
@@ -1120,7 +1120,7 @@ CodeGenSubprogram::generateObjCSetterBody(const ObjCImplementationDecl *classImp
       }
     }
     else {
-      setPropertyFn = CGM.getObjCRuntime().GetPropertySetFunction();
+      setPropertyFn = CGM.getObjCRuntime().GetPropertySetSubprogram();
       if (!setPropertyFn) {
         CGM.ErrorUnsupported(propImpl, "Obj-C setter requiring atomic copy");
         return;
@@ -1144,8 +1144,8 @@ CodeGenSubprogram::generateObjCSetterBody(const ObjCImplementationDecl *classImp
     if (setOptimizedPropertyFn) {
       args.add(RValue::get(arg), getContext().getObjCIdType());
       args.add(RValue::get(ivarOffset), getContext().getPointerDiffType());
-      EmitCall(getTypes().arrangeFreeFunctionCall(getContext().VoidTy, args,
-                                                  FunctionType::ExtInfo(),
+      EmitCall(getTypes().arrangeFreeSubprogramCall(getContext().VoidTy, args,
+                                                  SubprogramType::ExtInfo(),
                                                   RequiredArgs::All),
                setOptimizedPropertyFn, ReturnValueSlot(), args);
     } else {
@@ -1157,8 +1157,8 @@ CodeGenSubprogram::generateObjCSetterBody(const ObjCImplementationDecl *classImp
                getContext().BoolTy);
       // FIXME: We shouldn't need to get the function info here, the runtime
       // already should have computed it to build the function.
-      EmitCall(getTypes().arrangeFreeFunctionCall(getContext().VoidTy, args,
-                                                  FunctionType::ExtInfo(),
+      EmitCall(getTypes().arrangeFreeSubprogramCall(getContext().VoidTy, args,
+                                                  SubprogramType::ExtInfo(),
                                                   RequiredArgs::All),
                setPropertyFn, ReturnValueSlot(), args);
     }
@@ -1232,7 +1232,7 @@ CodeGenSubprogram::generateObjCSetterBody(const ObjCImplementationDecl *classImp
 void CodeGenSubprogram::GenerateObjCSetter(ObjCImplementationDecl *IMP,
                                          const ObjCPropertyImplDecl *PID) {
   llvm::Constant *AtomicHelperFn = 
-    GenerateObjCAtomicSetterCopyHelperFunction(PID);
+    GenerateObjCAtomicSetterCopyHelperSubprogram(PID);
   const ObjCPropertyDecl *PD = PID->getPropertyDecl();
   ObjCMethodDecl *OMD = PD->getSetterMethodDecl();
   assert(OMD && "Invalid call to generate setter (empty method)");
@@ -1240,7 +1240,7 @@ void CodeGenSubprogram::GenerateObjCSetter(ObjCImplementationDecl *IMP,
 
   generateObjCSetterBody(IMP, PID, AtomicHelperFn);
 
-  FinishFunction();
+  FinishSubprogram();
 }
 
 namespace {
@@ -1345,11 +1345,11 @@ void CodeGenSubprogram::GenerateObjCCtorDtorMethod(ObjCImplementationDecl *IMP,
   } else {
     emitCXXDestructMethod(*this, IMP);
   }
-  FinishFunction();
+  FinishSubprogram();
 }
 
-bool CodeGenSubprogram::IndirectObjCSetterArg(const CGFunctionInfo &FI) {
-  CGFunctionInfo::const_arg_iterator it = FI.arg_begin();
+bool CodeGenSubprogram::IndirectObjCSetterArg(const CGSubprogramInfo &FI) {
+  CGSubprogramInfo::const_arg_iterator it = FI.arg_begin();
   it++; it++;
   const ABIArgInfo &AI = it->info;
   // FIXME. Is this sufficient check?
@@ -1379,7 +1379,7 @@ QualType CodeGenSubprogram::TypeOfSelfObject() {
 
 void CodeGenSubprogram::EmitObjCForCollectionStmt(const ObjCForCollectionStmt &S){
   llvm::Constant *EnumerationMutationFn =
-    CGM.getObjCRuntime().EnumerationMutationFunction();
+    CGM.getObjCRuntime().EnumerationMutationSubprogram();
 
   if (!EnumerationMutationFn) {
     CGM.ErrorUnsupported(&S, "Obj-C fast enumeration for this runtime");
@@ -1522,8 +1522,8 @@ void CodeGenSubprogram::EmitObjCForCollectionStmt(const ObjCForCollectionStmt &S
   Args2.add(RValue::get(V), getContext().getObjCIdType());
   // FIXME: We shouldn't need to get the function info here, the runtime already
   // should have computed it to build the function.
-  EmitCall(CGM.getTypes().arrangeFreeFunctionCall(getContext().VoidTy, Args2,
-                                                  FunctionType::ExtInfo(),
+  EmitCall(CGM.getTypes().arrangeFreeSubprogramCall(getContext().VoidTy, Args2,
+                                                  SubprogramType::ExtInfo(),
                                                   RequiredArgs::All),
            EnumerationMutationFn, ReturnValueSlot(), Args2);
 
@@ -1700,10 +1700,10 @@ llvm::Value *CodeGenSubprogram::EmitObjCExtendObjectLifetime(QualType type,
 }
 
 
-static llvm::Constant *createARCRuntimeFunction(CodeGenModule &CGM,
+static llvm::Constant *createARCRuntimeSubprogram(CodeGenModule &CGM,
                                                 llvm::FunctionType *type,
                                                 StringRef fnName) {
-  llvm::Constant *fn = CGM.CreateRuntimeFunction(type, fnName);
+  llvm::Constant *fn = CGM.CreateRuntimeSubprogram(type, fnName);
 
   // If the target runtime doesn't naturally support ARC, emit weak
   // references to the runtime support library.  We don't really
@@ -1733,7 +1733,7 @@ static llvm::Value *emitARCValueOperation(CodeGenSubprogram &CGF,
     std::vector<llvm::Type*> args(1, CGF.Int8PtrTy);
     llvm::FunctionType *fnType =
       llvm::FunctionType::get(CGF.Int8PtrTy, args, false);
-    fn = createARCRuntimeFunction(CGF.CGM, fnType, fnName);
+    fn = createARCRuntimeSubprogram(CGF.CGM, fnType, fnName);
   }
 
   // Cast the argument to 'id'.
@@ -1760,7 +1760,7 @@ static llvm::Value *emitARCLoadOperation(CodeGenSubprogram &CGF,
     std::vector<llvm::Type*> args(1, CGF.Int8PtrPtrTy);
     llvm::FunctionType *fnType =
       llvm::FunctionType::get(CGF.Int8PtrTy, args, false);
-    fn = createARCRuntimeFunction(CGF.CGM, fnType, fnName);
+    fn = createARCRuntimeSubprogram(CGF.CGM, fnType, fnName);
   }
 
   // Cast the argument to 'id*'.
@@ -1796,7 +1796,7 @@ static llvm::Value *emitARCStoreOperation(CodeGenSubprogram &CGF,
 
     llvm::FunctionType *fnType
       = llvm::FunctionType::get(CGF.Int8PtrTy, argTypes, false);
-    fn = createARCRuntimeFunction(CGF.CGM, fnType, fnName);
+    fn = createARCRuntimeSubprogram(CGF.CGM, fnType, fnName);
   }
 
   llvm::Type *origType = value->getType();
@@ -1825,7 +1825,7 @@ static void emitARCCopyOperation(CodeGenSubprogram &CGF,
     std::vector<llvm::Type*> argTypes(2, CGF.Int8PtrPtrTy);
     llvm::FunctionType *fnType
       = llvm::FunctionType::get(CGF.Builder.getVoidTy(), argTypes, false);
-    fn = createARCRuntimeFunction(CGF.CGM, fnType, fnName);
+    fn = createARCRuntimeSubprogram(CGF.CGM, fnType, fnName);
   }
 
   dst = CGF.Builder.CreateBitCast(dst, CGF.Int8PtrPtrTy);
@@ -1943,7 +1943,7 @@ void CodeGenSubprogram::EmitARCRelease(llvm::Value *value, bool precise) {
     std::vector<llvm::Type*> args(1, Int8PtrTy);
     llvm::FunctionType *fnType =
       llvm::FunctionType::get(Builder.getVoidTy(), args, false);
-    fn = createARCRuntimeFunction(CGM, fnType, "objc_release");
+    fn = createARCRuntimeSubprogram(CGM, fnType, "objc_release");
   }
 
   // Cast the argument to 'id'.
@@ -1995,7 +1995,7 @@ llvm::Value *CodeGenSubprogram::EmitARCStoreStrongCall(llvm::Value *addr,
     llvm::Type *argTypes[] = { Int8PtrPtrTy, Int8PtrTy };
     llvm::FunctionType *fnType
       = llvm::FunctionType::get(Builder.getVoidTy(), argTypes, false);
-    fn = createARCRuntimeFunction(CGM, fnType, "objc_storeStrong");
+    fn = createARCRuntimeSubprogram(CGM, fnType, "objc_storeStrong");
   }
 
   addr = Builder.CreateBitCast(addr, Int8PtrPtrTy);
@@ -2152,7 +2152,7 @@ void CodeGenSubprogram::EmitARCDestroyWeak(llvm::Value *addr) {
     std::vector<llvm::Type*> args(1, Int8PtrPtrTy);
     llvm::FunctionType *fnType =
       llvm::FunctionType::get(Builder.getVoidTy(), args, false);
-    fn = createARCRuntimeFunction(CGM, fnType, "objc_destroyWeak");
+    fn = createARCRuntimeSubprogram(CGM, fnType, "objc_destroyWeak");
   }
 
   // Cast the argument to 'id*'.
@@ -2187,7 +2187,7 @@ llvm::Value *CodeGenSubprogram::EmitObjCAutoreleasePoolPush() {
   if (!fn) {
     llvm::FunctionType *fnType =
       llvm::FunctionType::get(Int8PtrTy, false);
-    fn = createARCRuntimeFunction(CGM, fnType, "objc_autoreleasePoolPush");
+    fn = createARCRuntimeSubprogram(CGM, fnType, "objc_autoreleasePoolPush");
   }
 
   llvm::CallInst *call = Builder.CreateCall(fn);
@@ -2209,7 +2209,7 @@ void CodeGenSubprogram::EmitObjCAutoreleasePoolPop(llvm::Value *value) {
 
     // We don't want to use a weak import here; instead we should not
     // fall into this path.
-    fn = createARCRuntimeFunction(CGM, fnType, "objc_autoreleasePoolPop");
+    fn = createARCRuntimeSubprogram(CGM, fnType, "objc_autoreleasePoolPop");
   }
 
   llvm::CallInst *call = Builder.CreateCall(fn, value);
@@ -2799,12 +2799,12 @@ void CodeGenSubprogram::EmitExtendGCLifetime(llvm::Value *object) {
   Builder.CreateCall(extender, object)->setDoesNotThrow();
 }
 
-/// GenerateObjCAtomicSetterCopyHelperFunction - Given a c++ object type with
+/// GenerateObjCAtomicSetterCopyHelperSubprogram - Given a c++ object type with
 /// non-trivial copy assignment function, produce following helper function.
 /// static void copyHelper(Ty *dest, const Ty *source) { *dest = *source; }
 ///
 llvm::Constant *
-CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperFunction(
+CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperSubprogram(
                                         const ObjCPropertyImplDecl *PID) {
   if (!getLangOpts().CPlusPlus ||
       !getLangOpts().ObjCRuntime.hasAtomicCopyHelper())
@@ -2825,7 +2825,7 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperFunction(
   ASTContext &C = getContext();
   IdentifierInfo *II
     = &CGM.getContext().Idents.get("__assign_helper_atomic_property_");
-  FunctionDecl *FD = FunctionDecl::Create(C,
+  SubprogramDecl *FD = SubprogramDecl::Create(C,
                                           C.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
@@ -2839,18 +2839,18 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperFunction(
   SrcTy.addConst();
   SrcTy = C.getPointerType(SrcTy);
   
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl dstDecl(FD, SourceLocation(), 0, DestTy);
   args.push_back(&dstDecl);
   ImplicitParamDecl srcDecl(FD, SourceLocation(), 0, SrcTy);
   args.push_back(&srcDecl);
   
-  const CGFunctionInfo &FI =
-    CGM.getTypes().arrangeFunctionDeclaration(C.VoidTy, args,
-                                              FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+    CGM.getTypes().arrangeSubprogramDeclaration(C.VoidTy, args,
+                                              SubprogramType::ExtInfo(),
                                               RequiredArgs::All);
   
-  llvm::FunctionType *LTy = CGM.getTypes().GetFunctionType(FI);
+  llvm::FunctionType *LTy = CGM.getTypes().GetSubprogramType(FI);
   
   llvm::Function *Fn =
     llvm::Function::Create(LTy, llvm::GlobalValue::InternalLinkage,
@@ -2860,7 +2860,7 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperFunction(
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
   
-  StartFunction(FD, C.VoidTy, Fn, FI, args, SourceLocation());
+  StartSubprogram(FD, C.VoidTy, Fn, FI, args, SourceLocation());
   
   DeclRefExpr DstExpr(&dstDecl, false, DestTy,
                       VK_RValue, SourceLocation());
@@ -2880,14 +2880,14 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperFunction(
   
   EmitStmt(&TheCall);
 
-  FinishFunction();
+  FinishSubprogram();
   HelperFn = llvm::ConstantExpr::getBitCast(Fn, VoidPtrTy);
   CGM.setAtomicSetterHelperFnMap(Ty, HelperFn);
   return HelperFn;
 }
 
 llvm::Constant *
-CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperFunction(
+CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperSubprogram(
                                             const ObjCPropertyImplDecl *PID) {
   if (!getLangOpts().CPlusPlus ||
       !getLangOpts().ObjCRuntime.hasAtomicCopyHelper())
@@ -2910,7 +2910,7 @@ CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperFunction(
   ASTContext &C = getContext();
   IdentifierInfo *II
   = &CGM.getContext().Idents.get("__copy_helper_atomic_property_");
-  FunctionDecl *FD = FunctionDecl::Create(C,
+  SubprogramDecl *FD = SubprogramDecl::Create(C,
                                           C.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
@@ -2924,18 +2924,18 @@ CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperFunction(
   SrcTy.addConst();
   SrcTy = C.getPointerType(SrcTy);
   
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl dstDecl(FD, SourceLocation(), 0, DestTy);
   args.push_back(&dstDecl);
   ImplicitParamDecl srcDecl(FD, SourceLocation(), 0, SrcTy);
   args.push_back(&srcDecl);
   
-  const CGFunctionInfo &FI =
-  CGM.getTypes().arrangeFunctionDeclaration(C.VoidTy, args,
-                                            FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+  CGM.getTypes().arrangeSubprogramDeclaration(C.VoidTy, args,
+                                            SubprogramType::ExtInfo(),
                                             RequiredArgs::All);
   
-  llvm::FunctionType *LTy = CGM.getTypes().GetFunctionType(FI);
+  llvm::FunctionType *LTy = CGM.getTypes().GetSubprogramType(FI);
   
   llvm::Function *Fn =
   llvm::Function::Create(LTy, llvm::GlobalValue::InternalLinkage,
@@ -2944,7 +2944,7 @@ CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperFunction(
   // Initialize debug info if needed.
   maybeInitializeDebugInfo();
   
-  StartFunction(FD, C.VoidTy, Fn, FI, args, SourceLocation());
+  StartSubprogram(FD, C.VoidTy, Fn, FI, args, SourceLocation());
   
   DeclRefExpr SrcExpr(&srcDecl, false, SrcTy,
                       VK_RValue, SourceLocation());
@@ -2987,7 +2987,7 @@ CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperFunction(
                                     AggValueSlot::DoesNotNeedGCBarriers,
                                     AggValueSlot::IsNotAliased));
   
-  FinishFunction();
+  FinishSubprogram();
   HelperFn = llvm::ConstantExpr::getBitCast(Fn, VoidPtrTy);
   CGM.setAtomicGetterHelperFnMap(Ty, HelperFn);
   return HelperFn;

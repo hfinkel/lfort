@@ -398,7 +398,7 @@ private:
   // These are helper methods used by more than one Traverse* method.
   bool TraverseTemplateParameterListHelper(TemplateParameterList *TPL);
   bool TraverseClassInstantiations(ClassTemplateDecl *D);
-  bool TraverseFunctionInstantiations(FunctionTemplateDecl *D) ;
+  bool TraverseSubprogramInstantiations(SubprogramTemplateDecl *D) ;
   bool TraverseTemplateArgumentLocsHelper(const TemplateArgumentLoc *TAL,
                                           unsigned Count);
   bool TraverseArrayTypeLocHelper(ArrayTypeLoc TL);
@@ -406,7 +406,7 @@ private:
   bool TraverseCXXRecordHelper(CXXRecordDecl *D);
   bool TraverseDeclaratorHelper(DeclaratorDecl *D);
   bool TraverseDeclContextHelper(DeclContext *DC);
-  bool TraverseFunctionHelper(FunctionDecl *D);
+  bool TraverseSubprogramHelper(SubprogramDecl *D);
   bool TraverseVarHelper(VarDecl *D);
 
   struct EnqueueJob {
@@ -679,7 +679,7 @@ bool RecursiveASTVisitor<Derived>::TraverseDeclarationNameInfo(
   switch (NameInfo.getName().getNameKind()) {
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TSInfo = NameInfo.getNamedTypeInfo())
       TRY_TO(TraverseTypeLoc(TSInfo->getTypeLoc()));
 
@@ -876,20 +876,20 @@ DEF_TRAVERSE_TYPE(ExtVectorType, {
     TRY_TO(TraverseType(T->getElementType()));
   })
 
-DEF_TRAVERSE_TYPE(FunctionNoProtoType, {
+DEF_TRAVERSE_TYPE(SubprogramNoProtoType, {
     TRY_TO(TraverseType(T->getResultType()));
   })
 
-DEF_TRAVERSE_TYPE(FunctionProtoType, {
+DEF_TRAVERSE_TYPE(SubprogramProtoType, {
     TRY_TO(TraverseType(T->getResultType()));
 
-    for (FunctionProtoType::arg_type_iterator A = T->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator A = T->arg_type_begin(),
                                            AEnd = T->arg_type_end();
          A != AEnd; ++A) {
       TRY_TO(TraverseType(*A));
     }
 
-    for (FunctionProtoType::exception_iterator E = T->exception_begin(),
+    for (SubprogramProtoType::exception_iterator E = T->exception_begin(),
                                             EEnd = T->exception_end();
          E != EEnd; ++E) {
       TRY_TO(TraverseType(*E));
@@ -1095,15 +1095,15 @@ DEF_TRAVERSE_TYPELOC(ExtVectorType, {
     TRY_TO(TraverseType(TL.getTypePtr()->getElementType()));
   })
 
-DEF_TRAVERSE_TYPELOC(FunctionNoProtoType, {
+DEF_TRAVERSE_TYPELOC(SubprogramNoProtoType, {
     TRY_TO(TraverseTypeLoc(TL.getResultLoc()));
   })
 
 // FIXME: location of exception specifications (attributes?)
-DEF_TRAVERSE_TYPELOC(FunctionProtoType, {
+DEF_TRAVERSE_TYPELOC(SubprogramProtoType, {
     TRY_TO(TraverseTypeLoc(TL.getResultLoc()));
 
-    const FunctionProtoType *T = TL.getTypePtr();
+    const SubprogramProtoType *T = TL.getTypePtr();
 
     for (unsigned I = 0, E = TL.getNumArgs(); I != E; ++I) {
       if (TL.getArg(I)) {
@@ -1113,7 +1113,7 @@ DEF_TRAVERSE_TYPELOC(FunctionProtoType, {
       }
     }
 
-    for (FunctionProtoType::exception_iterator E = T->exception_begin(),
+    for (SubprogramProtoType::exception_iterator E = T->exception_begin(),
                                             EEnd = T->exception_end();
          E != EEnd; ++E) {
       TRY_TO(TraverseType(*E));
@@ -1286,7 +1286,7 @@ DEF_TRAVERSE_DECL(FriendTemplateDecl, {
     }
   })
 
-DEF_TRAVERSE_DECL(ClassScopeFunctionSpecializationDecl, {
+DEF_TRAVERSE_DECL(ClassScopeSubprogramSpecializationDecl, {
     TRY_TO(TraverseDecl(D->getSpecialization()));
 
     if (D->hasExplicitTemplateArgs()) {
@@ -1452,16 +1452,16 @@ DEF_TRAVERSE_DECL(ClassTemplateDecl, {
 // A helper method for traversing the instantiations of a
 // function while skipping its specializations.
 template<typename Derived>
-bool RecursiveASTVisitor<Derived>::TraverseFunctionInstantiations(
-    FunctionTemplateDecl *D) {
-  FunctionTemplateDecl::spec_iterator end = D->spec_end();
-  for (FunctionTemplateDecl::spec_iterator it = D->spec_begin(); it != end;
+bool RecursiveASTVisitor<Derived>::TraverseSubprogramInstantiations(
+    SubprogramTemplateDecl *D) {
+  SubprogramTemplateDecl::spec_iterator end = D->spec_end();
+  for (SubprogramTemplateDecl::spec_iterator it = D->spec_begin(); it != end;
        ++it) {
-    FunctionDecl* FD = *it;
+    SubprogramDecl* FD = *it;
     switch (FD->getTemplateSpecializationKind()) {
     case TSK_Undeclared:
     case TSK_ImplicitInstantiation:
-      // We don't know what kind of FunctionDecl this is.
+      // We don't know what kind of SubprogramDecl this is.
       TRY_TO(TraverseDecl(FD));
       break;
 
@@ -1480,7 +1480,7 @@ bool RecursiveASTVisitor<Derived>::TraverseFunctionInstantiations(
   return true;
 }
 
-DEF_TRAVERSE_DECL(FunctionTemplateDecl, {
+DEF_TRAVERSE_DECL(SubprogramTemplateDecl, {
     TRY_TO(TraverseDecl(D->getTemplatedDecl()));
     TRY_TO(TraverseTemplateParameterListHelper(D->getTemplateParameters()));
 
@@ -1492,7 +1492,7 @@ DEF_TRAVERSE_DECL(FunctionTemplateDecl, {
     // declaration of the template, to ensure we only visit them once.
     if (getDerived().shouldVisitTemplateInstantiations() &&
         D == D->getCanonicalDecl())
-      TRY_TO(TraverseFunctionInstantiations(D));
+      TRY_TO(TraverseSubprogramInstantiations(D));
   })
 
 DEF_TRAVERSE_DECL(TemplateTemplateParmDecl, {
@@ -1683,16 +1683,16 @@ DEF_TRAVERSE_DECL(ObjCIvarDecl, {
   })
 
 template<typename Derived>
-bool RecursiveASTVisitor<Derived>::TraverseFunctionHelper(FunctionDecl *D) {
+bool RecursiveASTVisitor<Derived>::TraverseSubprogramHelper(SubprogramDecl *D) {
   TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
   TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
 
   // If we're an explicit template specialization, iterate over the
   // template args that were explicitly specified.  If we were doing
   // this in typing order, we'd do it between the return type and
-  // the function args, but both are handled by the FunctionTypeLoc
+  // the function args, but both are handled by the SubprogramTypeLoc
   // above, so we have to choose one side.  I've decided to do before.
-  if (const FunctionTemplateSpecializationInfo *FTSI =
+  if (const SubprogramTemplateSpecializationInfo *FTSI =
       D->getTemplateSpecializationInfo()) {
     if (FTSI->getTemplateSpecializationKind() != TSK_Undeclared &&
         FTSI->getTemplateSpecializationKind() != TSK_ImplicitInstantiation) {
@@ -1707,7 +1707,7 @@ bool RecursiveASTVisitor<Derived>::TraverseFunctionHelper(FunctionDecl *D) {
   }
 
   // Visit the function type itself, which can be either
-  // FunctionNoProtoType or FunctionProtoType, or a typedef.  This
+  // SubprogramNoProtoType or SubprogramProtoType, or a typedef.  This
   // also covers the return type and the function parameters,
   // including exception specifications.
   if (lfort::TypeSourceInfo *TSI = D->getTypeSourceInfo()) {
@@ -1724,47 +1724,47 @@ bool RecursiveASTVisitor<Derived>::TraverseFunctionHelper(FunctionDecl *D) {
   }
 
   if (D->isThisDeclarationADefinition()) {
-    TRY_TO(TraverseStmt(D->getBody()));  // Function body.
+    TRY_TO(TraverseStmt(D->getBody()));  // Subprogram body.
   }
   return true;
 }
 
-DEF_TRAVERSE_DECL(FunctionDecl, {
+DEF_TRAVERSE_DECL(SubprogramDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 DEF_TRAVERSE_DECL(CXXMethodDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 DEF_TRAVERSE_DECL(CXXConstructorDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 // CXXConversionDecl is the declaration of a type conversion operator.
 // It's not a cast expression.
 DEF_TRAVERSE_DECL(CXXConversionDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 DEF_TRAVERSE_DECL(CXXDestructorDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 DEF_TRAVERSE_DECL(MainProgramDecl, {
     // We skip decls_begin/decls_end, which are already covered by
-    // TraverseFunctionHelper().
-    return TraverseFunctionHelper(D);
+    // TraverseSubprogramHelper().
+    return TraverseSubprogramHelper(D);
   })
 
 template<typename Derived>
@@ -1950,7 +1950,7 @@ DEF_TRAVERSE_STMT(CStyleCastExpr, {
     TRY_TO(TraverseTypeLoc(S->getTypeInfoAsWritten()->getTypeLoc()));
   })
 
-DEF_TRAVERSE_STMT(CXXFunctionalCastExpr, {
+DEF_TRAVERSE_STMT(CXXSubprogramalCastExpr, {
     TRY_TO(TraverseTypeLoc(S->getTypeInfoAsWritten()->getTypeLoc()));
   })
 
@@ -2106,8 +2106,8 @@ bool RecursiveASTVisitor<Derived>::TraverseLambdaExpr(LambdaExpr *S) {
     if (S->hasExplicitParameters() && S->hasExplicitResultType()) {
       // Visit the whole type.
       TRY_TO(TraverseTypeLoc(TL));
-    } else if (isa<FunctionProtoTypeLoc>(TL)) {
-      FunctionProtoTypeLoc Proto = cast<FunctionProtoTypeLoc>(TL);
+    } else if (isa<SubprogramProtoTypeLoc>(TL)) {
+      SubprogramProtoTypeLoc Proto = cast<SubprogramProtoTypeLoc>(TL);
       if (S->hasExplicitParameters()) {
         // Visit parameters.
         for (unsigned I = 0, N = Proto.getNumArgs(); I != N; ++I) {
@@ -2223,7 +2223,7 @@ DEF_TRAVERSE_STMT(PackExpansionExpr, { })
 DEF_TRAVERSE_STMT(SizeOfPackExpr, { })
 DEF_TRAVERSE_STMT(SubstNonTypeTemplateParmPackExpr, { })
 DEF_TRAVERSE_STMT(SubstNonTypeTemplateParmExpr, { })
-DEF_TRAVERSE_STMT(FunctionParmPackExpr, { })
+DEF_TRAVERSE_STMT(SubprogramParmPackExpr, { })
 DEF_TRAVERSE_STMT(MaterializeTemporaryExpr, { })
 DEF_TRAVERSE_STMT(AtomicExpr, { })
 

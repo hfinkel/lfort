@@ -19,14 +19,14 @@
 using namespace lfort;
 using namespace ento;
 
-const FunctionDecl *CheckerContext::getCalleeDecl(const CallExpr *CE) const {
+const SubprogramDecl *CheckerContext::getCalleeDecl(const CallExpr *CE) const {
   ProgramStateRef State = getState();
   const Expr *Callee = CE->getCallee();
   SVal L = State->getSVal(Callee, Pred->getLocationContext());
-  return L.getAsFunctionDecl();
+  return L.getAsSubprogramDecl();
 }
 
-StringRef CheckerContext::getCalleeName(const FunctionDecl *FunDecl) const {
+StringRef CheckerContext::getCalleeName(const SubprogramDecl *FunDecl) const {
   if (!FunDecl)
     return StringRef();
   IdentifierInfo *funI = FunDecl->getIdentifier();
@@ -36,7 +36,7 @@ StringRef CheckerContext::getCalleeName(const FunctionDecl *FunDecl) const {
 }
 
 
-bool CheckerContext::isCLibraryFunction(const FunctionDecl *FD,
+bool CheckerContext::isCLibrarySubprogram(const SubprogramDecl *FD,
                                         StringRef Name) {
   // To avoid false positives (Ex: finding user defined functions with
   // similar names), only perform fuzzy name matching when it's a builtin.

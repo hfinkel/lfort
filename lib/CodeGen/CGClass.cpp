@@ -546,7 +546,7 @@ static void EmitMemberInitializer(CodeGenSubprogram &CGF,
                                   const CXXRecordDecl *ClassDecl,
                                   CXXCtorInitializer *MemberInit,
                                   const CXXConstructorDecl *Constructor,
-                                  FunctionArgList &Args) {
+                                  SubprogramArgList &Args) {
   assert(MemberInit->isAnyMemberInitializer() &&
          "Must have member initializer!");
   assert(MemberInit->getInit() && "Must have initializer!");
@@ -703,7 +703,7 @@ static bool IsConstructorDelegationValid(const CXXConstructorDecl *Ctor) {
 
   // We also disable the optimization for variadic functions because
   // it's impossible to "re-pass" varargs.
-  if (Ctor->getType()->getAs<FunctionProtoType>()->isVariadic())
+  if (Ctor->getType()->getAs<SubprogramProtoType>()->isVariadic())
     return false;
 
   // FIXME: Decide if we can do a delegation of a delegating constructor.
@@ -714,7 +714,7 @@ static bool IsConstructorDelegationValid(const CXXConstructorDecl *Ctor) {
 }
 
 /// EmitConstructorBody - Emits the body of the current constructor.
-void CodeGenSubprogram::EmitConstructorBody(FunctionArgList &Args) {
+void CodeGenSubprogram::EmitConstructorBody(SubprogramArgList &Args) {
   const CXXConstructorDecl *Ctor = cast<CXXConstructorDecl>(CurGD.getDecl());
   CXXCtorType CtorType = CurGD.getCtorType();
 
@@ -765,7 +765,7 @@ void CodeGenSubprogram::EmitConstructorBody(FunctionArgList &Args) {
 /// base classes and non-static data members belonging to this constructor.
 void CodeGenSubprogram::EmitCtorPrologue(const CXXConstructorDecl *CD,
                                        CXXCtorType CtorType,
-                                       FunctionArgList &Args) {
+                                       SubprogramArgList &Args) {
   if (CD->isDelegatingConstructor())
     return EmitDelegatingCXXConstructorCall(CD, Args);
 
@@ -882,7 +882,7 @@ static bool CanSkipVTablePointerInitialization(ASTContext &Context,
 }
 
 /// EmitDestructorBody - Emits the body of the current destructor.
-void CodeGenSubprogram::EmitDestructorBody(FunctionArgList &Args) {
+void CodeGenSubprogram::EmitDestructorBody(SubprogramArgList &Args) {
   const CXXDestructorDecl *Dtor = cast<CXXDestructorDecl>(CurGD.getDecl());
   CXXDtorType DtorType = CurGD.getDtorType();
 
@@ -1279,7 +1279,7 @@ CodeGenSubprogram::EmitSynthesizedCXXCopyCtorCall(const CXXConstructorDecl *D,
   assert(D->isInstance() &&
          "Trying to emit a member call expr on a static method!");
   
-  const FunctionProtoType *FPT = D->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = D->getType()->getAs<SubprogramProtoType>();
   
   CallArgList Args;
   
@@ -1296,7 +1296,7 @@ CodeGenSubprogram::EmitSynthesizedCXXCopyCtorCall(const CXXConstructorDecl *D,
   // Skip over first argument (Src).
   ++ArgBeg;
   CallExpr::const_arg_iterator Arg = ArgBeg;
-  for (FunctionProtoType::arg_type_iterator I = FPT->arg_type_begin()+1,
+  for (SubprogramProtoType::arg_type_iterator I = FPT->arg_type_begin()+1,
        E = FPT->arg_type_end(); I != E; ++I, ++Arg) {
     assert(Arg != ArgEnd && "Running over edge of argument list!");
     EmitCallArg(Args, *Arg, *I);
@@ -1318,10 +1318,10 @@ CodeGenSubprogram::EmitSynthesizedCXXCopyCtorCall(const CXXConstructorDecl *D,
 void
 CodeGenSubprogram::EmitDelegateCXXConstructorCall(const CXXConstructorDecl *Ctor,
                                                 CXXCtorType CtorType,
-                                                const FunctionArgList &Args) {
+                                                const SubprogramArgList &Args) {
   CallArgList DelegateArgs;
 
-  FunctionArgList::const_iterator I = Args.begin(), E = Args.end();
+  SubprogramArgList::const_iterator I = Args.begin(), E = Args.end();
   assert(I != E && "no parameters to constructor");
 
   // this
@@ -1371,7 +1371,7 @@ namespace {
 
 void
 CodeGenSubprogram::EmitDelegatingCXXConstructorCall(const CXXConstructorDecl *Ctor,
-                                                  const FunctionArgList &Args) {
+                                                  const SubprogramArgList &Args) {
   assert(Ctor->isDelegatingConstructor());
 
   llvm::Value *ThisPtr = LoadCXXThis();
@@ -1665,9 +1665,9 @@ static const Expr *skipNoOpCastsAndParens(const Expr *E) {
   }
 }
 
-/// canDevirtualizeMemberFunctionCall - Checks whether the given virtual member
+/// canDevirtualizeMemberSubprogramCall - Checks whether the given virtual member
 /// function call on the given expr can be devirtualized.
-static bool canDevirtualizeMemberFunctionCall(const Expr *Base, 
+static bool canDevirtualizeMemberSubprogramCall(const Expr *Base, 
                                               const CXXMethodDecl *MD) {
   // If the most derived class is marked final, we know that no subclass can
   // override this member function and so we can devirtualize it. For example:
@@ -1730,7 +1730,7 @@ static bool UseVirtualCall(ASTContext &Context,
   if (Context.getLangOpts().AppleKext)
     return true;
 
-  return !canDevirtualizeMemberFunctionCall(CE->getArg(0), MD);
+  return !canDevirtualizeMemberSubprogramCall(CE->getArg(0), MD);
 }
 
 llvm::Value *
@@ -1738,13 +1738,13 @@ CodeGenSubprogram::EmitCXXOperatorMemberCallee(const CXXOperatorCallExpr *E,
                                              const CXXMethodDecl *MD,
                                              llvm::Value *This) {
   llvm::FunctionType *fnType =
-    CGM.getTypes().GetFunctionType(
+    CGM.getTypes().GetSubprogramType(
                              CGM.getTypes().arrangeCXXMethodDeclaration(MD));
 
   if (UseVirtualCall(getContext(), E, MD))
     return BuildVirtualCall(MD, This, fnType);
 
-  return CGM.GetAddrOfFunction(MD, fnType);
+  return CGM.GetAddrOfSubprogram(MD, fnType);
 }
 
 void CodeGenSubprogram::EmitForwardingCallToLambda(const CXXRecordDecl *lambda,
@@ -1756,15 +1756,15 @@ void CodeGenSubprogram::EmitForwardingCallToLambda(const CXXRecordDecl *lambda,
     cast<CXXMethodDecl>(lambda->lookup(operatorName).front());
 
   // Get the address of the call operator.
-  const CGFunctionInfo &calleeFnInfo =
+  const CGSubprogramInfo &calleeFnInfo =
     CGM.getTypes().arrangeCXXMethodDeclaration(callOperator);
   llvm::Value *callee =
-    CGM.GetAddrOfFunction(GlobalDecl(callOperator),
-                          CGM.getTypes().GetFunctionType(calleeFnInfo));
+    CGM.GetAddrOfSubprogram(GlobalDecl(callOperator),
+                          CGM.getTypes().GetSubprogramType(calleeFnInfo));
 
   // Prepare the return slot.
-  const FunctionProtoType *FPT =
-    callOperator->getType()->castAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT =
+    callOperator->getType()->castAs<SubprogramProtoType>();
   QualType resultType = FPT->getResultType();
   ReturnValueSlot returnSlot;
   if (!resultType->isVoidType() &&
@@ -1809,7 +1809,7 @@ void CodeGenSubprogram::EmitLambdaBlockInvokeBody() {
   EmitForwardingCallToLambda(Lambda, CallArgs);
 }
 
-void CodeGenSubprogram::EmitLambdaToBlockPointerBody(FunctionArgList &Args) {
+void CodeGenSubprogram::EmitLambdaToBlockPointerBody(SubprogramArgList &Args) {
   if (cast<CXXMethodDecl>(CurFuncDecl)->isVariadic()) {
     // FIXME: Making this work correctly is nasty because it requires either
     // cloning the body of the call operator or making the call operator forward.
@@ -1817,7 +1817,7 @@ void CodeGenSubprogram::EmitLambdaToBlockPointerBody(FunctionArgList &Args) {
     return;
   }
 
-  EmitFunctionBody(Args);
+  EmitSubprogramBody(Args);
 }
 
 void CodeGenSubprogram::EmitLambdaDelegatingInvokeBody(const CXXMethodDecl *MD) {
@@ -1831,7 +1831,7 @@ void CodeGenSubprogram::EmitLambdaDelegatingInvokeBody(const CXXMethodDecl *MD) 
   CallArgs.add(RValue::get(ThisPtr), ThisType);
 
   // Add the rest of the parameters.
-  for (FunctionDecl::param_const_iterator I = MD->param_begin(),
+  for (SubprogramDecl::param_const_iterator I = MD->param_begin(),
        E = MD->param_end(); I != E; ++I) {
     ParmVarDecl *param = *I;
     EmitDelegateCallArg(CallArgs, param);
@@ -1840,7 +1840,7 @@ void CodeGenSubprogram::EmitLambdaDelegatingInvokeBody(const CXXMethodDecl *MD) 
   EmitForwardingCallToLambda(Lambda, CallArgs);
 }
 
-void CodeGenSubprogram::EmitLambdaStaticInvokeFunction(const CXXMethodDecl *MD) {
+void CodeGenSubprogram::EmitLambdaStaticInvokeSubprogram(const CXXMethodDecl *MD) {
   if (MD->isVariadic()) {
     // FIXME: Making this work correctly is nasty because it requires either
     // cloning the body of the call operator or making the call operator forward.

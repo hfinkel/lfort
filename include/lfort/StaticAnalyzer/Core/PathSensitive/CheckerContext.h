@@ -237,14 +237,14 @@ public:
   }
 
   /// \brief Get the declaration of the called function (path-sensitive).
-  const FunctionDecl *getCalleeDecl(const CallExpr *CE) const;
+  const SubprogramDecl *getCalleeDecl(const CallExpr *CE) const;
 
   /// \brief Get the name of the called function (path-sensitive).
-  StringRef getCalleeName(const FunctionDecl *FunDecl) const;
+  StringRef getCalleeName(const SubprogramDecl *FunDecl) const;
 
   /// \brief Get the identifier of the called function (path-sensitive).
   const IdentifierInfo *getCalleeIdentifier(const CallExpr *CE) const {
-    const FunctionDecl *FunDecl = getCalleeDecl(CE);
+    const SubprogramDecl *FunDecl = getCalleeDecl(CE);
     if (FunDecl)
       return FunDecl->getIdentifier();
     else
@@ -253,7 +253,7 @@ public:
 
   /// \brief Get the name of the called function (path-sensitive).
   StringRef getCalleeName(const CallExpr *CE) const {
-    const FunctionDecl *FunDecl = getCalleeDecl(CE);
+    const SubprogramDecl *FunDecl = getCalleeDecl(CE);
     return getCalleeName(FunDecl);
   }
 
@@ -267,7 +267,7 @@ public:
   /// namespace, but will include C library functions accessed through the
   /// \c std namespace. This also does not check if the function is declared
   /// as 'extern "C"', or if it uses C++ name mangling.
-  static bool isCLibraryFunction(const FunctionDecl *FD,
+  static bool isCLibrarySubprogram(const SubprogramDecl *FD,
                                  StringRef Name = StringRef());
 
   /// \brief Depending on wither the location corresponds to a macro, return 

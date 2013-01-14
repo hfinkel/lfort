@@ -748,7 +748,7 @@ public:
   enum ExtraKind {
     CXXConstructor = 0,
     CXXDestructor,
-    CXXConversionFunction,
+    CXXConversionSubprogram,
 #define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
     CXXOperator##Name,
 #include "lfort/Basic/OperatorKinds.def"
@@ -761,7 +761,7 @@ public:
   /// operator-id (if the value is one of the CXX* enumerators of
   /// ExtraKind), in which case the DeclarationNameExtra is also a
   /// CXXSpecialName, (for CXXConstructor, CXXDestructor, or
-  /// CXXConversionFunction) CXXOperatorIdName, or CXXLiteralOperatorName,
+  /// CXXConversionSubprogram) CXXOperatorIdName, or CXXLiteralOperatorName,
   /// it may be also name common to C++ using-directives (CXXUsingDirective),
   /// otherwise it is NUM_EXTRA_KINDS+NumArgs, where NumArgs is the number of
   /// arguments in the Objective-C selector, in which case the

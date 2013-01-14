@@ -102,7 +102,7 @@ static StringRef describeUninitializedArgumentInCall(const CallEvent &Call,
   case CE_Block:
     return "Block call argument is an uninitialized value";
   default:
-    return "Function call argument is an uninitialized value";
+    return "Subprogram call argument is an uninitialized value";
   }
 }
 

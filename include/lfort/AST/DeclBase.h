@@ -30,7 +30,7 @@ class DeclContext;
 class DeclarationName;
 class DependentDiagnostic;
 class EnumDecl;
-class FunctionDecl;
+class SubprogramDecl;
 class LinkageSpecDecl;
 class NamedDecl;
 class NamespaceDecl;
@@ -639,20 +639,20 @@ public:
 
   void setLexicalDeclContext(DeclContext *DC);
 
-  /// isDefinedOutsideFunctionOrMethod - This predicate returns true if this
+  /// isDefinedOutsideSubprogramOrMethod - This predicate returns true if this
   /// scoped decl is defined outside the current function or method.  This is
   /// roughly global variables and functions, but also handles enums (which
   /// could be defined inside or outside a function etc).
-  bool isDefinedOutsideFunctionOrMethod() const {
-    return getParentFunctionOrMethod() == 0;
+  bool isDefinedOutsideSubprogramOrMethod() const {
+    return getParentSubprogramOrMethod() == 0;
   }
 
   /// \brief If this decl is defined inside a function/method/block it returns
   /// the corresponding DeclContext, otherwise it returns null.
-  const DeclContext *getParentFunctionOrMethod() const;
-  DeclContext *getParentFunctionOrMethod() {
+  const DeclContext *getParentSubprogramOrMethod() const;
+  DeclContext *getParentSubprogramOrMethod() {
     return const_cast<DeclContext*>(
-                    const_cast<const Decl*>(this)->getParentFunctionOrMethod());
+                    const_cast<const Decl*>(this)->getParentSubprogramOrMethod());
   }
 
   /// \brief Retrieves the "canonical" declaration of the given declaration.
@@ -782,7 +782,7 @@ public:
   bool isTemplateDecl() const;
 
   /// \brief Whether this declaration is a function or function template.
-  bool isFunctionOrFunctionTemplate() const;
+  bool isSubprogramOrSubprogramTemplate() const;
 
   /// \brief Changes the namespace of this declaration to reflect that it's
   /// the object of a friend declaration.
@@ -832,7 +832,7 @@ public:
 
   /// Specifies that this declaration is a C++ overloaded non-member.
   void setNonMemberOperator() {
-    assert(getKind() == Function || getKind() == FunctionTemplate);
+    assert(getKind() == Subprogram || getKind() == SubprogramTemplate);
     assert((IdentifierNamespace & IDNS_Ordinary) &&
            "visible non-member operators should be in ordinary namespace");
     IdentifierNamespace |= IDNS_NonMemberOperator;
@@ -901,7 +901,7 @@ typedef llvm::ArrayRef<NamedDecl*> DeclContextLookupConstResult;
 ///
 ///   TranslationUnitDecl
 ///   NamespaceDecl
-///   FunctionDecl
+///   SubprogramDecl
 ///   TagDecl
 ///   ObjCMethodDecl
 ///   ObjCContainerDecl
@@ -1013,13 +1013,13 @@ public:
     return false;
   }
 
-  bool isFunctionOrMethod() const {
+  bool isSubprogramOrMethod() const {
     switch (DeclKind) {
     case Decl::Block:
     case Decl::ObjCMethod:
       return true;
     default:
-      return DeclKind >= Decl::firstFunction && DeclKind <= Decl::lastFunction;
+      return DeclKind >= Decl::firstSubprogram && DeclKind <= Decl::lastSubprogram;
     }
   }
 

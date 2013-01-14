@@ -69,11 +69,11 @@ public:
   // Visitation methods from generating USRs from AST elements.
   void VisitDeclContext(DeclContext *D);
   void VisitFieldDecl(FieldDecl *D);
-  void VisitFunctionDecl(FunctionDecl *D);
+  void VisitSubprogramDecl(SubprogramDecl *D);
   void VisitNamedDecl(NamedDecl *D);
   void VisitNamespaceDecl(NamespaceDecl *D);
   void VisitNamespaceAliasDecl(NamespaceAliasDecl *D);
-  void VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+  void VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
   void VisitClassTemplateDecl(ClassTemplateDecl *D);
   void VisitObjCContainerDecl(ObjCContainerDecl *CD);
   void VisitObjCMethodDecl(ObjCMethodDecl *MD);
@@ -175,12 +175,12 @@ void USRGenerator::VisitFieldDecl(FieldDecl *D) {
   }
 }
 
-void USRGenerator::VisitFunctionDecl(FunctionDecl *D) {
+void USRGenerator::VisitSubprogramDecl(SubprogramDecl *D) {
   if (ShouldGenerateLocation(D) && GenLoc(D))
     return;
 
   VisitDeclContext(D->getDeclContext());
-  if (FunctionTemplateDecl *FunTmpl = D->getDescribedFunctionTemplate()) {
+  if (SubprogramTemplateDecl *FunTmpl = D->getDescribedSubprogramTemplate()) {
     Out << "@FT@";
     VisitTemplateParameterList(FunTmpl->getTemplateParameters());
   } else
@@ -202,7 +202,7 @@ void USRGenerator::VisitFunctionDecl(FunctionDecl *D) {
   }
 
   // Mangle in type information for the arguments.
-  for (FunctionDecl::param_iterator I = D->param_begin(), E = D->param_end();
+  for (SubprogramDecl::param_iterator I = D->param_begin(), E = D->param_end();
        I != E; ++I) {
     Out << '#';
     if (ParmVarDecl *PD = *I)
@@ -275,8 +275,8 @@ void USRGenerator::VisitNamespaceDecl(NamespaceDecl *D) {
     Out << "@N@" << D->getName();
 }
 
-void USRGenerator::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
-  VisitFunctionDecl(D->getTemplatedDecl());
+void USRGenerator::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
+  VisitSubprogramDecl(D->getTemplatedDecl());
 }
 
 void USRGenerator::VisitClassTemplateDecl(ClassTemplateDecl *D) {
@@ -629,10 +629,10 @@ void USRGenerator::VisitType(QualType T) {
       T = RT->getPointeeType();
       continue;
     }
-    if (const FunctionProtoType *FT = T->getAs<FunctionProtoType>()) {
+    if (const SubprogramProtoType *FT = T->getAs<SubprogramProtoType>()) {
       Out << 'F';
       VisitType(FT->getResultType());
-      for (FunctionProtoType::arg_type_iterator
+      for (SubprogramProtoType::arg_type_iterator
             I = FT->arg_type_begin(), E = FT->arg_type_end(); I!=E; ++I) {
         VisitType(*I);
       }

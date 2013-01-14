@@ -56,7 +56,7 @@ public:
 
   void VisitDecl(Decl *D) {
     switch (D->getKind()) {
-        DISPATCH_CASE(Function)
+        DISPATCH_CASE(Subprogram)
         DISPATCH_CASE(CXXMethod)
         DISPATCH_CASE(Var)
         DISPATCH_CASE(ParmVar)       // FIXME: (same)
@@ -76,7 +76,7 @@ public:
   }
 
   DEFAULT_DISPATCH(Var)
-  DEFAULT_DISPATCH(Function)
+  DEFAULT_DISPATCH(Subprogram)
   DEFAULT_DISPATCH(CXXMethod)
   DEFAULT_DISPATCH_VARDECL(ParmVar)
   DEFAULT_DISPATCH(ImplicitParam)

@@ -239,7 +239,7 @@ void MallocOverflowSecurityChecker::checkASTCodeBody(const Decl *D,
       if (const CFGStmt *CS = bi->getAs<CFGStmt>()) {
         if (const CallExpr *TheCall = dyn_cast<CallExpr>(CS->getStmt())) {
           // Get the callee.
-          const FunctionDecl *FD = TheCall->getDirectCallee();
+          const SubprogramDecl *FD = TheCall->getDirectCallee();
 
           if (!FD)
             return;

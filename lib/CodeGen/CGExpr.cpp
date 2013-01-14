@@ -389,7 +389,7 @@ CodeGenSubprogram::EmitReferenceBindingToExpr(const Expr *E,
                                                    ReferenceTemporaryDtor,
                                                    ObjCARCReferenceLifetimeType,
                                                    InitializedDecl);
-  if (SanitizePerformTypeCheck && !E->getType()->isFunctionType()) {
+  if (SanitizePerformTypeCheck && !E->getType()->isSubprogramType()) {
     // C++11 [dcl.ref]p5 (as amended by core issue 453):
     //   If a glvalue to which a reference is directly bound designates neither
     //   an existing object or function of an appropriate type nor a region of
@@ -787,7 +787,7 @@ LValue CodeGenSubprogram::EmitLValue(const Expr *E) {
     return EmitLValue(cast<SubstNonTypeTemplateParmExpr>(E)->getReplacement());
   case Expr::ImplicitCastExprClass:
   case Expr::CStyleCastExprClass:
-  case Expr::CXXFunctionalCastExprClass:
+  case Expr::CXXSubprogramalCastExprClass:
   case Expr::CXXStaticCastExprClass:
   case Expr::CXXDynamicCastExprClass:
   case Expr::CXXReinterpretCastExprClass:
@@ -1156,7 +1156,7 @@ RValue CodeGenSubprogram::EmitLoadOfLValue(LValue LV) {
   }
 
   if (LV.isSimple()) {
-    assert(!LV.getType()->isFunctionType());
+    assert(!LV.getType()->isSubprogramType());
 
     // Everything needs a load.
     return RValue::get(EmitLoadOfScalar(LV));
@@ -1603,17 +1603,17 @@ static LValue EmitGlobalVarDeclLValue(CodeGenSubprogram &CGF,
   return LV;
 }
 
-static LValue EmitFunctionDeclLValue(CodeGenSubprogram &CGF,
-                                     const Expr *E, const FunctionDecl *FD) {
-  llvm::Value *V = CGF.CGM.GetAddrOfFunction(FD);
+static LValue EmitSubprogramDeclLValue(CodeGenSubprogram &CGF,
+                                     const Expr *E, const SubprogramDecl *FD) {
+  llvm::Value *V = CGF.CGM.GetAddrOfSubprogram(FD);
   if (!FD->hasPrototype()) {
-    if (const FunctionProtoType *Proto =
-            FD->getType()->getAs<FunctionProtoType>()) {
+    if (const SubprogramProtoType *Proto =
+            FD->getType()->getAs<SubprogramProtoType>()) {
       // Ugly case: for a K&R-style definition, the type of the definition
       // isn't the same as the type of a use.  Correct for this with a
       // bitcast.
       QualType NoProtoType =
-          CGF.getContext().getFunctionNoProtoType(Proto->getResultType());
+          CGF.getContext().getSubprogramNoProtoType(Proto->getResultType());
       NoProtoType = CGF.getContext().getPointerType(NoProtoType);
       V = CGF.Builder.CreateBitCast(V, CGF.ConvertType(NoProtoType));
     }
@@ -1642,7 +1642,7 @@ LValue CodeGenSubprogram::EmitDeclRefLValue(const DeclRefExpr *E) {
     }
   }
 
-  // FIXME: We should be able to assert this for FunctionDecls as well!
+  // FIXME: We should be able to assert this for SubprogramDecls as well!
   // FIXME: We should be able to assert this for all DeclRefExprs, not just
   // those with a valid source location.
   assert((ND->isUsed(false) || !isa<VarDecl>(ND) ||
@@ -1707,8 +1707,8 @@ LValue CodeGenSubprogram::EmitDeclRefLValue(const DeclRefExpr *E) {
     return LV;
   }
 
-  if (const FunctionDecl *fn = dyn_cast<FunctionDecl>(ND))
-    return EmitFunctionDeclLValue(*this, E, fn);
+  if (const SubprogramDecl *fn = dyn_cast<SubprogramDecl>(ND))
+    return EmitSubprogramDeclLValue(*this, E, fn);
 
   llvm_unreachable("Unhandled DeclRefExpr");
 }
@@ -1825,9 +1825,9 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
     return EmitUnsupportedLValue(E, "predefined expression");
 
   case PredefinedExpr::Func:
-  case PredefinedExpr::Function:
-  case PredefinedExpr::LFunction:
-  case PredefinedExpr::PrettyFunction: {
+  case PredefinedExpr::Subprogram:
+  case PredefinedExpr::LSubprogram:
+  case PredefinedExpr::PrettySubprogram: {
     unsigned IdentType = E->getIdentType();
     std::string GlobalVarName;
 
@@ -1836,13 +1836,13 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
     case PredefinedExpr::Func:
       GlobalVarName = "__func__.";
       break;
-    case PredefinedExpr::Function:
+    case PredefinedExpr::Subprogram:
       GlobalVarName = "__FUNCTION__.";
       break;
-    case PredefinedExpr::LFunction:
+    case PredefinedExpr::LSubprogram:
       GlobalVarName = "L__FUNCTION__.";
       break;
-    case PredefinedExpr::PrettyFunction:
+    case PredefinedExpr::PrettySubprogram:
       GlobalVarName = "__PRETTY_FUNCTION__.";
       break;
     }
@@ -1856,7 +1856,7 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
     if (CurDecl == 0)
       CurDecl = getContext().getTranslationUnitDecl();
 
-    std::string FunctionName =
+    std::string SubprogramName =
         (isa<BlockDecl>(CurDecl)
          ? FnName.str()
          : PredefinedExpr::ComputeName((PredefinedExpr::IdentType)IdentType,
@@ -1868,7 +1868,7 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
       SmallString<32> RawChars;
       ConvertUTF8ToWideString(
           getContext().getTypeSizeInChars(ElemType).getQuantity(),
-          FunctionName, RawChars);
+          SubprogramName, RawChars);
       C = GetAddrOfConstantWideString(RawChars,
                                       GlobalVarName.c_str(),
                                       getContext(),
@@ -1876,7 +1876,7 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
                                       E->getLocation(),
                                       CGM);
     } else {
-      C = CGM.GetAddrOfConstantCString(FunctionName,
+      C = CGM.GetAddrOfConstantCString(SubprogramName,
                                        GlobalVarName.c_str(),
                                        1);
     }
@@ -2027,10 +2027,10 @@ void CodeGenSubprogram::EmitCheck(llvm::Value *Checked, StringRef CheckName,
   // Checks that have two variants use a suffix to differentiate them
   bool NeedsAbortSuffix = (RecoverKind != CRK_Unrecoverable) &&
                            !CGM.getCodeGenOpts().SanitizeRecover;
-  std::string FunctionName = ("__ubsan_handle_" + CheckName +
+  std::string SubprogramName = ("__ubsan_handle_" + CheckName +
                               (NeedsAbortSuffix? "_abort" : "")).str();
   llvm::Value *Fn =
-    CGM.CreateRuntimeFunction(FnType, FunctionName,
+    CGM.CreateRuntimeSubprogram(FnType, SubprogramName,
                               llvm::Attribute::get(getLLVMContext(), B));
   llvm::CallInst *HandlerCall = Builder.CreateCall(Fn, Args);
   if (Recover) {
@@ -2280,8 +2280,8 @@ LValue CodeGenSubprogram::EmitMemberExpr(const MemberExpr *E) {
   if (VarDecl *VD = dyn_cast<VarDecl>(ND))
     return EmitGlobalVarDeclLValue(*this, E, VD);
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(ND))
-    return EmitFunctionDeclLValue(*this, E, FD);
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND))
+    return EmitSubprogramDeclLValue(*this, E, FD);
 
   llvm_unreachable("Unhandled member declaration!");
 }
@@ -2534,7 +2534,7 @@ LValue CodeGenSubprogram::EmitCastLValue(const CastExpr *E) {
 
   case CK_BitCast:
   case CK_ArrayToPointerDecay:
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
   case CK_NullToMemberPointer:
   case CK_NullToPointer:
   case CK_IntegralToPointer:
@@ -2698,7 +2698,7 @@ RValue CodeGenSubprogram::EmitCallExpr(const CallExpr *E,
     return EmitCUDAKernelCallExpr(CE, ReturnValue);
 
   const Decl *TargetDecl = E->getCalleeDecl();
-  if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(TargetDecl)) {
+  if (const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(TargetDecl)) {
     if (unsigned builtinID = FD->getBuiltinID())
       return EmitBuiltinExpr(FD, builtinID, E);
   }
@@ -2935,19 +2935,19 @@ RValue CodeGenSubprogram::EmitCall(QualType CalleeType, llvm::Value *Callee,
                                  const Decl *TargetDecl) {
   // Get the actual function type. The callee type will always be a pointer to
   // function type or a block pointer type.
-  assert(CalleeType->isFunctionPointerType() &&
+  assert(CalleeType->isSubprogramPointerType() &&
          "Call must have function pointer type!");
 
   CalleeType = getContext().getCanonicalType(CalleeType);
 
-  const FunctionType *FnType
-    = cast<FunctionType>(cast<PointerType>(CalleeType)->getPointeeType());
+  const SubprogramType *FnType
+    = cast<SubprogramType>(cast<PointerType>(CalleeType)->getPointeeType());
 
   CallArgList Args;
-  EmitCallArgs(Args, dyn_cast<FunctionProtoType>(FnType), ArgBeg, ArgEnd);
+  EmitCallArgs(Args, dyn_cast<SubprogramProtoType>(FnType), ArgBeg, ArgEnd);
 
-  const CGFunctionInfo &FnInfo =
-    CGM.getTypes().arrangeFreeFunctionCall(Args, FnType);
+  const CGSubprogramInfo &FnInfo =
+    CGM.getTypes().arrangeFreeSubprogramCall(Args, FnType);
 
   // C99 6.5.2.2p6:
   //   If the expression that denotes the called function has a type
@@ -2966,8 +2966,8 @@ RValue CodeGenSubprogram::EmitCall(QualType CalleeType, llvm::Value *Callee,
   // through an unprototyped function type works like a *non-variadic*
   // call.  The way we make this work is to cast to the exact type
   // of the promoted arguments.
-  if (isa<FunctionNoProtoType>(FnType)) {
-    llvm::Type *CalleeTy = getTypes().GetFunctionType(FnInfo);
+  if (isa<SubprogramNoProtoType>(FnType)) {
+    llvm::Type *CalleeTy = getTypes().GetSubprogramType(FnInfo);
     CalleeTy = CalleeTy->getPointerTo();
     Callee = Builder.CreateBitCast(Callee, CalleeTy, "callee.knr.cast");
   }
@@ -3335,11 +3335,11 @@ RValue CodeGenSubprogram::EmitAtomicExpr(AtomicExpr *E, llvm::Value *Dest) {
     Args.add(RValue::get(Order),
              getContext().IntTy);
 
-    const CGFunctionInfo &FuncInfo =
-        CGM.getTypes().arrangeFreeFunctionCall(RetTy, Args,
-            FunctionType::ExtInfo(), RequiredArgs::All);
-    llvm::FunctionType *FTy = CGM.getTypes().GetFunctionType(FuncInfo);
-    llvm::Constant *Func = CGM.CreateRuntimeFunction(FTy, LibCallName);
+    const CGSubprogramInfo &FuncInfo =
+        CGM.getTypes().arrangeFreeSubprogramCall(RetTy, Args,
+            SubprogramType::ExtInfo(), RequiredArgs::All);
+    llvm::FunctionType *FTy = CGM.getTypes().GetSubprogramType(FuncInfo);
+    llvm::Constant *Func = CGM.CreateRuntimeSubprogram(FTy, LibCallName);
     RValue Res = EmitCall(FuncInfo, Func, ReturnValueSlot(), Args);
     if (E->isCmpXChg())
       return Res;

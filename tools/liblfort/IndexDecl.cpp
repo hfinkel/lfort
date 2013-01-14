@@ -25,14 +25,14 @@ public:
   void handleDeclarator(DeclaratorDecl *D, const NamedDecl *Parent = 0) {
     if (!Parent) Parent = D;
 
-    if (!IndexCtx.shouldIndexFunctionLocalSymbols()) {
+    if (!IndexCtx.shouldIndexSubprogramLocalSymbols()) {
       IndexCtx.indexTypeSourceInfo(D->getTypeSourceInfo(), Parent);
       IndexCtx.indexNestedNameSpecifierLoc(D->getQualifierLoc(), Parent);
     } else {
       if (ParmVarDecl *Parm = dyn_cast<ParmVarDecl>(D)) {
         IndexCtx.handleVar(Parm);
-      } else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-        for (FunctionDecl::param_iterator
+      } else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+        for (SubprogramDecl::param_iterator
                PI = FD->param_begin(), PE = FD->param_end(); PI != PE; ++PI) {
           IndexCtx.handleVar(*PI);
         }
@@ -58,8 +58,8 @@ public:
     }
   }
 
-  bool VisitFunctionDecl(FunctionDecl *D) {
-    IndexCtx.handleFunction(D);
+  bool VisitSubprogramDecl(SubprogramDecl *D) {
+    IndexCtx.handleSubprogram(D);
     handleDeclarator(D);
 
     if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
@@ -286,9 +286,9 @@ public:
     return true;
   }
 
-  bool VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
-    IndexCtx.handleFunctionTemplate(D);
-    FunctionDecl *FD = D->getTemplatedDecl();
+  bool VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
+    IndexCtx.handleSubprogramTemplate(D);
+    SubprogramDecl *FD = D->getTemplatedDecl();
     handleDeclarator(FD, D);
     if (FD->isThisDeclarationADefinition()) {
       const Stmt *Body = FD->getBody();

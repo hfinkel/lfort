@@ -34,7 +34,7 @@ namespace lfort {
   class ObjCInterfaceDecl;
   class Expr;
   class QualType;
-  class FunctionDecl;
+  class SubprogramDecl;
   class TypeSourceInfo;
 
 /// Attr - This represents one attribute.

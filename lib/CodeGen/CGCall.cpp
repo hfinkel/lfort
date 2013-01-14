@@ -55,9 +55,9 @@ static CanQualType GetThisType(ASTContext &Context, const CXXRecordDecl *RD) {
 }
 
 /// Returns the canonical formal type of the given C++ method.
-static CanQual<FunctionProtoType> GetFormalType(const CXXMethodDecl *MD) {
+static CanQual<SubprogramProtoType> GetFormalType(const CXXMethodDecl *MD) {
   return MD->getType()->getCanonicalTypeUnqualified()
-           .getAs<FunctionProtoType>();
+           .getAs<SubprogramProtoType>();
 }
 
 /// Returns the "extra-canonicalized" return type, which discards
@@ -70,11 +70,11 @@ static CanQualType GetReturnType(QualType RetTy) {
 
 /// Arrange the argument and result information for a value of the given
 /// unprototyped freestanding function type.
-const CGFunctionInfo &
-CodeGenTypes::arrangeFreeFunctionType(CanQual<FunctionNoProtoType> FTNP) {
+const CGSubprogramInfo &
+CodeGenTypes::arrangeFreeSubprogramType(CanQual<SubprogramNoProtoType> FTNP) {
   // When translating an unprototyped function type, always use a
   // variadic type.
-  return arrangeLLVMFunctionInfo(FTNP->getResultType().getUnqualifiedType(),
+  return arrangeLLVMSubprogramInfo(FTNP->getResultType().getUnqualifiedType(),
                                  ArrayRef<CanQualType>(),
                                  FTNP->getExtInfo(),
                                  RequiredArgs(0));
@@ -83,30 +83,30 @@ CodeGenTypes::arrangeFreeFunctionType(CanQual<FunctionNoProtoType> FTNP) {
 /// Arrange the LLVM function layout for a value of the given function
 /// type, on top of any implicit parameters already stored.  Use the
 /// given ExtInfo instead of the ExtInfo from the function type.
-static const CGFunctionInfo &arrangeLLVMFunctionInfo(CodeGenTypes &CGT,
+static const CGSubprogramInfo &arrangeLLVMSubprogramInfo(CodeGenTypes &CGT,
                                        SmallVectorImpl<CanQualType> &prefix,
-                                             CanQual<FunctionProtoType> FTP,
-                                              FunctionType::ExtInfo extInfo) {
+                                             CanQual<SubprogramProtoType> FTP,
+                                              SubprogramType::ExtInfo extInfo) {
   RequiredArgs required = RequiredArgs::forPrototypePlus(FTP, prefix.size());
   // FIXME: Kill copy.
   for (unsigned i = 0, e = FTP->getNumArgs(); i != e; ++i)
     prefix.push_back(FTP->getArgType(i));
   CanQualType resultType = FTP->getResultType().getUnqualifiedType();
-  return CGT.arrangeLLVMFunctionInfo(resultType, prefix, extInfo, required);
+  return CGT.arrangeLLVMSubprogramInfo(resultType, prefix, extInfo, required);
 }
 
 /// Arrange the argument and result information for a free function (i.e.
 /// not a C++ or ObjC instance method) of the given type.
-static const CGFunctionInfo &arrangeFreeFunctionType(CodeGenTypes &CGT,
+static const CGSubprogramInfo &arrangeFreeSubprogramType(CodeGenTypes &CGT,
                                       SmallVectorImpl<CanQualType> &prefix,
-                                            CanQual<FunctionProtoType> FTP) {
-  return arrangeLLVMFunctionInfo(CGT, prefix, FTP, FTP->getExtInfo());
+                                            CanQual<SubprogramProtoType> FTP) {
+  return arrangeLLVMSubprogramInfo(CGT, prefix, FTP, FTP->getExtInfo());
 }
 
 /// Given the formal ext-info of a C++ instance method, adjust it
 /// according to the C++ ABI in effect.
 static void adjustCXXMethodInfo(CodeGenTypes &CGT,
-                                FunctionType::ExtInfo &extInfo,
+                                SubprogramType::ExtInfo &extInfo,
                                 bool isVariadic) {
   if (extInfo.getCC() == CC_Default) {
     CallingConv CC = CGT.getContext().getDefaultCXXMethodCallConv(isVariadic);
@@ -116,24 +116,24 @@ static void adjustCXXMethodInfo(CodeGenTypes &CGT,
 
 /// Arrange the argument and result information for a free function (i.e.
 /// not a C++ or ObjC instance method) of the given type.
-static const CGFunctionInfo &arrangeCXXMethodType(CodeGenTypes &CGT,
+static const CGSubprogramInfo &arrangeCXXMethodType(CodeGenTypes &CGT,
                                       SmallVectorImpl<CanQualType> &prefix,
-                                            CanQual<FunctionProtoType> FTP) {
-  FunctionType::ExtInfo extInfo = FTP->getExtInfo();
+                                            CanQual<SubprogramProtoType> FTP) {
+  SubprogramType::ExtInfo extInfo = FTP->getExtInfo();
   adjustCXXMethodInfo(CGT, extInfo, FTP->isVariadic());
-  return arrangeLLVMFunctionInfo(CGT, prefix, FTP, extInfo);
+  return arrangeLLVMSubprogramInfo(CGT, prefix, FTP, extInfo);
 }
 
 /// Arrange the argument and result information for a value of the
 /// given freestanding function type.
-const CGFunctionInfo &
-CodeGenTypes::arrangeFreeFunctionType(CanQual<FunctionProtoType> FTP) {
+const CGSubprogramInfo &
+CodeGenTypes::arrangeFreeSubprogramType(CanQual<SubprogramProtoType> FTP) {
   SmallVector<CanQualType, 16> argTypes;
-  return ::arrangeFreeFunctionType(*this, argTypes, FTP);
+  return ::arrangeFreeSubprogramType(*this, argTypes, FTP);
 }
 
 static CallingConv getCallingConventionForDecl(const Decl *D) {
-  // Set the appropriate calling convention for the Function.
+  // Set the appropriate calling convention for the Subprogram.
   if (D->hasAttr<StdCallAttr>())
     return CC_X86StdCall;
 
@@ -162,40 +162,40 @@ static CallingConv getCallingConventionForDecl(const Decl *D) {
 /// unknown C++ non-static member function of the given abstract type.
 /// The member function must be an ordinary function, i.e. not a
 /// constructor or destructor.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeCXXMethodType(const CXXRecordDecl *RD,
-                                   const FunctionProtoType *FTP) {
+                                   const SubprogramProtoType *FTP) {
   SmallVector<CanQualType, 16> argTypes;
 
   // Add the 'this' pointer.
   argTypes.push_back(GetThisType(Context, RD));
 
   return ::arrangeCXXMethodType(*this, argTypes,
-              FTP->getCanonicalTypeUnqualified().getAs<FunctionProtoType>());
+              FTP->getCanonicalTypeUnqualified().getAs<SubprogramProtoType>());
 }
 
 /// Arrange the argument and result information for a declaration or
 /// definition of the given C++ non-static member function.  The
 /// member function must be an ordinary function, i.e. not a
 /// constructor or destructor.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeCXXMethodDeclaration(const CXXMethodDecl *MD) {
   assert(!isa<CXXConstructorDecl>(MD) && "wrong method for contructors!");
   assert(!isa<CXXDestructorDecl>(MD) && "wrong method for destructors!");
 
-  CanQual<FunctionProtoType> prototype = GetFormalType(MD);
+  CanQual<SubprogramProtoType> prototype = GetFormalType(MD);
 
   if (MD->isInstance()) {
     // The abstract case is perfectly fine.
     return arrangeCXXMethodType(MD->getParent(), prototype.getTypePtr());
   }
 
-  return arrangeFreeFunctionType(prototype);
+  return arrangeFreeSubprogramType(prototype);
 }
 
 /// Arrange the argument and result information for a declaration
 /// or definition to the given constructor variant.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeCXXConstructorDeclaration(const CXXConstructorDecl *D,
                                                CXXCtorType ctorKind) {
   SmallVector<CanQualType, 16> argTypes;
@@ -204,7 +204,7 @@ CodeGenTypes::arrangeCXXConstructorDeclaration(const CXXConstructorDecl *D,
 
   TheFortranABI.BuildConstructorSignature(D, ctorKind, resultType, argTypes);
 
-  CanQual<FunctionProtoType> FTP = GetFormalType(D);
+  CanQual<SubprogramProtoType> FTP = GetFormalType(D);
 
   RequiredArgs required = RequiredArgs::forPrototypePlus(FTP, argTypes.size());
 
@@ -212,15 +212,15 @@ CodeGenTypes::arrangeCXXConstructorDeclaration(const CXXConstructorDecl *D,
   for (unsigned i = 0, e = FTP->getNumArgs(); i != e; ++i)
     argTypes.push_back(FTP->getArgType(i));
 
-  FunctionType::ExtInfo extInfo = FTP->getExtInfo();
+  SubprogramType::ExtInfo extInfo = FTP->getExtInfo();
   adjustCXXMethodInfo(*this, extInfo, FTP->isVariadic());
-  return arrangeLLVMFunctionInfo(resultType, argTypes, extInfo, required);
+  return arrangeLLVMSubprogramInfo(resultType, argTypes, extInfo, required);
 }
 
 /// Arrange the argument and result information for a declaration,
 /// definition, or call to the given destructor variant.  It so
 /// happens that all three cases produce the same information.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeCXXDestructor(const CXXDestructorDecl *D,
                                    CXXDtorType dtorKind) {
   SmallVector<CanQualType, 2> argTypes;
@@ -229,45 +229,45 @@ CodeGenTypes::arrangeCXXDestructor(const CXXDestructorDecl *D,
 
   TheFortranABI.BuildDestructorSignature(D, dtorKind, resultType, argTypes);
 
-  CanQual<FunctionProtoType> FTP = GetFormalType(D);
+  CanQual<SubprogramProtoType> FTP = GetFormalType(D);
   assert(FTP->getNumArgs() == 0 && "dtor with formal parameters");
   assert(FTP->isVariadic() == 0 && "dtor with formal parameters");
 
-  FunctionType::ExtInfo extInfo = FTP->getExtInfo();
+  SubprogramType::ExtInfo extInfo = FTP->getExtInfo();
   adjustCXXMethodInfo(*this, extInfo, false);
-  return arrangeLLVMFunctionInfo(resultType, argTypes, extInfo,
+  return arrangeLLVMSubprogramInfo(resultType, argTypes, extInfo,
                                  RequiredArgs::All);
 }
 
 /// Arrange the argument and result information for the declaration or
 /// definition of the given function.
-const CGFunctionInfo &
-CodeGenTypes::arrangeFunctionDeclaration(const FunctionDecl *FD) {
+const CGSubprogramInfo &
+CodeGenTypes::arrangeSubprogramDeclaration(const SubprogramDecl *FD) {
   if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD))
     if (MD->isInstance())
       return arrangeCXXMethodDeclaration(MD);
 
   CanQualType FTy = FD->getType()->getCanonicalTypeUnqualified();
 
-  assert(isa<FunctionType>(FTy));
+  assert(isa<SubprogramType>(FTy));
 
   // When declaring a function without a prototype, always use a
   // non-variadic type.
-  if (isa<FunctionNoProtoType>(FTy)) {
-    CanQual<FunctionNoProtoType> noProto = FTy.getAs<FunctionNoProtoType>();
-    return arrangeLLVMFunctionInfo(noProto->getResultType(),
+  if (isa<SubprogramNoProtoType>(FTy)) {
+    CanQual<SubprogramNoProtoType> noProto = FTy.getAs<SubprogramNoProtoType>();
+    return arrangeLLVMSubprogramInfo(noProto->getResultType(),
                                    ArrayRef<CanQualType>(),
                                    noProto->getExtInfo(),
                                    RequiredArgs::All);
   }
 
-  assert(isa<FunctionProtoType>(FTy));
-  return arrangeFreeFunctionType(FTy.getAs<FunctionProtoType>());
+  assert(isa<SubprogramProtoType>(FTy));
+  return arrangeFreeSubprogramType(FTy.getAs<SubprogramProtoType>());
 }
 
 /// Arrange the argument and result information for the declaration or
 /// definition of an Objective-C method.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeObjCMethodDeclaration(const ObjCMethodDecl *MD) {
   // It happens that this is the same as a call with no optional
   // arguments, except also using the formal 'self' type.
@@ -280,7 +280,7 @@ CodeGenTypes::arrangeObjCMethodDeclaration(const ObjCMethodDecl *MD) {
 /// the 'self' type of the method or even an Objective-C pointer type.
 /// This is *not* the right method for actually performing such a
 /// message send, due to the possibility of optional arguments.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeObjCMessageSendSignature(const ObjCMethodDecl *MD,
                                               QualType receiverType) {
   SmallVector<CanQualType, 16> argTys;
@@ -292,7 +292,7 @@ CodeGenTypes::arrangeObjCMessageSendSignature(const ObjCMethodDecl *MD,
     argTys.push_back(Context.getCanonicalParamType((*i)->getType()));
   }
 
-  FunctionType::ExtInfo einfo;
+  SubprogramType::ExtInfo einfo;
   einfo = einfo.withCallingConv(getCallingConventionForDecl(MD));
 
   if (getContext().getLangOpts().ObjCAutoRefCount &&
@@ -302,14 +302,14 @@ CodeGenTypes::arrangeObjCMessageSendSignature(const ObjCMethodDecl *MD,
   RequiredArgs required =
     (MD->isVariadic() ? RequiredArgs(argTys.size()) : RequiredArgs::All);
 
-  return arrangeLLVMFunctionInfo(GetReturnType(MD->getResultType()), argTys,
+  return arrangeLLVMSubprogramInfo(GetReturnType(MD->getResultType()), argTys,
                                  einfo, required);
 }
 
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeGlobalDeclaration(GlobalDecl GD) {
   // FIXME: Do we need to handle ObjCMethodDecl?
-  const FunctionDecl *FD = cast<FunctionDecl>(GD.getDecl());
+  const SubprogramDecl *FD = cast<SubprogramDecl>(GD.getDecl());
 
   if (const CXXConstructorDecl *CD = dyn_cast<CXXConstructorDecl>(FD))
     return arrangeCXXConstructorDeclaration(CD, GD.getCtorType());
@@ -317,15 +317,15 @@ CodeGenTypes::arrangeGlobalDeclaration(GlobalDecl GD) {
   if (const CXXDestructorDecl *DD = dyn_cast<CXXDestructorDecl>(FD))
     return arrangeCXXDestructor(DD, GD.getDtorType());
 
-  return arrangeFunctionDeclaration(FD);
+  return arrangeSubprogramDeclaration(FD);
 }
 
 /// Arrange a call as unto a free function, except possibly with an
 /// additional number of formal parameters considered required.
-static const CGFunctionInfo &
-arrangeFreeFunctionLikeCall(CodeGenTypes &CGT,
+static const CGSubprogramInfo &
+arrangeFreeSubprogramLikeCall(CodeGenTypes &CGT,
                             const CallArgList &args,
-                            const FunctionType *fnType,
+                            const SubprogramType *fnType,
                             unsigned numExtraRequiredArgs) {
   assert(args.size() >= numExtraRequiredArgs);
 
@@ -334,7 +334,7 @@ arrangeFreeFunctionLikeCall(CodeGenTypes &CGT,
 
   // If we have a variadic prototype, the required arguments are the
   // extra prefix plus the arguments in the prototype.
-  if (const FunctionProtoType *proto = dyn_cast<FunctionProtoType>(fnType)) {
+  if (const SubprogramProtoType *proto = dyn_cast<SubprogramProtoType>(fnType)) {
     if (proto->isVariadic())
       required = RequiredArgs(proto->getNumArgs() + numExtraRequiredArgs);
 
@@ -343,11 +343,11 @@ arrangeFreeFunctionLikeCall(CodeGenTypes &CGT,
   // treat all of the arguments as required but preserve the nominal
   // possibility of variadics.
   } else if (CGT.CGM.getTargetCodeGenInfo()
-               .isNoProtoCallVariadic(args, cast<FunctionNoProtoType>(fnType))) {
+               .isNoProtoCallVariadic(args, cast<SubprogramNoProtoType>(fnType))) {
     required = RequiredArgs(args.size());
   }
 
-  return CGT.arrangeFreeFunctionCall(fnType->getResultType(), args,
+  return CGT.arrangeFreeSubprogramCall(fnType->getResultType(), args,
                                      fnType->getExtInfo(), required);
 }
 
@@ -355,38 +355,38 @@ arrangeFreeFunctionLikeCall(CodeGenTypes &CGT,
 /// type using the given arguments.  The arguments are necessary
 /// because the function might be unprototyped, in which case it's
 /// target-dependent in crazy ways.
-const CGFunctionInfo &
-CodeGenTypes::arrangeFreeFunctionCall(const CallArgList &args,
-                                      const FunctionType *fnType) {
-  return arrangeFreeFunctionLikeCall(*this, args, fnType, 0);
+const CGSubprogramInfo &
+CodeGenTypes::arrangeFreeSubprogramCall(const CallArgList &args,
+                                      const SubprogramType *fnType) {
+  return arrangeFreeSubprogramLikeCall(*this, args, fnType, 0);
 }
 
 /// A block function call is essentially a free-function call with an
 /// extra implicit argument.
-const CGFunctionInfo &
-CodeGenTypes::arrangeBlockFunctionCall(const CallArgList &args,
-                                       const FunctionType *fnType) {
-  return arrangeFreeFunctionLikeCall(*this, args, fnType, 1);
+const CGSubprogramInfo &
+CodeGenTypes::arrangeBlockSubprogramCall(const CallArgList &args,
+                                       const SubprogramType *fnType) {
+  return arrangeFreeSubprogramLikeCall(*this, args, fnType, 1);
 }
 
-const CGFunctionInfo &
-CodeGenTypes::arrangeFreeFunctionCall(QualType resultType,
+const CGSubprogramInfo &
+CodeGenTypes::arrangeFreeSubprogramCall(QualType resultType,
                                       const CallArgList &args,
-                                      FunctionType::ExtInfo info,
+                                      SubprogramType::ExtInfo info,
                                       RequiredArgs required) {
   // FIXME: Kill copy.
   SmallVector<CanQualType, 16> argTypes;
   for (CallArgList::const_iterator i = args.begin(), e = args.end();
        i != e; ++i)
     argTypes.push_back(Context.getCanonicalParamType(i->Ty));
-  return arrangeLLVMFunctionInfo(GetReturnType(resultType), argTypes, info,
+  return arrangeLLVMSubprogramInfo(GetReturnType(resultType), argTypes, info,
                                  required);
 }
 
 /// Arrange a call to a C++ method, passing the given arguments.
-const CGFunctionInfo &
+const CGSubprogramInfo &
 CodeGenTypes::arrangeCXXMethodCall(const CallArgList &args,
-                                   const FunctionProtoType *FPT,
+                                   const SubprogramProtoType *FPT,
                                    RequiredArgs required) {
   // FIXME: Kill copy.
   SmallVector<CanQualType, 16> argTypes;
@@ -394,41 +394,41 @@ CodeGenTypes::arrangeCXXMethodCall(const CallArgList &args,
        i != e; ++i)
     argTypes.push_back(Context.getCanonicalParamType(i->Ty));
 
-  FunctionType::ExtInfo info = FPT->getExtInfo();
+  SubprogramType::ExtInfo info = FPT->getExtInfo();
   adjustCXXMethodInfo(*this, info, FPT->isVariadic());
-  return arrangeLLVMFunctionInfo(GetReturnType(FPT->getResultType()),
+  return arrangeLLVMSubprogramInfo(GetReturnType(FPT->getResultType()),
                                  argTypes, info, required);
 }
 
-const CGFunctionInfo &
-CodeGenTypes::arrangeFunctionDeclaration(QualType resultType,
-                                         const FunctionArgList &args,
-                                         const FunctionType::ExtInfo &info,
+const CGSubprogramInfo &
+CodeGenTypes::arrangeSubprogramDeclaration(QualType resultType,
+                                         const SubprogramArgList &args,
+                                         const SubprogramType::ExtInfo &info,
                                          bool isVariadic) {
   // FIXME: Kill copy.
   SmallVector<CanQualType, 16> argTypes;
-  for (FunctionArgList::const_iterator i = args.begin(), e = args.end();
+  for (SubprogramArgList::const_iterator i = args.begin(), e = args.end();
        i != e; ++i)
     argTypes.push_back(Context.getCanonicalParamType((*i)->getType()));
 
   RequiredArgs required =
     (isVariadic ? RequiredArgs(args.size()) : RequiredArgs::All);
-  return arrangeLLVMFunctionInfo(GetReturnType(resultType), argTypes, info,
+  return arrangeLLVMSubprogramInfo(GetReturnType(resultType), argTypes, info,
                                  required);
 }
 
-const CGFunctionInfo &CodeGenTypes::arrangeNullaryFunction() {
-  return arrangeLLVMFunctionInfo(getContext().VoidTy, ArrayRef<CanQualType>(),
-                                 FunctionType::ExtInfo(), RequiredArgs::All);
+const CGSubprogramInfo &CodeGenTypes::arrangeNullarySubprogram() {
+  return arrangeLLVMSubprogramInfo(getContext().VoidTy, ArrayRef<CanQualType>(),
+                                 SubprogramType::ExtInfo(), RequiredArgs::All);
 }
 
 /// Arrange the argument and result information for an abstract value
 /// of a given function type.  This is the method which all of the
 /// above functions ultimately defer to.
-const CGFunctionInfo &
-CodeGenTypes::arrangeLLVMFunctionInfo(CanQualType resultType,
+const CGSubprogramInfo &
+CodeGenTypes::arrangeLLVMSubprogramInfo(CanQualType resultType,
                                       ArrayRef<CanQualType> argTypes,
-                                      FunctionType::ExtInfo info,
+                                      SubprogramType::ExtInfo info,
                                       RequiredArgs required) {
 #ifndef NDEBUG
   for (ArrayRef<CanQualType>::const_iterator
@@ -440,18 +440,18 @@ CodeGenTypes::arrangeLLVMFunctionInfo(CanQualType resultType,
 
   // Lookup or create unique function info.
   llvm::FoldingSetNodeID ID;
-  CGFunctionInfo::Profile(ID, info, required, resultType, argTypes);
+  CGSubprogramInfo::Profile(ID, info, required, resultType, argTypes);
 
   void *insertPos = 0;
-  CGFunctionInfo *FI = FunctionInfos.FindNodeOrInsertPos(ID, insertPos);
+  CGSubprogramInfo *FI = SubprogramInfos.FindNodeOrInsertPos(ID, insertPos);
   if (FI)
     return *FI;
 
   // Construct the function info.  We co-allocate the ArgInfos.
-  FI = CGFunctionInfo::create(CC, info, resultType, argTypes, required);
-  FunctionInfos.InsertNode(FI, insertPos);
+  FI = CGSubprogramInfo::create(CC, info, resultType, argTypes, required);
+  SubprogramInfos.InsertNode(FI, insertPos);
 
-  bool inserted = FunctionsBeingProcessed.insert(FI); (void)inserted;
+  bool inserted = SubprogramsBeingProcessed.insert(FI); (void)inserted;
   assert(inserted && "Recursively being processed?");
   
   // Compute ABI information.
@@ -464,25 +464,25 @@ CodeGenTypes::arrangeLLVMFunctionInfo(CanQualType resultType,
   if (retInfo.canHaveCoerceToType() && retInfo.getCoerceToType() == 0)
     retInfo.setCoerceToType(ConvertType(FI->getReturnType()));
 
-  for (CGFunctionInfo::arg_iterator I = FI->arg_begin(), E = FI->arg_end();
+  for (CGSubprogramInfo::arg_iterator I = FI->arg_begin(), E = FI->arg_end();
        I != E; ++I)
     if (I->info.canHaveCoerceToType() && I->info.getCoerceToType() == 0)
       I->info.setCoerceToType(ConvertType(I->type));
 
-  bool erased = FunctionsBeingProcessed.erase(FI); (void)erased;
+  bool erased = SubprogramsBeingProcessed.erase(FI); (void)erased;
   assert(erased && "Not in set?");
   
   return *FI;
 }
 
-CGFunctionInfo *CGFunctionInfo::create(unsigned llvmCC,
-                                       const FunctionType::ExtInfo &info,
+CGSubprogramInfo *CGSubprogramInfo::create(unsigned llvmCC,
+                                       const SubprogramType::ExtInfo &info,
                                        CanQualType resultType,
                                        ArrayRef<CanQualType> argTypes,
                                        RequiredArgs required) {
-  void *buffer = operator new(sizeof(CGFunctionInfo) +
+  void *buffer = operator new(sizeof(CGSubprogramInfo) +
                               sizeof(ArgInfo) * (argTypes.size() + 1));
-  CGFunctionInfo *FI = new(buffer) CGFunctionInfo();
+  CGSubprogramInfo *FI = new(buffer) CGSubprogramInfo();
   FI->CallingConvention = llvmCC;
   FI->EffectiveCallingConvention = llvmCC;
   FI->ASTCallingConvention = info.getCC();
@@ -735,7 +735,7 @@ static llvm::Value *CreateCoercedLoad(llvm::Value *SrcPtr,
   return CGF.Builder.CreateLoad(Tmp);
 }
 
-// Function to store a first-class aggregate into memory.  We prefer to
+// Subprogram to store a first-class aggregate into memory.  We prefer to
 // store the elements rather than the aggregate to be more friendly to
 // fast-isel.
 // FIXME: Do we need to recurse here?
@@ -825,7 +825,7 @@ static void CreateCoercedStore(llvm::Value *Src,
 
 /***/
 
-bool CodeGenModule::ReturnTypeUsesSRet(const CGFunctionInfo &FI) {
+bool CodeGenModule::ReturnTypeUsesSRet(const CGSubprogramInfo &FI) {
   return FI.getReturnInfo().isIndirect();
 }
 
@@ -858,15 +858,15 @@ bool CodeGenModule::ReturnTypeUsesFP2Ret(QualType ResultType) {
   return false;
 }
 
-llvm::FunctionType *CodeGenTypes::GetFunctionType(GlobalDecl GD) {
-  const CGFunctionInfo &FI = arrangeGlobalDeclaration(GD);
-  return GetFunctionType(FI);
+llvm::FunctionType *CodeGenTypes::GetSubprogramType(GlobalDecl GD) {
+  const CGSubprogramInfo &FI = arrangeGlobalDeclaration(GD);
+  return GetSubprogramType(FI);
 }
 
 llvm::FunctionType *
-CodeGenTypes::GetFunctionType(const CGFunctionInfo &FI) {
+CodeGenTypes::GetSubprogramType(const CGSubprogramInfo &FI) {
   
-  bool Inserted = FunctionsBeingProcessed.insert(&FI); (void)Inserted;
+  bool Inserted = SubprogramsBeingProcessed.insert(&FI); (void)Inserted;
   assert(Inserted && "Recursively being processed?");
   
   SmallVector<llvm::Type*, 8> argTypes;
@@ -899,7 +899,7 @@ CodeGenTypes::GetFunctionType(const CGFunctionInfo &FI) {
   }
 
   // Add in all of the required arguments.
-  CGFunctionInfo::const_arg_iterator it = FI.arg_begin(), ie;
+  CGSubprogramInfo::const_arg_iterator it = FI.arg_begin(), ie;
   if (FI.isVariadic()) {
     ie = it + FI.getRequiredArgs().getNumRequiredArgs();
   } else {
@@ -944,28 +944,28 @@ CodeGenTypes::GetFunctionType(const CGFunctionInfo &FI) {
     }
   }
 
-  bool Erased = FunctionsBeingProcessed.erase(&FI); (void)Erased;
+  bool Erased = SubprogramsBeingProcessed.erase(&FI); (void)Erased;
   assert(Erased && "Not in set?");
   
   return llvm::FunctionType::get(resultType, argTypes, FI.isVariadic());
 }
 
-llvm::Type *CodeGenTypes::GetFunctionTypeForVTable(GlobalDecl GD) {
+llvm::Type *CodeGenTypes::GetSubprogramTypeForVTable(GlobalDecl GD) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
-  const FunctionProtoType *FPT = MD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = MD->getType()->getAs<SubprogramProtoType>();
 
   if (!isFuncTypeConvertible(FPT))
     return llvm::StructType::get(getLLVMContext());
     
-  const CGFunctionInfo *Info;
+  const CGSubprogramInfo *Info;
   if (isa<CXXDestructorDecl>(MD))
     Info = &arrangeCXXDestructor(cast<CXXDestructorDecl>(MD), GD.getDtorType());
   else
     Info = &arrangeCXXMethodDeclaration(MD);
-  return GetFunctionType(*Info);
+  return GetSubprogramType(*Info);
 }
 
-void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
+void CodeGenModule::ConstructAttributeList(const CGSubprogramInfo &FI,
                                            const Decl *TargetDecl,
                                            AttributeListType &PAL,
                                            unsigned &CallingConv) {
@@ -983,8 +983,8 @@ void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
       FuncAttrs.addAttribute(llvm::Attribute::ReturnsTwice);
     if (TargetDecl->hasAttr<NoThrowAttr>())
       FuncAttrs.addAttribute(llvm::Attribute::NoUnwind);
-    else if (const FunctionDecl *Fn = dyn_cast<FunctionDecl>(TargetDecl)) {
-      const FunctionProtoType *FPT = Fn->getType()->getAs<FunctionProtoType>();
+    else if (const SubprogramDecl *Fn = dyn_cast<SubprogramDecl>(TargetDecl)) {
+      const SubprogramProtoType *FPT = Fn->getType()->getAs<SubprogramProtoType>();
       if (FPT && FPT->isNothrow(getContext()))
         FuncAttrs.addAttribute(llvm::Attribute::NoUnwind);
     }
@@ -1057,7 +1057,7 @@ void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
                                          llvm::Attribute::get(getLLVMContext(),
                                                                RetAttrs)));
 
-  for (CGFunctionInfo::const_arg_iterator it = FI.arg_begin(),
+  for (CGSubprogramInfo::const_arg_iterator it = FI.arg_begin(),
          ie = FI.arg_end(); it != ie; ++it) {
     QualType ParamType = it->type;
     const ABIArgInfo &AI = it->info;
@@ -1075,7 +1075,7 @@ void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
       ++Index;
     }
 
-    // 'restrict' -> 'noalias' is done in EmitFunctionProlog when we
+    // 'restrict' -> 'noalias' is done in EmitSubprogramProlog when we
     // have the corresponding parameter variable.  It doesn't make
     // sense to do it here because parameters are so messed up.
     switch (AI.getKind()) {
@@ -1165,14 +1165,14 @@ static llvm::Value *emitArgumentDemotion(CodeGenSubprogram &CGF,
   return CGF.Builder.CreateFPCast(value, varType, "arg.unpromote");
 }
 
-void CodeGenSubprogram::EmitFunctionProlog(const CGFunctionInfo &FI,
+void CodeGenSubprogram::EmitSubprogramProlog(const CGSubprogramInfo &FI,
                                          llvm::Function *Fn,
-                                         const FunctionArgList &Args) {
+                                         const SubprogramArgList &Args) {
   // If this is an implicit-return-zero function, go ahead and
   // initialize the return value.  TODO: it might be nice to have
   // a more general mechanism for this that didn't require synthesized
   // return statements.
-  if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(CurFuncDecl)) {
+  if (const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(CurFuncDecl)) {
     if (FD->hasImplicitReturnZero()) {
       QualType RetTy = FD->getResultType().getUnqualifiedType();
       llvm::Type* LLVMTy = CGM.getTypes().ConvertType(RetTy);
@@ -1181,7 +1181,7 @@ void CodeGenSubprogram::EmitFunctionProlog(const CGFunctionInfo &FI,
     }
   }
 
-  // FIXME: We no longer need the types from FunctionArgList; lift up and
+  // FIXME: We no longer need the types from SubprogramArgList; lift up and
   // simplify.
 
   // Emit allocs for param decls.  Give the LLVM Argument nodes names.
@@ -1198,8 +1198,8 @@ void CodeGenSubprogram::EmitFunctionProlog(const CGFunctionInfo &FI,
   assert(FI.arg_size() == Args.size() &&
          "Mismatch between function signature & arguments.");
   unsigned ArgNo = 1;
-  CGFunctionInfo::const_arg_iterator info_it = FI.arg_begin();
-  for (FunctionArgList::const_iterator i = Args.begin(), e = Args.end(); 
+  CGSubprogramInfo::const_arg_iterator info_it = FI.arg_begin();
+  for (SubprogramArgList::const_iterator i = Args.begin(), e = Args.end(); 
        i != e; ++i, ++info_it, ++ArgNo) {
     const VarDecl *Arg = *i;
     QualType Ty = info_it->type;
@@ -1587,8 +1587,8 @@ static llvm::StoreInst *findDominatingStoreToReturnValue(CodeGenSubprogram &CGF)
   return store;
 }
 
-void CodeGenSubprogram::EmitFunctionEpilog(const CGFunctionInfo &FI) {
-  // Functions with no result always return void.
+void CodeGenSubprogram::EmitSubprogramEpilog(const CGSubprogramInfo &FI) {
+  // Subprograms with no result always return void.
   if (ReturnValue == 0) {
     Builder.CreateRetVoid();
     return;
@@ -1677,7 +1677,7 @@ void CodeGenSubprogram::EmitFunctionEpilog(const CGFunctionInfo &FI) {
 
 void CodeGenSubprogram::EmitDelegateCallArg(CallArgList &args,
                                           const VarDecl *param) {
-  // StartFunction converted the ABI-lowered parameter(s) into a
+  // StartSubprogram converted the ABI-lowered parameter(s) into a
   // local alloca.  We need to turn that into an r-value suitable
   // for EmitCall.
   llvm::Value *local = GetAddrOfLocalVar(param);
@@ -2006,7 +2006,7 @@ void CodeGenSubprogram::ExpandTypeToArgs(QualType Ty, RValue RV,
 }
 
 
-RValue CodeGenSubprogram::EmitCall(const CGFunctionInfo &CallInfo,
+RValue CodeGenSubprogram::EmitCall(const CGSubprogramInfo &CallInfo,
                                  llvm::Value *Callee,
                                  ReturnValueSlot ReturnValue,
                                  const CallArgList &CallArgs,
@@ -2038,7 +2038,7 @@ RValue CodeGenSubprogram::EmitCall(const CGFunctionInfo &CallInfo,
 
   assert(CallInfo.arg_size() == CallArgs.size() &&
          "Mismatch between function signature & arguments.");
-  CGFunctionInfo::const_arg_iterator info_it = CallInfo.arg_begin();
+  CGSubprogramInfo::const_arg_iterator info_it = CallInfo.arg_begin();
   for (CallArgList::const_iterator I = CallArgs.begin(), E = CallArgs.end();
        I != E; ++I, ++info_it) {
     const ABIArgInfo &ArgInfo = info_it->info;

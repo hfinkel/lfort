@@ -68,14 +68,14 @@ namespace lfort {
                                             ClassTemplateSpecializationDecl *D);
     void VisitClassTemplatePartialSpecializationDecl(
                                      ClassTemplatePartialSpecializationDecl *D);
-    void VisitClassScopeFunctionSpecializationDecl(
-                                       ClassScopeFunctionSpecializationDecl *D);
+    void VisitClassScopeSubprogramSpecializationDecl(
+                                       ClassScopeSubprogramSpecializationDecl *D);
     void VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D);
     void VisitValueDecl(ValueDecl *D);
     void VisitEnumConstantDecl(EnumConstantDecl *D);
     void VisitUnresolvedUsingValueDecl(UnresolvedUsingValueDecl *D);
     void VisitDeclaratorDecl(DeclaratorDecl *D);
-    void VisitFunctionDecl(FunctionDecl *D);
+    void VisitSubprogramDecl(SubprogramDecl *D);
     void VisitCXXMethodDecl(CXXMethodDecl *D);
     void VisitCXXConstructorDecl(CXXConstructorDecl *D);
     void VisitCXXDestructorDecl(CXXDestructorDecl *D);
@@ -89,7 +89,7 @@ namespace lfort {
     void VisitTemplateDecl(TemplateDecl *D);
     void VisitRedeclarableTemplateDecl(RedeclarableTemplateDecl *D);
     void VisitClassTemplateDecl(ClassTemplateDecl *D);
-    void VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+    void VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
     void VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D);
     void VisitTypeAliasTemplateDecl(TypeAliasTemplateDecl *D);
     void VisitUsingDecl(UsingDecl *D);
@@ -135,10 +135,10 @@ void ASTDeclWriter::Visit(Decl *D) {
     Writer.AddTypeSourceInfo(DD->getTypeSourceInfo(), Record);
   }
 
-  // Handle FunctionDecl's body here and write it after all other Stmts/Exprs
+  // Handle SubprogramDecl's body here and write it after all other Stmts/Exprs
   // have been written. We want it last because we will not read it back when
   // retrieving it from the AST, we'll just lazily set the offset. 
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     Record.push_back(FD->doesThisDeclarationHaveABody());
     if (FD->doesThisDeclarationHaveABody())
       Writer.AddStmt(FD->getBody());
@@ -304,14 +304,14 @@ void ASTDeclWriter::VisitDeclaratorDecl(DeclaratorDecl *D) {
     Writer.AddQualifierInfo(*D->getExtInfo(), Record);
 }
 
-void ASTDeclWriter::VisitFunctionDecl(FunctionDecl *D) {
+void ASTDeclWriter::VisitSubprogramDecl(SubprogramDecl *D) {
   VisitRedeclarable(D);
   VisitDeclaratorDecl(D);
 
   Writer.AddDeclarationNameLoc(D->DNLoc, D->getDeclName(), Record);
   Record.push_back(D->getIdentifierNamespace());
   
-  // FunctionDecl's body is handled last at ASTWriterDecl::Visit,
+  // SubprogramDecl's body is handled last at ASTWriterDecl::Visit,
   // after everything else is written.
   
   Record.push_back(D->getStorageClass()); // FIXME: stable encoding
@@ -333,20 +333,20 @@ void ASTDeclWriter::VisitFunctionDecl(FunctionDecl *D) {
 
   Record.push_back(D->getTemplatedKind());
   switch (D->getTemplatedKind()) {
-  case FunctionDecl::TK_NonTemplate:
+  case SubprogramDecl::TK_NonTemplate:
     break;
-  case FunctionDecl::TK_FunctionTemplate:
-    Writer.AddDeclRef(D->getDescribedFunctionTemplate(), Record);
+  case SubprogramDecl::TK_SubprogramTemplate:
+    Writer.AddDeclRef(D->getDescribedSubprogramTemplate(), Record);
     break;
-  case FunctionDecl::TK_MemberSpecialization: {
+  case SubprogramDecl::TK_MemberSpecialization: {
     MemberSpecializationInfo *MemberInfo = D->getMemberSpecializationInfo();
     Writer.AddDeclRef(MemberInfo->getInstantiatedFrom(), Record);
     Record.push_back(MemberInfo->getTemplateSpecializationKind());
     Writer.AddSourceLocation(MemberInfo->getPointOfInstantiation(), Record);
     break;
   }
-  case FunctionDecl::TK_FunctionTemplateSpecialization: {
-    FunctionTemplateSpecializationInfo *
+  case SubprogramDecl::TK_SubprogramTemplateSpecialization: {
+    SubprogramTemplateSpecializationInfo *
       FTSInfo = D->getTemplateSpecializationInfo();
     Writer.AddDeclRef(FTSInfo->getTemplate(), Record);
     Record.push_back(FTSInfo->getTemplateSpecializationKind());
@@ -372,13 +372,13 @@ void ASTDeclWriter::VisitFunctionDecl(FunctionDecl *D) {
 
     if (D->isCanonicalDecl()) {
       // Write the template that contains the specializations set. We will
-      // add a FunctionTemplateSpecializationInfo to it when reading.
+      // add a SubprogramTemplateSpecializationInfo to it when reading.
       Writer.AddDeclRef(FTSInfo->getTemplate()->getCanonicalDecl(), Record);
     }
     break;
   }
-  case FunctionDecl::TK_DependentFunctionTemplateSpecialization: {
-    DependentFunctionTemplateSpecializationInfo *
+  case SubprogramDecl::TK_DependentSubprogramTemplateSpecialization: {
+    DependentSubprogramTemplateSpecializationInfo *
       DFTSInfo = D->getDependentSpecializationInfo();
     
     // Templates.
@@ -397,7 +397,7 @@ void ASTDeclWriter::VisitFunctionDecl(FunctionDecl *D) {
   }
 
   Record.push_back(D->param_size());
-  for (FunctionDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
+  for (SubprogramDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
        P != PEnd; ++P)
     Writer.AddDeclRef(*P, Record);
   Code = serialization::DECL_FUNCTION;
@@ -726,8 +726,8 @@ void ASTDeclWriter::VisitImplicitParamDecl(ImplicitParamDecl *D) {
 void ASTDeclWriter::VisitParmVarDecl(ParmVarDecl *D) {
   VisitVarDecl(D);
   Record.push_back(D->isObjCMethodParameter());
-  Record.push_back(D->getFunctionScopeDepth());
-  Record.push_back(D->getFunctionScopeIndex());
+  Record.push_back(D->getSubprogramScopeDepth());
+  Record.push_back(D->getSubprogramScopeIndex());
   Record.push_back(D->getObjCDeclQualifier()); // FIXME: stable encoding
   Record.push_back(D->isKNRPromoted());
   Record.push_back(D->hasInheritedDefaultArg());
@@ -751,7 +751,7 @@ void ASTDeclWriter::VisitParmVarDecl(ParmVarDecl *D) {
       !D->isModulePrivate() &&
       D->getStorageClass() == 0 &&
       D->getInitStyle() == VarDecl::CInit && // Can params have anything else?
-      D->getFunctionScopeDepth() == 0 &&
+      D->getSubprogramScopeDepth() == 0 &&
       D->getObjCDeclQualifier() == 0 &&
       !D->isKNRPromoted() &&
       !D->hasInheritedDefaultArg() &&
@@ -781,7 +781,7 @@ void ASTDeclWriter::VisitBlockDecl(BlockDecl *D) {
   Writer.AddStmt(D->getBody());
   Writer.AddTypeSourceInfo(D->getSignatureAsWritten(), Record);
   Record.push_back(D->param_size());
-  for (FunctionDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
+  for (SubprogramDecl::param_iterator P = D->param_begin(), PEnd = D->param_end();
        P != PEnd; ++P)
     Writer.AddDeclRef(*P, Record);
   Record.push_back(D->isVariadic());
@@ -944,13 +944,13 @@ void ASTDeclWriter::VisitCXXRecordDecl(CXXRecordDecl *D) {
   // Store the key function to avoid deserializing every method so we can
   // compute it.
   if (D->IsCompleteDefinition)
-    Writer.AddDeclRef(Context.getKeyFunction(D), Record);
+    Writer.AddDeclRef(Context.getKeySubprogram(D), Record);
 
   Code = serialization::DECL_CXX_RECORD;
 }
 
 void ASTDeclWriter::VisitCXXMethodDecl(CXXMethodDecl *D) {
-  VisitFunctionDecl(D);
+  VisitSubprogramDecl(D);
   if (D->isCanonicalDecl()) {
     Record.push_back(D->size_overridden_methods());
     for (CXXMethodDecl::method_iterator
@@ -1146,28 +1146,28 @@ void ASTDeclWriter::VisitClassTemplatePartialSpecializationDecl(
   Code = serialization::DECL_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION;
 }
 
-void ASTDeclWriter::VisitClassScopeFunctionSpecializationDecl(
-                                    ClassScopeFunctionSpecializationDecl *D) {
+void ASTDeclWriter::VisitClassScopeSubprogramSpecializationDecl(
+                                    ClassScopeSubprogramSpecializationDecl *D) {
   VisitDecl(D);
   Writer.AddDeclRef(D->getSpecialization(), Record);
   Code = serialization::DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION;
 }
 
 
-void ASTDeclWriter::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
+void ASTDeclWriter::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
   VisitRedeclarableTemplateDecl(D);
 
   if (D->isFirstDeclaration()) {
-    // This FunctionTemplateDecl owns the CommonPtr; write it.
+    // This SubprogramTemplateDecl owns the CommonPtr; write it.
 
     // Write the function specialization declarations.
     Record.push_back(D->getSpecializations().size());
-    for (llvm::FoldingSetVector<FunctionTemplateSpecializationInfo>::iterator
+    for (llvm::FoldingSetVector<SubprogramTemplateSpecializationInfo>::iterator
            I = D->getSpecializations().begin(),
            E = D->getSpecializations().end()   ; I != E; ++I) {
-      assert(I->Function->isCanonicalDecl() &&
+      assert(I->Subprogram->isCanonicalDecl() &&
              "Expected only canonical decls in set");
-      Writer.AddDeclRef(I->Function, Record);
+      Writer.AddDeclRef(I->Subprogram, Record);
     }
   }
   Code = serialization::DECL_FUNCTION_TEMPLATE;

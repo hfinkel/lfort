@@ -500,7 +500,7 @@ TEST_F(FormatTest, MixingPreprocessorDirectivesAndNormalCode) {
 // Line break tests.
 //===----------------------------------------------------------------------===//
 
-TEST_F(FormatTest, FormatsFunctionDefinition) {
+TEST_F(FormatTest, FormatsSubprogramDefinition) {
   verifyFormat("void f(int a, int b, int c, int d, int e, int f, int g,"
                " int h, int j, int f,\n"
                "       int c, int ddddddddddddd) {\n"
@@ -642,10 +642,10 @@ TEST_F(FormatTest, AlignsAfterReturn) {
 }
 
 TEST_F(FormatTest, AlignsStringLiterals) {
-  verifyFormat("loooooooooooooooooooooooooongFunction(\"short literal \"\n"
+  verifyFormat("loooooooooooooooooooooooooongSubprogram(\"short literal \"\n"
                "                                      \"short literal\");");
   verifyFormat(
-      "looooooooooooooooooooooooongFunction(\n"
+      "looooooooooooooooooooooooongSubprogram(\n"
       "    \"short literal\"\n"
       "    \"looooooooooooooooooooooooooooooooooooooooooooooooong literal\");");
 }
@@ -689,28 +689,28 @@ TEST_F(FormatTest, UnderstandsEquals) {
                "        100000000 + 100000000) {\n}");
 }
 
-TEST_F(FormatTest, WrapsAtFunctionCallsIfNecessary) {
+TEST_F(FormatTest, WrapsAtSubprogramCallsIfNecessary) {
   verifyFormat("LoooooooooooooooooooooooooooooooooooooongObject\n"
-               "    .looooooooooooooooooooooooooooooooooooooongFunction();");
+               "    .looooooooooooooooooooooooooooooooooooooongSubprogram();");
 
   verifyFormat("LoooooooooooooooooooooooooooooooooooooongObject\n"
-               "    ->looooooooooooooooooooooooooooooooooooooongFunction();");
+               "    ->looooooooooooooooooooooooooooooooooooooongSubprogram();");
 
   verifyFormat(
-      "LooooooooooooooooooooooooooooooooongObject->shortFunction(Parameter1,\n"
+      "LooooooooooooooooooooooooooooooooongObject->shortSubprogram(Parameter1,\n"
       "                                                          Parameter2);");
 
   verifyFormat(
-      "ShortObject->shortFunction(\n"
+      "ShortObject->shortSubprogram(\n"
       "    LooooooooooooooooooooooooooooooooooooooooooooooongParameter1,\n"
       "    LooooooooooooooooooooooooooooooooooooooooooooooongParameter2);");
 
-  verifyFormat("loooooooooooooongFunction(\n"
-               "    LoooooooooooooongObject->looooooooooooooooongFunction());");
+  verifyFormat("loooooooooooooongSubprogram(\n"
+               "    LoooooooooooooongObject->looooooooooooooooongSubprogram());");
 
   verifyFormat(
       "function(LoooooooooooooooooooooooooooooooooooongObject\n"
-      "             ->loooooooooooooooooooooooooooooooooooooooongFunction());");
+      "             ->loooooooooooooooooooooooooooooooooooooooongSubprogram());");
 
   verifyFormat("if (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa(aaaaaaaaaaaa) ||\n"
                "    aaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) {\n"
@@ -719,13 +719,13 @@ TEST_F(FormatTest, WrapsAtFunctionCallsIfNecessary) {
 
 TEST_F(FormatTest, WrapsTemplateDeclarations) {
   verifyFormat("template <typename T>\n"
-               "virtual void loooooooooooongFunction(int Param1, int Param2);");
+               "virtual void loooooooooooongSubprogram(int Param1, int Param2);");
   verifyFormat(
       "template <typename T> void f(int Paaaaaaaaaaaaaaaaaaaaaaaaaaaaaaram1,\n"
       "                             int Paaaaaaaaaaaaaaaaaaaaaaaaaaaaaaram2);");
   verifyFormat(
       "template <typename T>\n"
-      "void looooooooooooooooooooongFunction(int Paaaaaaaaaaaaaaaaaaaaram1,\n"
+      "void looooooooooooooooooooongSubprogram(int Paaaaaaaaaaaaaaaaaaaaram1,\n"
       "                                      int Paaaaaaaaaaaaaaaaaaaaram2);");
   verifyFormat(
       "template <typename T>\n"
@@ -853,7 +853,7 @@ TEST_F(FormatTest, UnderstandsUsesOfStarAndAmp) {
 
 TEST_F(FormatTest, DoesNotBreakBeforePointerOrReference) {
   verifyFormat(
-      "int *someFunction(int LoooooooooooooooongParam1,\n"
+      "int *someSubprogram(int LoooooooooooooooongParam1,\n"
       "                  int LoooooooooooooooongParam2) {\n}");
   verifyFormat(
       "TypeSpecDecl *TypeSpecDecl::Create(ASTContext &C, DeclContext *DC,\n"

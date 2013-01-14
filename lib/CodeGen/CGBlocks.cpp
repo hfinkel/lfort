@@ -49,13 +49,13 @@ static llvm::Constant *buildGlobalBlock(CodeGenModule &CGM,
 /// Build the helper function to copy a block.
 static llvm::Constant *buildCopyHelper(CodeGenModule &CGM,
                                        const CGBlockInfo &blockInfo) {
-  return CodeGenSubprogram(CGM).GenerateCopyHelperFunction(blockInfo);
+  return CodeGenSubprogram(CGM).GenerateCopyHelperSubprogram(blockInfo);
 }
 
 /// Build the helper function to dipose of a block.
 static llvm::Constant *buildDisposeHelper(CodeGenModule &CGM,
                                           const CGBlockInfo &blockInfo) {
-  return CodeGenSubprogram(CGM).GenerateDestroyHelperFunction(blockInfo);
+  return CodeGenSubprogram(CGM).GenerateDestroyHelperSubprogram(blockInfo);
 }
 
 /// buildBlockDescriptor - Build the block descriptor meta-data for a block.
@@ -163,7 +163,7 @@ static llvm::Constant *buildBlockDescriptor(CodeGenModule &CGM,
     /// Reserved;  should be zero-initialized.
     int reserved;
 
-    /// Function pointer generated from block literal.
+    /// Subprogram pointer generated from block literal.
     _ResultType (*invoke)(Block_literal *, _ParamTypes...);
 
     /// Block description metadata generated from block literal.
@@ -658,7 +658,7 @@ llvm::Value *CodeGenSubprogram::EmitBlockLiteral(const CGBlockInfo &blockInfo) {
   // Using the computed layout, generate the actual block function.
   bool isLambdaConv = blockInfo.getBlockDecl()->isConversionFromLambda();
   llvm::Constant *blockFn
-    = CodeGenSubprogram(CGM, true).GenerateBlockFunction(CurGD, blockInfo,
+    = CodeGenSubprogram(CGM, true).GenerateBlockSubprogram(CurGD, blockInfo,
                                                  CurFuncDecl, LocalDeclMap,
                                                  isLambdaConv);
   blockFn = llvm::ConstantExpr::getBitCast(blockFn, VoidPtrTy);
@@ -897,18 +897,18 @@ RValue CodeGenSubprogram::EmitBlockCallExpr(const CallExpr* E,
   QualType FnType = BPT->getPointeeType();
 
   // And the rest of the arguments.
-  EmitCallArgs(Args, FnType->getAs<FunctionProtoType>(),
+  EmitCallArgs(Args, FnType->getAs<SubprogramProtoType>(),
                E->arg_begin(), E->arg_end());
 
   // Load the function.
   llvm::Value *Func = Builder.CreateLoad(FuncPtr);
 
-  const FunctionType *FuncTy = FnType->castAs<FunctionType>();
-  const CGFunctionInfo &FnInfo =
-    CGM.getTypes().arrangeBlockFunctionCall(Args, FuncTy);
+  const SubprogramType *FuncTy = FnType->castAs<SubprogramType>();
+  const CGSubprogramInfo &FnInfo =
+    CGM.getTypes().arrangeBlockSubprogramCall(Args, FuncTy);
 
   // Cast the function pointer to the right type.
-  llvm::Type *BlockFTy = CGM.getTypes().GetFunctionType(FnInfo);
+  llvm::Type *BlockFTy = CGM.getTypes().GetSubprogramType(FnInfo);
 
   llvm::Type *BlockFTyPtr = llvm::PointerType::getUnqual(BlockFTy);
   Func = Builder.CreateBitCast(Func, BlockFTyPtr);
@@ -968,7 +968,7 @@ CodeGenModule::GetAddrOfGlobalBlock(const BlockExpr *blockExpr,
   llvm::Constant *blockFn;
   {
     llvm::DenseMap<const Decl*, llvm::Value*> LocalDeclMap;
-    blockFn = CodeGenSubprogram(*this).GenerateBlockFunction(GlobalDecl(),
+    blockFn = CodeGenSubprogram(*this).GenerateBlockSubprogram(GlobalDecl(),
                                                            blockInfo,
                                                            0, LocalDeclMap,
                                                            false);
@@ -998,7 +998,7 @@ static llvm::Constant *buildGlobalBlock(CodeGenModule &CGM,
   // Reserved
   fields[2] = llvm::Constant::getNullValue(CGM.IntTy);
 
-  // Function
+  // Subprogram
   fields[3] = blockFn;
 
   // Descriptor
@@ -1022,7 +1022,7 @@ static llvm::Constant *buildGlobalBlock(CodeGenModule &CGM,
 }
 
 llvm::Function *
-CodeGenSubprogram::GenerateBlockFunction(GlobalDecl GD,
+CodeGenSubprogram::GenerateBlockSubprogram(GlobalDecl GD,
                                        const CGBlockInfo &blockInfo,
                                        const Decl *outerFnDecl,
                                        const DeclMapTy &ldm,
@@ -1047,7 +1047,7 @@ CodeGenSubprogram::GenerateBlockFunction(GlobalDecl GD,
   // Begin building the function declaration.
 
   // Build the argument list.
-  FunctionArgList args;
+  SubprogramArgList args;
 
   // The first argument is the block pointer.  Just take it as a void*
   // and cast it later.
@@ -1064,29 +1064,29 @@ CodeGenSubprogram::GenerateBlockFunction(GlobalDecl GD,
     args.push_back(*i);
 
   // Create the function declaration.
-  const FunctionProtoType *fnType = blockInfo.getBlockExpr()->getFunctionType();
-  const CGFunctionInfo &fnInfo =
-    CGM.getTypes().arrangeFunctionDeclaration(fnType->getResultType(), args,
+  const SubprogramProtoType *fnType = blockInfo.getBlockExpr()->getSubprogramType();
+  const CGSubprogramInfo &fnInfo =
+    CGM.getTypes().arrangeSubprogramDeclaration(fnType->getResultType(), args,
                                               fnType->getExtInfo(),
                                               fnType->isVariadic());
   if (CGM.ReturnTypeUsesSRet(fnInfo))
     blockInfo.UsesStret = true;
 
-  llvm::FunctionType *fnLLVMType = CGM.getTypes().GetFunctionType(fnInfo);
+  llvm::FunctionType *fnLLVMType = CGM.getTypes().GetSubprogramType(fnInfo);
 
   MangleBuffer name;
   CGM.getBlockMangledName(GD, name, blockDecl);
   llvm::Function *fn =
     llvm::Function::Create(fnLLVMType, llvm::GlobalValue::InternalLinkage, 
                            name.getString(), &CGM.getModule());
-  CGM.SetInternalFunctionAttributes(blockDecl, fn, fnInfo);
+  CGM.SetInternalSubprogramAttributes(blockDecl, fn, fnInfo);
 
   // Begin generating the function.
-  StartFunction(blockDecl, fnType->getResultType(), fn, fnInfo, args,
+  StartSubprogram(blockDecl, fnType->getResultType(), fn, fnInfo, args,
                 blockInfo.getBlockExpr()->getBody()->getLocStart());
-  CurFuncDecl = outerFnDecl; // StartFunction sets this to blockDecl
+  CurFuncDecl = outerFnDecl; // StartSubprogram sets this to blockDecl
 
-  // Okay.  Undo some of what StartFunction did.
+  // Okay.  Undo some of what StartSubprogram did.
   
   // Pull the 'self' reference out of the local decl map.
   llvm::Value *blockAddr = LocalDeclMap[&selfDecl];
@@ -1187,7 +1187,7 @@ CodeGenSubprogram::GenerateBlockFunction(GlobalDecl GD,
   else
     Builder.SetInsertPoint(resume);
 
-  FinishFunction(cast<CompoundStmt>(blockDecl->getBody())->getRBracLoc());
+  FinishSubprogram(cast<CompoundStmt>(blockDecl->getBody())->getRBracLoc());
 
   return fn;
 }
@@ -1213,23 +1213,23 @@ CodeGenSubprogram::GenerateBlockFunction(GlobalDecl GD,
 
 
 llvm::Constant *
-CodeGenSubprogram::GenerateCopyHelperFunction(const CGBlockInfo &blockInfo) {
+CodeGenSubprogram::GenerateCopyHelperSubprogram(const CGBlockInfo &blockInfo) {
   ASTContext &C = getContext();
 
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl dstDecl(0, SourceLocation(), 0, C.VoidPtrTy);
   args.push_back(&dstDecl);
   ImplicitParamDecl srcDecl(0, SourceLocation(), 0, C.VoidPtrTy);
   args.push_back(&srcDecl);
 
-  const CGFunctionInfo &FI =
-    CGM.getTypes().arrangeFunctionDeclaration(C.VoidTy, args,
-                                              FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+    CGM.getTypes().arrangeSubprogramDeclaration(C.VoidTy, args,
+                                              SubprogramType::ExtInfo(),
                                               /*variadic*/ false);
 
   // FIXME: it would be nice if these were mergeable with things with
   // identical semantics.
-  llvm::FunctionType *LTy = CGM.getTypes().GetFunctionType(FI);
+  llvm::FunctionType *LTy = CGM.getTypes().GetSubprogramType(FI);
 
   llvm::Function *Fn =
     llvm::Function::Create(LTy, llvm::GlobalValue::InternalLinkage,
@@ -1241,7 +1241,7 @@ CodeGenSubprogram::GenerateCopyHelperFunction(const CGBlockInfo &blockInfo) {
   // Check if we should generate debug info for this block helper function.
   maybeInitializeDebugInfo();
 
-  FunctionDecl *FD = FunctionDecl::Create(C,
+  SubprogramDecl *FD = SubprogramDecl::Create(C,
                                           C.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
@@ -1249,7 +1249,7 @@ CodeGenSubprogram::GenerateCopyHelperFunction(const CGBlockInfo &blockInfo) {
                                           SC_None,
                                           false,
                                           false);
-  StartFunction(FD, C.VoidTy, Fn, FI, args, SourceLocation());
+  StartSubprogram(FD, C.VoidTy, Fn, FI, args, SourceLocation());
 
   llvm::Type *structPtrTy = blockInfo.StructureType->getPointerTo();
 
@@ -1362,27 +1362,27 @@ CodeGenSubprogram::GenerateCopyHelperFunction(const CGBlockInfo &blockInfo) {
     }
   }
 
-  FinishFunction();
+  FinishSubprogram();
 
   return llvm::ConstantExpr::getBitCast(Fn, VoidPtrTy);
 }
 
 llvm::Constant *
-CodeGenSubprogram::GenerateDestroyHelperFunction(const CGBlockInfo &blockInfo) {
+CodeGenSubprogram::GenerateDestroyHelperSubprogram(const CGBlockInfo &blockInfo) {
   ASTContext &C = getContext();
 
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl srcDecl(0, SourceLocation(), 0, C.VoidPtrTy);
   args.push_back(&srcDecl);
 
-  const CGFunctionInfo &FI =
-    CGM.getTypes().arrangeFunctionDeclaration(C.VoidTy, args,
-                                              FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+    CGM.getTypes().arrangeSubprogramDeclaration(C.VoidTy, args,
+                                              SubprogramType::ExtInfo(),
                                               /*variadic*/ false);
 
   // FIXME: We'd like to put these into a mergable by content, with
   // internal linkage.
-  llvm::FunctionType *LTy = CGM.getTypes().GetFunctionType(FI);
+  llvm::FunctionType *LTy = CGM.getTypes().GetSubprogramType(FI);
 
   llvm::Function *Fn =
     llvm::Function::Create(LTy, llvm::GlobalValue::InternalLinkage,
@@ -1394,13 +1394,13 @@ CodeGenSubprogram::GenerateDestroyHelperFunction(const CGBlockInfo &blockInfo) {
   IdentifierInfo *II
     = &CGM.getContext().Idents.get("__destroy_helper_block_");
 
-  FunctionDecl *FD = FunctionDecl::Create(C, C.getTranslationUnitDecl(),
+  SubprogramDecl *FD = SubprogramDecl::Create(C, C.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
                                           SC_Static,
                                           SC_None,
                                           false, false);
-  StartFunction(FD, C.VoidTy, Fn, FI, args, SourceLocation());
+  StartSubprogram(FD, C.VoidTy, Fn, FI, args, SourceLocation());
 
   llvm::Type *structPtrTy = blockInfo.StructureType->getPointerTo();
 
@@ -1487,7 +1487,7 @@ CodeGenSubprogram::GenerateDestroyHelperFunction(const CGBlockInfo &blockInfo) {
 
   cleanups.ForceCleanup();
 
-  FinishFunction();
+  FinishSubprogram();
 
   return llvm::ConstantExpr::getBitCast(Fn, VoidPtrTy);
 }
@@ -1657,20 +1657,20 @@ generateByrefCopyHelper(CodeGenSubprogram &CGF,
 
   QualType R = Context.VoidTy;
 
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl dst(0, SourceLocation(), 0, Context.VoidPtrTy);
   args.push_back(&dst);
 
   ImplicitParamDecl src(0, SourceLocation(), 0, Context.VoidPtrTy);
   args.push_back(&src);
 
-  const CGFunctionInfo &FI =
-    CGF.CGM.getTypes().arrangeFunctionDeclaration(R, args,
-                                                  FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+    CGF.CGM.getTypes().arrangeSubprogramDeclaration(R, args,
+                                                  SubprogramType::ExtInfo(),
                                                   /*variadic*/ false);
 
   CodeGenTypes &Types = CGF.CGM.getTypes();
-  llvm::FunctionType *LTy = Types.GetFunctionType(FI);
+  llvm::FunctionType *LTy = Types.GetSubprogramType(FI);
 
   // FIXME: We'd like to put these into a mergable by content, with
   // internal linkage.
@@ -1681,7 +1681,7 @@ generateByrefCopyHelper(CodeGenSubprogram &CGF,
   IdentifierInfo *II
     = &Context.Idents.get("__Block_byref_object_copy_");
 
-  FunctionDecl *FD = FunctionDecl::Create(Context,
+  SubprogramDecl *FD = SubprogramDecl::Create(Context,
                                           Context.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, R, 0,
@@ -1691,7 +1691,7 @@ generateByrefCopyHelper(CodeGenSubprogram &CGF,
 
   // Initialize debug info if necessary.
   CGF.maybeInitializeDebugInfo();
-  CGF.StartFunction(FD, R, Fn, FI, args, SourceLocation());
+  CGF.StartSubprogram(FD, R, Fn, FI, args, SourceLocation());
 
   if (byrefInfo.needsCopy()) {
     llvm::Type *byrefPtrType = byrefType.getPointerTo(0);
@@ -1711,7 +1711,7 @@ generateByrefCopyHelper(CodeGenSubprogram &CGF,
     byrefInfo.emitCopy(CGF, destField, srcField);
   }  
 
-  CGF.FinishFunction();
+  CGF.FinishSubprogram();
 
   return llvm::ConstantExpr::getBitCast(Fn, CGF.Int8PtrTy);
 }
@@ -1732,17 +1732,17 @@ generateByrefDisposeHelper(CodeGenSubprogram &CGF,
   ASTContext &Context = CGF.getContext();
   QualType R = Context.VoidTy;
 
-  FunctionArgList args;
+  SubprogramArgList args;
   ImplicitParamDecl src(0, SourceLocation(), 0, Context.VoidPtrTy);
   args.push_back(&src);
 
-  const CGFunctionInfo &FI =
-    CGF.CGM.getTypes().arrangeFunctionDeclaration(R, args,
-                                                  FunctionType::ExtInfo(),
+  const CGSubprogramInfo &FI =
+    CGF.CGM.getTypes().arrangeSubprogramDeclaration(R, args,
+                                                  SubprogramType::ExtInfo(),
                                                   /*variadic*/ false);
 
   CodeGenTypes &Types = CGF.CGM.getTypes();
-  llvm::FunctionType *LTy = Types.GetFunctionType(FI);
+  llvm::FunctionType *LTy = Types.GetSubprogramType(FI);
 
   // FIXME: We'd like to put these into a mergable by content, with
   // internal linkage.
@@ -1754,7 +1754,7 @@ generateByrefDisposeHelper(CodeGenSubprogram &CGF,
   IdentifierInfo *II
     = &Context.Idents.get("__Block_byref_object_dispose_");
 
-  FunctionDecl *FD = FunctionDecl::Create(Context,
+  SubprogramDecl *FD = SubprogramDecl::Create(Context,
                                           Context.getTranslationUnitDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, R, 0,
@@ -1763,7 +1763,7 @@ generateByrefDisposeHelper(CodeGenSubprogram &CGF,
                                           false, false);
   // Initialize debug info if necessary.
   CGF.maybeInitializeDebugInfo();
-  CGF.StartFunction(FD, R, Fn, FI, args, SourceLocation());
+  CGF.StartSubprogram(FD, R, Fn, FI, args, SourceLocation());
 
   if (byrefInfo.needsDispose()) {
     llvm::Value *V = CGF.GetAddrOfLocalVar(&src);
@@ -1774,7 +1774,7 @@ generateByrefDisposeHelper(CodeGenSubprogram &CGF,
     byrefInfo.emitDispose(CGF, V);
   }
 
-  CGF.FinishFunction();
+  CGF.FinishSubprogram();
 
   return llvm::ConstantExpr::getBitCast(Fn, CGF.Int8PtrTy);
 }
@@ -2160,7 +2160,7 @@ llvm::Constant *CodeGenModule::getBlockObjectDispose() {
   llvm::Type *args[] = { Int8PtrTy, Int32Ty };
   llvm::FunctionType *fty
     = llvm::FunctionType::get(VoidTy, args, false);
-  BlockObjectDispose = CreateRuntimeFunction(fty, "_Block_object_dispose");
+  BlockObjectDispose = CreateRuntimeSubprogram(fty, "_Block_object_dispose");
   configureBlocksRuntimeObject(*this, BlockObjectDispose);
   return BlockObjectDispose;
 }
@@ -2172,7 +2172,7 @@ llvm::Constant *CodeGenModule::getBlockObjectAssign() {
   llvm::Type *args[] = { Int8PtrTy, Int8PtrTy, Int32Ty };
   llvm::FunctionType *fty
     = llvm::FunctionType::get(VoidTy, args, false);
-  BlockObjectAssign = CreateRuntimeFunction(fty, "_Block_object_assign");
+  BlockObjectAssign = CreateRuntimeSubprogram(fty, "_Block_object_assign");
   configureBlocksRuntimeObject(*this, BlockObjectAssign);
   return BlockObjectAssign;
 }

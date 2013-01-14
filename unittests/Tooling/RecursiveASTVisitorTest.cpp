@@ -181,7 +181,7 @@ TEST(RecursiveASTVisitor, VisitsCallInTemplateInstantiation) {
     "void foo() { y<Y>(Y()); }"));
 }
 
-TEST(RecursiveASTVisitor, VisitsCallInNestedFunctionTemplateInstantiation) {
+TEST(RecursiveASTVisitor, VisitsCallInNestedSubprogramTemplateInstantiation) {
   CXXMemberCallVisitor Visitor;
   Visitor.ExpectMatch("Y::x", 4, 5);
   EXPECT_TRUE(Visitor.runOver(
@@ -288,7 +288,7 @@ TEST(RecursiveASTVisitor, VisitsNestedUndefinedClassTemplateSpecialization) {
     "A<int>::B<char> *p;\n"));
 }
 
-TEST(RecursiveASTVisitor, VisitsUndefinedFunctionTemplateSpecialization) {
+TEST(RecursiveASTVisitor, VisitsUndefinedSubprogramTemplateSpecialization) {
   NamedDeclVisitor Visitor;
   Visitor.ExpectMatch("A<int>", 1, 26);
   EXPECT_TRUE(Visitor.runOver(
@@ -296,7 +296,7 @@ TEST(RecursiveASTVisitor, VisitsUndefinedFunctionTemplateSpecialization) {
     "int k = A<int>();\n"));
 }
 
-TEST(RecursiveASTVisitor, VisitsNestedUndefinedFunctionTemplateSpecialization) {
+TEST(RecursiveASTVisitor, VisitsNestedUndefinedSubprogramTemplateSpecialization) {
   NamedDeclVisitor Visitor;
   Visitor.ExpectMatch("A<int>::B<char>", 2, 35);
   EXPECT_TRUE(Visitor.runOver(

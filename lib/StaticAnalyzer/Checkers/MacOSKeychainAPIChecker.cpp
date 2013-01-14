@@ -73,21 +73,21 @@ private:
   };
   /// Stores the information about the allocator and deallocator functions -
   /// these are the functions the checker is tracking.
-  struct ADFunctionInfo {
+  struct ADSubprogramInfo {
     const char* Name;
     unsigned int Param;
     unsigned int DeallocatorIdx;
     APIKind Kind;
   };
   static const unsigned InvalidIdx = 100000;
-  static const unsigned FunctionsToTrackSize = 8;
-  static const ADFunctionInfo FunctionsToTrack[FunctionsToTrackSize];
+  static const unsigned SubprogramsToTrackSize = 8;
+  static const ADSubprogramInfo SubprogramsToTrack[SubprogramsToTrackSize];
   /// The value, which represents no error return value for allocator functions.
   static const unsigned NoErr = 0;
 
   /// Given the function name, returns the index of the allocator/deallocator
   /// function.
-  static unsigned getTrackedFunctionIndex(StringRef Name, bool IsAllocator);
+  static unsigned getTrackedSubprogramIndex(StringRef Name, bool IsAllocator);
 
   inline void initBugType() const {
     if (!BT)
@@ -159,7 +159,7 @@ REGISTER_MAP_WITH_PROGRAMSTATE(AllocatedData,
                                SymbolRef,
                                MacOSKeychainAPIChecker::AllocationState)
 
-static bool isEnclosingFunctionParam(const Expr *E) {
+static bool isEnclosingSubprogramParam(const Expr *E) {
   E = E->IgnoreParenCasts();
   if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E)) {
     const ValueDecl *VD = DRE->getDecl();
@@ -169,8 +169,8 @@ static bool isEnclosingFunctionParam(const Expr *E) {
   return false;
 }
 
-const MacOSKeychainAPIChecker::ADFunctionInfo
-  MacOSKeychainAPIChecker::FunctionsToTrack[FunctionsToTrackSize] = {
+const MacOSKeychainAPIChecker::ADSubprogramInfo
+  MacOSKeychainAPIChecker::SubprogramsToTrack[SubprogramsToTrackSize] = {
     {"SecKeychainItemCopyContent", 4, 3, ValidAPI},                       // 0
     {"SecKeychainFindGenericPassword", 6, 3, ValidAPI},                   // 1
     {"SecKeychainFindInternetPassword", 13, 3, ValidAPI},                 // 2
@@ -181,10 +181,10 @@ const MacOSKeychainAPIChecker::ADFunctionInfo
     {"CFStringCreateWithBytesNoCopy", 1, InvalidIdx, PossibleAPI},        // 7
 };
 
-unsigned MacOSKeychainAPIChecker::getTrackedFunctionIndex(StringRef Name,
+unsigned MacOSKeychainAPIChecker::getTrackedSubprogramIndex(StringRef Name,
                                                           bool IsAllocator) {
-  for (unsigned I = 0; I < FunctionsToTrackSize; ++I) {
-    ADFunctionInfo FI = FunctionsToTrack[I];
+  for (unsigned I = 0; I < SubprogramsToTrackSize; ++I) {
+    ADSubprogramInfo FI = SubprogramsToTrack[I];
     if (FI.Name != Name)
       continue;
     // Make sure the function is of the right type (allocator vs deallocator).
@@ -264,10 +264,10 @@ void MacOSKeychainAPIChecker::
   SmallString<80> sbuf;
   llvm::raw_svector_ostream os(sbuf);
   unsigned int PDeallocIdx =
-               FunctionsToTrack[AP.second->AllocatorIdx].DeallocatorIdx;
+               SubprogramsToTrack[AP.second->AllocatorIdx].DeallocatorIdx;
 
   os << "Deallocator doesn't match the allocator: '"
-     << FunctionsToTrack[PDeallocIdx].Name << "' should be used.";
+     << SubprogramsToTrack[PDeallocIdx].Name << "' should be used.";
   BugReport *Report = new BugReport(*BT, os.str(), N);
   Report->addVisitor(new SecKeychainBugVisitor(AP.first));
   Report->addRange(ArgExpr->getSourceRange());
@@ -280,8 +280,8 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
   unsigned idx = InvalidIdx;
   ProgramStateRef State = C.getState();
 
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
-  if (!FD || FD->getKind() != Decl::Function)
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
+  if (!FD || FD->getKind() != Decl::Subprogram)
     return;
   
   StringRef funName = C.getCalleeName(FD);
@@ -289,9 +289,9 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
     return;
 
   // If it is a call to an allocator function, it could be a double allocation.
-  idx = getTrackedFunctionIndex(funName, true);
+  idx = getTrackedSubprogramIndex(funName, true);
   if (idx != InvalidIdx) {
-    const Expr *ArgExpr = CE->getArg(FunctionsToTrack[idx].Param);
+    const Expr *ArgExpr = CE->getArg(SubprogramsToTrack[idx].Param);
     if (SymbolRef V = getAsPointeeSymbol(ArgExpr, C))
       if (const AllocationState *AS = State->get<AllocatedData>(V)) {
         if (!definitelyReturnedError(AS->Region, State, C.getSValBuilder())) {
@@ -304,10 +304,10 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
           initBugType();
           SmallString<128> sbuf;
           llvm::raw_svector_ostream os(sbuf);
-          unsigned int DIdx = FunctionsToTrack[AS->AllocatorIdx].DeallocatorIdx;
+          unsigned int DIdx = SubprogramsToTrack[AS->AllocatorIdx].DeallocatorIdx;
           os << "Allocated data should be released before another call to "
               << "the allocator: missing a call to '"
-              << FunctionsToTrack[DIdx].Name
+              << SubprogramsToTrack[DIdx].Name
               << "'.";
           BugReport *Report = new BugReport(*BT, os.str(), N);
           Report->addVisitor(new SecKeychainBugVisitor(V));
@@ -320,12 +320,12 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
   }
 
   // Is it a call to one of deallocator functions?
-  idx = getTrackedFunctionIndex(funName, false);
+  idx = getTrackedSubprogramIndex(funName, false);
   if (idx == InvalidIdx)
     return;
 
   // Check the argument to the deallocator.
-  const Expr *ArgExpr = CE->getArg(FunctionsToTrack[idx].Param);
+  const Expr *ArgExpr = CE->getArg(SubprogramsToTrack[idx].Param);
   SVal ArgSVal = State->getSVal(ArgExpr, C.getLocationContext());
 
   // Undef is reported by another checker.
@@ -345,7 +345,7 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
 
   // Is the argument to the call being tracked?
   const AllocationState *AS = State->get<AllocatedData>(ArgSM);
-  if (!AS && FunctionsToTrack[idx].Kind != ValidAPI) {
+  if (!AS && SubprogramsToTrack[idx].Kind != ValidAPI) {
     return;
   }
   // If trying to free data which has not been allocated yet, report as a bug.
@@ -354,7 +354,7 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
   if (!AS || RegionArgIsBad) {
     // It is possible that this is a false positive - the argument might
     // have entered as an enclosing function parameter.
-    if (isEnclosingFunctionParam(ArgExpr))
+    if (isEnclosingSubprogramParam(ArgExpr))
       return;
 
     ExplodedNode *N = C.addTransition(State);
@@ -371,7 +371,7 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
   }
 
   // Process functions which might deallocate.
-  if (FunctionsToTrack[idx].Kind == PossibleAPI) {
+  if (SubprogramsToTrack[idx].Kind == PossibleAPI) {
 
     if (funName == "CFStringCreateWithBytesNoCopy") {
       const Expr *DeallocatorExpr = CE->getArg(5)->IgnoreParenCasts();
@@ -410,8 +410,8 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
   State = State->remove<AllocatedData>(ArgSM);
 
   // Check if the proper deallocator is used.
-  unsigned int PDeallocIdx = FunctionsToTrack[AS->AllocatorIdx].DeallocatorIdx;
-  if (PDeallocIdx != idx || (FunctionsToTrack[idx].Kind == ErrorAPI)) {
+  unsigned int PDeallocIdx = SubprogramsToTrack[AS->AllocatorIdx].DeallocatorIdx;
+  if (PDeallocIdx != idx || (SubprogramsToTrack[idx].Kind == ErrorAPI)) {
     const AllocationPair AP = std::make_pair(ArgSM, AS);
     generateDeallocatorMismatchReport(AP, ArgExpr, C);
     return;
@@ -440,21 +440,21 @@ void MacOSKeychainAPIChecker::checkPreStmt(const CallExpr *CE,
 void MacOSKeychainAPIChecker::checkPostStmt(const CallExpr *CE,
                                             CheckerContext &C) const {
   ProgramStateRef State = C.getState();
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
-  if (!FD || FD->getKind() != Decl::Function)
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
+  if (!FD || FD->getKind() != Decl::Subprogram)
     return;
 
   StringRef funName = C.getCalleeName(FD);
 
   // If a value has been allocated, add it to the set for tracking.
-  unsigned idx = getTrackedFunctionIndex(funName, true);
+  unsigned idx = getTrackedSubprogramIndex(funName, true);
   if (idx == InvalidIdx)
     return;
 
-  const Expr *ArgExpr = CE->getArg(FunctionsToTrack[idx].Param);
+  const Expr *ArgExpr = CE->getArg(SubprogramsToTrack[idx].Param);
   // If the argument entered as an enclosing function parameter, skip it to
   // avoid false positives.
-  if (isEnclosingFunctionParam(ArgExpr) &&
+  if (isEnclosingSubprogramParam(ArgExpr) &&
       C.getLocationContext()->getParent() == 0)
     return;
 
@@ -515,12 +515,12 @@ BugReport *MacOSKeychainAPIChecker::
   generateAllocatedDataNotReleasedReport(const AllocationPair &AP,
                                          ExplodedNode *N,
                                          CheckerContext &C) const {
-  const ADFunctionInfo &FI = FunctionsToTrack[AP.second->AllocatorIdx];
+  const ADSubprogramInfo &FI = SubprogramsToTrack[AP.second->AllocatorIdx];
   initBugType();
   SmallString<70> sbuf;
   llvm::raw_svector_ostream os(sbuf);
   os << "Allocated data is not released: missing a call to '"
-      << FunctionsToTrack[FI.DeallocatorIdx].Name << "'.";
+      << SubprogramsToTrack[FI.DeallocatorIdx].Name << "'.";
 
   // Most bug reports are cached at the location where they occurred.
   // With leaks, we want to unique them by the location where they were
@@ -596,14 +596,14 @@ PathDiagnosticPiece *MacOSKeychainAPIChecker::SecKeychainBugVisitor::VisitNode(
   // allocation site.
   const CallExpr *CE = cast<CallExpr>(cast<StmtPoint>(N->getLocation())
                                                             .getStmt());
-  const FunctionDecl *funDecl = CE->getDirectCallee();
+  const SubprogramDecl *funDecl = CE->getDirectCallee();
   assert(funDecl && "We do not support indirect function calls as of now.");
   StringRef funName = funDecl->getName();
 
   // Get the expression of the corresponding argument.
-  unsigned Idx = getTrackedFunctionIndex(funName, true);
+  unsigned Idx = getTrackedSubprogramIndex(funName, true);
   assert(Idx != InvalidIdx && "This should be a call to an allocator.");
-  const Expr *ArgExpr = CE->getArg(FunctionsToTrack[Idx].Param);
+  const Expr *ArgExpr = CE->getArg(SubprogramsToTrack[Idx].Param);
   PathDiagnosticLocation Pos(ArgExpr, BRC.getSourceManager(),
                              N->getLocationContext());
   return new PathDiagnosticEventPiece(Pos, "Data is allocated here.");

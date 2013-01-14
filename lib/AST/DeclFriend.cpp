@@ -31,9 +31,9 @@ FriendDecl *FriendDecl::Create(ASTContext &C, DeclContext *DC,
 #ifndef NDEBUG
   if (Friend.is<NamedDecl*>()) {
     NamedDecl *D = Friend.get<NamedDecl*>();
-    assert(isa<FunctionDecl>(D) ||
+    assert(isa<SubprogramDecl>(D) ||
            isa<CXXRecordDecl>(D) ||
-           isa<FunctionTemplateDecl>(D) ||
+           isa<SubprogramTemplateDecl>(D) ||
            isa<ClassTemplateDecl>(D));
 
     // As a temporary hack, we permit template instantiation to point

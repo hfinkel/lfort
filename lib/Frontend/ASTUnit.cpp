@@ -322,7 +322,7 @@ static unsigned getDeclShowContexts(NamedDecl *ND,
         IsNestedNameSpecifier = true;
     } else if (isa<ClassTemplateDecl>(ND))
       IsNestedNameSpecifier = true;
-  } else if (isa<ValueDecl>(ND) || isa<FunctionTemplateDecl>(ND)) {
+  } else if (isa<ValueDecl>(ND) || isa<SubprogramTemplateDecl>(ND)) {
     // Values can appear in these contexts.
     Contexts = (1LL << CodeCompletionContext::CCC_Statement)
              | (1LL << CodeCompletionContext::CCC_Expression)
@@ -1925,7 +1925,7 @@ ASTUnit *ASTUnit::LoadFromCommandLine(const char **ArgBegin,
                                       bool CacheCodeCompletionResults,
                                       bool IncludeBriefCommentsInCodeCompletion,
                                       bool AllowPCHWithCompilerErrors,
-                                      bool SkipFunctionBodies,
+                                      bool SkipSubprogramBodies,
                                       bool UserFilesAreVolatile,
                                       bool ForSerialization,
                                       OwningPtr<ASTUnit> *ErrAST) {
@@ -1971,7 +1971,7 @@ ASTUnit *ASTUnit::LoadFromCommandLine(const char **ArgBegin,
   // Override the resources path.
   CI->getHeaderSearchOpts().ResourceDir = ResourceFilesPath;
 
-  CI->getFrontendOpts().SkipFunctionBodies = SkipFunctionBodies;
+  CI->getFrontendOpts().SkipSubprogramBodies = SkipSubprogramBodies;
 
   // Create the AST unit.
   OwningPtr<ASTUnit> AST;

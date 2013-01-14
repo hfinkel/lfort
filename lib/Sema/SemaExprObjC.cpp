@@ -426,7 +426,7 @@ ExprResult Sema::BuildObjCBoxedExpr(SourceRange SR, Expr *ValueExpr) {
   ObjCMethodDecl *BoxingMethod = NULL;
   QualType BoxedType;
   // Convert the expression to an RValue, so we can check for pointer types...
-  ExprResult RValue = DefaultFunctionArrayLvalueConversion(ValueExpr);
+  ExprResult RValue = DefaultSubprogramArrayLvalueConversion(ValueExpr);
   if (RValue.isInvalid()) {
     return ExprError();
   }
@@ -1034,7 +1034,7 @@ ExprResult Sema::ParseObjCProtocolExpression(IdentifierInfo *ProtocolId,
 
 /// Try to capture an implicit reference to 'self'.
 ObjCMethodDecl *Sema::tryCaptureObjCSelf(SourceLocation Loc) {
-  DeclContext *DC = getFunctionLevelDeclContext();
+  DeclContext *DC = getSubprogramLevelDeclContext();
 
   // If we're not in an ObjC method, error out.  Note that, unlike the
   // C++ case, we don't require an instance method --- class methods
@@ -1786,7 +1786,7 @@ ExprResult Sema::ActOnSuperMessage(Scope *S,
   // We are in a method whose class has a superclass, so 'super'
   // is acting as a keyword.
   if (Method->getSelector() == Sel)
-    getCurFunction()->ObjCShouldCallSuper = false;
+    getCurSubprogram()->ObjCShouldCallSuper = false;
 
   if (Method->isInstanceMethod()) {
     // Since we are in an instance method, this is an instance
@@ -2114,7 +2114,7 @@ ExprResult Sema::BuildInstanceMessage(Expr *Receiver,
 
     // If necessary, apply function/array conversion to the receiver.
     // C99 6.7.5.3p[7,8].
-    ExprResult Result = DefaultFunctionArrayLvalueConversion(Receiver);
+    ExprResult Result = DefaultSubprogramArrayLvalueConversion(Receiver);
     if (Result.isInvalid())
       return ExprError();
     Receiver = Result.take();
@@ -2451,7 +2451,7 @@ ExprResult Sema::BuildInstanceMessage(Expr *Receiver,
             Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak,
                                      LBracLoc);
           if (Level != DiagnosticsEngine::Ignored)
-            getCurFunction()->recordUseOfWeak(Result, Prop);
+            getCurSubprogram()->recordUseOfWeak(Result, Prop);
 
         }
       }
@@ -2681,14 +2681,14 @@ namespace {
 
     /// Some calls are okay.
     ACCResult VisitCallExpr(CallExpr *e) {
-      if (FunctionDecl *fn = e->getDirectCallee())
-        if (ACCResult result = checkCallToFunction(fn))
+      if (SubprogramDecl *fn = e->getDirectCallee())
+        if (ACCResult result = checkCallToSubprogram(fn))
           return result;
 
       return super::VisitCallExpr(e);
     }
 
-    ACCResult checkCallToFunction(FunctionDecl *fn) {
+    ACCResult checkCallToSubprogram(SubprogramDecl *fn) {
       // Require a CF*Ref return type.
       if (!isCFType(fn->getResultType()))
         return ACC_invalid;
@@ -2791,7 +2791,7 @@ static void addFixitForObjCARCConversion(Sema &S,
   case Sema::CCK_ImplicitConversion:
   case Sema::CCK_CStyleCast:
     break;
-  case Sema::CCK_FunctionalCast:
+  case Sema::CCK_SubprogramalCast:
   case Sema::CCK_OtherCast:
     return;
   }

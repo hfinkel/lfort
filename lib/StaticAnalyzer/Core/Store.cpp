@@ -123,7 +123,7 @@ const MemRegion *StoreManager::castRegion(const MemRegion *R, QualType CastToTy)
       llvm_unreachable("Invalid region cast");
     }
 
-    case MemRegion::FunctionTextRegionKind:
+    case MemRegion::SubprogramTextRegionKind:
     case MemRegion::BlockTextRegionKind:
     case MemRegion::BlockDataRegionKind:
     case MemRegion::StringRegionKind:

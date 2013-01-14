@@ -88,7 +88,7 @@ bool cocoa::isCocoaObjectRef(QualType Ty) {
   return false;
 }
 
-bool coreFoundation::followsCreateRule(const FunctionDecl *fn) {
+bool coreFoundation::followsCreateRule(const SubprogramDecl *fn) {
   // For now, *just* base this on the function name, not on anything else.
 
   const IdentifierInfo *ident = fn->getIdentifier();

@@ -151,7 +151,7 @@ public:
   }
 
 //===----------------------------------------------------------------------===//
-// Functions for running checkers for AST traversing..
+// Subprograms for running checkers for AST traversing..
 //===----------------------------------------------------------------------===//
 
   /// \brief Run checkers handling Decls.
@@ -163,7 +163,7 @@ public:
                             BugReporter &BR);
 
 //===----------------------------------------------------------------------===//
-// Functions for running checkers for path-sensitive checking.
+// Subprograms for running checkers for path-sensitive checking.
 //===----------------------------------------------------------------------===//
 
   /// \brief Run checkers for pre-visiting Stmts.
@@ -265,7 +265,7 @@ public:
                                  ExprEngine &Eng);
 
   /// \brief Run checkers on end of function.
-  void runCheckersForEndFunction(NodeBuilderContext &BC,
+  void runCheckersForEndSubprogram(NodeBuilderContext &BC,
                                  ExplodedNodeSet &Dst,
                                  ExplodedNode *Pred,
                                  ExprEngine &Eng);
@@ -363,7 +363,7 @@ public:
 // Internal registration functions for AST traversing.
 //===----------------------------------------------------------------------===//
 
-  // Functions used by the registration mechanism, checkers should not touch
+  // Subprograms used by the registration mechanism, checkers should not touch
   // these directly.
 
   typedef CheckerFn<void (const Decl *, AnalysisManager&, BugReporter &)>
@@ -399,7 +399,7 @@ public:
       CheckEndAnalysisFunc;
   
   typedef CheckerFn<void (CheckerContext &)>
-      CheckEndFunctionFunc;
+      CheckEndSubprogramFunc;
   
   typedef CheckerFn<void (const Stmt *, CheckerContext &)>
       CheckBranchConditionFunc;
@@ -452,7 +452,7 @@ public:
 
   void _registerForEndAnalysis(CheckEndAnalysisFunc checkfn);
 
-  void _registerForEndFunction(CheckEndFunctionFunc checkfn);
+  void _registerForEndSubprogram(CheckEndSubprogramFunc checkfn);
 
   void _registerForBranchCondition(CheckBranchConditionFunc checkfn);
 
@@ -576,7 +576,7 @@ private:
 
   std::vector<CheckEndAnalysisFunc> EndAnalysisCheckers;
 
-  std::vector<CheckEndFunctionFunc> EndFunctionCheckers;
+  std::vector<CheckEndSubprogramFunc> EndSubprogramCheckers;
 
   std::vector<CheckBranchConditionFunc> BranchConditionCheckers;
 

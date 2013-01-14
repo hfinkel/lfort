@@ -54,10 +54,10 @@ class WalkAST: public StmtVisitor<WalkAST> {
   /// Check if the expression E is a strlen(WithArg).
   inline bool isStrlen(const Expr *E, const Expr *WithArg) {
     if (const CallExpr *CE = dyn_cast<CallExpr>(E)) {
-      const FunctionDecl *FD = CE->getDirectCallee();
+      const SubprogramDecl *FD = CE->getDirectCallee();
       if (!FD)
         return false;
-      return (CheckerContext::isCLibraryFunction(FD, "strlen") &&
+      return (CheckerContext::isCLibrarySubprogram(FD, "strlen") &&
               sameDecl(CE->getArg(0), WithArg));
     }
     return false;
@@ -131,11 +131,11 @@ bool WalkAST::containsBadStrncatPattern(const CallExpr *CE) {
 }
 
 void WalkAST::VisitCallExpr(CallExpr *CE) {
-  const FunctionDecl *FD = CE->getDirectCallee();
+  const SubprogramDecl *FD = CE->getDirectCallee();
   if (!FD)
     return;
 
-  if (CheckerContext::isCLibraryFunction(FD, "strncat")) {
+  if (CheckerContext::isCLibrarySubprogram(FD, "strncat")) {
     if (containsBadStrncatPattern(CE)) {
       const Expr *DstArg = CE->getArg(0);
       const Expr *LenArg = CE->getArg(2);

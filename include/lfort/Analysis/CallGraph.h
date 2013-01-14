@@ -34,10 +34,10 @@ class CallGraphNode;
 class CallGraph : public RecursiveASTVisitor<CallGraph> {
   friend class CallGraphNode;
 
-  typedef llvm::DenseMap<const Decl *, CallGraphNode *> FunctionMapTy;
+  typedef llvm::DenseMap<const Decl *, CallGraphNode *> SubprogramMapTy;
 
-  /// FunctionMap owns all CallGraphNodes.
-  FunctionMapTy FunctionMap;
+  /// SubprogramMap owns all CallGraphNodes.
+  SubprogramMapTy SubprogramMap;
 
   /// This is a virtual root node that has edges to all the functions.
   CallGraphNode *Root;
@@ -66,15 +66,15 @@ public:
 
   /// Iterators through all the elements in the graph. Note, this gives
   /// non-deterministic order.
-  typedef FunctionMapTy::iterator iterator;
-  typedef FunctionMapTy::const_iterator const_iterator;
-  iterator begin() { return FunctionMap.begin(); }
-  iterator end()   { return FunctionMap.end();   }
-  const_iterator begin() const { return FunctionMap.begin(); }
-  const_iterator end()   const { return FunctionMap.end();   }
+  typedef SubprogramMapTy::iterator iterator;
+  typedef SubprogramMapTy::const_iterator const_iterator;
+  iterator begin() { return SubprogramMap.begin(); }
+  iterator end()   { return SubprogramMap.end();   }
+  const_iterator begin() const { return SubprogramMap.begin(); }
+  const_iterator end()   const { return SubprogramMap.end();   }
 
   /// \brief Get the number of nodes in the graph.
-  unsigned size() const { return FunctionMap.size(); }
+  unsigned size() const { return SubprogramMap.size(); }
 
   /// \ brief Get the virtual root of the graph, all the functions available
   /// externally are represented as callees of the node.
@@ -94,7 +94,7 @@ public:
 
   /// Part of recursive declaration visitation. We recursively visit all the
   /// declarations to collect the root functions.
-  bool VisitFunctionDecl(FunctionDecl *FD) {
+  bool VisitSubprogramDecl(SubprogramDecl *FD) {
     // We skip function template definitions, as their semantics is
     // only determined when they are instantiated.
     if (includeInGraph(FD)) {
@@ -139,7 +139,7 @@ private:
   Decl *FD;
 
   /// \brief The list of functions called from this node.
-  llvm::SmallVector<CallRecord, 5> CalledFunctions;
+  llvm::SmallVector<CallRecord, 5> CalledSubprograms;
 
 public:
   CallGraphNode(Decl *D) : FD(D) {}
@@ -148,16 +148,16 @@ public:
   typedef llvm::SmallVector<CallRecord, 5>::const_iterator const_iterator;
 
   /// Iterators through all the callees/children of the node.
-  inline iterator begin() { return CalledFunctions.begin(); }
-  inline iterator end()   { return CalledFunctions.end(); }
-  inline const_iterator begin() const { return CalledFunctions.begin(); }
-  inline const_iterator end()   const { return CalledFunctions.end();   }
+  inline iterator begin() { return CalledSubprograms.begin(); }
+  inline iterator end()   { return CalledSubprograms.end(); }
+  inline const_iterator begin() const { return CalledSubprograms.begin(); }
+  inline const_iterator end()   const { return CalledSubprograms.end();   }
 
-  inline bool empty() const {return CalledFunctions.empty(); }
-  inline unsigned size() const {return CalledFunctions.size(); }
+  inline bool empty() const {return CalledSubprograms.empty(); }
+  inline unsigned size() const {return CalledSubprograms.size(); }
 
   void addCallee(CallGraphNode *N, CallGraph *CG) {
-    CalledFunctions.push_back(N);
+    CalledSubprograms.push_back(N);
   }
 
   Decl *getDecl() const { return FD; }

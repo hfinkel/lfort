@@ -344,7 +344,7 @@ void lfort::FormatASTNodeDiagnosticArgument(
           S += "namespace ";
         else if (isa<ObjCMethodDecl>(ND))
           S += "method ";
-        else if (isa<FunctionDecl>(ND))
+        else if (isa<SubprogramDecl>(ND))
           S += "function ";
         
         S += "'";
@@ -1183,7 +1183,7 @@ class TemplateDiff {
       OS << ToggleHighlight;
   }
 
-  // Functions to print out the arguments and highlighting the difference.
+  // Subprograms to print out the arguments and highlighting the difference.
 
   /// PrintTypeNames - prints the typenames, bolding differences.  Will detect
   /// typenames that are the same and attempt to disambiguate them by using

@@ -128,7 +128,7 @@ public:
   void EmitThunks(GlobalDecl GD);
     
   /// GenerateClassData - Generate all the class data required to be generated
-  /// upon definition of a KeyFunction.  This includes the vtable, the
+  /// upon definition of a KeySubprogram.  This includes the vtable, the
   /// rtti data structure and the VTT.
   ///
   /// \param Linkage - The desired linkage of the vtable, the RTTI and the VTT.

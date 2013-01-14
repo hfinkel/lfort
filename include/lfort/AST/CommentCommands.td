@@ -145,7 +145,7 @@ def Interface : DeclarationVerbatimLineCommand<"interface">;
 def Protocol  : DeclarationVerbatimLineCommand<"protocol">;
 def Category  : DeclarationVerbatimLineCommand<"category">;
 def Template  : DeclarationVerbatimLineCommand<"template">;
-def Function  : DeclarationVerbatimLineCommand<"function">;
+def Subprogram  : DeclarationVerbatimLineCommand<"function">;
 def Method    : DeclarationVerbatimLineCommand<"method">;
 def Callback  : DeclarationVerbatimLineCommand<"callback">;
 def Const     : DeclarationVerbatimLineCommand<"const">;

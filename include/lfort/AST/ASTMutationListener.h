@@ -21,8 +21,8 @@ namespace lfort {
   class ClassTemplateSpecializationDecl;
   class Decl;
   class DeclContext;
-  class FunctionDecl;
-  class FunctionTemplateDecl;
+  class SubprogramDecl;
+  class SubprogramTemplateDecl;
   class ObjCCategoryDecl;
   class ObjCContainerDecl;
   class ObjCInterfaceDecl;
@@ -53,11 +53,11 @@ public:
 
   /// \brief A template specialization (or partial one) was added to the
   /// template declaration.
-  virtual void AddedCXXTemplateSpecialization(const FunctionTemplateDecl *TD,
-                                              const FunctionDecl *D) {}
+  virtual void AddedCXXTemplateSpecialization(const SubprogramTemplateDecl *TD,
+                                              const SubprogramDecl *D) {}
 
   /// \brief An implicit member got a definition.
-  virtual void CompletedImplicitDefinition(const FunctionDecl *D) {}
+  virtual void CompletedImplicitDefinition(const SubprogramDecl *D) {}
 
   /// \brief A static data member was implicitly instantiated.
   virtual void StaticDataMemberInstantiated(const VarDecl *D) {}

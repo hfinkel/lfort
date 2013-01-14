@@ -71,7 +71,7 @@ static unsigned getDefaultParsingOptions() {
   if (getenv("CINDEXTEST_COMPLETION_NO_CACHING"))
     options &= ~CXTranslationUnit_CacheCompletionResults;
   if (getenv("CINDEXTEST_SKIP_FUNCTION_BODIES"))
-    options |= CXTranslationUnit_SkipFunctionBodies;
+    options |= CXTranslationUnit_SkipSubprogramBodies;
   if (getenv("CINDEXTEST_COMPLETION_BRIEF_COMMENTS"))
     options |= CXTranslationUnit_IncludeBriefCommentsInCodeCompletion;
   
@@ -941,7 +941,7 @@ enum CXChildVisitResult FilteredPrintingVisitor(CXCursor Cursor,
   return CXChildVisit_Continue;
 }
 
-static enum CXChildVisitResult FunctionScanVisitor(CXCursor Cursor,
+static enum CXChildVisitResult SubprogramScanVisitor(CXCursor Cursor,
                                                    CXCursor Parent,
                                                    CXClientData ClientData) {
   const char *startBuf, *endBuf;
@@ -949,7 +949,7 @@ static enum CXChildVisitResult FunctionScanVisitor(CXCursor Cursor,
   CXCursor Ref;
   VisitorData *Data = (VisitorData *)ClientData;
 
-  if (Cursor.kind != CXCursor_FunctionDecl ||
+  if (Cursor.kind != CXCursor_SubprogramDecl ||
       !lfort_isCursorDefinition(Cursor))
     return CXChildVisit_Continue;
 
@@ -982,7 +982,7 @@ static enum CXChildVisitResult FunctionScanVisitor(CXCursor Cursor,
       Ref = lfort_getCursor(Data->TU, RefLoc);
       if (Ref.kind == CXCursor_NoDeclFound) {
         /* Nothing found here; that's fine. */
-      } else if (Ref.kind != CXCursor_FunctionDecl) {
+      } else if (Ref.kind != CXCursor_SubprogramDecl) {
         printf("// %s: %s:%d:%d: ", FileCheckPrefix, GetCursorSource(Ref),
                curLine, curColumn);
         PrintCursor(Ref, &Data->ValidationData);
@@ -1188,9 +1188,9 @@ static int perform_test_load(CXIndex Idx, CXTranslationUnit TU,
     else if (!strcmp(filter, "category")) K = CXCursor_ObjCCategoryDecl;
     else if (!strcmp(filter, "interface")) K = CXCursor_ObjCInterfaceDecl;
     else if (!strcmp(filter, "protocol")) K = CXCursor_ObjCProtocolDecl;
-    else if (!strcmp(filter, "function")) K = CXCursor_FunctionDecl;
+    else if (!strcmp(filter, "function")) K = CXCursor_SubprogramDecl;
     else if (!strcmp(filter, "typedef")) K = CXCursor_TypedefDecl;
-    else if (!strcmp(filter, "scan-function")) Visitor = FunctionScanVisitor;
+    else if (!strcmp(filter, "scan-function")) Visitor = SubprogramScanVisitor;
     else {
       fprintf(stderr, "Unknown filter for -test-load-tu: %s\n", filter);
       return 1;
@@ -2268,7 +2268,7 @@ static const char *getEntityKindString(CXIdxEntityKind kind) {
   switch (kind) {
   case CXIdxEntity_Unexposed: return "<<UNEXPOSED>>";
   case CXIdxEntity_Typedef: return "typedef";
-  case CXIdxEntity_Function: return "function";
+  case CXIdxEntity_Subprogram: return "function";
   case CXIdxEntity_Variable: return "variable";
   case CXIdxEntity_Field: return "field";
   case CXIdxEntity_EnumConstant: return "enumerator";
@@ -2290,7 +2290,7 @@ static const char *getEntityKindString(CXIdxEntityKind kind) {
   case CXIdxEntity_CXXInstanceMethod: return "c++-instance-method";
   case CXIdxEntity_CXXConstructor: return "constructor";
   case CXIdxEntity_CXXDestructor: return "destructor";
-  case CXIdxEntity_CXXConversionFunction: return "conversion-func";
+  case CXIdxEntity_CXXConversionSubprogram: return "conversion-func";
   case CXIdxEntity_CXXTypeAlias: return "type-alias";
   case CXIdxEntity_CXXInterface: return "c++-__interface";
   }
@@ -2612,7 +2612,7 @@ static unsigned getIndexOptions(void) {
   if (getenv("CINDEXTEST_SUPPRESSREFS"))
     index_opts |= CXIndexOpt_SuppressRedundantRefs;
   if (getenv("CINDEXTEST_INDEXLOCALSYMBOLS"))
-    index_opts |= CXIndexOpt_IndexFunctionLocalSymbols;
+    index_opts |= CXIndexOpt_IndexSubprogramLocalSymbols;
   if (!getenv("CINDEXTEST_DISABLE_SKIPPARSEDBODIES"))
     index_opts |= CXIndexOpt_SkipParsedBodiesInSession;
 

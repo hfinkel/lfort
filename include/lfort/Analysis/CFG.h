@@ -593,7 +593,7 @@ public:
   };
 
   /// \brief Provides a custom implementation of the iterator class to have the
-  /// same interface as Function::iterator - iterator returns CFGBlock
+  /// same interface as Subprogram::iterator - iterator returns CFGBlock
   /// (not a pointer to CFGBlock).
   class graph_iterator {
   public:

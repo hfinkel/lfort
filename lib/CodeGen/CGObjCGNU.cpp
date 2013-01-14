@@ -44,16 +44,16 @@ namespace {
 /// Class that lazily initialises the runtime function.  Avoids inserting the
 /// types and the function declaration into a module if they're not used, and
 /// avoids constructing the type more than once if it's used more than once.
-class LazyRuntimeFunction {
+class LazyRuntimeSubprogram {
   CodeGenModule *CGM;
   std::vector<llvm::Type*> ArgTys;
-  const char *FunctionName;
-  llvm::Constant *Function;
+  const char *SubprogramName;
+  llvm::Constant *Subprogram;
   public:
     /// Constructor leaves this class uninitialized, because it is intended to
     /// be used as a field in another class and not all of the types that are
     /// used as arguments will necessarily be available at construction time.
-    LazyRuntimeFunction() : CGM(0), FunctionName(0), Function(0) {}
+    LazyRuntimeSubprogram() : CGM(0), SubprogramName(0), Subprogram(0) {}
 
     /// Initialises the lazy function with the name, return type, and the types
     /// of the arguments.
@@ -61,8 +61,8 @@ class LazyRuntimeFunction {
     void init(CodeGenModule *Mod, const char *name,
         llvm::Type *RetTy, ...) {
        CGM =Mod;
-       FunctionName = name;
-       Function = 0;
+       SubprogramName = name;
+       Subprogram = 0;
        ArgTys.clear();
        va_list Args;
        va_start(Args, RetTy);
@@ -75,19 +75,19 @@ class LazyRuntimeFunction {
    /// Overloaded cast operator, allows the class to be implicitly cast to an
    /// LLVM constant.
    operator llvm::Constant*() {
-     if (!Function) {
-       if (0 == FunctionName) return 0;
+     if (!Subprogram) {
+       if (0 == SubprogramName) return 0;
        // We put the return type on the end of the vector, so pop it back off
        llvm::Type *RetTy = ArgTys.back();
        ArgTys.pop_back();
        llvm::FunctionType *FTy = llvm::FunctionType::get(RetTy, ArgTys, false);
-       Function =
-         cast<llvm::Constant>(CGM->CreateRuntimeFunction(FTy, FunctionName));
+       Subprogram =
+         cast<llvm::Constant>(CGM->CreateRuntimeSubprogram(FTy, SubprogramName));
        // We won't need to use the types again, so we may as well clean up the
        // vector now
        ArgTys.resize(0);
      }
-     return Function;
+     return Subprogram;
    }
    operator llvm::Function*() {
      return cast<llvm::Function>((llvm::Constant*)*this);
@@ -299,7 +299,7 @@ private:
   /// Runtime functions used for memory management in GC mode.  Note that lfort
   /// supports code generation for calling these functions, but neither GNU
   /// runtime actually supports this API properly yet.
-  LazyRuntimeFunction IvarAssignFn, StrongCastAssignFn, MemMoveFn, WeakReadFn, 
+  LazyRuntimeSubprogram IvarAssignFn, StrongCastAssignFn, MemMoveFn, WeakReadFn, 
     WeakAssignFn, GlobalAssignFn;
 
   typedef std::pair<std::string, std::string> ClassAliasPair;
@@ -307,37 +307,37 @@ private:
   std::vector<ClassAliasPair> ClassAliases;
 
 protected:
-  /// Function used for throwing Objective-C exceptions.
-  LazyRuntimeFunction ExceptionThrowFn;
-  /// Function used for rethrowing exceptions, used at the end of \@finally or
+  /// Subprogram used for throwing Objective-C exceptions.
+  LazyRuntimeSubprogram ExceptionThrowFn;
+  /// Subprogram used for rethrowing exceptions, used at the end of \@finally or
   /// \@synchronize blocks.
-  LazyRuntimeFunction ExceptionReThrowFn;
-  /// Function called when entering a catch function.  This is required for
+  LazyRuntimeSubprogram ExceptionReThrowFn;
+  /// Subprogram called when entering a catch function.  This is required for
   /// differentiating Objective-C exceptions and foreign exceptions.
-  LazyRuntimeFunction EnterCatchFn;
-  /// Function called when exiting from a catch block.  Used to do exception
+  LazyRuntimeSubprogram EnterCatchFn;
+  /// Subprogram called when exiting from a catch block.  Used to do exception
   /// cleanup.
-  LazyRuntimeFunction ExitCatchFn;
-  /// Function called when entering an \@synchronize block.  Acquires the lock.
-  LazyRuntimeFunction SyncEnterFn;
-  /// Function called when exiting an \@synchronize block.  Releases the lock.
-  LazyRuntimeFunction SyncExitFn;
+  LazyRuntimeSubprogram ExitCatchFn;
+  /// Subprogram called when entering an \@synchronize block.  Acquires the lock.
+  LazyRuntimeSubprogram SyncEnterFn;
+  /// Subprogram called when exiting an \@synchronize block.  Releases the lock.
+  LazyRuntimeSubprogram SyncExitFn;
 
 private:
 
-  /// Function called if fast enumeration detects that the collection is
+  /// Subprogram called if fast enumeration detects that the collection is
   /// modified during the update.
-  LazyRuntimeFunction EnumerationMutationFn;
-  /// Function for implementing synthesized property getters that return an
+  LazyRuntimeSubprogram EnumerationMutationFn;
+  /// Subprogram for implementing synthesized property getters that return an
   /// object.
-  LazyRuntimeFunction GetPropertyFn;
-  /// Function for implementing synthesized property setters that return an
+  LazyRuntimeSubprogram GetPropertyFn;
+  /// Subprogram for implementing synthesized property setters that return an
   /// object.
-  LazyRuntimeFunction SetPropertyFn;
-  /// Function used for non-object declared property getters.
-  LazyRuntimeFunction GetStructPropertyFn;
-  /// Function used for non-object declared property setters.
-  LazyRuntimeFunction SetStructPropertyFn;
+  LazyRuntimeSubprogram SetPropertyFn;
+  /// Subprogram used for non-object declared property getters.
+  LazyRuntimeSubprogram GetStructPropertyFn;
+  /// Subprogram used for non-object declared property setters.
+  LazyRuntimeSubprogram SetStructPropertyFn;
 
   /// The version of the runtime that this class targets.  Must match the
   /// version in the runtime.
@@ -486,16 +486,16 @@ public:
   virtual llvm::Value *GenerateProtocolRef(CGBuilderTy &Builder,
                                            const ObjCProtocolDecl *PD);
   virtual void GenerateProtocol(const ObjCProtocolDecl *PD);
-  virtual llvm::Function *ModuleInitFunction();
-  virtual llvm::Constant *GetPropertyGetFunction();
-  virtual llvm::Constant *GetPropertySetFunction();
-  virtual llvm::Constant *GetOptimizedPropertySetFunction(bool atomic, 
+  virtual llvm::Function *ModuleInitSubprogram();
+  virtual llvm::Constant *GetPropertyGetSubprogram();
+  virtual llvm::Constant *GetPropertySetSubprogram();
+  virtual llvm::Constant *GetOptimizedPropertySetSubprogram(bool atomic, 
                                                           bool copy);
-  virtual llvm::Constant *GetSetStructFunction();
-  virtual llvm::Constant *GetGetStructFunction();
-  virtual llvm::Constant *GetCppAtomicObjectGetFunction();
-  virtual llvm::Constant *GetCppAtomicObjectSetFunction();
-  virtual llvm::Constant *EnumerationMutationFunction();
+  virtual llvm::Constant *GetSetStructSubprogram();
+  virtual llvm::Constant *GetGetStructSubprogram();
+  virtual llvm::Constant *GetCppAtomicObjectGetSubprogram();
+  virtual llvm::Constant *GetCppAtomicObjectSetSubprogram();
+  virtual llvm::Constant *EnumerationMutationSubprogram();
 
   virtual void EmitTryStmt(CodeGenSubprogram &CGF,
                            const ObjCAtTryStmt &S);
@@ -557,11 +557,11 @@ public:
 class CGObjCGCC : public CGObjCGNU {
   /// The GCC ABI message lookup function.  Returns an IMP pointing to the
   /// method implementation for this message.
-  LazyRuntimeFunction MsgLookupFn;
+  LazyRuntimeSubprogram MsgLookupFn;
   /// The GCC ABI superclass message lookup function.  Takes a pointer to a
   /// structure describing the receiver and the class, and a selector as
   /// arguments.  Returns the IMP for the corresponding method.
-  LazyRuntimeFunction MsgLookupSuperFn;
+  LazyRuntimeSubprogram MsgLookupSuperFn;
 protected:
   virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                  llvm::Value *&Receiver,
@@ -596,26 +596,26 @@ protected:
 class CGObjCGNUstep : public CGObjCGNU {
     /// The slot lookup function.  Returns a pointer to a cacheable structure
     /// that contains (among other things) the IMP.
-    LazyRuntimeFunction SlotLookupFn;
+    LazyRuntimeSubprogram SlotLookupFn;
     /// The GNUstep ABI superclass message lookup function.  Takes a pointer to
     /// a structure describing the receiver and the class, and a selector as
     /// arguments.  Returns the slot for the corresponding method.  Superclass
     /// message lookup rarely changes, so this is a good caching opportunity.
-    LazyRuntimeFunction SlotLookupSuperFn;
+    LazyRuntimeSubprogram SlotLookupSuperFn;
     /// Specialised function for setting atomic retain properties
-    LazyRuntimeFunction SetPropertyAtomic;
+    LazyRuntimeSubprogram SetPropertyAtomic;
     /// Specialised function for setting atomic copy properties
-    LazyRuntimeFunction SetPropertyAtomicCopy;
+    LazyRuntimeSubprogram SetPropertyAtomicCopy;
     /// Specialised function for setting nonatomic retain properties
-    LazyRuntimeFunction SetPropertyNonAtomic;
+    LazyRuntimeSubprogram SetPropertyNonAtomic;
     /// Specialised function for setting nonatomic copy properties
-    LazyRuntimeFunction SetPropertyNonAtomicCopy;
-    /// Function to perform atomic copies of C++ objects with nontrivial copy
+    LazyRuntimeSubprogram SetPropertyNonAtomicCopy;
+    /// Subprogram to perform atomic copies of C++ objects with nontrivial copy
     /// constructors from Objective-C ivars.
-    LazyRuntimeFunction CxxAtomicObjectGetFn;
-    /// Function to perform atomic copies of C++ objects with nontrivial copy
+    LazyRuntimeSubprogram CxxAtomicObjectGetFn;
+    /// Subprogram to perform atomic copies of C++ objects with nontrivial copy
     /// constructors to Objective-C ivars.
-    LazyRuntimeFunction CxxAtomicObjectSetFn;
+    LazyRuntimeSubprogram CxxAtomicObjectSetFn;
     /// Type of an slot structure pointer.  This is returned by the various
     /// lookup functions.
     llvm::Type *SlotTy;
@@ -712,21 +712,21 @@ class CGObjCGNUstep : public CGObjCGNU {
       CxxAtomicObjectGetFn.init(&CGM, "objc_getCppObjectAtomic", VoidTy, PtrTy,
           PtrTy, PtrTy, NULL);
     }
-    virtual llvm::Constant *GetCppAtomicObjectGetFunction() {
+    virtual llvm::Constant *GetCppAtomicObjectGetSubprogram() {
       // The optimised functions were added in version 1.7 of the GNUstep
       // runtime.
       assert (CGM.getLangOpts().ObjCRuntime.getVersion() >=
           VersionTuple(1, 7));
       return CxxAtomicObjectGetFn;
     }
-    virtual llvm::Constant *GetCppAtomicObjectSetFunction() {
+    virtual llvm::Constant *GetCppAtomicObjectSetSubprogram() {
       // The optimised functions were added in version 1.7 of the GNUstep
       // runtime.
       assert (CGM.getLangOpts().ObjCRuntime.getVersion() >=
           VersionTuple(1, 7));
       return CxxAtomicObjectSetFn;
     }
-    virtual llvm::Constant *GetOptimizedPropertySetFunction(bool atomic,
+    virtual llvm::Constant *GetOptimizedPropertySetSubprogram(bool atomic,
                                                             bool copy) {
       // The optimised property functions omit the GC check, and so are not
       // safe to use in GC mode.  The standard functions are fast in GC mode,
@@ -754,11 +754,11 @@ class CGObjCObjFW: public CGObjCGNU {
 protected:
   /// The GCC ABI message lookup function.  Returns an IMP pointing to the
   /// method implementation for this message.
-  LazyRuntimeFunction MsgLookupFn;
+  LazyRuntimeSubprogram MsgLookupFn;
   /// The GCC ABI superclass message lookup function.  Takes a pointer to a
   /// structure describing the receiver and the class, and a selector as
   /// arguments.  Returns the IMP for the corresponding method.
-  LazyRuntimeFunction MsgLookupSuperFn;
+  LazyRuntimeSubprogram MsgLookupSuperFn;
 
   virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                  llvm::Value *&Receiver,
@@ -981,7 +981,7 @@ llvm::Value *CGObjCGNU::GetClassNamed(CGBuilderTy &Builder,
   ClassName = Builder.CreateStructGEP(ClassName, 0);
 
   llvm::Constant *ClassLookupFn =
-    CGM.CreateRuntimeFunction(llvm::FunctionType::get(IdTy, PtrToInt8Ty, true),
+    CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IdTy, PtrToInt8Ty, true),
                               "objc_lookup_class");
   return Builder.CreateCall(ClassLookupFn, ClassName);
 }
@@ -1198,15 +1198,15 @@ CGObjCGNU::GenerateMessageSendSuper(CodeGenSubprogram &CGF,
 
   llvm::Value *ReceiverClass = 0;
   if (isCategoryImpl) {
-    llvm::Constant *classLookupFunction = 0;
+    llvm::Constant *classLookupSubprogram = 0;
     if (IsClassMessage)  {
-      classLookupFunction = CGM.CreateRuntimeFunction(llvm::FunctionType::get(
+      classLookupSubprogram = CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(
             IdTy, PtrTy, true), "objc_get_meta_class");
     } else {
-      classLookupFunction = CGM.CreateRuntimeFunction(llvm::FunctionType::get(
+      classLookupSubprogram = CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(
             IdTy, PtrTy, true), "objc_get_class");
     }
-    ReceiverClass = Builder.CreateCall(classLookupFunction,
+    ReceiverClass = Builder.CreateCall(classLookupSubprogram,
         MakeConstantString(Class->getNameAsString()));
   } else {
     // Set up global aliases for the metaclass or class pointer if they do not
@@ -1353,15 +1353,15 @@ CGObjCGNU::GenerateMessageSend(CodeGenSubprogram &CGF,
     case CodeGenOptions::Mixed:
     case CodeGenOptions::NonLegacy:
       if (CGM.ReturnTypeUsesFPRet(ResultType)) {
-        imp = CGM.CreateRuntimeFunction(llvm::FunctionType::get(IdTy, IdTy, true),
+        imp = CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IdTy, IdTy, true),
                                   "objc_msgSend_fpret");
       } else if (CGM.ReturnTypeUsesSRet(MSI.CallInfo)) {
         // The actual types here don't matter - we're going to bitcast the
         // function anyway
-        imp = CGM.CreateRuntimeFunction(llvm::FunctionType::get(IdTy, IdTy, true),
+        imp = CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IdTy, IdTy, true),
                                   "objc_msgSend_stret");
       } else {
-        imp = CGM.CreateRuntimeFunction(llvm::FunctionType::get(IdTy, IdTy, true),
+        imp = CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(IdTy, IdTy, true),
                                   "objc_msgSend");
       }
   }
@@ -2329,7 +2329,7 @@ void CGObjCGNU::GenerateClass(const ObjCImplementationDecl *OID) {
 }
 
 
-llvm::Function *CGObjCGNU::ModuleInitFunction() {
+llvm::Function *CGObjCGNU::ModuleInitSubprogram() {
   // Only emit an ObjC load function if no Objective-C stuff has been called
   if (Classes.empty() && Categories.empty() && ConstantStrings.empty() &&
       ExistingProtocols.empty() && SelectorTable.empty())
@@ -2501,19 +2501,19 @@ llvm::Function *CGObjCGNU::ModuleInitFunction() {
 
   // Create the load function calling the runtime entry point with the module
   // structure
-  llvm::Function * LoadFunction = llvm::Function::Create(
+  llvm::Function * LoadSubprogram = llvm::Function::Create(
       llvm::FunctionType::get(llvm::Type::getVoidTy(VMContext), false),
       llvm::GlobalValue::InternalLinkage, ".objc_load_function",
       &TheModule);
   llvm::BasicBlock *EntryBB =
-      llvm::BasicBlock::Create(VMContext, "entry", LoadFunction);
+      llvm::BasicBlock::Create(VMContext, "entry", LoadSubprogram);
   CGBuilderTy Builder(VMContext);
   Builder.SetInsertPoint(EntryBB);
 
   llvm::FunctionType *FT =
     llvm::FunctionType::get(Builder.getVoidTy(),
                             llvm::PointerType::getUnqual(ModuleTy), true);
-  llvm::Value *Register = CGM.CreateRuntimeFunction(FT, "__objc_exec_class");
+  llvm::Value *Register = CGM.CreateRuntimeSubprogram(FT, "__objc_exec_class");
   Builder.CreateCall(Register, Module);
 
   if (!ClassAliases.empty()) {
@@ -2526,9 +2526,9 @@ llvm::Function *CGObjCGNU::ModuleInitFunction() {
       llvm::GlobalValue::ExternalWeakLinkage, "class_registerAlias_np",
       &TheModule);
     llvm::BasicBlock *AliasBB =
-      llvm::BasicBlock::Create(VMContext, "alias", LoadFunction);
+      llvm::BasicBlock::Create(VMContext, "alias", LoadSubprogram);
     llvm::BasicBlock *NoAliasBB =
-      llvm::BasicBlock::Create(VMContext, "no_alias", LoadFunction);
+      llvm::BasicBlock::Create(VMContext, "no_alias", LoadSubprogram);
 
     // Branch based on whether the runtime provided class_registerAlias_np()
     llvm::Value *HasRegisterAlias = Builder.CreateICmpNE(RegisterAlias,
@@ -2557,7 +2557,7 @@ llvm::Function *CGObjCGNU::ModuleInitFunction() {
   }
   Builder.CreateRetVoid();
 
-  return LoadFunction;
+  return LoadSubprogram;
 }
 
 llvm::Function *CGObjCGNU::GenerateMethod(const ObjCMethodDecl *OMD,
@@ -2571,45 +2571,45 @@ llvm::Function *CGObjCGNU::GenerateMethod(const ObjCMethodDecl *OMD,
 
   CodeGenTypes &Types = CGM.getTypes();
   llvm::FunctionType *MethodTy =
-    Types.GetFunctionType(Types.arrangeObjCMethodDeclaration(OMD));
-  std::string FunctionName = SymbolNameForMethod(ClassName, CategoryName,
+    Types.GetSubprogramType(Types.arrangeObjCMethodDeclaration(OMD));
+  std::string SubprogramName = SymbolNameForMethod(ClassName, CategoryName,
       MethodName, isClassMethod);
 
   llvm::Function *Method
     = llvm::Function::Create(MethodTy,
                              llvm::GlobalValue::InternalLinkage,
-                             FunctionName,
+                             SubprogramName,
                              &TheModule);
   return Method;
 }
 
-llvm::Constant *CGObjCGNU::GetPropertyGetFunction() {
+llvm::Constant *CGObjCGNU::GetPropertyGetSubprogram() {
   return GetPropertyFn;
 }
 
-llvm::Constant *CGObjCGNU::GetPropertySetFunction() {
+llvm::Constant *CGObjCGNU::GetPropertySetSubprogram() {
   return SetPropertyFn;
 }
 
-llvm::Constant *CGObjCGNU::GetOptimizedPropertySetFunction(bool atomic,
+llvm::Constant *CGObjCGNU::GetOptimizedPropertySetSubprogram(bool atomic,
                                                            bool copy) {
   return 0;
 }
 
-llvm::Constant *CGObjCGNU::GetGetStructFunction() {
+llvm::Constant *CGObjCGNU::GetGetStructSubprogram() {
   return GetStructPropertyFn;
 }
-llvm::Constant *CGObjCGNU::GetSetStructFunction() {
+llvm::Constant *CGObjCGNU::GetSetStructSubprogram() {
   return SetStructPropertyFn;
 }
-llvm::Constant *CGObjCGNU::GetCppAtomicObjectGetFunction() {
+llvm::Constant *CGObjCGNU::GetCppAtomicObjectGetSubprogram() {
   return 0;
 }
-llvm::Constant *CGObjCGNU::GetCppAtomicObjectSetFunction() {
+llvm::Constant *CGObjCGNU::GetCppAtomicObjectSetSubprogram() {
   return 0;
 }
 
-llvm::Constant *CGObjCGNU::EnumerationMutationFunction() {
+llvm::Constant *CGObjCGNU::EnumerationMutationSubprogram() {
   return EnumerationMutationFn;
 }
 

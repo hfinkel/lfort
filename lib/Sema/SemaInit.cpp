@@ -701,7 +701,7 @@ void InitListChecker::CheckListElementTypes(const InitializedEntity &Entity,
     CheckArrayType(Entity, IList, DeclType, Zero,
                    SubobjectIsDesignatorContext, Index,
                    StructuredList, StructuredIndex);
-  } else if (DeclType->isVoidType() || DeclType->isFunctionType()) {
+  } else if (DeclType->isVoidType() || DeclType->isSubprogramType()) {
     // This type is invalid, issue a diagnostic.
     ++Index;
     if (!VerifyOnly)
@@ -818,7 +818,7 @@ void InitListChecker::CheckSubElementType(const InitializedEntity &Entity,
       if (ExprRes.isInvalid())
         hadError = true;
       else {
-        ExprRes = SemaRef.DefaultFunctionArrayLvalueConversion(ExprRes.take());
+        ExprRes = SemaRef.DefaultSubprogramArrayLvalueConversion(ExprRes.take());
 	      if (ExprRes.isInvalid())
 	        hadError = true;
       }
@@ -2398,7 +2398,7 @@ bool InitializedEntity::allowsNRVO() const {
 
 void InitializationSequence::Step::Destroy() {
   switch (Kind) {
-  case SK_ResolveAddressOfOverloadedFunction:
+  case SK_ResolveAddressOfOverloadedSubprogram:
   case SK_CastDerivedToBaseRValue:
   case SK_CastDerivedToBaseXValue:
   case SK_CastDerivedToBaseLValue:
@@ -2481,15 +2481,15 @@ bool InitializationSequence::isConstructorInitialization() const {
 
 void
 InitializationSequence
-::AddAddressOverloadResolutionStep(FunctionDecl *Function,
+::AddAddressOverloadResolutionStep(SubprogramDecl *Subprogram,
                                    DeclAccessPair Found,
                                    bool HadMultipleCandidates) {
   Step S;
-  S.Kind = SK_ResolveAddressOfOverloadedFunction;
-  S.Type = Function->getType();
-  S.Function.HadMultipleCandidates = HadMultipleCandidates;
-  S.Function.Function = Function;
-  S.Function.FoundDecl = Found;
+  S.Kind = SK_ResolveAddressOfOverloadedSubprogram;
+  S.Type = Subprogram->getType();
+  S.Subprogram.HadMultipleCandidates = HadMultipleCandidates;
+  S.Subprogram.Subprogram = Subprogram;
+  S.Subprogram.FoundDecl = Found;
   Steps.push_back(S);
 }
 
@@ -2521,16 +2521,16 @@ void InitializationSequence::AddExtraneousCopyToTemporary(QualType T) {
 }
 
 void
-InitializationSequence::AddUserConversionStep(FunctionDecl *Function,
+InitializationSequence::AddUserConversionStep(SubprogramDecl *Subprogram,
                                               DeclAccessPair FoundDecl,
                                               QualType T,
                                               bool HadMultipleCandidates) {
   Step S;
   S.Kind = SK_UserConversion;
   S.Type = T;
-  S.Function.HadMultipleCandidates = HadMultipleCandidates;
-  S.Function.Function = Function;
-  S.Function.FoundDecl = FoundDecl;
+  S.Subprogram.HadMultipleCandidates = HadMultipleCandidates;
+  S.Subprogram.Subprogram = Subprogram;
+  S.Subprogram.FoundDecl = FoundDecl;
   Steps.push_back(S);
 }
 
@@ -2581,9 +2581,9 @@ InitializationSequence
   S.Kind = FromInitList && !AsInitList ? SK_ListConstructorCall
                                        : SK_ConstructorInitialization;
   S.Type = T;
-  S.Function.HadMultipleCandidates = HadMultipleCandidates;
-  S.Function.Function = Constructor;
-  S.Function.FoundDecl = DeclAccessPair::make(Constructor, Access);
+  S.Subprogram.HadMultipleCandidates = HadMultipleCandidates;
+  S.Subprogram.Subprogram = Constructor;
+  S.Subprogram.FoundDecl = DeclAccessPair::make(Constructor, Access);
   Steps.push_back(S);
 }
 
@@ -2758,7 +2758,7 @@ ResolveConstructorOverload(Sema &S, SourceLocation DeclLoc,
 
     // Find the constructor (which may be a template).
     CXXConstructorDecl *Constructor = 0;
-    FunctionTemplateDecl *ConstructorTmpl = dyn_cast<FunctionTemplateDecl>(D);
+    SubprogramTemplateDecl *ConstructorTmpl = dyn_cast<SubprogramTemplateDecl>(D);
     if (ConstructorTmpl)
       Constructor = cast<CXXConstructorDecl>(
                                            ConstructorTmpl->getTemplatedDecl());
@@ -2801,7 +2801,7 @@ ResolveConstructorOverload(Sema &S, SourceLocation DeclLoc,
   }
 
   // Perform overload resolution and return the result.
-  return CandidateSet.BestViableFunction(S, DeclLoc, Best);
+  return CandidateSet.BestViableSubprogram(S, DeclLoc, Best);
 }
 
 /// \brief Attempt initialization by constructor (C++ [dcl.init]), which
@@ -2848,7 +2848,7 @@ static void TryConstructorInitialization(Sema &S,
   // To be safe we copy the lookup results to a new container.
   SmallVector<NamedDecl*, 16> Ctors(R.begin(), R.end());
 
-  OverloadingResult Result = OR_No_Viable_Function;
+  OverloadingResult Result = OR_No_Viable_Subprogram;
   OverloadCandidateSet::iterator Best;
   bool AsInitializerList = false;
 
@@ -2881,7 +2881,7 @@ static void TryConstructorInitialization(Sema &S,
   //     is performed again, where the candidate functions are all the
   //     constructors of the class T and the argument list consists of the
   //     elements of the initializer list.
-  if (Result == OR_No_Viable_Function) {
+  if (Result == OR_No_Viable_Subprogram) {
     AsInitializerList = false;
     Result = ResolveConstructorOverload(S, Kind.getLocation(), Args, NumArgs,
                                         CandidateSet, Ctors, Best,
@@ -2903,7 +2903,7 @@ static void TryConstructorInitialization(Sema &S,
   //   user-provided default constructor.
   if (Kind.getKind() == InitializationKind::IK_Default &&
       Entity.getType().isConstQualified() &&
-      !cast<CXXConstructorDecl>(Best->Function)->isUserProvided()) {
+      !cast<CXXConstructorDecl>(Best->Subprogram)->isUserProvided()) {
     Sequence.SetFailed(InitializationSequence::FK_DefaultInitOfConst);
     return;
   }
@@ -2911,7 +2911,7 @@ static void TryConstructorInitialization(Sema &S,
   // C++11 [over.match.list]p1:
   //   In copy-list-initialization, if an explicit constructor is chosen, the
   //   initializer is ill-formed.
-  CXXConstructorDecl *CtorDecl = cast<CXXConstructorDecl>(Best->Function);
+  CXXConstructorDecl *CtorDecl = cast<CXXConstructorDecl>(Best->Subprogram);
   if (InitListSyntax && !Kind.AllowExplicit() && CtorDecl->isExplicit()) {
     Sequence.SetFailed(InitializationSequence::FK_ExplicitConstructor);
     return;
@@ -2927,7 +2927,7 @@ static void TryConstructorInitialization(Sema &S,
 }
 
 static bool
-ResolveOverloadedFunctionForReferenceBinding(Sema &S,
+ResolveOverloadedSubprogramForReferenceBinding(Sema &S,
                                              Expr *Initializer,
                                              QualType &SourceType,
                                              QualType &UnqualifiedSourceType,
@@ -2937,8 +2937,8 @@ ResolveOverloadedFunctionForReferenceBinding(Sema &S,
         S.Context.OverloadTy) {
     DeclAccessPair Found;
     bool HadMultipleCandidates = false;
-    if (FunctionDecl *Fn
-        = S.ResolveAddressOfOverloadedFunction(Initializer,
+    if (SubprogramDecl *Fn
+        = S.ResolveAddressOfOverloadedSubprogram(Initializer,
                                                UnqualifiedTargetType,
                                                false, Found,
                                                &HadMultipleCandidates)) {
@@ -3007,7 +3007,7 @@ static void TryReferenceListInitialization(Sema &S,
     QualType T2 = S.Context.getUnqualifiedArrayType(cv2T2, T2Quals);
 
     // If this fails, creating a temporary wouldn't work either.
-    if (ResolveOverloadedFunctionForReferenceBinding(S, Initializer, cv2T2, T2,
+    if (ResolveOverloadedSubprogramForReferenceBinding(S, Initializer, cv2T2, T2,
                                                      T1, Sequence))
       return;
 
@@ -3111,7 +3111,7 @@ static void TryListInitialization(Sema &S,
 
 /// \brief Try a reference initialization that involves calling a conversion
 /// function.
-static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
+static OverloadingResult TryRefInitWithConversionSubprogram(Sema &S,
                                              const InitializedEntity &Entity,
                                              const InitializationKind &Kind,
                                              Expr *Initializer,
@@ -3143,7 +3143,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
   // Determine whether we are allowed to call explicit constructors or
   // explicit conversion operators.
   bool AllowExplicit = Kind.AllowExplicit();
-  bool AllowExplicitConvs = Kind.allowExplicitConversionFunctions();
+  bool AllowExplicitConvs = Kind.allowExplicitConversionSubprograms();
   
   const RecordType *T1RecordType = 0;
   if (AllowRValues && (T1RecordType = T1->getAs<RecordType>()) &&
@@ -3164,7 +3164,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
 
       // Find the constructor (which may be a template).
       CXXConstructorDecl *Constructor = 0;
-      FunctionTemplateDecl *ConstructorTmpl = dyn_cast<FunctionTemplateDecl>(D);
+      SubprogramTemplateDecl *ConstructorTmpl = dyn_cast<SubprogramTemplateDecl>(D);
       if (ConstructorTmpl)
         Constructor = cast<CXXConstructorDecl>(
                                          ConstructorTmpl->getTemplatedDecl());
@@ -3186,7 +3186,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
     }
   }
   if (T1RecordType && T1RecordType->getDecl()->isInvalidDecl())
-    return OR_No_Viable_Function;
+    return OR_No_Viable_Subprogram;
 
   const RecordType *T2RecordType = 0;
   if ((T2RecordType = T2->getAs<RecordType>()) &&
@@ -3197,7 +3197,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
 
     std::pair<CXXRecordDecl::conversion_iterator,
               CXXRecordDecl::conversion_iterator>
-      Conversions = T2RecordDecl->getVisibleConversionFunctions();
+      Conversions = T2RecordDecl->getVisibleConversionSubprograms();
     for (CXXRecordDecl::conversion_iterator
            I = Conversions.first, E = Conversions.second; I != E; ++I) {
       NamedDecl *D = *I;
@@ -3205,7 +3205,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
       if (isa<UsingShadowDecl>(D))
         D = cast<UsingShadowDecl>(D)->getTargetDecl();
 
-      FunctionTemplateDecl *ConvTemplate = dyn_cast<FunctionTemplateDecl>(D);
+      SubprogramTemplateDecl *ConvTemplate = dyn_cast<SubprogramTemplateDecl>(D);
       CXXConversionDecl *Conv;
       if (ConvTemplate)
         Conv = cast<CXXConversionDecl>(ConvTemplate->getTemplatedDecl());
@@ -3231,31 +3231,31 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
     }
   }
   if (T2RecordType && T2RecordType->getDecl()->isInvalidDecl())
-    return OR_No_Viable_Function;
+    return OR_No_Viable_Subprogram;
 
   SourceLocation DeclLoc = Initializer->getLocStart();
 
   // Perform overload resolution. If it fails, return the failed result.
   OverloadCandidateSet::iterator Best;
   if (OverloadingResult Result
-        = CandidateSet.BestViableFunction(S, DeclLoc, Best, true))
+        = CandidateSet.BestViableSubprogram(S, DeclLoc, Best, true))
     return Result;
 
-  FunctionDecl *Function = Best->Function;
+  SubprogramDecl *Subprogram = Best->Subprogram;
 
   // This is the overload that will actually be used for the initialization, so
   // mark it as used.
-  S.MarkFunctionReferenced(DeclLoc, Function);
+  S.MarkSubprogramReferenced(DeclLoc, Subprogram);
 
   // Compute the returned type of the conversion.
-  if (isa<CXXConversionDecl>(Function))
-    T2 = Function->getResultType();
+  if (isa<CXXConversionDecl>(Subprogram))
+    T2 = Subprogram->getResultType();
   else
     T2 = cv1T1;
 
   // Add the user-defined conversion step.
   bool HadMultipleCandidates = (CandidateSet.size() > 1);
-  Sequence.AddUserConversionStep(Function, Best->FoundDecl,
+  Sequence.AddUserConversionStep(Subprogram, Best->FoundDecl,
                                  T2.getNonLValueExprType(S.Context),
                                  HadMultipleCandidates);
 
@@ -3265,7 +3265,7 @@ static OverloadingResult TryRefInitWithConversionFunction(Sema &S,
   if (T2->isLValueReferenceType())
     VK = VK_LValue;
   else if (const RValueReferenceType *RRef = T2->getAs<RValueReferenceType>())
-    VK = RRef->getPointeeType()->isFunctionType() ? VK_LValue : VK_XValue;
+    VK = RRef->getPointeeType()->isSubprogramType() ? VK_LValue : VK_XValue;
 
   bool NewDerivedToBase = false;
   bool NewObjCConversion = false;
@@ -3323,7 +3323,7 @@ static void TryReferenceInitialization(Sema &S,
   // If the initializer is the address of an overloaded function, try
   // to resolve the overloaded function. If all goes well, T2 is the
   // type of the resulting function.
-  if (ResolveOverloadedFunctionForReferenceBinding(S, Initializer, cv2T2, T2,
+  if (ResolveOverloadedSubprogramForReferenceBinding(S, Initializer, cv2T2, T2,
                                                    T1, Sequence))
     return;
 
@@ -3365,11 +3365,11 @@ static void TryReferenceInitializationCore(Sema &S,
   // there are no function rvalues in C++, rvalue refs to functions are treated
   // like lvalue refs.
   OverloadingResult ConvOvlResult = OR_Success;
-  bool T1Function = T1->isFunctionType();
-  if (isLValueRef || T1Function) {
+  bool T1Subprogram = T1->isSubprogramType();
+  if (isLValueRef || T1Subprogram) {
     if (InitCategory.isLValue() &&
         (RefRelationship >= Sema::Ref_Compatible_With_Added_Qualification ||
-         (Kind.isCStyleOrFunctionalCast() &&
+         (Kind.isCStyleOrSubprogramalCast() &&
           RefRelationship == Sema::Ref_Related))) {
       //   - is an lvalue (but is not a bit-field), and "cv1 T1" is
       //     reference-compatible with "cv2 T2," or
@@ -3405,13 +3405,13 @@ static void TryReferenceInitializationCore(Sema &S,
     // an rvalue.
     if (RefRelationship == Sema::Ref_Incompatible && T2->isRecordType() &&
         (isLValueRef || InitCategory.isRValue())) {
-      ConvOvlResult = TryRefInitWithConversionFunction(S, Entity, Kind,
+      ConvOvlResult = TryRefInitWithConversionSubprogram(S, Entity, Kind,
                                                        Initializer,
                                                    /*AllowRValues=*/isRValueRef,
                                                        Sequence);
       if (ConvOvlResult == OR_Success)
         return;
-      if (ConvOvlResult != OR_No_Viable_Function) {
+      if (ConvOvlResult != OR_No_Viable_Subprogram) {
         Sequence.SetOverloadFailure(
                       InitializationSequence::FK_ReferenceInitOverloadFailed,
                                     ConvOvlResult);
@@ -3443,9 +3443,9 @@ static void TryReferenceInitializationCore(Sema &S,
   //      - is an xvalue, class prvalue, array prvalue, or function lvalue and
   //        "cv1 T1" is reference-compatible with "cv2 T2"
   // Note: functions are handled below.
-  if (!T1Function &&
+  if (!T1Subprogram &&
       (RefRelationship >= Sema::Ref_Compatible_With_Added_Qualification ||
-       (Kind.isCStyleOrFunctionalCast() &&
+       (Kind.isCStyleOrSubprogramalCast() &&
         RefRelationship == Sema::Ref_Related)) &&
       (InitCategory.isXValue() ||
        (InitCategory.isPRValue() && T2->isRecordType()) ||
@@ -3487,7 +3487,7 @@ static void TryReferenceInitializationCore(Sema &S,
   //         where "cv1 T1" is reference-compatible with "cv3 T3",
   if (T2->isRecordType()) {
     if (RefRelationship == Sema::Ref_Incompatible) {
-      ConvOvlResult = TryRefInitWithConversionFunction(S, Entity,
+      ConvOvlResult = TryRefInitWithConversionSubprogram(S, Entity,
                                                        Kind, Initializer,
                                                        /*AllowRValues=*/true,
                                                        Sequence);
@@ -3519,7 +3519,7 @@ static void TryReferenceInitializationCore(Sema &S,
                               /*SuppressUserConversions*/ false,
                               AllowExplicit,
                               /*FIXME:InOverloadResolution=*/false,
-                              /*CStyle=*/Kind.isCStyleOrFunctionalCast(),
+                              /*CStyle=*/Kind.isCStyleOrSubprogramalCast(),
                               /*AllowObjCWritebackConversion=*/false);
   
   if (ICS.isBad()) {
@@ -3734,8 +3734,8 @@ static void TryUserDefinedConversion(Sema &S,
 
         // Find the constructor (which may be a template).
         CXXConstructorDecl *Constructor = 0;
-        FunctionTemplateDecl *ConstructorTmpl
-          = dyn_cast<FunctionTemplateDecl>(D);
+        SubprogramTemplateDecl *ConstructorTmpl
+          = dyn_cast<SubprogramTemplateDecl>(D);
         if (ConstructorTmpl)
           Constructor = cast<CXXConstructorDecl>(
                                            ConstructorTmpl->getTemplatedDecl());
@@ -3772,7 +3772,7 @@ static void TryUserDefinedConversion(Sema &S,
 
       std::pair<CXXRecordDecl::conversion_iterator,
                 CXXRecordDecl::conversion_iterator>
-        Conversions = SourceRecordDecl->getVisibleConversionFunctions();
+        Conversions = SourceRecordDecl->getVisibleConversionSubprograms();
       for (CXXRecordDecl::conversion_iterator
              I = Conversions.first, E = Conversions.second; I != E; ++I) {
         NamedDecl *D = *I;
@@ -3780,7 +3780,7 @@ static void TryUserDefinedConversion(Sema &S,
         if (isa<UsingShadowDecl>(D))
           D = cast<UsingShadowDecl>(D)->getTargetDecl();
 
-        FunctionTemplateDecl *ConvTemplate = dyn_cast<FunctionTemplateDecl>(D);
+        SubprogramTemplateDecl *ConvTemplate = dyn_cast<SubprogramTemplateDecl>(D);
         CXXConversionDecl *Conv;
         if (ConvTemplate)
           Conv = cast<CXXConversionDecl>(ConvTemplate->getTemplatedDecl());
@@ -3803,29 +3803,29 @@ static void TryUserDefinedConversion(Sema &S,
   // Perform overload resolution. If it fails, return the failed result.
   OverloadCandidateSet::iterator Best;
   if (OverloadingResult Result
-        = CandidateSet.BestViableFunction(S, DeclLoc, Best, true)) {
+        = CandidateSet.BestViableSubprogram(S, DeclLoc, Best, true)) {
     Sequence.SetOverloadFailure(
                         InitializationSequence::FK_UserConversionOverloadFailed,
                                 Result);
     return;
   }
 
-  FunctionDecl *Function = Best->Function;
-  S.MarkFunctionReferenced(DeclLoc, Function);
+  SubprogramDecl *Subprogram = Best->Subprogram;
+  S.MarkSubprogramReferenced(DeclLoc, Subprogram);
   bool HadMultipleCandidates = (CandidateSet.size() > 1);
 
-  if (isa<CXXConstructorDecl>(Function)) {
+  if (isa<CXXConstructorDecl>(Subprogram)) {
     // Add the user-defined conversion step. Any cv-qualification conversion is
     // subsumed by the initialization. Per DR5, the created temporary is of the
     // cv-unqualified type of the destination.
-    Sequence.AddUserConversionStep(Function, Best->FoundDecl,
+    Sequence.AddUserConversionStep(Subprogram, Best->FoundDecl,
                                    DestType.getUnqualifiedType(),
                                    HadMultipleCandidates);
     return;
   }
 
   // Add the user-defined conversion step that calls the conversion function.
-  QualType ConvType = Function->getCallResultType();
+  QualType ConvType = Subprogram->getCallResultType();
   if (ConvType->getAs<RecordType>()) {
     // If we're converting to a class type, there may be an copy of
     // the resulting temporary object (possible to create an object of
@@ -3833,12 +3833,12 @@ static void TryUserDefinedConversion(Sema &S,
     // we just make a note of the actual destination type (possibly a
     // base class of the type returned by the conversion function) and
     // let the user-defined conversion step handle the conversion.
-    Sequence.AddUserConversionStep(Function, Best->FoundDecl, DestType,
+    Sequence.AddUserConversionStep(Subprogram, Best->FoundDecl, DestType,
                                    HadMultipleCandidates);
     return;
   }
 
-  Sequence.AddUserConversionStep(Function, Best->FoundDecl, ConvType,
+  Sequence.AddUserConversionStep(Subprogram, Best->FoundDecl, ConvType,
                                  HadMultipleCandidates);
 
   // If the conversion following the call to the conversion function
@@ -4204,7 +4204,7 @@ InitializationSequence::InitializationSequence(Sema &S,
                               /*SuppressUserConversions*/true,
                               /*AllowExplicitConversions*/ false,
                               /*InOverloadResolution*/ false,
-                              /*CStyle=*/Kind.isCStyleOrFunctionalCast(),
+                              /*CStyle=*/Kind.isCStyleOrSubprogramalCast(),
                               allowObjCWritebackConversion);
       
   if (ICS.isStandard() && 
@@ -4232,7 +4232,7 @@ InitializationSequence::InitializationSequence(Sema &S,
   } else if (ICS.isBad()) {
     DeclAccessPair dap;
     if (Initializer->getType() == Context.OverloadTy && 
-          !S.ResolveAddressOfOverloadedFunction(Initializer
+          !S.ResolveAddressOfOverloadedSubprogram(Initializer
                       , DestType, false, dap))
       SetFailed(InitializationSequence::FK_AddressOfOverloadFailed);
     else
@@ -4373,7 +4373,7 @@ static void LookupCopyAndMoveConstructors(Sema &S,
     }
 
     // Handle constructor templates.
-    FunctionTemplateDecl *ConstructorTmpl = cast<FunctionTemplateDecl>(D);
+    SubprogramTemplateDecl *ConstructorTmpl = cast<SubprogramTemplateDecl>(D);
     if (ConstructorTmpl->isInvalidDecl())
       continue;
 
@@ -4487,11 +4487,11 @@ static ExprResult CopyObject(Sema &S,
   bool HadMultipleCandidates = (CandidateSet.size() > 1);
 
   OverloadCandidateSet::iterator Best;
-  switch (CandidateSet.BestViableFunction(S, Loc, Best)) {
+  switch (CandidateSet.BestViableSubprogram(S, Loc, Best)) {
   case OR_Success:
     break;
 
-  case OR_No_Viable_Function:
+  case OR_No_Viable_Subprogram:
     S.Diag(Loc, IsExtraneousCopy && !S.isSFINAEContext()
            ? diag::ext_rvalue_to_reference_temp_copy_no_viable
            : diag::err_temp_copy_no_viable)
@@ -4513,11 +4513,11 @@ static ExprResult CopyObject(Sema &S,
     S.Diag(Loc, diag::err_temp_copy_deleted)
       << (int)Entity.getKind() << CurInitExpr->getType()
       << CurInitExpr->getSourceRange();
-    S.NoteDeletedFunction(Best->Function);
+    S.NoteDeletedSubprogram(Best->Subprogram);
     return ExprError();
   }
 
-  CXXConstructorDecl *Constructor = cast<CXXConstructorDecl>(Best->Function);
+  CXXConstructorDecl *Constructor = cast<CXXConstructorDecl>(Best->Subprogram);
   SmallVector<Expr*, 8> ConstructorArgs;
   CurInit.release(); // Ownership transferred into MultiExprArg, below.
 
@@ -4550,7 +4550,7 @@ static ExprResult CopyObject(Sema &S,
     return S.Owned(CurInitExpr);
   }
 
-  S.MarkFunctionReferenced(Loc, Constructor);
+  S.MarkSubprogramReferenced(Loc, Constructor);
 
   // Determine the arguments required to actually perform the
   // constructor call (we might have derived-to-base conversions, or
@@ -4598,7 +4598,7 @@ static void CheckCXX98CompatAccessibleCopy(Sema &S,
 
   // Perform overload resolution.
   OverloadCandidateSet::iterator Best;
-  OverloadingResult OR = CandidateSet.BestViableFunction(S, Loc, Best);
+  OverloadingResult OR = CandidateSet.BestViableSubprogram(S, Loc, Best);
 
   PartialDiagnostic Diag = S.PDiag(diag::warn_cxx98_compat_temp_copy)
     << OR << (int)Entity.getKind() << CurInitExpr->getType()
@@ -4606,12 +4606,12 @@ static void CheckCXX98CompatAccessibleCopy(Sema &S,
 
   switch (OR) {
   case OR_Success:
-    S.CheckConstructorAccess(Loc, cast<CXXConstructorDecl>(Best->Function),
+    S.CheckConstructorAccess(Loc, cast<CXXConstructorDecl>(Best->Subprogram),
                              Entity, Best->FoundDecl.getAccess(), Diag);
     // FIXME: Check default arguments as far as that's possible.
     break;
 
-  case OR_No_Viable_Function:
+  case OR_No_Viable_Subprogram:
     S.Diag(Loc, Diag);
     CandidateSet.NoteCandidates(S, OCD_AllCandidates, CurInitExpr);
     break;
@@ -4623,7 +4623,7 @@ static void CheckCXX98CompatAccessibleCopy(Sema &S,
 
   case OR_Deleted:
     S.Diag(Loc, Diag);
-    S.NoteDeletedFunction(Best->Function);
+    S.NoteDeletedSubprogram(Best->Subprogram);
     break;
   }
 }
@@ -4657,8 +4657,8 @@ PerformConstructorInitialization(Sema &S,
                                  bool IsListInitialization) {
   unsigned NumArgs = Args.size();
   CXXConstructorDecl *Constructor
-    = cast<CXXConstructorDecl>(Step.Function.Function);
-  bool HadMultipleCandidates = Step.Function.HadMultipleCandidates;
+    = cast<CXXConstructorDecl>(Step.Subprogram.Subprogram);
+  bool HadMultipleCandidates = Step.Subprogram.HadMultipleCandidates;
 
   // Build a call to the selected constructor.
   SmallVector<Expr*, 8> ConstructorArgs;
@@ -4702,7 +4702,7 @@ PerformConstructorInitialization(Sema &S,
         (Kind.getKind() == InitializationKind::IK_Direct ||
          Kind.getKind() == InitializationKind::IK_Value)))) {
     // An explicitly-constructed temporary, e.g., X(1, 2).
-    S.MarkFunctionReferenced(Loc, Constructor);
+    S.MarkSubprogramReferenced(Loc, Constructor);
     S.DiagnoseUseOfDecl(Constructor, Loc);
 
     TypeSourceInfo *TSInfo = Entity.getTypeSourceInfo();
@@ -4761,8 +4761,8 @@ PerformConstructorInitialization(Sema &S,
 
   // Only check access if all of that succeeded.
   S.CheckConstructorAccess(Loc, Constructor, Entity,
-                           Step.Function.FoundDecl.getAccess());
-  S.DiagnoseUseOfDecl(Step.Function.FoundDecl, Loc);
+                           Step.Subprogram.FoundDecl.getAccess());
+  S.DiagnoseUseOfDecl(Step.Subprogram.FoundDecl, Loc);
 
   if (shouldBindAsTemporary(Entity))
     CurInit = S.MaybeBindToTemporary(CurInit.takeAs<Expr>());
@@ -4912,7 +4912,7 @@ InitializationSequence::Perform(Sema &S,
   // grab the only argument out the Args and place it into the "current"
   // initializer.
   switch (Steps.front().Kind) {
-  case SK_ResolveAddressOfOverloadedFunction:
+  case SK_ResolveAddressOfOverloadedSubprogram:
   case SK_CastDerivedToBaseRValue:
   case SK_CastDerivedToBaseXValue:
   case SK_CastDerivedToBaseLValue:
@@ -4959,14 +4959,14 @@ InitializationSequence::Perform(Sema &S,
     QualType SourceType = CurInit.get() ? CurInit.get()->getType() : QualType();
 
     switch (Step->Kind) {
-    case SK_ResolveAddressOfOverloadedFunction:
+    case SK_ResolveAddressOfOverloadedSubprogram:
       // Overload resolution determined which function invoke; update the
       // initializer to reflect that choice.
-      S.CheckAddressOfMemberAccess(CurInit.get(), Step->Function.FoundDecl);
-      S.DiagnoseUseOfDecl(Step->Function.FoundDecl, Kind.getLocation());
-      CurInit = S.FixOverloadedFunctionReference(CurInit,
-                                                 Step->Function.FoundDecl,
-                                                 Step->Function.Function);
+      S.CheckAddressOfMemberAccess(CurInit.get(), Step->Subprogram.FoundDecl);
+      S.DiagnoseUseOfDecl(Step->Subprogram.FoundDecl, Kind.getLocation());
+      CurInit = S.FixOverloadedSubprogramReference(CurInit,
+                                                 Step->Subprogram.FoundDecl,
+                                                 Step->Subprogram.Subprogram);
       break;
 
     case SK_CastDerivedToBaseRValue:
@@ -4978,7 +4978,7 @@ InitializationSequence::Perform(Sema &S,
       CXXCastPath BasePath;
 
       // Casts to inaccessible base classes are allowed with C-style casts.
-      bool IgnoreBaseAccess = Kind.isCStyleOrFunctionalCast();
+      bool IgnoreBaseAccess = Kind.isCStyleOrSubprogramalCast();
       if (S.CheckDerivedToBaseConversion(SourceType, Step->Type,
                                          CurInit.get()->getLocStart(),
                                          CurInit.get()->getSourceRange(),
@@ -5065,9 +5065,9 @@ InitializationSequence::Perform(Sema &S,
       // or a conversion function.
       CastKind CastKind;
       bool IsCopy = false;
-      FunctionDecl *Fn = Step->Function.Function;
-      DeclAccessPair FoundFn = Step->Function.FoundDecl;
-      bool HadMultipleCandidates = Step->Function.HadMultipleCandidates;
+      SubprogramDecl *Fn = Step->Subprogram.Subprogram;
+      DeclAccessPair FoundFn = Step->Subprogram.FoundDecl;
+      bool HadMultipleCandidates = Step->Subprogram.HadMultipleCandidates;
       bool CreatedObject = false;
       if (CXXConstructorDecl *Constructor = dyn_cast<CXXConstructorDecl>(Fn)) {
         // Build a call to the selected constructor.
@@ -5143,7 +5143,7 @@ InitializationSequence::Perform(Sema &S,
             = S.LookupDestructor(cast<CXXRecordDecl>(Record->getDecl()));
           S.CheckDestructorAccess(CurInit.get()->getLocStart(), Destructor,
                                   S.PDiag(diag::err_access_dtor_temp) << T);
-          S.MarkFunctionReferenced(CurInit.get()->getLocStart(), Destructor);
+          S.MarkSubprogramReferenced(CurInit.get()->getLocStart(), Destructor);
           S.DiagnoseUseOfDecl(Destructor, CurInit.get()->getLocStart());
         }
       }
@@ -5177,7 +5177,7 @@ InitializationSequence::Perform(Sema &S,
     case SK_ConversionSequence: {
       Sema::CheckedConversionKind CCK 
         = Kind.isCStyleCast()? Sema::CCK_CStyleCast
-        : Kind.isFunctionalCast()? Sema::CCK_FunctionalCast
+        : Kind.isSubprogramalCast()? Sema::CCK_SubprogramalCast
         : Kind.isExplicitCast()? Sema::CCK_OtherCast
         : Sema::CCK_ImplicitConversion;
       ExprResult CurInitExprRes =
@@ -5410,7 +5410,7 @@ InitializationSequence::Perform(Sema &S,
       if (CXXRecordDecl *RD = E->getAsCXXRecordDecl()) {
         if (!RD->hasIrrelevantDestructor()) {
           if (CXXDestructorDecl *Destructor = S.LookupDestructor(RD)) {
-            S.MarkFunctionReferenced(Kind.getLocation(), Destructor);
+            S.MarkSubprogramReferenced(Kind.getLocation(), Destructor);
             S.CheckDestructorAccess(Kind.getLocation(), Destructor,
                                     S.PDiag(diag::err_access_dtor_temp) << E);
             S.DiagnoseUseOfDecl(Destructor, Kind.getLocation());
@@ -5551,7 +5551,7 @@ bool InitializationSequence::Diagnose(Sema &S,
 
   case FK_AddressOfOverloadFailed: {
     DeclAccessPair Found;
-    S.ResolveAddressOfOverloadedFunction(Args[0],
+    S.ResolveAddressOfOverloadedSubprogram(Args[0],
                                          DestType.getNonReferenceType(),
                                          true,
                                          Found);
@@ -5575,7 +5575,7 @@ bool InitializationSequence::Diagnose(Sema &S,
                                         llvm::makeArrayRef(Args, NumArgs));
       break;
 
-    case OR_No_Viable_Function:
+    case OR_No_Viable_Subprogram:
       S.Diag(Kind.getLocation(), diag::err_typecheck_nonviable_condition)
         << Args[0]->getType() << DestType.getNonReferenceType()
         << Args[0]->getSourceRange();
@@ -5589,10 +5589,10 @@ bool InitializationSequence::Diagnose(Sema &S,
         << Args[0]->getSourceRange();
       OverloadCandidateSet::iterator Best;
       OverloadingResult Ovl
-        = FailedCandidateSet.BestViableFunction(S, Kind.getLocation(), Best,
+        = FailedCandidateSet.BestViableSubprogram(S, Kind.getLocation(), Best,
                                                 true);
       if (Ovl == OR_Deleted) {
-        S.NoteDeletedFunction(Best->Function);
+        S.NoteDeletedSubprogram(Best->Subprogram);
       } else {
         llvm_unreachable("Inconsistent overload resolution?");
       }
@@ -5658,7 +5658,7 @@ bool InitializationSequence::Diagnose(Sema &S,
       << Args[0]->isLValue()
       << FromType
       << Args[0]->getSourceRange();
-    S.HandleFunctionTypeMismatch(PDiag, FromType, DestType);
+    S.HandleSubprogramTypeMismatch(PDiag, FromType, DestType);
     S.Diag(Kind.getLocation(), PDiag);
     if (DestType.getNonReferenceType()->isObjCObjectPointerType() &&
         Args[0]->getType()->isObjCObjectPointerType())
@@ -5680,7 +5680,7 @@ bool InitializationSequence::Diagnose(Sema &S,
       R = SourceRange(Args[0]->getLocEnd(), Args[NumArgs - 1]->getLocEnd());
 
     R.setBegin(S.PP.getLocForEndOfToken(R.getBegin()));
-    if (Kind.isCStyleOrFunctionalCast())
+    if (Kind.isCStyleOrSubprogramalCast())
       S.Diag(Kind.getLocation(), diag::err_builtin_func_cast_more_than_one_arg)
         << R;
     else
@@ -5723,7 +5723,7 @@ bool InitializationSequence::Diagnose(Sema &S,
                                           llvm::makeArrayRef(Args, NumArgs));
         break;
 
-      case OR_No_Viable_Function:
+      case OR_No_Viable_Subprogram:
         if (Kind.getKind() == InitializationKind::IK_Default &&
             (Entity.getKind() == InitializedEntity::EK_Base ||
              Entity.getKind() == InitializedEntity::EK_Member) &&
@@ -5772,7 +5772,7 @@ bool InitializationSequence::Diagnose(Sema &S,
       case OR_Deleted: {
         OverloadCandidateSet::iterator Best;
         OverloadingResult Ovl
-          = FailedCandidateSet.BestViableFunction(S, Kind.getLocation(), Best);
+          = FailedCandidateSet.BestViableSubprogram(S, Kind.getLocation(), Best);
         if (Ovl != OR_Deleted) {
           S.Diag(Kind.getLocation(), diag::err_ovl_deleted_init)
             << true << DestType << ArgsRange;
@@ -5783,15 +5783,15 @@ bool InitializationSequence::Diagnose(Sema &S,
         // If this is a defaulted or implicitly-declared function, then
         // it was implicitly deleted. Make it clear that the deletion was
         // implicit.
-        if (S.isImplicitlyDeleted(Best->Function))
+        if (S.isImplicitlyDeleted(Best->Subprogram))
           S.Diag(Kind.getLocation(), diag::err_ovl_deleted_special_init)
-            << S.getSpecialMember(cast<CXXMethodDecl>(Best->Function))
+            << S.getSpecialMember(cast<CXXMethodDecl>(Best->Subprogram))
             << DestType << ArgsRange;
         else
           S.Diag(Kind.getLocation(), diag::err_ovl_deleted_init)
             << true << DestType << ArgsRange;
 
-        S.NoteDeletedFunction(Best->Function);
+        S.NoteDeletedSubprogram(Best->Subprogram);
         break;
       }
 
@@ -5880,10 +5880,10 @@ bool InitializationSequence::Diagnose(Sema &S,
       << Args[0]->getSourceRange();
     OverloadCandidateSet::iterator Best;
     OverloadingResult Ovl
-      = FailedCandidateSet.BestViableFunction(S, Kind.getLocation(), Best);
+      = FailedCandidateSet.BestViableSubprogram(S, Kind.getLocation(), Best);
     (void)Ovl;
     assert(Ovl == OR_Success && "Inconsistent overload resolution");
-    CXXConstructorDecl *CtorDecl = cast<CXXConstructorDecl>(Best->Function);
+    CXXConstructorDecl *CtorDecl = cast<CXXConstructorDecl>(Best->Subprogram);
     S.Diag(CtorDecl->getLocation(), diag::note_constructor_declared_here);
     break;
   }
@@ -6025,7 +6025,7 @@ void InitializationSequence::dump(raw_ostream &OS) const {
     }
 
     switch (S->Kind) {
-    case SK_ResolveAddressOfOverloadedFunction:
+    case SK_ResolveAddressOfOverloadedSubprogram:
       OS << "resolve address of overloaded function";
       break;
 
@@ -6054,7 +6054,7 @@ void InitializationSequence::dump(raw_ostream &OS) const {
       break;
 
     case SK_UserConversion:
-      OS << "user-defined conversion via " << *S->Function.Function;
+      OS << "user-defined conversion via " << *S->Subprogram.Subprogram;
       break;
 
     case SK_QualificationConversionRValue:

@@ -45,11 +45,11 @@ lfort::getTemplateParamsRange(TemplateParameterList const * const *Ps,
 /// returns NULL.
 static NamedDecl *isAcceptableTemplateName(ASTContext &Context,
                                            NamedDecl *Orig,
-                                           bool AllowFunctionTemplates) {
+                                           bool AllowSubprogramTemplates) {
   NamedDecl *D = Orig->getUnderlyingDecl();
 
   if (isa<TemplateDecl>(D)) {
-    if (!AllowFunctionTemplates && isa<FunctionTemplateDecl>(D))
+    if (!AllowSubprogramTemplates && isa<SubprogramTemplateDecl>(D))
       return 0;
     
     return Orig;
@@ -84,14 +84,14 @@ static NamedDecl *isAcceptableTemplateName(ASTContext &Context,
 }
 
 void Sema::FilterAcceptableTemplateNames(LookupResult &R, 
-                                         bool AllowFunctionTemplates) {
+                                         bool AllowSubprogramTemplates) {
   // The set of class templates we've already seen.
   llvm::SmallPtrSet<ClassTemplateDecl *, 8> ClassTemplates;
   LookupResult::Filter filter = R.makeFilter();
   while (filter.hasNext()) {
     NamedDecl *Orig = filter.next();
     NamedDecl *Repl = isAcceptableTemplateName(Context, Orig, 
-                                               AllowFunctionTemplates);
+                                               AllowSubprogramTemplates);
     if (!Repl)
       filter.erase();
     else if (Repl != Orig) {
@@ -122,9 +122,9 @@ void Sema::FilterAcceptableTemplateNames(LookupResult &R,
 }
 
 bool Sema::hasAnyAcceptableTemplateNames(LookupResult &R,
-                                         bool AllowFunctionTemplates) {
+                                         bool AllowSubprogramTemplates) {
   for (LookupResult::iterator I = R.begin(), IEnd = R.end(); I != IEnd; ++I)
-    if (isAcceptableTemplateName(Context, *I, AllowFunctionTemplates))
+    if (isAcceptableTemplateName(Context, *I, AllowSubprogramTemplates))
       return true;
   
   return false;
@@ -148,9 +148,9 @@ TemplateNameKind Sema::isTemplateName(Scope *S,
     TName = DeclarationName(Name.Identifier);
     break;
 
-  case UnqualifiedId::IK_OperatorFunctionId:
+  case UnqualifiedId::IK_OperatorSubprogramId:
     TName = Context.DeclarationNames.getCXXOperatorName(
-                                              Name.OperatorFunctionId.Operator);
+                                              Name.OperatorSubprogramId.Operator);
     break;
 
   case UnqualifiedId::IK_LiteralOperatorId:
@@ -184,7 +184,7 @@ TemplateNameKind Sema::isTemplateName(Scope *S,
     // We assume that we'll preserve the qualifier from a function
     // template name in other ways.
     Template = Context.getOverloadedTemplateName(R.begin(), R.end());
-    TemplateKind = TNK_Function_template;
+    TemplateKind = TNK_Subprogram_template;
 
     // We'll do this lookup again later.
     R.suppressDiagnostics();
@@ -200,8 +200,8 @@ TemplateNameKind Sema::isTemplateName(Scope *S,
       Template = TemplateName(TD);
     }
 
-    if (isa<FunctionTemplateDecl>(TD)) {
-      TemplateKind = TNK_Function_template;
+    if (isa<SubprogramTemplateDecl>(TD)) {
+      TemplateKind = TNK_Subprogram_template;
 
       // We'll do this lookup again later.
       R.suppressDiagnostics();
@@ -276,7 +276,7 @@ void Sema::LookupTemplateName(LookupResult &Found,
   }
 
   bool ObjectTypeSearchedInScope = false;
-  bool AllowFunctionTemplatesInLookup = true;
+  bool AllowSubprogramTemplatesInLookup = true;
   if (LookupCtx) {
     // Perform "qualified" name lookup into the declaration context we
     // computed, which is either the type of the base of a member access
@@ -295,7 +295,7 @@ void Sema::LookupTemplateName(LookupResult &Found,
       //   or function template.
       if (S) LookupName(Found, S);
       ObjectTypeSearchedInScope = true;
-      AllowFunctionTemplatesInLookup = false;
+      AllowSubprogramTemplatesInLookup = false;
     }
   } else if (isDependent && (!S || ObjectType.isNull())) {
     // We cannot look into a dependent object type or nested nme
@@ -307,7 +307,7 @@ void Sema::LookupTemplateName(LookupResult &Found,
     LookupName(Found, S);
     
     if (!ObjectType.isNull())
-      AllowFunctionTemplatesInLookup = false;
+      AllowSubprogramTemplatesInLookup = false;
   }
 
   if (Found.empty() && !isDependent) {
@@ -348,7 +348,7 @@ void Sema::LookupTemplateName(LookupResult &Found,
     }
   }
 
-  FilterAcceptableTemplateNames(Found, AllowFunctionTemplatesInLookup);
+  FilterAcceptableTemplateNames(Found, AllowSubprogramTemplatesInLookup);
   if (Found.empty()) {
     if (isDependent)
       MemberOfUnknownSpecialization = true;
@@ -366,7 +366,7 @@ void Sema::LookupTemplateName(LookupResult &Found,
     LookupResult FoundOuter(*this, Found.getLookupName(), Found.getNameLoc(),
                             LookupOrdinaryName);
     LookupName(FoundOuter, S);
-    FilterAcceptableTemplateNames(FoundOuter, /*AllowFunctionTemplates=*/false);
+    FilterAcceptableTemplateNames(FoundOuter, /*AllowSubprogramTemplates=*/false);
 
     if (FoundOuter.empty()) {
       //   - if the name is not found, the name found in the class of the
@@ -410,7 +410,7 @@ Sema::ActOnDependentIdExpression(const CXXScopeSpec &SS,
                                  const DeclarationNameInfo &NameInfo,
                                  bool isAddressOfOperand,
                            const TemplateArgumentListInfo *TemplateArgs) {
-  DeclContext *DC = getFunctionLevelDeclContext();
+  DeclContext *DC = getSubprogramLevelDeclContext();
 
   if (!isAddressOfOperand &&
       isa<CXXMethodDecl>(DC) &&
@@ -660,7 +660,7 @@ Sema::CheckNonTypeTemplateParameterType(QualType T, SourceLocation Loc) {
   else if (T->isArrayType())
     // FIXME: Keep the type prior to promotion?
     return Context.getArrayDecayedType(T);
-  else if (T->isFunctionType())
+  else if (T->isSubprogramType())
     // FIXME: Keep the type prior to promotion?
     return Context.getPointerType(T);
 
@@ -1161,8 +1161,8 @@ static bool DiagnoseDefaultTemplateArgument(Sema &S,
   case Sema::TPC_TypeAliasTemplate:
     return false;
 
-  case Sema::TPC_FunctionTemplate:
-  case Sema::TPC_FriendFunctionTemplateDefinition:
+  case Sema::TPC_SubprogramTemplate:
+  case Sema::TPC_FriendSubprogramTemplateDefinition:
     // C++ [temp.param]p9:
     //   A default template-argument shall not be specified in a
     //   function template declaration or a function template
@@ -1186,7 +1186,7 @@ static bool DiagnoseDefaultTemplateArgument(Sema &S,
       << DefArgRange;
     return true;
 
-  case Sema::TPC_FriendFunctionTemplate:
+  case Sema::TPC_FriendSubprogramTemplate:
     // C++ [temp.param]p9:
     //   A default template-argument shall not be specified in a
     //   friend template declaration.
@@ -1444,7 +1444,7 @@ bool Sema::CheckTemplateParameterList(TemplateParameterList *NewParams,
       Diag(NewDefaultLoc, diag::err_template_param_default_arg_redefinition);
       Diag(OldDefaultLoc, diag::note_template_param_prev_default_arg);
       Invalid = true;
-    } else if (MissingDefaultArg && TPC != TPC_FunctionTemplate) {
+    } else if (MissingDefaultArg && TPC != TPC_SubprogramTemplate) {
       // C++ [temp.param]p11:
       //   If a template-parameter of a class template has a default
       //   template-argument, each subsequent template-parameter shall either
@@ -1933,7 +1933,7 @@ Sema::MatchTemplateParametersToScopeSpecifier(SourceLocation DeclStartLoc,
 void Sema::NoteAllFoundTemplates(TemplateName Name) {
   if (TemplateDecl *Template = Name.getAsTemplateDecl()) {
     Diag(Template->getLocation(), diag::note_template_declared_here)
-      << (isa<FunctionTemplateDecl>(Template)? 0
+      << (isa<SubprogramTemplateDecl>(Template)? 0
           : isa<ClassTemplateDecl>(Template)? 1
           : isa<TypeAliasTemplateDecl>(Template)? 2
           : 3)
@@ -1968,7 +1968,7 @@ QualType Sema::CheckTemplateIdType(TemplateName Name,
                                                           TemplateArgs);
 
   TemplateDecl *Template = Name.getAsTemplateDecl();
-  if (!Template || isa<FunctionTemplateDecl>(Template)) {
+  if (!Template || isa<SubprogramTemplateDecl>(Template)) {
     // We might have a substituted template template parameter pack. If so,
     // build a template specialization type for it.
     if (Name.getAsSubstTemplateTemplateParmPack())
@@ -2417,9 +2417,9 @@ TemplateNameKind Sema::ActOnDependentTemplateName(Scope *S,
                                                               Name.Identifier));
     return TNK_Dependent_template_name;
 
-  case UnqualifiedId::IK_OperatorFunctionId:
+  case UnqualifiedId::IK_OperatorSubprogramId:
     Result = TemplateTy::make(Context.getDependentTemplateName(Qualifier,
-                                             Name.OperatorFunctionId.Operator));
+                                             Name.OperatorSubprogramId.Operator));
     return TNK_Dependent_template_name;
 
   case UnqualifiedId::IK_LiteralOperatorId:
@@ -2915,7 +2915,7 @@ bool Sema::CheckTemplateArgument(NamedDecl *Param,
       // confusing for users.
       QualType T = Arg.getArgument().getAsType();
       SourceRange SR = Arg.getSourceRange();
-      if (T->isFunctionType())
+      if (T->isSubprogramType())
         Diag(SR.getBegin(), diag::err_template_arg_nontype_ambig) << SR << T;
       else
         Diag(SR.getBegin(), diag::err_template_arg_must_be_expr) << SR;
@@ -3004,7 +3004,7 @@ static bool diagnoseArityMismatch(Sema &S, TemplateDecl *Template,
   S.Diag(TemplateLoc, diag::err_template_arg_list_different_arity)
     << (NumArgs > NumParams)
     << (isa<ClassTemplateDecl>(Template)? 0 :
-        isa<FunctionTemplateDecl>(Template)? 1 :
+        isa<SubprogramTemplateDecl>(Template)? 1 :
         isa<TemplateTemplateParmDecl>(Template)? 2 : 3)
     << Template << Range;
   S.Diag(Template->getLocation(), diag::note_template_decl_here)
@@ -3086,7 +3086,7 @@ bool Sema::CheckTemplateArgumentList(TemplateDecl *Template,
         Diag(TemplateLoc, diag::err_template_arg_list_different_arity)
           << false
           << (isa<ClassTemplateDecl>(Template)? 0 :
-              isa<FunctionTemplateDecl>(Template)? 1 :
+              isa<SubprogramTemplateDecl>(Template)? 1 :
               isa<TemplateTemplateParmDecl>(Template)? 2 : 3)
           << Template;
         Diag(Template->getLocation(), diag::note_template_decl_here)
@@ -3379,9 +3379,9 @@ bool UnnamedLocalNoLinkageFinder::VisitExtVectorType(const ExtVectorType* T) {
   return Visit(T->getElementType());
 }
 
-bool UnnamedLocalNoLinkageFinder::VisitFunctionProtoType(
-                                                  const FunctionProtoType* T) {
-  for (FunctionProtoType::arg_type_iterator A = T->arg_type_begin(),
+bool UnnamedLocalNoLinkageFinder::VisitSubprogramProtoType(
+                                                  const SubprogramProtoType* T) {
+  for (SubprogramProtoType::arg_type_iterator A = T->arg_type_begin(),
                                          AEnd = T->arg_type_end();
        A != AEnd; ++A) {
     if (Visit(*A))
@@ -3391,8 +3391,8 @@ bool UnnamedLocalNoLinkageFinder::VisitFunctionProtoType(
   return Visit(T->getResultType());
 }
 
-bool UnnamedLocalNoLinkageFinder::VisitFunctionNoProtoType(
-                                               const FunctionNoProtoType* T) {
+bool UnnamedLocalNoLinkageFinder::VisitSubprogramNoProtoType(
+                                               const SubprogramNoProtoType* T) {
   return Visit(T->getResultType());
 }
 
@@ -3484,7 +3484,7 @@ bool UnnamedLocalNoLinkageFinder::VisitAtomicType(const AtomicType* T) {
 }
 
 bool UnnamedLocalNoLinkageFinder::VisitTagDecl(const TagDecl *Tag) {
-  if (Tag->getDeclContext()->isFunctionOrMethod()) {
+  if (Tag->getDeclContext()->isSubprogramOrMethod()) {
     S.Diag(SR.getBegin(),
            S.getLangOpts().CPlusPlus11 ?
              diag::warn_cxx98_compat_template_arg_local_type :
@@ -3580,7 +3580,7 @@ isNullPointerValueTemplateArgument(Sema &S, NonTypeTemplateParmDecl *Param,
     return NPV_NotNullPointer;
   
   // Determine whether we have a constant expression.
-  ExprResult ArgRV = S.DefaultFunctionArrayConversion(Arg);
+  ExprResult ArgRV = S.DefaultSubprogramArrayConversion(Arg);
   if (ArgRV.isInvalid())
     return NPV_Error;
   Arg = ArgRV.take();
@@ -3658,7 +3658,7 @@ isNullPointerValueTemplateArgument(Sema &S, NonTypeTemplateParmDecl *Param,
 /// \brief Checks whether the given template argument is the address
 /// of an object or function according to C++ [temp.arg.nontype]p1.
 static bool
-CheckTemplateArgumentAddressOfObjectOrFunction(Sema &S,
+CheckTemplateArgumentAddressOfObjectOrSubprogram(Sema &S,
                                                NonTypeTemplateParmDecl *Param,
                                                QualType ParamType,
                                                Expr *ArgIn,
@@ -3780,7 +3780,7 @@ CheckTemplateArgumentAddressOfObjectOrFunction(Sema &S,
     }
   }
 
-  FunctionDecl *Func = dyn_cast<FunctionDecl>(Entity);
+  SubprogramDecl *Func = dyn_cast<SubprogramDecl>(Entity);
   VarDecl *Var = dyn_cast<VarDecl>(Entity);
 
   // A non-type template argument must refer to an object or function.
@@ -3899,14 +3899,14 @@ CheckTemplateArgumentAddressOfObjectOrFunction(Sema &S,
 
   bool ObjCLifetimeConversion;
   if (ParamType->isPointerType() &&
-      !ParamType->getAs<PointerType>()->getPointeeType()->isFunctionType() &&
+      !ParamType->getAs<PointerType>()->getPointeeType()->isSubprogramType() &&
       S.IsQualificationConversion(ArgType, ParamType, false, 
                                   ObjCLifetimeConversion)) {
     // For pointer-to-object types, qualification conversions are
     // permitted.
   } else {
     if (const ReferenceType *ParamRef = ParamType->getAs<ReferenceType>()) {
-      if (!ParamRef->getPointeeType()->isFunctionType()) {
+      if (!ParamRef->getPointeeType()->isSubprogramType()) {
         // C++ [temp.arg.nontype]p5b3:
         //   For a non-type template-parameter of type reference to
         //   object, no conversions apply. The type referred to by the
@@ -4305,7 +4305,7 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
   }
 
   QualType ArgType = Arg->getType();
-  DeclAccessPair FoundResult; // temporary for ResolveOverloadedFunction
+  DeclAccessPair FoundResult; // temporary for ResolveOverloadedSubprogram
 
   // Handle pointer-to-function, reference-to-function, and
   // pointer-to-member-function all in (roughly) the same way.
@@ -4315,13 +4315,13 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
       //    overloaded functions (or a pointer to such), the matching
       //    function is selected from the set (13.4).
       (ParamType->isPointerType() &&
-       ParamType->getAs<PointerType>()->getPointeeType()->isFunctionType()) ||
+       ParamType->getAs<PointerType>()->getPointeeType()->isSubprogramType()) ||
       // -- For a non-type template-parameter of type reference to
       //    function, no conversions apply. If the template-argument
       //    represents a set of overloaded functions, the matching
       //    function is selected from the set (13.4).
       (ParamType->isReferenceType() &&
-       ParamType->getAs<ReferenceType>()->getPointeeType()->isFunctionType()) ||
+       ParamType->getAs<ReferenceType>()->getPointeeType()->isSubprogramType()) ||
       // -- For a non-type template-parameter of type pointer to
       //    member function, no conversions apply. If the
       //    template-argument represents a set of overloaded member
@@ -4329,23 +4329,23 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
       //    the set (13.4).
       (ParamType->isMemberPointerType() &&
        ParamType->getAs<MemberPointerType>()->getPointeeType()
-         ->isFunctionType())) {
+         ->isSubprogramType())) {
 
     if (Arg->getType() == Context.OverloadTy) {
-      if (FunctionDecl *Fn = ResolveAddressOfOverloadedFunction(Arg, ParamType,
+      if (SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(Arg, ParamType,
                                                                 true,
                                                                 FoundResult)) {
         if (DiagnoseUseOfDecl(Fn, Arg->getLocStart()))
           return ExprError();
 
-        Arg = FixOverloadedFunctionReference(Arg, FoundResult, Fn);
+        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, Fn);
         ArgType = Arg->getType();
       } else
         return ExprError();
     }
 
     if (!ParamType->isMemberPointerType()) {
-      if (CheckTemplateArgumentAddressOfObjectOrFunction(*this, Param,
+      if (CheckTemplateArgumentAddressOfObjectOrSubprogram(*this, Param,
                                                          ParamType,
                                                          Arg, Converted))
         return ExprError();
@@ -4366,7 +4366,7 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
     assert(ParamType->getPointeeType()->isIncompleteOrObjectType() &&
            "Only object pointers allowed here");
 
-    if (CheckTemplateArgumentAddressOfObjectOrFunction(*this, Param,
+    if (CheckTemplateArgumentAddressOfObjectOrSubprogram(*this, Param,
                                                        ParamType,
                                                        Arg, Converted))
       return ExprError();
@@ -4384,20 +4384,20 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
            "Only object references allowed here");
 
     if (Arg->getType() == Context.OverloadTy) {
-      if (FunctionDecl *Fn = ResolveAddressOfOverloadedFunction(Arg,
+      if (SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(Arg,
                                                  ParamRefType->getPointeeType(),
                                                                 true,
                                                                 FoundResult)) {
         if (DiagnoseUseOfDecl(Fn, Arg->getLocStart()))
           return ExprError();
 
-        Arg = FixOverloadedFunctionReference(Arg, FoundResult, Fn);
+        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, Fn);
         ArgType = Arg->getType();
       } else
         return ExprError();
     }
 
-    if (CheckTemplateArgumentAddressOfObjectOrFunction(*this, Param,
+    if (CheckTemplateArgumentAddressOfObjectOrSubprogram(*this, Param,
                                                        ParamType,
                                                        Arg, Converted))
       return ExprError();
@@ -4469,7 +4469,7 @@ bool Sema::CheckTemplateArgument(TemplateTemplateParmDecl *Param,
   if (!isa<ClassTemplateDecl>(Template) &&
       !isa<TemplateTemplateParmDecl>(Template) &&
       !isa<TypeAliasTemplateDecl>(Template)) {
-    assert(isa<FunctionTemplateDecl>(Template) &&
+    assert(isa<SubprogramTemplateDecl>(Template) &&
            "Only function templates are possible here");
     Diag(Arg.getLocation(), diag::err_template_arg_not_class_template);
     Diag(Template->getLocation(), diag::note_template_arg_refers_here_func)
@@ -4567,9 +4567,9 @@ Sema::BuildExpressionFromDeclTemplateArgument(const TemplateArgument &Arg,
     if (RefExpr.isInvalid())
       return ExprError();
 
-    if (T->isFunctionType() || T->isArrayType()) {
+    if (T->isSubprogramType() || T->isArrayType()) {
       // Decay functions and arrays.
-      RefExpr = DefaultFunctionArrayConversion(RefExpr.take());
+      RefExpr = DefaultSubprogramArrayConversion(RefExpr.take());
       if (RefExpr.isInvalid())
         return ExprError();
 
@@ -4910,8 +4910,8 @@ static TemplateSpecializationKind getTemplateSpecializationKind(Decl *D) {
 
   if (CXXRecordDecl *Record = dyn_cast<CXXRecordDecl>(D))
     return Record->getTemplateSpecializationKind();
-  if (FunctionDecl *Function = dyn_cast<FunctionDecl>(D))
-    return Function->getTemplateSpecializationKind();
+  if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D))
+    return Subprogram->getTemplateSpecializationKind();
   if (VarDecl *Var = dyn_cast<VarDecl>(D))
     return Var->getTemplateSpecializationKind();
 
@@ -4952,7 +4952,7 @@ static bool CheckTemplateSpecializationScope(Sema &S,
   int EntityKind = 0;
   if (isa<ClassTemplateDecl>(Specialized))
     EntityKind = IsPartialSpecialization? 1 : 0;
-  else if (isa<FunctionTemplateDecl>(Specialized))
+  else if (isa<SubprogramTemplateDecl>(Specialized))
     EntityKind = 2;
   else if (isa<CXXMethodDecl>(Specialized))
     EntityKind = 3;
@@ -4982,7 +4982,7 @@ static bool CheckTemplateSpecializationScope(Sema &S,
   //   the explicit specialization was declared, or in a namespace
   //   that encloses the one in which the explicit specialization was
   //   declared.
-  if (S.CurContext->getRedeclContext()->isFunctionOrMethod()) {
+  if (S.CurContext->getRedeclContext()->isSubprogramOrMethod()) {
     S.Diag(Loc, diag::err_template_spec_decl_function_scope)
       << Specialized;
     return true;
@@ -5067,8 +5067,8 @@ static bool CheckTemplateSpecializationScope(Sema &S,
   // FIXME: HandleDeclarator's diagnostics aren't quite as good, though.
   // Should we refactor that check, so that it occurs later?
   if (!ComplainedAboutScope && !DC->Encloses(SpecializedContext) &&
-      !(isa<FunctionTemplateDecl>(Specialized) || isa<VarDecl>(Specialized) ||
-        isa<FunctionDecl>(Specialized))) {
+      !(isa<SubprogramTemplateDecl>(Specialized) || isa<VarDecl>(Specialized) ||
+        isa<SubprogramDecl>(Specialized))) {
     if (isa<TranslationUnitDecl>(SpecializedContext))
       S.Diag(Loc, diag::err_template_spec_redecl_global_scope)
         << EntityKind << Specialized;
@@ -5613,11 +5613,11 @@ Decl *Sema::ActOnTemplateDeclarator(Scope *S,
   return NewDecl;
 }
 
-Decl *Sema::ActOnStartOfFunctionTemplateDef(Scope *FnBodyScope,
+Decl *Sema::ActOnStartOfSubprogramTemplateDef(Scope *FnBodyScope,
                                MultiTemplateParamsArg TemplateParameterLists,
                                             Declarator &D) {
-  assert(getCurFunctionDecl() == 0 && "Function parsing confused");
-  DeclaratorChunk::FunctionTypeInfo &FTI = D.getFunctionTypeInfo();
+  assert(getCurSubprogramDecl() == 0 && "Subprogram parsing confused");
+  DeclaratorChunk::SubprogramTypeInfo &FTI = D.getSubprogramTypeInfo();
 
   if (FTI.hasPrototype) {
     // FIXME: Diagnose arguments without names in C.
@@ -5625,10 +5625,10 @@ Decl *Sema::ActOnStartOfFunctionTemplateDef(Scope *FnBodyScope,
 
   Scope *ParentScope = FnBodyScope->getParent();
 
-  D.setFunctionDefinitionKind(FDK_Definition);
+  D.setSubprogramDefinitionKind(FDK_Definition);
   Decl *DP = HandleDeclarator(ParentScope, D,
                               TemplateParameterLists);
-  return ActOnStartOfFunctionDef(FnBodyScope, DP);
+  return ActOnStartOfSubprogramDef(FnBodyScope, DP);
 }
 
 /// \brief Strips various properties off an implicit instantiation
@@ -5637,7 +5637,7 @@ static void StripImplicitInstantiation(NamedDecl *D) {
   // FIXME: "make check" is clean if the call to dropAttrs() is commented out.
   D->dropAttrs();
 
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     FD->setInlineSpecified(false);
   }
 }
@@ -5857,7 +5857,7 @@ Sema::CheckSpecializationInstantiationRedecl(SourceLocation NewLoc,
 /// There really isn't any useful analysis we can do here, so we
 /// just store the information.
 bool
-Sema::CheckDependentFunctionTemplateSpecialization(FunctionDecl *FD,
+Sema::CheckDependentSubprogramTemplateSpecialization(SubprogramDecl *FD,
                    const TemplateArgumentListInfo &ExplicitTemplateArgs,
                                                    LookupResult &Previous) {
   // Remove anything from Previous that isn't a function template in
@@ -5866,7 +5866,7 @@ Sema::CheckDependentFunctionTemplateSpecialization(FunctionDecl *FD,
   LookupResult::Filter F = Previous.makeFilter();
   while (F.hasNext()) {
     NamedDecl *D = F.next()->getUnderlyingDecl();
-    if (!isa<FunctionTemplateDecl>(D) ||
+    if (!isa<SubprogramTemplateDecl>(D) ||
         !FDLookupContext->InEnclosingNamespaceSetOf(
                               D->getDeclContext()->getRedeclContext()))
       F.erase();
@@ -5900,7 +5900,7 @@ Sema::CheckDependentFunctionTemplateSpecialization(FunctionDecl *FD,
 /// \param Previous the set of declarations that may be specialized by
 /// this function specialization.
 bool
-Sema::CheckFunctionTemplateSpecialization(FunctionDecl *FD,
+Sema::CheckSubprogramTemplateSpecialization(SubprogramDecl *FD,
                                  TemplateArgumentListInfo *ExplicitTemplateArgs,
                                           LookupResult &Previous) {
   // The set of function template specializations that could match this
@@ -5911,7 +5911,7 @@ Sema::CheckFunctionTemplateSpecialization(FunctionDecl *FD,
   for (LookupResult::iterator I = Previous.begin(), E = Previous.end();
          I != E; ++I) {
     NamedDecl *Ovl = (*I)->getUnderlyingDecl();
-    if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(Ovl)) {
+    if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(Ovl)) {
       // Only consider templates found within the same semantic lookup scope as
       // FD.
       if (!FDLookupContext->InEnclosingNamespaceSetOf(
@@ -5926,7 +5926,7 @@ Sema::CheckFunctionTemplateSpecialization(FunctionDecl *FD,
       // specializing this template.
       // FIXME: It is somewhat wasteful to build
       TemplateDeductionInfo Info(FD->getLocation());
-      FunctionDecl *Specialization = 0;
+      SubprogramDecl *Specialization = 0;
       if (TemplateDeductionResult TDK
             = DeduceTemplateArguments(FunTmpl, ExplicitTemplateArgs,
                                       FD->getType(),
@@ -5956,11 +5956,11 @@ Sema::CheckFunctionTemplateSpecialization(FunctionDecl *FD,
     return true;
 
   // Ignore access information;  it doesn't figure into redeclaration checking.
-  FunctionDecl *Specialization = cast<FunctionDecl>(*Result);
+  SubprogramDecl *Specialization = cast<SubprogramDecl>(*Result);
 
-  FunctionTemplateSpecializationInfo *SpecInfo
+  SubprogramTemplateSpecializationInfo *SpecInfo
     = Specialization->getTemplateSpecializationInfo();
-  assert(SpecInfo && "Function template specialization info missing?");
+  assert(SpecInfo && "Subprogram template specialization info missing?");
 
   // Note: do not overwrite location info if previous template
   // specialization kind was explicit.
@@ -6017,7 +6017,7 @@ Sema::CheckFunctionTemplateSpecialization(FunctionDecl *FD,
   // Take copies of (semantic and syntactic) template argument lists.
   const TemplateArgumentList* TemplArgs = new (Context)
     TemplateArgumentList(Specialization->getTemplateSpecializationArgs());
-  FD->setFunctionTemplateSpecialization(Specialization->getPrimaryTemplate(),
+  FD->setSubprogramTemplateSpecialization(Specialization->getPrimaryTemplate(),
                                         TemplArgs, /*InsertPos=*/0,
                                     SpecInfo->getTemplateSpecializationKind(),
                                         ExplicitTemplateArgs);
@@ -6055,14 +6055,14 @@ Sema::CheckMemberSpecialization(NamedDecl *Member, LookupResult &Previous) {
 
   if (Previous.empty()) {
     // Nowhere to look anyway.
-  } else if (FunctionDecl *Function = dyn_cast<FunctionDecl>(Member)) {
+  } else if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(Member)) {
     for (LookupResult::iterator I = Previous.begin(), E = Previous.end();
            I != E; ++I) {
       NamedDecl *D = (*I)->getUnderlyingDecl();
       if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
-        if (Context.hasSameType(Function->getType(), Method->getType())) {
+        if (Context.hasSameType(Subprogram->getType(), Method->getType())) {
           Instantiation = Method;
-          InstantiatedFrom = Method->getInstantiatedFromMemberFunction();
+          InstantiatedFrom = Method->getInstantiatedFromMemberSubprogram();
           MSInfo = Method->getMemberSpecializationInfo();
           break;
         }
@@ -6107,7 +6107,7 @@ Sema::CheckMemberSpecialization(NamedDecl *Member, LookupResult &Previous) {
   if (Member->getFriendObjectKind() != Decl::FOK_None) {
     // Preserve instantiation information.
     if (InstantiatedFrom && isa<CXXMethodDecl>(Member)) {
-      cast<CXXMethodDecl>(Member)->setInstantiationOfMemberFunction(
+      cast<CXXMethodDecl>(Member)->setInstantiationOfMemberSubprogram(
                                       cast<CXXMethodDecl>(InstantiatedFrom),
         cast<CXXMethodDecl>(Instantiation)->getTemplateSpecializationKind());
     } else if (InstantiatedFrom && isa<CXXRecordDecl>(Member)) {
@@ -6157,19 +6157,19 @@ Sema::CheckMemberSpecialization(NamedDecl *Member, LookupResult &Previous) {
   // the original declaration to note that it is an explicit specialization
   // (if it was previously an implicit instantiation). This latter step
   // makes bookkeeping easier.
-  if (isa<FunctionDecl>(Member)) {
-    FunctionDecl *InstantiationFunction = cast<FunctionDecl>(Instantiation);
-    if (InstantiationFunction->getTemplateSpecializationKind() ==
+  if (isa<SubprogramDecl>(Member)) {
+    SubprogramDecl *InstantiationSubprogram = cast<SubprogramDecl>(Instantiation);
+    if (InstantiationSubprogram->getTemplateSpecializationKind() ==
           TSK_ImplicitInstantiation) {
-      InstantiationFunction->setTemplateSpecializationKind(
+      InstantiationSubprogram->setTemplateSpecializationKind(
                                                   TSK_ExplicitSpecialization);
-      InstantiationFunction->setLocation(Member->getLocation());
+      InstantiationSubprogram->setLocation(Member->getLocation());
     }
 
-    cast<FunctionDecl>(Member)->setInstantiationOfMemberFunction(
+    cast<SubprogramDecl>(Member)->setInstantiationOfMemberSubprogram(
                                         cast<CXXMethodDecl>(InstantiatedFrom),
                                                   TSK_ExplicitSpecialization);
-    MarkUnusedFileScopedDecl(InstantiationFunction);
+    MarkUnusedFileScopedDecl(InstantiationSubprogram);
   } else if (isa<VarDecl>(Member)) {
     VarDecl *InstantiationVar = cast<VarDecl>(Instantiation);
     if (InstantiationVar->getTemplateSpecializationKind() ==
@@ -6677,7 +6677,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
   LookupResult Previous(*this, NameInfo, LookupOrdinaryName);
   LookupParsedName(Previous, S, &D.getCXXScopeSpec());
 
-  if (!R->isFunctionType()) {
+  if (!R->isSubprogramType()) {
     // C++ [temp.explicit]p1:
     //   A [...] static data member of a class template can be explicitly
     //   instantiated from the member definition associated with its class
@@ -6777,12 +6777,12 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
       }
     }
 
-    FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(Prev);
+    SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(Prev);
     if (!FunTmpl)
       continue;
 
     TemplateDeductionInfo Info(D.getIdentifierLoc());
-    FunctionDecl *Specialization = 0;
+    SubprogramDecl *Specialization = 0;
     if (TemplateDeductionResult TDK
           = DeduceTemplateArguments(FunTmpl,
                                (HasExplicitTemplateArgs ? &TemplateArgs : 0),
@@ -6807,7 +6807,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
     return true;
 
   // Ignore access control bits, we don't need them for redeclaration checking.
-  FunctionDecl *Specialization = cast<FunctionDecl>(*Result);
+  SubprogramDecl *Specialization = cast<SubprogramDecl>(*Result);
 
   if (Specialization->getTemplateSpecializationKind() == TSK_Undeclared) {
     Diag(D.getIdentifierLoc(),
@@ -6819,7 +6819,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
     return true;
   }
 
-  FunctionDecl *PrevDecl = Specialization->getPreviousDecl();
+  SubprogramDecl *PrevDecl = Specialization->getPreviousDecl();
   if (!PrevDecl && Specialization->isThisDeclarationADefinition())
     PrevDecl = Specialization;
 
@@ -6844,7 +6844,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
     ProcessDeclAttributeList(S, Specialization, Attr);
 
   if (TSK == TSK_ExplicitInstantiationDefinition)
-    InstantiateFunctionDefinition(D.getIdentifierLoc(), Specialization);
+    InstantiateSubprogramDefinition(D.getIdentifierLoc(), Specialization);
 
   // C++0x [temp.explicit]p2:
   //   If the explicit instantiation is for a member function, a member class
@@ -6853,7 +6853,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
   //   name shall be a simple-template-id.
   //
   // C++98 has the same restriction, just worded differently.
-  FunctionTemplateDecl *FunTmpl = Specialization->getPrimaryTemplate();
+  SubprogramTemplateDecl *FunTmpl = Specialization->getPrimaryTemplate();
   if (D.getName().getKind() != UnqualifiedId::IK_TemplateId && !FunTmpl &&
       D.getCXXScopeSpec().isSet() &&
       !ScopeSpecifierHasTemplateId(D.getCXXScopeSpec()))
@@ -6863,7 +6863,7 @@ DeclResult Sema::ActOnExplicitInstantiation(Scope *S,
 
   CheckExplicitInstantiationScope(*this,
                    FunTmpl? (NamedDecl *)FunTmpl
-                          : Specialization->getInstantiatedFromMemberFunction(),
+                          : Specialization->getInstantiatedFromMemberSubprogram(),
                                   D.getIdentifierLoc(),
                                   D.getCXXScopeSpec().isSet());
 
@@ -7338,19 +7338,19 @@ Sema::getTemplateArgumentBindingsText(const TemplateParameterList *Params,
   return Out.str();
 }
 
-void Sema::MarkAsLateParsedTemplate(FunctionDecl *FD, bool Flag) {
+void Sema::MarkAsLateParsedTemplate(SubprogramDecl *FD, bool Flag) {
   if (!FD)
     return;
   FD->setLateTemplateParsed(Flag);
 } 
 
-bool Sema::IsInsideALocalClassWithinATemplateFunction() {
+bool Sema::IsInsideALocalClassWithinATemplateSubprogram() {
   DeclContext *DC = CurContext;
 
   while (DC) {
     if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(CurContext)) {
-      const FunctionDecl *FD = RD->isLocalClass();
-      return (FD && FD->getTemplatedKind() != FunctionDecl::TK_NonTemplate);
+      const SubprogramDecl *FD = RD->isLocalClass();
+      return (FD && FD->getTemplatedKind() != SubprogramDecl::TK_NonTemplate);
     } else if (DC->isTranslationUnit() || DC->isNamespace())
       return false;
 

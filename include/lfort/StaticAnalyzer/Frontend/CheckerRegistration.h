@@ -1,4 +1,4 @@
-//===-- CheckerRegistration.h - Checker Registration Function ---*- C++ -*-===//
+//===-- CheckerRegistration.h - Checker Registration Subprogram ---*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //

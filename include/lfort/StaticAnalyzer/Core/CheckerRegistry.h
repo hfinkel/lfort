@@ -72,20 +72,20 @@ class CheckerOptInfo;
 /// Manages a set of available checkers for running a static analysis.
 /// The checkers are organized into packages by full name, where including
 /// a package will recursively include all subpackages and checkers within it.
-/// For example, the checker "core.builtin.NoReturnFunctionChecker" will be
+/// For example, the checker "core.builtin.NoReturnSubprogramChecker" will be
 /// included if initializeManager() is called with an option of "core",
-/// "core.builtin", or the full name "core.builtin.NoReturnFunctionChecker".
+/// "core.builtin", or the full name "core.builtin.NoReturnSubprogramChecker".
 class CheckerRegistry {
 public:
   /// Initialization functions perform any necessary setup for a checker.
   /// They should include a call to CheckerManager::registerChecker.
-  typedef void (*InitializationFunction)(CheckerManager &);
+  typedef void (*InitializationSubprogram)(CheckerManager &);
   struct CheckerInfo {
-    InitializationFunction Initialize;
+    InitializationSubprogram Initialize;
     StringRef FullName;
     StringRef Desc;
 
-    CheckerInfo(InitializationFunction fn, StringRef name, StringRef desc)
+    CheckerInfo(InitializationSubprogram fn, StringRef name, StringRef desc)
     : Initialize(fn), FullName(name), Desc(desc) {}
   };
 
@@ -100,7 +100,7 @@ private:
 public:
   /// Adds a checker to the registry. Use this non-templated overload when your
   /// checker requires custom initialization.
-  void addChecker(InitializationFunction fn, StringRef fullName,
+  void addChecker(InitializationSubprogram fn, StringRef fullName,
                   StringRef desc);
 
   /// Adds a checker to the registry. Use this templated overload when your

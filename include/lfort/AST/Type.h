@@ -81,7 +81,7 @@ namespace lfort {
   class CXXRecordDecl;
   class EnumDecl;
   class FieldDecl;
-  class FunctionDecl;
+  class SubprogramDecl;
   class ObjCInterfaceDecl;
   class ObjCProtocolDecl;
   class ObjCMethodDecl;
@@ -1258,8 +1258,8 @@ protected:
     unsigned Kind : 8;
   };
 
-  class FunctionTypeBitfields {
-    friend class FunctionType;
+  class SubprogramTypeBitfields {
+    friend class SubprogramType;
 
     unsigned : NumTypeBits;
 
@@ -1267,15 +1267,15 @@ protected:
     /// regparm and the calling convention.
     unsigned ExtInfo : 9;
 
-    /// TypeQuals - Used only by FunctionProtoType, put here to pack with the
+    /// TypeQuals - Used only by SubprogramProtoType, put here to pack with the
     /// other bitfields.
-    /// The qualifiers are part of FunctionProtoType because...
+    /// The qualifiers are part of SubprogramProtoType because...
     ///
     /// C++ 8.3.5p4: The return type, the parameter type list and the
     /// cv-qualifier-seq, [...], are part of the function type.
     unsigned TypeQuals : 3;
 
-    /// \brief The ref-qualifier associated with a \c FunctionProtoType.
+    /// \brief The ref-qualifier associated with a \c SubprogramProtoType.
     ///
     /// This is a value of type \c RefQualifierKind.
     unsigned RefQualifier : 2;
@@ -1350,7 +1350,7 @@ protected:
     ArrayTypeBitfields ArrayTypeBits;
     AttributedTypeBitfields AttributedTypeBits;
     BuiltinTypeBitfields BuiltinTypeBits;
-    FunctionTypeBitfields FunctionTypeBits;
+    SubprogramTypeBitfields SubprogramTypeBits;
     ObjCObjectTypeBitfields ObjCObjectTypeBits;
     ReferenceTypeBitfields ReferenceTypeBits;
     TypeWithKeywordBitfields TypeWithKeywordBits;
@@ -1451,7 +1451,7 @@ public:
   /// isIncompleteOrObjectType - Return true if this is an incomplete or object
   /// type, in other words, not a function type.
   bool isIncompleteOrObjectType() const {
-    return !isFunctionType();
+    return !isSubprogramType();
   }
 
   /// \brief Determine whether this type is an object type.
@@ -1459,7 +1459,7 @@ public:
     // C++ [basic.types]p8:
     //   An object type is a (possibly cv-qualified) type that is not a
     //   function type, not a reference type, and not a void type.
-    return !isReferenceType() && !isFunctionType() && !isVoidType();
+    return !isReferenceType() && !isSubprogramType() && !isVoidType();
   }
 
   /// isLiteralType - Return true if this is a literal type
@@ -1530,9 +1530,9 @@ public:
 
   // Type Predicates: Check to see if this type is structurally the specified
   // type, ignoring typedefs and qualifiers.
-  bool isFunctionType() const;
-  bool isFunctionNoProtoType() const { return getAs<FunctionNoProtoType>(); }
-  bool isFunctionProtoType() const { return getAs<FunctionProtoType>(); }
+  bool isSubprogramType() const;
+  bool isSubprogramNoProtoType() const { return getAs<SubprogramNoProtoType>(); }
+  bool isSubprogramProtoType() const { return getAs<SubprogramProtoType>(); }
   bool isPointerType() const;
   bool isAnyPointerType() const;   // Any C pointer or ObjC object pointer
   bool isBlockPointerType() const;
@@ -1540,9 +1540,9 @@ public:
   bool isReferenceType() const;
   bool isLValueReferenceType() const;
   bool isRValueReferenceType() const;
-  bool isFunctionPointerType() const;
+  bool isSubprogramPointerType() const;
   bool isMemberPointerType() const;
-  bool isMemberFunctionPointerType() const;
+  bool isMemberSubprogramPointerType() const;
   bool isMemberDataPointerType() const;
   bool isArrayType() const;
   bool isConstantArrayType() const;
@@ -1669,7 +1669,7 @@ public:
   /// of some sort, e.g., it is a floating-point type or a vector thereof.
   bool hasFloatingRepresentation() const;
 
-  // Type Checking Functions: Check to see if this type is structurally the
+  // Type Checking Subprograms: Check to see if this type is structurally the
   // specified type, ignoring typedefs and qualifiers, and return a pointer to
   // the best type we can.
   const RecordType *getAsStructureType() const;
@@ -2129,14 +2129,14 @@ public:
 
   /// Returns true if the member type (i.e. the pointee type) is a
   /// function type rather than a data-member type.
-  bool isMemberFunctionPointer() const {
-    return PointeeType->isFunctionProtoType();
+  bool isMemberSubprogramPointer() const {
+    return PointeeType->isSubprogramProtoType();
   }
 
   /// Returns true if the member type (i.e. the pointee type) is a
   /// data type rather than a function type.
   bool isMemberDataPointer() const {
-    return !PointeeType->isFunctionProtoType();
+    return !PointeeType->isSubprogramProtoType();
   }
 
   const Type *getClass() const { return Class; }
@@ -2576,10 +2576,10 @@ public:
   }
 };
 
-/// FunctionType - C99 6.7.5.3 - Function Declarators.  This is the common base
-/// class of FunctionNoProtoType and FunctionProtoType.
+/// SubprogramType - C99 6.7.5.3 - Subprogram Declarators.  This is the common base
+/// class of SubprogramNoProtoType and SubprogramProtoType.
 ///
-class FunctionType : public Type {
+class SubprogramType : public Type {
   // The type returned by the function.
   QualType ResultType;
 
@@ -2588,7 +2588,7 @@ class FunctionType : public Type {
   /// making a call.
   ///
   /// It is not actually used directly for storing this information in
-  /// a FunctionType, although FunctionType does currently use the
+  /// a SubprogramType, although SubprogramType does currently use the
   /// same bit-pattern.
   ///
   // If you add a field (say Foo), other than the obvious places (both,
@@ -2598,16 +2598,16 @@ class FunctionType : public Type {
   // * withFoo
   // * functionType. Add Foo, getFoo.
   // * ASTContext::getFooType
-  // * ASTContext::mergeFunctionTypes
-  // * FunctionNoProtoType::Profile
-  // * FunctionProtoType::Profile
-  // * TypePrinter::PrintFunctionProto
+  // * ASTContext::mergeSubprogramTypes
+  // * SubprogramNoProtoType::Profile
+  // * SubprogramProtoType::Profile
+  // * TypePrinter::PrintSubprogramProto
   // * AST read and write
   // * Codegen
   class ExtInfo {
     // Feel free to rearrange or add bits, but if you go over 9,
     // you'll need to adjust both the Bits field below and
-    // Type::FunctionTypeBitfields.
+    // Type::SubprogramTypeBitfields.
 
     //   |  CC  |noreturn|produces|regparm|
     //   |0 .. 3|   4    |    5   | 6 .. 8|
@@ -2623,7 +2623,7 @@ class FunctionType : public Type {
 
     ExtInfo(unsigned Bits) : Bits(static_cast<uint16_t>(Bits)) {}
 
-    friend class FunctionType;
+    friend class SubprogramType;
 
    public:
     // Constructor with no defaults. Use this when you know that you
@@ -2692,7 +2692,7 @@ class FunctionType : public Type {
   };
 
 protected:
-  FunctionType(TypeClass tc, QualType res,
+  SubprogramType(TypeClass tc, QualType res,
                unsigned typeQuals, RefQualifierKind RefQualifier,
                QualType Canonical, bool Dependent,
                bool InstantiationDependent,
@@ -2701,14 +2701,14 @@ protected:
     : Type(tc, Canonical, Dependent, InstantiationDependent, VariablyModified,
            ContainsUnexpandedParameterPack),
       ResultType(res) {
-    FunctionTypeBits.ExtInfo = Info.Bits;
-    FunctionTypeBits.TypeQuals = typeQuals;
-    FunctionTypeBits.RefQualifier = static_cast<unsigned>(RefQualifier);
+    SubprogramTypeBits.ExtInfo = Info.Bits;
+    SubprogramTypeBits.TypeQuals = typeQuals;
+    SubprogramTypeBits.RefQualifier = static_cast<unsigned>(RefQualifier);
   }
-  unsigned getTypeQuals() const { return FunctionTypeBits.TypeQuals; }
+  unsigned getTypeQuals() const { return SubprogramTypeBits.TypeQuals; }
 
   RefQualifierKind getRefQualifier() const {
-    return static_cast<RefQualifierKind>(FunctionTypeBits.RefQualifier);
+    return static_cast<RefQualifierKind>(SubprogramTypeBits.RefQualifier);
   }
 
 public:
@@ -2719,7 +2719,7 @@ public:
   unsigned getRegParmType() const { return getExtInfo().getRegParm(); }
   bool getNoReturnAttr() const { return getExtInfo().getNoReturn(); }
   CallingConv getCallConv() const { return getExtInfo().getCC(); }
-  ExtInfo getExtInfo() const { return ExtInfo(FunctionTypeBits.ExtInfo); }
+  ExtInfo getExtInfo() const { return ExtInfo(SubprogramTypeBits.ExtInfo); }
   bool isConst() const { return getTypeQuals() & Qualifiers::Const; }
   bool isVolatile() const { return getTypeQuals() & Qualifiers::Volatile; }
   bool isRestrict() const { return getTypeQuals() & Qualifiers::Restrict; }
@@ -2733,16 +2733,16 @@ public:
   static StringRef getNameForCallConv(CallingConv CC);
 
   static bool classof(const Type *T) {
-    return T->getTypeClass() == FunctionNoProto ||
-           T->getTypeClass() == FunctionProto;
+    return T->getTypeClass() == SubprogramNoProto ||
+           T->getTypeClass() == SubprogramProto;
   }
 };
 
-/// FunctionNoProtoType - Represents a K&R-style 'int foo()' function, which has
+/// SubprogramNoProtoType - Represents a K&R-style 'int foo()' function, which has
 /// no information available about its arguments.
-class FunctionNoProtoType : public FunctionType, public llvm::FoldingSetNode {
-  FunctionNoProtoType(QualType Result, QualType Canonical, ExtInfo Info)
-    : FunctionType(FunctionNoProto, Result, 0, RQ_None, Canonical,
+class SubprogramNoProtoType : public SubprogramType, public llvm::FoldingSetNode {
+  SubprogramNoProtoType(QualType Result, QualType Canonical, ExtInfo Info)
+    : SubprogramType(SubprogramNoProto, Result, 0, RQ_None, Canonical,
                    /*Dependent=*/false, /*InstantiationDependent=*/false,
                    Result->isVariablyModifiedType(),
                    /*ContainsUnexpandedParameterPack=*/false, Info) {}
@@ -2750,7 +2750,7 @@ class FunctionNoProtoType : public FunctionType, public llvm::FoldingSetNode {
   friend class ASTContext;  // ASTContext creates these.
 
 public:
-  // No additional state past what FunctionType provides.
+  // No additional state past what SubprogramType provides.
 
   bool isSugared() const { return false; }
   QualType desugar() const { return QualType(this, 0); }
@@ -2765,16 +2765,16 @@ public:
   }
 
   static bool classof(const Type *T) {
-    return T->getTypeClass() == FunctionNoProto;
+    return T->getTypeClass() == SubprogramNoProto;
   }
 };
 
-/// FunctionProtoType - Represents a prototype with argument type info, e.g.
+/// SubprogramProtoType - Represents a prototype with argument type info, e.g.
 /// 'int foo(int)' or 'int foo(void)'.  'void' is represented as having no
 /// arguments, not as having a single void argument. Such a type can have an
 /// exception specification, but this specification is not part of the canonical
 /// type.
-class FunctionProtoType : public FunctionType, public llvm::FoldingSetNode {
+class SubprogramProtoType : public SubprogramType, public llvm::FoldingSetNode {
 public:
   /// ExtProtoInfo - Extra information about a function prototype.
   struct ExtProtoInfo {
@@ -2785,7 +2785,7 @@ public:
       ExceptionSpecDecl(0), ExceptionSpecTemplate(0),
       ConsumedArguments(0) {}
 
-    FunctionType::ExtInfo ExtInfo;
+    SubprogramType::ExtInfo ExtInfo;
     bool Variadic : 1;
     bool HasTrailingReturn : 1;
     unsigned char TypeQuals;
@@ -2794,8 +2794,8 @@ public:
     unsigned NumExceptions;
     const QualType *Exceptions;
     Expr *NoexceptExpr;
-    FunctionDecl *ExceptionSpecDecl;
-    FunctionDecl *ExceptionSpecTemplate;
+    SubprogramDecl *ExceptionSpecDecl;
+    SubprogramDecl *ExceptionSpecTemplate;
     const bool *ConsumedArguments;
   };
 
@@ -2811,7 +2811,7 @@ private:
     return false;
   }
 
-  FunctionProtoType(QualType result, const QualType *args, unsigned numArgs,
+  SubprogramProtoType(QualType result, const QualType *args, unsigned numArgs,
                     QualType canonical, const ExtProtoInfo &epi);
 
   /// NumArgs - The number of arguments this function has, not counting '...'.
@@ -2842,7 +2842,7 @@ private:
   // to the expression in the noexcept() specifier.
 
   // ExceptionSpecDecl, ExceptionSpecTemplate - Instead of Exceptions, there may
-  // be a pair of FunctionDecl* pointing to the function which should be used to
+  // be a pair of SubprogramDecl* pointing to the function which should be used to
   // instantiate this function type's exception specification, and the function
   // from which it should be instantiated.
 
@@ -2937,20 +2937,20 @@ public:
   /// been determined yet (either because it has not been evaluated or because
   /// it has not been instantiated), this is the function whose exception
   /// specification is represented by this type.
-  FunctionDecl *getExceptionSpecDecl() const {
+  SubprogramDecl *getExceptionSpecDecl() const {
     if (getExceptionSpecType() != EST_Uninstantiated &&
         getExceptionSpecType() != EST_Unevaluated)
       return 0;
-    return reinterpret_cast<FunctionDecl * const *>(arg_type_end())[0];
+    return reinterpret_cast<SubprogramDecl * const *>(arg_type_end())[0];
   }
   /// \brief If this function type has an uninstantiated exception
   /// specification, this is the function whose exception specification
   /// should be instantiated to find the exception specification for
   /// this type.
-  FunctionDecl *getExceptionSpecTemplate() const {
+  SubprogramDecl *getExceptionSpecTemplate() const {
     if (getExceptionSpecType() != EST_Uninstantiated)
       return 0;
-    return reinterpret_cast<FunctionDecl * const *>(arg_type_end())[1];
+    return reinterpret_cast<SubprogramDecl * const *>(arg_type_end())[1];
   }
   bool isNothrow(ASTContext &Ctx) const {
     ExceptionSpecificationType EST = getExceptionSpecType();
@@ -2974,12 +2974,12 @@ public:
 
   bool hasTrailingReturn() const { return HasTrailingReturn; }
 
-  unsigned getTypeQuals() const { return FunctionType::getTypeQuals(); }
+  unsigned getTypeQuals() const { return SubprogramType::getTypeQuals(); }
 
 
   /// \brief Retrieve the ref-qualifier associated with this function type.
   RefQualifierKind getRefQualifier() const {
-    return FunctionType::getRefQualifier();
+    return SubprogramType::getRefQualifier();
   }
 
   typedef const QualType *arg_type_iterator;
@@ -3019,7 +3019,7 @@ public:
                                    const PrintingPolicy &Policy) const;
 
   static bool classof(const Type *T) {
-    return T->getTypeClass() == FunctionProto;
+    return T->getTypeClass() == SubprogramProto;
   }
 
   void Profile(llvm::FoldingSetNodeID &ID, const ASTContext &Ctx);
@@ -4621,7 +4621,7 @@ inline bool QualType::isCanonicalAsParam() const {
   if (T->isVariablyModifiedType() && T->hasSizedVLAType())
     return false;
 
-  return !isa<FunctionType>(T) && !isa<ArrayType>(T);
+  return !isa<SubprogramType>(T) && !isa<ArrayType>(T);
 }
 
 inline bool QualType::isConstQualified() const {
@@ -4689,18 +4689,18 @@ inline Qualifiers::GC QualType::getObjCGCAttr() const {
   return getQualifiers().getObjCGCAttr();
 }
 
-inline FunctionType::ExtInfo getFunctionExtInfo(const Type &t) {
+inline SubprogramType::ExtInfo getSubprogramExtInfo(const Type &t) {
   if (const PointerType *PT = t.getAs<PointerType>()) {
-    if (const FunctionType *FT = PT->getPointeeType()->getAs<FunctionType>())
+    if (const SubprogramType *FT = PT->getPointeeType()->getAs<SubprogramType>())
       return FT->getExtInfo();
-  } else if (const FunctionType *FT = t.getAs<FunctionType>())
+  } else if (const SubprogramType *FT = t.getAs<SubprogramType>())
     return FT->getExtInfo();
 
-  return FunctionType::ExtInfo();
+  return SubprogramType::ExtInfo();
 }
 
-inline FunctionType::ExtInfo getFunctionExtInfo(QualType t) {
-  return getFunctionExtInfo(*t);
+inline SubprogramType::ExtInfo getSubprogramExtInfo(QualType t) {
+  return getSubprogramExtInfo(*t);
 }
 
 /// isMoreQualifiedThan - Determine whether this type is more
@@ -4740,7 +4740,7 @@ inline QualType QualType::getNonReferenceType() const {
 
 inline bool QualType::isCForbiddenLValueType() const {
   return ((getTypePtr()->isVoidType() && !hasQualifiers()) ||
-          getTypePtr()->isFunctionType());
+          getTypePtr()->isSubprogramType());
 }
 
 /// \brief Tests whether the type is categorized as a fundamental type.
@@ -4762,7 +4762,7 @@ inline bool Type::isCompoundType() const {
   //    -- arrays of objects of a given type [...];
   return isArrayType() ||
   //    -- functions, which have parameters of given types [...];
-         isFunctionType() ||
+         isSubprogramType() ||
   //    -- pointers to void or objects or functions [...];
          isPointerType() ||
   //    -- references to objects or functions of a given type. [...]
@@ -4778,8 +4778,8 @@ inline bool Type::isCompoundType() const {
          isMemberPointerType();
 }
 
-inline bool Type::isFunctionType() const {
-  return isa<FunctionType>(CanonicalType);
+inline bool Type::isSubprogramType() const {
+  return isa<SubprogramType>(CanonicalType);
 }
 inline bool Type::isPointerType() const {
   return isa<PointerType>(CanonicalType);
@@ -4799,18 +4799,18 @@ inline bool Type::isLValueReferenceType() const {
 inline bool Type::isRValueReferenceType() const {
   return isa<RValueReferenceType>(CanonicalType);
 }
-inline bool Type::isFunctionPointerType() const {
+inline bool Type::isSubprogramPointerType() const {
   if (const PointerType *T = getAs<PointerType>())
-    return T->getPointeeType()->isFunctionType();
+    return T->getPointeeType()->isSubprogramType();
   else
     return false;
 }
 inline bool Type::isMemberPointerType() const {
   return isa<MemberPointerType>(CanonicalType);
 }
-inline bool Type::isMemberFunctionPointerType() const {
+inline bool Type::isMemberSubprogramPointerType() const {
   if (const MemberPointerType* T = getAs<MemberPointerType>())
-    return T->isMemberFunctionPointer();
+    return T->isMemberSubprogramPointer();
   else
     return false;
 }
@@ -5043,7 +5043,7 @@ inline bool Type::isOverloadableType() const {
 
 /// \brief Determines whether this type can decay to a pointer type.
 inline bool Type::canDecayToPointerType() const {
-  return isFunctionType() || isArrayType();
+  return isSubprogramType() || isArrayType();
 }
 
 inline bool Type::hasPointerRepresentation() const {

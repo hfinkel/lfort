@@ -71,7 +71,7 @@ enum AnalysisIPAMode {
 NumIPAModes
 };
 
-/// AnalysisInlineFunctionSelection - Set of inlining function selection heuristics.
+/// AnalysisInlineSubprogramSelection - Set of inlining function selection heuristics.
 enum AnalysisInliningMode {
 #define ANALYSIS_INLINING_MODE(NAME, CMDFLAG, DESC) NAME,
 #include "lfort/StaticAnalyzer/Core/Analyses.def"
@@ -90,7 +90,7 @@ enum CXXInlineableMemberKind {
   CIMK_None = 1,
 
   /// Refers to regular member function and operator calls.
-  CIMK_MemberFunctions,
+  CIMK_MemberSubprograms,
 
   /// Refers to constructors (implicit or explicit).
   ///
@@ -120,7 +120,7 @@ public:
   // \brief The interprocedural analysis mode.
   AnalysisIPAMode IPAMode;
   
-  std::string AnalyzeSpecificFunction;
+  std::string AnalyzeSpecificSubprogram;
   
   /// \brief The maximum number of exploded nodes the analyzer will generate.
   unsigned MaxNodes;
@@ -159,7 +159,7 @@ public:
   unsigned InlineMaxStackDepth;
   
   /// \brief The mode of function selection used during inlining.
-  unsigned InlineMaxFunctionSize;
+  unsigned InlineMaxSubprogramSize;
 
   /// \brief The mode of function selection used during inlining.
   AnalysisInliningMode InliningMode;
@@ -174,8 +174,8 @@ private:
   /// \sa mayInlineCXXStandardLibrary
   llvm::Optional<bool> InlineCXXStandardLibrary;
   
-  /// \sa mayInlineTemplateFunctions
-  llvm::Optional<bool> InlineTemplateFunctions;
+  /// \sa mayInlineTemplateSubprograms
+  llvm::Optional<bool> InlineTemplateSubprograms;
 
   /// \sa mayInlineObjCMethod
   llvm::Optional<bool> ObjCInliningMode;
@@ -216,7 +216,7 @@ public:
   /// This is controlled by the 'c++-inlining' config option.
   ///
   /// \sa CXXMemberInliningMode
-  bool mayInlineCXXMemberFunction(CXXInlineableMemberKind K);
+  bool mayInlineCXXMemberSubprogram(CXXInlineableMemberKind K);
 
   /// Returns true if ObjectiveC inlining is enabled, false otherwise.
   bool mayInlineObjCMethod();
@@ -239,7 +239,7 @@ public:
   ///
   /// This is controlled by the 'c++-template-inlining' config option, which
   /// accepts the values "true" and "false".
-  bool mayInlineTemplateFunctions();
+  bool mayInlineTemplateSubprograms();
 
   /// Returns whether or not paths that go through null returns should be
   /// suppressed.
@@ -304,7 +304,7 @@ public:
     NoRetryExhausted = 0;
     // Cap the stack depth at 4 calls (5 stack frames, base + 4 calls).
     InlineMaxStackDepth = 5;
-    InlineMaxFunctionSize = 200;
+    InlineMaxSubprogramSize = 200;
     InliningMode = NoRedundancy;
   }
 };

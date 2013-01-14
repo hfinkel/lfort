@@ -1036,31 +1036,31 @@ public:
 /// @code
 ///   x = int(0.5);
 /// @endcode
-class CXXFunctionalCastExpr : public ExplicitCastExpr {
+class CXXSubprogramalCastExpr : public ExplicitCastExpr {
   SourceLocation TyBeginLoc;
   SourceLocation RParenLoc;
 
-  CXXFunctionalCastExpr(QualType ty, ExprValueKind VK,
+  CXXSubprogramalCastExpr(QualType ty, ExprValueKind VK,
                         TypeSourceInfo *writtenTy,
                         SourceLocation tyBeginLoc, CastKind kind,
                         Expr *castExpr, unsigned pathSize,
                         SourceLocation rParenLoc)
-    : ExplicitCastExpr(CXXFunctionalCastExprClass, ty, VK, kind,
+    : ExplicitCastExpr(CXXSubprogramalCastExprClass, ty, VK, kind,
                        castExpr, pathSize, writtenTy),
       TyBeginLoc(tyBeginLoc), RParenLoc(rParenLoc) {}
 
-  explicit CXXFunctionalCastExpr(EmptyShell Shell, unsigned PathSize)
-    : ExplicitCastExpr(CXXFunctionalCastExprClass, Shell, PathSize) { }
+  explicit CXXSubprogramalCastExpr(EmptyShell Shell, unsigned PathSize)
+    : ExplicitCastExpr(CXXSubprogramalCastExprClass, Shell, PathSize) { }
 
 public:
-  static CXXFunctionalCastExpr *Create(ASTContext &Context, QualType T,
+  static CXXSubprogramalCastExpr *Create(ASTContext &Context, QualType T,
                                        ExprValueKind VK,
                                        TypeSourceInfo *Written,
                                        SourceLocation TyBeginLoc,
                                        CastKind Kind, Expr *Op,
                                        const CXXCastPath *Path,
                                        SourceLocation RPLoc);
-  static CXXFunctionalCastExpr *CreateEmpty(ASTContext &Context,
+  static CXXSubprogramalCastExpr *CreateEmpty(ASTContext &Context,
                                             unsigned PathSize);
 
   SourceLocation getTypeBeginLoc() const { return TyBeginLoc; }
@@ -1072,7 +1072,7 @@ public:
   SourceLocation getLocEnd() const LLVM_READONLY { return RParenLoc; }
 
   static bool classof(const Stmt *T) {
-    return T->getStmtClass() == CXXFunctionalCastExprClass;
+    return T->getStmtClass() == CXXSubprogramalCastExprClass;
   }
 };
 
@@ -1082,7 +1082,7 @@ public:
 /// This expression type represents a C++ "functional" cast
 /// (C++[expr.type.conv]) with N != 1 arguments that invokes a
 /// constructor to build a temporary object. With N == 1 arguments the
-/// functional cast expression will be represented by CXXFunctionalCastExpr.
+/// functional cast expression will be represented by CXXSubprogramalCastExpr.
 /// Example:
 /// @code
 /// struct X { X(int, float); }
@@ -1466,10 +1466,10 @@ class CXXNewExpr : public Expr {
   // expression, and any number of optional placement arguments, in that order.
   Stmt **SubExprs;
   /// \brief Points to the allocation function used.
-  FunctionDecl *OperatorNew;
+  SubprogramDecl *OperatorNew;
   /// \brief Points to the deallocation function used in case of error. May be
   /// null.
-  FunctionDecl *OperatorDelete;
+  SubprogramDecl *OperatorDelete;
 
   /// \brief The allocated type-source information, as written in the source.
   TypeSourceInfo *AllocatedTypeInfo;
@@ -1507,8 +1507,8 @@ public:
     ListInit  ///< New-expression has a C++11 list-initializer.
   };
 
-  CXXNewExpr(ASTContext &C, bool globalNew, FunctionDecl *operatorNew,
-             FunctionDecl *operatorDelete, bool usualArrayDeleteWantsSize,
+  CXXNewExpr(ASTContext &C, bool globalNew, SubprogramDecl *operatorNew,
+             SubprogramDecl *operatorDelete, bool usualArrayDeleteWantsSize,
              ArrayRef<Expr*> placementArgs,
              SourceRange typeIdParens, Expr *arraySize,
              InitializationStyle initializationStyle, Expr *initializer,
@@ -1540,10 +1540,10 @@ public:
   /// exception specification is just "is it throw()?".
   bool shouldNullCheckAllocation(ASTContext &Ctx) const;
 
-  FunctionDecl *getOperatorNew() const { return OperatorNew; }
-  void setOperatorNew(FunctionDecl *D) { OperatorNew = D; }
-  FunctionDecl *getOperatorDelete() const { return OperatorDelete; }
-  void setOperatorDelete(FunctionDecl *D) { OperatorDelete = D; }
+  SubprogramDecl *getOperatorNew() const { return OperatorNew; }
+  void setOperatorNew(SubprogramDecl *D) { OperatorNew = D; }
+  SubprogramDecl *getOperatorDelete() const { return OperatorDelete; }
+  void setOperatorDelete(SubprogramDecl *D) { OperatorDelete = D; }
 
   bool isArray() const { return Array; }
   Expr *getArraySize() {
@@ -1653,7 +1653,7 @@ public:
 /// destructor calls, e.g. "delete[] pArray".
 class CXXDeleteExpr : public Expr {
   // Points to the operator delete overload that is used. Could be a member.
-  FunctionDecl *OperatorDelete;
+  SubprogramDecl *OperatorDelete;
   // The pointer expression to be deleted.
   Stmt *Argument;
   // Location of the expression.
@@ -1672,7 +1672,7 @@ class CXXDeleteExpr : public Expr {
 public:
   CXXDeleteExpr(QualType ty, bool globalDelete, bool arrayForm,
                 bool arrayFormAsWritten, bool usualArrayDeleteWantsSize,
-                FunctionDecl *operatorDelete, Expr *arg, SourceLocation loc)
+                SubprogramDecl *operatorDelete, Expr *arg, SourceLocation loc)
     : Expr(CXXDeleteExprClass, ty, VK_RValue, OK_Ordinary, false, false,
            arg->isInstantiationDependent(),
            arg->containsUnexpandedParameterPack()),
@@ -1695,7 +1695,7 @@ public:
     return UsualArrayDeleteWantsSize;
   }
 
-  FunctionDecl *getOperatorDelete() const { return OperatorDelete; }
+  SubprogramDecl *getOperatorDelete() const { return OperatorDelete; }
 
   Expr *getArgument() { return cast<Expr>(Argument); }
   const Expr *getArgument() const { return cast<Expr>(Argument); }
@@ -3610,7 +3610,7 @@ public:
 /// };
 /// template struct S<int, int>;
 /// \endcode
-class FunctionParmPackExpr : public Expr {
+class SubprogramParmPackExpr : public Expr {
   /// \brief The function parameter pack which was referenced.
   ParmVarDecl *ParamPack;
 
@@ -3620,7 +3620,7 @@ class FunctionParmPackExpr : public Expr {
   /// \brief The number of expansions of this pack.
   unsigned NumParameters;
 
-  FunctionParmPackExpr(QualType T, ParmVarDecl *ParamPack,
+  SubprogramParmPackExpr(QualType T, ParmVarDecl *ParamPack,
                        SourceLocation NameLoc, unsigned NumParams,
                        Decl * const *Params);
 
@@ -3628,11 +3628,11 @@ class FunctionParmPackExpr : public Expr {
   friend class ASTStmtReader;
 
 public:
-  static FunctionParmPackExpr *Create(ASTContext &Context, QualType T,
+  static SubprogramParmPackExpr *Create(ASTContext &Context, QualType T,
                                       ParmVarDecl *ParamPack,
                                       SourceLocation NameLoc,
                                       llvm::ArrayRef<Decl*> Params);
-  static FunctionParmPackExpr *CreateEmpty(ASTContext &Context,
+  static SubprogramParmPackExpr *CreateEmpty(ASTContext &Context,
                                            unsigned NumParams);
 
   /// \brief Get the parameter pack which this expression refers to.
@@ -3657,7 +3657,7 @@ public:
   SourceLocation getLocEnd() const LLVM_READONLY { return NameLoc; }
 
   static bool classof(const Stmt *T) {
-    return T->getStmtClass() == FunctionParmPackExprClass;
+    return T->getStmtClass() == SubprogramParmPackExprClass;
   }
 
   child_range children() { return child_range(); }

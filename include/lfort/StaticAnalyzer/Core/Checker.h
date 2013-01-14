@@ -227,18 +227,18 @@ public:
   }
 };
 
-class EndFunction {
+class EndSubprogram {
   template <typename CHECKER>
-  static void _checkEndFunction(void *checker,
+  static void _checkEndSubprogram(void *checker,
                                 CheckerContext &C) {
-    ((const CHECKER *)checker)->checkEndFunction(C);
+    ((const CHECKER *)checker)->checkEndSubprogram(C);
   }
 
 public:
   template <typename CHECKER>
   static void _register(CHECKER *checker, CheckerManager &mgr) {
-    mgr._registerForEndFunction(
-     CheckerManager::CheckEndFunctionFunc(checker, _checkEndFunction<CHECKER>));
+    mgr._registerForEndSubprogram(
+     CheckerManager::CheckEndSubprogramFunc(checker, _checkEndSubprogram<CHECKER>));
   }
 };
 

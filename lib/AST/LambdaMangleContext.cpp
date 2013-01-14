@@ -19,14 +19,14 @@
 using namespace lfort;
 
 unsigned LambdaMangleContext::getManglingNumber(CXXMethodDecl *CallOperator) {
-  const FunctionProtoType *Proto
-    = CallOperator->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *Proto
+    = CallOperator->getType()->getAs<SubprogramProtoType>();
   ASTContext &Context = CallOperator->getASTContext();
   
-  QualType Key = Context.getFunctionType(Context.VoidTy, 
+  QualType Key = Context.getSubprogramType(Context.VoidTy, 
                                          Proto->arg_type_begin(),
                                          Proto->getNumArgs(),
-                                         FunctionProtoType::ExtProtoInfo());
+                                         SubprogramProtoType::ExtProtoInfo());
   Key = Context.getCanonicalType(Key);
-  return ++ManglingNumbers[Key->castAs<FunctionProtoType>()];
+  return ++ManglingNumbers[Key->castAs<SubprogramProtoType>()];
 }

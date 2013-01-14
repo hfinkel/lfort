@@ -927,16 +927,16 @@ void Parser::ParseLexedAttribute(LateParsedAttribute &LA,
         Actions.ActOnReenterTemplateScope(Actions.CurScope, D);
 
       // If the Decl is on a function, add function parameters to the scope.
-      bool HasFunScope = EnterScope && D->isFunctionOrFunctionTemplate();
+      bool HasFunScope = EnterScope && D->isSubprogramOrSubprogramTemplate();
       ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope, HasFunScope);
       if (HasFunScope)
-        Actions.ActOnReenterFunctionContext(Actions.CurScope, D);
+        Actions.ActOnReenterSubprogramContext(Actions.CurScope, D);
 
       ParseGNUAttributeArgs(&LA.AttrName, LA.AttrNameLoc, Attrs, &endLoc,
                             0, SourceLocation(), AttributeList::AS_GNU);
 
       if (HasFunScope) {
-        Actions.ActOnExitFunctionContext();
+        Actions.ActOnExitSubprogramContext();
         FnScope.Exit();  // Pop scope, and remove Decls from IdResolver
       }
       if (HasTemplateScope) {
@@ -1260,7 +1260,7 @@ Parser::ParseSimpleDeclaration(StmtVector &Stmts, unsigned Context,
     return Actions.ConvertDeclToDeclGroup(TheDecl);
   }
 
-  return ParseDeclGroup(DS, Context, /*FunctionDefs=*/ false, &DeclEnd, FRI);
+  return ParseDeclGroup(DS, Context, /*SubprogramDefs=*/ false, &DeclEnd, FRI);
 }
 
 /// Returns true if this might be the start of a declarator, or a common typo
@@ -1413,7 +1413,7 @@ void Parser::SkipMalformedDecl() {
 /// result.
 Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
                                               unsigned Context,
-                                              bool AllowFunctionDefinitions,
+                                              bool AllowSubprogramDefinitions,
                                               SourceLocation *DeclEnd,
                                               ForRangeInit *FRI) {
   // Parse the first declarator.
@@ -1428,19 +1428,19 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
 
   // Save late-parsed attributes for now; they need to be parsed in the
   // appropriate function scope after the function Decl has been constructed.
-  // These will be parsed in ParseFunctionDefinition or ParseLexedAttrList.
+  // These will be parsed in ParseSubprogramDefinition or ParseLexedAttrList.
   LateParsedAttrList LateParsedAttrs(true);
-  if (D.isFunctionDeclarator())
+  if (D.isSubprogramDeclarator())
     MaybeParseGNUAttributes(D, &LateParsedAttrs);
 
   // Check to see if we have a function *definition* which must have a body.
-  if (AllowFunctionDefinitions && D.isFunctionDeclarator() &&
+  if (AllowSubprogramDefinitions && D.isSubprogramDeclarator() &&
       // Look at the next token to make sure that this isn't a function
       // declaration.  We have to check this because __attribute__ might be the
       // start of a function definition in GCC-extended K&R C.
       !isDeclarationAfterDeclarator()) {
 
-    if (isStartOfFunctionDefinition(D)) {
+    if (isStartOfSubprogramDefinition(D)) {
       if (DS.getStorageClassSpec() == DeclSpec::SCS_typedef) {
         Diag(Tok, diag::err_function_declared_typedef);
 
@@ -1449,7 +1449,7 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
       }
 
       Decl *TheDecl =
-        ParseFunctionDefinition(D, ParsedTemplateInfo(), &LateParsedAttrs);
+        ParseSubprogramDefinition(D, ParsedTemplateInfo(), &LateParsedAttrs);
       return Actions.ConvertDeclToDeclGroup(TheDecl);
     }
 
@@ -1644,13 +1644,13 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
   if (isTokenEqualOrEqualTypo()) {
     ConsumeToken();
     if (Tok.is(tok::kw_delete)) {
-      if (D.isFunctionDeclarator())
+      if (D.isSubprogramDeclarator())
         Diag(ConsumeToken(), diag::err_default_delete_in_multiple_declaration)
           << 1 /* delete */;
       else
         Diag(ConsumeToken(), diag::err_deleted_non_function);
     } else if (Tok.is(tok::kw_default)) {
-      if (D.isFunctionDeclarator())
+      if (D.isSubprogramDeclarator())
         Diag(ConsumeToken(), diag::err_default_delete_in_multiple_declaration)
           << 0 /* default */;
       else
@@ -1722,7 +1722,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
                                    /*DirectInit=*/true, TypeContainsAuto);
     }
   } else if (getLangOpts().CPlusPlus11 && Tok.is(tok::l_brace) &&
-             (!CurParsedObjCImpl || !D.isFunctionDeclarator())) {
+             (!CurParsedObjCImpl || !D.isSubprogramDeclarator())) {
     // Parse C++0x braced-init-list.
     Diag(Tok, diag::warn_cxx98_compat_generalized_initializer_lists);
 
@@ -1789,14 +1789,14 @@ void Parser::ParseSpecifierQualifierList(DeclSpec &DS, AccessSpecifier AS,
   }
 
   // Issue diagnostic and remove function specfier if present.
-  if (Specs & DeclSpec::PQ_FunctionSpecifier) {
+  if (Specs & DeclSpec::PQ_SubprogramSpecifier) {
     if (DS.isInlineSpecified())
       Diag(DS.getInlineSpecLoc(), diag::err_typename_invalid_functionspec);
     if (DS.isVirtualSpecified())
       Diag(DS.getVirtualSpecLoc(), diag::err_typename_invalid_functionspec);
     if (DS.isExplicitSpecified())
       Diag(DS.getExplicitSpecLoc(), diag::err_typename_invalid_functionspec);
-    DS.ClearFunctionSpecs();
+    DS.ClearSubprogramSpecs();
   }
 
   // Issue diagnostic and remove constexpr specfier if present.
@@ -2199,7 +2199,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
           = (getCurScope()->getFlags() & (Scope::ControlScope |
                                           Scope::BlockScope |
                                           Scope::TemplateParamScope |
-                                          Scope::FunctionPrototypeScope |
+                                          Scope::SubprogramPrototypeScope |
                                           Scope::AtCatchScope)) == 0;
         bool AllowNestedNameSpecifiers
           = DSContext == DSC_top_level ||
@@ -2528,7 +2528,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
 
     // Microsoft single token adornments.
     case tok::kw___forceinline: {
-      isInvalid = DS.setFunctionSpecInline(Loc);
+      isInvalid = DS.setSubprogramSpecInline(Loc);
       IdentifierInfo *AttrName = Tok.getIdentifierInfo();
       SourceLocation AttrNameLoc = Tok.getLocation();
       // FIXME: This does not work correctly if it is set to be a declspec
@@ -2609,13 +2609,13 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
 
     // function-specifier
     case tok::kw_inline:
-      isInvalid = DS.setFunctionSpecInline(Loc);
+      isInvalid = DS.setSubprogramSpecInline(Loc);
       break;
     case tok::kw_virtual:
-      isInvalid = DS.setFunctionSpecVirtual(Loc);
+      isInvalid = DS.setSubprogramSpecVirtual(Loc);
       break;
     case tok::kw_explicit:
-      isInvalid = DS.setFunctionSpecExplicit(Loc);
+      isInvalid = DS.setSubprogramSpecExplicit(Loc);
       break;
 
     // alignment-specifier
@@ -4171,7 +4171,7 @@ static bool isPtrOperatorToken(tok::TokenKind Kind, const LangOptions &Lang) {
 /// [GNU?]  '&&' restrict[opt] attributes[opt]
 ///         '::'[opt] nested-name-specifier '*' cv-qualifier-seq[opt]
 void Parser::ParseDeclaratorInternal(Declarator &D,
-                                     DirectDeclParseFunction DirectDeclParser) {
+                                     DirectDeclParseSubprogram DirectDeclParser) {
   if (Diags.hasAllExtensionsSilenced())
     D.setExtension();
 
@@ -4500,7 +4500,7 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
       // Enter function-declaration scope, limiting any declarators to the
       // function prototype scope, including parameter declarators.
       ParseScope PrototypeScope(this,
-                                Scope::FunctionPrototypeScope|Scope::DeclScope);
+                                Scope::SubprogramPrototypeScope|Scope::DeclScope);
       // The paren may be part of a C++ direct initializer, eg. "int x(1);".
       // In such a case, check if we actually have a function declarator; if it
       // is not, the declarator has been fully parsed.
@@ -4509,15 +4509,15 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
         // The name of the declarator, if any, is tentatively declared within
         // a possible direct initializer.
         TentativelyDeclaredIdentifiers.push_back(D.getIdentifier());
-        bool IsFunctionDecl = isCXXFunctionDeclarator(&IsAmbiguous);
+        bool IsSubprogramDecl = isCXXSubprogramDeclarator(&IsAmbiguous);
         TentativelyDeclaredIdentifiers.pop_back();
-        if (!IsFunctionDecl)
+        if (!IsSubprogramDecl)
           break;
       }
       ParsedAttributes attrs(AttrFactory);
       BalancedDelimiterTracker T(*this, tok::l_paren);
       T.consumeOpen();
-      ParseFunctionDeclarator(D, attrs, T, IsAmbiguous);
+      ParseSubprogramDeclarator(D, attrs, T, IsAmbiguous);
       PrototypeScope.Exit();
     } else if (Tok.is(tok::l_square)) {
       ParseBracketDeclarator(D);
@@ -4530,7 +4530,7 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
 /// ParseParenDeclarator - We parsed the declarator D up to a paren.  This is
 /// only called before the identifier, so these are most likely just grouping
 /// parens for precedence.  If we find that these are actually function
-/// parameter parens in an abstract-declarator, we call ParseFunctionDeclarator.
+/// parameter parens in an abstract-declarator, we call ParseSubprogramDeclarator.
 ///
 ///       direct-declarator:
 ///         '(' declarator ')'
@@ -4624,18 +4624,18 @@ void Parser::ParseParenDeclarator(Declarator &D) {
   // Okay, if this wasn't a grouping paren, it must be the start of a function
   // argument list.  Recognize that this declarator will never have an
   // identifier (and remember where it would have been), then call into
-  // ParseFunctionDeclarator to handle of argument list.
+  // ParseSubprogramDeclarator to handle of argument list.
   D.SetIdentifier(0, Tok.getLocation());
 
   // Enter function-declaration scope, limiting any declarators to the
   // function prototype scope, including parameter declarators.
   ParseScope PrototypeScope(this,
-                            Scope::FunctionPrototypeScope|Scope::DeclScope);
-  ParseFunctionDeclarator(D, attrs, T, false, RequiresArg);
+                            Scope::SubprogramPrototypeScope|Scope::DeclScope);
+  ParseSubprogramDeclarator(D, attrs, T, false, RequiresArg);
   PrototypeScope.Exit();
 }
 
-/// ParseFunctionDeclarator - We are after the identifier and have parsed the
+/// ParseSubprogramDeclarator - We are after the identifier and have parsed the
 /// declarator D up to a paren, which indicates that we are parsing function
 /// arguments.
 ///
@@ -4654,13 +4654,13 @@ void Parser::ParseParenDeclarator(Declarator &D) {
 ///           dynamic-exception-specification
 ///           noexcept-specification
 ///
-void Parser::ParseFunctionDeclarator(Declarator &D,
+void Parser::ParseSubprogramDeclarator(Declarator &D,
                                      ParsedAttributes &FirstArgAttrs,
                                      BalancedDelimiterTracker &Tracker,
                                      bool IsAmbiguous,
                                      bool RequiresArg) {
-  assert(getCurScope()->isFunctionPrototypeScope() &&
-         "Should call from a Function scope");
+  assert(getCurScope()->isSubprogramPrototypeScope() &&
+         "Should call from a Subprogram scope");
   // lparen is already consumed!
   assert(D.isPastIdentifier() && "Should not call before identifier!");
 
@@ -4685,9 +4685,9 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
   ParsedAttributes FnAttrs(AttrFactory);
   TypeResult TrailingReturnType;
 
-  Actions.ActOnStartFunctionDeclarator();
+  Actions.ActOnStartSubprogramDeclarator();
 
-  /* LocalEndLoc is the end location for the local FunctionTypeLoc.
+  /* LocalEndLoc is the end location for the local SubprogramTypeLoc.
      EndLoc is the end location for the function declarator.
      They differ for trailing return types. */
   SourceLocation StartLoc, LocalEndLoc, EndLoc;
@@ -4695,11 +4695,11 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
   LParenLoc = Tracker.getOpenLocation();
   StartLoc = LParenLoc;
 
-  if (isFunctionDeclaratorIdentifierList()) {
+  if (isSubprogramDeclaratorIdentifierList()) {
     if (RequiresArg)
       Diag(Tok, diag::err_argument_required_after_attribute);
 
-    ParseFunctionDeclaratorIdentifierList(D, ParamInfo);
+    ParseSubprogramDeclaratorIdentifierList(D, ParamInfo);
 
     Tracker.consumeClose();
     RParenLoc = Tracker.getCloseLocation();
@@ -4749,7 +4749,7 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
       //   "pointer to cv-qualifier-seq X" between the optional cv-qualifer-seq
       //   and the end of the function-definition, member-declarator, or
       //   declarator.
-      bool IsCXX11MemberFunction =
+      bool IsCXX11MemberSubprogram =
         getLangOpts().CPlusPlus11 &&
         (D.getContext() == Declarator::MemberContext ||
          (D.getContext() == Declarator::FileContext &&
@@ -4758,7 +4758,7 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
       Sema::CXXThisScopeRAII ThisScope(Actions,
                                dyn_cast<CXXRecordDecl>(Actions.CurContext),
                                DS.getTypeQualifiers(),
-                               IsCXX11MemberFunction);
+                               IsCXX11MemberSubprogram);
 
       // Parse exception-specification[opt].
       ESpecType = tryParseExceptionSpecification(ESpecRange,
@@ -4787,7 +4787,7 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
   }
 
   // Remember that we parsed a function type, and remember the attributes.
-  D.AddTypeInfo(DeclaratorChunk::getFunction(HasProto,
+  D.AddTypeInfo(DeclaratorChunk::getSubprogram(HasProto,
                                              IsAmbiguous,
                                              LParenLoc,
                                              ParamInfo.data(), ParamInfo.size(),
@@ -4807,15 +4807,15 @@ void Parser::ParseFunctionDeclarator(Declarator &D,
                                              TrailingReturnType),
                 FnAttrs, EndLoc);
 
-  Actions.ActOnEndFunctionDeclarator();
+  Actions.ActOnEndSubprogramDeclarator();
 }
 
-/// isFunctionDeclaratorIdentifierList - This parameter list may have an
+/// isSubprogramDeclaratorIdentifierList - This parameter list may have an
 /// identifier list form for a K&R-style function:  void foo(a,b,c)
 ///
 /// Note that identifier-lists are only allowed for normal declarators, not for
 /// abstract-declarators.
-bool Parser::isFunctionDeclaratorIdentifierList() {
+bool Parser::isSubprogramDeclaratorIdentifierList() {
   return !getLangOpts().CPlusPlus
          && Tok.is(tok::identifier)
          && !TryAltiVecVectorToken()
@@ -4837,7 +4837,7 @@ bool Parser::isFunctionDeclaratorIdentifierList() {
          && (NextToken().is(tok::comma) || NextToken().is(tok::r_paren));
 }
 
-/// ParseFunctionDeclaratorIdentifierList - While parsing a function declarator
+/// ParseSubprogramDeclaratorIdentifierList - While parsing a function declarator
 /// we found a K&R-style identifier list instead of a typed parameter list.
 ///
 /// After returning, ParamInfo will hold the parsed parameters.
@@ -4846,7 +4846,7 @@ bool Parser::isFunctionDeclaratorIdentifierList() {
 ///         identifier
 ///         identifier-list ',' identifier
 ///
-void Parser::ParseFunctionDeclaratorIdentifierList(
+void Parser::ParseSubprogramDeclaratorIdentifierList(
        Declarator &D,
        SmallVector<DeclaratorChunk::ParamInfo, 16> &ParamInfo) {
   // If there was no identifier specified for the declarator, either we are in

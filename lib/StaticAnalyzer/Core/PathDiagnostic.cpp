@@ -725,7 +725,7 @@ PathDiagnosticRange
     case DeclK:
       if (const ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(D))
         return MD->getSourceRange();
-      if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+      if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
         if (Stmt *Body = FD->getBody())
           return Body->getSourceRange();
       }

@@ -57,7 +57,7 @@ public:
 
   llvm::Type *ConvertMemberPointerType(const MemberPointerType *MPT);
 
-  llvm::Value *EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
+  llvm::Value *EmitLoadOfMemberSubprogramPointer(CodeGenSubprogram &CGF,
                                                llvm::Value *&This,
                                                llvm::Value *MemFnPtr,
                                                const MemberPointerType *MPT);
@@ -106,11 +106,11 @@ public:
                                 CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys);
 
-  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+  void BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
-                                   FunctionArgList &Params);
+                                   SubprogramArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
+  void EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF);
 
   StringRef GetPureVirtualCallName() { return "__cxa_pure_virtual"; }
   StringRef GetDeletedVirtualCallName() { return "__cxa_deleted_virtual"; }
@@ -147,11 +147,11 @@ public:
                                 CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys);
 
-  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+  void BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
-                                   FunctionArgList &Params);
+                                   SubprogramArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
+  void EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF);
 
   void EmitReturnFromThunk(CodeGenSubprogram &CGF, RValue RV, QualType ResTy);
 
@@ -211,19 +211,19 @@ ItaniumFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
 /// If the member is non-virtual, memptr.ptr is the address of
 /// the function to call.
 llvm::Value *
-ItaniumFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
+ItaniumFortranABI::EmitLoadOfMemberSubprogramPointer(CodeGenSubprogram &CGF,
                                                llvm::Value *&This,
                                                llvm::Value *MemFnPtr,
                                                const MemberPointerType *MPT) {
   CGBuilderTy &Builder = CGF.Builder;
 
-  const FunctionProtoType *FPT = 
-    MPT->getPointeeType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = 
+    MPT->getPointeeType()->getAs<SubprogramProtoType>();
   const CXXRecordDecl *RD = 
     cast<CXXRecordDecl>(MPT->getClass()->getAs<RecordType>()->getDecl());
 
   llvm::FunctionType *FTy = 
-    CGM.getTypes().GetFunctionType(
+    CGM.getTypes().GetSubprogramType(
       CGM.getTypes().arrangeCXXMethodType(RD, FPT));
 
   llvm::IntegerType *ptrdiff = getPtrDiffTy();
@@ -511,18 +511,18 @@ llvm::Constant *ItaniumFortranABI::BuildMemberPointer(const CXXMethodDecl *MD,
                                          ThisAdjustment.getQuantity());
     }
   } else {
-    const FunctionProtoType *FPT = MD->getType()->castAs<FunctionProtoType>();
+    const SubprogramProtoType *FPT = MD->getType()->castAs<SubprogramProtoType>();
     llvm::Type *Ty;
     // Check whether the function has a computable LLVM signature.
     if (Types.isFuncTypeConvertible(FPT)) {
       // The function has a computable LLVM signature; use the correct type.
-      Ty = Types.GetFunctionType(Types.arrangeCXXMethodDeclaration(MD));
+      Ty = Types.GetSubprogramType(Types.arrangeCXXMethodDeclaration(MD));
     } else {
-      // Use an arbitrary non-function type to tell GetAddrOfFunction that the
+      // Use an arbitrary non-function type to tell GetAddrOfSubprogram that the
       // function type is incomplete.
       Ty = ptrdiff_t;
     }
-    llvm::Constant *addr = CGM.GetAddrOfFunction(MD, Ty);
+    llvm::Constant *addr = CGM.GetAddrOfSubprogram(MD, Ty);
 
     MemPtr[0] = llvm::ConstantExpr::getPtrToInt(addr, ptrdiff_t);
     MemPtr[1] = llvm::ConstantInt::get(ptrdiff_t, (IsARM ? 2 : 1) *
@@ -679,7 +679,7 @@ ItaniumFortranABI::EmitMemberPointerIsNotNull(CodeGenSubprogram &CGF,
 /// The Itanium ABI requires non-zero initialization only for data
 /// member pointers, for which '0' is a valid offset.
 bool ItaniumFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
-  return MPT->getPointeeType()->isFunctionType();
+  return MPT->getPointeeType()->isSubprogramType();
 }
 
 /// The Itanium ABI always places an offset to the complete object
@@ -752,9 +752,9 @@ void ARMFortranABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
     ResTy = ArgTys[0];
 }
 
-void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+void ItaniumFortranABI::BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                                 QualType &ResTy,
-                                                FunctionArgList &Params) {
+                                                SubprogramArgList &Params) {
   /// Create the 'this' variable.
   BuildThisParam(CGF, Params);
 
@@ -775,17 +775,17 @@ void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
   }
 }
 
-void ARMFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+void ARMFortranABI::BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                             QualType &ResTy,
-                                            FunctionArgList &Params) {
-  ItaniumFortranABI::BuildInstanceFunctionParams(CGF, ResTy, Params);
+                                            SubprogramArgList &Params) {
+  ItaniumFortranABI::BuildInstanceSubprogramParams(CGF, ResTy, Params);
 
   // Return 'this' from certain constructors and destructors.
   if (HasThisReturn(CGF.CurGD))
     ResTy = Params[0]->getType();
 }
 
-void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
+void ItaniumFortranABI::EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF) {
   /// Initialize the 'this' slot.
   EmitThisParam(CGF);
 
@@ -797,8 +797,8 @@ void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
   }
 }
 
-void ARMFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
-  ItaniumFortranABI::EmitInstanceFunctionProlog(CGF);
+void ARMFortranABI::EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF) {
+  ItaniumFortranABI::EmitInstanceSubprogramProlog(CGF);
 
   /// Initialize the return slot to 'this' at the start of the
   /// function.
@@ -951,7 +951,7 @@ static llvm::Constant *getGuardAcquireFn(CodeGenModule &CGM,
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGM.getTypes().ConvertType(CGM.getContext().IntTy),
                             GuardPtrTy, /*isVarArg=*/false);
-  return CGM.CreateRuntimeFunction(FTy, "__cxa_guard_acquire",
+  return CGM.CreateRuntimeSubprogram(FTy, "__cxa_guard_acquire",
                                    llvm::Attribute::get(CGM.getLLVMContext(),
                                                  llvm::Attribute::NoUnwind));
 }
@@ -961,7 +961,7 @@ static llvm::Constant *getGuardReleaseFn(CodeGenModule &CGM,
   // void __cxa_guard_release(__guard *guard_object);
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGM.VoidTy, GuardPtrTy, /*isVarArg=*/false);
-  return CGM.CreateRuntimeFunction(FTy, "__cxa_guard_release",
+  return CGM.CreateRuntimeSubprogram(FTy, "__cxa_guard_release",
                                    llvm::Attribute::get(CGM.getLLVMContext(),
                                                  llvm::Attribute::NoUnwind));
 }
@@ -971,7 +971,7 @@ static llvm::Constant *getGuardAbortFn(CodeGenModule &CGM,
   // void __cxa_guard_abort(__guard *guard_object);
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGM.VoidTy, GuardPtrTy, /*isVarArg=*/false);
-  return CGM.CreateRuntimeFunction(FTy, "__cxa_guard_abort",
+  return CGM.CreateRuntimeSubprogram(FTy, "__cxa_guard_abort",
                                    llvm::Attribute::get(CGM.getLLVMContext(),
                                                  llvm::Attribute::NoUnwind));
 }
@@ -1146,7 +1146,7 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenSubprogram &CGF,
 
   // Fetch the actual function.
   llvm::Constant *atexit =
-    CGF.CGM.CreateRuntimeFunction(atexitTy, "__cxa_atexit");
+    CGF.CGM.CreateRuntimeSubprogram(atexitTy, "__cxa_atexit");
   if (llvm::Function *fn = dyn_cast<llvm::Function>(atexit))
     fn->setDoesNotThrow();
 

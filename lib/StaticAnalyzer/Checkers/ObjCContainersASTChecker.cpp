@@ -83,7 +83,7 @@ public:
 } // end anonymous namespace
 
 static StringRef getCalleeName(CallExpr *CE) {
-  const FunctionDecl *FD = CE->getDirectCallee();
+  const SubprogramDecl *FD = CE->getDirectCallee();
   if (!FD)
     return StringRef();
 

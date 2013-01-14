@@ -49,7 +49,7 @@
 using namespace lfort;
 using namespace ento;
 
-static bool shouldRunOnFunctionOrMethod(const NamedDecl *ND);
+static bool shouldRunOnSubprogramOrMethod(const NamedDecl *ND);
 static bool isInitializationMethod(const ObjCMethodDecl *MD);
 static bool isInitMessage(const ObjCMethodCall &Msg);
 static bool isSelfVar(SVal location, CheckerContext &C);
@@ -174,7 +174,7 @@ void ObjCSelfInitChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
   // then it is properly initialized.
 
   // FIXME: A callback should disable checkers at the start of functions.
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
                                 C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -201,7 +201,7 @@ void ObjCSelfInitChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
 void ObjCSelfInitChecker::checkPostStmt(const ObjCIvarRefExpr *E,
                                         CheckerContext &C) const {
   // FIXME: A callback should disable checkers at the start of functions.
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
                                  C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -213,7 +213,7 @@ void ObjCSelfInitChecker::checkPostStmt(const ObjCIvarRefExpr *E,
 void ObjCSelfInitChecker::checkPreStmt(const ReturnStmt *S,
                                        CheckerContext &C) const {
   // FIXME: A callback should disable checkers at the start of functions.
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
                                  C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -241,7 +241,7 @@ void ObjCSelfInitChecker::checkPreStmt(const ReturnStmt *S,
 void ObjCSelfInitChecker::checkPreCall(const CallEvent &CE,
                                        CheckerContext &C) const {
   // FIXME: A callback should disable checkers at the start of functions.
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
                                  C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -269,7 +269,7 @@ void ObjCSelfInitChecker::checkPreCall(const CallEvent &CE,
 void ObjCSelfInitChecker::checkPostCall(const CallEvent &CE,
                                         CheckerContext &C) const {
   // FIXME: A callback should disable checkers at the start of functions.
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
                                  C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -304,7 +304,7 @@ void ObjCSelfInitChecker::checkPostCall(const CallEvent &CE,
 void ObjCSelfInitChecker::checkLocation(SVal location, bool isLoad,
                                         const Stmt *S,
                                         CheckerContext &C) const {
-  if (!shouldRunOnFunctionOrMethod(dyn_cast<NamedDecl>(
+  if (!shouldRunOnSubprogramOrMethod(dyn_cast<NamedDecl>(
         C.getCurrentAnalysisDeclContext()->getDecl())))
     return;
 
@@ -385,7 +385,7 @@ void ObjCSelfInitChecker::printState(raw_ostream &Out, ProgramStateRef State,
 
 
 // FIXME: A callback should disable checkers at the start of functions.
-static bool shouldRunOnFunctionOrMethod(const NamedDecl *ND) {
+static bool shouldRunOnSubprogramOrMethod(const NamedDecl *ND) {
   if (!ND)
     return false;
 

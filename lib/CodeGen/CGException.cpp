@@ -28,7 +28,7 @@ static llvm::Constant *getAllocateExceptionFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.Int8PtrTy, CGF.SizeTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_allocate_exception");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_allocate_exception");
 }
 
 static llvm::Constant *getFreeExceptionFn(CodeGenSubprogram &CGF) {
@@ -37,7 +37,7 @@ static llvm::Constant *getFreeExceptionFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, CGF.Int8PtrTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_free_exception");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_free_exception");
 }
 
 static llvm::Constant *getThrowFn(CodeGenSubprogram &CGF) {
@@ -48,7 +48,7 @@ static llvm::Constant *getThrowFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, Args, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_throw");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_throw");
 }
 
 static llvm::Constant *getReThrowFn(CodeGenSubprogram &CGF) {
@@ -57,7 +57,7 @@ static llvm::Constant *getReThrowFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_rethrow");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_rethrow");
 }
 
 static llvm::Constant *getGetExceptionPtrFn(CodeGenSubprogram &CGF) {
@@ -66,7 +66,7 @@ static llvm::Constant *getGetExceptionPtrFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.Int8PtrTy, CGF.Int8PtrTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_get_exception_ptr");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_get_exception_ptr");
 }
 
 static llvm::Constant *getBeginCatchFn(CodeGenSubprogram &CGF) {
@@ -75,7 +75,7 @@ static llvm::Constant *getBeginCatchFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.Int8PtrTy, CGF.Int8PtrTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_begin_catch");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_begin_catch");
 }
 
 static llvm::Constant *getEndCatchFn(CodeGenSubprogram &CGF) {
@@ -84,7 +84,7 @@ static llvm::Constant *getEndCatchFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_end_catch");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_end_catch");
 }
 
 static llvm::Constant *getUnexpectedFn(CodeGenSubprogram &CGF) {
@@ -93,7 +93,7 @@ static llvm::Constant *getUnexpectedFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, CGF.Int8PtrTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_call_unexpected");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_call_unexpected");
 }
 
 llvm::Constant *CodeGenSubprogram::getUnwindResumeFn() {
@@ -101,8 +101,8 @@ llvm::Constant *CodeGenSubprogram::getUnwindResumeFn() {
     llvm::FunctionType::get(VoidTy, Int8PtrTy, /*IsVarArgs=*/false);
 
   if (CGM.getLangOpts().SjLjExceptions)
-    return CGM.CreateRuntimeFunction(FTy, "_Unwind_SjLj_Resume");
-  return CGM.CreateRuntimeFunction(FTy, "_Unwind_Resume");
+    return CGM.CreateRuntimeSubprogram(FTy, "_Unwind_SjLj_Resume");
+  return CGM.CreateRuntimeSubprogram(FTy, "_Unwind_Resume");
 }
 
 llvm::Constant *CodeGenSubprogram::getUnwindResumeOrRethrowFn() {
@@ -110,8 +110,8 @@ llvm::Constant *CodeGenSubprogram::getUnwindResumeOrRethrowFn() {
     llvm::FunctionType::get(VoidTy, Int8PtrTy, /*IsVarArgs=*/false);
 
   if (CGM.getLangOpts().SjLjExceptions)
-    return CGM.CreateRuntimeFunction(FTy, "_Unwind_SjLj_Resume_or_Rethrow");
-  return CGM.CreateRuntimeFunction(FTy, "_Unwind_Resume_or_Rethrow");
+    return CGM.CreateRuntimeSubprogram(FTy, "_Unwind_SjLj_Resume_or_Rethrow");
+  return CGM.CreateRuntimeSubprogram(FTy, "_Unwind_Resume_or_Rethrow");
 }
 
 static llvm::Constant *getTerminateFn(CodeGenSubprogram &CGF) {
@@ -130,7 +130,7 @@ static llvm::Constant *getTerminateFn(CodeGenSubprogram &CGF) {
     name = "objc_terminate";
   else
     name = "abort";
-  return CGF.CGM.CreateRuntimeFunction(FTy, name);
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, name);
 }
 
 static llvm::Constant *getCatchallRethrowFn(CodeGenSubprogram &CGF,
@@ -138,7 +138,7 @@ static llvm::Constant *getCatchallRethrowFn(CodeGenSubprogram &CGF,
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(CGF.VoidTy, CGF.Int8PtrTy, /*IsVarArgs=*/false);
 
-  return CGF.CGM.CreateRuntimeFunction(FTy, Name);
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, Name);
 }
 
 namespace {
@@ -242,7 +242,7 @@ const EHPersonality &EHPersonality::get(const LangOptions &L) {
 static llvm::Constant *getPersonalityFn(CodeGenModule &CGM,
                                         const EHPersonality &Personality) {
   llvm::Constant *Fn =
-    CGM.CreateRuntimeFunction(llvm::FunctionType::get(CGM.Int32Ty, true),
+    CGM.CreateRuntimeSubprogram(llvm::FunctionType::get(CGM.Int32Ty, true),
                               Personality.PersonalityFn);
   return Fn;
 }
@@ -486,16 +486,16 @@ void CodeGenSubprogram::EmitStartEHSpec(const Decl *D) {
   if (!CGM.getLangOpts().CXXExceptions)
     return;
   
-  const FunctionDecl* FD = dyn_cast_or_null<FunctionDecl>(D);
+  const SubprogramDecl* FD = dyn_cast_or_null<SubprogramDecl>(D);
   if (FD == 0)
     return;
-  const FunctionProtoType *Proto = FD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *Proto = FD->getType()->getAs<SubprogramProtoType>();
   if (Proto == 0)
     return;
 
   ExceptionSpecificationType EST = Proto->getExceptionSpecType();
   if (isNoexceptExceptionSpec(EST)) {
-    if (Proto->getNoexceptSpec(getContext()) == FunctionProtoType::NR_Nothrow) {
+    if (Proto->getNoexceptSpec(getContext()) == SubprogramProtoType::NR_Nothrow) {
       // noexcept functions are simple terminate scopes.
       EHStack.pushTerminate();
     }
@@ -554,16 +554,16 @@ void CodeGenSubprogram::EmitEndEHSpec(const Decl *D) {
   if (!CGM.getLangOpts().CXXExceptions)
     return;
   
-  const FunctionDecl* FD = dyn_cast_or_null<FunctionDecl>(D);
+  const SubprogramDecl* FD = dyn_cast_or_null<SubprogramDecl>(D);
   if (FD == 0)
     return;
-  const FunctionProtoType *Proto = FD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *Proto = FD->getType()->getAs<SubprogramProtoType>();
   if (Proto == 0)
     return;
 
   ExceptionSpecificationType EST = Proto->getExceptionSpecType();
   if (isNoexceptExceptionSpec(EST)) {
-    if (Proto->getNoexceptSpec(getContext()) == FunctionProtoType::NR_Nothrow) {
+    if (Proto->getNoexceptSpec(getContext()) == SubprogramProtoType::NR_Nothrow) {
       EHStack.popTerminate();
     }
   } else if (EST == EST_Dynamic || EST == EST_DynamicNone) {
@@ -1533,7 +1533,7 @@ llvm::BasicBlock *CodeGenSubprogram::getTerminateHandler() {
   CGBuilderTy::InsertPoint SavedIP = Builder.saveAndClearIP();
 
   // Set up the terminate handler.  This block is inserted at the very
-  // end of the function by FinishFunction.
+  // end of the function by FinishSubprogram.
   TerminateHandler = createBasicBlock("terminate.handler");
   Builder.SetInsertPoint(TerminateHandler);
   llvm::CallInst *TerminateCall = Builder.CreateCall(getTerminateFn(*this));

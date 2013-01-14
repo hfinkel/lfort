@@ -52,7 +52,7 @@ void Scope::Init(Scope *parent, unsigned flags) {
   if (flags & TemplateParamScope) TemplateParamParent = this;
 
   // If this is a prototype scope, record that.
-  if (flags & FunctionPrototypeScope) PrototypeDepth++;
+  if (flags & SubprogramPrototypeScope) PrototypeDepth++;
 
   DeclsInScope.clear();
   UsingDirectives.clear();
@@ -63,7 +63,7 @@ void Scope::Init(Scope *parent, unsigned flags) {
 bool Scope::containedInPrototypeScope() const {
   const Scope *S = this;
   while (S) {
-    if (S->isFunctionPrototypeScope())
+    if (S->isSubprogramPrototypeScope())
       return true;
     S = S->getParent();
   }

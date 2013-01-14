@@ -52,7 +52,7 @@ RValue CodeGenSubprogram::EmitCXXMemberCall(const CXXMethodDecl *MD,
     Args.add(RValue::get(VTT), T);
   }
 
-  const FunctionProtoType *FPT = MD->getType()->castAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = MD->getType()->castAs<SubprogramProtoType>();
   RequiredArgs required = RequiredArgs::forPrototypePlus(FPT, Args.size());
   
   // And the rest of the call args.
@@ -87,9 +87,9 @@ static const Expr *skipNoOpCastsAndParens(const Expr *E) {
   }
 }
 
-/// canDevirtualizeMemberFunctionCalls - Checks whether virtual calls on given
+/// canDevirtualizeMemberSubprogramCalls - Checks whether virtual calls on given
 /// expr can be devirtualized.
-static bool canDevirtualizeMemberFunctionCalls(ASTContext &Context,
+static bool canDevirtualizeMemberSubprogramCalls(ASTContext &Context,
                                                const Expr *Base, 
                                                const CXXMethodDecl *MD) {
   
@@ -188,7 +188,7 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
 
   if (MD->isStatic()) {
     // The method is static, emit it as we would a regular call.
-    llvm::Value *Callee = CGM.GetAddrOfFunction(MD);
+    llvm::Value *Callee = CGM.GetAddrOfSubprogram(MD);
     return EmitCall(getContext().getPointerType(MD->getType()), Callee,
                     ReturnValue, CE->arg_begin(), CE->arg_end());
   }
@@ -199,7 +199,7 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
 
   const CXXMethodDecl *DevirtualizedMethod = NULL;
   if (CanUseVirtualCall &&
-      canDevirtualizeMemberFunctionCalls(getContext(), Base, MD)) {
+      canDevirtualizeMemberSubprogramCalls(getContext(), Base, MD)) {
     const CXXRecordDecl *BestDynamicDecl = Base->getBestDynamicClassType();
     DevirtualizedMethod = MD->getCorrespondingMethodInClass(BestDynamicDecl);
     assert(DevirtualizedMethod);
@@ -261,7 +261,7 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
 
   // Compute the function type we're calling.
   const CXXMethodDecl *CalleeDecl = DevirtualizedMethod ? DevirtualizedMethod : MD;
-  const CGFunctionInfo *FInfo = 0;
+  const CGSubprogramInfo *FInfo = 0;
   if (const CXXDestructorDecl *Dtor = dyn_cast<CXXDestructorDecl>(CalleeDecl))
     FInfo = &CGM.getTypes().arrangeCXXDestructor(Dtor,
                                                  Dtor_Complete);
@@ -271,7 +271,7 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
   else
     FInfo = &CGM.getTypes().arrangeCXXMethodDeclaration(CalleeDecl);
 
-  llvm::Type *Ty = CGM.getTypes().GetFunctionType(*FInfo);
+  llvm::Type *Ty = CGM.getTypes().GetSubprogramType(*FInfo);
 
   // C++ [class.virtual]p12:
   //   Explicit qualification with the scope operator (5.1) suppresses the
@@ -291,16 +291,16 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
           ME->hasQualifier())
         Callee = BuildAppleKextVirtualCall(MD, ME->getQualifier(), Ty);
       else if (!DevirtualizedMethod)
-        Callee = CGM.GetAddrOfFunction(GlobalDecl(Dtor, Dtor_Complete), Ty);
+        Callee = CGM.GetAddrOfSubprogram(GlobalDecl(Dtor, Dtor_Complete), Ty);
       else {
         const CXXDestructorDecl *DDtor =
           cast<CXXDestructorDecl>(DevirtualizedMethod);
-        Callee = CGM.GetAddrOfFunction(GlobalDecl(DDtor, Dtor_Complete), Ty);
+        Callee = CGM.GetAddrOfSubprogram(GlobalDecl(DDtor, Dtor_Complete), Ty);
       }
     }
   } else if (const CXXConstructorDecl *Ctor =
                dyn_cast<CXXConstructorDecl>(MD)) {
-    Callee = CGM.GetAddrOfFunction(GlobalDecl(Ctor, Ctor_Complete), Ty);
+    Callee = CGM.GetAddrOfSubprogram(GlobalDecl(Ctor, Ctor_Complete), Ty);
   } else if (UseVirtualCall) {
       Callee = BuildVirtualCall(MD, This, Ty); 
   } else {
@@ -309,9 +309,9 @@ RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
         ME->hasQualifier())
       Callee = BuildAppleKextVirtualCall(MD, ME->getQualifier(), Ty);
     else if (!DevirtualizedMethod)
-      Callee = CGM.GetAddrOfFunction(MD, Ty);
+      Callee = CGM.GetAddrOfSubprogram(MD, Ty);
     else {
-      Callee = CGM.GetAddrOfFunction(DevirtualizedMethod, Ty);
+      Callee = CGM.GetAddrOfSubprogram(DevirtualizedMethod, Ty);
     }
   }
 
@@ -330,8 +330,8 @@ CodeGenSubprogram::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
   const MemberPointerType *MPT = 
     MemFnExpr->getType()->castAs<MemberPointerType>();
 
-  const FunctionProtoType *FPT = 
-    MPT->getPointeeType()->castAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = 
+    MPT->getPointeeType()->castAs<SubprogramProtoType>();
   const CXXRecordDecl *RD = 
     cast<CXXRecordDecl>(MPT->getClass()->getAs<RecordType>()->getDecl());
 
@@ -351,7 +351,7 @@ CodeGenSubprogram::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
 
   // Ask the ABI to load the callee.  Note that This is modified.
   llvm::Value *Callee =
-    CGM.getFortranABI().EmitLoadOfMemberFunctionPointer(*this, This, MemFnPtr, MPT);
+    CGM.getFortranABI().EmitLoadOfMemberSubprogramPointer(*this, This, MemFnPtr, MPT);
   
   CallArgList Args;
 
@@ -1001,7 +1001,7 @@ namespace {
   /// abnormal exit from a new expression.
   class CallDeleteDuringNew : public EHScopeStack::Cleanup {
     size_t NumPlacementArgs;
-    const FunctionDecl *OperatorDelete;
+    const SubprogramDecl *OperatorDelete;
     llvm::Value *Ptr;
     llvm::Value *AllocSize;
 
@@ -1013,7 +1013,7 @@ namespace {
     }
 
     CallDeleteDuringNew(size_t NumPlacementArgs,
-                        const FunctionDecl *OperatorDelete,
+                        const SubprogramDecl *OperatorDelete,
                         llvm::Value *Ptr,
                         llvm::Value *AllocSize) 
       : NumPlacementArgs(NumPlacementArgs), OperatorDelete(OperatorDelete),
@@ -1025,15 +1025,15 @@ namespace {
     }
 
     void Emit(CodeGenSubprogram &CGF, Flags flags) {
-      const FunctionProtoType *FPT
-        = OperatorDelete->getType()->getAs<FunctionProtoType>();
+      const SubprogramProtoType *FPT
+        = OperatorDelete->getType()->getAs<SubprogramProtoType>();
       assert(FPT->getNumArgs() == NumPlacementArgs + 1 ||
              (FPT->getNumArgs() == 2 && NumPlacementArgs == 0));
 
       CallArgList DeleteArgs;
 
       // The first argument is always a void*.
-      FunctionProtoType::arg_type_iterator AI = FPT->arg_type_begin();
+      SubprogramProtoType::arg_type_iterator AI = FPT->arg_type_begin();
       DeleteArgs.add(RValue::get(Ptr), *AI++);
 
       // A member 'operator delete' can take an extra 'size_t' argument.
@@ -1045,8 +1045,8 @@ namespace {
         DeleteArgs.add(getPlacementArgs()[I], *AI++);
 
       // Call 'operator delete'.
-      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(DeleteArgs, FPT),
-                   CGF.CGM.GetAddrOfFunction(OperatorDelete),
+      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeSubprogramCall(DeleteArgs, FPT),
+                   CGF.CGM.GetAddrOfSubprogram(OperatorDelete),
                    ReturnValueSlot(), DeleteArgs, OperatorDelete);
     }
   };
@@ -1056,7 +1056,7 @@ namespace {
   /// conditional.
   class CallDeleteDuringConditionalNew : public EHScopeStack::Cleanup {
     size_t NumPlacementArgs;
-    const FunctionDecl *OperatorDelete;
+    const SubprogramDecl *OperatorDelete;
     DominatingValue<RValue>::saved_type Ptr;
     DominatingValue<RValue>::saved_type AllocSize;
 
@@ -1070,7 +1070,7 @@ namespace {
     }
 
     CallDeleteDuringConditionalNew(size_t NumPlacementArgs,
-                                   const FunctionDecl *OperatorDelete,
+                                   const SubprogramDecl *OperatorDelete,
                                    DominatingValue<RValue>::saved_type Ptr,
                               DominatingValue<RValue>::saved_type AllocSize)
       : NumPlacementArgs(NumPlacementArgs), OperatorDelete(OperatorDelete),
@@ -1082,15 +1082,15 @@ namespace {
     }
 
     void Emit(CodeGenSubprogram &CGF, Flags flags) {
-      const FunctionProtoType *FPT
-        = OperatorDelete->getType()->getAs<FunctionProtoType>();
+      const SubprogramProtoType *FPT
+        = OperatorDelete->getType()->getAs<SubprogramProtoType>();
       assert(FPT->getNumArgs() == NumPlacementArgs + 1 ||
              (FPT->getNumArgs() == 2 && NumPlacementArgs == 0));
 
       CallArgList DeleteArgs;
 
       // The first argument is always a void*.
-      FunctionProtoType::arg_type_iterator AI = FPT->arg_type_begin();
+      SubprogramProtoType::arg_type_iterator AI = FPT->arg_type_begin();
       DeleteArgs.add(Ptr.restore(CGF), *AI++);
 
       // A member 'operator delete' can take an extra 'size_t' argument.
@@ -1106,8 +1106,8 @@ namespace {
       }
 
       // Call 'operator delete'.
-      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(DeleteArgs, FPT),
-                   CGF.CGM.GetAddrOfFunction(OperatorDelete),
+      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeSubprogramCall(DeleteArgs, FPT),
+                   CGF.CGM.GetAddrOfSubprogram(OperatorDelete),
                    ReturnValueSlot(), DeleteArgs, OperatorDelete);
     }
   };
@@ -1158,9 +1158,9 @@ llvm::Value *CodeGenSubprogram::EmitCXXNewExpr(const CXXNewExpr *E) {
   QualType allocType = getContext().getBaseElementType(E->getAllocatedType());
 
   // 1. Build a call to the allocation function.
-  FunctionDecl *allocator = E->getOperatorNew();
-  const FunctionProtoType *allocatorType =
-    allocator->getType()->castAs<FunctionProtoType>();
+  SubprogramDecl *allocator = E->getOperatorNew();
+  const SubprogramProtoType *allocatorType =
+    allocator->getType()->castAs<SubprogramProtoType>();
 
   CallArgList allocatorArgs;
 
@@ -1221,9 +1221,9 @@ llvm::Value *CodeGenSubprogram::EmitCXXNewExpr(const CXXNewExpr *E) {
     // TODO: kill any unnecessary computations done for the size
     // argument.
   } else {
-    RV = EmitCall(CGM.getTypes().arrangeFreeFunctionCall(allocatorArgs,
+    RV = EmitCall(CGM.getTypes().arrangeFreeSubprogramCall(allocatorArgs,
                                                          allocatorType),
-                  CGM.GetAddrOfFunction(allocator), ReturnValueSlot(),
+                  CGM.GetAddrOfSubprogram(allocator), ReturnValueSlot(),
                   allocatorArgs, allocator);
   }
 
@@ -1316,13 +1316,13 @@ llvm::Value *CodeGenSubprogram::EmitCXXNewExpr(const CXXNewExpr *E) {
   return result;
 }
 
-void CodeGenSubprogram::EmitDeleteCall(const FunctionDecl *DeleteFD,
+void CodeGenSubprogram::EmitDeleteCall(const SubprogramDecl *DeleteFD,
                                      llvm::Value *Ptr,
                                      QualType DeleteTy) {
   assert(DeleteFD->getOverloadedOperator() == OO_Delete);
 
-  const FunctionProtoType *DeleteFTy =
-    DeleteFD->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *DeleteFTy =
+    DeleteFD->getType()->getAs<SubprogramProtoType>();
 
   CallArgList DeleteArgs;
 
@@ -1344,8 +1344,8 @@ void CodeGenSubprogram::EmitDeleteCall(const FunctionDecl *DeleteFD,
     DeleteArgs.add(RValue::get(Size), SizeTy);
 
   // Emit the call to delete.
-  EmitCall(CGM.getTypes().arrangeFreeFunctionCall(DeleteArgs, DeleteFTy),
-           CGM.GetAddrOfFunction(DeleteFD), ReturnValueSlot(), 
+  EmitCall(CGM.getTypes().arrangeFreeSubprogramCall(DeleteArgs, DeleteFTy),
+           CGM.GetAddrOfSubprogram(DeleteFD), ReturnValueSlot(), 
            DeleteArgs, DeleteFD);
 }
 
@@ -1353,11 +1353,11 @@ namespace {
   /// Calls the given 'operator delete' on a single object.
   struct CallObjectDelete : EHScopeStack::Cleanup {
     llvm::Value *Ptr;
-    const FunctionDecl *OperatorDelete;
+    const SubprogramDecl *OperatorDelete;
     QualType ElementType;
 
     CallObjectDelete(llvm::Value *Ptr,
-                     const FunctionDecl *OperatorDelete,
+                     const SubprogramDecl *OperatorDelete,
                      QualType ElementType)
       : Ptr(Ptr), OperatorDelete(OperatorDelete), ElementType(ElementType) {}
 
@@ -1369,7 +1369,7 @@ namespace {
 
 /// Emit the code for deleting a single object.
 static void EmitObjectDelete(CodeGenSubprogram &CGF,
-                             const FunctionDecl *OperatorDelete,
+                             const SubprogramDecl *OperatorDelete,
                              llvm::Value *Ptr,
                              QualType ElementType,
                              bool UseGlobalDelete) {
@@ -1397,7 +1397,7 @@ static void EmitObjectDelete(CodeGenSubprogram &CGF,
         }
         
         llvm::Type *Ty =
-          CGF.getTypes().GetFunctionType(
+          CGF.getTypes().GetSubprogramType(
                          CGF.getTypes().arrangeCXXDestructor(Dtor, Dtor_Complete));
           
         llvm::Value *Callee
@@ -1456,13 +1456,13 @@ namespace {
   /// Calls the given 'operator delete' on an array of objects.
   struct CallArrayDelete : EHScopeStack::Cleanup {
     llvm::Value *Ptr;
-    const FunctionDecl *OperatorDelete;
+    const SubprogramDecl *OperatorDelete;
     llvm::Value *NumElements;
     QualType ElementType;
     CharUnits CookieSize;
 
     CallArrayDelete(llvm::Value *Ptr,
-                    const FunctionDecl *OperatorDelete,
+                    const SubprogramDecl *OperatorDelete,
                     llvm::Value *NumElements,
                     QualType ElementType,
                     CharUnits CookieSize)
@@ -1470,8 +1470,8 @@ namespace {
         ElementType(ElementType), CookieSize(CookieSize) {}
 
     void Emit(CodeGenSubprogram &CGF, Flags flags) {
-      const FunctionProtoType *DeleteFTy =
-        OperatorDelete->getType()->getAs<FunctionProtoType>();
+      const SubprogramProtoType *DeleteFTy =
+        OperatorDelete->getType()->getAs<SubprogramProtoType>();
       assert(DeleteFTy->getNumArgs() == 1 || DeleteFTy->getNumArgs() == 2);
 
       CallArgList Args;
@@ -1507,8 +1507,8 @@ namespace {
       }
 
       // Emit the call to delete.
-      CGF.EmitCall(CGF.getTypes().arrangeFreeFunctionCall(Args, DeleteFTy),
-                   CGF.CGM.GetAddrOfFunction(OperatorDelete),
+      CGF.EmitCall(CGF.getTypes().arrangeFreeSubprogramCall(Args, DeleteFTy),
+                   CGF.CGM.GetAddrOfSubprogram(OperatorDelete),
                    ReturnValueSlot(), Args, OperatorDelete);
     }
   };
@@ -1528,7 +1528,7 @@ static void EmitArrayDelete(CodeGenSubprogram &CGF,
   assert(allocatedPtr && "ReadArrayCookie didn't set allocated pointer");
 
   // Make sure that we call delete even if one of the dtors throws.
-  const FunctionDecl *operatorDelete = E->getOperatorDelete();
+  const SubprogramDecl *operatorDelete = E->getOperatorDelete();
   CGF.EHStack.pushCleanup<CallArrayDelete>(NormalAndEHCleanup,
                                            allocatedPtr, operatorDelete,
                                            numElements, elementType,
@@ -1607,7 +1607,7 @@ static llvm::Constant *getBadTypeidFn(CodeGenSubprogram &CGF) {
   // void __cxa_bad_typeid();
   llvm::FunctionType *FTy = llvm::FunctionType::get(CGF.VoidTy, false);
   
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_bad_typeid");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_bad_typeid");
 }
 
 static void EmitBadTypeidCall(CodeGenSubprogram &CGF) {
@@ -1689,13 +1689,13 @@ static llvm::Constant *getDynamicCastFn(CodeGenSubprogram &CGF) {
   llvm::FunctionType *FTy =
     llvm::FunctionType::get(Int8PtrTy, Args, false);
   
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__dynamic_cast");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__dynamic_cast");
 }
 
 static llvm::Constant *getBadCastFn(CodeGenSubprogram &CGF) {
   // void __cxa_bad_cast();
   llvm::FunctionType *FTy = llvm::FunctionType::get(CGF.VoidTy, false);
-  return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_bad_cast");
+  return CGF.CGM.CreateRuntimeSubprogram(FTy, "__cxa_bad_cast");
 }
 
 static void EmitBadCastCall(CodeGenSubprogram &CGF) {

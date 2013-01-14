@@ -1163,7 +1163,7 @@ void ASTStmtReader::VisitCXXConstCastExpr(CXXConstCastExpr *E) {
   return VisitCXXNamedCastExpr(E);
 }
 
-void ASTStmtReader::VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *E) {
+void ASTStmtReader::VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *E) {
   VisitExplicitCastExpr(E);
   E->setTypeBeginLoc(ReadSourceLocation(Record, Idx));
   E->setRParenLoc(ReadSourceLocation(Record, Idx));
@@ -1239,8 +1239,8 @@ void ASTStmtReader::VisitCXXNewExpr(CXXNewExpr *E) {
   E->UsualArrayDeleteWantsSize = Record[Idx++];
   unsigned NumPlacementArgs = Record[Idx++];
   E->StoredInitializationStyle = Record[Idx++];
-  E->setOperatorNew(ReadDeclAs<FunctionDecl>(Record, Idx));
-  E->setOperatorDelete(ReadDeclAs<FunctionDecl>(Record, Idx));
+  E->setOperatorNew(ReadDeclAs<SubprogramDecl>(Record, Idx));
+  E->setOperatorDelete(ReadDeclAs<SubprogramDecl>(Record, Idx));
   E->AllocatedTypeInfo = GetTypeSourceInfo(Record, Idx);
   E->TypeIdParens = ReadSourceRange(Record, Idx);
   E->Range = ReadSourceRange(Record, Idx);
@@ -1261,7 +1261,7 @@ void ASTStmtReader::VisitCXXDeleteExpr(CXXDeleteExpr *E) {
   E->ArrayForm = Record[Idx++];
   E->ArrayFormAsWritten = Record[Idx++];
   E->UsualArrayDeleteWantsSize = Record[Idx++];
-  E->OperatorDelete = ReadDeclAs<FunctionDecl>(Record, Idx);
+  E->OperatorDelete = ReadDeclAs<SubprogramDecl>(Record, Idx);
   E->Argument = Reader.ReadSubExpr();
   E->Loc = ReadSourceLocation(Record, Idx);
 }
@@ -1468,7 +1468,7 @@ void ASTStmtReader::VisitSubstNonTypeTemplateParmPackExpr(
   E->NameLoc = ReadSourceLocation(Record, Idx);
 }
 
-void ASTStmtReader::VisitFunctionParmPackExpr(FunctionParmPackExpr *E) {
+void ASTStmtReader::VisitSubprogramParmPackExpr(SubprogramParmPackExpr *E) {
   VisitExpr(E);
   E->NumParameters = Record[Idx++];
   E->ParamPack = ReadDeclAs<ParmVarDecl>(Record, Idx);
@@ -2052,7 +2052,7 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
       break;
 
     case EXPR_CXX_FUNCTIONAL_CAST:
-      S = CXXFunctionalCastExpr::CreateEmpty(Context,
+      S = CXXSubprogramalCastExpr::CreateEmpty(Context,
                        /*PathSize*/ Record[ASTStmtReader::NumExprFields]);
       break;
 
@@ -2195,7 +2195,7 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
       break;
 
     case EXPR_FUNCTION_PARM_PACK:
-      S = FunctionParmPackExpr::CreateEmpty(Context,
+      S = SubprogramParmPackExpr::CreateEmpty(Context,
                                           Record[ASTStmtReader::NumExprFields]);
       break;
         

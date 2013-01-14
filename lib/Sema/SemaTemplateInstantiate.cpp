@@ -51,7 +51,7 @@ MultiLevelTemplateArgumentList
 Sema::getTemplateInstantiationArgs(NamedDecl *D, 
                                    const TemplateArgumentList *Innermost,
                                    bool RelativeToPrimary,
-                                   const FunctionDecl *Pattern) {
+                                   const SubprogramDecl *Pattern) {
   // Accumulate the set of template argument lists in this structure.
   MultiLevelTemplateArgumentList Result;
 
@@ -96,25 +96,25 @@ Sema::getTemplateInstantiationArgs(NamedDecl *D,
         break;
     }
     // Add template arguments from a function template specialization.
-    else if (FunctionDecl *Function = dyn_cast<FunctionDecl>(Ctx)) {
+    else if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(Ctx)) {
       if (!RelativeToPrimary &&
-          (Function->getTemplateSpecializationKind() == 
+          (Subprogram->getTemplateSpecializationKind() == 
                                                   TSK_ExplicitSpecialization &&
-           !Function->getClassScopeSpecializationPattern()))
+           !Subprogram->getClassScopeSpecializationPattern()))
         break;
           
       if (const TemplateArgumentList *TemplateArgs
-            = Function->getTemplateSpecializationArgs()) {
+            = Subprogram->getTemplateSpecializationArgs()) {
         // Add the template arguments for this specialization.
         Result.addOuterTemplateArguments(TemplateArgs);
 
         // If this function was instantiated from a specialized member that is
         // a function template, we're done.
-        assert(Function->getPrimaryTemplate() && "No function template?");
-        if (Function->getPrimaryTemplate()->isMemberSpecialization())
+        assert(Subprogram->getPrimaryTemplate() && "No function template?");
+        if (Subprogram->getPrimaryTemplate()->isMemberSpecialization())
           break;
-      } else if (FunctionTemplateDecl *FunTmpl
-                                   = Function->getDescribedFunctionTemplate()) {
+      } else if (SubprogramTemplateDecl *FunTmpl
+                                   = Subprogram->getDescribedSubprogramTemplate()) {
         // Add the "injected" template arguments.
         std::pair<const TemplateArgument *, unsigned>
           Injected = FunTmpl->getInjectedTemplateArgs();
@@ -125,10 +125,10 @@ Sema::getTemplateInstantiationArgs(NamedDecl *D,
       // namespace scope, take arguments from its lexical parent
       // instead of its semantic parent, unless of course the pattern we're
       // instantiating actually comes from the file's context!
-      if (Function->getFriendObjectKind() &&
-          Function->getDeclContext()->isFileContext() &&
+      if (Subprogram->getFriendObjectKind() &&
+          Subprogram->getDeclContext()->isFileContext() &&
           (!Pattern || !Pattern->getLexicalDeclContext()->isFileContext())) {
-        Ctx = Function->getLexicalDeclContext();
+        Ctx = Subprogram->getLexicalDeclContext();
         RelativeToPrimary = false;
         continue;
       }
@@ -155,7 +155,7 @@ bool Sema::ActiveTemplateInstantiation::isInstantiationRecord() const {
   case TemplateInstantiation:
   case ExceptionSpecInstantiation:
   case DefaultTemplateArgumentInstantiation:
-  case DefaultFunctionArgumentInstantiation:
+  case DefaultSubprogramArgumentInstantiation:
   case ExplicitTemplateArgumentSubstitution:
   case DeducedTemplateArgumentSubstitution:
   case PriorTemplateArgumentSubstitution:
@@ -193,7 +193,7 @@ InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
 
 Sema::InstantiatingTemplate::
 InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
-                      FunctionDecl *Entity, ExceptionSpecification,
+                      SubprogramDecl *Entity, ExceptionSpecification,
                       SourceRange InstantiationRange)
   : SemaRef(SemaRef),
     SavedInNonInstantiationSFINAEContext(
@@ -241,7 +241,7 @@ InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
 
 Sema::InstantiatingTemplate::
 InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
-                      FunctionTemplateDecl *FunctionTemplate,
+                      SubprogramTemplateDecl *SubprogramTemplate,
                       ArrayRef<TemplateArgument> TemplateArgs,
                       ActiveTemplateInstantiation::InstantiationKind Kind,
                       sema::TemplateDeductionInfo &DeductionInfo,
@@ -255,7 +255,7 @@ InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
     ActiveTemplateInstantiation Inst;
     Inst.Kind = Kind;
     Inst.PointOfInstantiation = PointOfInstantiation;
-    Inst.Entity = FunctionTemplate;
+    Inst.Entity = SubprogramTemplate;
     Inst.TemplateArgs = TemplateArgs.data();
     Inst.NumTemplateArgs = TemplateArgs.size();
     Inst.DeductionInfo = &DeductionInfo;
@@ -306,7 +306,7 @@ InstantiatingTemplate(Sema &SemaRef, SourceLocation PointOfInstantiation,
   if (!Invalid) {
     ActiveTemplateInstantiation Inst;
     Inst.Kind
-      = ActiveTemplateInstantiation::DefaultFunctionArgumentInstantiation;
+      = ActiveTemplateInstantiation::DefaultSubprogramArgumentInstantiation;
     Inst.PointOfInstantiation = PointOfInstantiation;
     Inst.Entity = Param;
     Inst.TemplateArgs = TemplateArgs.data();
@@ -462,14 +462,14 @@ void Sema::PrintInstantiationStack() {
         Diags.Report(Active->PointOfInstantiation, DiagID)
           << Context.getTypeDeclType(Record)
           << Active->InstantiationRange;
-      } else if (FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
+      } else if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
         unsigned DiagID;
-        if (Function->getPrimaryTemplate())
+        if (Subprogram->getPrimaryTemplate())
           DiagID = diag::note_function_template_spec_here;
         else
           DiagID = diag::note_template_member_function_here;
         Diags.Report(Active->PointOfInstantiation, DiagID)
-          << Function
+          << Subprogram
           << Active->InstantiationRange;
       } else if (VarDecl *VD = dyn_cast<VarDecl>(D)) {
         Diags.Report(Active->PointOfInstantiation,
@@ -505,7 +505,7 @@ void Sema::PrintInstantiationStack() {
     }
 
     case ActiveTemplateInstantiation::ExplicitTemplateArgumentSubstitution: {
-      FunctionTemplateDecl *FnTmpl = cast<FunctionTemplateDecl>(Active->Entity);
+      SubprogramTemplateDecl *FnTmpl = cast<SubprogramTemplateDecl>(Active->Entity);
       Diags.Report(Active->PointOfInstantiation,
                    diag::note_explicit_template_arg_substitution_here)
         << FnTmpl 
@@ -528,8 +528,8 @@ void Sema::PrintInstantiationStack() {
                                              Active->NumTemplateArgs)
           << Active->InstantiationRange;
       } else {
-        FunctionTemplateDecl *FnTmpl
-          = cast<FunctionTemplateDecl>(Active->Entity);
+        SubprogramTemplateDecl *FnTmpl
+          = cast<SubprogramTemplateDecl>(Active->Entity);
         Diags.Report(Active->PointOfInstantiation,
                      diag::note_function_template_deduction_instantiation_here)
           << FnTmpl
@@ -540,9 +540,9 @@ void Sema::PrintInstantiationStack() {
       }
       break;
 
-    case ActiveTemplateInstantiation::DefaultFunctionArgumentInstantiation: {
+    case ActiveTemplateInstantiation::DefaultSubprogramArgumentInstantiation: {
       ParmVarDecl *Param = cast<ParmVarDecl>(Active->Entity);
-      FunctionDecl *FD = cast<FunctionDecl>(Param->getDeclContext());
+      SubprogramDecl *FD = cast<SubprogramDecl>(Param->getDeclContext());
 
       std::string TemplateArgsStr
         = TemplateSpecializationType::PrintTemplateArgumentList(
@@ -601,7 +601,7 @@ void Sema::PrintInstantiationStack() {
     case ActiveTemplateInstantiation::ExceptionSpecInstantiation:
       Diags.Report(Active->PointOfInstantiation,
                    diag::note_template_exception_spec_instantiation_here)
-        << cast<FunctionDecl>(Active->Entity)
+        << cast<SubprogramDecl>(Active->Entity)
         << Active->InstantiationRange;
       break;
     }
@@ -625,7 +625,7 @@ llvm::Optional<TemplateDeductionInfo *> Sema::isSFINAEContext() const {
       if (isa<TypeAliasTemplateDecl>(Active->Entity))
         break;
       // Fall through.
-    case ActiveTemplateInstantiation::DefaultFunctionArgumentInstantiation:
+    case ActiveTemplateInstantiation::DefaultSubprogramArgumentInstantiation:
     case ActiveTemplateInstantiation::ExceptionSpecInstantiation:
       // This is a template instantiation, so there is no SFINAE.
       return llvm::Optional<TemplateDeductionInfo *>();
@@ -716,7 +716,7 @@ namespace {
                                                        NumExpansions);
     }
 
-    void ExpandingFunctionParameterPack(ParmVarDecl *Pack) { 
+    void ExpandingSubprogramParameterPack(ParmVarDecl *Pack) { 
       SemaRef.CurrentInstantiationScope->MakeInstantiatedLocalArgPack(Pack);
     }
     
@@ -810,22 +810,22 @@ namespace {
     ExprResult RebuildParmVarDeclRefExpr(ParmVarDecl *PD, SourceLocation Loc);
 
     /// \brief Transform a reference to a function parameter pack.
-    ExprResult TransformFunctionParmPackRefExpr(DeclRefExpr *E,
+    ExprResult TransformSubprogramParmPackRefExpr(DeclRefExpr *E,
                                                 ParmVarDecl *PD);
 
-    /// \brief Transform a FunctionParmPackExpr which was built when we couldn't
+    /// \brief Transform a SubprogramParmPackExpr which was built when we couldn't
     /// expand a function parameter pack reference which refers to an expanded
     /// pack.
-    ExprResult TransformFunctionParmPackExpr(FunctionParmPackExpr *E);
+    ExprResult TransformSubprogramParmPackExpr(SubprogramParmPackExpr *E);
 
-    QualType TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                        FunctionProtoTypeLoc TL);
-    QualType TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                        FunctionProtoTypeLoc TL,
+    QualType TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                        SubprogramProtoTypeLoc TL);
+    QualType TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                        SubprogramProtoTypeLoc TL,
                                         CXXRecordDecl *ThisContext,
                                         unsigned ThisTypeQuals);
 
-    ParmVarDecl *TransformFunctionTypeParam(ParmVarDecl *OldParm,
+    ParmVarDecl *TransformSubprogramTypeParam(ParmVarDecl *OldParm,
                                             int indexAdjustment,
                                         llvm::Optional<unsigned> NumExpansions,
                                             bool ExpectParameterPack);
@@ -856,7 +856,7 @@ namespace {
 
     ExprResult TransformLambdaScope(LambdaExpr *E,
                                     CXXMethodDecl *CallOperator) {
-      CallOperator->setInstantiationOfMemberFunction(E->getCallOperator(),
+      CallOperator->setInstantiationOfMemberSubprogram(E->getCallOperator(),
                                                      TSK_ImplicitInstantiation);
       return TreeTransform<TemplateInstantiator>::
          TransformLambdaScope(E, CallOperator);
@@ -1090,7 +1090,7 @@ TemplateInstantiator::TransformPredefinedExpr(PredefinedExpr *E) {
   if (!E->isTypeDependent())
     return SemaRef.Owned(E);
 
-  FunctionDecl *currentDecl = getSema().getCurFunctionDecl();
+  SubprogramDecl *currentDecl = getSema().getCurSubprogramDecl();
   assert(currentDecl && "Must have current function declaration when "
                         "instantiating.");
 
@@ -1100,7 +1100,7 @@ TemplateInstantiator::TransformPredefinedExpr(PredefinedExpr *E) {
 
   llvm::APInt LengthI(32, Length + 1);
   QualType ResTy;
-  if (IT == PredefinedExpr::LFunction)
+  if (IT == PredefinedExpr::LSubprogram)
     ResTy = getSema().Context.WCharTy.withConst();
   else
     ResTy = getSema().Context.CharTy.withConst();
@@ -1249,7 +1249,7 @@ TemplateInstantiator::RebuildParmVarDeclRefExpr(ParmVarDecl *PD,
 }
 
 ExprResult
-TemplateInstantiator::TransformFunctionParmPackExpr(FunctionParmPackExpr *E) {
+TemplateInstantiator::TransformSubprogramParmPackExpr(SubprogramParmPackExpr *E) {
   if (getSema().ArgumentPackSubstitutionIndex != -1) {
     // We can expand this parameter pack now.
     ParmVarDecl *D = E->getExpansion(getSema().ArgumentPackSubstitutionIndex);
@@ -1267,7 +1267,7 @@ TemplateInstantiator::TransformFunctionParmPackExpr(FunctionParmPackExpr *E) {
   // parameters in the instantiation of the function decl.
   llvm::SmallVector<Decl*, 8> Parms;
   Parms.reserve(E->getNumExpansions());
-  for (FunctionParmPackExpr::iterator I = E->begin(), End = E->end();
+  for (SubprogramParmPackExpr::iterator I = E->begin(), End = E->end();
        I != End; ++I) {
     ParmVarDecl *D =
         cast_or_null<ParmVarDecl>(TransformDecl(E->getExprLoc(), *I));
@@ -1276,13 +1276,13 @@ TemplateInstantiator::TransformFunctionParmPackExpr(FunctionParmPackExpr *E) {
     Parms.push_back(D);
   }
 
-  return FunctionParmPackExpr::Create(getSema().Context, T,
+  return SubprogramParmPackExpr::Create(getSema().Context, T,
                                       E->getParameterPack(),
                                       E->getParameterPackLocation(), Parms);
 }
 
 ExprResult
-TemplateInstantiator::TransformFunctionParmPackRefExpr(DeclRefExpr *E,
+TemplateInstantiator::TransformSubprogramParmPackRefExpr(DeclRefExpr *E,
                                                        ParmVarDecl *PD) {
   typedef LocalInstantiationScope::DeclArgumentPack DeclArgumentPack;
   llvm::PointerUnion<Decl *, DeclArgumentPack *> *Found
@@ -1292,12 +1292,12 @@ TemplateInstantiator::TransformFunctionParmPackRefExpr(DeclRefExpr *E,
   Decl *TransformedDecl;
   if (DeclArgumentPack *Pack = Found->dyn_cast<DeclArgumentPack *>()) {
     // If this is a reference to a function parameter pack which we can substitute
-    // but can't yet expand, build a FunctionParmPackExpr for it.
+    // but can't yet expand, build a SubprogramParmPackExpr for it.
     if (getSema().ArgumentPackSubstitutionIndex == -1) {
       QualType T = TransformType(E->getType());
       if (T.isNull())
         return ExprError();
-      return FunctionParmPackExpr::Create(getSema().Context, T, PD,
+      return SubprogramParmPackExpr::Create(getSema().Context, T, PD,
                                           E->getExprLoc(), *Pack);
     }
 
@@ -1328,40 +1328,40 @@ TemplateInstantiator::TransformDeclRefExpr(DeclRefExpr *E) {
   // Handle references to function parameter packs.
   if (ParmVarDecl *PD = dyn_cast<ParmVarDecl>(D))
     if (PD->isParameterPack())
-      return TransformFunctionParmPackRefExpr(E, PD);
+      return TransformSubprogramParmPackRefExpr(E, PD);
 
   return TreeTransform<TemplateInstantiator>::TransformDeclRefExpr(E);
 }
 
 ExprResult TemplateInstantiator::TransformCXXDefaultArgExpr(
     CXXDefaultArgExpr *E) {
-  assert(!cast<FunctionDecl>(E->getParam()->getDeclContext())->
-             getDescribedFunctionTemplate() &&
+  assert(!cast<SubprogramDecl>(E->getParam()->getDeclContext())->
+             getDescribedSubprogramTemplate() &&
          "Default arg expressions are never formed in dependent cases.");
   return SemaRef.BuildCXXDefaultArgExpr(E->getUsedLocation(),
-                           cast<FunctionDecl>(E->getParam()->getDeclContext()), 
+                           cast<SubprogramDecl>(E->getParam()->getDeclContext()), 
                                         E->getParam());
 }
 
-QualType TemplateInstantiator::TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                                      FunctionProtoTypeLoc TL) {
+QualType TemplateInstantiator::TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                                      SubprogramProtoTypeLoc TL) {
   // We need a local instantiation scope for this function prototype.
   LocalInstantiationScope Scope(SemaRef, /*CombineWithOuterScope=*/true);
-  return inherited::TransformFunctionProtoType(TLB, TL);
+  return inherited::TransformSubprogramProtoType(TLB, TL);
 }
 
-QualType TemplateInstantiator::TransformFunctionProtoType(TypeLocBuilder &TLB,
-                                 FunctionProtoTypeLoc TL,
+QualType TemplateInstantiator::TransformSubprogramProtoType(TypeLocBuilder &TLB,
+                                 SubprogramProtoTypeLoc TL,
                                  CXXRecordDecl *ThisContext,
                                  unsigned ThisTypeQuals) {
   // We need a local instantiation scope for this function prototype.
   LocalInstantiationScope Scope(SemaRef, /*CombineWithOuterScope=*/true);
-  return inherited::TransformFunctionProtoType(TLB, TL, ThisContext, 
+  return inherited::TransformSubprogramProtoType(TLB, TL, ThisContext, 
                                                ThisTypeQuals);  
 }
 
 ParmVarDecl *
-TemplateInstantiator::TransformFunctionTypeParam(ParmVarDecl *OldParm,
+TemplateInstantiator::TransformSubprogramTypeParam(ParmVarDecl *OldParm,
                                                  int indexAdjustment,
                                        llvm::Optional<unsigned> NumExpansions,
                                                  bool ExpectParameterPack) {
@@ -1560,16 +1560,16 @@ QualType Sema::SubstType(QualType T,
   return Instantiator.TransformType(T);
 }
 
-static bool NeedsInstantiationAsFunctionType(TypeSourceInfo *T) {
+static bool NeedsInstantiationAsSubprogramType(TypeSourceInfo *T) {
   if (T->getType()->isInstantiationDependentType() || 
       T->getType()->isVariablyModifiedType())
     return true;
 
   TypeLoc TL = T->getTypeLoc().IgnoreParens();
-  if (!isa<FunctionProtoTypeLoc>(TL))
+  if (!isa<SubprogramProtoTypeLoc>(TL))
     return false;
 
-  FunctionProtoTypeLoc FP = cast<FunctionProtoTypeLoc>(TL);
+  SubprogramProtoTypeLoc FP = cast<SubprogramProtoTypeLoc>(TL);
   for (unsigned I = 0, E = FP.getNumArgs(); I != E; ++I) {
     ParmVarDecl *P = FP.getArg(I);
 
@@ -1590,9 +1590,9 @@ static bool NeedsInstantiationAsFunctionType(TypeSourceInfo *T) {
 }
 
 /// A form of SubstType intended specifically for instantiating the
-/// type of a FunctionDecl.  Its purpose is solely to force the
+/// type of a SubprogramDecl.  Its purpose is solely to force the
 /// instantiation of default-argument expressions.
-TypeSourceInfo *Sema::SubstFunctionDeclType(TypeSourceInfo *T,
+TypeSourceInfo *Sema::SubstSubprogramDeclType(TypeSourceInfo *T,
                                 const MultiLevelTemplateArgumentList &Args,
                                 SourceLocation Loc,
                                 DeclarationName Entity,
@@ -1602,7 +1602,7 @@ TypeSourceInfo *Sema::SubstFunctionDeclType(TypeSourceInfo *T,
          "Cannot perform an instantiation without some context on the "
          "instantiation stack");
   
-  if (!NeedsInstantiationAsFunctionType(T))
+  if (!NeedsInstantiationAsSubprogramType(T))
     return T;
 
   TemplateInstantiator Instantiator(*this, Args, Loc, Entity);
@@ -1614,8 +1614,8 @@ TypeSourceInfo *Sema::SubstFunctionDeclType(TypeSourceInfo *T,
 
   QualType Result;
   
-  if (FunctionProtoTypeLoc *Proto = dyn_cast<FunctionProtoTypeLoc>(&TL)) {
-    Result = Instantiator.TransformFunctionProtoType(TLB, *Proto, ThisContext,
+  if (SubprogramProtoTypeLoc *Proto = dyn_cast<SubprogramProtoTypeLoc>(&TL)) {
+    Result = Instantiator.TransformSubprogramProtoType(TLB, *Proto, ThisContext,
                                                      ThisTypeQuals);
   } else {
     Result = Instantiator.TransformType(TLB, TL);
@@ -1707,12 +1707,12 @@ ParmVarDecl *Sema::SubstParmVarDecl(ParmVarDecl *OldParm,
     CurrentInstantiationScope->InstantiatedLocal(OldParm, NewParm);  
   }
   
-  // FIXME: OldParm may come from a FunctionProtoType, in which case CurContext
+  // FIXME: OldParm may come from a SubprogramProtoType, in which case CurContext
   // can be anything, is this right ?
   NewParm->setDeclContext(CurContext);
 
-  NewParm->setScopeInfo(OldParm->getFunctionScopeDepth(),
-                        OldParm->getFunctionScopeIndex() + indexAdjustment);
+  NewParm->setScopeInfo(OldParm->getSubprogramScopeDepth(),
+                        OldParm->getSubprogramScopeIndex() + indexAdjustment);
   
   return NewParm;  
 }
@@ -1731,7 +1731,7 @@ bool Sema::SubstParmTypes(SourceLocation Loc,
   
   TemplateInstantiator Instantiator(*this, TemplateArgs, Loc, 
                                     DeclarationName());
-  return Instantiator.TransformFunctionTypeParams(Loc, Params, NumParams, 0,
+  return Instantiator.TransformSubprogramTypeParams(Loc, Params, NumParams, 0,
                                                   ParamTypes, OutParams);
 }
 
@@ -1957,7 +1957,7 @@ Sema::InstantiateClass(SourceLocation PointOfInstantiation,
   // If this is an instantiation of a local class, merge this local
   // instantiation scope with the enclosing scope. Otherwise, every
   // instantiation of a class has its own local instantiation scope.
-  bool MergeWithParentScope = !Instantiation->isDefinedOutsideFunctionOrMethod();
+  bool MergeWithParentScope = !Instantiation->isDefinedOutsideSubprogramOrMethod();
   LocalInstantiationScope Scope(*this, MergeWithParentScope);
 
   // Pull attributes from the pattern onto the instantiation.
@@ -2377,25 +2377,25 @@ Sema::InstantiateClassMembers(SourceLocation PointOfInstantiation,
                                DEnd = Instantiation->decls_end();
        D != DEnd; ++D) {
     bool SuppressNew = false;
-    if (FunctionDecl *Function = dyn_cast<FunctionDecl>(*D)) {
-      if (FunctionDecl *Pattern
-            = Function->getInstantiatedFromMemberFunction()) {
+    if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(*D)) {
+      if (SubprogramDecl *Pattern
+            = Subprogram->getInstantiatedFromMemberSubprogram()) {
         MemberSpecializationInfo *MSInfo 
-          = Function->getMemberSpecializationInfo();
+          = Subprogram->getMemberSpecializationInfo();
         assert(MSInfo && "No member specialization information?");
         if (MSInfo->getTemplateSpecializationKind()
                                                  == TSK_ExplicitSpecialization)
           continue;
         
         if (CheckSpecializationInstantiationRedecl(PointOfInstantiation, TSK, 
-                                                   Function, 
+                                                   Subprogram, 
                                         MSInfo->getTemplateSpecializationKind(),
                                               MSInfo->getPointOfInstantiation(),
                                                    SuppressNew) ||
             SuppressNew)
           continue;
         
-        if (Function->isDefined())
+        if (Subprogram->isDefined())
           continue;
 
         if (TSK == TSK_ExplicitInstantiationDefinition) {
@@ -2408,11 +2408,11 @@ Sema::InstantiateClassMembers(SourceLocation PointOfInstantiation,
           if (!Pattern->isDefined())
             continue;
         
-          Function->setTemplateSpecializationKind(TSK, PointOfInstantiation);
+          Subprogram->setTemplateSpecializationKind(TSK, PointOfInstantiation);
                       
-          InstantiateFunctionDefinition(PointOfInstantiation, Function);
+          InstantiateSubprogramDefinition(PointOfInstantiation, Subprogram);
         } else {
-          Function->setTemplateSpecializationKind(TSK, PointOfInstantiation);
+          Subprogram->setTemplateSpecializationKind(TSK, PointOfInstantiation);
         }
       }
     } else if (VarDecl *Var = dyn_cast<VarDecl>(*D)) {
@@ -2650,8 +2650,8 @@ static const Decl* getCanonicalParmVarDecl(const Decl *D) {
   // since the map is then valid for any redeclaration or definition of that
   // function.
   if (const ParmVarDecl *PV = dyn_cast<ParmVarDecl>(D)) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(PV->getDeclContext())) {
-      unsigned i = PV->getFunctionScopeIndex();
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(PV->getDeclContext())) {
+      unsigned i = PV->getSubprogramScopeIndex();
       return FD->getCanonicalDecl()->getParamDecl(i);
     }
   }

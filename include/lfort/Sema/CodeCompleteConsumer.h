@@ -108,7 +108,7 @@ enum SimplifiedTypeClass {
   STC_Arithmetic,
   STC_Array,
   STC_Block,
-  STC_Function,
+  STC_Subprogram,
   STC_ObjectiveC,
   STC_Other,
   STC_Pointer,
@@ -140,9 +140,9 @@ unsigned getMacroUsagePriority(StringRef MacroName,
 /// declaration.
 CXCursorKind getCursorKindForDecl(Decl *D);
 
-class FunctionDecl;
-class FunctionType;
-class FunctionTemplateDecl;
+class SubprogramDecl;
+class SubprogramType;
+class SubprogramTemplateDecl;
 class IdentifierInfo;
 class NamedDecl;
 class NestedNameSpecifier;
@@ -835,12 +835,12 @@ public:
     /// \brief Describes the type of overload candidate.
     enum CandidateKind {
       /// \brief The candidate is a function declaration.
-      CK_Function,
+      CK_Subprogram,
       /// \brief The candidate is a function template.
-      CK_FunctionTemplate,
+      CK_SubprogramTemplate,
       /// \brief The "candidate" is actually a variable, expression, or block
       /// for which we only have a function prototype.
-      CK_FunctionType
+      CK_SubprogramType
     };
 
   private:
@@ -849,44 +849,44 @@ public:
 
     union {
       /// \brief The function overload candidate, available when
-      /// Kind == CK_Function.
-      FunctionDecl *Function;
+      /// Kind == CK_Subprogram.
+      SubprogramDecl *Subprogram;
 
       /// \brief The function template overload candidate, available when
-      /// Kind == CK_FunctionTemplate.
-      FunctionTemplateDecl *FunctionTemplate;
+      /// Kind == CK_SubprogramTemplate.
+      SubprogramTemplateDecl *SubprogramTemplate;
 
       /// \brief The function type that describes the entity being called,
-      /// when Kind == CK_FunctionType.
-      const FunctionType *Type;
+      /// when Kind == CK_SubprogramType.
+      const SubprogramType *Type;
     };
 
   public:
-    OverloadCandidate(FunctionDecl *Function)
-      : Kind(CK_Function), Function(Function) { }
+    OverloadCandidate(SubprogramDecl *Subprogram)
+      : Kind(CK_Subprogram), Subprogram(Subprogram) { }
 
-    OverloadCandidate(FunctionTemplateDecl *FunctionTemplateDecl)
-      : Kind(CK_FunctionTemplate), FunctionTemplate(FunctionTemplateDecl) { }
+    OverloadCandidate(SubprogramTemplateDecl *SubprogramTemplateDecl)
+      : Kind(CK_SubprogramTemplate), SubprogramTemplate(SubprogramTemplateDecl) { }
 
-    OverloadCandidate(const FunctionType *Type)
-      : Kind(CK_FunctionType), Type(Type) { }
+    OverloadCandidate(const SubprogramType *Type)
+      : Kind(CK_SubprogramType), Type(Type) { }
 
     /// \brief Determine the kind of overload candidate.
     CandidateKind getKind() const { return Kind; }
 
     /// \brief Retrieve the function overload candidate or the templated
     /// function declaration for a function template.
-    FunctionDecl *getFunction() const;
+    SubprogramDecl *getSubprogram() const;
 
     /// \brief Retrieve the function template overload candidate.
-    FunctionTemplateDecl *getFunctionTemplate() const {
-      assert(getKind() == CK_FunctionTemplate && "Not a function template");
-      return FunctionTemplate;
+    SubprogramTemplateDecl *getSubprogramTemplate() const {
+      assert(getKind() == CK_SubprogramTemplate && "Not a function template");
+      return SubprogramTemplate;
     }
 
     /// \brief Retrieve the function type of the entity, regardless of how the
     /// function is stored.
-    const FunctionType *getFunctionType() const;
+    const SubprogramType *getSubprogramType() const;
 
     /// \brief Create a new code-completion string that describes the function
     /// signature of this overload candidate.

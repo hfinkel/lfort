@@ -968,7 +968,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
       Param = S.Context.getQualifiedType(UnqualParam, Quals);
     }
 
-    if ((TDF & TDF_TopLevelParameterTypeList) && !Param->isFunctionType()) {
+    if ((TDF & TDF_TopLevelParameterTypeList) && !Param->isSubprogramType()) {
       // C++0x [temp.deduct.type]p10:
       //   If P and A are function types that originated from deduction when
       //   taking the address of a function template (14.8.2.2) or when deducing
@@ -1134,7 +1134,7 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
     case Type::Builtin:
     case Type::VariableArray:
     case Type::Vector:
-    case Type::FunctionNoProto:
+    case Type::SubprogramNoProto:
     case Type::Record:
     case Type::Enum:
     case Type::ObjCObject:
@@ -1296,36 +1296,36 @@ DeduceTemplateArgumentsByTypeMatch(Sema &S,
     //     type(*)(T)
     //     T(*)()
     //     T(*)(T)
-    case Type::FunctionProto: {
+    case Type::SubprogramProto: {
       unsigned SubTDF = TDF & TDF_TopLevelParameterTypeList;
-      const FunctionProtoType *FunctionProtoArg =
-        dyn_cast<FunctionProtoType>(Arg);
-      if (!FunctionProtoArg)
+      const SubprogramProtoType *SubprogramProtoArg =
+        dyn_cast<SubprogramProtoType>(Arg);
+      if (!SubprogramProtoArg)
         return Sema::TDK_NonDeducedMismatch;
 
-      const FunctionProtoType *FunctionProtoParam =
-        cast<FunctionProtoType>(Param);
+      const SubprogramProtoType *SubprogramProtoParam =
+        cast<SubprogramProtoType>(Param);
 
-      if (FunctionProtoParam->getTypeQuals()
-            != FunctionProtoArg->getTypeQuals() ||
-          FunctionProtoParam->getRefQualifier()
-            != FunctionProtoArg->getRefQualifier() ||
-          FunctionProtoParam->isVariadic() != FunctionProtoArg->isVariadic())
+      if (SubprogramProtoParam->getTypeQuals()
+            != SubprogramProtoArg->getTypeQuals() ||
+          SubprogramProtoParam->getRefQualifier()
+            != SubprogramProtoArg->getRefQualifier() ||
+          SubprogramProtoParam->isVariadic() != SubprogramProtoArg->isVariadic())
         return Sema::TDK_NonDeducedMismatch;
 
       // Check return types.
       if (Sema::TemplateDeductionResult Result
             = DeduceTemplateArgumentsByTypeMatch(S, TemplateParams,
-                                            FunctionProtoParam->getResultType(),
-                                            FunctionProtoArg->getResultType(),
+                                            SubprogramProtoParam->getResultType(),
+                                            SubprogramProtoArg->getResultType(),
                                             Info, Deduced, 0))
         return Result;
 
       return DeduceTemplateArguments(S, TemplateParams,
-                                     FunctionProtoParam->arg_type_begin(),
-                                     FunctionProtoParam->getNumArgs(),
-                                     FunctionProtoArg->arg_type_begin(),
-                                     FunctionProtoArg->getNumArgs(),
+                                     SubprogramProtoParam->arg_type_begin(),
+                                     SubprogramProtoParam->getNumArgs(),
+                                     SubprogramProtoArg->arg_type_begin(),
+                                     SubprogramProtoArg->getNumArgs(),
                                      Info, Deduced, SubTDF);
     }
 
@@ -2021,7 +2021,7 @@ static bool ConvertDeducedTemplateArgument(Sema &S, NamedDecl *Param,
                                            QualType NTTPType,
                                            unsigned ArgumentPackIndex,
                                            TemplateDeductionInfo &Info,
-                                           bool InFunctionTemplate,
+                                           bool InSubprogramTemplate,
                              SmallVectorImpl<TemplateArgument> &Output) {
   if (Arg.getKind() == TemplateArgument::Pack) {
     // This is a template argument pack, so check each of its arguments against
@@ -2037,7 +2037,7 @@ static bool ConvertDeducedTemplateArgument(Sema &S, NamedDecl *Param,
       InnerArg.setDeducedFromArrayBound(Arg.wasDeducedFromArrayBound());
       if (ConvertDeducedTemplateArgument(S, Param, InnerArg, Template,
                                          NTTPType, PackedArgsBuilder.size(),
-                                         Info, InFunctionTemplate, Output))
+                                         Info, InSubprogramTemplate, Output))
         return true;
 
       // Move the converted template argument into our argument pack.
@@ -2065,7 +2065,7 @@ static bool ConvertDeducedTemplateArgument(Sema &S, NamedDecl *Param,
                                  Template->getSourceRange().getEnd(),
                                  ArgumentPackIndex,
                                  Output,
-                                 InFunctionTemplate
+                                 InSubprogramTemplate
                                   ? (Arg.wasDeducedFromArrayBound()
                                        ? Sema::CTAK_DeducedFromArrayBound
                                        : Sema::CTAK_Deduced)
@@ -2249,7 +2249,7 @@ static bool isSimpleTemplateIdType(QualType T) {
 /// \brief Substitute the explicitly-provided template arguments into the
 /// given function template according to C++ [temp.arg.explicit].
 ///
-/// \param FunctionTemplate the function template into which the explicit
+/// \param SubprogramTemplate the function template into which the explicit
 /// template arguments will be substituted.
 ///
 /// \param ExplicitTemplateArgs the explicitly-specified template
@@ -2261,7 +2261,7 @@ static bool isSimpleTemplateIdType(QualType T) {
 /// \param ParamTypes will be populated with the instantiated function
 /// parameters.
 ///
-/// \param FunctionType if non-NULL, the result type of the function template
+/// \param SubprogramType if non-NULL, the result type of the function template
 /// will also be instantiated and the pointed-to value will be updated with
 /// the instantiated function type.
 ///
@@ -2272,27 +2272,27 @@ static bool isSimpleTemplateIdType(QualType T) {
 /// condition.
 Sema::TemplateDeductionResult
 Sema::SubstituteExplicitTemplateArguments(
-                                      FunctionTemplateDecl *FunctionTemplate,
+                                      SubprogramTemplateDecl *SubprogramTemplate,
                                TemplateArgumentListInfo &ExplicitTemplateArgs,
                        SmallVectorImpl<DeducedTemplateArgument> &Deduced,
                                  SmallVectorImpl<QualType> &ParamTypes,
-                                          QualType *FunctionType,
+                                          QualType *SubprogramType,
                                           TemplateDeductionInfo &Info) {
-  FunctionDecl *Function = FunctionTemplate->getTemplatedDecl();
+  SubprogramDecl *Subprogram = SubprogramTemplate->getTemplatedDecl();
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
 
   if (ExplicitTemplateArgs.size() == 0) {
     // No arguments to substitute; just copy over the parameter types and
     // fill in the function type.
-    for (FunctionDecl::param_iterator P = Function->param_begin(),
-                                   PEnd = Function->param_end();
+    for (SubprogramDecl::param_iterator P = Subprogram->param_begin(),
+                                   PEnd = Subprogram->param_end();
          P != PEnd;
          ++P)
       ParamTypes.push_back((*P)->getType());
 
-    if (FunctionType)
-      *FunctionType = Function->getType();
+    if (SubprogramType)
+      *SubprogramType = Subprogram->getType();
     return TDK_Success;
   }
 
@@ -2311,14 +2311,14 @@ Sema::SubstituteExplicitTemplateArguments(
   // explicitly-specified template arguments against this function template,
   // and then substitute them into the function parameter types.
   SmallVector<TemplateArgument, 4> DeducedArgs(Deduced.begin(), Deduced.end());
-  InstantiatingTemplate Inst(*this, FunctionTemplate->getLocation(),
-                             FunctionTemplate, DeducedArgs,
+  InstantiatingTemplate Inst(*this, SubprogramTemplate->getLocation(),
+                             SubprogramTemplate, DeducedArgs,
            ActiveTemplateInstantiation::ExplicitTemplateArgumentSubstitution,
                              Info);
   if (Inst)
     return TDK_InstantiationDepth;
 
-  if (CheckTemplateArgumentList(FunctionTemplate,
+  if (CheckTemplateArgumentList(SubprogramTemplate,
                                 SourceLocation(),
                                 ExplicitTemplateArgs,
                                 true,
@@ -2340,7 +2340,7 @@ Sema::SubstituteExplicitTemplateArguments(
   // done in the context of the templated declaration.  Explicit
   // argument substitution, on the other hand, needs to happen in the
   // calling context.
-  ContextRAII SavedContext(*this, FunctionTemplate->getTemplatedDecl());
+  ContextRAII SavedContext(*this, SubprogramTemplate->getTemplatedDecl());
 
   // If we deduced template arguments for a template parameter pack,
   // note that the template argument pack is partially substituted and record
@@ -2357,17 +2357,17 @@ Sema::SubstituteExplicitTemplateArguments(
     }
   }
 
-  const FunctionProtoType *Proto
-    = Function->getType()->getAs<FunctionProtoType>();
-  assert(Proto && "Function template does not have a prototype?");
+  const SubprogramProtoType *Proto
+    = Subprogram->getType()->getAs<SubprogramProtoType>();
+  assert(Proto && "Subprogram template does not have a prototype?");
 
   // Instantiate the types of each of the function parameters given the
   // explicitly-specified template arguments. If the function has a trailing
   // return type, substitute it after the arguments to ensure we substitute
   // in lexical order.
   if (Proto->hasTrailingReturn()) {
-    if (SubstParmTypes(Function->getLocation(),
-                       Function->param_begin(), Function->getNumParams(),
+    if (SubstParmTypes(Subprogram->getLocation(),
+                       Subprogram->param_begin(), Subprogram->getNumParams(),
                        MultiLevelTemplateArgumentList(*ExplicitArgumentList),
                        ParamTypes))
       return TDK_SubstitutionFailure;
@@ -2385,7 +2385,7 @@ Sema::SubstituteExplicitTemplateArguments(
     //   declarator.
     unsigned ThisTypeQuals = 0;
     CXXRecordDecl *ThisContext = 0;
-    if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(Function)) {
+    if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(Subprogram)) {
       ThisContext = Method->getParent();
       ThisTypeQuals = Method->getTypeQualifiers();
     }
@@ -2395,8 +2395,8 @@ Sema::SubstituteExplicitTemplateArguments(
     
     ResultType = SubstType(Proto->getResultType(),
                    MultiLevelTemplateArgumentList(*ExplicitArgumentList),
-                   Function->getTypeSpecStartLoc(),
-                   Function->getDeclName());
+                   Subprogram->getTypeSpecStartLoc(),
+                   Subprogram->getDeclName());
     if (ResultType.isNull() || Trap.hasErrorOccurred())
       return TDK_SubstitutionFailure;
   }
@@ -2404,23 +2404,23 @@ Sema::SubstituteExplicitTemplateArguments(
   // Instantiate the types of each of the function parameters given the
   // explicitly-specified template arguments if we didn't do so earlier.
   if (!Proto->hasTrailingReturn() &&
-      SubstParmTypes(Function->getLocation(),
-                     Function->param_begin(), Function->getNumParams(),
+      SubstParmTypes(Subprogram->getLocation(),
+                     Subprogram->param_begin(), Subprogram->getNumParams(),
                      MultiLevelTemplateArgumentList(*ExplicitArgumentList),
                      ParamTypes))
     return TDK_SubstitutionFailure;
 
-  if (FunctionType) {
-    *FunctionType = BuildFunctionType(ResultType,
+  if (SubprogramType) {
+    *SubprogramType = BuildSubprogramType(ResultType,
                                       ParamTypes.data(), ParamTypes.size(),
                                       Proto->isVariadic(),
                                       Proto->hasTrailingReturn(),
                                       Proto->getTypeQuals(),
                                       Proto->getRefQualifier(),
-                                      Function->getLocation(),
-                                      Function->getDeclName(),
+                                      Subprogram->getLocation(),
+                                      Subprogram->getDeclName(),
                                       Proto->getExtInfo());
-    if (FunctionType->isNull() || Trap.hasErrorOccurred())
+    if (SubprogramType->isNull() || Trap.hasErrorOccurred())
       return TDK_SubstitutionFailure;
   }
 
@@ -2552,14 +2552,14 @@ CheckOriginalCallArgDeduction(Sema &S, Sema::OriginalCallArg OriginalArg,
 /// \param OriginalCallArgs If non-NULL, the original call arguments against
 /// which the deduced argument types should be compared.
 Sema::TemplateDeductionResult
-Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
+Sema::FinishTemplateArgumentDeduction(SubprogramTemplateDecl *SubprogramTemplate,
                        SmallVectorImpl<DeducedTemplateArgument> &Deduced,
                                       unsigned NumExplicitlySpecified,
-                                      FunctionDecl *&Specialization,
+                                      SubprogramDecl *&Specialization,
                                       TemplateDeductionInfo &Info,
         SmallVectorImpl<OriginalCallArg> const *OriginalCallArgs) {
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
 
   // Unevaluated SFINAE context.
   EnterExpressionEvaluationContext Unevaluated(*this, Sema::Unevaluated);
@@ -2568,14 +2568,14 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
   // Enter a new template instantiation context while we instantiate the
   // actual function declaration.
   SmallVector<TemplateArgument, 4> DeducedArgs(Deduced.begin(), Deduced.end());
-  InstantiatingTemplate Inst(*this, FunctionTemplate->getLocation(),
-                             FunctionTemplate, DeducedArgs,
+  InstantiatingTemplate Inst(*this, SubprogramTemplate->getLocation(),
+                             SubprogramTemplate, DeducedArgs,
               ActiveTemplateInstantiation::DeducedTemplateArgumentSubstitution,
                              Info);
   if (Inst)
     return TDK_InstantiationDepth;
 
-  ContextRAII SavedContext(*this, FunctionTemplate->getTemplatedDecl());
+  ContextRAII SavedContext(*this, SubprogramTemplate->getTemplatedDecl());
 
   // C++ [temp.deduct.type]p2:
   //   [...] or if any template argument remains neither deduced nor
@@ -2622,7 +2622,7 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
       }
 
       if (ConvertDeducedTemplateArgument(*this, Param, Deduced[I],
-                                         FunctionTemplate, NTTPType, 0, Info,
+                                         SubprogramTemplate, NTTPType, 0, Info,
                                          true, Builder)) {
         Info.Param = makeTemplateParameter(Param);
         // FIXME: These template arguments are temporary. Free them!
@@ -2657,9 +2657,9 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
 
     // Substitute into the default template argument, if available.
     TemplateArgumentLoc DefArg
-      = SubstDefaultTemplateArgumentIfAvailable(FunctionTemplate,
-                                              FunctionTemplate->getLocation(),
-                                  FunctionTemplate->getSourceRange().getEnd(),
+      = SubstDefaultTemplateArgumentIfAvailable(SubprogramTemplate,
+                                              SubprogramTemplate->getLocation(),
+                                  SubprogramTemplate->getSourceRange().getEnd(),
                                                 Param,
                                                 Builder);
 
@@ -2672,9 +2672,9 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
 
     // Check whether we can actually use the default argument.
     if (CheckTemplateArgument(Param, DefArg,
-                              FunctionTemplate,
-                              FunctionTemplate->getLocation(),
-                              FunctionTemplate->getSourceRange().getEnd(),
+                              SubprogramTemplate,
+                              SubprogramTemplate->getLocation(),
+                              SubprogramTemplate->getSourceRange().getEnd(),
                               0, Builder,
                               CTAK_Specified)) {
       Info.Param = makeTemplateParameter(
@@ -2695,17 +2695,17 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
 
   // Substitute the deduced template arguments into the function template
   // declaration to produce the function template specialization.
-  DeclContext *Owner = FunctionTemplate->getDeclContext();
-  if (FunctionTemplate->getFriendObjectKind())
-    Owner = FunctionTemplate->getLexicalDeclContext();
-  Specialization = cast_or_null<FunctionDecl>(
-                      SubstDecl(FunctionTemplate->getTemplatedDecl(), Owner,
+  DeclContext *Owner = SubprogramTemplate->getDeclContext();
+  if (SubprogramTemplate->getFriendObjectKind())
+    Owner = SubprogramTemplate->getLexicalDeclContext();
+  Specialization = cast_or_null<SubprogramDecl>(
+                      SubstDecl(SubprogramTemplate->getTemplatedDecl(), Owner,
                          MultiLevelTemplateArgumentList(*DeducedArgumentList)));
   if (!Specialization || Specialization->isInvalidDecl())
     return TDK_SubstitutionFailure;
 
   assert(Specialization->getPrimaryTemplate()->getCanonicalDecl() ==
-         FunctionTemplate->getCanonicalDecl());
+         SubprogramTemplate->getCanonicalDecl());
 
   // If the template argument list is owned by the function template
   // specialization, release it.
@@ -2756,9 +2756,9 @@ Sema::FinishTemplateArgumentDeduction(FunctionTemplateDecl *FunctionTemplate,
 
 /// Gets the type of a function for template-argument-deducton
 /// purposes when it's considered as part of an overload set.
-static QualType GetTypeOfFunction(ASTContext &Context,
+static QualType GetTypeOfSubprogram(ASTContext &Context,
                                   const OverloadExpr::FindResult &R,
-                                  FunctionDecl *Fn) {
+                                  SubprogramDecl *Fn) {
   if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(Fn))
     if (Method->isInstance()) {
       // An instance method that's referenced in a form that doesn't
@@ -2797,14 +2797,14 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
   //   When P is a function type, pointer to function type, or pointer
   //   to member function type:
 
-  if (!ParamType->isFunctionType() &&
-      !ParamType->isFunctionPointerType() &&
-      !ParamType->isMemberFunctionPointerType()) {
+  if (!ParamType->isSubprogramType() &&
+      !ParamType->isSubprogramPointerType() &&
+      !ParamType->isMemberSubprogramPointerType()) {
     if (Ovl->hasExplicitTemplateArgs()) {
       // But we can still look for an explicit specialization.
-      if (FunctionDecl *ExplicitSpec
-            = S.ResolveSingleFunctionTemplateSpecialization(Ovl))
-        return GetTypeOfFunction(S.Context, R, ExplicitSpec);
+      if (SubprogramDecl *ExplicitSpec
+            = S.ResolveSingleSubprogramTemplateSpecialization(Ovl))
+        return GetTypeOfSubprogram(S.Context, R, ExplicitSpec);
     }
 
     return QualType();
@@ -2819,7 +2819,7 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
          E = Ovl->decls_end(); I != E; ++I) {
     NamedDecl *D = (*I)->getUnderlyingDecl();
 
-    if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(D)) {
+    if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(D)) {
       //   - If the argument is an overload set containing one or more
       //     function templates, the parameter is treated as a
       //     non-deduced context.
@@ -2827,7 +2827,7 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
         return QualType();
       
       // Otherwise, see if we can resolve a function type 
-      FunctionDecl *Specialization = 0;
+      SubprogramDecl *Specialization = 0;
       TemplateDeductionInfo Info(Ovl->getNameLoc());
       if (S.DeduceTemplateArguments(FunTmpl, &ExplicitTemplateArgs,
                                     Specialization, Info))
@@ -2836,13 +2836,13 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
       D = Specialization;
     }
 
-    FunctionDecl *Fn = cast<FunctionDecl>(D);
-    QualType ArgType = GetTypeOfFunction(S.Context, R, Fn);
+    SubprogramDecl *Fn = cast<SubprogramDecl>(D);
+    QualType ArgType = GetTypeOfSubprogram(S.Context, R, Fn);
     if (ArgType.isNull()) continue;
 
-    // Function-to-pointer conversion.
+    // Subprogram-to-pointer conversion.
     if (!ParamWasReference && ParamType->isPointerType() &&
-        ArgType->isFunctionType())
+        ArgType->isSubprogramType())
       ArgType = S.Context.getPointerType(ArgType);
 
     //   - If the argument is an overload set (not containing function
@@ -2876,7 +2876,7 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
 ///
 /// \returns true if the caller should not attempt to perform any template
 /// argument deduction based on this P/A pair.
-static bool AdjustFunctionParmAndArgTypesForDeduction(Sema &S,
+static bool AdjustSubprogramParmAndArgTypesForDeduction(Sema &S,
                                           TemplateParameterList *TemplateParams,
                                                       QualType &ParamType,
                                                       QualType &ArgType,
@@ -2943,7 +2943,7 @@ static bool AdjustFunctionParmAndArgTypesForDeduction(Sema &S,
     //   - If A is a function type, the pointer type produced by the
     //     function-to-pointer standard conversion (4.3) is used in place
     //     of A for type deduction; otherwise,
-    else if (ArgType->isFunctionType())
+    else if (ArgType->isSubprogramType())
       ArgType = S.Context.getPointerType(ArgType);
     else {
       // - If A is a cv-qualified type, the top level cv-qualifiers of A's
@@ -2984,7 +2984,7 @@ static bool AdjustFunctionParmAndArgTypesForDeduction(Sema &S,
 }
 
 static bool hasDeducibleTemplateParameters(Sema &S,
-                                           FunctionTemplateDecl *FunctionTemplate,
+                                           SubprogramTemplateDecl *SubprogramTemplate,
                                            QualType T);
 
 /// \brief Perform template argument deduction by matching a parameter type
@@ -3018,7 +3018,7 @@ DeduceTemplateArgumentByListElement(Sema &S,
 
   // For all other cases, just match by type.
   QualType ArgType = Arg->getType();
-  if (AdjustFunctionParmAndArgTypesForDeduction(S, TemplateParams, ParamType, 
+  if (AdjustSubprogramParmAndArgTypesForDeduction(S, TemplateParams, ParamType, 
                                                 ArgType, Arg, TDF))
     return Sema::TDK_FailedOverloadResolution;
   return DeduceTemplateArgumentsByTypeMatch(S, TemplateParams, ParamType,
@@ -3028,7 +3028,7 @@ DeduceTemplateArgumentByListElement(Sema &S,
 /// \brief Perform template argument deduction from a function call
 /// (C++ [temp.deduct.call]).
 ///
-/// \param FunctionTemplate the function template for which we are performing
+/// \param SubprogramTemplate the function template for which we are performing
 /// template argument deduction.
 ///
 /// \param ExplicitTemplateArgs the explicit template arguments provided
@@ -3045,30 +3045,30 @@ DeduceTemplateArgumentByListElement(Sema &S,
 ///
 /// \returns the result of template argument deduction.
 Sema::TemplateDeductionResult
-Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
+Sema::DeduceTemplateArguments(SubprogramTemplateDecl *SubprogramTemplate,
                               TemplateArgumentListInfo *ExplicitTemplateArgs,
                               llvm::ArrayRef<Expr *> Args,
-                              FunctionDecl *&Specialization,
+                              SubprogramDecl *&Specialization,
                               TemplateDeductionInfo &Info) {
-  if (FunctionTemplate->isInvalidDecl())
+  if (SubprogramTemplate->isInvalidDecl())
     return TDK_Invalid;
 
-  FunctionDecl *Function = FunctionTemplate->getTemplatedDecl();
+  SubprogramDecl *Subprogram = SubprogramTemplate->getTemplatedDecl();
 
   // C++ [temp.deduct.call]p1:
   //   Template argument deduction is done by comparing each function template
   //   parameter type (call it P) with the type of the corresponding argument
   //   of the call (call it A) as described below.
   unsigned CheckArgs = Args.size();
-  if (Args.size() < Function->getMinRequiredArguments())
+  if (Args.size() < Subprogram->getMinRequiredArguments())
     return TDK_TooFewArguments;
-  else if (Args.size() > Function->getNumParams()) {
-    const FunctionProtoType *Proto
-      = Function->getType()->getAs<FunctionProtoType>();
+  else if (Args.size() > Subprogram->getNumParams()) {
+    const SubprogramProtoType *Proto
+      = Subprogram->getType()->getAs<SubprogramProtoType>();
     if (Proto->isTemplateVariadic())
       /* Do nothing */;
     else if (Proto->isVariadic())
-      CheckArgs = Function->getNumParams();
+      CheckArgs = Subprogram->getNumParams();
     else
       return TDK_TooManyArguments;
   }
@@ -3077,13 +3077,13 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
   // deduction.
   LocalInstantiationScope InstScope(*this);
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
   SmallVector<DeducedTemplateArgument, 4> Deduced;
   SmallVector<QualType, 4> ParamTypes;
   unsigned NumExplicitlySpecified = 0;
   if (ExplicitTemplateArgs) {
     TemplateDeductionResult Result =
-      SubstituteExplicitTemplateArguments(FunctionTemplate,
+      SubstituteExplicitTemplateArguments(SubprogramTemplate,
                                           *ExplicitTemplateArgs,
                                           Deduced,
                                           ParamTypes,
@@ -3095,8 +3095,8 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
     NumExplicitlySpecified = Deduced.size();
   } else {
     // Just fill in the parameter types from the function declaration.
-    for (unsigned I = 0, N = Function->getNumParams(); I != N; ++I)
-      ParamTypes.push_back(Function->getParamDecl(I)->getType());
+    for (unsigned I = 0, N = Subprogram->getNumParams(); I != N; ++I)
+      ParamTypes.push_back(Subprogram->getParamDecl(I)->getType());
   }
 
   // Deduce template arguments from the function parameters.
@@ -3119,13 +3119,13 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
       QualType ArgType = Arg->getType();
       
       unsigned TDF = 0;
-      if (AdjustFunctionParmAndArgTypesForDeduction(*this, TemplateParams,
+      if (AdjustSubprogramParmAndArgTypesForDeduction(*this, TemplateParams,
                                                     ParamType, ArgType, Arg,
                                                     TDF))
         continue;
 
       // If we have nothing to deduce, we're done.
-      if (!hasDeducibleTemplateParameters(*this, FunctionTemplate, ParamType))
+      if (!hasDeducibleTemplateParameters(*this, SubprogramTemplate, ParamType))
         continue;
 
       // If the argument is an initializer list ...
@@ -3212,7 +3212,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
       QualType ArgType = Arg->getType();
       
       unsigned TDF = 0;
-      if (AdjustFunctionParmAndArgTypesForDeduction(*this, TemplateParams,
+      if (AdjustSubprogramParmAndArgTypesForDeduction(*this, TemplateParams,
                                                     ParamType, ArgType, Arg,
                                                     TDF)) {
         // We can't actually perform any deduction for this argument, so stop
@@ -3240,7 +3240,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 
         // Keep track of the argument type and corresponding argument index,
         // so we can check for compatibility between the deduced A and A.
-        if (hasDeducibleTemplateParameters(*this, FunctionTemplate, ParamType))
+        if (hasDeducibleTemplateParameters(*this, SubprogramTemplate, ParamType))
           OriginalCallArgs.push_back(OriginalCallArg(OrigParamType, ArgIdx, 
                                                      ArgType));
 
@@ -3275,7 +3275,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
     break;
   }
 
-  return FinishTemplateArgumentDeduction(FunctionTemplate, Deduced,
+  return FinishTemplateArgumentDeduction(SubprogramTemplate, Deduced,
                                          NumExplicitlySpecified,
                                          Specialization, Info, &OriginalCallArgs);
 }
@@ -3284,13 +3284,13 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 /// template (C++ [temp.deduct.funcaddr]) or matching a specialization to
 /// a template.
 ///
-/// \param FunctionTemplate the function template for which we are performing
+/// \param SubprogramTemplate the function template for which we are performing
 /// template argument deduction.
 ///
 /// \param ExplicitTemplateArgs the explicitly-specified template
 /// arguments.
 ///
-/// \param ArgFunctionType the function type that will be used as the
+/// \param ArgSubprogramType the function type that will be used as the
 /// "argument" type (A) when performing template argument deduction from the
 /// function template's function type. This type may be NULL, if there is no
 /// argument type to compare against, in C++0x [temp.arg.explicit]p3.
@@ -3304,18 +3304,18 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 ///
 /// \returns the result of template argument deduction.
 Sema::TemplateDeductionResult
-Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
+Sema::DeduceTemplateArguments(SubprogramTemplateDecl *SubprogramTemplate,
                               TemplateArgumentListInfo *ExplicitTemplateArgs,
-                              QualType ArgFunctionType,
-                              FunctionDecl *&Specialization,
+                              QualType ArgSubprogramType,
+                              SubprogramDecl *&Specialization,
                               TemplateDeductionInfo &Info) {
-  if (FunctionTemplate->isInvalidDecl())
+  if (SubprogramTemplate->isInvalidDecl())
     return TDK_Invalid;
 
-  FunctionDecl *Function = FunctionTemplate->getTemplatedDecl();
+  SubprogramDecl *Subprogram = SubprogramTemplate->getTemplatedDecl();
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
-  QualType FunctionType = Function->getType();
+    = SubprogramTemplate->getTemplateParameters();
+  QualType SubprogramType = Subprogram->getType();
 
   // Substitute any explicit template arguments.
   LocalInstantiationScope InstScope(*this);
@@ -3324,10 +3324,10 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
   SmallVector<QualType, 4> ParamTypes;
   if (ExplicitTemplateArgs) {
     if (TemplateDeductionResult Result
-          = SubstituteExplicitTemplateArguments(FunctionTemplate,
+          = SubstituteExplicitTemplateArguments(SubprogramTemplate,
                                                 *ExplicitTemplateArgs,
                                                 Deduced, ParamTypes,
-                                                &FunctionType, Info))
+                                                &SubprogramType, Info))
       return Result;
 
     NumExplicitlySpecified = Deduced.size();
@@ -3339,25 +3339,25 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 
   Deduced.resize(TemplateParams->size());
 
-  if (!ArgFunctionType.isNull()) {
+  if (!ArgSubprogramType.isNull()) {
     // Deduce template arguments from the function type.
     if (TemplateDeductionResult Result
           = DeduceTemplateArgumentsByTypeMatch(*this, TemplateParams,
-                                      FunctionType, ArgFunctionType, Info,
+                                      SubprogramType, ArgSubprogramType, Info,
                                       Deduced, TDF_TopLevelParameterTypeList))
       return Result;
   }
 
   if (TemplateDeductionResult Result
-        = FinishTemplateArgumentDeduction(FunctionTemplate, Deduced,
+        = FinishTemplateArgumentDeduction(SubprogramTemplate, Deduced,
                                           NumExplicitlySpecified,
                                           Specialization, Info))
     return Result;
 
   // If the requested function type does not match the actual type of the
   // specialization, template argument deduction fails.
-  if (!ArgFunctionType.isNull() &&
-      !Context.hasSameType(ArgFunctionType, Specialization->getType()))
+  if (!ArgSubprogramType.isNull() &&
+      !Context.hasSameType(ArgSubprogramType, Specialization->getType()))
     return TDK_NonDeducedMismatch;
 
   return TDK_Success;
@@ -3367,15 +3367,15 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 /// function (C++ [temp.deduct.conv]) and, if successful, produce a
 /// conversion function template specialization.
 Sema::TemplateDeductionResult
-Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
+Sema::DeduceTemplateArguments(SubprogramTemplateDecl *SubprogramTemplate,
                               QualType ToType,
                               CXXConversionDecl *&Specialization,
                               TemplateDeductionInfo &Info) {
-  if (FunctionTemplate->isInvalidDecl())
+  if (SubprogramTemplate->isInvalidDecl())
     return TDK_Invalid;
 
   CXXConversionDecl *Conv
-    = cast<CXXConversionDecl>(FunctionTemplate->getTemplatedDecl());
+    = cast<CXXConversionDecl>(SubprogramTemplate->getTemplatedDecl());
   QualType FromType = Conv->getConversionType();
 
   // Canonicalize the types for deduction.
@@ -3407,7 +3407,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
     //   - If P is a function type, the pointer type produced by the
     //     function-to-pointer standard conversion (4.3) is used in
     //     place of P for type deduction; otherwise,
-    else if (P->isFunctionType())
+    else if (P->isSubprogramType())
       P = Context.getPointerType(P);
     //   - If P is a cv-qualified type, the top level cv-qualifiers of
     //     P's type are ignored for type deduction.
@@ -3431,7 +3431,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
   //   type that is required as the result of the conversion (call it
   //   A) as described in 14.8.2.4.
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
   SmallVector<DeducedTemplateArgument, 4> Deduced;
   Deduced.resize(TemplateParams->size());
 
@@ -3462,9 +3462,9 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 
   // Finish template argument deduction.
   LocalInstantiationScope InstScope(*this);
-  FunctionDecl *Spec = 0;
+  SubprogramDecl *Spec = 0;
   TemplateDeductionResult Result
-    = FinishTemplateArgumentDeduction(FunctionTemplate, Deduced, 0, Spec,
+    = FinishTemplateArgumentDeduction(SubprogramTemplate, Deduced, 0, Spec,
                                       Info);
   Specialization = cast_or_null<CXXConversionDecl>(Spec);
   return Result;
@@ -3473,7 +3473,7 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 /// \brief Deduce template arguments for a function template when there is
 /// nothing to deduce against (C++0x [temp.arg.explicit]p3).
 ///
-/// \param FunctionTemplate the function template for which we are performing
+/// \param SubprogramTemplate the function template for which we are performing
 /// template argument deduction.
 ///
 /// \param ExplicitTemplateArgs the explicitly-specified template
@@ -3488,11 +3488,11 @@ Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
 ///
 /// \returns the result of template argument deduction.
 Sema::TemplateDeductionResult
-Sema::DeduceTemplateArguments(FunctionTemplateDecl *FunctionTemplate,
+Sema::DeduceTemplateArguments(SubprogramTemplateDecl *SubprogramTemplate,
                               TemplateArgumentListInfo *ExplicitTemplateArgs,
-                              FunctionDecl *&Specialization,
+                              SubprogramDecl *&Specialization,
                               TemplateDeductionInfo &Info) {
-  return DeduceTemplateArguments(FunctionTemplate, ExplicitTemplateArgs,
+  return DeduceTemplateArguments(SubprogramTemplate, ExplicitTemplateArgs,
                                  QualType(), Specialization, Info);
 }
 
@@ -3545,8 +3545,8 @@ namespace {
         if (MPT->getClass()->isDependentType())
           return true;
         Ty = MPT->getPointeeType();
-      } else if (const FunctionProtoType *FPT = Ty->getAs<FunctionProtoType>()){
-        for (FunctionProtoType::arg_type_iterator I = FPT->arg_type_begin(),
+      } else if (const SubprogramProtoType *FPT = Ty->getAs<SubprogramProtoType>()){
+        for (SubprogramProtoType::arg_type_iterator I = FPT->arg_type_begin(),
                                                   E = FPT->arg_type_end();
              I != E; ++I)
           if ((*I)->isDependentType())
@@ -3630,7 +3630,7 @@ Sema::DeduceAutoType(TypeSourceInfo *Type, Expr *&Init,
         return DAR_Failed;
     }
   } else {
-    if (AdjustFunctionParmAndArgTypesForDeduction(*this, &TemplateParams,
+    if (AdjustSubprogramParmAndArgTypesForDeduction(*this, &TemplateParams,
                                                   FuncParam, InitType, Init,
                                                   TDF))
       return DAR_Failed;
@@ -3708,17 +3708,17 @@ static void AddImplicitObjectParameterType(ASTContext &Context,
 /// specialized as \p FT2.
 static bool isAtLeastAsSpecializedAs(Sema &S,
                                      SourceLocation Loc,
-                                     FunctionTemplateDecl *FT1,
-                                     FunctionTemplateDecl *FT2,
+                                     SubprogramTemplateDecl *FT1,
+                                     SubprogramTemplateDecl *FT2,
                                      TemplatePartialOrderingContext TPOC,
                                      unsigned NumCallArguments,
     SmallVectorImpl<RefParamPartialOrderingComparison> *RefParamComparisons) {
-  FunctionDecl *FD1 = FT1->getTemplatedDecl();
-  FunctionDecl *FD2 = FT2->getTemplatedDecl();
-  const FunctionProtoType *Proto1 = FD1->getType()->getAs<FunctionProtoType>();
-  const FunctionProtoType *Proto2 = FD2->getType()->getAs<FunctionProtoType>();
+  SubprogramDecl *FD1 = FT1->getTemplatedDecl();
+  SubprogramDecl *FD2 = FT2->getTemplatedDecl();
+  const SubprogramProtoType *Proto1 = FD1->getType()->getAs<SubprogramProtoType>();
+  const SubprogramProtoType *Proto2 = FD2->getType()->getAs<SubprogramProtoType>();
 
-  assert(Proto1 && Proto2 && "Function templates must have prototypes");
+  assert(Proto1 && Proto2 && "Subprogram templates must have prototypes");
   TemplateParameterList *TemplateParams = FT2->getTemplateParameters();
   SmallVector<DeducedTemplateArgument, 4> Deduced;
   Deduced.resize(TemplateParams->size());
@@ -3870,19 +3870,19 @@ static bool isAtLeastAsSpecializedAs(Sema &S,
 
 /// \brief Determine whether this a function template whose parameter-type-list
 /// ends with a function parameter pack.
-static bool isVariadicFunctionTemplate(FunctionTemplateDecl *FunTmpl) {
-  FunctionDecl *Function = FunTmpl->getTemplatedDecl();
-  unsigned NumParams = Function->getNumParams();
+static bool isVariadicSubprogramTemplate(SubprogramTemplateDecl *FunTmpl) {
+  SubprogramDecl *Subprogram = FunTmpl->getTemplatedDecl();
+  unsigned NumParams = Subprogram->getNumParams();
   if (NumParams == 0)
     return false;
 
-  ParmVarDecl *Last = Function->getParamDecl(NumParams - 1);
+  ParmVarDecl *Last = Subprogram->getParamDecl(NumParams - 1);
   if (!Last->isParameterPack())
     return false;
 
   // Make sure that no previous parameter is a parameter pack.
   while (--NumParams > 0) {
-    if (Function->getParamDecl(NumParams - 1)->isParameterPack())
+    if (Subprogram->getParamDecl(NumParams - 1)->isParameterPack())
       return false;
   }
 
@@ -3904,9 +3904,9 @@ static bool isVariadicFunctionTemplate(FunctionTemplateDecl *FunTmpl) {
 ///
 /// \returns the more specialized function template. If neither
 /// template is more specialized, returns NULL.
-FunctionTemplateDecl *
-Sema::getMoreSpecializedTemplate(FunctionTemplateDecl *FT1,
-                                 FunctionTemplateDecl *FT2,
+SubprogramTemplateDecl *
+Sema::getMoreSpecializedTemplate(SubprogramTemplateDecl *FT1,
+                                 SubprogramTemplateDecl *FT2,
                                  SourceLocation Loc,
                                  TemplatePartialOrderingContext TPOC,
                                  unsigned NumCallArguments) {
@@ -3990,8 +3990,8 @@ Sema::getMoreSpecializedTemplate(FunctionTemplateDecl *FT1,
   // FIXME: This mimics what GCC implements, but doesn't match up with the
   // proposed resolution for core issue 692. This area needs to be sorted out,
   // but for now we attempt to maintain compatibility.
-  bool Variadic1 = isVariadicFunctionTemplate(FT1);
-  bool Variadic2 = isVariadicFunctionTemplate(FT2);
+  bool Variadic1 = isVariadicSubprogramTemplate(FT1);
+  bool Variadic2 = isVariadicSubprogramTemplate(FT2);
   if (Variadic1 != Variadic2)
     return Variadic1? FT2 : FT1;
 
@@ -4066,12 +4066,12 @@ Sema::getMostSpecialized(UnresolvedSetIterator SpecBegin,
   // Find the function template that is better than all of the templates it
   // has been compared to.
   UnresolvedSetIterator Best = SpecBegin;
-  FunctionTemplateDecl *BestTemplate
-    = cast<FunctionDecl>(*Best)->getPrimaryTemplate();
+  SubprogramTemplateDecl *BestTemplate
+    = cast<SubprogramDecl>(*Best)->getPrimaryTemplate();
   assert(BestTemplate && "Not a function template specialization?");
   for (UnresolvedSetIterator I = SpecBegin + 1; I != SpecEnd; ++I) {
-    FunctionTemplateDecl *Challenger
-      = cast<FunctionDecl>(*I)->getPrimaryTemplate();
+    SubprogramTemplateDecl *Challenger
+      = cast<SubprogramDecl>(*I)->getPrimaryTemplate();
     assert(Challenger && "Not a function template specialization?");
     if (isSameTemplate(getMoreSpecializedTemplate(BestTemplate, Challenger,
                                                   Loc, TPOC, NumCallArguments),
@@ -4085,8 +4085,8 @@ Sema::getMostSpecialized(UnresolvedSetIterator SpecBegin,
   // of the others.
   bool Ambiguous = false;
   for (UnresolvedSetIterator I = SpecBegin; I != SpecEnd; ++I) {
-    FunctionTemplateDecl *Challenger
-      = cast<FunctionDecl>(*I)->getPrimaryTemplate();
+    SubprogramTemplateDecl *Challenger
+      = cast<SubprogramDecl>(*I)->getPrimaryTemplate();
     if (I != Best &&
         !isSameTemplate(getMoreSpecializedTemplate(BestTemplate, Challenger,
                                                    Loc, TPOC, NumCallArguments),
@@ -4110,10 +4110,10 @@ Sema::getMostSpecialized(UnresolvedSetIterator SpecBegin,
     for (UnresolvedSetIterator I = SpecBegin; I != SpecEnd; ++I) {
       PartialDiagnostic PD = CandidateDiag;
       PD << getTemplateArgumentBindingsText(
-          cast<FunctionDecl>(*I)->getPrimaryTemplate()->getTemplateParameters(),
-                    *cast<FunctionDecl>(*I)->getTemplateSpecializationArgs());
+          cast<SubprogramDecl>(*I)->getPrimaryTemplate()->getTemplateParameters(),
+                    *cast<SubprogramDecl>(*I)->getTemplateSpecializationArgs());
       if (!TargetType.isNull())
-        HandleFunctionTypeMismatch(PD, cast<FunctionDecl>(*I)->getType(),
+        HandleSubprogramTypeMismatch(PD, cast<SubprogramDecl>(*I)->getType(),
                                    TargetType);
       Diag((*I)->getLocation(), PD);
     }
@@ -4373,8 +4373,8 @@ MarkUsedTemplateParameters(ASTContext &Ctx, QualType T,
     break;
   }
 
-  case Type::FunctionProto: {
-    const FunctionProtoType *Proto = cast<FunctionProtoType>(T);
+  case Type::SubprogramProto: {
+    const SubprogramProtoType *Proto = cast<SubprogramProtoType>(T);
     MarkUsedTemplateParameters(Ctx, Proto->getResultType(), OnlyDeduced,
                                Depth, Used);
     for (unsigned I = 0, N = Proto->getNumArgs(); I != N; ++I)
@@ -4509,7 +4509,7 @@ MarkUsedTemplateParameters(ASTContext &Ctx, QualType T,
   // None of these types have any template parameters in them.
   case Type::Builtin:
   case Type::VariableArray:
-  case Type::FunctionNoProto:
+  case Type::SubprogramNoProto:
   case Type::Record:
   case Type::Enum:
   case Type::ObjCInterface:
@@ -4600,27 +4600,27 @@ Sema::MarkUsedTemplateParameters(const TemplateArgumentList &TemplateArgs,
 /// call to the given function template.
 void
 Sema::MarkDeducedTemplateParameters(ASTContext &Ctx,
-                                    FunctionTemplateDecl *FunctionTemplate,
+                                    SubprogramTemplateDecl *SubprogramTemplate,
                                     llvm::SmallBitVector &Deduced) {
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
   Deduced.clear();
   Deduced.resize(TemplateParams->size());
 
-  FunctionDecl *Function = FunctionTemplate->getTemplatedDecl();
-  for (unsigned I = 0, N = Function->getNumParams(); I != N; ++I)
-    ::MarkUsedTemplateParameters(Ctx, Function->getParamDecl(I)->getType(),
+  SubprogramDecl *Subprogram = SubprogramTemplate->getTemplatedDecl();
+  for (unsigned I = 0, N = Subprogram->getNumParams(); I != N; ++I)
+    ::MarkUsedTemplateParameters(Ctx, Subprogram->getParamDecl(I)->getType(),
                                  true, TemplateParams->getDepth(), Deduced);
 }
 
 bool hasDeducibleTemplateParameters(Sema &S,
-                                    FunctionTemplateDecl *FunctionTemplate,
+                                    SubprogramTemplateDecl *SubprogramTemplate,
                                     QualType T) {
   if (!T->isDependentType())
     return false;
 
   TemplateParameterList *TemplateParams
-    = FunctionTemplate->getTemplateParameters();
+    = SubprogramTemplate->getTemplateParameters();
   llvm::SmallBitVector Deduced(TemplateParams->size());
   ::MarkUsedTemplateParameters(S.Context, T, true, TemplateParams->getDepth(), 
                                Deduced);

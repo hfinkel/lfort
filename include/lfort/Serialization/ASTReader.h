@@ -391,7 +391,7 @@ private:
                           llvm::SmallVector<std::pair<Decl *, uint64_t>, 4> >
     PendingBodiesMap;
 
-  /// \brief Functions or methods that have bodies that will be attached.
+  /// \brief Subprograms or methods that have bodies that will be attached.
   PendingBodiesMap PendingBodies;
 
   /// \brief Read the records that describe the contents of declcontexts.
@@ -1426,7 +1426,7 @@ public:
   /// a decl or type. Must be paired with StartedDeserializing.
   virtual void FinishedDeserializing();
 
-  /// \brief Function that will be invoked when we begin parsing a new
+  /// \brief Subprogram that will be invoked when we begin parsing a new
   /// translation unit involving this external AST source.
   ///
   /// This function will provide all of the external definitions to

@@ -216,8 +216,8 @@ void Sema::DiagnoseUnusedExprResult(const Stmt *S) {
       DiagID = diag::warn_unused_container_subscript_expr;
     else
       DiagID = diag::warn_unused_property_expr;
-  } else if (const CXXFunctionalCastExpr *FC
-                                       = dyn_cast<CXXFunctionalCastExpr>(E)) {
+  } else if (const CXXSubprogramalCastExpr *FC
+                                       = dyn_cast<CXXSubprogramalCastExpr>(E)) {
     if (isa<CXXConstructExpr>(FC->getSubExpr()) ||
         isa<CXXTemporaryObjectExpr>(FC->getSubExpr()))
       return;
@@ -254,7 +254,7 @@ void Sema::ActOnFinishOfCompoundStmt() {
 }
 
 sema::CompoundScopeInfo &Sema::getCurCompoundScope() const {
-  return getCurFunction()->CompoundScopes.back();
+  return getCurSubprogram()->CompoundScopes.back();
 }
 
 StmtResult
@@ -309,7 +309,7 @@ Sema::ActOnCaseStmt(SourceLocation CaseLoc, Expr *LHSVal,
                     SourceLocation ColonLoc) {
   assert((LHSVal != 0) && "missing expression in case statement");
 
-  if (getCurFunction()->SwitchStack.empty()) {
+  if (getCurSubprogram()->SwitchStack.empty()) {
     Diag(CaseLoc, diag::err_case_not_in_switch);
     return StmtError();
   }
@@ -333,7 +333,7 @@ Sema::ActOnCaseStmt(SourceLocation CaseLoc, Expr *LHSVal,
 
   CaseStmt *CS = new (Context) CaseStmt(LHSVal, RHSVal, CaseLoc, DotDotDotLoc,
                                         ColonLoc);
-  getCurFunction()->SwitchStack.back()->addSwitchCase(CS);
+  getCurSubprogram()->SwitchStack.back()->addSwitchCase(CS);
   return Owned(CS);
 }
 
@@ -350,13 +350,13 @@ Sema::ActOnDefaultStmt(SourceLocation DefaultLoc, SourceLocation ColonLoc,
                        Stmt *SubStmt, Scope *CurScope) {
   DiagnoseUnusedExprResult(SubStmt);
 
-  if (getCurFunction()->SwitchStack.empty()) {
+  if (getCurSubprogram()->SwitchStack.empty()) {
     Diag(DefaultLoc, diag::err_default_not_in_switch);
     return Owned(SubStmt);
   }
 
   DefaultStmt *DS = new (Context) DefaultStmt(DefaultLoc, ColonLoc, SubStmt);
-  getCurFunction()->SwitchStack.back()->addSwitchCase(DS);
+  getCurSubprogram()->SwitchStack.back()->addSwitchCase(DS);
   return Owned(DS);
 }
 
@@ -604,10 +604,10 @@ Sema::ActOnStartOfSwitchStmt(SourceLocation SwitchLoc, Expr *Cond,
     Cond = CondResult.take();
   }
 
-  getCurFunction()->setHasBranchIntoScope();
+  getCurSubprogram()->setHasBranchIntoScope();
 
   SwitchStmt *SS = new (Context) SwitchStmt(Context, ConditionVar, Cond);
-  getCurFunction()->SwitchStack.push_back(SS);
+  getCurSubprogram()->SwitchStack.push_back(SS);
   return Owned(SS);
 }
 
@@ -623,11 +623,11 @@ StmtResult
 Sema::ActOnFinishSwitchStmt(SourceLocation SwitchLoc, Stmt *Switch,
                             Stmt *BodyStmt) {
   SwitchStmt *SS = cast<SwitchStmt>(Switch);
-  assert(SS == getCurFunction()->SwitchStack.back() &&
+  assert(SS == getCurSubprogram()->SwitchStack.back() &&
          "switch stack missing push/pop!");
 
   SS->setBody(BodyStmt, SwitchLoc);
-  getCurFunction()->SwitchStack.pop_back();
+  getCurSubprogram()->SwitchStack.pop_back();
 
   Expr *CondExpr = SS->getCond();
   if (!CondExpr) return StmtError();
@@ -1451,7 +1451,7 @@ Sema::CheckObjCForCollectionOperand(SourceLocation forLoc, Expr *collection) {
   if (collection->isTypeDependent()) return Owned(collection);
 
   // Perform normal l-value conversion.
-  ExprResult result = DefaultFunctionArrayLvalueConversion(collection);
+  ExprResult result = DefaultSubprogramArrayLvalueConversion(collection);
   if (result.isInvalid())
     return ExprError();
   collection = result.take();
@@ -1598,19 +1598,19 @@ namespace {
 /// by a C++11 for-range statement. This is often not obvious from the code,
 /// nor from the diagnostics produced when analysing the implicit expressions
 /// required in a for-range statement.
-void NoteForRangeBeginEndFunction(Sema &SemaRef, Expr *E,
-                                  Sema::BeginEndFunction BEF) {
+void NoteForRangeBeginEndSubprogram(Sema &SemaRef, Expr *E,
+                                  Sema::BeginEndSubprogram BEF) {
   CallExpr *CE = dyn_cast<CallExpr>(E);
   if (!CE)
     return;
-  FunctionDecl *D = dyn_cast<FunctionDecl>(CE->getCalleeDecl());
+  SubprogramDecl *D = dyn_cast<SubprogramDecl>(CE->getCalleeDecl());
   if (!D)
     return;
   SourceLocation Loc = D->getLocation();
 
   std::string Description;
   bool IsTemplate = false;
-  if (FunctionTemplateDecl *FunTmpl = D->getPrimaryTemplate()) {
+  if (SubprogramTemplateDecl *FunTmpl = D->getPrimaryTemplate()) {
     Description = SemaRef.getTemplateArgumentBindingsText(
       FunTmpl->getTemplateParameters(), *D->getTemplateSpecializationArgs());
     IsTemplate = true;
@@ -1719,7 +1719,7 @@ static Sema::ForRangeStatus BuildNonArrayForRange(Sema &SemaRef, Scope *S,
                                             OverloadCandidateSet *CandidateSet,
                                             ExprResult *BeginExpr,
                                             ExprResult *EndExpr,
-                                            Sema::BeginEndFunction *BEF) {
+                                            Sema::BeginEndSubprogram *BEF) {
   DeclarationNameInfo BeginNameInfo(
       &SemaRef.PP.getIdentifierTable().get("begin"), ColonLoc);
   DeclarationNameInfo EndNameInfo(&SemaRef.PP.getIdentifierTable().get("end"),
@@ -1765,7 +1765,7 @@ static Sema::ForRangeStatus BuildNonArrayForRange(Sema &SemaRef, Scope *S,
     return RangeStatus;
   if (FinishForRangeVarDecl(SemaRef, BeginVar, BeginExpr->get(), ColonLoc,
                             diag::err_for_range_iter_deduction_failure)) {
-    NoteForRangeBeginEndFunction(SemaRef, BeginExpr->get(), *BEF);
+    NoteForRangeBeginEndSubprogram(SemaRef, BeginExpr->get(), *BEF);
     return Sema::FRS_DiagnosticIssued;
   }
 
@@ -1779,7 +1779,7 @@ static Sema::ForRangeStatus BuildNonArrayForRange(Sema &SemaRef, Scope *S,
     return RangeStatus;
   if (FinishForRangeVarDecl(SemaRef, EndVar, EndExpr->get(), ColonLoc,
                             diag::err_for_range_iter_deduction_failure)) {
-    NoteForRangeBeginEndFunction(SemaRef, EndExpr->get(), *BEF);
+    NoteForRangeBeginEndSubprogram(SemaRef, EndExpr->get(), *BEF);
     return Sema::FRS_DiagnosticIssued;
   }
   return Sema::FRS_Success;
@@ -1884,7 +1884,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
       BeginExpr = BeginRangeRef;
       if (FinishForRangeVarDecl(*this, BeginVar, BeginRangeRef.get(), ColonLoc,
                                 diag::err_for_range_iter_deduction_failure)) {
-        NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
+        NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
         return StmtError();
       }
 
@@ -1910,12 +1910,12 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
         return StmtError();
       if (FinishForRangeVarDecl(*this, EndVar, EndExpr.get(), ColonLoc,
                                 diag::err_for_range_iter_deduction_failure)) {
-        NoteForRangeBeginEndFunction(*this, EndExpr.get(), BEF_end);
+        NoteForRangeBeginEndSubprogram(*this, EndExpr.get(), BEF_end);
         return StmtError();
       }
     } else {
       OverloadCandidateSet CandidateSet(RangeLoc);
-      Sema::BeginEndFunction BEFFailure;
+      Sema::BeginEndSubprogram BEFFailure;
       ForRangeStatus RangeStatus =
           BuildNonArrayForRange(*this, S, BeginRangeRef.get(),
                                 EndRangeRef.get(), RangeType,
@@ -1924,7 +1924,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
 
       // If building the range failed, try dereferencing the range expression
       // unless a diagnostic was issued or the end function is problematic.
-      if (Kind == BFRK_Build && RangeStatus == FRS_NoViableFunction &&
+      if (Kind == BFRK_Build && RangeStatus == FRS_NoViableSubprogram &&
           BEFFailure == BEF_begin) {
         StmtResult SR = RebuildForRangeWithDereference(*this, S, ForLoc,
                                                        LoopVarDecl, ColonLoc,
@@ -1935,7 +1935,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
       }
 
       // Otherwise, emit diagnostics if we haven't already.
-      if (RangeStatus == FRS_NoViableFunction) {
+      if (RangeStatus == FRS_NoViableSubprogram) {
         Expr *Range = BEFFailure ? EndRangeRef.get() : BeginRangeRef.get();
         Diag(Range->getLocStart(), diag::err_for_range_invalid)
             << RangeLoc << Range->getType() << BEFFailure;
@@ -1954,8 +1954,8 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
     if (!Context.hasSameType(BeginType, EndType)) {
       Diag(RangeLoc, diag::err_for_range_begin_end_types_differ)
         << BeginType << EndType;
-      NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
-      NoteForRangeBeginEndFunction(*this, EndExpr.get(), BEF_end);
+      NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
+      NoteForRangeBeginEndSubprogram(*this, EndExpr.get(), BEF_end);
     }
 
     Decl *BeginEndDecls[] = { BeginVar, EndVar };
@@ -1983,9 +1983,9 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
     if (NotEqExpr.isInvalid()) {
       Diag(RangeLoc, diag::note_for_range_invalid_iterator)
         << RangeLoc << 0 << BeginRangeRef.get()->getType();
-      NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
+      NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
       if (!Context.hasSameType(BeginType, EndType))
-        NoteForRangeBeginEndFunction(*this, EndExpr.get(), BEF_end);
+        NoteForRangeBeginEndSubprogram(*this, EndExpr.get(), BEF_end);
       return StmtError();
     }
 
@@ -2000,7 +2000,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
     if (IncrExpr.isInvalid()) {
       Diag(RangeLoc, diag::note_for_range_invalid_iterator)
         << RangeLoc << 2 << BeginRangeRef.get()->getType() ;
-      NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
+      NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
       return StmtError();
     }
 
@@ -2014,7 +2014,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
     if (DerefExpr.isInvalid()) {
       Diag(RangeLoc, diag::note_for_range_invalid_iterator)
         << RangeLoc << 1 << BeginRangeRef.get()->getType();
-      NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
+      NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
       return StmtError();
     }
 
@@ -2024,7 +2024,7 @@ Sema::BuildCXXForRangeStmt(SourceLocation ForLoc, SourceLocation ColonLoc,
       AddInitializerToDecl(LoopVar, DerefExpr.get(), /*DirectInit=*/false,
                            /*TypeMayContainAuto=*/true);
       if (LoopVar->isInvalidDecl())
-        NoteForRangeBeginEndFunction(*this, BeginExpr.get(), BEF_begin);
+        NoteForRangeBeginEndSubprogram(*this, BeginExpr.get(), BEF_begin);
     }
   } else {
     // The range is implicitly used as a placeholder when it is dependent.
@@ -2077,7 +2077,7 @@ StmtResult Sema::FinishCXXForRangeStmt(Stmt *S, Stmt *B) {
 StmtResult Sema::ActOnGotoStmt(SourceLocation GotoLoc,
                                SourceLocation LabelLoc,
                                LabelDecl *TheDecl) {
-  getCurFunction()->setHasBranchIntoScope();
+  getCurSubprogram()->setHasBranchIntoScope();
   TheDecl->setUsed();
   return Owned(new (Context) GotoStmt(TheDecl, GotoLoc, LabelLoc));
 }
@@ -2100,7 +2100,7 @@ Sema::ActOnIndirectGotoStmt(SourceLocation GotoLoc, SourceLocation StarLoc,
     E = MaybeCreateExprWithCleanups(E);
   }
 
-  getCurFunction()->setHasIndirectGoto();
+  getCurSubprogram()->setHasIndirectGoto();
 
   return Owned(new (Context) IndirectGotoStmt(GotoLoc, StarLoc, E));
 }
@@ -2138,7 +2138,7 @@ Sema::ActOnBreakStmt(SourceLocation BreakLoc, Scope *CurScope) {
 /// \param E The expression being returned from the function or block, or
 /// being thrown.
 ///
-/// \param AllowFunctionParameter Whether we allow function parameters to
+/// \param AllowSubprogramParameter Whether we allow function parameters to
 /// be considered NRVO candidates. C++ prohibits this for NRVO itself, but
 /// we re-use this logic to determine whether we should try to move as part of
 /// a return or throw (which does allow function parameters).
@@ -2147,7 +2147,7 @@ Sema::ActOnBreakStmt(SourceLocation BreakLoc, Scope *CurScope) {
 /// NRVO, or NULL if there is no such candidate.
 const VarDecl *Sema::getCopyElisionCandidate(QualType ReturnType,
                                              Expr *E,
-                                             bool AllowFunctionParameter) {
+                                             bool AllowSubprogramParameter) {
   QualType ExprType = E->getType();
   // - in a return statement in a function with ...
   // ... a class return type ...
@@ -2170,7 +2170,7 @@ const VarDecl *Sema::getCopyElisionCandidate(QualType ReturnType,
 
   // ...object (other than a function or catch-clause parameter)...
   if (VD->getKind() != Decl::Var &&
-      !(AllowFunctionParameter && VD->getKind() == Decl::ParmVar))
+      !(AllowSubprogramParameter && VD->getKind() == Decl::ParmVar))
     return 0;
   if (VD->isExceptionVariable()) return 0;
 
@@ -2235,7 +2235,7 @@ Sema::PerformMoveOrCopyInitialization(const InitializedEntity &Entity,
           continue;
 
         CXXConstructorDecl *Constructor
-        = cast<CXXConstructorDecl>(Step->Function.Function);
+        = cast<CXXConstructorDecl>(Step->Subprogram.Subprogram);
 
         const RValueReferenceType *RRefType
           = Constructor->getParamDecl(0)->getType()
@@ -2276,7 +2276,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // If this is the first return we've seen, infer the return type.
   // [expr.prim.lambda]p4 in C++11; block literals follow a superset of those
   // rules which allows multiple return statements.
-  CapturingScopeInfo *CurCap = cast<CapturingScopeInfo>(getCurFunction());
+  CapturingScopeInfo *CurCap = cast<CapturingScopeInfo>(getCurSubprogram());
   QualType FnRetType = CurCap->ReturnType;
 
   // For blocks/lambdas with implicit return types, we check each return
@@ -2284,7 +2284,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // or lambda is completed.
   if (CurCap->HasImplicitReturnType) {
     if (RetValExp && !isa<InitListExpr>(RetValExp)) {
-      ExprResult Result = DefaultFunctionArrayLvalueConversion(RetValExp);
+      ExprResult Result = DefaultSubprogramArrayLvalueConversion(RetValExp);
       if (Result.isInvalid())
         return StmtError();
       RetValExp = Result.take();
@@ -2313,13 +2313,13 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   assert(!FnRetType.isNull());
 
   if (BlockScopeInfo *CurBlock = dyn_cast<BlockScopeInfo>(CurCap)) {
-    if (CurBlock->FunctionType->getAs<FunctionType>()->getNoReturnAttr()) {
+    if (CurBlock->SubprogramType->getAs<SubprogramType>()->getNoReturnAttr()) {
       Diag(ReturnLoc, diag::err_noreturn_block_has_return_expr);
       return StmtError();
     }
   } else {
     LambdaScopeInfo *LSI = cast<LambdaScopeInfo>(CurCap);
-    if (LSI->CallOperator->getType()->getAs<FunctionType>()->getNoReturnAttr()){
+    if (LSI->CallOperator->getType()->getAs<SubprogramType>()->getNoReturnAttr()){
       Diag(ReturnLoc, diag::err_noreturn_lambda_has_return_expr);
       return StmtError();
     }
@@ -2383,7 +2383,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   if (CurCap->HasImplicitReturnType ||
       (getLangOpts().CPlusPlus && FnRetType->isRecordType() &&
        !CurContext->isDependentContext()))
-    FunctionScopes.back()->Returns.push_back(Result);
+    SubprogramScopes.back()->Returns.push_back(Result);
 
   return Owned(Result);
 }
@@ -2394,15 +2394,15 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   if (RetValExp && DiagnoseUnexpandedParameterPack(RetValExp))
     return StmtError();
 
-  if (isa<CapturingScopeInfo>(getCurFunction()))
+  if (isa<CapturingScopeInfo>(getCurSubprogram()))
     return ActOnCapScopeReturnStmt(ReturnLoc, RetValExp);
 
   QualType FnRetType;
   QualType RelatedRetType;
-  if (const FunctionDecl *FD = getCurFunctionDecl()) {
+  if (const SubprogramDecl *FD = getCurSubprogramDecl()) {
     FnRetType = FD->getResultType();
     if (FD->hasAttr<NoReturnAttr>() ||
-        FD->getType()->getAs<FunctionType>()->getNoReturnAttr())
+        FD->getType()->getAs<SubprogramType>()->getNoReturnAttr())
       Diag(ReturnLoc, diag::warn_noreturn_function_has_return_expr)
         << FD->getDeclName();
   } else if (ObjCMethodDecl *MD = getCurMethodDecl()) {
@@ -2424,17 +2424,17 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
         // We simply never allow init lists as the return value of void
         // functions. This is compatible because this was never allowed before,
         // so there's no legacy code to deal with.
-        NamedDecl *CurDecl = getCurFunctionOrMethodDecl();
-        int FunctionKind = 0;
+        NamedDecl *CurDecl = getCurSubprogramOrMethodDecl();
+        int SubprogramKind = 0;
         if (isa<ObjCMethodDecl>(CurDecl))
-          FunctionKind = 1;
+          SubprogramKind = 1;
         else if (isa<CXXConstructorDecl>(CurDecl))
-          FunctionKind = 2;
+          SubprogramKind = 2;
         else if (isa<CXXDestructorDecl>(CurDecl))
-          FunctionKind = 3;
+          SubprogramKind = 3;
 
         Diag(ReturnLoc, diag::err_return_init_list)
-          << CurDecl->getDeclName() << FunctionKind
+          << CurDecl->getDeclName() << SubprogramKind
           << RetValExp->getSourceRange();
 
         // Drop the expression.
@@ -2457,18 +2457,18 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
         // return (some void expression); is legal in C++.
         if (D != diag::ext_return_has_void_expr ||
             !getLangOpts().CPlusPlus) {
-          NamedDecl *CurDecl = getCurFunctionOrMethodDecl();
+          NamedDecl *CurDecl = getCurSubprogramOrMethodDecl();
 
-          int FunctionKind = 0;
+          int SubprogramKind = 0;
           if (isa<ObjCMethodDecl>(CurDecl))
-            FunctionKind = 1;
+            SubprogramKind = 1;
           else if (isa<CXXConstructorDecl>(CurDecl))
-            FunctionKind = 2;
+            SubprogramKind = 2;
           else if (isa<CXXDestructorDecl>(CurDecl))
-            FunctionKind = 3;
+            SubprogramKind = 3;
 
           Diag(ReturnLoc, D)
-            << CurDecl->getDeclName() << FunctionKind
+            << CurDecl->getDeclName() << SubprogramKind
             << RetValExp->getSourceRange();
         }
       }
@@ -2485,7 +2485,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
     // C99 6.8.6.4p1 (ext_ since GCC warns)
     if (getLangOpts().C99) DiagID = diag::ext_return_missing_expr;
 
-    if (FunctionDecl *FD = getCurFunctionDecl())
+    if (SubprogramDecl *FD = getCurSubprogramDecl())
       Diag(ReturnLoc, DiagID) << FD->getIdentifier() << 0/*fn*/;
     else
       Diag(ReturnLoc, DiagID) << getCurMethodDecl()->getDeclName() << 1/*meth*/;
@@ -2543,7 +2543,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // return statement in our scope for later processing.
   if (getLangOpts().CPlusPlus && FnRetType->isRecordType() &&
       !CurContext->isDependentContext())
-    FunctionScopes.back()->Returns.push_back(Result);
+    SubprogramScopes.back()->Returns.push_back(Result);
 
   return Owned(Result);
 }
@@ -2570,7 +2570,7 @@ Sema::ActOnObjCAtTryStmt(SourceLocation AtLoc, Stmt *Try,
   if (!getLangOpts().ObjCExceptions)
     Diag(AtLoc, diag::err_objc_exceptions_disabled) << "@try";
 
-  getCurFunction()->setHasBranchProtectedScope();
+  getCurSubprogram()->setHasBranchProtectedScope();
   unsigned NumCatchStmts = CatchStmts.size();
   return Owned(ObjCAtTryStmt::Create(Context, AtLoc, Try,
                                      CatchStmts.data(),
@@ -2642,7 +2642,7 @@ StmtResult
 Sema::ActOnObjCAtSynchronizedStmt(SourceLocation AtLoc, Expr *SyncExpr,
                                   Stmt *SyncBody) {
   // We can't jump into or indirect-jump out of a @synchronized block.
-  getCurFunction()->setHasBranchProtectedScope();
+  getCurSubprogram()->setHasBranchProtectedScope();
   return Owned(new (Context) ObjCAtSynchronizedStmt(AtLoc, SyncExpr, SyncBody));
 }
 
@@ -2659,7 +2659,7 @@ Sema::ActOnCXXCatchBlock(SourceLocation CatchLoc, Decl *ExDecl,
 
 StmtResult
 Sema::ActOnObjCAutoreleasePoolStmt(SourceLocation AtLoc, Stmt *Body) {
-  getCurFunction()->setHasBranchProtectedScope();
+  getCurSubprogram()->setHasBranchProtectedScope();
   return Owned(new (Context) ObjCAutoreleasePoolStmt(AtLoc, Body));
 }
 
@@ -2748,7 +2748,7 @@ Sema::ActOnCXXTryBlock(SourceLocation TryLoc, Stmt *TryBlock,
     }
   }
 
-  getCurFunction()->setHasBranchProtectedScope();
+  getCurSubprogram()->setHasBranchProtectedScope();
 
   // FIXME: We should detect handlers that cannot catch anything because an
   // earlier handler catches a superclass. Need to find a method that is not
@@ -2767,7 +2767,7 @@ Sema::ActOnSEHTryBlock(bool IsCXXTry,
                        Stmt *Handler) {
   assert(TryBlock && Handler);
 
-  getCurFunction()->setHasBranchProtectedScope();
+  getCurSubprogram()->setHasBranchProtectedScope();
 
   return Owned(SEHTryStmt::Create(Context,IsCXXTry,TryLoc,TryBlock,Handler));
 }

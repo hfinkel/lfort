@@ -1117,7 +1117,7 @@ enum CXTranslationUnit_Flags {
    * This option can be used to search for declarations/definitions while
    * ignoring the usages.
    */
-  CXTranslationUnit_SkipFunctionBodies = 0x40,
+  CXTranslationUnit_SkipSubprogramBodies = 0x40,
 
   /**
    * \brief Used to indicate that brief documentation comments should be
@@ -1452,7 +1452,7 @@ enum CXCursorKind {
   /** \brief An enumerator constant. */
   CXCursor_EnumConstantDecl              = 7,
   /** \brief A function. */
-  CXCursor_FunctionDecl                  = 8,
+  CXCursor_SubprogramDecl                  = 8,
   /** \brief A variable. */
   CXCursor_VarDecl                       = 9,
   /** \brief A function or method parameter. */
@@ -1488,7 +1488,7 @@ enum CXCursorKind {
   /** \brief A C++ destructor. */
   CXCursor_Destructor                    = 25,
   /** \brief A C++ conversion function. */
-  CXCursor_ConversionFunction            = 26,
+  CXCursor_ConversionSubprogram            = 26,
   /** \brief A C++ template type parameter. */
   CXCursor_TemplateTypeParameter         = 27,
   /** \brief A C++ non-type template parameter. */
@@ -1496,7 +1496,7 @@ enum CXCursorKind {
   /** \brief A C++ template template parameter. */
   CXCursor_TemplateTemplateParameter     = 29,
   /** \brief A C++ function template. */
-  CXCursor_FunctionTemplate              = 30,
+  CXCursor_SubprogramTemplate              = 30,
   /** \brief A C++ class template. */
   CXCursor_ClassTemplate                 = 31,
   /** \brief A C++ class template partial specialization. */
@@ -1771,7 +1771,7 @@ enum CXCursorKind {
    *   x = int(0.5);
    * \endcode
    */
-  CXCursor_CXXFunctionalCastExpr         = 128,
+  CXCursor_CXXSubprogramalCastExpr         = 128,
 
   /** \brief A C++ typeid expression (C++ [expr.typeid]).
    */
@@ -2636,8 +2636,8 @@ enum CXTypeKind {
   CXType_Typedef = 107,
   CXType_ObjCInterface = 108,
   CXType_ObjCObjectPointer = 109,
-  CXType_FunctionNoProto = 110,
-  CXType_FunctionProto = 111,
+  CXType_SubprogramNoProto = 110,
+  CXType_SubprogramProto = 111,
   CXType_ConstantArray = 112,
   CXType_Vector = 113
 };
@@ -2799,7 +2799,7 @@ CINDEX_LINKAGE CXString lfort_getTypeKindSpelling(enum CXTypeKind K);
  *
  * If a non-function type is passed in, CXCallingConv_Invalid is returned.
  */
-CINDEX_LINKAGE enum CXCallingConv lfort_getFunctionTypeCallingConv(CXType T);
+CINDEX_LINKAGE enum CXCallingConv lfort_getSubprogramTypeCallingConv(CXType T);
 
 /**
  * \brief Retrieve the result type associated with a function type.
@@ -2827,7 +2827,7 @@ CINDEX_LINKAGE CXType lfort_getArgType(CXType T, unsigned i);
 /**
  * \brief Return 1 if the CXType is a variadic function type, and 0 otherwise.
  */
-CINDEX_LINKAGE unsigned lfort_isFunctionTypeVariadic(CXType T);
+CINDEX_LINKAGE unsigned lfort_isSubprogramTypeVariadic(CXType T);
 
 /**
  * \brief Retrieve the result type associated with a given cursor.
@@ -3807,7 +3807,7 @@ CINDEX_LINKAGE CXString lfort_HTMLTagComment_getAsString(CXComment Comment);
  * \li "para-returns" for \\returns paragraph and equivalent commands;
  * \li "word-returns" for the "Returns" word in \\returns paragraph.
  *
- * Function argument documentation is rendered as a \<dl\> list with arguments
+ * Subprogram argument documentation is rendered as a \<dl\> list with arguments
  * sorted in function prototype order.  CSS classes used:
  * \li "param-name-index-NUMBER" for parameter name (\<dt\>);
  * \li "param-descr-index-NUMBER" for parameter description (\<dd\>);
@@ -5090,7 +5090,7 @@ typedef struct {
 typedef enum {
   CXIdxEntity_Unexposed     = 0,
   CXIdxEntity_Typedef       = 1,
-  CXIdxEntity_Function      = 2,
+  CXIdxEntity_Subprogram      = 2,
   CXIdxEntity_Variable      = 3,
   CXIdxEntity_Field         = 4,
   CXIdxEntity_EnumConstant  = 5,
@@ -5116,7 +5116,7 @@ typedef enum {
   CXIdxEntity_CXXInstanceMethod     = 21,
   CXIdxEntity_CXXConstructor        = 22,
   CXIdxEntity_CXXDestructor         = 23,
-  CXIdxEntity_CXXConversionFunction = 24,
+  CXIdxEntity_CXXConversionSubprogram = 24,
   CXIdxEntity_CXXTypeAlias          = 25,
   CXIdxEntity_CXXInterface          = 26
 
@@ -5131,12 +5131,12 @@ typedef enum {
 
 /**
  * \brief Extra C++ template information for an entity. This can apply to:
- * CXIdxEntity_Function
+ * CXIdxEntity_Subprogram
  * CXIdxEntity_CXXClass
  * CXIdxEntity_CXXStaticMethod
  * CXIdxEntity_CXXInstanceMethod
  * CXIdxEntity_CXXConstructor
- * CXIdxEntity_CXXConversionFunction
+ * CXIdxEntity_CXXConversionSubprogram
  * CXIdxEntity_CXXTypeAlias
  */
 typedef enum {
@@ -5451,10 +5451,10 @@ typedef enum {
   CXIndexOpt_SuppressRedundantRefs = 0x1,
 
   /**
-   * \brief Function-local symbols should be indexed. If this is not set
+   * \brief Subprogram-local symbols should be indexed. If this is not set
    * function-local symbols will be ignored.
    */
-  CXIndexOpt_IndexFunctionLocalSymbols = 0x2,
+  CXIndexOpt_IndexSubprogramLocalSymbols = 0x2,
 
   /**
    * \brief Implicit function/class template instantiations should be indexed.

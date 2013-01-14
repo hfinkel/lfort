@@ -31,7 +31,7 @@ namespace thread_safety {
 enum ProtectedOperationKind {
   POK_VarDereference, /// Dereferencing a variable (e.g. p in *p = 5;)
   POK_VarAccess, /// Reading or writing a variable (e.g. x in x = 5;)
-  POK_FunctionCall /// Making a function call (e.g. fool())
+  POK_SubprogramCall /// Making a function call (e.g. fool())
 };
 
 /// This enum distinguishes between different kinds of lock actions. For
@@ -55,13 +55,13 @@ enum AccessKind {
 /// loop iterations.
 /// \enum SK_LockedSomePredecessors -- a mutex is locked in some but not all
 /// predecessors of a CFGBlock.
-/// \enum SK_LockedAtEndOfFunction -- a mutex is still locked at the end of a
+/// \enum SK_LockedAtEndOfSubprogram -- a mutex is still locked at the end of a
 /// function.
 enum LockErrorKind {
   LEK_LockedSomeLoopIterations,
   LEK_LockedSomePredecessors,
-  LEK_LockedAtEndOfFunction,
-  LEK_NotLockedAtEndOfFunction
+  LEK_LockedAtEndOfSubprogram,
+  LEK_NotLockedAtEndOfSubprogram
 };
 
 /// Handler class for thread safety warnings.

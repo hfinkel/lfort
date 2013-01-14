@@ -29,7 +29,7 @@ using namespace lfort;
 FormatStringHandler::~FormatStringHandler() {}
 
 //===----------------------------------------------------------------------===//
-// Functions for parsing format strings components in both printf and
+// Subprograms for parsing format strings components in both printf and
 // scanf format strings.
 //===----------------------------------------------------------------------===//
 

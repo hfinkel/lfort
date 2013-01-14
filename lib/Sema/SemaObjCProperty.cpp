@@ -473,7 +473,7 @@ ObjCPropertyDecl *Sema::CreatePropertyDecl(Scope *S,
       PDecl->setLexicalDeclContext(lexicalDC);
   }
 
-  if (T->isArrayType() || T->isFunctionType()) {
+  if (T->isArrayType() || T->isSubprogramType()) {
     Diag(AtLoc, diag::err_property_type) << T;
     PDecl->setInvalidDecl();
   }
@@ -1030,7 +1030,7 @@ Decl *Sema::ActOnPropertyImplDecl(Scope *S,
       // For Objective-C++, need to synthesize the AST for the IVAR object to be
       // returned by the getter as it must conform to C++'s copy-return rules.
       // FIXME. Eventually we want to do this for Objective-C as well.
-      SynthesizedFunctionScope Scope(*this, getterMethod);
+      SynthesizedSubprogramScope Scope(*this, getterMethod);
       ImplicitParamDecl *SelfDecl = getterMethod->getSelfDecl();
       DeclRefExpr *SelfExpr = 
         new (Context) DeclRefExpr(SelfDecl, false, SelfDecl->getType(),
@@ -1065,7 +1065,7 @@ Decl *Sema::ActOnPropertyImplDecl(Scope *S,
     if (getLangOpts().CPlusPlus && Synthesize && !CompleteTypeErr &&
         Ivar->getType()->isRecordType()) {
       // FIXME. Eventually we want to do this for Objective-C as well.
-      SynthesizedFunctionScope Scope(*this, setterMethod);
+      SynthesizedSubprogramScope Scope(*this, setterMethod);
       ImplicitParamDecl *SelfDecl = setterMethod->getSelfDecl();
       DeclRefExpr *SelfExpr = 
         new (Context) DeclRefExpr(SelfDecl, false, SelfDecl->getType(),
@@ -1087,7 +1087,7 @@ Decl *Sema::ActOnPropertyImplDecl(Scope *S,
         Expr *callExpr = Res.takeAs<Expr>();
         if (const CXXOperatorCallExpr *CXXCE = 
               dyn_cast_or_null<CXXOperatorCallExpr>(callExpr))
-          if (const FunctionDecl *FuncDecl = CXXCE->getDirectCallee())
+          if (const SubprogramDecl *FuncDecl = CXXCE->getDirectCallee())
             if (!FuncDecl->isTrivial())
               if (property->getType()->isReferenceType()) {
                 Diag(PropertyDiagLoc, 

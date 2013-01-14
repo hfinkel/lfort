@@ -171,8 +171,8 @@ TEST(newFrontendActionFactory, InjectsEndOfSourceFileCallback) {
 
 struct SkipBodyConsumer : public lfort::ASTConsumer {
   /// Skip the 'skipMe' function.
-  virtual bool shouldSkipFunctionBody(Decl *D) {
-    FunctionDecl *F = dyn_cast<FunctionDecl>(D);
+  virtual bool shouldSkipSubprogramBody(Decl *D) {
+    SubprogramDecl *F = dyn_cast<SubprogramDecl>(D);
     return F && F->getNameAsString() == "skipMe";
   }
 };
@@ -180,14 +180,14 @@ struct SkipBodyConsumer : public lfort::ASTConsumer {
 struct SkipBodyAction : public lfort::ASTFrontendAction {
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &Compiler,
                                          StringRef) {
-    Compiler.getFrontendOpts().SkipFunctionBodies = true;
+    Compiler.getFrontendOpts().SkipSubprogramBodies = true;
     return new SkipBodyConsumer;
   }
 };
 
 // FIXME: Convert to Fortran
 #if 0
-TEST(runToolOnCode, TestSkipFunctionBody) {
+TEST(runToolOnCode, TestSkipSubprogramBody) {
   EXPECT_TRUE(runToolOnCode(new SkipBodyAction,
                             "int skipMe() { an_error_here }"));
   EXPECT_FALSE(runToolOnCode(new SkipBodyAction,

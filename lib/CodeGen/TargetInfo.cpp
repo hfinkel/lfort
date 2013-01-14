@@ -38,7 +38,7 @@ static void AssignToArrayRange(CodeGen::CGBuilderTy &Builder,
 
 static bool isAggregateTypeForABI(QualType T) {
   return CodeGenSubprogram::hasAggregateLLVMType(T) ||
-         T->isMemberFunctionPointerType();
+         T->isMemberSubprogramPointerType();
 }
 
 ABIInfo::~ABIInfo() {}
@@ -99,7 +99,7 @@ unsigned TargetCodeGenInfo::getSizeOfUnwindException() const {
 }
 
 bool TargetCodeGenInfo::isNoProtoCallVariadic(const CallArgList &args,
-                                     const FunctionNoProtoType *fnType) const {
+                                     const SubprogramNoProtoType *fnType) const {
   // The following conventions are known to require this to be false:
   //   x86_stdcall
   //   MIPS
@@ -340,9 +340,9 @@ public:
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType RetTy) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const {
+  virtual void computeInfo(CGSubprogramInfo &FI) const {
     FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-    for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+    for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
          it != ie; ++it)
       it->info = classifyArgumentType(it->type);
   }
@@ -406,7 +406,7 @@ class PNaClABIInfo : public ABIInfo {
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType RetTy, unsigned &FreeRegs) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
 };
@@ -417,12 +417,12 @@ class PNaClTargetCodeGenInfo : public TargetCodeGenInfo {
     : TargetCodeGenInfo(new PNaClABIInfo(CGT)) {}
 };
 
-void PNaClABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void PNaClABIInfo::computeInfo(CGSubprogramInfo &FI) const {
     FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
 
     unsigned FreeRegs = FI.getHasRegParm() ? FI.getRegParm() : 0;
 
-    for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+    for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
          it != ie; ++it)
       it->info = classifyArgumentType(it->type, FreeRegs);
   }
@@ -541,7 +541,7 @@ class X86_32ABIInfo : public ABIInfo {
 
 public:
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
 
@@ -939,7 +939,7 @@ ABIArgInfo X86_32ABIInfo::classifyArgumentType(QualType Ty,
   return ABIArgInfo::getDirect();
 }
 
-void X86_32ABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void X86_32ABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   FI.getReturnInfo() = classifyReturnType(FI.getReturnType(),
                                           FI.getCallingConvention());
 
@@ -963,7 +963,7 @@ void X86_32ABIInfo::computeInfo(CGFunctionInfo &FI) const {
                                        Old.getIndirectRealign());
   }
 
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it)
     it->info = classifyArgumentType(it->type, FreeRegs, IsFastCall);
 }
@@ -1011,7 +1011,7 @@ llvm::Value *X86_32ABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
 void X86_32TargetCodeGenInfo::SetTargetAttributes(const Decl *D,
                                                   llvm::GlobalValue *GV,
                                             CodeGen::CodeGenModule &CGM) const {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->hasAttr<X86ForceAlignArgPointerAttr>()) {
       // Get the LLVM function.
       llvm::Function *Fn = cast<llvm::Function>(GV);
@@ -1188,7 +1188,7 @@ public:
     return false;
   }
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
@@ -1202,7 +1202,7 @@ class WinX86_64ABIInfo : public ABIInfo {
 public:
   WinX86_64ABIInfo(CodeGen::CodeGenTypes &CGT) : ABIInfo(CGT) {}
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
@@ -1238,7 +1238,7 @@ public:
   }
 
   bool isNoProtoCallVariadic(const CallArgList &args,
-                             const FunctionNoProtoType *fnType) const {
+                             const SubprogramNoProtoType *fnType) const {
     // The default CC on x86-64 sets %al to the number of SSA
     // registers used, and GCC sets this when calling an unprototyped
     // function, so we override the default behavior.  However, don't do
@@ -1410,7 +1410,7 @@ void X86_64ABIInfo::classify(QualType Ty, uint64_t OffsetBase,
   }
 
   if (Ty->isMemberPointerType()) {
-    if (Ty->isMemberFunctionPointerType() && Has64BitPointers)
+    if (Ty->isMemberSubprogramPointerType() && Has64BitPointers)
       Lo = Hi = Integer;
     else
       Current = Integer;
@@ -2277,7 +2277,7 @@ ABIArgInfo X86_64ABIInfo::classifyArgumentType(
   return ABIArgInfo::getDirect(ResType);
 }
 
-void X86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void X86_64ABIInfo::computeInfo(CGSubprogramInfo &FI) const {
 
   FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
 
@@ -2291,7 +2291,7 @@ void X86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
 
   // AMD64-ABI 3.2.3p3: Once arguments are classified, the registers
   // get assigned (in left-to-right order) for passing as follows...
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it) {
     unsigned neededInt, neededSSE;
     it->info = classifyArgumentType(it->type, freeIntRegs, neededInt,
@@ -2553,12 +2553,12 @@ ABIArgInfo WinX86_64ABIInfo::classify(QualType Ty) const {
   return ABIArgInfo::getDirect();
 }
 
-void WinX86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void WinX86_64ABIInfo::computeInfo(CGSubprogramInfo &FI) const {
 
   QualType RetTy = FI.getReturnType();
   FI.getReturnInfo() = classify(RetTy);
 
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it)
     it->info = classify(it->type);
 }
@@ -2591,7 +2591,7 @@ class NaClX86_64ABIInfo : public ABIInfo {
  public:
   NaClX86_64ABIInfo(CodeGen::CodeGenTypes &CGT, bool HasAVX)
       : ABIInfo(CGT), PInfo(CGT), NInfo(CGT, HasAVX) {}
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
  private:
@@ -2607,7 +2607,7 @@ class NaClX86_64TargetCodeGenInfo : public TargetCodeGenInfo  {
 
 }
 
-void NaClX86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void NaClX86_64ABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   if (FI.getASTCallingConvention() == CC_PnaclCall)
     PInfo.computeInfo(FI);
   else
@@ -2701,9 +2701,9 @@ public:
   // floating-point value) to avoid pushing them to memory on function
   // entry.  This would require changing the logic in PPCISelLowering
   // when lowering the parameters in the caller and args in the callee.
-  virtual void computeInfo(CGFunctionInfo &FI) const {
+  virtual void computeInfo(CGSubprogramInfo &FI) const {
     FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-    for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+    for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
          it != ie; ++it) {
       // We rely on the default argument classification for the most part.
       // One exception:  An aggregate containing a single floating-point
@@ -2938,7 +2938,7 @@ private:
                                   bool &IsHA) const;
   bool isIllegalVectorType(QualType Ty) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
@@ -2978,7 +2978,7 @@ public:
 
 }
 
-void ARMABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void ARMABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   // To correctly handle Homogeneous Aggregate, we need to keep track of the
   // VFP registers allocated so far.
   // C.1.vfp If the argument is a VFP CPRC and there are sufficient consecutive
@@ -2989,7 +2989,7 @@ void ARMABIInfo::computeInfo(CGFunctionInfo &FI) const {
   unsigned AllocatedVFP = 0;
   int VFPRegs[16] = { 0 };
   FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it) {
     unsigned PreAllocation = AllocatedVFP;
     bool IsHA = false;
@@ -3520,7 +3520,7 @@ class NaClARMABIInfo : public ABIInfo {
  public:
   NaClARMABIInfo(CodeGen::CodeGenTypes &CGT, ARMABIInfo::ABIKind Kind)
       : ABIInfo(CGT), PInfo(CGT), NInfo(CGT, Kind) {}
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
  private:
@@ -3536,7 +3536,7 @@ class NaClARMTargetCodeGenInfo : public TargetCodeGenInfo  {
 
 }
 
-void NaClARMABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void NaClARMABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   if (FI.getASTCallingConvention() == CC_PnaclCall)
     PInfo.computeInfo(FI);
   else
@@ -3563,7 +3563,7 @@ public:
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType Ty) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CFG) const;
 };
@@ -3592,9 +3592,9 @@ ABIArgInfo NVPTXABIInfo::classifyArgumentType(QualType Ty) const {
   return ABIArgInfo::getDirect();
 }
 
-void NVPTXABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void NVPTXABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it)
     it->info = classifyArgumentType(it->type);
 
@@ -3631,7 +3631,7 @@ llvm::Value *NVPTXABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
 void NVPTXTargetCodeGenInfo::
 SetTargetAttributes(const Decl *D, llvm::GlobalValue *GV,
                     CodeGen::CodeGenModule &M) const{
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD) return;
 
   llvm::Function *F = cast<llvm::Function>(GV);
@@ -3675,9 +3675,9 @@ public:
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType RetTy) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const {
+  virtual void computeInfo(CGSubprogramInfo &FI) const {
     FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-    for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+    for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
          it != ie; ++it)
       it->info = classifyArgumentType(it->type);
   }
@@ -3743,7 +3743,7 @@ void MBlazeTargetCodeGenInfo::SetTargetAttributes(const Decl *D,
                                                   llvm::GlobalValue *GV,
                                                   CodeGen::CodeGenModule &M)
                                                   const {
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD) return;
 
   llvm::CallingConv::ID CC = llvm::CallingConv::C;
@@ -3789,7 +3789,7 @@ public:
 void MSP430TargetCodeGenInfo::SetTargetAttributes(const Decl *D,
                                                   llvm::GlobalValue *GV,
                                              CodeGen::CodeGenModule &M) const {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (const MSP430InterruptAttr *attr = FD->getAttr<MSP430InterruptAttr>()) {
       // Handle 'interrupt' attribute:
       llvm::Function *F = cast<llvm::Function>(GV);
@@ -3830,7 +3830,7 @@ public:
 
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType RetTy, uint64_t &Offset) const;
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
 };
@@ -4050,14 +4050,14 @@ ABIArgInfo MipsABIInfo::classifyReturnType(QualType RetTy) const {
           ABIArgInfo::getExtend() : ABIArgInfo::getDirect());
 }
 
-void MipsABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void MipsABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   ABIArgInfo &RetInfo = FI.getReturnInfo();
   RetInfo = classifyReturnType(FI.getReturnType());
 
   // Check if a pointer to an aggregate is passed as a hidden argument.  
   uint64_t Offset = RetInfo.isIndirect() ? MinABIStackAlignInBytes : 0;
 
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it)
     it->info = classifyArgumentType(it->type, Offset);
 }
@@ -4147,7 +4147,7 @@ public:
 void TCETargetCodeGenInfo::SetTargetAttributes(const Decl *D,
                                                llvm::GlobalValue *GV,
                                                CodeGen::CodeGenModule &M) const {
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD) return;
 
   llvm::Function *F = cast<llvm::Function>(GV);
@@ -4206,7 +4206,7 @@ private:
   ABIArgInfo classifyReturnType(QualType RetTy) const;
   ABIArgInfo classifyArgumentType(QualType RetTy) const;
 
-  virtual void computeInfo(CGFunctionInfo &FI) const;
+  virtual void computeInfo(CGSubprogramInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
                                  CodeGenSubprogram &CGF) const;
@@ -4224,9 +4224,9 @@ public:
 
 }
 
-void HexagonABIInfo::computeInfo(CGFunctionInfo &FI) const {
+void HexagonABIInfo::computeInfo(CGSubprogramInfo &FI) const {
   FI.getReturnInfo() = classifyReturnType(FI.getReturnType());
-  for (CGFunctionInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
+  for (CGSubprogramInfo::arg_iterator it = FI.arg_begin(), ie = FI.arg_end();
        it != ie; ++it)
     it->info = classifyArgumentType(it->type);
 }

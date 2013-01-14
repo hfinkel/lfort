@@ -92,7 +92,7 @@ namespace  {
     void VisitRecordDecl(RecordDecl *D);
     void VisitEnumConstantDecl(EnumConstantDecl *D);
     void VisitIndirectFieldDecl(IndirectFieldDecl *D);
-    void VisitFunctionDecl(FunctionDecl *D);
+    void VisitSubprogramDecl(SubprogramDecl *D);
     void VisitFieldDecl(FieldDecl *D);
     void VisitVarDecl(VarDecl *D);
     void VisitFileScopeAsmDecl(FileScopeAsmDecl *D);
@@ -106,14 +106,14 @@ namespace  {
     void VisitTypeAliasTemplateDecl(TypeAliasTemplateDecl *D);
     void VisitCXXRecordDecl(CXXRecordDecl *D);
     void VisitStaticAssertDecl(StaticAssertDecl *D);
-    void VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+    void VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
     void VisitClassTemplateDecl(ClassTemplateDecl *D);
     void VisitClassTemplateSpecializationDecl(
         ClassTemplateSpecializationDecl *D);
     void VisitClassTemplatePartialSpecializationDecl(
         ClassTemplatePartialSpecializationDecl *D);
-    void VisitClassScopeFunctionSpecializationDecl(
-        ClassScopeFunctionSpecializationDecl *D);
+    void VisitClassScopeSubprogramSpecializationDecl(
+        ClassScopeSubprogramSpecializationDecl *D);
     void VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D);
     void VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D);
     void VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D);
@@ -167,7 +167,7 @@ namespace  {
     void VisitCXXNamedCastExpr(CXXNamedCastExpr *Node);
     void VisitCXXBoolLiteralExpr(CXXBoolLiteralExpr *Node);
     void VisitCXXThisExpr(CXXThisExpr *Node);
-    void VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *Node);
+    void VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *Node);
     void VisitCXXConstructExpr(CXXConstructExpr *Node);
     void VisitCXXBindTemporaryExpr(CXXBindTemporaryExpr *Node);
     void VisitExprWithCleanups(ExprWithCleanups *Node);
@@ -426,7 +426,7 @@ void ASTDumper::dumpDecl(Decl *D) {
   dumpSourceRange(D->getSourceRange());
   DeclVisitor<ASTDumper>::Visit(D);
   // Decls within functions are visited by the body
-  if (!isa<FunctionDecl>(*D) && !isa<ObjCMethodDecl>(*D))
+  if (!isa<SubprogramDecl>(*D) && !isa<ObjCMethodDecl>(*D))
     dumpDeclContext(dyn_cast<DeclContext>(D));
 }
 
@@ -477,7 +477,7 @@ void ASTDumper::VisitIndirectFieldDecl(IndirectFieldDecl *D) {
     dumpDeclRef(*I);
 }
 
-void ASTDumper::VisitFunctionDecl(FunctionDecl *D) {
+void ASTDumper::VisitSubprogramDecl(SubprogramDecl *D) {
   dumpName(D);
   dumpType(D->getType());
 
@@ -496,7 +496,7 @@ void ASTDumper::VisitFunctionDecl(FunctionDecl *D) {
   else if (D->isDeletedAsWritten())
     OS << " delete";
 
-  if (const FunctionTemplateSpecializationInfo *FTSI =
+  if (const SubprogramTemplateSpecializationInfo *FTSI =
       D->getTemplateSpecializationInfo())
     dumpTemplateArgumentList(*FTSI->TemplateArguments);
 
@@ -505,7 +505,7 @@ void ASTDumper::VisitFunctionDecl(FunctionDecl *D) {
        E = D->getDeclsInPrototypeScope().end(); I != E; ++I)
     dumpDecl(*I);
 
-  for (FunctionDecl::param_iterator I = D->param_begin(), E = D->param_end();
+  for (SubprogramDecl::param_iterator I = D->param_begin(), E = D->param_end();
        I != E; ++I)
     dumpDecl(*I);
 
@@ -610,11 +610,11 @@ void ASTDumper::VisitStaticAssertDecl(StaticAssertDecl *D) {
   dumpStmt(D->getMessage());
 }
 
-void ASTDumper::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
+void ASTDumper::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
   dumpName(D);
   dumpTemplateParameters(D->getTemplateParameters());
   dumpDecl(D->getTemplatedDecl());
-  for (FunctionTemplateDecl::spec_iterator I = D->spec_begin(),
+  for (SubprogramTemplateDecl::spec_iterator I = D->spec_begin(),
        E = D->spec_end(); I != E; ++I) {
     switch (I->getTemplateSpecializationKind()) {
     case TSK_Undeclared:
@@ -662,8 +662,8 @@ void ASTDumper::VisitClassTemplatePartialSpecializationDecl(
   dumpTemplateParameters(D->getTemplateParameters());
 }
 
-void ASTDumper::VisitClassScopeFunctionSpecializationDecl(
-    ClassScopeFunctionSpecializationDecl *D) {
+void ASTDumper::VisitClassScopeSubprogramSpecializationDecl(
+    ClassScopeSubprogramSpecializationDecl *D) {
   dumpDeclRef(D->getSpecialization());
   if (D->hasExplicitTemplateArgs())
     dumpTemplateArgumentListInfo(D->templateArgs());
@@ -1083,9 +1083,9 @@ void ASTDumper::VisitPredefinedExpr(PredefinedExpr *Node) {
   switch (Node->getIdentType()) {
   default: llvm_unreachable("unknown case");
   case PredefinedExpr::Func:           OS <<  " __func__"; break;
-  case PredefinedExpr::Function:       OS <<  " __FUNCTION__"; break;
-  case PredefinedExpr::LFunction:      OS <<  " L__FUNCTION__"; break;
-  case PredefinedExpr::PrettyFunction: OS <<  " __PRETTY_FUNCTION__";break;
+  case PredefinedExpr::Subprogram:       OS <<  " __FUNCTION__"; break;
+  case PredefinedExpr::LSubprogram:      OS <<  " L__FUNCTION__"; break;
+  case PredefinedExpr::PrettySubprogram: OS <<  " __PRETTY_FUNCTION__";break;
   }
 }
 
@@ -1203,7 +1203,7 @@ void ASTDumper::VisitCXXThisExpr(CXXThisExpr *Node) {
   OS << " this";
 }
 
-void ASTDumper::VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *Node) {
+void ASTDumper::VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *Node) {
   VisitExpr(Node);
   OS << " functional cast to " << Node->getTypeAsWritten().getAsString()
      << " <" << Node->getCastKindName() << ">";

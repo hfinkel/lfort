@@ -30,14 +30,14 @@ namespace lfort {
   class ASTContext;
   class CXXConstructorDecl;
   class CXXConversionDecl;
-  class FunctionDecl;
+  class SubprogramDecl;
   class Sema;
 
   /// OverloadingResult - Capture the result of performing overload
   /// resolution.
   enum OverloadingResult {
     OR_Success,             ///< Overload resolution succeeded.
-    OR_No_Viable_Function,  ///< No viable function found.
+    OR_No_Viable_Subprogram,  ///< No viable function found.
     OR_Ambiguous,           ///< Ambiguous candidates found.
     OR_Deleted              ///< Succeeded, but refers to a deleted function.
   };
@@ -59,7 +59,7 @@ namespace lfort {
     ICK_Identity = 0,          ///< Identity conversion (no conversion)
     ICK_Lvalue_To_Rvalue,      ///< Lvalue-to-rvalue conversion (C++ 4.1)
     ICK_Array_To_Pointer,      ///< Array-to-pointer conversion (C++ 4.2)
-    ICK_Function_To_Pointer,   ///< Function-to-pointer (C++ 4.3)
+    ICK_Subprogram_To_Pointer,   ///< Subprogram-to-pointer (C++ 4.3)
     ICK_NoReturn_Adjustment,   ///< Removal of noreturn from a type (LFort)
     ICK_Qualification,         ///< Qualification conversions (C++ 4.4)
     ICK_Integral_Promotion,    ///< Integral promotions (C++ 4.5)
@@ -179,7 +179,7 @@ namespace lfort {
     unsigned IsLvalueReference : 1;
     
     /// \brief Whether we're binding to a function lvalue.
-    unsigned BindsToFunctionLvalue : 1;
+    unsigned BindsToSubprogramLvalue : 1;
     
     /// \brief Whether we're binding to an rvalue.
     unsigned BindsToRvalue : 1;
@@ -276,22 +276,22 @@ namespace lfort {
     /// the actual user-defined conversion.
     StandardConversionSequence After;
 
-    /// ConversionFunction - The function that will perform the
+    /// ConversionSubprogram - The function that will perform the
     /// user-defined conversion. Null if the conversion is an
     /// aggregate initialization from an initializer list.
-    FunctionDecl* ConversionFunction;
+    SubprogramDecl* ConversionSubprogram;
 
     /// \brief The declaration that we found via name lookup, which might be
-    /// the same as \c ConversionFunction or it might be a using declaration
-    /// that refers to \c ConversionFunction.
-    DeclAccessPair FoundConversionFunction;
+    /// the same as \c ConversionSubprogram or it might be a using declaration
+    /// that refers to \c ConversionSubprogram.
+    DeclAccessPair FoundConversionSubprogram;
 
     void DebugPrint() const;
   };
 
   /// Represents an ambiguous user-defined conversion sequence.
   struct AmbiguousConversionSequence {
-    typedef SmallVector<FunctionDecl*, 4> ConversionSet;
+    typedef SmallVector<SubprogramDecl*, 4> ConversionSet;
 
     void *FromTypePtr;
     void *ToTypePtr;
@@ -314,7 +314,7 @@ namespace lfort {
       return *reinterpret_cast<const ConversionSet*>(Buffer);
     }
 
-    void addConversion(FunctionDecl *D) {
+    void addConversion(SubprogramDecl *D) {
       conversions().push_back(D);
     }
 
@@ -597,19 +597,19 @@ namespace lfort {
 
   /// OverloadCandidate - A single candidate in an overload set (C++ 13.3).
   struct OverloadCandidate {
-    /// Function - The actual function that this candidate
+    /// Subprogram - The actual function that this candidate
     /// represents. When NULL, this is a built-in candidate
     /// (C++ [over.oper]) or a surrogate for a conversion to a
     /// function pointer or reference (C++ [over.call.object]).
-    FunctionDecl *Function;
+    SubprogramDecl *Subprogram;
 
     /// FoundDecl - The original declaration that was looked up /
     /// invented / otherwise found, together with its access.
-    /// Might be a UsingShadowDecl or a FunctionTemplateDecl.
+    /// Might be a UsingShadowDecl or a SubprogramTemplateDecl.
     DeclAccessPair FoundDecl;
 
     // BuiltinTypes - Provides the return and parameter types of a
-    // built-in overload candidate. Only valid when Function is NULL.
+    // built-in overload candidate. Only valid when Subprogram is NULL.
     struct {
       QualType ResultTy;
       QualType ParamTypes[3];
@@ -702,7 +702,7 @@ namespace lfort {
     union {
       DeductionFailureInfo DeductionFailure;
       
-      /// FinalConversion - For a conversion function (where Function is
+      /// FinalConversion - For a conversion function (where Subprogram is
       /// a CXXConversionDecl), the standard conversion that occurs
       /// after the call to the overload candidate to convert the result
       /// of calling the conversion function to the required type.
@@ -737,7 +737,7 @@ namespace lfort {
   /// overload resolution (C++ 13.3).
   class OverloadCandidateSet {
     SmallVector<OverloadCandidate, 16> Candidates;
-    llvm::SmallPtrSet<Decl *, 16> Functions;
+    llvm::SmallPtrSet<Decl *, 16> Subprograms;
 
     // Allocator for OverloadCandidate::Conversions. We store the first few
     // elements inline to avoid allocation for small sets.
@@ -762,7 +762,7 @@ namespace lfort {
     /// \brief Determine when this overload candidate will be new to the
     /// overload set.
     bool isNewCandidate(Decl *F) { 
-      return Functions.insert(F->getCanonicalDecl()); 
+      return Subprograms.insert(F->getCanonicalDecl()); 
     }
 
     /// \brief Clear out all of the candidates.
@@ -803,7 +803,7 @@ namespace lfort {
     }
 
     /// Find the best viable function on this overload set, if it exists.
-    OverloadingResult BestViableFunction(Sema &S, SourceLocation Loc,
+    OverloadingResult BestViableSubprogram(Sema &S, SourceLocation Loc,
                                          OverloadCandidateSet::iterator& Best,
                                          bool UserDefinedConversion = false);
 

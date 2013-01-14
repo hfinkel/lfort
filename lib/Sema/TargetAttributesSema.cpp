@@ -133,15 +133,15 @@ static void HandleX86ForceAlignArgPointerAttr(Decl *D,
   // do anything, either. It doesn't matter anyway, because there's nothing
   // special about calling a force_align_arg_pointer function.
   ValueDecl *VD = dyn_cast<ValueDecl>(D);
-  if (VD && VD->getType()->isFunctionPointerType())
+  if (VD && VD->getType()->isSubprogramPointerType())
     return;
   // Also don't warn on function pointer typedefs.
   TypedefNameDecl *TD = dyn_cast<TypedefNameDecl>(D);
-  if (TD && (TD->getUnderlyingType()->isFunctionPointerType() ||
-             TD->getUnderlyingType()->isFunctionType()))
+  if (TD && (TD->getUnderlyingType()->isSubprogramPointerType() ||
+             TD->getUnderlyingType()->isSubprogramType()))
     return;
   // Attribute can only be applied to function types.
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
       << Attr.getName() << /* function */0;
     return;
@@ -171,7 +171,7 @@ static void HandleDLLImportAttr(Decl *D, const AttributeList &Attr, Sema &S) {
   }
 
   // Attribute can be applied only to functions or variables.
-  FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD && !isa<VarDecl>(D)) {
     // Apparently Visual C++ thinks it is okay to not emit a warning
     // in this case, so only emit a warning when -fms-extensions is not
@@ -214,7 +214,7 @@ static void HandleDLLExportAttr(Decl *D, const AttributeList &Attr, Sema &S) {
   }
 
   // Attribute can be applied only to functions or variables.
-  FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD && !isa<VarDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
       << Attr.getName() << 2 /*variable and function*/;

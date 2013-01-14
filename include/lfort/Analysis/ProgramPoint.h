@@ -30,7 +30,7 @@
 namespace lfort {
 
 class AnalysisDeclContext;
-class FunctionDecl;
+class SubprogramDecl;
 class LocationContext;
 class ProgramPointTag;
   

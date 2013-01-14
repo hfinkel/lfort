@@ -51,7 +51,7 @@ void CodeGenSubprogram::EmitDecl(const Decl &D) {
   case Decl::ParmVar:
   case Decl::ImplicitParam:
   case Decl::ClassTemplate:
-  case Decl::FunctionTemplate:
+  case Decl::SubprogramTemplate:
   case Decl::TypeAliasTemplate:
   case Decl::TemplateTemplateParm:
   case Decl::ObjCMethod:
@@ -69,9 +69,9 @@ void CodeGenSubprogram::EmitDecl(const Decl &D) {
   case Decl::Friend:
   case Decl::FriendTemplate:
   case Decl::Block:
-  case Decl::ClassScopeFunctionSpecialization:
+  case Decl::ClassScopeSubprogramSpecialization:
     llvm_unreachable("Declaration should not be in declstmts!");
-  case Decl::Function:  // void X();
+  case Decl::Subprogram:  // void X();
   case Decl::MainProgram:
   case Decl::Record:    // struct/union/class X;
   case Decl::Enum:      // enum X;
@@ -159,7 +159,7 @@ static std::string GetStaticDeclName(CodeGenSubprogram &CGF, const VarDecl &D,
     }
     else
       llvm_unreachable("Unknown context for block static var decl");
-  } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(CGF.CurFuncDecl)) {
+  } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CGF.CurFuncDecl)) {
     StringRef Name = CGM.getMangledName(FD);
     ContextName = Name.str();
   } else if (isa<ObjCMethodDecl>(CGF.CurFuncDecl))
@@ -417,12 +417,12 @@ namespace {
     }
   };
 
-  struct CallCleanupFunction : EHScopeStack::Cleanup {
+  struct CallCleanupSubprogram : EHScopeStack::Cleanup {
     llvm::Constant *CleanupFn;
-    const CGFunctionInfo &FnInfo;
+    const CGSubprogramInfo &FnInfo;
     const VarDecl &Var;
 
-    CallCleanupFunction(llvm::Constant *CleanupFn, const CGFunctionInfo *Info,
+    CallCleanupSubprogram(llvm::Constant *CleanupFn, const CGSubprogramInfo *Info,
                         const VarDecl *Var)
       : CleanupFn(CleanupFn), FnInfo(*Info), Var(*Var) {}
 
@@ -1212,13 +1212,13 @@ void CodeGenSubprogram::EmitAutoVarCleanups(const AutoVarEmission &emission) {
 
   // Handle the cleanup attribute.
   if (const CleanupAttr *CA = D.getAttr<CleanupAttr>()) {
-    const FunctionDecl *FD = CA->getFunctionDecl();
+    const SubprogramDecl *FD = CA->getSubprogramDecl();
 
-    llvm::Constant *F = CGM.GetAddrOfFunction(FD);
+    llvm::Constant *F = CGM.GetAddrOfSubprogram(FD);
     assert(F && "Could not find function!");
 
-    const CGFunctionInfo &Info = CGM.getTypes().arrangeFunctionDeclaration(FD);
-    EHStack.pushCleanup<CallCleanupFunction>(NormalAndEHCleanup, F, &Info, &D);
+    const CGSubprogramInfo &Info = CGM.getTypes().arrangeSubprogramDeclaration(FD);
+    EHStack.pushCleanup<CallCleanupSubprogram>(NormalAndEHCleanup, F, &Info, &D);
   }
 
   // If this is a block variable, call _Block_object_destroy

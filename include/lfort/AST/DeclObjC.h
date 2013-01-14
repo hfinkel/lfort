@@ -22,7 +22,7 @@
 namespace lfort {
 class Expr;
 class Stmt;
-class FunctionDecl;
+class SubprogramDecl;
 class RecordDecl;
 class ObjCIvarDecl;
 class ObjCMethodDecl;

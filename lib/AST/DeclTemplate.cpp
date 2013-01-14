@@ -216,55 +216,55 @@ static void GenerateInjectedTemplateArgs(ASTContext &Context,
 }
                                       
 //===----------------------------------------------------------------------===//
-// FunctionTemplateDecl Implementation
+// SubprogramTemplateDecl Implementation
 //===----------------------------------------------------------------------===//
 
-void FunctionTemplateDecl::DeallocateCommon(void *Ptr) {
+void SubprogramTemplateDecl::DeallocateCommon(void *Ptr) {
   static_cast<Common *>(Ptr)->~Common();
 }
 
-FunctionTemplateDecl *FunctionTemplateDecl::Create(ASTContext &C,
+SubprogramTemplateDecl *SubprogramTemplateDecl::Create(ASTContext &C,
                                                    DeclContext *DC,
                                                    SourceLocation L,
                                                    DeclarationName Name,
                                                TemplateParameterList *Params,
                                                    NamedDecl *Decl) {
   AdoptTemplateParameterList(Params, cast<DeclContext>(Decl));
-  return new (C) FunctionTemplateDecl(DC, L, Name, Params, Decl);
+  return new (C) SubprogramTemplateDecl(DC, L, Name, Params, Decl);
 }
 
-FunctionTemplateDecl *FunctionTemplateDecl::CreateDeserialized(ASTContext &C,
+SubprogramTemplateDecl *SubprogramTemplateDecl::CreateDeserialized(ASTContext &C,
                                                                unsigned ID) {
-  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(FunctionTemplateDecl));
-  return new (Mem) FunctionTemplateDecl(0, SourceLocation(), DeclarationName(),
+  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(SubprogramTemplateDecl));
+  return new (Mem) SubprogramTemplateDecl(0, SourceLocation(), DeclarationName(),
                                         0, 0);
 }
 
 RedeclarableTemplateDecl::CommonBase *
-FunctionTemplateDecl::newCommon(ASTContext &C) {
+SubprogramTemplateDecl::newCommon(ASTContext &C) {
   Common *CommonPtr = new (C) Common;
   C.AddDeallocation(DeallocateCommon, CommonPtr);
   return CommonPtr;
 }
 
-FunctionDecl *
-FunctionTemplateDecl::findSpecialization(const TemplateArgument *Args,
+SubprogramDecl *
+SubprogramTemplateDecl::findSpecialization(const TemplateArgument *Args,
                                          unsigned NumArgs, void *&InsertPos) {
   return findSpecializationImpl(getSpecializations(), Args, NumArgs, InsertPos);
 }
 
-void FunctionTemplateDecl::addSpecialization(
-      FunctionTemplateSpecializationInfo *Info, void *InsertPos) {
+void SubprogramTemplateDecl::addSpecialization(
+      SubprogramTemplateSpecializationInfo *Info, void *InsertPos) {
   if (InsertPos)
     getSpecializations().InsertNode(Info, InsertPos);
   else
     getSpecializations().GetOrInsertNode(Info);
   if (ASTMutationListener *L = getASTMutationListener())
-    L->AddedCXXTemplateSpecialization(this, Info->Function);
+    L->AddedCXXTemplateSpecialization(this, Info->Subprogram);
 }
 
 std::pair<const TemplateArgument *, unsigned> 
-FunctionTemplateDecl::getInjectedTemplateArgs() {
+SubprogramTemplateDecl::getInjectedTemplateArgs() {
   TemplateParameterList *Params = getTemplateParameters();
   Common *CommonPtr = getCommonPtr();
   if (!CommonPtr->InjectedArgs) {
@@ -662,9 +662,9 @@ TemplateArgumentList::CreateCopy(ASTContext &Context,
   return new (Mem) TemplateArgumentList(StoredArgs, NumArgs, true);
 }
 
-FunctionTemplateSpecializationInfo *
-FunctionTemplateSpecializationInfo::Create(ASTContext &C, FunctionDecl *FD,
-                                           FunctionTemplateDecl *Template,
+SubprogramTemplateSpecializationInfo *
+SubprogramTemplateSpecializationInfo::Create(ASTContext &C, SubprogramDecl *FD,
+                                           SubprogramTemplateDecl *Template,
                                            TemplateSpecializationKind TSK,
                                        const TemplateArgumentList *TemplateArgs,
                           const TemplateArgumentListInfo *TemplateArgsAsWritten,
@@ -674,7 +674,7 @@ FunctionTemplateSpecializationInfo::Create(ASTContext &C, FunctionDecl *FD,
     ArgsAsWritten = ASTTemplateArgumentListInfo::Create(C,
                                                         *TemplateArgsAsWritten);
 
-  return new (C) FunctionTemplateSpecializationInfo(FD, Template, TSK,
+  return new (C) SubprogramTemplateSpecializationInfo(FD, Template, TSK,
                                                     TemplateArgs,
                                                     ArgsAsWritten,
                                                     POI);
@@ -926,16 +926,16 @@ TypeAliasTemplateDecl::newCommon(ASTContext &C) {
 }
 
 //===----------------------------------------------------------------------===//
-// ClassScopeFunctionSpecializationDecl Implementation
+// ClassScopeSubprogramSpecializationDecl Implementation
 //===----------------------------------------------------------------------===//
 
-void ClassScopeFunctionSpecializationDecl::anchor() { }
+void ClassScopeSubprogramSpecializationDecl::anchor() { }
 
-ClassScopeFunctionSpecializationDecl *
-ClassScopeFunctionSpecializationDecl::CreateDeserialized(ASTContext &C,
+ClassScopeSubprogramSpecializationDecl *
+ClassScopeSubprogramSpecializationDecl::CreateDeserialized(ASTContext &C,
                                                          unsigned ID) {
   void *Mem = AllocateDeserializedDecl(C, ID, 
-                sizeof(ClassScopeFunctionSpecializationDecl));
-  return new (Mem) ClassScopeFunctionSpecializationDecl(0, SourceLocation(), 0,
+                sizeof(ClassScopeSubprogramSpecializationDecl));
+  return new (Mem) ClassScopeSubprogramSpecializationDecl(0, SourceLocation(), 0,
                                              false, TemplateArgumentListInfo());
 }

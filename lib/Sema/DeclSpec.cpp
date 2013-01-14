@@ -142,9 +142,9 @@ CXXScopeSpec::getWithLocInContext(ASTContext &Context) const {
   return Builder.getWithLocInContext(Context);
 }
 
-/// DeclaratorChunk::getFunction - Return a DeclaratorChunk for a function.
+/// DeclaratorChunk::getSubprogram - Return a DeclaratorChunk for a function.
 /// "TheDeclarator" is the declarator that this will be added to.
-DeclaratorChunk DeclaratorChunk::getFunction(bool hasProto,
+DeclaratorChunk DeclaratorChunk::getSubprogram(bool hasProto,
                                              bool isAmbiguous,
                                              SourceLocation LParenLoc,
                                              ParamInfo *ArgInfo,
@@ -171,7 +171,7 @@ DeclaratorChunk DeclaratorChunk::getFunction(bool hasProto,
                                              TypeResult TrailingReturnType,
                                              bool IsMainProgram) {
   DeclaratorChunk I;
-  I.Kind                        = Function;
+  I.Kind                        = Subprogram;
   I.Loc                         = LocalRangeBegin;
   I.EndLoc                      = LocalRangeEnd;
   I.Fun.AttrList                = 0;
@@ -240,10 +240,10 @@ DeclaratorChunk DeclaratorChunk::getFunction(bool hasProto,
   return I;
 }
 
-bool Declarator::isDeclarationOfFunction() const {
+bool Declarator::isDeclarationOfSubprogram() const {
   for (unsigned i = 0, i_end = DeclTypeInfo.size(); i < i_end; ++i) {
     switch (DeclTypeInfo[i].Kind) {
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
       return true;
     case DeclaratorChunk::Paren:
       continue;
@@ -293,7 +293,7 @@ bool Declarator::isDeclarationOfFunction() const {
     case TST_decltype:
     case TST_typeofExpr:
       if (Expr *E = DS.getRepAsExpr())
-        return E->getType()->isFunctionType();
+        return E->getType()->isSubprogramType();
       return false;
      
     case TST_underlyingType:
@@ -309,7 +309,7 @@ bool Declarator::isDeclarationOfFunction() const {
       if (QT.isNull())
         return false;
         
-      return QT->isFunctionType();
+      return QT->isSubprogramType();
     }
   }
 
@@ -332,7 +332,7 @@ unsigned DeclSpec::getParsedSpecifiers() const {
     Res |= PQ_TypeSpecifier;
 
   if (FS_inline_specified || FS_virtual_specified || FS_explicit_specified)
-    Res |= PQ_FunctionSpecifier;
+    Res |= PQ_SubprogramSpecifier;
   return Res;
 }
 
@@ -715,21 +715,21 @@ bool DeclSpec::SetTypeQual(TQ T, SourceLocation Loc, const char *&PrevSpec,
   return false;
 }
 
-bool DeclSpec::setFunctionSpecInline(SourceLocation Loc) {
+bool DeclSpec::setSubprogramSpecInline(SourceLocation Loc) {
   // 'inline inline' is ok.
   FS_inline_specified = true;
   FS_inlineLoc = Loc;
   return false;
 }
 
-bool DeclSpec::setFunctionSpecVirtual(SourceLocation Loc) {
+bool DeclSpec::setSubprogramSpecVirtual(SourceLocation Loc) {
   // 'virtual virtual' is ok.
   FS_virtual_specified = true;
   FS_virtualLoc = Loc;
   return false;
 }
 
-bool DeclSpec::setFunctionSpecExplicit(SourceLocation Loc) {
+bool DeclSpec::setSubprogramSpecExplicit(SourceLocation Loc) {
   // 'explicit explicit' is ok.
   FS_explicit_specified = true;
   FS_explicitLoc = Loc;
@@ -974,15 +974,15 @@ bool DeclSpec::isMissingDeclaratorOk() {
     StorageClassSpec != DeclSpec::SCS_typedef;
 }
 
-void UnqualifiedId::setOperatorFunctionId(SourceLocation OperatorLoc, 
+void UnqualifiedId::setOperatorSubprogramId(SourceLocation OperatorLoc, 
                                           OverloadedOperatorKind Op,
                                           SourceLocation SymbolLocations[3]) {
-  Kind = IK_OperatorFunctionId;
+  Kind = IK_OperatorSubprogramId;
   StartLocation = OperatorLoc;
   EndLocation = OperatorLoc;
-  OperatorFunctionId.Operator = Op;
+  OperatorSubprogramId.Operator = Op;
   for (unsigned I = 0; I != 3; ++I) {
-    OperatorFunctionId.SymbolLocations[I] = SymbolLocations[I].getRawEncoding();
+    OperatorSubprogramId.SymbolLocations[I] = SymbolLocations[I].getRawEncoding();
     
     if (SymbolLocations[I].isValid())
       EndLocation = SymbolLocations[I];

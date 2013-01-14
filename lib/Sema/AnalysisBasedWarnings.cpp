@@ -224,10 +224,10 @@ struct CheckFallThroughDiagnostics {
   unsigned diag_AlwaysFallThrough_HasNoReturn;
   unsigned diag_AlwaysFallThrough_ReturnsNonVoid;
   unsigned diag_NeverFallThroughOrReturn;
-  enum { Function, Block, Lambda } funMode;
+  enum { Subprogram, Block, Lambda } funMode;
   SourceLocation FuncLoc;
 
-  static CheckFallThroughDiagnostics MakeForFunction(const Decl *Func) {
+  static CheckFallThroughDiagnostics MakeForSubprogram(const Decl *Func) {
     CheckFallThroughDiagnostics D;
     D.FuncLoc = Func->getLocation();
     D.diag_MaybeFallThrough_HasNoReturn =
@@ -247,8 +247,8 @@ struct CheckFallThroughDiagnostics {
     
     // Don't suggest that template instantiations be marked "noreturn"
     bool isTemplateInstantiation = false;
-    if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(Func))
-      isTemplateInstantiation = Function->isTemplateInstantiation();
+    if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(Func))
+      isTemplateInstantiation = Subprogram->isTemplateInstantiation();
         
     if (!isVirtualMethod && !isTemplateInstantiation)
       D.diag_NeverFallThroughOrReturn =
@@ -256,7 +256,7 @@ struct CheckFallThroughDiagnostics {
     else
       D.diag_NeverFallThroughOrReturn = 0;
     
-    D.funMode = Function;
+    D.funMode = Subprogram;
     return D;
   }
 
@@ -293,7 +293,7 @@ struct CheckFallThroughDiagnostics {
 
   bool checkDiagnostics(DiagnosticsEngine &D, bool ReturnsVoid,
                         bool HasNoReturn) const {
-    if (funMode == Function) {
+    if (funMode == Subprogram) {
       return (ReturnsVoid ||
               D.getDiagnosticLevel(diag::warn_maybe_falloff_nonvoid_function,
                                    FuncLoc) == DiagnosticsEngine::Ignored)
@@ -315,7 +315,7 @@ struct CheckFallThroughDiagnostics {
 
 }
 
-/// CheckFallThroughForFunctionDef - Check that we don't fall off the end of a
+/// CheckFallThroughForSubprogramDef - Check that we don't fall off the end of a
 /// function that should return a value.  Check that we don't fall off the end
 /// of a noreturn function.  We assume that functions and blocks not marked
 /// noreturn will return.
@@ -327,10 +327,10 @@ static void CheckFallThroughForBody(Sema &S, const Decl *D, const Stmt *Body,
   bool ReturnsVoid = false;
   bool HasNoReturn = false;
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     ReturnsVoid = FD->getResultType()->isVoidType();
     HasNoReturn = FD->hasAttr<NoReturnAttr>() ||
-       FD->getType()->getAs<FunctionType>()->getNoReturnAttr();
+       FD->getType()->getAs<SubprogramType>()->getNoReturnAttr();
   }
   else if (const ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(D)) {
     ReturnsVoid = MD->getResultType()->isVoidType();
@@ -338,8 +338,8 @@ static void CheckFallThroughForBody(Sema &S, const Decl *D, const Stmt *Body,
   }
   else if (isa<BlockDecl>(D)) {
     QualType BlockTy = blkExpr->getType();
-    if (const FunctionType *FT =
-          BlockTy->getPointeeType()->getAs<FunctionType>()) {
+    if (const SubprogramType *FT =
+          BlockTy->getPointeeType()->getAs<SubprogramType>()) {
       if (FT->getResultType()->isVoidType())
         ReturnsVoid = true;
       if (FT->getNoReturnAttr())
@@ -353,7 +353,7 @@ static void CheckFallThroughForBody(Sema &S, const Decl *D, const Stmt *Body,
   if (CD.checkDiagnostics(Diags, ReturnsVoid, HasNoReturn))
       return;
 
-  // FIXME: Function try block
+  // FIXME: Subprogram try block
   if (const CompoundStmt *Compound = dyn_cast<CompoundStmt>(Body)) {
     switch (CheckFallThrough(AC)) {
       case UnknownFallThrough:
@@ -377,7 +377,7 @@ static void CheckFallThroughForBody(Sema &S, const Decl *D, const Stmt *Body,
         break;
       case NeverFallThroughOrReturn:
         if (ReturnsVoid && !HasNoReturn && CD.diag_NeverFallThroughOrReturn) {
-          if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+          if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
             S.Diag(Compound->getLBracLoc(), CD.diag_NeverFallThroughOrReturn)
               << 0 << FD;
           } else if (const ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(D)) {
@@ -817,7 +817,7 @@ namespace {
 }
 
 static void DiagnoseSwitchLabelsFallthrough(Sema &S, AnalysisDeclContext &AC,
-                                            bool PerFunction) {
+                                            bool PerSubprogram) {
   // Only perform this analysis when using C++11.  There is no good workflow
   // for this warning when not using C++11.  There is no good way to silence
   // the warning (no attribute is available) unless we are using C++11's support
@@ -836,7 +836,7 @@ static void DiagnoseSwitchLabelsFallthrough(Sema &S, AnalysisDeclContext &AC,
   if (!FM.foundSwitchStatements())
     return;
 
-  if (PerFunction && FM.getFallthroughStmts().empty())
+  if (PerSubprogram && FM.getFallthroughStmts().empty())
     return;
 
   CFG *Cfg = AC.getCFG();
@@ -857,7 +857,7 @@ static void DiagnoseSwitchLabelsFallthrough(Sema &S, AnalysisDeclContext &AC,
       continue;
 
     S.Diag(Label->getLocStart(),
-        PerFunction ? diag::warn_unannotated_fallthrough_per_function
+        PerSubprogram ? diag::warn_unannotated_fallthrough_per_function
                     : diag::warn_unannotated_fallthrough);
 
     if (!AnnotatedCnt) {
@@ -900,7 +900,7 @@ static void DiagnoseSwitchLabelsFallthrough(Sema &S, AnalysisDeclContext &AC,
 
 namespace {
 typedef std::pair<const Stmt *,
-                  sema::FunctionScopeInfo::WeakObjectUseMap::const_iterator>
+                  sema::SubprogramScopeInfo::WeakObjectUseMap::const_iterator>
         StmtUsesPair;
 
 class StmtUseSorter {
@@ -944,12 +944,12 @@ static bool isInLoop(const ASTContext &Ctx, const ParentMap &PM,
 
 
 static void diagnoseRepeatedUseOfWeak(Sema &S,
-                                      const sema::FunctionScopeInfo *CurFn,
+                                      const sema::SubprogramScopeInfo *CurFn,
                                       const Decl *D,
                                       const ParentMap &PM) {
-  typedef sema::FunctionScopeInfo::WeakObjectProfileTy WeakObjectProfileTy;
-  typedef sema::FunctionScopeInfo::WeakObjectUseMap WeakObjectUseMap;
-  typedef sema::FunctionScopeInfo::WeakUseVector WeakUseVector;
+  typedef sema::SubprogramScopeInfo::WeakObjectProfileTy WeakObjectProfileTy;
+  typedef sema::SubprogramScopeInfo::WeakObjectUseMap WeakObjectUseMap;
+  typedef sema::SubprogramScopeInfo::WeakUseVector WeakUseVector;
 
   ASTContext &Ctx = S.getASTContext();
 
@@ -1017,20 +1017,20 @@ static void diagnoseRepeatedUseOfWeak(Sema &S,
   // FIXME: Should we use a common classification enum and the same set of
   // possibilities all throughout Sema?
   enum {
-    Function,
+    Subprogram,
     Method,
     Block,
     Lambda
-  } FunctionKind;
+  } SubprogramKind;
 
   if (isa<sema::BlockScopeInfo>(CurFn))
-    FunctionKind = Block;
+    SubprogramKind = Block;
   else if (isa<sema::LambdaScopeInfo>(CurFn))
-    FunctionKind = Lambda;
+    SubprogramKind = Lambda;
   else if (isa<ObjCMethodDecl>(D))
-    FunctionKind = Method;
+    SubprogramKind = Method;
   else
-    FunctionKind = Function;
+    SubprogramKind = Subprogram;
 
   // Iterate through the sorted problems and emit warnings for each.
   for (SmallVectorImpl<StmtUsesPair>::const_iterator I = UsesByStmt.begin(),
@@ -1075,7 +1075,7 @@ static void diagnoseRepeatedUseOfWeak(Sema &S,
 
     // Show the first time the object was read.
     S.Diag(FirstRead->getLocStart(), DiagKind)
-      << ObjectKind << D << FunctionKind
+      << ObjectKind << D << SubprogramKind
       << FirstRead->getSourceRange();
 
     // Print all the other accesses as notes.
@@ -1272,10 +1272,10 @@ class ThreadSafetyReporter : public lfort::thread_safety::ThreadSafetyHandler {
       case LEK_LockedSomeLoopIterations:
         DiagID = diag::warn_expecting_lock_held_on_loop;
         break;
-      case LEK_LockedAtEndOfFunction:
+      case LEK_LockedAtEndOfSubprogram:
         DiagID = diag::warn_no_unlock;
         break;
-      case LEK_NotLockedAtEndOfFunction:
+      case LEK_NotLockedAtEndOfSubprogram:
         DiagID = diag::warn_expecting_locked;
         break;
     }
@@ -1321,7 +1321,7 @@ class ThreadSafetyReporter : public lfort::thread_safety::ThreadSafetyHandler {
         case POK_VarDereference:
           DiagID = diag::warn_var_deref_requires_lock_precise;
           break;
-        case POK_FunctionCall:
+        case POK_SubprogramCall:
           DiagID = diag::warn_fun_requires_lock_precise;
           break;
       }
@@ -1338,7 +1338,7 @@ class ThreadSafetyReporter : public lfort::thread_safety::ThreadSafetyHandler {
         case POK_VarDereference:
           DiagID = diag::warn_var_deref_requires_lock;
           break;
-        case POK_FunctionCall:
+        case POK_SubprogramCall:
           DiagID = diag::warn_fun_requires_lock;
           break;
       }
@@ -1371,15 +1371,15 @@ lfort::sema::AnalysisBasedWarnings::Policy::Policy() {
 
 lfort::sema::AnalysisBasedWarnings::AnalysisBasedWarnings(Sema &s)
   : S(s),
-    NumFunctionsAnalyzed(0),
-    NumFunctionsWithBadCFGs(0),
+    NumSubprogramsAnalyzed(0),
+    NumSubprogramsWithBadCFGs(0),
     NumCFGBlocks(0),
-    MaxCFGBlocksPerFunction(0),
-    NumUninitAnalysisFunctions(0),
+    MaxCFGBlocksPerSubprogram(0),
+    NumUninitAnalysisSubprograms(0),
     NumUninitAnalysisVariables(0),
-    MaxUninitAnalysisVariablesPerFunction(0),
+    MaxUninitAnalysisVariablesPerSubprogram(0),
     NumUninitAnalysisBlockVisits(0),
-    MaxUninitAnalysisBlockVisitsPerFunction(0) {
+    MaxUninitAnalysisBlockVisitsPerSubprogram(0) {
   DiagnosticsEngine &D = S.getDiagnostics();
   DefaultPolicy.enableCheckUnreachable = (unsigned)
     (D.getDiagnosticLevel(diag::warn_unreachable, SourceLocation()) !=
@@ -1390,7 +1390,7 @@ lfort::sema::AnalysisBasedWarnings::AnalysisBasedWarnings(Sema &s)
 
 }
 
-static void flushDiagnostics(Sema &S, sema::FunctionScopeInfo *fscope) {
+static void flushDiagnostics(Sema &S, sema::SubprogramScopeInfo *fscope) {
   for (SmallVectorImpl<sema::PossiblyUnreachableDiag>::iterator
        i = fscope->PossiblyUnreachableDiags.begin(),
        e = fscope->PossiblyUnreachableDiags.end();
@@ -1402,7 +1402,7 @@ static void flushDiagnostics(Sema &S, sema::FunctionScopeInfo *fscope) {
 
 void lfort::sema::
 AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
-                                     sema::FunctionScopeInfo *fscope,
+                                     sema::SubprogramScopeInfo *fscope,
                                      const Decl *D, const BlockExpr *blkExpr) {
 
   // We avoid doing analysis-based warnings when there are errors for
@@ -1522,7 +1522,7 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
           cast<CXXMethodDecl>(D)->getOverloadedOperator() == OO_Call &&
           cast<CXXMethodDecl>(D)->getParent()->isLambda())
             ? CheckFallThroughDiagnostics::MakeForLambda()
-            : CheckFallThroughDiagnostics::MakeForFunction(D));
+            : CheckFallThroughDiagnostics::MakeForSubprogram(D));
     CheckFallThroughForBody(S, D, Body, blkExpr, CD, AC);
   }
 
@@ -1533,8 +1533,8 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
     // and it is very difficult to prove that a snippet of code in a template
     // is unreachable for all instantiations.
     bool isTemplateInstantiation = false;
-    if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(D))
-      isTemplateInstantiation = Function->isTemplateInstantiation();
+    if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D))
+      isTemplateInstantiation = Subprogram->isTemplateInstantiation();
     if (!isTemplateInstantiation)
       CheckUnreachable(S, AC);
   }
@@ -1566,14 +1566,14 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
                                         reporter, stats);
 
       if (S.CollectStats && stats.NumVariablesAnalyzed > 0) {
-        ++NumUninitAnalysisFunctions;
+        ++NumUninitAnalysisSubprograms;
         NumUninitAnalysisVariables += stats.NumVariablesAnalyzed;
         NumUninitAnalysisBlockVisits += stats.NumBlockVisits;
-        MaxUninitAnalysisVariablesPerFunction =
-            std::max(MaxUninitAnalysisVariablesPerFunction,
+        MaxUninitAnalysisVariablesPerSubprogram =
+            std::max(MaxUninitAnalysisVariablesPerSubprogram,
                      stats.NumVariablesAnalyzed);
-        MaxUninitAnalysisBlockVisitsPerFunction =
-            std::max(MaxUninitAnalysisBlockVisitsPerFunction,
+        MaxUninitAnalysisBlockVisitsPerSubprogram =
+            std::max(MaxUninitAnalysisBlockVisitsPerSubprogram,
                      stats.NumBlockVisits);
       }
     }
@@ -1582,10 +1582,10 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
   bool FallThroughDiagFull =
       Diags.getDiagnosticLevel(diag::warn_unannotated_fallthrough,
                                D->getLocStart()) != DiagnosticsEngine::Ignored;
-  bool FallThroughDiagPerFunction =
+  bool FallThroughDiagPerSubprogram =
       Diags.getDiagnosticLevel(diag::warn_unannotated_fallthrough_per_function,
                                D->getLocStart()) != DiagnosticsEngine::Ignored;
-  if (FallThroughDiagFull || FallThroughDiagPerFunction) {
+  if (FallThroughDiagFull || FallThroughDiagPerSubprogram) {
     DiagnoseSwitchLabelsFallthrough(S, AC, !FallThroughDiagFull);
   }
 
@@ -1596,15 +1596,15 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
 
   // Collect statistics about the CFG if it was built.
   if (S.CollectStats && AC.isCFGBuilt()) {
-    ++NumFunctionsAnalyzed;
+    ++NumSubprogramsAnalyzed;
     if (CFG *cfg = AC.getCFG()) {
       // If we successfully built a CFG for this context, record some more
       // detail information about it.
       NumCFGBlocks += cfg->getNumBlockIDs();
-      MaxCFGBlocksPerFunction = std::max(MaxCFGBlocksPerFunction,
+      MaxCFGBlocksPerSubprogram = std::max(MaxCFGBlocksPerSubprogram,
                                          cfg->getNumBlockIDs());
     } else {
-      ++NumFunctionsWithBadCFGs;
+      ++NumSubprogramsWithBadCFGs;
     }
   }
 }
@@ -1612,31 +1612,31 @@ AnalysisBasedWarnings::IssueWarnings(sema::AnalysisBasedWarnings::Policy P,
 void lfort::sema::AnalysisBasedWarnings::PrintStats() const {
   llvm::errs() << "\n*** Analysis Based Warnings Stats:\n";
 
-  unsigned NumCFGsBuilt = NumFunctionsAnalyzed - NumFunctionsWithBadCFGs;
-  unsigned AvgCFGBlocksPerFunction =
+  unsigned NumCFGsBuilt = NumSubprogramsAnalyzed - NumSubprogramsWithBadCFGs;
+  unsigned AvgCFGBlocksPerSubprogram =
       !NumCFGsBuilt ? 0 : NumCFGBlocks/NumCFGsBuilt;
-  llvm::errs() << NumFunctionsAnalyzed << " functions analyzed ("
-               << NumFunctionsWithBadCFGs << " w/o CFGs).\n"
+  llvm::errs() << NumSubprogramsAnalyzed << " functions analyzed ("
+               << NumSubprogramsWithBadCFGs << " w/o CFGs).\n"
                << "  " << NumCFGBlocks << " CFG blocks built.\n"
-               << "  " << AvgCFGBlocksPerFunction
+               << "  " << AvgCFGBlocksPerSubprogram
                << " average CFG blocks per function.\n"
-               << "  " << MaxCFGBlocksPerFunction
+               << "  " << MaxCFGBlocksPerSubprogram
                << " max CFG blocks per function.\n";
 
-  unsigned AvgUninitVariablesPerFunction = !NumUninitAnalysisFunctions ? 0
-      : NumUninitAnalysisVariables/NumUninitAnalysisFunctions;
-  unsigned AvgUninitBlockVisitsPerFunction = !NumUninitAnalysisFunctions ? 0
-      : NumUninitAnalysisBlockVisits/NumUninitAnalysisFunctions;
-  llvm::errs() << NumUninitAnalysisFunctions
+  unsigned AvgUninitVariablesPerSubprogram = !NumUninitAnalysisSubprograms ? 0
+      : NumUninitAnalysisVariables/NumUninitAnalysisSubprograms;
+  unsigned AvgUninitBlockVisitsPerSubprogram = !NumUninitAnalysisSubprograms ? 0
+      : NumUninitAnalysisBlockVisits/NumUninitAnalysisSubprograms;
+  llvm::errs() << NumUninitAnalysisSubprograms
                << " functions analyzed for uninitialiazed variables\n"
                << "  " << NumUninitAnalysisVariables << " variables analyzed.\n"
-               << "  " << AvgUninitVariablesPerFunction
+               << "  " << AvgUninitVariablesPerSubprogram
                << " average variables per function.\n"
-               << "  " << MaxUninitAnalysisVariablesPerFunction
+               << "  " << MaxUninitAnalysisVariablesPerSubprogram
                << " max variables per function.\n"
                << "  " << NumUninitAnalysisBlockVisits << " block visits.\n"
-               << "  " << AvgUninitBlockVisitsPerFunction
+               << "  " << AvgUninitBlockVisitsPerSubprogram
                << " average block visits per function.\n"
-               << "  " << MaxUninitAnalysisBlockVisitsPerFunction
+               << "  " << MaxUninitAnalysisBlockVisitsPerSubprogram
                << " max block visits per function.\n";
 }

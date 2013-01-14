@@ -203,10 +203,10 @@ void IndexingContext::setPreprocessor(Preprocessor &PP) {
   static_cast<ASTUnit*>(CXTU->TUData)->setPreprocessor(&PP);
 }
 
-bool IndexingContext::isFunctionLocalDecl(const Decl *D) {
+bool IndexingContext::isSubprogramLocalDecl(const Decl *D) {
   assert(D);
 
-  if (!D->getParentFunctionOrMethod())
+  if (!D->getParentSubprogramOrMethod())
     return false;
 
   if (const NamedDecl *ND = dyn_cast<NamedDecl>(D)) {
@@ -311,7 +311,7 @@ bool IndexingContext::handleDecl(const NamedDecl *D,
 
   ScratchAlloc SA(*this);
   getEntityInfo(D, DInfo.EntInfo, SA);
-  if ((!shouldIndexFunctionLocalSymbols() && !DInfo.EntInfo.USR)
+  if ((!shouldIndexSubprogramLocalSymbols() && !DInfo.EntInfo.USR)
       || Loc.isInvalid())
     return false;
 
@@ -363,7 +363,7 @@ bool IndexingContext::handleObjCContainer(const ObjCContainerDecl *D,
   return handleDecl(D, Loc, Cursor, ContDInfo);
 }
 
-bool IndexingContext::handleFunction(const FunctionDecl *D) {
+bool IndexingContext::handleSubprogram(const SubprogramDecl *D) {
   bool isDef = D->isThisDeclarationADefinition();
   bool isContainer = isDef;
   bool isSkipped = false;
@@ -623,7 +623,7 @@ bool IndexingContext::handleClassTemplate(const ClassTemplateDecl *D) {
   return handleCXXRecordDecl(D->getTemplatedDecl(), D);
 }
 
-bool IndexingContext::handleFunctionTemplate(const FunctionTemplateDecl *D) {
+bool IndexingContext::handleSubprogramTemplate(const SubprogramTemplateDecl *D) {
   DeclInfo DInfo(/*isRedeclaration=*/!D->isCanonicalDecl(),
                  /*isDefinition=*/D->isThisDeclarationADefinition(),
                  /*isContainer=*/D->isThisDeclarationADefinition());
@@ -663,7 +663,7 @@ bool IndexingContext::handleReference(const NamedDecl *D, SourceLocation Loc,
     return false;
   if (Loc.isInvalid())
     return false;
-  if (!shouldIndexFunctionLocalSymbols() && isFunctionLocalDecl(D))
+  if (!shouldIndexSubprogramLocalSymbols() && isSubprogramLocalDecl(D))
     return false;
   if (isNotFromSourceFile(D->getLocation()))
     return false;
@@ -808,8 +808,8 @@ const NamedDecl *IndexingContext::getEntityDecl(const NamedDecl *D) const {
   } else if (const ObjCCategoryImplDecl *
                CatImplD = dyn_cast<ObjCCategoryImplDecl>(D)) {
     return getEntityDecl(CatImplD->getCategoryDecl());
-  } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    if (FunctionTemplateDecl *TemplD = FD->getDescribedFunctionTemplate())
+  } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    if (SubprogramTemplateDecl *TemplD = FD->getDescribedSubprogramTemplate())
       return getEntityDecl(TemplD);
   } else if (const CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(D)) {
     if (ClassTemplateDecl *TemplD = RD->getDescribedClassTemplate())
@@ -827,8 +827,8 @@ IndexingContext::getEntityContainer(const Decl *D) const {
 
   if (const ClassTemplateDecl *ClassTempl = dyn_cast<ClassTemplateDecl>(D)) {
     DC = ClassTempl->getTemplatedDecl();
-  } else if (const FunctionTemplateDecl *
-          FuncTempl = dyn_cast<FunctionTemplateDecl>(D)) {
+  } else if (const SubprogramTemplateDecl *
+          FuncTempl = dyn_cast<SubprogramTemplateDecl>(D)) {
     DC = FuncTempl->getTemplatedDecl();
   }
 
@@ -950,8 +950,8 @@ void IndexingContext::getEntityInfo(const NamedDecl *D,
     switch (D->getKind()) {
     case Decl::Typedef:
       EntityInfo.kind = CXIdxEntity_Typedef; break;
-    case Decl::Function:
-      EntityInfo.kind = CXIdxEntity_Function;
+    case Decl::Subprogram:
+      EntityInfo.kind = CXIdxEntity_Subprogram;
       break;
     case Decl::ParmVar:
       EntityInfo.kind = CXIdxEntity_Variable;
@@ -1019,7 +1019,7 @@ void IndexingContext::getEntityInfo(const NamedDecl *D,
       EntityInfo.lang = CXIdxEntityLang_CXX;
       break;
     case Decl::CXXConversion:
-      EntityInfo.kind = CXIdxEntity_CXXConversionFunction;
+      EntityInfo.kind = CXIdxEntity_CXXConversionSubprogram;
       EntityInfo.lang = CXIdxEntityLang_CXX;
       break;
     case Decl::CXXMethod: {
@@ -1035,17 +1035,17 @@ void IndexingContext::getEntityInfo(const NamedDecl *D,
       EntityInfo.kind = CXIdxEntity_CXXClass;
       EntityInfo.templateKind = CXIdxEntity_Template;
       break;
-    case Decl::FunctionTemplate:
-      EntityInfo.kind = CXIdxEntity_Function;
+    case Decl::SubprogramTemplate:
+      EntityInfo.kind = CXIdxEntity_Subprogram;
       EntityInfo.templateKind = CXIdxEntity_Template;
       if (const CXXMethodDecl *MD = dyn_cast_or_null<CXXMethodDecl>(
-                           cast<FunctionTemplateDecl>(D)->getTemplatedDecl())) {
+                           cast<SubprogramTemplateDecl>(D)->getTemplatedDecl())) {
         if (isa<CXXConstructorDecl>(MD))
           EntityInfo.kind = CXIdxEntity_CXXConstructor;
         else if (isa<CXXDestructorDecl>(MD))
           EntityInfo.kind = CXIdxEntity_CXXDestructor;
         else if (isa<CXXConversionDecl>(MD))
-          EntityInfo.kind = CXIdxEntity_CXXConversionFunction;
+          EntityInfo.kind = CXIdxEntity_CXXConversionSubprogram;
         else {
           if (MD->isStatic())
             EntityInfo.kind = CXIdxEntity_CXXStaticMethod;
@@ -1070,9 +1070,9 @@ void IndexingContext::getEntityInfo(const NamedDecl *D,
   if (EntityInfo.kind == CXIdxEntity_Unexposed)
     return;
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->getTemplatedKind() ==
-          FunctionDecl::TK_FunctionTemplateSpecialization)
+          SubprogramDecl::TK_SubprogramTemplateSpecialization)
       EntityInfo.templateKind = CXIdxEntity_TemplateSpecialization;
   }
 
@@ -1152,7 +1152,7 @@ bool IndexingContext::isTemplateImplicitInstantiation(const Decl *D) {
         SD = dyn_cast<ClassTemplateSpecializationDecl>(D)) {
     return SD->getSpecializationKind() == TSK_ImplicitInstantiation;
   }
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     return FD->getTemplateSpecializationKind() == TSK_ImplicitInstantiation;
   }
   return false;

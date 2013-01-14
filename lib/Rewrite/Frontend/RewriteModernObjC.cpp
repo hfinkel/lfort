@@ -92,18 +92,18 @@ namespace {
     RecordDecl *SuperStructDecl;
     RecordDecl *ConstantStringDecl;
     
-    FunctionDecl *MsgSendFunctionDecl;
-    FunctionDecl *MsgSendSuperFunctionDecl;
-    FunctionDecl *MsgSendStretFunctionDecl;
-    FunctionDecl *MsgSendSuperStretFunctionDecl;
-    FunctionDecl *MsgSendFpretFunctionDecl;
-    FunctionDecl *GetClassFunctionDecl;
-    FunctionDecl *GetMetaClassFunctionDecl;
-    FunctionDecl *GetSuperClassFunctionDecl;
-    FunctionDecl *SelGetUidFunctionDecl;
-    FunctionDecl *CFStringFunctionDecl;
-    FunctionDecl *SuperContructorFunctionDecl;
-    FunctionDecl *CurFunctionDef;
+    SubprogramDecl *MsgSendSubprogramDecl;
+    SubprogramDecl *MsgSendSuperSubprogramDecl;
+    SubprogramDecl *MsgSendStretSubprogramDecl;
+    SubprogramDecl *MsgSendSuperStretSubprogramDecl;
+    SubprogramDecl *MsgSendFpretSubprogramDecl;
+    SubprogramDecl *GetClassSubprogramDecl;
+    SubprogramDecl *GetMetaClassSubprogramDecl;
+    SubprogramDecl *GetSuperClassSubprogramDecl;
+    SubprogramDecl *SelGetUidSubprogramDecl;
+    SubprogramDecl *CFStringSubprogramDecl;
+    SubprogramDecl *SuperContructorSubprogramDecl;
+    SubprogramDecl *CurSubprogramDef;
 
     /* Misc. containers needed for meta-data rewrite. */
     SmallVector<ObjCImplementationDecl *, 8> ClassImplementation;
@@ -296,7 +296,7 @@ namespace {
     void RewriteObjCMethodDecl(const ObjCInterfaceDecl *IDecl,
                                ObjCMethodDecl *MDecl, std::string &ResultStr);
     void RewriteTypeIntoString(QualType T, std::string &ResultStr,
-                               const FunctionType *&FPRetType);
+                               const SubprogramType *&FPRetType);
     void RewriteByRefString(std::string &ResultStr, const std::string &Name,
                             ValueDecl *VD, bool def=false);
     void RewriteCategoryDecl(ObjCCategoryDecl *Dcl);
@@ -305,10 +305,10 @@ namespace {
     void RewriteForwardProtocolDecl(const llvm::SmallVector<Decl*, 8> &DG);
     void RewriteMethodDeclaration(ObjCMethodDecl *Method);
     void RewriteProperty(ObjCPropertyDecl *prop);
-    void RewriteFunctionDecl(FunctionDecl *FD);
+    void RewriteSubprogramDecl(SubprogramDecl *FD);
     void RewriteBlockPointerType(std::string& Str, QualType Type);
     void RewriteBlockPointerTypeVariable(std::string& Str, ValueDecl *VD);
-    void RewriteBlockLiteralFunctionDecl(FunctionDecl *FD);
+    void RewriteBlockLiteralSubprogramDecl(SubprogramDecl *FD);
     void RewriteObjCQualifiedInterfaceTypes(Decl *Dcl);
     void RewriteTypeOfDecl(VarDecl *VD);
     void RewriteObjCQualifiedInterfaceTypes(Expr *E);
@@ -316,7 +316,7 @@ namespace {
     std::string getIvarAccessString(ObjCIvarDecl *D);
   
     // Expression Rewriting.
-    Stmt *RewriteFunctionBodyOrGlobalInitializer(Stmt *S);
+    Stmt *RewriteSubprogramBodyOrGlobalInitializer(Stmt *S);
     Stmt *RewriteAtEncode(ObjCEncodeExpr *Exp);
     Stmt *RewritePropertyOrImplicitGetter(PseudoObjectExpr *Pseudo);
     Stmt *RewritePropertyOrImplicitSetter(PseudoObjectExpr *Pseudo);
@@ -341,14 +341,14 @@ namespace {
     void RewriteLinkageSpec(LinkageSpecDecl *LSD);
     
     // Block rewriting.
-    void RewriteBlocksInFunctionProtoType(QualType funcType, NamedDecl *D);
+    void RewriteBlocksInSubprogramProtoType(QualType funcType, NamedDecl *D);
     
     // Block specific rewrite rules.
     void RewriteBlockPointerDecl(NamedDecl *VD);
     void RewriteByRefVar(VarDecl *VD, bool firstDecl, bool lastDecl);
     Stmt *RewriteBlockDeclRefExpr(DeclRefExpr *VD);
     Stmt *RewriteLocalVariableExternalStorage(DeclRefExpr *DRE);
-    void RewriteBlockPointerFunctionArgs(FunctionDecl *FD);
+    void RewriteBlockPointerSubprogramArgs(SubprogramDecl *FD);
     
     void RewriteObjCInternalStruct(ObjCInterfaceDecl *CDecl,
                                       std::string &Result);
@@ -368,12 +368,12 @@ namespace {
     
     // Misc. AST transformation routines. Sometimes they end up calling
     // rewriting routines on the new ASTs.
-    CallExpr *SynthesizeCallToFunctionDecl(FunctionDecl *FD,
+    CallExpr *SynthesizeCallToSubprogramDecl(SubprogramDecl *FD,
                                            Expr **args, unsigned nargs,
                                            SourceLocation StartLoc=SourceLocation(),
                                            SourceLocation EndLoc=SourceLocation());
     
-    Expr *SynthMsgSendStretCallExpr(FunctionDecl *MsgSendStretFlavor,
+    Expr *SynthMsgSendStretCallExpr(SubprogramDecl *MsgSendStretFlavor,
                                         QualType msgSendType, 
                                         QualType returnType, 
                                         SmallVectorImpl<QualType> &ArgTypes,
@@ -385,16 +385,16 @@ namespace {
                            SourceLocation EndLoc=SourceLocation());
     
     void SynthCountByEnumWithState(std::string &buf);
-    void SynthMsgSendFunctionDecl();
-    void SynthMsgSendSuperFunctionDecl();
-    void SynthMsgSendStretFunctionDecl();
-    void SynthMsgSendFpretFunctionDecl();
-    void SynthMsgSendSuperStretFunctionDecl();
-    void SynthGetClassFunctionDecl();
-    void SynthGetMetaClassFunctionDecl();
-    void SynthGetSuperClassFunctionDecl();
-    void SynthSelGetUidFunctionDecl();
-    void SynthSuperContructorFunctionDecl();
+    void SynthMsgSendSubprogramDecl();
+    void SynthMsgSendSuperSubprogramDecl();
+    void SynthMsgSendStretSubprogramDecl();
+    void SynthMsgSendFpretSubprogramDecl();
+    void SynthMsgSendSuperStretSubprogramDecl();
+    void SynthGetClassSubprogramDecl();
+    void SynthGetMetaClassSubprogramDecl();
+    void SynthGetSuperClassSubprogramDecl();
+    void SynthSelGetUidSubprogramDecl();
+    void SynthSuperContructorSubprogramDecl();
     
     // Rewriting metadata
     template<typename MethodIterator>
@@ -439,15 +439,15 @@ namespace {
     Stmt *SynthesizeBlockCall(CallExpr *Exp, const Expr* BlockExp);
     void SynthesizeBlockLiterals(SourceLocation FunLocStart,
                                  StringRef FunName);
-    FunctionDecl *SynthBlockInitFunctionDecl(StringRef name);
+    SubprogramDecl *SynthBlockInitSubprogramDecl(StringRef name);
     Stmt *SynthBlockInitExpr(BlockExpr *Exp,
             const SmallVector<DeclRefExpr *, 8> &InnerBlockDeclRefs);
 
     // Misc. helper routines.
     QualType getProtocolType();
     void WarnAboutReturnGotoStmts(Stmt *S);
-    void CheckFunctionPointerDecl(QualType dType, NamedDecl *ND);
-    void InsertBlockLiteralsWithinFunction(FunctionDecl *FD);
+    void CheckSubprogramPointerDecl(QualType dType, NamedDecl *ND);
+    void InsertBlockLiteralsWithinSubprogram(SubprogramDecl *FD);
     void InsertBlockLiteralsWithinMethod(ObjCMethodDecl *MD);
 
     bool IsDeclStmtInForeachHeader(DeclStmt *DS);
@@ -463,10 +463,10 @@ namespace {
       return isa<BlockPointerType>(T);
     }
 
-    /// convertBlockPointerToFunctionPointer - Converts a block-pointer type
+    /// convertBlockPointerToSubprogramPointer - Converts a block-pointer type
     /// to a function pointer type and upon success, returns true; false
     /// otherwise.
-    bool convertBlockPointerToFunctionPointer(QualType &T) {
+    bool convertBlockPointerToSubprogramPointer(QualType &T) {
       if (isTopLevelBlockPointerType(T)) {
         const BlockPointerType *BPT = T->getAs<BlockPointerType>();
         T = Context->getPointerType(BPT->getPointeeType());
@@ -480,7 +480,7 @@ namespace {
     bool needToScanForQualifiers(QualType T);
     QualType getSuperStructType();
     QualType getConstantStringStructType();
-    QualType convertFunctionTypeOfBlocks(const FunctionType *FT);
+    QualType convertSubprogramTypeOfBlocks(const SubprogramType *FT);
     bool BufferContainsPPDirectives(const char *startBuf, const char *endBuf);
     
     void convertToUnqualifiedObjCType(QualType &T) {
@@ -534,15 +534,15 @@ namespace {
       }
     }
 
-    QualType getSimpleFunctionType(QualType result,
+    QualType getSimpleSubprogramType(QualType result,
                                    const QualType *args,
                                    unsigned numArgs,
                                    bool variadic = false) {
       if (result == Context->getObjCInstanceType())
         result =  Context->getObjCIdType();
-      FunctionProtoType::ExtProtoInfo fpi;
+      SubprogramProtoType::ExtProtoInfo fpi;
       fpi.Variadic = variadic;
-      return Context->getFunctionType(result, args, numArgs, fpi);
+      return Context->getSubprogramType(result, args, numArgs, fpi);
     }
 
     // Helper function: create a CStyleCastExpr with trivial type source info.
@@ -562,11 +562,11 @@ namespace {
   
 }
 
-void RewriteModernObjC::RewriteBlocksInFunctionProtoType(QualType funcType,
+void RewriteModernObjC::RewriteBlocksInSubprogramProtoType(QualType funcType,
                                                    NamedDecl *D) {
-  if (const FunctionProtoType *fproto
-      = dyn_cast<FunctionProtoType>(funcType.IgnoreParens())) {
-    for (FunctionProtoType::arg_type_iterator I = fproto->arg_type_begin(),
+  if (const SubprogramProtoType *fproto
+      = dyn_cast<SubprogramProtoType>(funcType.IgnoreParens())) {
+    for (SubprogramProtoType::arg_type_iterator I = fproto->arg_type_begin(),
          E = fproto->arg_type_end(); I && (I != E); ++I)
       if (isTopLevelBlockPointerType(*I)) {
         // All the args are checked/rewritten. Don't call twice!
@@ -576,10 +576,10 @@ void RewriteModernObjC::RewriteBlocksInFunctionProtoType(QualType funcType,
   }
 }
 
-void RewriteModernObjC::CheckFunctionPointerDecl(QualType funcType, NamedDecl *ND) {
+void RewriteModernObjC::CheckSubprogramPointerDecl(QualType funcType, NamedDecl *ND) {
   const PointerType *PT = funcType->getAs<PointerType>();
   if (PT && PointerTypeTakesAnyBlockArguments(funcType))
-    RewriteBlocksInFunctionProtoType(PT->getPointeeType(), ND);
+    RewriteBlocksInSubprogramProtoType(PT->getPointeeType(), ND);
 }
 
 static bool IsHeaderFile(const std::string &Filename) {
@@ -627,27 +627,27 @@ void RewriteModernObjC::InitializeCommon(ASTContext &context) {
   Context = &context;
   SM = &Context->getSourceManager();
   TUDecl = Context->getTranslationUnitDecl();
-  MsgSendFunctionDecl = 0;
-  MsgSendSuperFunctionDecl = 0;
-  MsgSendStretFunctionDecl = 0;
-  MsgSendSuperStretFunctionDecl = 0;
-  MsgSendFpretFunctionDecl = 0;
-  GetClassFunctionDecl = 0;
-  GetMetaClassFunctionDecl = 0;
-  GetSuperClassFunctionDecl = 0;
-  SelGetUidFunctionDecl = 0;
-  CFStringFunctionDecl = 0;
+  MsgSendSubprogramDecl = 0;
+  MsgSendSuperSubprogramDecl = 0;
+  MsgSendStretSubprogramDecl = 0;
+  MsgSendSuperStretSubprogramDecl = 0;
+  MsgSendFpretSubprogramDecl = 0;
+  GetClassSubprogramDecl = 0;
+  GetMetaClassSubprogramDecl = 0;
+  GetSuperClassSubprogramDecl = 0;
+  SelGetUidSubprogramDecl = 0;
+  CFStringSubprogramDecl = 0;
   ConstantStringClassReference = 0;
   NSStringRecord = 0;
   CurMethodDef = 0;
-  CurFunctionDef = 0;
+  CurSubprogramDef = 0;
   GlobalVarDecl = 0;
   GlobalConstructionExp = 0;
   SuperStructDecl = 0;
   ProtocolTypeDecl = 0;
   ConstantStringDecl = 0;
   BcLabelCount = 0;
-  SuperContructorFunctionDecl = 0;
+  SuperContructorSubprogramDecl = 0;
   NumObjCStringLiterals = 0;
   PropParentMap = 0;
   CurrentBody = 0;
@@ -681,8 +681,8 @@ void RewriteModernObjC::HandleTopLevelSingleDecl(Decl *D) {
   if (Loc.isInvalid()) return;
 
   // Look for built-in declarations that we need to refer during the rewrite.
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    RewriteFunctionDecl(FD);
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    RewriteSubprogramDecl(FD);
   } else if (VarDecl *FVD = dyn_cast<VarDecl>(D)) {
     // declared in <Foundation/NSString.h>
     if (FVD->getName() == "_NSConstantStringClassReference") {
@@ -914,7 +914,7 @@ void RewriteModernObjC::RewritePropertyImplDecl(ObjCPropertyImplDecl *PID,
     if (GenGetProperty) {
       // return objc_getProperty(self, _cmd, offsetof(ClassDecl, OID), 1)
       Getr += "typedef ";
-      const FunctionType *FPRetType = 0;
+      const SubprogramType *FPRetType = 0;
       RewriteTypeIntoString(PD->getGetterMethodDecl()->getResultType(), Getr, 
                             FPRetType);
       Getr += " _TYPE";
@@ -922,7 +922,7 @@ void RewriteModernObjC::RewritePropertyImplDecl(ObjCPropertyImplDecl *PID,
         Getr += ")"; // close the precedence "scope" for "*".
       
         // Now, emit the argument types (if any).
-        if (const FunctionProtoType *FT = dyn_cast<FunctionProtoType>(FPRetType)){
+        if (const SubprogramProtoType *FT = dyn_cast<SubprogramProtoType>(FPRetType)){
           Getr += "(";
           for (unsigned i = 0, e = FT->getNumArgs(); i != e; ++i) {
             if (i) Getr += ", ";
@@ -1180,10 +1180,10 @@ RewriteModernObjC::RewriteLinkageSpec(LinkageSpecDecl *LSD) {
 }
 
 void RewriteModernObjC::RewriteTypeIntoString(QualType T, std::string &ResultStr,
-                                        const FunctionType *&FPRetType) {
+                                        const SubprogramType *&FPRetType) {
   if (T->isObjCQualifiedIdType())
     ResultStr += "id";
-  else if (T->isFunctionPointerType() ||
+  else if (T->isSubprogramPointerType() ||
            T->isBlockPointerType()) {
     // needs special handling, since pointer-to-functions have special
     // syntax (where a decaration models use).
@@ -1193,7 +1193,7 @@ void RewriteModernObjC::RewriteTypeIntoString(QualType T, std::string &ResultStr
       PointeeTy = PT->getPointeeType();
     else if (const BlockPointerType *BPT = retType->getAs<BlockPointerType>())
       PointeeTy = BPT->getPointeeType();
-    if ((FPRetType = PointeeTy->getAs<FunctionType>())) {
+    if ((FPRetType = PointeeTy->getAs<SubprogramType>())) {
       ResultStr += FPRetType->getResultType().getAsString(
         Context->getPrintingPolicy());
       ResultStr += "(*";
@@ -1206,7 +1206,7 @@ void RewriteModernObjC::RewriteObjCMethodDecl(const ObjCInterfaceDecl *IDecl,
                                         ObjCMethodDecl *OMD,
                                         std::string &ResultStr) {
   //fprintf(stderr,"In RewriteObjCMethodDecl\n");
-  const FunctionType *FPRetType = 0;
+  const SubprogramType *FPRetType = 0;
   ResultStr += "\nstatic ";
   RewriteTypeIntoString(OMD->getResultType(), ResultStr, FPRetType);
   ResultStr += " ";
@@ -1275,7 +1275,7 @@ void RewriteModernObjC::RewriteObjCMethodDecl(const ObjCInterfaceDecl *IDecl,
       std::string Name = PDecl->getNameAsString();
       QualType QT = PDecl->getType();
       // Make sure we convert "t (^)(...)" to "t (*)(...)".
-      (void)convertBlockPointerToFunctionPointer(QT);
+      (void)convertBlockPointerToSubprogramPointer(QT);
       QT.getAsStringInternal(Name, Context->getPrintingPolicy());
       ResultStr += Name;
     }
@@ -1288,7 +1288,7 @@ void RewriteModernObjC::RewriteObjCMethodDecl(const ObjCInterfaceDecl *IDecl,
     ResultStr += ")"; // close the precedence "scope" for "*".
 
     // Now, emit the argument types (if any).
-    if (const FunctionProtoType *FT = dyn_cast<FunctionProtoType>(FPRetType)) {
+    if (const SubprogramProtoType *FT = dyn_cast<SubprogramProtoType>(FPRetType)) {
       ResultStr += "(";
       for (unsigned i = 0, e = FT->getNumArgs(); i != e; ++i) {
         if (i) ResultStr += ", ";
@@ -1420,7 +1420,7 @@ Stmt *RewriteModernObjC::RewritePropertyOrImplicitSetter(PseudoObjectExpr *Pseud
     if (OldMsg->getReceiverKind() == ObjCMessageExpr::Instance) {
       Base = OldMsg->getInstanceReceiver();
       Base = cast<OpaqueValueExpr>(Base)->getSourceExpr();
-      Base = cast<Expr>(RewriteFunctionBodyOrGlobalInitializer(Base));
+      Base = cast<Expr>(RewriteSubprogramBodyOrGlobalInitializer(Base));
     }
   
     unsigned numArgs = OldMsg->getNumArgs();
@@ -1428,7 +1428,7 @@ Stmt *RewriteModernObjC::RewritePropertyOrImplicitSetter(PseudoObjectExpr *Pseud
       Expr *Arg = OldMsg->getArg(i);
       if (isa<OpaqueValueExpr>(Arg))
         Arg = cast<OpaqueValueExpr>(Arg)->getSourceExpr();
-      Arg = cast<Expr>(RewriteFunctionBodyOrGlobalInitializer(Arg));
+      Arg = cast<Expr>(RewriteSubprogramBodyOrGlobalInitializer(Arg));
       Args.push_back(Arg);
     }
   }
@@ -1505,14 +1505,14 @@ Stmt *RewriteModernObjC::RewritePropertyOrImplicitGetter(PseudoObjectExpr *Pseud
     if (OldMsg->getReceiverKind() == ObjCMessageExpr::Instance) {
       Base = OldMsg->getInstanceReceiver();
       Base = cast<OpaqueValueExpr>(Base)->getSourceExpr();
-      Base = cast<Expr>(RewriteFunctionBodyOrGlobalInitializer(Base));
+      Base = cast<Expr>(RewriteSubprogramBodyOrGlobalInitializer(Base));
     }
     unsigned numArgs = OldMsg->getNumArgs();
     for (unsigned i = 0; i < numArgs; i++) {
       Expr *Arg = OldMsg->getArg(i);
       if (isa<OpaqueValueExpr>(Arg))
         Arg = cast<OpaqueValueExpr>(Arg)->getSourceExpr();
-      Arg = cast<Expr>(RewriteFunctionBodyOrGlobalInitializer(Arg));
+      Arg = cast<Expr>(RewriteSubprogramBodyOrGlobalInitializer(Arg));
       Args.push_back(Arg);
     }
   }
@@ -2068,9 +2068,9 @@ Stmt *RewriteModernObjC::RewriteAtEncode(ObjCEncodeExpr *Exp) {
 }
 
 Stmt *RewriteModernObjC::RewriteAtSelector(ObjCSelectorExpr *Exp) {
-  if (!SelGetUidFunctionDecl)
-    SynthSelGetUidFunctionDecl();
-  assert(SelGetUidFunctionDecl && "Can't find sel_registerName() decl");
+  if (!SelGetUidSubprogramDecl)
+    SynthSelGetUidSubprogramDecl();
+  assert(SelGetUidSubprogramDecl && "Can't find sel_registerName() decl");
   // Create a call to sel_registerName("selName").
   SmallVector<Expr*, 8> SelExprs;
   QualType argType = Context->getPointerType(Context->CharTy);
@@ -2078,15 +2078,15 @@ Stmt *RewriteModernObjC::RewriteAtSelector(ObjCSelectorExpr *Exp) {
                                            Exp->getSelector().getAsString(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *SelExp = SynthesizeCallToFunctionDecl(SelGetUidFunctionDecl,
+  CallExpr *SelExp = SynthesizeCallToSubprogramDecl(SelGetUidSubprogramDecl,
                                                  &SelExprs[0], SelExprs.size());
   ReplaceStmt(Exp, SelExp);
   // delete Exp; leak for now, see RewritePropertyOrImplicitSetter() usage for more info.
   return SelExp;
 }
 
-CallExpr *RewriteModernObjC::SynthesizeCallToFunctionDecl(
-  FunctionDecl *FD, Expr **args, unsigned nargs, SourceLocation StartLoc,
+CallExpr *RewriteModernObjC::SynthesizeCallToSubprogramDecl(
+  SubprogramDecl *FD, Expr **args, unsigned nargs, SourceLocation StartLoc,
                                                     SourceLocation EndLoc) {
   // Get the type, we will need to reference it in a couple spots.
   QualType msgSendType = FD->getType();
@@ -2098,10 +2098,10 @@ CallExpr *RewriteModernObjC::SynthesizeCallToFunctionDecl(
   // Now, we cast the reference to a pointer to the objc_msgSend type.
   QualType pToFunc = Context->getPointerType(msgSendType);
   ImplicitCastExpr *ICE = 
-    ImplicitCastExpr::Create(*Context, pToFunc, CK_FunctionToPointerDecay,
+    ImplicitCastExpr::Create(*Context, pToFunc, CK_SubprogramToPointerDecay,
                              DRE, 0, VK_RValue);
 
-  const FunctionType *FT = msgSendType->getAs<FunctionType>();
+  const SubprogramType *FT = msgSendType->getAs<SubprogramType>();
 
   CallExpr *Exp =  
     new (Context) CallExpr(*Context, ICE, llvm::makeArrayRef(args, nargs),
@@ -2190,18 +2190,18 @@ void RewriteModernObjC::RewriteObjCQualifiedInterfaceTypes(Expr *E) {
 void RewriteModernObjC::RewriteObjCQualifiedInterfaceTypes(Decl *Dcl) {
   SourceLocation Loc;
   QualType Type;
-  const FunctionProtoType *proto = 0;
+  const SubprogramProtoType *proto = 0;
   if (VarDecl *VD = dyn_cast<VarDecl>(Dcl)) {
     Loc = VD->getLocation();
     Type = VD->getType();
   }
-  else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Dcl)) {
+  else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(Dcl)) {
     Loc = FD->getLocation();
     // Check for ObjC 'id' and class types that have been adorned with protocol
     // information (id<p>, C<p>*). The protocol references need to be rewritten!
-    const FunctionType *funcType = FD->getType()->getAs<FunctionType>();
+    const SubprogramType *funcType = FD->getType()->getAs<SubprogramType>();
     assert(funcType && "missing function type");
-    proto = dyn_cast<FunctionProtoType>(funcType);
+    proto = dyn_cast<SubprogramProtoType>(funcType);
     if (!proto)
       return;
     Type = proto->getResultType();
@@ -2301,25 +2301,25 @@ void RewriteModernObjC::RewriteTypeOfDecl(VarDecl *ND) {
   }
 }
 
-// SynthSelGetUidFunctionDecl - SEL sel_registerName(const char *str);
-void RewriteModernObjC::SynthSelGetUidFunctionDecl() {
+// SynthSelGetUidSubprogramDecl - SEL sel_registerName(const char *str);
+void RewriteModernObjC::SynthSelGetUidSubprogramDecl() {
   IdentifierInfo *SelGetUidIdent = &Context->Idents.get("sel_registerName");
   SmallVector<QualType, 16> ArgTys;
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getFuncType =
-    getSimpleFunctionType(Context->getObjCSelType(), &ArgTys[0], ArgTys.size());
-  SelGetUidFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+    getSimpleSubprogramType(Context->getObjCSelType(), &ArgTys[0], ArgTys.size());
+  SelGetUidSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                SourceLocation(),
                                                SourceLocation(),
                                                SelGetUidIdent, getFuncType, 0,
                                                SC_Extern, SC_None);
 }
 
-void RewriteModernObjC::RewriteFunctionDecl(FunctionDecl *FD) {
+void RewriteModernObjC::RewriteSubprogramDecl(SubprogramDecl *FD) {
   // declared in <objc/objc.h>
   if (FD->getIdentifier() &&
       FD->getName() == "sel_registerName") {
-    SelGetUidFunctionDecl = FD;
+    SelGetUidSubprogramDecl = FD;
     return;
   }
   RewriteObjCQualifiedInterfaceTypes(FD);
@@ -2368,10 +2368,10 @@ void RewriteModernObjC::RewriteBlockPointerTypeVariable(std::string& Str,
   }
 }
 
-void RewriteModernObjC::RewriteBlockLiteralFunctionDecl(FunctionDecl *FD) {
+void RewriteModernObjC::RewriteBlockLiteralSubprogramDecl(SubprogramDecl *FD) {
   SourceLocation FunLocStart = FD->getTypeSpecStartLoc();
-  const FunctionType *funcType = FD->getType()->getAs<FunctionType>();
-  const FunctionProtoType *proto = dyn_cast<FunctionProtoType>(funcType);
+  const SubprogramType *funcType = FD->getType()->getAs<SubprogramType>();
+  const SubprogramProtoType *proto = dyn_cast<SubprogramProtoType>(funcType);
   if (!proto)
     return;
   QualType Type = proto->getResultType();
@@ -2394,9 +2394,9 @@ void RewriteModernObjC::RewriteBlockLiteralFunctionDecl(FunctionDecl *FD) {
   InsertText(FunLocStart, FdStr);
 }
 
-// SynthSuperContructorFunctionDecl - id __rw_objc_super(id obj, id super);
-void RewriteModernObjC::SynthSuperContructorFunctionDecl() {
-  if (SuperContructorFunctionDecl)
+// SynthSuperContructorSubprogramDecl - id __rw_objc_super(id obj, id super);
+void RewriteModernObjC::SynthSuperContructorSubprogramDecl() {
+  if (SuperContructorSubprogramDecl)
     return;
   IdentifierInfo *msgSendIdent = &Context->Idents.get("__rw_objc_super");
   SmallVector<QualType, 16> ArgTys;
@@ -2404,17 +2404,17 @@ void RewriteModernObjC::SynthSuperContructorFunctionDecl() {
   assert(!argT.isNull() && "Can't find 'id' type");
   ArgTys.push_back(argT);
   ArgTys.push_back(argT);
-  QualType msgSendType = getSimpleFunctionType(Context->getObjCIdType(),
+  QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size());
-  SuperContructorFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  SuperContructorSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                      SourceLocation(),
                                                      SourceLocation(),
                                                      msgSendIdent, msgSendType,
                                                      0, SC_Extern, SC_None);
 }
 
-// SynthMsgSendFunctionDecl - id objc_msgSend(id self, SEL op, ...);
-void RewriteModernObjC::SynthMsgSendFunctionDecl() {
+// SynthMsgSendSubprogramDecl - id objc_msgSend(id self, SEL op, ...);
+void RewriteModernObjC::SynthMsgSendSubprogramDecl() {
   IdentifierInfo *msgSendIdent = &Context->Idents.get("objc_msgSend");
   SmallVector<QualType, 16> ArgTys;
   QualType argT = Context->getObjCIdType();
@@ -2423,33 +2423,33 @@ void RewriteModernObjC::SynthMsgSendFunctionDecl() {
   argT = Context->getObjCSelType();
   assert(!argT.isNull() && "Can't find 'SEL' type");
   ArgTys.push_back(argT);
-  QualType msgSendType = getSimpleFunctionType(Context->getObjCIdType(),
+  QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  MsgSendSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                              SourceLocation(),
                                              SourceLocation(),
                                              msgSendIdent, msgSendType, 0,
                                              SC_Extern, SC_None);
 }
 
-// SynthMsgSendSuperFunctionDecl - id objc_msgSendSuper(void);
-void RewriteModernObjC::SynthMsgSendSuperFunctionDecl() {
+// SynthMsgSendSuperSubprogramDecl - id objc_msgSendSuper(void);
+void RewriteModernObjC::SynthMsgSendSuperSubprogramDecl() {
   IdentifierInfo *msgSendIdent = &Context->Idents.get("objc_msgSendSuper");
   SmallVector<QualType, 2> ArgTys;
   ArgTys.push_back(Context->VoidTy);
-  QualType msgSendType = getSimpleFunctionType(Context->getObjCIdType(),
+  QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], 1,
                                                true /*isVariadic*/);
-  MsgSendSuperFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  MsgSendSuperSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
                                                   SC_Extern, SC_None);
 }
 
-// SynthMsgSendStretFunctionDecl - id objc_msgSend_stret(id self, SEL op, ...);
-void RewriteModernObjC::SynthMsgSendStretFunctionDecl() {
+// SynthMsgSendStretSubprogramDecl - id objc_msgSend_stret(id self, SEL op, ...);
+void RewriteModernObjC::SynthMsgSendStretSubprogramDecl() {
   IdentifierInfo *msgSendIdent = &Context->Idents.get("objc_msgSend_stret");
   SmallVector<QualType, 16> ArgTys;
   QualType argT = Context->getObjCIdType();
@@ -2458,27 +2458,27 @@ void RewriteModernObjC::SynthMsgSendStretFunctionDecl() {
   argT = Context->getObjCSelType();
   assert(!argT.isNull() && "Can't find 'SEL' type");
   ArgTys.push_back(argT);
-  QualType msgSendType = getSimpleFunctionType(Context->getObjCIdType(),
+  QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendStretFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  MsgSendStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
                                                   SC_Extern, SC_None);
 }
 
-// SynthMsgSendSuperStretFunctionDecl -
+// SynthMsgSendSuperStretSubprogramDecl -
 // id objc_msgSendSuper_stret(void);
-void RewriteModernObjC::SynthMsgSendSuperStretFunctionDecl() {
+void RewriteModernObjC::SynthMsgSendSuperStretSubprogramDecl() {
   IdentifierInfo *msgSendIdent =
     &Context->Idents.get("objc_msgSendSuper_stret");
   SmallVector<QualType, 2> ArgTys;
   ArgTys.push_back(Context->VoidTy);
-  QualType msgSendType = getSimpleFunctionType(Context->getObjCIdType(),
+  QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], 1,
                                                true /*isVariadic*/);
-  MsgSendSuperStretFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  MsgSendSuperStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                        SourceLocation(),
                                                        SourceLocation(),
                                                        msgSendIdent,
@@ -2486,8 +2486,8 @@ void RewriteModernObjC::SynthMsgSendSuperStretFunctionDecl() {
                                                        SC_Extern, SC_None);
 }
 
-// SynthMsgSendFpretFunctionDecl - double objc_msgSend_fpret(id self, SEL op, ...);
-void RewriteModernObjC::SynthMsgSendFpretFunctionDecl() {
+// SynthMsgSendFpretSubprogramDecl - double objc_msgSend_fpret(id self, SEL op, ...);
+void RewriteModernObjC::SynthMsgSendFpretSubprogramDecl() {
   IdentifierInfo *msgSendIdent = &Context->Idents.get("objc_msgSend_fpret");
   SmallVector<QualType, 16> ArgTys;
   QualType argT = Context->getObjCIdType();
@@ -2496,39 +2496,39 @@ void RewriteModernObjC::SynthMsgSendFpretFunctionDecl() {
   argT = Context->getObjCSelType();
   assert(!argT.isNull() && "Can't find 'SEL' type");
   ArgTys.push_back(argT);
-  QualType msgSendType = getSimpleFunctionType(Context->DoubleTy,
+  QualType msgSendType = getSimpleSubprogramType(Context->DoubleTy,
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendFpretFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  MsgSendFpretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
                                                   SC_Extern, SC_None);
 }
 
-// SynthGetClassFunctionDecl - Class objc_getClass(const char *name);
-void RewriteModernObjC::SynthGetClassFunctionDecl() {
+// SynthGetClassSubprogramDecl - Class objc_getClass(const char *name);
+void RewriteModernObjC::SynthGetClassSubprogramDecl() {
   IdentifierInfo *getClassIdent = &Context->Idents.get("objc_getClass");
   SmallVector<QualType, 16> ArgTys;
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
-  QualType getClassType = getSimpleFunctionType(Context->getObjCClassType(),
+  QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetClassFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  GetClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                               SourceLocation(),
                                               SourceLocation(),
                                               getClassIdent, getClassType, 0,
                                               SC_Extern, SC_None);
 }
 
-// SynthGetSuperClassFunctionDecl - Class class_getSuperclass(Class cls);
-void RewriteModernObjC::SynthGetSuperClassFunctionDecl() {
+// SynthGetSuperClassSubprogramDecl - Class class_getSuperclass(Class cls);
+void RewriteModernObjC::SynthGetSuperClassSubprogramDecl() {
   IdentifierInfo *getSuperClassIdent = 
     &Context->Idents.get("class_getSuperclass");
   SmallVector<QualType, 16> ArgTys;
   ArgTys.push_back(Context->getObjCClassType());
-  QualType getClassType = getSimpleFunctionType(Context->getObjCClassType(),
+  QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetSuperClassFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  GetSuperClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                    SourceLocation(),
                                                    SourceLocation(),
                                                    getSuperClassIdent,
@@ -2536,14 +2536,14 @@ void RewriteModernObjC::SynthGetSuperClassFunctionDecl() {
                                                    SC_Extern, SC_None);
 }
 
-// SynthGetMetaClassFunctionDecl - Class objc_getMetaClass(const char *name);
-void RewriteModernObjC::SynthGetMetaClassFunctionDecl() {
+// SynthGetMetaClassSubprogramDecl - Class objc_getMetaClass(const char *name);
+void RewriteModernObjC::SynthGetMetaClassSubprogramDecl() {
   IdentifierInfo *getClassIdent = &Context->Idents.get("objc_getMetaClass");
   SmallVector<QualType, 16> ArgTys;
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
-  QualType getClassType = getSimpleFunctionType(Context->getObjCClassType(),
+  QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetMetaClassFunctionDecl = FunctionDecl::Create(*Context, TUDecl,
+  GetMetaClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   getClassIdent, getClassType,
@@ -2612,15 +2612,15 @@ Stmt *RewriteModernObjC::RewriteObjCBoolLiteralExpr(ObjCBoolLiteralExpr *Exp) {
 
 Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
   // synthesize declaration of helper functions needed in this routine.
-  if (!SelGetUidFunctionDecl)
-    SynthSelGetUidFunctionDecl();
+  if (!SelGetUidSubprogramDecl)
+    SynthSelGetUidSubprogramDecl();
   // use objc_msgSend() for all.
-  if (!MsgSendFunctionDecl)
-    SynthMsgSendFunctionDecl();
-  if (!GetClassFunctionDecl)
-    SynthGetClassFunctionDecl();
+  if (!MsgSendSubprogramDecl)
+    SynthMsgSendSubprogramDecl();
+  if (!GetClassSubprogramDecl)
+    SynthGetClassSubprogramDecl();
   
-  FunctionDecl *MsgSendFlavor = MsgSendFunctionDecl;
+  SubprogramDecl *MsgSendFlavor = MsgSendSubprogramDecl;
   SourceLocation StartLoc = Exp->getLocStart();
   SourceLocation EndLoc = Exp->getLocEnd();
   
@@ -2638,7 +2638,7 @@ Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
                                            clsName->getName(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *Cls = SynthesizeCallToFunctionDecl(GetClassFunctionDecl,
+  CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetClassSubprogramDecl,
                                                &ClsExprs[0],
                                                ClsExprs.size(), 
                                                StartLoc, EndLoc);
@@ -2651,7 +2651,7 @@ Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
                                            BoxingMethod->getSelector().getAsString(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *SelExp = SynthesizeCallToFunctionDecl(SelGetUidFunctionDecl,
+  CallExpr *SelExp = SynthesizeCallToSubprogramDecl(SelGetUidSubprogramDecl,
                                                   &SelExprs[0], SelExprs.size(),
                                                   StartLoc, EndLoc);
   MsgExprs.push_back(SelExp);
@@ -2689,7 +2689,7 @@ Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
   
   // Now do the "normal" pointer to function cast.
   QualType castType =
-  getSimpleFunctionType(returnType, &ArgTypes[0], ArgTypes.size(),
+  getSimpleSubprogramType(returnType, &ArgTypes[0], ArgTypes.size(),
                         BoxingMethod->isVariadic());
   castType = Context->getPointerType(castType);
   cast = NoTypeInfoCStyleCastExpr(Context, castType, CK_BitCast,
@@ -2698,7 +2698,7 @@ Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
   // Don't forget the parens to enforce the proper binding.
   ParenExpr *PE = new (Context) ParenExpr(StartLoc, EndLoc, cast);
   
-  const FunctionType *FT = msgSendType->getAs<FunctionType>();
+  const SubprogramType *FT = msgSendType->getAs<SubprogramType>();
   CallExpr *CE = new (Context) CallExpr(*Context, PE, MsgExprs,
                                         FT->getResultType(), VK_RValue,
                                         EndLoc);
@@ -2708,24 +2708,24 @@ Stmt *RewriteModernObjC::RewriteObjCBoxedExpr(ObjCBoxedExpr *Exp) {
 
 Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
   // synthesize declaration of helper functions needed in this routine.
-  if (!SelGetUidFunctionDecl)
-    SynthSelGetUidFunctionDecl();
+  if (!SelGetUidSubprogramDecl)
+    SynthSelGetUidSubprogramDecl();
   // use objc_msgSend() for all.
-  if (!MsgSendFunctionDecl)
-    SynthMsgSendFunctionDecl();
-  if (!GetClassFunctionDecl)
-    SynthGetClassFunctionDecl();
+  if (!MsgSendSubprogramDecl)
+    SynthMsgSendSubprogramDecl();
+  if (!GetClassSubprogramDecl)
+    SynthGetClassSubprogramDecl();
   
-  FunctionDecl *MsgSendFlavor = MsgSendFunctionDecl;
+  SubprogramDecl *MsgSendFlavor = MsgSendSubprogramDecl;
   SourceLocation StartLoc = Exp->getLocStart();
   SourceLocation EndLoc = Exp->getLocEnd();
   
   // Build the expression: __NSContainer_literal(int, ...).arr
   QualType IntQT = Context->IntTy;
   QualType NSArrayFType =
-    getSimpleFunctionType(Context->VoidTy, &IntQT, 1, true);
+    getSimpleSubprogramType(Context->VoidTy, &IntQT, 1, true);
   std::string NSArrayFName("__NSContainer_literal");
-  FunctionDecl *NSArrayFD = SynthBlockInitFunctionDecl(NSArrayFName);
+  SubprogramDecl *NSArrayFD = SynthBlockInitSubprogramDecl(NSArrayFName);
   DeclRefExpr *NSArrayDRE = 
     new (Context) DeclRefExpr(NSArrayFD, false, NSArrayFType, VK_RValue,
                               SourceLocation());
@@ -2777,7 +2777,7 @@ Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
                                            clsName->getName(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *Cls = SynthesizeCallToFunctionDecl(GetClassFunctionDecl,
+  CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetClassSubprogramDecl,
                                                &ClsExprs[0],
                                                ClsExprs.size(), 
                                                StartLoc, EndLoc);
@@ -2791,7 +2791,7 @@ Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
                                            ArrayMethod->getSelector().getAsString(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *SelExp = SynthesizeCallToFunctionDecl(SelGetUidFunctionDecl,
+  CallExpr *SelExp = SynthesizeCallToSubprogramDecl(SelGetUidSubprogramDecl,
                                                   &SelExprs[0], SelExprs.size(),
                                                   StartLoc, EndLoc);
   MsgExprs.push_back(SelExp);
@@ -2827,7 +2827,7 @@ Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
   
   // Now do the "normal" pointer to function cast.
   QualType castType =
-  getSimpleFunctionType(returnType, &ArgTypes[0], ArgTypes.size(),
+  getSimpleSubprogramType(returnType, &ArgTypes[0], ArgTypes.size(),
                         ArrayMethod->isVariadic());
   castType = Context->getPointerType(castType);
   cast = NoTypeInfoCStyleCastExpr(Context, castType, CK_BitCast,
@@ -2836,7 +2836,7 @@ Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
   // Don't forget the parens to enforce the proper binding.
   ParenExpr *PE = new (Context) ParenExpr(StartLoc, EndLoc, cast);
   
-  const FunctionType *FT = msgSendType->getAs<FunctionType>();
+  const SubprogramType *FT = msgSendType->getAs<SubprogramType>();
   CallExpr *CE = new (Context) CallExpr(*Context, PE, MsgExprs,
                                         FT->getResultType(), VK_RValue,
                                         EndLoc);
@@ -2846,24 +2846,24 @@ Stmt *RewriteModernObjC::RewriteObjCArrayLiteralExpr(ObjCArrayLiteral *Exp) {
 
 Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral *Exp) {
   // synthesize declaration of helper functions needed in this routine.
-  if (!SelGetUidFunctionDecl)
-    SynthSelGetUidFunctionDecl();
+  if (!SelGetUidSubprogramDecl)
+    SynthSelGetUidSubprogramDecl();
   // use objc_msgSend() for all.
-  if (!MsgSendFunctionDecl)
-    SynthMsgSendFunctionDecl();
-  if (!GetClassFunctionDecl)
-    SynthGetClassFunctionDecl();
+  if (!MsgSendSubprogramDecl)
+    SynthMsgSendSubprogramDecl();
+  if (!GetClassSubprogramDecl)
+    SynthGetClassSubprogramDecl();
   
-  FunctionDecl *MsgSendFlavor = MsgSendFunctionDecl;
+  SubprogramDecl *MsgSendFlavor = MsgSendSubprogramDecl;
   SourceLocation StartLoc = Exp->getLocStart();
   SourceLocation EndLoc = Exp->getLocEnd();
   
   // Build the expression: __NSContainer_literal(int, ...).arr
   QualType IntQT = Context->IntTy;
   QualType NSDictFType =
-    getSimpleFunctionType(Context->VoidTy, &IntQT, 1, true);
+    getSimpleSubprogramType(Context->VoidTy, &IntQT, 1, true);
   std::string NSDictFName("__NSContainer_literal");
-  FunctionDecl *NSDictFD = SynthBlockInitFunctionDecl(NSDictFName);
+  SubprogramDecl *NSDictFD = SynthBlockInitSubprogramDecl(NSDictFName);
   DeclRefExpr *NSDictDRE = 
     new (Context) DeclRefExpr(NSDictFD, false, NSDictFType, VK_RValue,
                               SourceLocation());
@@ -2941,7 +2941,7 @@ Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral 
                                            clsName->getName(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *Cls = SynthesizeCallToFunctionDecl(GetClassFunctionDecl,
+  CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetClassSubprogramDecl,
                                                &ClsExprs[0],
                                                ClsExprs.size(), 
                                                StartLoc, EndLoc);
@@ -2955,7 +2955,7 @@ Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral 
                                            DictMethod->getSelector().getAsString(),
                                            StringLiteral::Ascii, false,
                                            argType, SourceLocation()));
-  CallExpr *SelExp = SynthesizeCallToFunctionDecl(SelGetUidFunctionDecl,
+  CallExpr *SelExp = SynthesizeCallToSubprogramDecl(SelGetUidSubprogramDecl,
                                                   &SelExprs[0], SelExprs.size(),
                                                   StartLoc, EndLoc);
   MsgExprs.push_back(SelExp);
@@ -3001,7 +3001,7 @@ Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral 
   
   // Now do the "normal" pointer to function cast.
   QualType castType =
-  getSimpleFunctionType(returnType, &ArgTypes[0], ArgTypes.size(),
+  getSimpleSubprogramType(returnType, &ArgTypes[0], ArgTypes.size(),
                         DictMethod->isVariadic());
   castType = Context->getPointerType(castType);
   cast = NoTypeInfoCStyleCastExpr(Context, castType, CK_BitCast,
@@ -3010,7 +3010,7 @@ Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral 
   // Don't forget the parens to enforce the proper binding.
   ParenExpr *PE = new (Context) ParenExpr(StartLoc, EndLoc, cast);
   
-  const FunctionType *FT = msgSendType->getAs<FunctionType>();
+  const SubprogramType *FT = msgSendType->getAs<SubprogramType>();
   CallExpr *CE = new (Context) CallExpr(*Context, PE, MsgExprs,
                                         FT->getResultType(), VK_RValue,
                                         EndLoc);
@@ -3082,11 +3082,11 @@ QualType RewriteModernObjC::getConstantStringStructType() {
   return Context->getTagDeclType(ConstantStringDecl);
 }
 
-/// getFunctionSourceLocation - returns start location of a function
+/// getSubprogramSourceLocation - returns start location of a function
 /// definition. Complication arises when function has declared as
 /// extern "C" or extern "C" {...}
-static SourceLocation getFunctionSourceLocation (RewriteModernObjC &R,
-                                                 FunctionDecl *FD) {
+static SourceLocation getSubprogramSourceLocation (RewriteModernObjC &R,
+                                                 SubprogramDecl *FD) {
   if (FD->isExternC()  && !FD->isMain()) {
     const DeclContext *DC = FD->getDeclContext();
     if (const LinkageSpecDecl *LSD = dyn_cast<LinkageSpecDecl>(DC))
@@ -3095,7 +3095,7 @@ static SourceLocation getFunctionSourceLocation (RewriteModernObjC &R,
         return LSD->getExternLoc();
   }
   if (FD->getStorageClassAsWritten() != SC_None)
-    R.RewriteBlockLiteralFunctionDecl(FD);
+    R.RewriteBlockLiteralSubprogramDecl(FD);
   return FD->getTypeSpecStartLoc();
 }
 
@@ -3114,7 +3114,7 @@ void RewriteModernObjC::RewriteLineDirective(const Decl *D) {
     else LineString += "\"\n";
     
     Location = D->getLocStart();
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       if (FD->isExternC()  && !FD->isMain()) {
         const DeclContext *DC = FD->getDeclContext();
         if (const LinkageSpecDecl *LSD = dyn_cast<LinkageSpecDecl>(DC))
@@ -3137,14 +3137,14 @@ void RewriteModernObjC::RewriteLineDirective(const Decl *D) {
 /// MsgExprs - list of argument expressions being passed to objc_msgSend_stret, 
 /// starting with receiver.
 /// Method - Method being rewritten.
-Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(FunctionDecl *MsgSendStretFlavor,
+Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(SubprogramDecl *MsgSendStretFlavor,
                                                  QualType msgSendType, 
                                                  QualType returnType, 
                                                  SmallVectorImpl<QualType> &ArgTypes,
                                                  SmallVectorImpl<Expr*> &MsgExprs,
                                                  ObjCMethodDecl *Method) {
   // Now do the "normal" pointer to function cast.
-  QualType castType = getSimpleFunctionType(returnType, &ArgTypes[0], ArgTypes.size(),
+  QualType castType = getSimpleSubprogramType(returnType, &ArgTypes[0], ArgTypes.size(),
                                             Method ? Method->isVariadic() : false);
   castType = Context->getPointerType(castType);
   
@@ -3190,8 +3190,8 @@ Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(FunctionDecl *MsgSendStretFla
   str += " s;\n";
   str += "};\n\n";
   SourceLocation FunLocStart;
-  if (CurFunctionDef)
-    FunLocStart = getFunctionSourceLocation(*this, CurFunctionDef);
+  if (CurSubprogramDef)
+    FunLocStart = getSubprogramSourceLocation(*this, CurSubprogramDef);
   else {
     assert(CurMethodDef && "SynthMsgSendStretCallExpr - CurMethodDef is null");
     FunLocStart = CurMethodDef->getLocStart();
@@ -3202,7 +3202,7 @@ Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(FunctionDecl *MsgSendStretFla
   
   // AST for __Stretn(receiver, args).s;
   IdentifierInfo *ID = &Context->Idents.get(name);
-  FunctionDecl *FD = FunctionDecl::Create(*Context, TUDecl, SourceLocation(),
+  SubprogramDecl *FD = SubprogramDecl::Create(*Context, TUDecl, SourceLocation(),
                                           SourceLocation(), ID, castType, 0,
                                           SC_Extern, SC_None, false, false);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(FD, false, castType, VK_RValue,
@@ -3226,44 +3226,44 @@ Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(FunctionDecl *MsgSendStretFla
 Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                                     SourceLocation StartLoc,
                                     SourceLocation EndLoc) {
-  if (!SelGetUidFunctionDecl)
-    SynthSelGetUidFunctionDecl();
-  if (!MsgSendFunctionDecl)
-    SynthMsgSendFunctionDecl();
-  if (!MsgSendSuperFunctionDecl)
-    SynthMsgSendSuperFunctionDecl();
-  if (!MsgSendStretFunctionDecl)
-    SynthMsgSendStretFunctionDecl();
-  if (!MsgSendSuperStretFunctionDecl)
-    SynthMsgSendSuperStretFunctionDecl();
-  if (!MsgSendFpretFunctionDecl)
-    SynthMsgSendFpretFunctionDecl();
-  if (!GetClassFunctionDecl)
-    SynthGetClassFunctionDecl();
-  if (!GetSuperClassFunctionDecl)
-    SynthGetSuperClassFunctionDecl();
-  if (!GetMetaClassFunctionDecl)
-    SynthGetMetaClassFunctionDecl();
+  if (!SelGetUidSubprogramDecl)
+    SynthSelGetUidSubprogramDecl();
+  if (!MsgSendSubprogramDecl)
+    SynthMsgSendSubprogramDecl();
+  if (!MsgSendSuperSubprogramDecl)
+    SynthMsgSendSuperSubprogramDecl();
+  if (!MsgSendStretSubprogramDecl)
+    SynthMsgSendStretSubprogramDecl();
+  if (!MsgSendSuperStretSubprogramDecl)
+    SynthMsgSendSuperStretSubprogramDecl();
+  if (!MsgSendFpretSubprogramDecl)
+    SynthMsgSendFpretSubprogramDecl();
+  if (!GetClassSubprogramDecl)
+    SynthGetClassSubprogramDecl();
+  if (!GetSuperClassSubprogramDecl)
+    SynthGetSuperClassSubprogramDecl();
+  if (!GetMetaClassSubprogramDecl)
+    SynthGetMetaClassSubprogramDecl();
 
   // default to objc_msgSend().
-  FunctionDecl *MsgSendFlavor = MsgSendFunctionDecl;
+  SubprogramDecl *MsgSendFlavor = MsgSendSubprogramDecl;
   // May need to use objc_msgSend_stret() as well.
-  FunctionDecl *MsgSendStretFlavor = 0;
+  SubprogramDecl *MsgSendStretFlavor = 0;
   if (ObjCMethodDecl *mDecl = Exp->getMethodDecl()) {
     QualType resultType = mDecl->getResultType();
     if (resultType->isRecordType())
-      MsgSendStretFlavor = MsgSendStretFunctionDecl;
+      MsgSendStretFlavor = MsgSendStretSubprogramDecl;
     else if (resultType->isRealFloatingType())
-      MsgSendFlavor = MsgSendFpretFunctionDecl;
+      MsgSendFlavor = MsgSendFpretSubprogramDecl;
   }
 
   // Synthesize a call to objc_msgSend().
   SmallVector<Expr*, 8> MsgExprs;
   switch (Exp->getReceiverKind()) {
   case ObjCMessageExpr::SuperClass: {
-    MsgSendFlavor = MsgSendSuperFunctionDecl;
+    MsgSendFlavor = MsgSendSuperSubprogramDecl;
     if (MsgSendStretFlavor)
-      MsgSendStretFlavor = MsgSendSuperStretFunctionDecl;
+      MsgSendStretFlavor = MsgSendSuperStretSubprogramDecl;
     assert(MsgSendFlavor && "MsgSendFlavor is NULL!");
 
     ObjCInterfaceDecl *ClassDecl = CurMethodDef->getClassInterface();
@@ -3289,14 +3289,14 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                                    StringLiteral::Ascii, false,
                                    argType, SourceLocation()));
     // (Class)objc_getClass("CurrentClass")
-    CallExpr *Cls = SynthesizeCallToFunctionDecl(GetMetaClassFunctionDecl,
+    CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetMetaClassSubprogramDecl,
                                                  &ClsExprs[0],
                                                  ClsExprs.size(),
                                                  StartLoc,
                                                  EndLoc);
     ClsExprs.clear();
     ClsExprs.push_back(Cls);
-    Cls = SynthesizeCallToFunctionDecl(GetSuperClassFunctionDecl,
+    Cls = SynthesizeCallToSubprogramDecl(GetSuperClassSubprogramDecl,
                                        &ClsExprs[0], ClsExprs.size(),
                                        StartLoc, EndLoc);
     
@@ -3311,9 +3311,9 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
     Expr *SuperRep;
 
     if (LangOpts.MicrosoftExt) {
-      SynthSuperContructorFunctionDecl();
+      SynthSuperContructorSubprogramDecl();
       // Simulate a contructor call...
-      DeclRefExpr *DRE = new (Context) DeclRefExpr(SuperContructorFunctionDecl,
+      DeclRefExpr *DRE = new (Context) DeclRefExpr(SuperContructorSubprogramDecl,
                                                    false, superType, VK_LValue,
                                                    SourceLocation());
       SuperRep = new (Context) CallExpr(*Context, DRE, InitExprs,
@@ -3362,7 +3362,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                                              clsName->getName(),
                                              StringLiteral::Ascii, false,
                                              argType, SourceLocation()));
-    CallExpr *Cls = SynthesizeCallToFunctionDecl(GetClassFunctionDecl,
+    CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetClassSubprogramDecl,
                                                  &ClsExprs[0],
                                                  ClsExprs.size(), 
                                                  StartLoc, EndLoc);
@@ -3374,9 +3374,9 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
   }
 
   case ObjCMessageExpr::SuperInstance:{
-    MsgSendFlavor = MsgSendSuperFunctionDecl;
+    MsgSendFlavor = MsgSendSuperSubprogramDecl;
     if (MsgSendStretFlavor)
-      MsgSendStretFlavor = MsgSendSuperStretFunctionDecl;
+      MsgSendStretFlavor = MsgSendSuperStretSubprogramDecl;
     assert(MsgSendFlavor && "MsgSendFlavor is NULL!");
     ObjCInterfaceDecl *ClassDecl = CurMethodDef->getClassInterface();
     SmallVector<Expr*, 4> InitExprs;
@@ -3398,13 +3398,13 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                                    StringLiteral::Ascii, false, argType,
                                    SourceLocation()));
     // (Class)objc_getClass("CurrentClass")
-    CallExpr *Cls = SynthesizeCallToFunctionDecl(GetClassFunctionDecl,
+    CallExpr *Cls = SynthesizeCallToSubprogramDecl(GetClassSubprogramDecl,
                                                  &ClsExprs[0],
                                                  ClsExprs.size(), 
                                                  StartLoc, EndLoc);
     ClsExprs.clear();
     ClsExprs.push_back(Cls);
-    Cls = SynthesizeCallToFunctionDecl(GetSuperClassFunctionDecl,
+    Cls = SynthesizeCallToSubprogramDecl(GetSuperClassSubprogramDecl,
                                        &ClsExprs[0], ClsExprs.size(),
                                        StartLoc, EndLoc);
     
@@ -3419,9 +3419,9 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
     Expr *SuperRep;
 
     if (LangOpts.MicrosoftExt) {
-      SynthSuperContructorFunctionDecl();
+      SynthSuperContructorSubprogramDecl();
       // Simulate a contructor call...
-      DeclRefExpr *DRE = new (Context) DeclRefExpr(SuperContructorFunctionDecl,
+      DeclRefExpr *DRE = new (Context) DeclRefExpr(SuperContructorSubprogramDecl,
                                                    false, superType, VK_LValue,
                                                    SourceLocation());
       SuperRep = new (Context) CallExpr(*Context, DRE, InitExprs,
@@ -3479,7 +3479,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                                        Exp->getSelector().getAsString(),
                                        StringLiteral::Ascii, false,
                                        argType, SourceLocation()));
-  CallExpr *SelExp = SynthesizeCallToFunctionDecl(SelGetUidFunctionDecl,
+  CallExpr *SelExp = SynthesizeCallToSubprogramDecl(SelGetUidSubprogramDecl,
                                                  &SelExprs[0], SelExprs.size(),
                                                   StartLoc,
                                                   EndLoc);
@@ -3495,7 +3495,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
       if (needToScanForQualifiers(type))
         type = Context->getObjCIdType();
       // Make sure we convert "type (^)(...)" to "type (*)(...)".
-      (void)convertBlockPointerToFunctionPointer(type);
+      (void)convertBlockPointerToSubprogramPointer(type);
       const Expr *SubExpr = ICE->IgnoreParenImpCasts();
       CastKind CK;
       if (SubExpr->getType()->isIntegralType(*Context) && 
@@ -3546,7 +3546,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
   QualType returnType;
 
   // Push 'id' and 'SEL', the 2 implicit arguments.
-  if (MsgSendFlavor == MsgSendSuperFunctionDecl)
+  if (MsgSendFlavor == MsgSendSuperSubprogramDecl)
     ArgTypes.push_back(Context->getPointerType(getSuperStructType()));
   else
     ArgTypes.push_back(Context->getObjCIdType());
@@ -3559,12 +3559,12 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
                      ? Context->getObjCIdType()
                      : (*PI)->getType();
       // Make sure we convert "t (^)(...)" to "t (*)(...)".
-      (void)convertBlockPointerToFunctionPointer(t);
+      (void)convertBlockPointerToSubprogramPointer(t);
       ArgTypes.push_back(t);
     }
     returnType = Exp->getType();
     convertToUnqualifiedObjCType(returnType);
-    (void)convertBlockPointerToFunctionPointer(returnType);
+    (void)convertBlockPointerToSubprogramPointer(returnType);
   } else {
     returnType = Context->getObjCIdType();
   }
@@ -3585,7 +3585,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
 
   // Now do the "normal" pointer to function cast.
   QualType castType =
-    getSimpleFunctionType(returnType, &ArgTypes[0], ArgTypes.size(),
+    getSimpleSubprogramType(returnType, &ArgTypes[0], ArgTypes.size(),
       // If we don't have a method decl, force a variadic cast.
       Exp->getMethodDecl() ? Exp->getMethodDecl()->isVariadic() : true);
   castType = Context->getPointerType(castType);
@@ -3595,7 +3595,7 @@ Stmt *RewriteModernObjC::SynthMessageExpr(ObjCMessageExpr *Exp,
   // Don't forget the parens to enforce the proper binding.
   ParenExpr *PE = new (Context) ParenExpr(StartLoc, EndLoc, cast);
 
-  const FunctionType *FT = msgSendType->getAs<FunctionType>();
+  const SubprogramType *FT = msgSendType->getAs<SubprogramType>();
   CallExpr *CE = new (Context) CallExpr(*Context, PE, MsgExprs,
                                         FT->getResultType(), VK_RValue, EndLoc);
   Stmt *ReplacingStmt = CE;
@@ -4009,14 +4009,14 @@ void RewriteModernObjC::RewriteByRefString(std::string &ResultStr,
 
 static bool HasLocalVariableExternalStorage(ValueDecl *VD) {
   if (VarDecl *Var = dyn_cast<VarDecl>(VD))
-    return (Var->isFunctionOrMethodVarDecl() && !Var->hasLocalStorage());
+    return (Var->isSubprogramOrMethodVarDecl() && !Var->hasLocalStorage());
   return false;
 }
 
 std::string RewriteModernObjC::SynthesizeBlockFunc(BlockExpr *CE, int i,
                                                    StringRef funcName,
                                                    std::string Tag) {
-  const FunctionType *AFT = CE->getFunctionType();
+  const SubprogramType *AFT = CE->getSubprogramType();
   QualType RT = AFT->getResultType();
   std::string StructRef = "struct " + Tag;
   SourceLocation BlockLoc = CE->getExprLoc();
@@ -4028,14 +4028,14 @@ std::string RewriteModernObjC::SynthesizeBlockFunc(BlockExpr *CE, int i,
 
   BlockDecl *BD = CE->getBlockDecl();
 
-  if (isa<FunctionNoProtoType>(AFT)) {
+  if (isa<SubprogramNoProtoType>(AFT)) {
     // No user-supplied arguments. Still need to pass in a pointer to the
     // block (to reference imported block decl refs).
     S += "(" + StructRef + " *__cself)";
   } else if (BD->param_empty()) {
     S += "(" + StructRef + " *__cself)";
   } else {
-    const FunctionProtoType *FT = cast<FunctionProtoType>(AFT);
+    const SubprogramProtoType *FT = cast<SubprogramProtoType>(AFT);
     assert(FT && "SynthesizeBlockFunc: No function proto");
     S += '(';
     // first add the implicit argument.
@@ -4046,7 +4046,7 @@ std::string RewriteModernObjC::SynthesizeBlockFunc(BlockExpr *CE, int i,
       if (AI != BD->param_begin()) S += ", ";
       ParamStr = (*AI)->getNameAsString();
       QualType QT = (*AI)->getType();
-      (void)convertBlockPointerToFunctionPointer(QT);
+      (void)convertBlockPointerToSubprogramPointer(QT);
       QT.getAsStringInternal(ParamStr, Context->getPrintingPolicy());
       S += ParamStr;
     }
@@ -4409,9 +4409,9 @@ void RewriteModernObjC::SynthesizeBlockLiterals(SourceLocation FunLocStart,
   RewrittenBlockExprs.clear();
 }
 
-void RewriteModernObjC::InsertBlockLiteralsWithinFunction(FunctionDecl *FD) {
+void RewriteModernObjC::InsertBlockLiteralsWithinSubprogram(SubprogramDecl *FD) {
   SourceLocation FunLocStart = 
-    (!Blocks.empty()) ? getFunctionSourceLocation(*this, FD)
+    (!Blocks.empty()) ? getSubprogramSourceLocation(*this, FD)
                       : FD->getTypeSpecStartLoc();
   StringRef FuncName = FD->getName();
 
@@ -4450,7 +4450,7 @@ void RewriteModernObjC::GetBlockDeclRefExprs(Stmt *S) {
   if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(S)) {
     if (DRE->refersToEnclosingLocal()) {
       // FIXME: Handle enums.
-      if (!isa<FunctionDecl>(DRE->getDecl()))
+      if (!isa<SubprogramDecl>(DRE->getDecl()))
         BlockDeclRefs.push_back(DRE);
       if (HasLocalVariableExternalStorage(DRE->getDecl()))
         BlockDeclRefs.push_back(DRE);
@@ -4480,11 +4480,11 @@ void RewriteModernObjC::GetInnerBlockDeclRefExprs(Stmt *S,
   // Handle specific things.
   if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(S)) {
     if (DRE->refersToEnclosingLocal()) {
-      if (!isa<FunctionDecl>(DRE->getDecl()) &&
+      if (!isa<SubprogramDecl>(DRE->getDecl()) &&
           !InnerContexts.count(DRE->getDecl()->getDeclContext()))
         InnerBlockDeclRefs.push_back(DRE);
       if (VarDecl *Var = dyn_cast<VarDecl>(DRE->getDecl()))
-        if (Var->isFunctionOrMethodVarDecl())
+        if (Var->isSubprogramOrMethodVarDecl())
           ImportedLocalExternalDecls.insert(Var);
     }
   }
@@ -4497,13 +4497,13 @@ void RewriteModernObjC::GetInnerBlockDeclRefExprs(Stmt *S,
 /// it can. It returns true if input type was modified.
 bool RewriteModernObjC::convertObjCTypeToCStyleType(QualType &T) {
   QualType oldT = T;
-  convertBlockPointerToFunctionPointer(T);
-  if (T->isFunctionPointerType()) {
+  convertBlockPointerToSubprogramPointer(T);
+  if (T->isSubprogramPointerType()) {
     QualType PointeeTy;
     if (const PointerType* PT = T->getAs<PointerType>()) {
       PointeeTy = PT->getPointeeType();
-      if (const FunctionType *FT = PointeeTy->getAs<FunctionType>()) {
-        T = convertFunctionTypeOfBlocks(FT);
+      if (const SubprogramType *FT = PointeeTy->getAs<SubprogramType>()) {
+        T = convertSubprogramTypeOfBlocks(FT);
         T = Context->getPointerType(T);
       }
     }
@@ -4513,12 +4513,12 @@ bool RewriteModernObjC::convertObjCTypeToCStyleType(QualType &T) {
   return T != oldT;
 }
 
-/// convertFunctionTypeOfBlocks - This routine converts a function type
+/// convertSubprogramTypeOfBlocks - This routine converts a function type
 /// whose result type may be a block pointer or whose argument type(s)
 /// might be block pointers to an equivalent function type replacing
 /// all block pointers to function pointers.
-QualType RewriteModernObjC::convertFunctionTypeOfBlocks(const FunctionType *FT) {
-  const FunctionProtoType *FTP = dyn_cast<FunctionProtoType>(FT);
+QualType RewriteModernObjC::convertSubprogramTypeOfBlocks(const SubprogramType *FT) {
+  const SubprogramProtoType *FTP = dyn_cast<SubprogramProtoType>(FT);
   // FTP will be null for closures that don't take arguments.
   // Generate a funky cast.
   SmallVector<QualType, 8> ArgTypes;
@@ -4526,7 +4526,7 @@ QualType RewriteModernObjC::convertFunctionTypeOfBlocks(const FunctionType *FT) 
   bool modified = convertObjCTypeToCStyleType(Res);
   
   if (FTP) {
-    for (FunctionProtoType::arg_type_iterator I = FTP->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator I = FTP->arg_type_begin(),
          E = FTP->arg_type_end(); I && (I != E); ++I) {
       QualType t = *I;
       // Make sure we convert "t (^)(...)" to "t (*)(...)".
@@ -4537,7 +4537,7 @@ QualType RewriteModernObjC::convertFunctionTypeOfBlocks(const FunctionType *FT) 
   }
   QualType FuncType;
   if (modified)
-    FuncType = getSimpleFunctionType(Res, &ArgTypes[0], ArgTypes.size());
+    FuncType = getSimpleSubprogramType(Res, &ArgTypes[0], ArgTypes.size());
   else FuncType = QualType(FT, 0);
   return FuncType;
 }
@@ -4578,9 +4578,9 @@ Stmt *RewriteModernObjC::SynthesizeBlockCall(CallExpr *Exp, const Expr *BlockExp
     assert(1 && "RewriteBlockClass: Bad type");
   }
   assert(CPT && "RewriteBlockClass: Bad type");
-  const FunctionType *FT = CPT->getPointeeType()->getAs<FunctionType>();
+  const SubprogramType *FT = CPT->getPointeeType()->getAs<SubprogramType>();
   assert(FT && "RewriteBlockClass: Bad type");
-  const FunctionProtoType *FTP = dyn_cast<FunctionProtoType>(FT);
+  const SubprogramProtoType *FTP = dyn_cast<SubprogramProtoType>(FT);
   // FTP will be null for closures that don't take arguments.
 
   RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
@@ -4594,18 +4594,18 @@ Stmt *RewriteModernObjC::SynthesizeBlockCall(CallExpr *Exp, const Expr *BlockExp
   // Push the block argument type.
   ArgTypes.push_back(PtrBlock);
   if (FTP) {
-    for (FunctionProtoType::arg_type_iterator I = FTP->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator I = FTP->arg_type_begin(),
          E = FTP->arg_type_end(); I && (I != E); ++I) {
       QualType t = *I;
       // Make sure we convert "t (^)(...)" to "t (*)(...)".
-      if (!convertBlockPointerToFunctionPointer(t))
+      if (!convertBlockPointerToSubprogramPointer(t))
         convertToUnqualifiedObjCType(t);
       ArgTypes.push_back(t);
     }
   }
   // Now do the pointer to function cast.
   QualType PtrToFuncCastType
-    = getSimpleFunctionType(Exp->getType(), &ArgTypes[0], ArgTypes.size());
+    = getSimpleSubprogramType(Exp->getType(), &ArgTypes[0], ArgTypes.size());
 
   PtrToFuncCastType = Context->getPointerType(PtrToFuncCastType);
 
@@ -4759,7 +4759,7 @@ void RewriteModernObjC::RewriteImplicitCastObjCExpr(CastExpr *IC) {
     return;
   
   QualType QT = IC->getType();
-  (void)convertBlockPointerToFunctionPointer(QT);
+  (void)convertBlockPointerToSubprogramPointer(QT);
   std::string TypeString(QT.getAsString(Context->getPrintingPolicy()));
   std::string Str = "(";
   Str += TypeString;
@@ -4769,7 +4769,7 @@ void RewriteModernObjC::RewriteImplicitCastObjCExpr(CastExpr *IC) {
   return;
 }
 
-void RewriteModernObjC::RewriteBlockPointerFunctionArgs(FunctionDecl *FD) {
+void RewriteModernObjC::RewriteBlockPointerSubprogramArgs(SubprogramDecl *FD) {
   SourceLocation DeclLoc = FD->getLocation();
   unsigned parenCount = 0;
 
@@ -4805,17 +4805,17 @@ void RewriteModernObjC::RewriteBlockPointerFunctionArgs(FunctionDecl *FD) {
 }
 
 bool RewriteModernObjC::PointerTypeTakesAnyBlockArguments(QualType QT) {
-  const FunctionProtoType *FTP;
+  const SubprogramProtoType *FTP;
   const PointerType *PT = QT->getAs<PointerType>();
   if (PT) {
-    FTP = PT->getPointeeType()->getAs<FunctionProtoType>();
+    FTP = PT->getPointeeType()->getAs<SubprogramProtoType>();
   } else {
     const BlockPointerType *BPT = QT->getAs<BlockPointerType>();
     assert(BPT && "BlockPointerTypeTakeAnyBlockArguments(): not a block pointer type");
-    FTP = BPT->getPointeeType()->getAs<FunctionProtoType>();
+    FTP = BPT->getPointeeType()->getAs<SubprogramProtoType>();
   }
   if (FTP) {
-    for (FunctionProtoType::arg_type_iterator I = FTP->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator I = FTP->arg_type_begin(),
          E = FTP->arg_type_end(); I != E; ++I)
       if (isTopLevelBlockPointerType(*I))
         return true;
@@ -4824,17 +4824,17 @@ bool RewriteModernObjC::PointerTypeTakesAnyBlockArguments(QualType QT) {
 }
 
 bool RewriteModernObjC::PointerTypeTakesAnyObjCQualifiedType(QualType QT) {
-  const FunctionProtoType *FTP;
+  const SubprogramProtoType *FTP;
   const PointerType *PT = QT->getAs<PointerType>();
   if (PT) {
-    FTP = PT->getPointeeType()->getAs<FunctionProtoType>();
+    FTP = PT->getPointeeType()->getAs<SubprogramProtoType>();
   } else {
     const BlockPointerType *BPT = QT->getAs<BlockPointerType>();
     assert(BPT && "BlockPointerTypeTakeAnyBlockArguments(): not a block pointer type");
-    FTP = BPT->getPointeeType()->getAs<FunctionProtoType>();
+    FTP = BPT->getPointeeType()->getAs<SubprogramProtoType>();
   }
   if (FTP) {
-    for (FunctionProtoType::arg_type_iterator I = FTP->arg_type_begin(),
+    for (SubprogramProtoType::arg_type_iterator I = FTP->arg_type_begin(),
          E = FTP->arg_type_end(); I != E; ++I) {
       if ((*I)->isObjCQualifiedIdType())
         return true;
@@ -4869,8 +4869,8 @@ void RewriteModernObjC::GetExtentOfArgList(const char *Name, const char *&LParen
 }
 
 void RewriteModernObjC::RewriteBlockPointerDecl(NamedDecl *ND) {
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(ND)) {
-    RewriteBlockPointerFunctionArgs(FD);
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND)) {
+    RewriteBlockPointerSubprogramArgs(FD);
     return;
   }
   // Handle Variables and Typedefs.
@@ -5052,15 +5052,15 @@ void RewriteModernObjC::RewriteByRefVar(VarDecl *ND, bool firstDecl,
   }
 
   QualType T = Ty;
-  (void)convertBlockPointerToFunctionPointer(T);
+  (void)convertBlockPointerToSubprogramPointer(T);
   T.getAsStringInternal(Name, Context->getPrintingPolicy());
     
   ByrefType += " " + Name + ";\n";
   ByrefType += "};\n";
   // Insert this type in global scope. It is needed by helper function.
   SourceLocation FunLocStart;
-  if (CurFunctionDef)
-     FunLocStart = getFunctionSourceLocation(*this, CurFunctionDef);
+  if (CurSubprogramDef)
+     FunLocStart = getSubprogramSourceLocation(*this, CurSubprogramDef);
   else {
     assert(CurMethodDef && "RewriteByRefVar - CurMethodDef is null");
     FunLocStart = CurMethodDef->getLocStart();
@@ -5139,7 +5139,7 @@ void RewriteModernObjC::RewriteByRefVar(VarDecl *ND, bool firstDecl,
     unsigned nameSize = Name.size();
     // for block or function pointer declaration. Name is aleady
     // part of the declaration.
-    if (Ty->isBlockPointerType() || Ty->isFunctionPointerType())
+    if (Ty->isBlockPointerType() || Ty->isSubprogramPointerType())
       nameSize = 1;
     ReplaceText(DeclLoc, endBuf-startBuf+nameSize, ByrefType);
   }
@@ -5197,10 +5197,10 @@ void RewriteModernObjC::CollectBlockDeclRefInfo(BlockExpr *Exp) {
   }
 }
 
-FunctionDecl *RewriteModernObjC::SynthBlockInitFunctionDecl(StringRef name) {
+SubprogramDecl *RewriteModernObjC::SynthBlockInitSubprogramDecl(StringRef name) {
   IdentifierInfo *ID = &Context->Idents.get(name);
-  QualType FType = Context->getFunctionNoProtoType(Context->VoidPtrTy);
-  return FunctionDecl::Create(*Context, TUDecl, SourceLocation(),
+  QualType FType = Context->getSubprogramNoProtoType(Context->VoidPtrTy);
+  return SubprogramDecl::Create(*Context, TUDecl, SourceLocation(),
                               SourceLocation(), ID, FType, 0, SC_Extern,
                               SC_None, false, false);
 }
@@ -5247,8 +5247,8 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
   
   std::string FuncName;
 
-  if (CurFunctionDef)
-    FuncName = CurFunctionDef->getNameAsString();
+  if (CurSubprogramDef)
+    FuncName = CurSubprogramDef->getNameAsString();
   else if (CurMethodDef)
     BuildUniqueMethodName(FuncName, CurMethodDef);
   else if (GlobalVarDecl)
@@ -5267,10 +5267,10 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
   std::string Func = "__" + FuncName + "_block_func_" + BlockNumber;
 
   // Get a pointer to the function type so we can cast appropriately.
-  QualType BFT = convertFunctionTypeOfBlocks(Exp->getFunctionType());
+  QualType BFT = convertSubprogramTypeOfBlocks(Exp->getSubprogramType());
   QualType FType = Context->getPointerType(BFT);
 
-  FunctionDecl *FD;
+  SubprogramDecl *FD;
   Expr *NewRep;
 
   // Simulate a contructor call...
@@ -5282,14 +5282,14 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
     Tag = "__";
   Tag += FuncName + "_block_impl_" + BlockNumber;
   
-  FD = SynthBlockInitFunctionDecl(Tag);
+  FD = SynthBlockInitSubprogramDecl(Tag);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(FD, false, FType, VK_RValue,
                                                SourceLocation());
 
   SmallVector<Expr*, 4> InitExprs;
 
   // Initialize the block function.
-  FD = SynthBlockInitFunctionDecl(Func);
+  FD = SynthBlockInitSubprogramDecl(Func);
   DeclRefExpr *Arg = new (Context) DeclRefExpr(FD, false, FD->getType(),
                                                VK_LValue, SourceLocation());
   CastExpr *castExpr = NoTypeInfoCStyleCastExpr(Context, Context->VoidPtrTy,
@@ -5323,7 +5323,7 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
          E = BlockByCopyDecls.end(); I != E; ++I) {
       if (isObjCType((*I)->getType())) {
         // FIXME: Conform to ABI ([[obj retain] autorelease]).
-        FD = SynthBlockInitFunctionDecl((*I)->getName());
+        FD = SynthBlockInitSubprogramDecl((*I)->getName());
         Exp = new (Context) DeclRefExpr(FD, false, FD->getType(),
                                         VK_LValue, SourceLocation());
         if (HasLocalVariableExternalStorage(*I)) {
@@ -5333,13 +5333,13 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
                                             OK_Ordinary, SourceLocation());
         }
       } else if (isTopLevelBlockPointerType((*I)->getType())) {
-        FD = SynthBlockInitFunctionDecl((*I)->getName());
+        FD = SynthBlockInitSubprogramDecl((*I)->getName());
         Arg = new (Context) DeclRefExpr(FD, false, FD->getType(),
                                         VK_LValue, SourceLocation());
         Exp = NoTypeInfoCStyleCastExpr(Context, Context->VoidPtrTy,
                                        CK_BitCast, Arg);
       } else {
-        FD = SynthBlockInitFunctionDecl((*I)->getName());
+        FD = SynthBlockInitSubprogramDecl((*I)->getName());
         Exp = new (Context) DeclRefExpr(FD, false, FD->getType(),
                                         VK_LValue, SourceLocation());
         if (HasLocalVariableExternalStorage(*I)) {
@@ -5367,7 +5367,7 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
       assert(RD && "SynthBlockInitExpr(): Can't find RecordDecl");
       QualType castT = Context->getPointerType(Context->getTagDeclType(RD));
       
-      FD = SynthBlockInitFunctionDecl((*I)->getName());
+      FD = SynthBlockInitSubprogramDecl((*I)->getName());
       Exp = new (Context) DeclRefExpr(FD, false, FD->getType(), VK_LValue,
                                       SourceLocation());
       bool isNestedCapturedVar = false;
@@ -5433,10 +5433,10 @@ bool RewriteModernObjC::IsDeclStmtInForeachHeader(DeclStmt *DS) {
 }
 
 //===----------------------------------------------------------------------===//
-// Function Body / Expression rewriting
+// Subprogram Body / Expression rewriting
 //===----------------------------------------------------------------------===//
 
-Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
+Stmt *RewriteModernObjC::RewriteSubprogramBodyOrGlobalInitializer(Stmt *S) {
   if (isa<SwitchStmt>(S) || isa<WhileStmt>(S) ||
       isa<DoStmt>(S) || isa<ForStmt>(S))
     Stmts.push_back(S);
@@ -5463,7 +5463,7 @@ Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
   for (Stmt::child_range CI = S->children(); CI; ++CI)
     if (*CI) {
       Stmt *childStmt = (*CI);
-      Stmt *newStmt = RewriteFunctionBodyOrGlobalInitializer(childStmt);
+      Stmt *newStmt = RewriteSubprogramBodyOrGlobalInitializer(childStmt);
       if (newStmt) {
         *CI = newStmt;
       }
@@ -5487,7 +5487,7 @@ Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
     // block literal; as in: self.c = ^() {[ace ARR];};
     bool saveDisableReplaceStmt = DisableReplaceStmt;
     DisableReplaceStmt = false;
-    RewriteFunctionBodyOrGlobalInitializer(BE->getBody());
+    RewriteSubprogramBodyOrGlobalInitializer(BE->getBody());
     DisableReplaceStmt = saveDisableReplaceStmt;
     CurrentBody = SaveCurrentBody;
     PropParentMap = 0;
@@ -5598,13 +5598,13 @@ Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
       if (ValueDecl *ND = dyn_cast<ValueDecl>(SD)) {
         if (isTopLevelBlockPointerType(ND->getType()))
           RewriteBlockPointerDecl(ND);
-        else if (ND->getType()->isFunctionPointerType())
-          CheckFunctionPointerDecl(ND->getType(), ND);
+        else if (ND->getType()->isSubprogramPointerType())
+          CheckSubprogramPointerDecl(ND->getType(), ND);
         if (VarDecl *VD = dyn_cast<VarDecl>(SD)) {
           if (VD->hasAttr<BlocksAttr>()) {
             static unsigned uniqueByrefDeclCount = 0;
             assert(!BlockByRefDeclNo.count(ND) &&
-              "RewriteFunctionBodyOrGlobalInitializer: Duplicate byref decl");
+              "RewriteSubprogramBodyOrGlobalInitializer: Duplicate byref decl");
             BlockByRefDeclNo[ND] = uniqueByrefDeclCount++;
             RewriteByRefVar(VD, (DI == DS->decl_begin()), ((DI+1) == DE));
           }
@@ -5615,8 +5615,8 @@ Stmt *RewriteModernObjC::RewriteFunctionBodyOrGlobalInitializer(Stmt *S) {
       if (TypedefNameDecl *TD = dyn_cast<TypedefNameDecl>(SD)) {
         if (isTopLevelBlockPointerType(TD->getUnderlyingType()))
           RewriteBlockPointerDecl(TD);
-        else if (TD->getUnderlyingType()->isFunctionPointerType())
-          CheckFunctionPointerDecl(TD->getUnderlyingType(), TD);
+        else if (TD->getUnderlyingType()->isSubprogramPointerType())
+          CheckSubprogramPointerDecl(TD->getUnderlyingType(), TD);
       }
     }
   }
@@ -5692,25 +5692,25 @@ void RewriteModernObjC::RewriteRecordBody(RecordDecl *RD) {
 /// main file of the input.
 void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
   switch (D->getKind()) {
-    case Decl::Function: {
-      FunctionDecl *FD = cast<FunctionDecl>(D);
+    case Decl::Subprogram: {
+      SubprogramDecl *FD = cast<SubprogramDecl>(D);
       if (FD->isOverloadedOperator())
         return;
 
       // Since function prototypes don't have ParmDecl's, we check the function
       // prototype. This enables us to rewrite function declarations and
       // definitions using the same code.
-      RewriteBlocksInFunctionProtoType(FD->getType(), FD);
+      RewriteBlocksInSubprogramProtoType(FD->getType(), FD);
 
       if (!FD->isThisDeclarationADefinition())
         break;
 
       // FIXME: If this should support Obj-C++, support CXXTryStmt
       if (CompoundStmt *Body = dyn_cast_or_null<CompoundStmt>(FD->getBody())) {
-        CurFunctionDef = FD;
+        CurSubprogramDef = FD;
         CurrentBody = Body;
         Body =
-        cast_or_null<CompoundStmt>(RewriteFunctionBodyOrGlobalInitializer(Body));
+        cast_or_null<CompoundStmt>(RewriteSubprogramBodyOrGlobalInitializer(Body));
         FD->setBody(Body);
         CurrentBody = 0;
         if (PropParentMap) {
@@ -5719,9 +5719,9 @@ void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
         }
         // This synthesizes and inserts the block "impl" struct, invoke function,
         // and any copy/dispose helper functions.
-        InsertBlockLiteralsWithinFunction(FD);
+        InsertBlockLiteralsWithinSubprogram(FD);
         RewriteLineDirective(D);
-        CurFunctionDef = 0;
+        CurSubprogramDef = 0;
       }
       break;
     }
@@ -5731,7 +5731,7 @@ void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
         CurMethodDef = MD;
         CurrentBody = Body;
         Body =
-          cast_or_null<CompoundStmt>(RewriteFunctionBodyOrGlobalInitializer(Body));
+          cast_or_null<CompoundStmt>(RewriteSubprogramBodyOrGlobalInitializer(Body));
         MD->setBody(Body);
         CurrentBody = 0;
         if (PropParentMap) {
@@ -5759,8 +5759,8 @@ void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
       RewriteObjCQualifiedInterfaceTypes(VD);
       if (isTopLevelBlockPointerType(VD->getType()))
         RewriteBlockPointerDecl(VD);
-      else if (VD->getType()->isFunctionPointerType()) {
-        CheckFunctionPointerDecl(VD->getType(), VD);
+      else if (VD->getType()->isSubprogramPointerType()) {
+        CheckSubprogramPointerDecl(VD->getType(), VD);
         if (VD->getInit()) {
           if (CStyleCastExpr *CE = dyn_cast<CStyleCastExpr>(VD->getInit())) {
             RewriteCastExpr(CE);
@@ -5774,7 +5774,7 @@ void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
       if (VD->getInit()) {
         GlobalVarDecl = VD;
         CurrentBody = VD->getInit();
-        RewriteFunctionBodyOrGlobalInitializer(VD->getInit());
+        RewriteSubprogramBodyOrGlobalInitializer(VD->getInit());
         CurrentBody = 0;
         if (PropParentMap) {
           delete PropParentMap;
@@ -5795,8 +5795,8 @@ void RewriteModernObjC::HandleDeclInMainFile(Decl *D) {
       if (TypedefNameDecl *TD = dyn_cast<TypedefNameDecl>(D)) {
         if (isTopLevelBlockPointerType(TD->getUnderlyingType()))
           RewriteBlockPointerDecl(TD);
-        else if (TD->getUnderlyingType()->isFunctionPointerType())
-          CheckFunctionPointerDecl(TD->getUnderlyingType(), TD);
+        else if (TD->getUnderlyingType()->isSubprogramPointerType())
+          CheckSubprogramPointerDecl(TD->getUnderlyingType(), TD);
       }
       break;
     }
@@ -7494,7 +7494,7 @@ Stmt *RewriteModernObjC::RewriteObjCIvarRefExpr(ObjCIvarRefExpr *IV) {
   // Rewrite the base, but without actually doing replaces.
   {
     DisableReplaceStmtScope S(*this);
-    BaseExpr = cast<Expr>(RewriteFunctionBodyOrGlobalInitializer(BaseExpr));
+    BaseExpr = cast<Expr>(RewriteSubprogramBodyOrGlobalInitializer(BaseExpr));
     IV->setBase(BaseExpr);
   }
   

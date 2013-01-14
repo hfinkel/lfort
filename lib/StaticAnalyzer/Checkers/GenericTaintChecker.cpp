@@ -70,7 +70,7 @@ private:
   /// (points to).
   static SymbolRef getPointedToSymbol(CheckerContext &C, const Expr *Arg);
 
-  /// Functions defining the attack surface.
+  /// Subprograms defining the attack surface.
   typedef ProgramStateRef (GenericTaintChecker::*FnCheck)(const CallExpr *,
                                                        CheckerContext &C) const;
   ProgramStateRef postScanf(const CallExpr *CE, CheckerContext &C) const;
@@ -95,7 +95,7 @@ private:
   /// Check if tainted data is used as a buffer size ins strn.. functions,
   /// and allocators.
   static const char MsgTaintedBufferSize[];
-  bool checkTaintedBufferSize(const CallExpr *CE, const FunctionDecl *FDecl,
+  bool checkTaintedBufferSize(const CallExpr *CE, const SubprogramDecl *FDecl,
                               CheckerContext &C) const;
 
   /// Generate a report if the expression is tainted or points to tainted data.
@@ -142,7 +142,7 @@ private:
 
     /// Get the propagation rule for a given function.
     static TaintPropagationRule
-      getTaintPropagationRule(const FunctionDecl *FDecl,
+      getTaintPropagationRule(const SubprogramDecl *FDecl,
                               StringRef Name,
                               CheckerContext &C);
 
@@ -197,7 +197,7 @@ REGISTER_SET_WITH_PROGRAMSTATE(TaintArgsOnPostVisit, unsigned)
 
 GenericTaintChecker::TaintPropagationRule
 GenericTaintChecker::TaintPropagationRule::getTaintPropagationRule(
-                                                     const FunctionDecl *FDecl,
+                                                     const SubprogramDecl *FDecl,
                                                      StringRef Name,
                                                      CheckerContext &C) {
   // TODO: Currently, we might loose precision here: we always mark a return
@@ -229,9 +229,9 @@ GenericTaintChecker::TaintPropagationRule::getTaintPropagationRule(
     return Rule;
 
   // Check if it's one of the memory setting/copying functions.
-  // This check is specialized but faster then calling isCLibraryFunction.
+  // This check is specialized but faster then calling isCLibrarySubprogram.
   unsigned BId = 0;
-  if ( (BId = FDecl->getMemoryFunctionKind()) )
+  if ( (BId = FDecl->getMemorySubprogramKind()) )
     switch(BId) {
     case Builtin::BImemcpy:
     case Builtin::BImemmove:
@@ -250,19 +250,19 @@ GenericTaintChecker::TaintPropagationRule::getTaintPropagationRule(
 
   // Process all other functions which could be defined as builtins.
   if (Rule.isNull()) {
-    if (C.isCLibraryFunction(FDecl, "snprintf") ||
-        C.isCLibraryFunction(FDecl, "sprintf"))
+    if (C.isCLibrarySubprogram(FDecl, "snprintf") ||
+        C.isCLibrarySubprogram(FDecl, "sprintf"))
       return TaintPropagationRule(InvalidArgIndex, 0, true);
-    else if (C.isCLibraryFunction(FDecl, "strcpy") ||
-             C.isCLibraryFunction(FDecl, "stpcpy") ||
-             C.isCLibraryFunction(FDecl, "strcat"))
+    else if (C.isCLibrarySubprogram(FDecl, "strcpy") ||
+             C.isCLibrarySubprogram(FDecl, "stpcpy") ||
+             C.isCLibrarySubprogram(FDecl, "strcat"))
       return TaintPropagationRule(1, 0, true);
-    else if (C.isCLibraryFunction(FDecl, "bcopy"))
+    else if (C.isCLibrarySubprogram(FDecl, "bcopy"))
       return TaintPropagationRule(0, 2, 1, false);
-    else if (C.isCLibraryFunction(FDecl, "strdup") ||
-             C.isCLibraryFunction(FDecl, "strdupa"))
+    else if (C.isCLibrarySubprogram(FDecl, "strdup") ||
+             C.isCLibrarySubprogram(FDecl, "strdupa"))
       return TaintPropagationRule(0, ReturnValueIndex);
-    else if (C.isCLibraryFunction(FDecl, "wcsdup"))
+    else if (C.isCLibrarySubprogram(FDecl, "wcsdup"))
       return TaintPropagationRule(0, ReturnValueIndex);
   }
 
@@ -293,8 +293,8 @@ void GenericTaintChecker::checkPostStmt(const CallExpr *CE,
 void GenericTaintChecker::addSourcesPre(const CallExpr *CE,
                                         CheckerContext &C) const {
   ProgramStateRef State = 0;
-  const FunctionDecl *FDecl = C.getCalleeDecl(CE);
-  if (!FDecl || FDecl->getKind() != Decl::Function)
+  const SubprogramDecl *FDecl = C.getCalleeDecl(CE);
+  if (!FDecl || FDecl->getKind() != Decl::Subprogram)
     return;
 
   StringRef Name = C.getCalleeName(FDecl);
@@ -313,12 +313,12 @@ void GenericTaintChecker::addSourcesPre(const CallExpr *CE,
   }
 
   // Otherwise, check if we have custom pre-processing implemented.
-  FnCheck evalFunction = llvm::StringSwitch<FnCheck>(Name)
+  FnCheck evalSubprogram = llvm::StringSwitch<FnCheck>(Name)
     .Case("fscanf", &GenericTaintChecker::preFscanf)
     .Default(0);
   // Check and evaluate the call.
-  if (evalFunction)
-    State = (this->*evalFunction)(CE, C);
+  if (evalSubprogram)
+    State = (this->*evalSubprogram)(CE, C);
   if (!State)
     return;
   C.addTransition(State);
@@ -370,14 +370,14 @@ void GenericTaintChecker::addSourcesPost(const CallExpr *CE,
                                          CheckerContext &C) const {
   // Define the attack surface.
   // Set the evaluation function by switching on the callee name.
-  const FunctionDecl *FDecl = C.getCalleeDecl(CE);
-  if (!FDecl || FDecl->getKind() != Decl::Function)
+  const SubprogramDecl *FDecl = C.getCalleeDecl(CE);
+  if (!FDecl || FDecl->getKind() != Decl::Subprogram)
     return;
 
   StringRef Name = C.getCalleeName(FDecl);
   if (Name.empty())
     return;
-  FnCheck evalFunction = llvm::StringSwitch<FnCheck>(Name)
+  FnCheck evalSubprogram = llvm::StringSwitch<FnCheck>(Name)
     .Case("scanf", &GenericTaintChecker::postScanf)
     // TODO: Add support for vfscanf & family.
     .Case("getchar", &GenericTaintChecker::postRetTaint)
@@ -394,8 +394,8 @@ void GenericTaintChecker::addSourcesPost(const CallExpr *CE,
   // If the callee isn't defined, it is not of security concern.
   // Check and evaluate the call.
   ProgramStateRef State = 0;
-  if (evalFunction)
-    State = (this->*evalFunction)(CE, C);
+  if (evalSubprogram)
+    State = (this->*evalSubprogram)(CE, C);
   if (!State)
     return;
 
@@ -407,8 +407,8 @@ bool GenericTaintChecker::checkPre(const CallExpr *CE, CheckerContext &C) const{
   if (checkUncontrolledFormatString(CE, C))
     return true;
 
-  const FunctionDecl *FDecl = C.getCalleeDecl(CE);
-  if (!FDecl || FDecl->getKind() != Decl::Function)
+  const SubprogramDecl *FDecl = C.getCalleeDecl(CE);
+  if (!FDecl || FDecl->getKind() != Decl::Subprogram)
     return false;
 
   StringRef Name = C.getCalleeName(FDecl);
@@ -610,7 +610,7 @@ static bool getPrintfFormatArgumentNum(const CallExpr *CE,
   // Find if the function contains a format string argument.
   // Handles: fprintf, printf, sprintf, snprintf, vfprintf, vprintf, vsprintf,
   // vsnprintf, syslog, custom annotated functions.
-  const FunctionDecl *FDecl = C.getCalleeDecl(CE);
+  const SubprogramDecl *FDecl = C.getCalleeDecl(CE);
   if (!FDecl)
     return false;
   for (specific_attr_iterator<FormatAttr>
@@ -700,12 +700,12 @@ bool GenericTaintChecker::checkSystemCall(const CallExpr *CE,
 // TODO: Should this check be a part of the CString checker?
 // If yes, should taint be a global setting?
 bool GenericTaintChecker::checkTaintedBufferSize(const CallExpr *CE,
-                                                 const FunctionDecl *FDecl,
+                                                 const SubprogramDecl *FDecl,
                                                  CheckerContext &C) const {
   // If the function has a buffer size argument, set ArgNum.
   unsigned ArgNum = InvalidArgIndex;
   unsigned BId = 0;
-  if ( (BId = FDecl->getMemoryFunctionKind()) )
+  if ( (BId = FDecl->getMemorySubprogramKind()) )
     switch(BId) {
     case Builtin::BImemcpy:
     case Builtin::BImemmove:
@@ -720,15 +720,15 @@ bool GenericTaintChecker::checkTaintedBufferSize(const CallExpr *CE,
     };
 
   if (ArgNum == InvalidArgIndex) {
-    if (C.isCLibraryFunction(FDecl, "malloc") ||
-        C.isCLibraryFunction(FDecl, "calloc") ||
-        C.isCLibraryFunction(FDecl, "alloca"))
+    if (C.isCLibrarySubprogram(FDecl, "malloc") ||
+        C.isCLibrarySubprogram(FDecl, "calloc") ||
+        C.isCLibrarySubprogram(FDecl, "alloca"))
       ArgNum = 0;
-    else if (C.isCLibraryFunction(FDecl, "memccpy"))
+    else if (C.isCLibrarySubprogram(FDecl, "memccpy"))
       ArgNum = 3;
-    else if (C.isCLibraryFunction(FDecl, "realloc"))
+    else if (C.isCLibrarySubprogram(FDecl, "realloc"))
       ArgNum = 1;
-    else if (C.isCLibraryFunction(FDecl, "bcopy"))
+    else if (C.isCLibrarySubprogram(FDecl, "bcopy"))
       ArgNum = 2;
   }
 

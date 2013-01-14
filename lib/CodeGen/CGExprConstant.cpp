@@ -721,7 +721,7 @@ public:
     case CK_BlockPointerToObjCPointerCast:
     case CK_AnyPointerToBlockPointerCast:
     case CK_ArrayToPointerDecay:
-    case CK_FunctionToPointerDecay:
+    case CK_SubprogramToPointerDecay:
     case CK_BaseToDerived:
     case CK_DerivedToBase:
     case CK_UncheckedDerivedToBase:
@@ -898,8 +898,8 @@ public:
     if (const ValueDecl *Decl = LVBase.dyn_cast<const ValueDecl*>()) {
       if (Decl->hasAttr<WeakRefAttr>())
         return CGM.GetWeakRefReference(Decl);
-      if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(Decl))
-        return CGM.GetAddrOfFunction(FD);
+      if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(Decl))
+        return CGM.GetAddrOfSubprogram(FD);
       if (const VarDecl* VD = dyn_cast<VarDecl>(Decl)) {
         // We can never refer to a variable with local storage.
         if (!VD->hasLocalStorage()) {
@@ -946,7 +946,7 @@ public:
       if (CGF) {
         LValue Res = CGF->EmitPredefinedLValue(cast<PredefinedExpr>(E));
         return cast<llvm::Constant>(Res.getAddress());
-      } else if (Type == PredefinedExpr::PrettyFunction) {
+      } else if (Type == PredefinedExpr::PrettySubprogram) {
         return CGM.GetAddrOfConstantCString("top level", ".tmp");
       }
 
@@ -976,13 +976,13 @@ public:
       return CGM.GetAddrOfConstantCFString(Literal);
     }
     case Expr::BlockExprClass: {
-      std::string FunctionName;
+      std::string SubprogramName;
       if (CGF)
-        FunctionName = CGF->CurFn->getName();
+        SubprogramName = CGF->CurFn->getName();
       else
-        FunctionName = "global";
+        SubprogramName = "global";
 
-      return CGM.GetAddrOfGlobalBlock(cast<BlockExpr>(E), FunctionName.c_str());
+      return CGM.GetAddrOfGlobalBlock(cast<BlockExpr>(E), SubprogramName.c_str());
     }
     case Expr::CXXTypeidExprClass: {
       CXXTypeidExpr *Typeid = cast<CXXTypeidExpr>(E);
@@ -1318,7 +1318,7 @@ FillInNullDataMemberPointers(CodeGenModule &CGM, QualType T,
     }
   } else {
     assert(T->isMemberPointerType() && "Should only see member pointers here!");
-    assert(!T->getAs<MemberPointerType>()->getPointeeType()->isFunctionType() &&
+    assert(!T->getAs<MemberPointerType>()->getPointeeType()->isSubprogramType() &&
            "Should only see pointers to data members here!");
   
     CharUnits StartIndex = CGM.getContext().toCharUnitsFromBits(StartOffset);
@@ -1481,7 +1481,7 @@ llvm::Constant *CodeGenModule::EmitNullConstant(QualType T) {
   }
 
   assert(T->isMemberPointerType() && "Should only see member pointers here!");
-  assert(!T->getAs<MemberPointerType>()->getPointeeType()->isFunctionType() &&
+  assert(!T->getAs<MemberPointerType>()->getPointeeType()->isSubprogramType() &&
          "Should only see pointers to data members here!");
   
   // Itanium C++ ABI 2.3:

@@ -478,7 +478,7 @@ void PlistDiagnostics::FlushDiagnosticsImpl(
           case Decl::ObjCMethod:
             declKind = "Objective-C method";
             break;
-          case Decl::Function:
+          case Decl::Subprogram:
             declKind = "function";
             break;
           default:

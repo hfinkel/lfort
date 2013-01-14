@@ -568,7 +568,7 @@ ASTDeclContextNameLookupTrait::ComputeHash(const DeclNameKey &Key) const {
     break;
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
   case DeclarationName::CXXUsingDirective:
     break;
   }
@@ -598,7 +598,7 @@ ASTDeclContextNameLookupTrait::GetInternalKey(
     break;
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
   case DeclarationName::CXXUsingDirective:
     Key.Data = 0;
     break;
@@ -640,7 +640,7 @@ ASTDeclContextNameLookupTrait::ReadKey(const unsigned char* d, unsigned) {
     break;
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
   case DeclarationName::CXXUsingDirective:
     Key.Data = 0;
     break;
@@ -3047,7 +3047,7 @@ void ASTReader::InitializeContext() {
   if (!CUDASpecialDeclRefs.empty()) {
     assert(CUDASpecialDeclRefs.size() == 1 && "More decl refs than expected!");
     Context.setcudaConfigureCallDecl(
-                           cast<FunctionDecl>(GetDecl(CUDASpecialDeclRefs[0])));
+                           cast<SubprogramDecl>(GetDecl(CUDASpecialDeclRefs[0])));
   }
   
   // Re-export any modules that were imported by a non-module AST file.
@@ -4294,16 +4294,16 @@ QualType ASTReader::readTypeRecord(unsigned Index) {
       return QualType();
     }
     QualType ResultType = readType(*Loc.F, Record, Idx);
-    FunctionType::ExtInfo Info(Record[1], Record[2], Record[3],
+    SubprogramType::ExtInfo Info(Record[1], Record[2], Record[3],
                                (CallingConv)Record[4], Record[5]);
-    return Context.getFunctionNoProtoType(ResultType, Info);
+    return Context.getSubprogramNoProtoType(ResultType, Info);
   }
 
   case TYPE_FUNCTION_PROTO: {
     QualType ResultType = readType(*Loc.F, Record, Idx);
 
-    FunctionProtoType::ExtProtoInfo EPI;
-    EPI.ExtInfo = FunctionType::ExtInfo(/*noreturn*/ Record[1],
+    SubprogramProtoType::ExtProtoInfo EPI;
+    EPI.ExtInfo = SubprogramType::ExtInfo(/*noreturn*/ Record[1],
                                         /*hasregparm*/ Record[2],
                                         /*regparm*/ Record[3],
                                         static_cast<CallingConv>(Record[4]),
@@ -4331,12 +4331,12 @@ QualType ASTReader::readTypeRecord(unsigned Index) {
     } else if (EST == EST_ComputedNoexcept) {
       EPI.NoexceptExpr = ReadExpr(*Loc.F);
     } else if (EST == EST_Uninstantiated) {
-      EPI.ExceptionSpecDecl = ReadDeclAs<FunctionDecl>(*Loc.F, Record, Idx);
-      EPI.ExceptionSpecTemplate = ReadDeclAs<FunctionDecl>(*Loc.F, Record, Idx);
+      EPI.ExceptionSpecDecl = ReadDeclAs<SubprogramDecl>(*Loc.F, Record, Idx);
+      EPI.ExceptionSpecTemplate = ReadDeclAs<SubprogramDecl>(*Loc.F, Record, Idx);
     } else if (EST == EST_Unevaluated) {
-      EPI.ExceptionSpecDecl = ReadDeclAs<FunctionDecl>(*Loc.F, Record, Idx);
+      EPI.ExceptionSpecDecl = ReadDeclAs<SubprogramDecl>(*Loc.F, Record, Idx);
     }
-    return Context.getFunctionType(ResultType, ParamTypes.data(), NumParams,
+    return Context.getSubprogramType(ResultType, ParamTypes.data(), NumParams,
                                     EPI);
   }
 
@@ -4617,7 +4617,7 @@ public:
   void Visit##CLASS##TypeLoc(CLASS##TypeLoc TyLoc);
 #include "lfort/AST/TypeLocNodes.def"
 
-  void VisitFunctionTypeLoc(FunctionTypeLoc);
+  void VisitSubprogramTypeLoc(SubprogramTypeLoc);
   void VisitArrayTypeLoc(ArrayTypeLoc);
 };
 
@@ -4683,7 +4683,7 @@ void TypeLocReader::VisitVectorTypeLoc(VectorTypeLoc TL) {
 void TypeLocReader::VisitExtVectorTypeLoc(ExtVectorTypeLoc TL) {
   TL.setNameLoc(ReadSourceLocation(Record, Idx));
 }
-void TypeLocReader::VisitFunctionTypeLoc(FunctionTypeLoc TL) {
+void TypeLocReader::VisitSubprogramTypeLoc(SubprogramTypeLoc TL) {
   TL.setLocalRangeBegin(ReadSourceLocation(Record, Idx));
   TL.setLParenLoc(ReadSourceLocation(Record, Idx));
   TL.setRParenLoc(ReadSourceLocation(Record, Idx));
@@ -4692,11 +4692,11 @@ void TypeLocReader::VisitFunctionTypeLoc(FunctionTypeLoc TL) {
     TL.setArg(i, ReadDeclAs<ParmVarDecl>(Record, Idx));
   }
 }
-void TypeLocReader::VisitFunctionProtoTypeLoc(FunctionProtoTypeLoc TL) {
-  VisitFunctionTypeLoc(TL);
+void TypeLocReader::VisitSubprogramProtoTypeLoc(SubprogramProtoTypeLoc TL) {
+  VisitSubprogramTypeLoc(TL);
 }
-void TypeLocReader::VisitFunctionNoProtoTypeLoc(FunctionNoProtoTypeLoc TL) {
-  VisitFunctionTypeLoc(TL);
+void TypeLocReader::VisitSubprogramNoProtoTypeLoc(SubprogramNoProtoTypeLoc TL) {
+  VisitSubprogramTypeLoc(TL);
 }
 void TypeLocReader::VisitUnresolvedUsingTypeLoc(UnresolvedUsingTypeLoc TL) {
   TL.setNameLoc(ReadSourceLocation(Record, Idx));
@@ -6271,8 +6271,8 @@ ASTReader::ReadDeclarationName(ModuleFile &F,
     return Context.DeclarationNames.getCXXDestructorName(
                           Context.getCanonicalType(readType(F, Record, Idx)));
 
-  case DeclarationName::CXXConversionFunctionName:
-    return Context.DeclarationNames.getCXXConversionFunctionName(
+  case DeclarationName::CXXConversionSubprogramName:
+    return Context.DeclarationNames.getCXXConversionSubprogramName(
                           Context.getCanonicalType(readType(F, Record, Idx)));
 
   case DeclarationName::CXXOperatorName:
@@ -6297,7 +6297,7 @@ void ASTReader::ReadDeclarationNameLoc(ModuleFile &F,
   switch (Name.getNameKind()) {
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     DNLoc.NamedType.TInfo = GetTypeSourceInfo(F, Record, Idx);
     break;
 
@@ -6923,7 +6923,7 @@ void ASTReader::finishPendingActions() {
   for (PendingBodiesMap::iterator PB = PendingBodies.begin(),
                                PBEnd = PendingBodies.end();
        PB != PBEnd; ++PB) {
-    if (FunctionDecl *FD = dyn_cast<FunctionDecl>(PB->first)) {
+    if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(PB->first)) {
       // FIXME: Check for =delete/=default?
       // FIXME: Complain about ODR violations here?
       if (!getContext().getLangOpts().Modules || !FD->hasBody())

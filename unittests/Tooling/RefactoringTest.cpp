@@ -291,13 +291,13 @@ public:
   Replacement Replace;
 };
 
-TEST(Replacement, FunctionCall) {
+TEST(Replacement, SubprogramCall) {
   CallToFVisitor CallToF;
   EXPECT_TRUE(CallToF.runOver("void F(); void G() { F(); }"));
   expectReplacementAt(CallToF.Replace, "input.cc", 21, 3);
 }
 
-TEST(Replacement, TemplatedFunctionCall) {
+TEST(Replacement, TemplatedSubprogramCall) {
   CallToFVisitor CallToF;
   EXPECT_TRUE(CallToF.runOver(
         "template <typename T> void F(); void G() { F<int>(); }"));

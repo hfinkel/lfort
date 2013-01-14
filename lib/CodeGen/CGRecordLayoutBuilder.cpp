@@ -668,10 +668,10 @@ CGRecordLayoutBuilder::LayoutNonVirtualBases(const CXXRecordDecl *RD,
 
   // Otherwise, add a vtable / vf-table if the layout says to do so.
   } else if (Layout.hasOwnVFPtr()) {
-    llvm::Type *FunctionType =
+    llvm::Type *SubprogramType =
       llvm::FunctionType::get(llvm::Type::getInt32Ty(Types.getLLVMContext()),
                               /*isVarArg=*/true);
-    llvm::Type *VTableTy = FunctionType->getPointerTo();
+    llvm::Type *VTableTy = SubprogramType->getPointerTo();
 
     if (getTypeAlignment(VTableTy) > Alignment) {
       // FIXME: Should we allow this to happen in Sema?

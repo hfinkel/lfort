@@ -143,22 +143,22 @@ bool Decl::isParameterPack() const {
   return isTemplateParameterPack();
 }
 
-bool Decl::isFunctionOrFunctionTemplate() const {
+bool Decl::isSubprogramOrSubprogramTemplate() const {
   if (const UsingShadowDecl *UD = dyn_cast<UsingShadowDecl>(this))
-    return UD->getTargetDecl()->isFunctionOrFunctionTemplate();
+    return UD->getTargetDecl()->isSubprogramOrSubprogramTemplate();
 
-  return isa<FunctionDecl>(this) || isa<FunctionTemplateDecl>(this);
+  return isa<SubprogramDecl>(this) || isa<SubprogramTemplateDecl>(this);
 }
 
 bool Decl::isTemplateDecl() const {
   return isa<TemplateDecl>(this);
 }
 
-const DeclContext *Decl::getParentFunctionOrMethod() const {
+const DeclContext *Decl::getParentSubprogramOrMethod() const {
   for (const DeclContext *DC = getDeclContext();
        DC && !DC->isTranslationUnit() && !DC->isNamespace(); 
        DC = DC->getParent())
-    if (DC->isFunctionOrMethod())
+    if (DC->isSubprogramOrMethod())
       return DC;
 
   return 0;
@@ -428,8 +428,8 @@ bool Decl::canBeWeakImported(bool &IsDefinition) const {
     }
     return true;
 
-  // Functions, if they aren't definitions.
-  } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(this)) {
+  // Subprograms, if they aren't definitions.
+  } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(this)) {
     if (FD->hasBody()) {
       IsDefinition = true;
       return false;
@@ -468,7 +468,7 @@ bool Decl::isWeakImported() const {
 
 unsigned Decl::getIdentifierNamespaceForKind(Kind DeclKind) {
   switch (DeclKind) {
-    case Function:
+    case Subprogram:
     case MainProgram:
     case CXXMethod:
     case CXXConstructor:
@@ -524,7 +524,7 @@ unsigned Decl::getIdentifierNamespaceForKind(Kind DeclKind) {
     case NamespaceAlias:
       return IDNS_Namespace;
 
-    case FunctionTemplate:
+    case SubprogramTemplate:
       return IDNS_Ordinary;
 
     case ClassTemplate:
@@ -545,7 +545,7 @@ unsigned Decl::getIdentifierNamespaceForKind(Kind DeclKind) {
     case UsingDirective:
     case ClassTemplateSpecialization:
     case ClassTemplatePartialSpecialization:
-    case ClassScopeFunctionSpecialization:
+    case ClassScopeSubprogramSpecialization:
     case ObjCImplementation:
     case ObjCCategory:
     case ObjCCategoryImpl:
@@ -644,10 +644,10 @@ DeclContext *Decl::castToDeclContext(const Decl *D) {
 }
 
 SourceLocation Decl::getBodyRBrace() const {
-  // Special handling of FunctionDecl to avoid de-serializing the body from PCH.
-  // FunctionDecl stores EndRangeLoc for this purpose.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(this)) {
-    const FunctionDecl *Definition;
+  // Special handling of SubprogramDecl to avoid de-serializing the body from PCH.
+  // SubprogramDecl stores EndRangeLoc for this purpose.
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(this)) {
+    const SubprogramDecl *Definition;
     if (FD->hasBody(Definition))
       return Definition->getSourceRange().getEnd();
     return SourceLocation();
@@ -680,7 +680,7 @@ void Decl::CheckAccessDeclContext() const {
       // FIXME: a ClassTemplateSpecialization or CXXRecordDecl can have
       // AS_none as access specifier.
       isa<CXXRecordDecl>(this) ||
-      isa<ClassScopeFunctionSpecializationDecl>(this))
+      isa<ClassScopeSubprogramSpecializationDecl>(this))
     return;
 
   assert(Access != AS_none &&
@@ -737,7 +737,7 @@ DeclContext::~DeclContext() { }
 /// is the class in which the friend is declared.
 DeclContext *DeclContext::getLookupParent() {
   // FIXME: Find a better way to identify friends
-  if (isa<FunctionDecl>(this))
+  if (isa<SubprogramDecl>(this))
     if (getParent()->getRedeclContext()->isFileContext() &&
         getLexicalParent()->getRedeclContext()->isRecord())
       return getLexicalParent();
@@ -765,8 +765,8 @@ bool DeclContext::isDependentContext() const {
       return true;
   }
   
-  if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(this)) {
-    if (Function->getDescribedFunctionTemplate())
+  if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(this)) {
+    if (Subprogram->getDescribedSubprogramTemplate())
       return true;
 
     // Friend function declarations are dependent if their *lexical*
@@ -864,7 +864,7 @@ DeclContext *DeclContext::getPrimaryContext() {
       return Tag;
     }
 
-    assert(DeclKind >= Decl::firstFunction && DeclKind <= Decl::lastFunction &&
+    assert(DeclKind >= Decl::firstSubprogram && DeclKind <= Decl::lastSubprogram &&
           "Unknown DeclContext kind");
     return this;
   }
@@ -1110,8 +1110,8 @@ static bool shouldBeHidden(NamedDecl *D) {
   // from being visible?
   if (isa<ClassTemplateSpecializationDecl>(D))
     return true;
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    if (FD->isFunctionTemplateSpecialization())
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    if (FD->isSubprogramTemplateSpecialization())
       return true;
 
   return false;
@@ -1287,7 +1287,7 @@ void DeclContext::makeDeclVisibleInContextWithFlags(NamedDecl *D, bool Internal,
   // classes, and consequently accept the following invalid code:
   //
   //   void f() { void g(); { int g; struct S { friend void g(); }; } }
-  if (isFunctionOrMethod() && !isa<FunctionDecl>(D))
+  if (isSubprogramOrMethod() && !isa<SubprogramDecl>(D))
     return;
 
   // Skip declarations which should be invisible to name lookup.

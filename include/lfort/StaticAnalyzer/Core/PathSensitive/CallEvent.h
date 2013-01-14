@@ -32,9 +32,9 @@ class ProgramPointTag;
 namespace ento {
 
 enum CallEventKind {
-  CE_Function,
+  CE_Subprogram,
   CE_Block,
-  CE_BEG_SIMPLE_CALLS = CE_Function,
+  CE_BEG_SIMPLE_CALLS = CE_Subprogram,
   CE_END_SIMPLE_CALLS = CE_Block,
   CE_CXXMember,
   CE_CXXMemberOperator,
@@ -43,7 +43,7 @@ enum CallEventKind {
   CE_END_CXX_INSTANCE_CALLS = CE_CXXDestructor,
   CE_CXXConstructor,
   CE_CXXAllocator,
-  CE_BEG_FUNCTION_CALLS = CE_Function,
+  CE_BEG_FUNCTION_CALLS = CE_Subprogram,
   CE_END_FUNCTION_CALLS = CE_CXXAllocator,
   CE_ObjCMessage
 };
@@ -222,7 +222,7 @@ public:
 
     // Special case for implicitly-declared global operator new/delete.
     // These should be considered system functions.
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
       return FD->isOverloadedOperator() && FD->isImplicit() && FD->isGlobal();
 
     return false;
@@ -281,16 +281,16 @@ public:
   /// \c std namespace. This also does not check if the function is declared
   /// as 'extern "C"', or if it uses C++ name mangling.
   // FIXME: Add a helper for checking namespaces.
-  // FIXME: Move this down to AnyFunctionCall once checkers have more
+  // FIXME: Move this down to AnySubprogramCall once checkers have more
   // precise callbacks.
-  bool isGlobalCFunction(StringRef SpecificName = StringRef()) const;
+  bool isGlobalCSubprogram(StringRef SpecificName = StringRef()) const;
 
   /// \brief Returns the name of the callee, if its name is a simple identifier.
   ///
   /// Note that this will fail for Objective-C methods, blocks, and C++
   /// overloaded operators. The former is named by a Selector rather than a
   /// simple identifier, and the latter two do not have names.
-  // FIXME: Move this down to AnyFunctionCall once checkers have more
+  // FIXME: Move this down to AnySubprogramCall once checkers have more
   // precise callbacks.
   const IdentifierInfo *getCalleeIdentifier() const {
     const NamedDecl *ND = dyn_cast_or_null<NamedDecl>(getDecl());
@@ -383,27 +383,27 @@ public:
 
 
 /// \brief Represents a call to any sort of function that might have a
-/// FunctionDecl.
-class AnyFunctionCall : public CallEvent {
+/// SubprogramDecl.
+class AnySubprogramCall : public CallEvent {
 protected:
-  AnyFunctionCall(const Expr *E, ProgramStateRef St,
+  AnySubprogramCall(const Expr *E, ProgramStateRef St,
                   const LocationContext *LCtx)
     : CallEvent(E, St, LCtx) {}
-  AnyFunctionCall(const Decl *D, ProgramStateRef St,
+  AnySubprogramCall(const Decl *D, ProgramStateRef St,
                   const LocationContext *LCtx)
     : CallEvent(D, St, LCtx) {}
-  AnyFunctionCall(const AnyFunctionCall &Other) : CallEvent(Other) {}
+  AnySubprogramCall(const AnySubprogramCall &Other) : CallEvent(Other) {}
 
 public:
   // This function is overridden by subclasses, but they must return
-  // a FunctionDecl.
-  virtual const FunctionDecl *getDecl() const {
-    return cast<FunctionDecl>(CallEvent::getDecl());
+  // a SubprogramDecl.
+  virtual const SubprogramDecl *getDecl() const {
+    return cast<SubprogramDecl>(CallEvent::getDecl());
   }
 
   virtual RuntimeDefinition getRuntimeDefinition() const {
-    const FunctionDecl *FD = getDecl();
-    // Note that the AnalysisDeclContext will have the FunctionDecl with
+    const SubprogramDecl *FD = getDecl();
+    // Note that the AnalysisDeclContext will have the SubprogramDecl with
     // the definition (if one exists).
     if (FD) {
       AnalysisDeclContext *AD =
@@ -431,19 +431,19 @@ public:
 };
 
 /// \brief Represents a call to a non-C++ function, written as a CallExpr.
-class SimpleCall : public AnyFunctionCall {
+class SimpleCall : public AnySubprogramCall {
 protected:
   SimpleCall(const CallExpr *CE, ProgramStateRef St,
              const LocationContext *LCtx)
-    : AnyFunctionCall(CE, St, LCtx) {}
-  SimpleCall(const SimpleCall &Other) : AnyFunctionCall(Other) {}
+    : AnySubprogramCall(CE, St, LCtx) {}
+  SimpleCall(const SimpleCall &Other) : AnySubprogramCall(Other) {}
 
 public:
   virtual const CallExpr *getOriginExpr() const {
-    return cast<CallExpr>(AnyFunctionCall::getOriginExpr());
+    return cast<CallExpr>(AnySubprogramCall::getOriginExpr());
   }
 
-  virtual const FunctionDecl *getDecl() const;
+  virtual const SubprogramDecl *getDecl() const;
 
   virtual unsigned getNumArgs() const { return getOriginExpr()->getNumArgs(); }
 
@@ -460,22 +460,22 @@ public:
 /// \brief Represents a C function or static C++ member function call.
 ///
 /// Example: \c fun()
-class FunctionCall : public SimpleCall {
+class SubprogramCall : public SimpleCall {
   friend class CallEventManager;
 
 protected:
-  FunctionCall(const CallExpr *CE, ProgramStateRef St,
+  SubprogramCall(const CallExpr *CE, ProgramStateRef St,
                const LocationContext *LCtx)
     : SimpleCall(CE, St, LCtx) {}
 
-  FunctionCall(const FunctionCall &Other) : SimpleCall(Other) {}
-  virtual void cloneTo(void *Dest) const { new (Dest) FunctionCall(*this); }
+  SubprogramCall(const SubprogramCall &Other) : SimpleCall(Other) {}
+  virtual void cloneTo(void *Dest) const { new (Dest) SubprogramCall(*this); }
 
 public:
-  virtual Kind getKind() const { return CE_Function; }
+  virtual Kind getKind() const { return CE_Subprogram; }
 
   static bool classof(const CallEvent *CA) {
-    return CA->getKind() == CE_Function;
+    return CA->getKind() == CE_Subprogram;
   }
 };
 
@@ -503,8 +503,8 @@ public:
 
   /// \brief Gets the declaration of the block.
   ///
-  /// This is not an override of getDecl() because AnyFunctionCall has already
-  /// assumed that it's a FunctionDecl.
+  /// This is not an override of getDecl() because AnySubprogramCall has already
+  /// assumed that it's a SubprogramDecl.
   const BlockDecl *getBlockDecl() const {
     const BlockDataRegion *BR = getBlockRegion();
     if (!BR)
@@ -531,19 +531,19 @@ public:
 
 /// \brief Represents a non-static C++ member function call, no matter how
 /// it is written.
-class CXXInstanceCall : public AnyFunctionCall {
+class CXXInstanceCall : public AnySubprogramCall {
 protected:
   virtual void getExtraInvalidatedRegions(RegionList &Regions) const;
 
   CXXInstanceCall(const CallExpr *CE, ProgramStateRef St,
                   const LocationContext *LCtx)
-    : AnyFunctionCall(CE, St, LCtx) {}
-  CXXInstanceCall(const FunctionDecl *D, ProgramStateRef St,
+    : AnySubprogramCall(CE, St, LCtx) {}
+  CXXInstanceCall(const SubprogramDecl *D, ProgramStateRef St,
                   const LocationContext *LCtx)
-    : AnyFunctionCall(D, St, LCtx) {}
+    : AnySubprogramCall(D, St, LCtx) {}
 
 
-  CXXInstanceCall(const CXXInstanceCall &Other) : AnyFunctionCall(Other) {}
+  CXXInstanceCall(const CXXInstanceCall &Other) : AnySubprogramCall(Other) {}
 
 public:
   /// \brief Returns the expression representing the implicit 'this' object.
@@ -552,7 +552,7 @@ public:
   /// \brief Returns the value of the implicit 'this' object.
   virtual SVal getCXXThisVal() const;
 
-  virtual const FunctionDecl *getDecl() const;
+  virtual const SubprogramDecl *getDecl() const;
 
   virtual RuntimeDefinition getRuntimeDefinition() const;
 
@@ -696,7 +696,7 @@ public:
 /// \brief Represents a call to a C++ constructor.
 ///
 /// Example: \c T(1)
-class CXXConstructorCall : public AnyFunctionCall {
+class CXXConstructorCall : public AnySubprogramCall {
   friend class CallEventManager;
 
 protected:
@@ -709,18 +709,18 @@ protected:
   /// \param LCtx The location context at this point in the program.
   CXXConstructorCall(const CXXConstructExpr *CE, const MemRegion *Target,
                      ProgramStateRef St, const LocationContext *LCtx)
-    : AnyFunctionCall(CE, St, LCtx) {
+    : AnySubprogramCall(CE, St, LCtx) {
     Data = Target;
   }
 
-  CXXConstructorCall(const CXXConstructorCall &Other) : AnyFunctionCall(Other){}
+  CXXConstructorCall(const CXXConstructorCall &Other) : AnySubprogramCall(Other){}
   virtual void cloneTo(void *Dest) const { new (Dest) CXXConstructorCall(*this); }
 
   virtual void getExtraInvalidatedRegions(RegionList &Regions) const;
 
 public:
   virtual const CXXConstructExpr *getOriginExpr() const {
-    return cast<CXXConstructExpr>(AnyFunctionCall::getOriginExpr());
+    return cast<CXXConstructExpr>(AnySubprogramCall::getOriginExpr());
   }
 
   virtual const CXXConstructorDecl *getDecl() const {
@@ -749,23 +749,23 @@ public:
 /// \brief Represents the memory allocation call in a C++ new-expression.
 ///
 /// This is a call to "operator new".
-class CXXAllocatorCall : public AnyFunctionCall {
+class CXXAllocatorCall : public AnySubprogramCall {
   friend class CallEventManager;
 
 protected:
   CXXAllocatorCall(const CXXNewExpr *E, ProgramStateRef St,
                    const LocationContext *LCtx)
-    : AnyFunctionCall(E, St, LCtx) {}
+    : AnySubprogramCall(E, St, LCtx) {}
 
-  CXXAllocatorCall(const CXXAllocatorCall &Other) : AnyFunctionCall(Other) {}
+  CXXAllocatorCall(const CXXAllocatorCall &Other) : AnySubprogramCall(Other) {}
   virtual void cloneTo(void *Dest) const { new (Dest) CXXAllocatorCall(*this); }
 
 public:
   virtual const CXXNewExpr *getOriginExpr() const {
-    return cast<CXXNewExpr>(AnyFunctionCall::getOriginExpr());
+    return cast<CXXNewExpr>(AnySubprogramCall::getOriginExpr());
   }
 
-  virtual const FunctionDecl *getDecl() const {
+  virtual const SubprogramDecl *getDecl() const {
     return getOriginExpr()->getOperatorNew();
   }
 
@@ -918,7 +918,7 @@ class CallEventManager {
   /// Returns memory that can be initialized as a CallEvent.
   void *allocate() {
     if (Cache.empty())
-      return Alloc.Allocate<FunctionCall>();
+      return Alloc.Allocate<SubprogramCall>();
     else
       return Cache.pop_back_val();
   }

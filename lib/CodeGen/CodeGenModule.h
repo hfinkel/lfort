@@ -33,17 +33,17 @@ namespace llvm {
   class Module;
   class Constant;
   class ConstantInt;
-  class Function;
+  class Subprogram;
   class GlobalValue;
   class DataLayout;
-  class FunctionType;
+  class SubprogramType;
   class LLVMContext;
 }
 
 namespace lfort {
   class TargetCodeGenInfo;
   class ASTContext;
-  class FunctionDecl;
+  class SubprogramDecl;
   class IdentifierInfo;
   class ObjCMethodDecl;
   class ObjCImplementationDecl;
@@ -78,7 +78,7 @@ namespace CodeGen {
   class CGOpenCLRuntime;
   class CGCUDARuntime;
   class BlockFieldFlags;
-  class FunctionArgList;
+  class SubprogramArgList;
   
   struct OrderGlobalInits {
     unsigned int priority;
@@ -339,8 +339,8 @@ class CodeGenModule : public CodeGenTypeCache {
   void createOpenCLRuntime();
   void createCUDARuntime();
 
-  bool isTriviallyRecursive(const FunctionDecl *F);
-  bool shouldEmitFunction(const FunctionDecl *F);
+  bool isTriviallyRecursive(const SubprogramDecl *F);
+  bool shouldEmitSubprogram(const SubprogramDecl *F);
   llvm::LLVMContext &VMContext;
 
   /// @name Cache for Blocks Runtime Globals
@@ -517,8 +517,8 @@ public:
     else if (isa<CXXDestructorDecl>(GD.getDecl()))
       return GetAddrOfCXXDestructor(cast<CXXDestructorDecl>(GD.getDecl()),
                                      GD.getDtorType());
-    else if (isa<FunctionDecl>(GD.getDecl()))
-      return GetAddrOfFunction(GD);
+    else if (isa<SubprogramDecl>(GD.getDecl()))
+      return GetAddrOfSubprogram(GD);
     else
       return GetAddrOfGlobalVar(cast<VarDecl>(GD.getDecl()));
   }
@@ -545,10 +545,10 @@ public:
                                      llvm::Type *Ty = 0);
 
 
-  /// GetAddrOfFunction - Return the address of the given function.  If Ty is
+  /// GetAddrOfSubprogram - Return the address of the given function.  If Ty is
   /// non-null, then this function will use the specified type if it has to
   /// create it.
-  llvm::Constant *GetAddrOfFunction(GlobalDecl GD,
+  llvm::Constant *GetAddrOfSubprogram(GlobalDecl GD,
                                     llvm::Type *Ty = 0,
                                     bool ForVTable = false);
 
@@ -673,17 +673,17 @@ public:
   /// given type.
   llvm::GlobalValue *GetAddrOfCXXConstructor(const CXXConstructorDecl *ctor,
                                              CXXCtorType ctorType,
-                                             const CGFunctionInfo *fnInfo = 0);
+                                             const CGSubprogramInfo *fnInfo = 0);
 
   /// GetAddrOfCXXDestructor - Return the address of the constructor of the
   /// given type.
   llvm::GlobalValue *GetAddrOfCXXDestructor(const CXXDestructorDecl *dtor,
                                             CXXDtorType dtorType,
-                                            const CGFunctionInfo *fnInfo = 0);
+                                            const CGSubprogramInfo *fnInfo = 0);
 
-  /// getBuiltinLibFunction - Given a builtin id for a function like
-  /// "__builtin_fabsf", return a Function* for "fabsf".
-  llvm::Value *getBuiltinLibFunction(const FunctionDecl *FD,
+  /// getBuiltinLibSubprogram - Given a builtin id for a function like
+  /// "__builtin_fabsf", return a Subprogram* for "fabsf".
+  llvm::Value *getBuiltinLibSubprogram(const SubprogramDecl *FD,
                                      unsigned BuiltinID);
 
   llvm::Function *getIntrinsic(unsigned IID, ArrayRef<llvm::Type*> Tys =
@@ -707,9 +707,9 @@ public:
     CXXGlobalDtors.push_back(std::make_pair(DtorFn, Object));
   }
 
-  /// CreateRuntimeFunction - Create a new runtime function with the specified
+  /// CreateRuntimeSubprogram - Create a new runtime function with the specified
   /// type and name.
-  llvm::Constant *CreateRuntimeFunction(llvm::FunctionType *Ty,
+  llvm::Constant *CreateRuntimeSubprogram(llvm::FunctionType *Ty,
                                         StringRef Name,
                                         llvm::Attribute ExtraAttrs =
                                           llvm::Attribute());
@@ -782,26 +782,26 @@ public:
   void ErrorUnsupported(const Decl *D, const char *Type,
                         bool OmitOnError=false);
 
-  /// SetInternalFunctionAttributes - Set the attributes on the LLVM
+  /// SetInternalSubprogramAttributes - Set the attributes on the LLVM
   /// function for the given decl and function info. This applies
   /// attributes necessary for handling the ABI as well as user
   /// specified attributes like section.
-  void SetInternalFunctionAttributes(const Decl *D, llvm::Function *F,
-                                     const CGFunctionInfo &FI);
+  void SetInternalSubprogramAttributes(const Decl *D, llvm::Function *F,
+                                     const CGSubprogramInfo &FI);
 
-  /// SetLLVMFunctionAttributes - Set the LLVM function attributes
+  /// SetLLVMSubprogramAttributes - Set the LLVM function attributes
   /// (sext, zext, etc).
-  void SetLLVMFunctionAttributes(const Decl *D,
-                                 const CGFunctionInfo &Info,
+  void SetLLVMSubprogramAttributes(const Decl *D,
+                                 const CGSubprogramInfo &Info,
                                  llvm::Function *F);
 
-  /// SetLLVMFunctionAttributesForDefinition - Set the LLVM function attributes
+  /// SetLLVMSubprogramAttributesForDefinition - Set the LLVM function attributes
   /// which only apply to a function definintion.
-  void SetLLVMFunctionAttributesForDefinition(const Decl *D, llvm::Function *F);
+  void SetLLVMSubprogramAttributesForDefinition(const Decl *D, llvm::Function *F);
 
   /// ReturnTypeUsesSRet - Return true iff the given type uses 'sret' when used
   /// as a return type.
-  bool ReturnTypeUsesSRet(const CGFunctionInfo &FI);
+  bool ReturnTypeUsesSRet(const CGSubprogramInfo &FI);
 
   /// ReturnTypeUsesFPRet - Return true iff the given type uses 'fpret' when
   /// used as a return type.
@@ -820,7 +820,7 @@ public:
   /// function attributes and calling convention.
   /// \param PAL [out] - On return, the attribute list to use.
   /// \param CallingConv [out] - On return, the LLVM calling convention to use.
-  void ConstructAttributeList(const CGFunctionInfo &Info,
+  void ConstructAttributeList(const CGSubprogramInfo &Info,
                               const Decl *TargetDecl,
                               AttributeListType &PAL,
                               unsigned &CallingConv);
@@ -834,10 +834,10 @@ public:
   void EmitVTable(CXXRecordDecl *Class, bool DefinitionRequired);
 
   llvm::GlobalVariable::LinkageTypes
-  getFunctionLinkage(const FunctionDecl *FD);
+  getSubprogramLinkage(const SubprogramDecl *FD);
 
-  void setFunctionLinkage(const FunctionDecl *FD, llvm::GlobalValue *V) {
-    V->setLinkage(getFunctionLinkage(FD));
+  void setSubprogramLinkage(const SubprogramDecl *FD, llvm::GlobalValue *V) {
+    V->setLinkage(getSubprogramLinkage(FD));
   }
 
   /// getVTableLinkage - Return the appropriate linkage for the vtable, VTT,
@@ -886,7 +886,7 @@ public:
 private:
   llvm::GlobalValue *GetGlobalValue(StringRef Ref);
 
-  llvm::Constant *GetOrCreateLLVMFunction(StringRef MangledName,
+  llvm::Constant *GetOrCreateLLVMSubprogram(StringRef MangledName,
                                           llvm::Type *Ty,
                                           GlobalDecl D,
                                           bool ForVTable,
@@ -904,15 +904,15 @@ private:
   /// NOTE: This should only be called for definitions.
   void SetCommonAttributes(const Decl *D, llvm::GlobalValue *GV);
 
-  /// SetFunctionDefinitionAttributes - Set attributes for a global definition.
-  void SetFunctionDefinitionAttributes(const FunctionDecl *D,
+  /// SetSubprogramDefinitionAttributes - Set attributes for a global definition.
+  void SetSubprogramDefinitionAttributes(const SubprogramDecl *D,
                                        llvm::GlobalValue *GV);
 
-  /// SetFunctionAttributes - Set function attributes for a function
+  /// SetSubprogramAttributes - Set function attributes for a function
   /// declaration.
-  void SetFunctionAttributes(GlobalDecl GD,
+  void SetSubprogramAttributes(GlobalDecl GD,
                              llvm::Function *F,
-                             bool IsIncompleteFunction);
+                             bool IsIncompleteSubprogram);
 
   /// EmitGlobal - Emit code for a singal global function or var decl. Forward
   /// declarations are emitted lazily.
@@ -920,7 +920,7 @@ private:
 
   void EmitGlobalDefinition(GlobalDecl D);
 
-  void EmitGlobalFunctionDefinition(GlobalDecl GD);
+  void EmitGlobalSubprogramDefinition(GlobalDecl GD);
   void EmitGlobalVarDefinition(const VarDecl *D);
   llvm::Constant *MaybeEmitGlobalStdInitializerListInitializer(const VarDecl *D,
                                                               const Expr *init);

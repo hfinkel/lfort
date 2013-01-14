@@ -166,7 +166,7 @@ namespace lfort {
   };
 
   /// \brief Checks whether the given storage class is legal for functions.
-  inline bool isLegalForFunction(StorageClass SC) {
+  inline bool isLegalForSubprogram(StorageClass SC) {
     return SC <= SC_PrivateExtern;
   }
 

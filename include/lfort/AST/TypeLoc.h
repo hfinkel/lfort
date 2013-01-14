@@ -1048,7 +1048,7 @@ public:
 };
 
 
-struct FunctionLocInfo {
+struct SubprogramLocInfo {
   SourceLocation LocalRangeBegin;
   SourceLocation LParenLoc;
   SourceLocation RParenLoc;
@@ -1056,10 +1056,10 @@ struct FunctionLocInfo {
 };
 
 /// \brief Wrapper for source info for functions.
-class FunctionTypeLoc : public ConcreteTypeLoc<UnqualTypeLoc,
-                                               FunctionTypeLoc,
-                                               FunctionType,
-                                               FunctionLocInfo> {
+class SubprogramTypeLoc : public ConcreteTypeLoc<UnqualTypeLoc,
+                                               SubprogramTypeLoc,
+                                               SubprogramType,
+                                               SubprogramLocInfo> {
 public:
   SourceLocation getLocalRangeBegin() const {
     return getLocalData()->LocalRangeBegin;
@@ -1103,9 +1103,9 @@ public:
   }
 
   unsigned getNumArgs() const {
-    if (isa<FunctionNoProtoType>(getTypePtr()))
+    if (isa<SubprogramNoProtoType>(getTypePtr()))
       return 0;
-    return cast<FunctionProtoType>(getTypePtr())->getNumArgs();
+    return cast<SubprogramProtoType>(getTypePtr())->getNumArgs();
   }
   ParmVarDecl *getArg(unsigned i) const { return getParmArray()[i]; }
   void setArg(unsigned i, ParmVarDecl *VD) { getParmArray()[i] = VD; }
@@ -1136,16 +1136,16 @@ public:
   QualType getInnerType() const { return getTypePtr()->getResultType(); }
 };
 
-class FunctionProtoTypeLoc :
-    public InheritingConcreteTypeLoc<FunctionTypeLoc,
-                                     FunctionProtoTypeLoc,
-                                     FunctionProtoType> {
+class SubprogramProtoTypeLoc :
+    public InheritingConcreteTypeLoc<SubprogramTypeLoc,
+                                     SubprogramProtoTypeLoc,
+                                     SubprogramProtoType> {
 };
 
-class FunctionNoProtoTypeLoc :
-    public InheritingConcreteTypeLoc<FunctionTypeLoc,
-                                     FunctionNoProtoTypeLoc,
-                                     FunctionNoProtoType> {
+class SubprogramNoProtoTypeLoc :
+    public InheritingConcreteTypeLoc<SubprogramTypeLoc,
+                                     SubprogramNoProtoTypeLoc,
+                                     SubprogramNoProtoType> {
 };
 
 

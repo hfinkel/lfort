@@ -45,7 +45,7 @@ static bool isOmittedBlockReturnType(const Declarator &D) {
     return true;   // ^{ ... }
 
   if (D.getNumTypeObjects() == 1 &&
-      D.getTypeObject(0).Kind == DeclaratorChunk::Function)
+      D.getTypeObject(0).Kind == DeclaratorChunk::Subprogram)
     return true;   // ^(int X, float Y) { ... }
 
   return false;
@@ -96,7 +96,7 @@ static void diagnoseBadTypeAttribute(Sema &S, const AttributeList &attr,
     case AttributeList::AT_ObjCGC: \
     case AttributeList::AT_ObjCOwnership
 
-// Function type attributes.
+// Subprogram type attributes.
 #define FUNCTION_TYPE_ATTRS_CASELIST \
     case AttributeList::AT_NoReturn: \
     case AttributeList::AT_CDecl: \
@@ -274,7 +274,7 @@ static void processTypeAttrs(TypeProcessingState &state,
                              QualType &type, bool isDeclSpec,
                              AttributeList *attrs);
 
-static bool handleFunctionTypeAttr(TypeProcessingState &state,
+static bool handleSubprogramTypeAttr(TypeProcessingState &state,
                                    AttributeList &attr,
                                    QualType &type);
 
@@ -316,7 +316,7 @@ static void distributeObjCPointerTypeAttr(TypeProcessingState &state,
 
     // Don't walk through these.
     case DeclaratorChunk::Reference:
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
     case DeclaratorChunk::MemberPointer:
       goto error;
     }
@@ -352,7 +352,7 @@ distributeObjCPointerTypeAttrFromDeclarator(TypeProcessingState &state,
     case DeclaratorChunk::Array:
       continue;
 
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
       considerDeclSpec = false;
       goto done;
     }
@@ -390,7 +390,7 @@ distributeObjCPointerTypeAttrFromDeclarator(TypeProcessingState &state,
 /// *other* than on the declarator itself or in the decl spec.  Given
 /// that it didn't apply in whatever position it was written in, try
 /// to move it to a more appropriate position.
-static void distributeFunctionTypeAttr(TypeProcessingState &state,
+static void distributeSubprogramTypeAttr(TypeProcessingState &state,
                                        AttributeList &attr,
                                        QualType type) {
   Declarator &declarator = state.getDeclarator();
@@ -400,7 +400,7 @@ static void distributeFunctionTypeAttr(TypeProcessingState &state,
   for (unsigned i = state.getCurrentChunkIndex(); i != 0; --i) {
     DeclaratorChunk &chunk = declarator.getTypeObject(i-1);
     switch (chunk.Kind) {
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
       moveAttrFromListToList(attr, state.getCurrentAttrListRef(),
                              chunk.getAttrListRef());
       return;
@@ -422,7 +422,7 @@ static void distributeFunctionTypeAttr(TypeProcessingState &state,
 /// function chunk or type.  Returns true if the attribute was
 /// distributed, false if no location was found.
 static bool
-distributeFunctionTypeAttrToInnermost(TypeProcessingState &state,
+distributeSubprogramTypeAttrToInnermost(TypeProcessingState &state,
                                       AttributeList &attr,
                                       AttributeList *&attrList,
                                       QualType &declSpecType) {
@@ -431,13 +431,13 @@ distributeFunctionTypeAttrToInnermost(TypeProcessingState &state,
   // Put it on the innermost function chunk, if there is one.
   for (unsigned i = 0, e = declarator.getNumTypeObjects(); i != e; ++i) {
     DeclaratorChunk &chunk = declarator.getTypeObject(i);
-    if (chunk.Kind != DeclaratorChunk::Function) continue;
+    if (chunk.Kind != DeclaratorChunk::Subprogram) continue;
 
     moveAttrFromListToList(attr, attrList, chunk.getAttrListRef());
     return true;
   }
 
-  if (handleFunctionTypeAttr(state, attr, declSpecType)) {
+  if (handleSubprogramTypeAttr(state, attr, declSpecType)) {
     spliceAttrOutOfList(attr, attrList);
     return true;
   }
@@ -448,13 +448,13 @@ distributeFunctionTypeAttrToInnermost(TypeProcessingState &state,
 /// A function type attribute was written in the decl spec.  Try to
 /// apply it somewhere.
 static void
-distributeFunctionTypeAttrFromDeclSpec(TypeProcessingState &state,
+distributeSubprogramTypeAttrFromDeclSpec(TypeProcessingState &state,
                                        AttributeList &attr,
                                        QualType &declSpecType) {
   state.saveDeclSpecAttrs();
 
   // Try to distribute to the innermost.
-  if (distributeFunctionTypeAttrToInnermost(state, attr,
+  if (distributeSubprogramTypeAttrToInnermost(state, attr,
                                             state.getCurrentAttrListRef(),
                                             declSpecType))
     return;
@@ -467,13 +467,13 @@ distributeFunctionTypeAttrFromDeclSpec(TypeProcessingState &state,
 /// A function type attribute was written on the declarator.  Try to
 /// apply it somewhere.
 static void
-distributeFunctionTypeAttrFromDeclarator(TypeProcessingState &state,
+distributeSubprogramTypeAttrFromDeclarator(TypeProcessingState &state,
                                          AttributeList &attr,
                                          QualType &declSpecType) {
   Declarator &declarator = state.getDeclarator();
 
   // Try to distribute to the innermost.
-  if (distributeFunctionTypeAttrToInnermost(state, attr,
+  if (distributeSubprogramTypeAttrToInnermost(state, attr,
                                             declarator.getAttrListRef(),
                                             declSpecType))
     return;
@@ -513,7 +513,7 @@ static void distributeTypeAttrsFromDeclarator(TypeProcessingState &state,
       // fallthrough
 
     FUNCTION_TYPE_ATTRS_CASELIST:
-      distributeFunctionTypeAttrFromDeclarator(state, *attr, declSpecType);
+      distributeSubprogramTypeAttrFromDeclarator(state, *attr, declSpecType);
       break;
 
     default:
@@ -530,9 +530,9 @@ static void maybeSynthesizeBlockSignature(TypeProcessingState &state,
 
   // First, check whether the declarator would produce a function,
   // i.e. whether the innermost semantic chunk is a function.
-  if (declarator.isFunctionDeclarator()) {
+  if (declarator.isSubprogramDeclarator()) {
     // If so, make that declarator a prototyped declarator.
-    declarator.getFunctionTypeInfo().hasPrototype = true;
+    declarator.getSubprogramTypeInfo().hasPrototype = true;
     return;
   }
 
@@ -542,7 +542,7 @@ static void maybeSynthesizeBlockSignature(TypeProcessingState &state,
   // abstract-declarators can't just be parentheses chunks.  Therefore
   // we need to build a function chunk unless there are no type
   // objects and the decl spec type is a function.
-  if (!declarator.getNumTypeObjects() && declSpecType->isFunctionType())
+  if (!declarator.getNumTypeObjects() && declSpecType->isSubprogramType())
     return;
 
   // Note that there *are* cases with invalid declarators where
@@ -555,7 +555,7 @@ static void maybeSynthesizeBlockSignature(TypeProcessingState &state,
 
   // ...and *prepend* it to the declarator.
   SourceLocation NoLoc;
-  declarator.AddInnermostTypeInfo(DeclaratorChunk::getFunction(
+  declarator.AddInnermostTypeInfo(DeclaratorChunk::getSubprogram(
                              /*HasProto=*/true,
                              /*IsAmbiguous=*/false,
                              /*LParenLoc=*/NoLoc,
@@ -1000,7 +1000,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
     // Warn about CV qualifiers on functions: C99 6.7.3p8: "If the specification
     // of a function type includes any type qualifiers, the behavior is
     // undefined."
-    if (Result->isFunctionType() && TypeQuals) {
+    if (Result->isSubprogramType() && TypeQuals) {
       // Get some location to point at, either the C or V location.
       SourceLocation Loc;
       if (TypeQuals & DeclSpec::TQ_const)
@@ -1325,7 +1325,7 @@ QualType Sema::BuildArrayType(QualType T, ArrayType::ArraySizeModifier ASM,
       return QualType();
   }
 
-  if (T->isFunctionType()) {
+  if (T->isSubprogramType()) {
     Diag(Loc, diag::err_illegal_decl_array_of_functions)
       << getPrintableNameForEntity(Entity) << T;
     return QualType();
@@ -1533,21 +1533,21 @@ QualType Sema::BuildExtVectorType(QualType T, Expr *ArraySize,
 ///
 /// \returns A suitable function type, if there are no
 /// errors. Otherwise, returns a NULL type.
-QualType Sema::BuildFunctionType(QualType T,
+QualType Sema::BuildSubprogramType(QualType T,
                                  QualType *ParamTypes,
                                  unsigned NumParamTypes,
                                  bool Variadic, bool HasTrailingReturn,
                                  unsigned Quals,
                                  RefQualifierKind RefQualifier,
                                  SourceLocation Loc, DeclarationName Entity,
-                                 FunctionType::ExtInfo Info) {
-  if (T->isArrayType() || T->isFunctionType()) {
+                                 SubprogramType::ExtInfo Info) {
+  if (T->isArrayType() || T->isSubprogramType()) {
     Diag(Loc, diag::err_func_returning_array_function)
-      << T->isFunctionType() << T;
+      << T->isSubprogramType() << T;
     return QualType();
   }
 
-  // Functions cannot return half FP.
+  // Subprograms cannot return half FP.
   if (T->isHalfType()) {
     Diag(Loc, diag::err_parameters_retval_cannot_have_fp16_type) << 1 <<
       FixItHint::CreateInsertion(Loc, "*");
@@ -1574,14 +1574,14 @@ QualType Sema::BuildFunctionType(QualType T,
   if (Invalid)
     return QualType();
 
-  FunctionProtoType::ExtProtoInfo EPI;
+  SubprogramProtoType::ExtProtoInfo EPI;
   EPI.Variadic = Variadic;
   EPI.HasTrailingReturn = HasTrailingReturn;
   EPI.TypeQuals = Quals;
   EPI.RefQualifier = RefQualifier;
   EPI.ExtInfo = Info;
 
-  return Context.getFunctionType(T, ParamTypes, NumParamTypes, EPI);
+  return Context.getSubprogramType(T, ParamTypes, NumParamTypes, EPI);
 }
 
 /// \brief Build a member pointer type \c T Class::*.
@@ -1653,7 +1653,7 @@ QualType Sema::BuildMemberPointerType(QualType T, QualType Class,
 QualType Sema::BuildBlockPointerType(QualType T,
                                      SourceLocation Loc,
                                      DeclarationName Entity) {
-  if (!T->isFunctionType()) {
+  if (!T->isSubprogramType()) {
     Diag(Loc, diag::err_nonfunction_block_type);
     return QualType();
   }
@@ -1727,7 +1727,7 @@ static void inferARCWriteback(TypeProcessingState &state,
       goto done;
 
     case DeclaratorChunk::Array: // suppress if written (id[])?
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
     case DeclaratorChunk::MemberPointer:
       return;
     }
@@ -1839,7 +1839,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
 
   switch (D.getName().getKind()) {
   case UnqualifiedId::IK_ImplicitSelfParam:
-  case UnqualifiedId::IK_OperatorFunctionId:
+  case UnqualifiedId::IK_OperatorSubprogramId:
   case UnqualifiedId::IK_Identifier:
   case UnqualifiedId::IK_LiteralOperatorId:
   case UnqualifiedId::IK_TemplateId:
@@ -1862,10 +1862,10 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
       processTypeAttrs(state, T, true, attrs);
     break;
 
-  case UnqualifiedId::IK_ConversionFunctionId:
+  case UnqualifiedId::IK_ConversionSubprogramId:
     // The result type of a conversion function is the type that it
     // converts to.
-    T = SemaRef.GetTypeFromParser(D.getName().ConversionFunctionId,
+    T = SemaRef.GetTypeFromParser(D.getName().ConversionSubprogramId,
                                   &ReturnTypeInfo);
     break;
   }
@@ -1878,7 +1878,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
   // type (this is checked later) and we can skip this. In other languages
   // using auto, we need to check regardless.
   if (D.getDeclSpec().getTypeSpecType() == DeclSpec::TST_auto &&
-      (!SemaRef.getLangOpts().CPlusPlus11 || !D.isFunctionDeclarator())) {
+      (!SemaRef.getLangOpts().CPlusPlus11 || !D.isSubprogramDeclarator())) {
     int Error = -1;
 
     switch (D.getContext()) {
@@ -1889,7 +1889,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
     case Declarator::ObjCParameterContext:
     case Declarator::ObjCResultContext:
     case Declarator::PrototypeContext:
-      Error = 0; // Function prototype
+      Error = 0; // Subprogram prototype
       break;
     case Declarator::MemberContext:
       if (D.getDeclSpec().getStorageClassSpec() == DeclSpec::SCS_static)
@@ -1920,7 +1920,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
       Error = 10; // Type alias
       break;
     case Declarator::TrailingReturnContext:
-      Error = 11; // Function return type
+      Error = 11; // Subprogram return type
       break;
     case Declarator::TypeNameContext:
       Error = 12; // Generic
@@ -1937,7 +1937,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
       Error = 9;
 
     // In Objective-C it is an error to use 'auto' on a function declarator.
-    if (D.isFunctionDeclarator())
+    if (D.isSubprogramDeclarator())
       Error = 11;
 
     // C++11 [dcl.spec.auto]p2: 'auto' is always fine if the declarator
@@ -1949,8 +1949,8 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
         unsigned chunkIndex = e - i - 1;
         state.setCurrentChunkIndex(chunkIndex);
         DeclaratorChunk &DeclType = D.getTypeObject(chunkIndex);
-        if (DeclType.Kind == DeclaratorChunk::Function) {
-          const DeclaratorChunk::FunctionTypeInfo &FTI = DeclType.Fun;
+        if (DeclType.Kind == DeclaratorChunk::Subprogram) {
+          const DeclaratorChunk::SubprogramTypeInfo &FTI = DeclType.Fun;
           if (FTI.hasTrailingReturnType()) {
             Error = -1;
             break;
@@ -2030,7 +2030,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
   return T;
 }
 
-static std::string getFunctionQualifiersAsString(const FunctionProtoType *FnTy){
+static std::string getSubprogramQualifiersAsString(const SubprogramProtoType *FnTy){
   std::string Quals =
     Qualifiers::fromCVRMask(FnTy->getTypeQuals()).getAsString();
 
@@ -2057,7 +2057,7 @@ static std::string getFunctionQualifiersAsString(const FunctionProtoType *FnTy){
 /// Check that the function type T, which has a cv-qualifier or a ref-qualifier,
 /// can be contained within the declarator chunk DeclType, and produce an
 /// appropriate diagnostic if not.
-static void checkQualifiedFunction(Sema &S, QualType T,
+static void checkQualifiedSubprogram(Sema &S, QualType T,
                                    DeclaratorChunk &DeclType) {
   // C++98 [dcl.fct]p4 / C++11 [dcl.fct]p6: a function type with a
   // cv-qualifier or a ref-qualifier can only appear at the topmost level
@@ -2069,7 +2069,7 @@ static void checkQualifiedFunction(Sema &S, QualType T,
     // These cases are permitted.
     return;
   case DeclaratorChunk::Array:
-  case DeclaratorChunk::Function:
+  case DeclaratorChunk::Subprogram:
     // These cases don't allow function types at all; no need to diagnose the
     // qualifiers separately.
     return;
@@ -2086,15 +2086,15 @@ static void checkQualifiedFunction(Sema &S, QualType T,
 
   assert(DiagKind != -1);
   S.Diag(DeclType.Loc, diag::err_compound_qualified_function_type)
-    << DiagKind << isa<FunctionType>(T.IgnoreParens()) << T
-    << getFunctionQualifiersAsString(T->castAs<FunctionProtoType>());
+    << DiagKind << isa<SubprogramType>(T.IgnoreParens()) << T
+    << getSubprogramQualifiersAsString(T->castAs<SubprogramProtoType>());
 }
 
 /// Produce an approprioate diagnostic for an ambiguity between a function
 /// declarator and a C++ direct-initializer.
-static void warnAboutAmbiguousFunction(Sema &S, Declarator &D,
+static void warnAboutAmbiguousSubprogram(Sema &S, Declarator &D,
                                        DeclaratorChunk &DeclType, QualType RT) {
-  const DeclaratorChunk::FunctionTypeInfo &FTI = DeclType.Fun;
+  const DeclaratorChunk::SubprogramTypeInfo &FTI = DeclType.Fun;
   assert(FTI.isAmbiguous && "no direct-initializer / function ambiguity");
 
   // If the return type is void there is no ambiguity.
@@ -2111,9 +2111,9 @@ static void warnAboutAmbiguousFunction(Sema &S, Declarator &D,
 
   // Only warn if this declarator is declaring a function at block scope, and
   // doesn't have a storage class (such as 'extern') specified.
-  if (!D.isFunctionDeclarator() ||
-      D.getFunctionDefinitionKind() != FDK_Declaration ||
-      !S.CurContext->isFunctionOrMethod() ||
+  if (!D.isSubprogramDeclarator() ||
+      D.getSubprogramDefinitionKind() != FDK_Declaration ||
+      !S.CurContext->isSubprogramOrMethod() ||
       D.getDeclSpec().getStorageClassSpecAsWritten()
         != DeclSpec::SCS_unspecified)
     return;
@@ -2208,9 +2208,9 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     D.getContext() == Declarator::AliasTemplateContext;
 
   // Does T refer to a function type with a cv-qualifier or a ref-qualifier?
-  bool IsQualifiedFunction = T->isFunctionProtoType() &&
-      (T->castAs<FunctionProtoType>()->getTypeQuals() != 0 ||
-       T->castAs<FunctionProtoType>()->getRefQualifier() != RQ_None);
+  bool IsQualifiedSubprogram = T->isSubprogramProtoType() &&
+      (T->castAs<SubprogramProtoType>()->getTypeQuals() != 0 ||
+       T->castAs<SubprogramProtoType>()->getRefQualifier() != RQ_None);
 
   // Walk the DeclTypeInfo, building the recursive type as we go.
   // DeclTypeInfos are ordered from the identifier out, which is
@@ -2219,9 +2219,9 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     unsigned chunkIndex = e - i - 1;
     state.setCurrentChunkIndex(chunkIndex);
     DeclaratorChunk &DeclType = D.getTypeObject(chunkIndex);
-    if (IsQualifiedFunction) {
-      checkQualifiedFunction(S, T, DeclType);
-      IsQualifiedFunction = DeclType.Kind == DeclaratorChunk::Paren;
+    if (IsQualifiedSubprogram) {
+      checkQualifiedSubprogram(S, T, DeclType);
+      IsQualifiedSubprogram = DeclType.Kind == DeclaratorChunk::Paren;
     }
     switch (DeclType.Kind) {
     case DeclaratorChunk::Paren:
@@ -2332,7 +2332,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
             ATI.TypeQuals = 0;
             D.setInvalidType(true);
             break;
-          case DeclaratorChunk::Function:
+          case DeclaratorChunk::Subprogram:
           case DeclaratorChunk::BlockPointer:
             // These are invalid anyway, so just ignore.
             break;
@@ -2344,12 +2344,12 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
                            SourceRange(DeclType.Loc, DeclType.EndLoc), Name);
       break;
     }
-    case DeclaratorChunk::Function: {
+    case DeclaratorChunk::Subprogram: {
       // If the function declarator has a prototype (i.e. it is not () and
       // does not have a K&R-style identifier list), then the arguments are part
       // of the type, otherwise the argument list is ().
-      const DeclaratorChunk::FunctionTypeInfo &FTI = DeclType.Fun;
-      IsQualifiedFunction = FTI.TypeQuals || FTI.hasRefQualifier();
+      const DeclaratorChunk::SubprogramTypeInfo &FTI = DeclType.Fun;
+      IsQualifiedSubprogram = FTI.TypeQuals || FTI.hasRefQualifier();
 
       // Check for auto functions and trailing return type and adjust the
       // return type accordingly.
@@ -2387,21 +2387,21 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
 
       // C99 6.7.5.3p1: The return type may not be a function or array type.
       // For conversion functions, we'll diagnose this particular error later.
-      if ((T->isArrayType() || T->isFunctionType()) &&
-          (D.getName().getKind() != UnqualifiedId::IK_ConversionFunctionId)) {
+      if ((T->isArrayType() || T->isSubprogramType()) &&
+          (D.getName().getKind() != UnqualifiedId::IK_ConversionSubprogramId)) {
         unsigned diagID = diag::err_func_returning_array_function;
         // Last processing chunk in block context means this function chunk
         // represents the block.
         if (chunkIndex == 0 &&
             D.getContext() == Declarator::BlockLiteralContext)
           diagID = diag::err_block_returning_array_function;
-        S.Diag(DeclType.Loc, diagID) << T->isFunctionType() << T;
+        S.Diag(DeclType.Loc, diagID) << T->isSubprogramType() << T;
         T = Context.IntTy;
         D.setInvalidType(true);
       }
 
       // Do not allow returning half FP value.
-      // FIXME: This really should be in BuildFunctionType.
+      // FIXME: This really should be in BuildSubprogramType.
       if (T->isHalfType()) {
         S.Diag(D.getIdentifierLoc(),
              diag::err_parameters_retval_cannot_have_fp16_type) << 1
@@ -2412,7 +2412,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       // cv-qualifiers on return types are pointless except when the type is a
       // class type in C++.
       if (isa<PointerType>(T) && T.getLocalCVRQualifiers() &&
-          (D.getName().getKind() != UnqualifiedId::IK_ConversionFunctionId) &&
+          (D.getName().getKind() != UnqualifiedId::IK_ConversionSubprogramId) &&
           (!LangOpts.CPlusPlus || !T->isDependentType())) {
         assert(chunkIndex + 1 < e && "No DeclaratorChunk for the return type?");
         DeclaratorChunk ReturnTypeChunk = D.getTypeObject(chunkIndex + 1);
@@ -2456,11 +2456,11 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       // If we see "T var();" or "T var(T());" at block scope, it is probably
       // an attempt to initialize a variable, not a function declaration.
       if (FTI.isAmbiguous)
-        warnAboutAmbiguousFunction(S, D, DeclType, T);
+        warnAboutAmbiguousSubprogram(S, D, DeclType, T);
 
       if (!FTI.NumArgs && !FTI.isVariadic && !LangOpts.CPlusPlus) {
         // Simple void foo(), where the incoming T is the result type.
-        T = Context.getFunctionNoProtoType(T);
+        T = Context.getSubprogramNoProtoType(T);
       } else {
         // We allow a zero-parameter variadic function in C if the
         // function is marked with the "overloadable" attribute. Scan
@@ -2487,7 +2487,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
           break;
         }
 
-        FunctionProtoType::ExtProtoInfo EPI;
+        SubprogramProtoType::ExtProtoInfo EPI;
         EPI.Variadic = FTI.isVariadic;
         EPI.HasTrailingReturn = FTI.hasTrailingReturnType();
         EPI.TypeQuals = FTI.TypeQuals;
@@ -2515,7 +2515,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
 
           // Look for 'void'.  void is allowed only as a single argument to a
           // function with no other parameters (C99 6.7.5.3p10).  We record
-          // int(void) as a FunctionProtoType with an empty argument list.
+          // int(void) as a SubprogramProtoType with an empty argument list.
           if (ArgTy->isVoidType()) {
             // If this is something like 'float(int, void)', reject it.  'void'
             // is an incomplete type (C99 6.2.5p19) and function decls cannot
@@ -2540,7 +2540,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
             }
           } else if (ArgTy->isHalfType()) {
             // Disallow half FP arguments.
-            // FIXME: This really should be in BuildFunctionType.
+            // FIXME: This really should be in BuildSubprogramType.
             S.Diag(Param->getLocation(),
                diag::err_parameters_retval_cannot_have_fp16_type) << 0
             << FixItHint::CreateInsertion(Param->getLocation(), "*");
@@ -2595,7 +2595,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
                                       Exceptions,
                                       EPI);
 
-        T = Context.getFunctionType(T, ArgTys.data(), ArgTys.size(), EPI);
+        T = Context.getSubprogramType(T, ArgTys.data(), ArgTys.size(), EPI);
       }
 
       break;
@@ -2664,9 +2664,9 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       processTypeAttrs(state, T, false, attrs);
   }
 
-  if (LangOpts.CPlusPlus && T->isFunctionType()) {
-    const FunctionProtoType *FnTy = T->getAs<FunctionProtoType>();
-    assert(FnTy && "Why oh why is there not a FunctionProtoType here?");
+  if (LangOpts.CPlusPlus && T->isSubprogramType()) {
+    const SubprogramProtoType *FnTy = T->getAs<SubprogramProtoType>();
+    assert(FnTy && "Why oh why is there not a SubprogramProtoType here?");
 
     // C++ 8.3.5p4:
     //   A cv-qualifier-seq shall only be part of the function type
@@ -2676,14 +2676,14 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     //
     // Core issue 547 also allows cv-qualifiers on function types that are
     // top-level template type arguments.
-    bool FreeFunction;
+    bool FreeSubprogram;
     if (!D.getCXXScopeSpec().isSet()) {
-      FreeFunction = ((D.getContext() != Declarator::MemberContext &&
+      FreeSubprogram = ((D.getContext() != Declarator::MemberContext &&
                        D.getContext() != Declarator::LambdaExprContext) ||
                       D.getDeclSpec().isFriendSpecified());
     } else {
       DeclContext *DC = S.computeDeclContext(D.getCXXScopeSpec());
-      FreeFunction = (DC && !DC->isRecord());
+      FreeSubprogram = (DC && !DC->isRecord());
     }
 
     // C++0x [dcl.constexpr]p8: A constexpr specifier for a non-static member
@@ -2691,15 +2691,15 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     // FIXME: This should be deferred until we know whether this is a static
     //        member function (for an out-of-class definition, we don't know
     //        this until we perform redeclaration lookup).
-    if (D.getDeclSpec().isConstexprSpecified() && !FreeFunction &&
+    if (D.getDeclSpec().isConstexprSpecified() && !FreeSubprogram &&
         D.getDeclSpec().getStorageClassSpec() != DeclSpec::SCS_static &&
         D.getName().getKind() != UnqualifiedId::IK_ConstructorName &&
         D.getName().getKind() != UnqualifiedId::IK_ConstructorTemplateId &&
         !(FnTy->getTypeQuals() & DeclSpec::TQ_const)) {
       // Rebuild function type adding a 'const' qualifier.
-      FunctionProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
+      SubprogramProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
       EPI.TypeQuals |= DeclSpec::TQ_const;
-      T = Context.getFunctionType(FnTy->getResultType(),
+      T = Context.getSubprogramType(FnTy->getResultType(),
                                   FnTy->arg_type_begin(),
                                   FnTy->getNumArgs(), EPI);
       // Rebuild any parens around the identifier in the function type.
@@ -2719,18 +2719,18 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     //    alias-declaration,
     //  - the type-id in the default argument of a type-parameter, or
     //  - the type-id of a template-argument for a type-parameter
-    if (IsQualifiedFunction &&
-        !(!FreeFunction &&
+    if (IsQualifiedSubprogram &&
+        !(!FreeSubprogram &&
           D.getDeclSpec().getStorageClassSpec() != DeclSpec::SCS_static) &&
         !IsTypedefName &&
         D.getContext() != Declarator::TemplateTypeArgContext) {
       SourceLocation Loc = D.getLocStart();
       SourceRange RemovalRange;
       unsigned I;
-      if (D.isFunctionDeclarator(I)) {
+      if (D.isSubprogramDeclarator(I)) {
         SmallVector<SourceLocation, 4> RemovalLocs;
         const DeclaratorChunk &Chunk = D.getTypeObject(I);
-        assert(Chunk.Kind == DeclaratorChunk::Function);
+        assert(Chunk.Kind == DeclaratorChunk::Subprogram);
         if (Chunk.Fun.hasRefQualifier())
           RemovalLocs.push_back(Chunk.Fun.getRefQualifierLoc());
         if (Chunk.Fun.TypeQuals & Qualifiers::Const)
@@ -2749,16 +2749,16 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       }
 
       S.Diag(Loc, diag::err_invalid_qualified_function_type)
-        << FreeFunction << D.isFunctionDeclarator() << T
-        << getFunctionQualifiersAsString(FnTy)
+        << FreeSubprogram << D.isSubprogramDeclarator() << T
+        << getSubprogramQualifiersAsString(FnTy)
         << FixItHint::CreateRemoval(RemovalRange);
 
       // Strip the cv-qualifiers and ref-qualifiers from the type.
-      FunctionProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
+      SubprogramProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
       EPI.TypeQuals = 0;
       EPI.RefQualifier = RQ_None;
 
-      T = Context.getFunctionType(FnTy->getResultType(),
+      T = Context.getSubprogramType(FnTy->getResultType(),
                                   FnTy->arg_type_begin(),
                                   FnTy->getNumArgs(), EPI);
       // Rebuild any parens around the identifier in the function type.
@@ -2961,7 +2961,7 @@ static void transferARCOwnership(TypeProcessingState &state,
         transferARCOwnershipToDeclaratorChunk(state, ownership, i);
       return;
 
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
     case DeclaratorChunk::MemberPointer:
       return;
     }
@@ -3315,12 +3315,12 @@ namespace {
       TL.setRBracketLoc(Chunk.EndLoc);
       TL.setSizeExpr(static_cast<Expr*>(Chunk.Arr.NumElts));
     }
-    void VisitFunctionTypeLoc(FunctionTypeLoc TL) {
-      assert(Chunk.Kind == DeclaratorChunk::Function);
+    void VisitSubprogramTypeLoc(SubprogramTypeLoc TL) {
+      assert(Chunk.Kind == DeclaratorChunk::Subprogram);
       TL.setLocalRangeBegin(Chunk.Loc);
       TL.setLocalRangeEnd(Chunk.EndLoc);
 
-      const DeclaratorChunk::FunctionTypeInfo &FTI = Chunk.Fun;
+      const DeclaratorChunk::SubprogramTypeInfo &FTI = Chunk.Fun;
       TL.setLParenLoc(FTI.getLParenLoc());
       TL.setRParenLoc(FTI.getRParenLoc());
       for (unsigned i = 0, e = TL.getNumArgs(), tpi = 0; i != e; ++i) {
@@ -3457,7 +3457,7 @@ static void HandleAddressSpaceTypeAttribute(QualType &Type,
 
   // ISO/IEC TR 18037 S5.3 (amending C99 6.7.3): "A function type shall not be
   // qualified by an address-space qualifier."
-  if (Type->isFunctionType()) {
+  if (Type->isSubprogramType()) {
     S.Diag(Attr.getLoc(), diag::err_attribute_address_function_type);
     Attr.setInvalid();
     return;
@@ -3737,13 +3737,13 @@ namespace {
   /// purposes of applying attributes there.
   ///
   /// Use:
-  ///   FunctionTypeUnwrapper unwrapped(SemaRef, T);
-  ///   if (unwrapped.isFunctionType()) {
-  ///     const FunctionType *fn = unwrapped.get();
+  ///   SubprogramTypeUnwrapper unwrapped(SemaRef, T);
+  ///   if (unwrapped.isSubprogramType()) {
+  ///     const SubprogramType *fn = unwrapped.get();
   ///     // change fn somehow
   ///     T = unwrapped.wrap(fn);
   ///   }
-  struct FunctionTypeUnwrapper {
+  struct SubprogramTypeUnwrapper {
     enum WrapKind {
       Desugar,
       Parens,
@@ -3754,14 +3754,14 @@ namespace {
     };
 
     QualType Original;
-    const FunctionType *Fn;
+    const SubprogramType *Fn;
     SmallVector<unsigned char /*WrapKind*/, 8> Stack;
 
-    FunctionTypeUnwrapper(Sema &S, QualType T) : Original(T) {
+    SubprogramTypeUnwrapper(Sema &S, QualType T) : Original(T) {
       while (true) {
         const Type *Ty = T.getTypePtr();
-        if (isa<FunctionType>(Ty)) {
-          Fn = cast<FunctionType>(Ty);
+        if (isa<SubprogramType>(Ty)) {
+          Fn = cast<SubprogramType>(Ty);
           return;
         } else if (isa<ParenType>(Ty)) {
           T = cast<ParenType>(Ty)->getInnerType();
@@ -3791,10 +3791,10 @@ namespace {
       }
     }
 
-    bool isFunctionType() const { return (Fn != 0); }
-    const FunctionType *get() const { return Fn; }
+    bool isSubprogramType() const { return (Fn != 0); }
+    const SubprogramType *get() const { return Fn; }
 
-    QualType wrap(Sema &S, const FunctionType *New) {
+    QualType wrap(Sema &S, const SubprogramType *New) {
       // If T wasn't modified from the unwrapped type, do nothing.
       if (New == get()) return Original;
 
@@ -3864,24 +3864,24 @@ namespace {
 
 /// Process an individual function attribute.  Returns true to
 /// indicate that the attribute was handled, false if it wasn't.
-static bool handleFunctionTypeAttr(TypeProcessingState &state,
+static bool handleSubprogramTypeAttr(TypeProcessingState &state,
                                    AttributeList &attr,
                                    QualType &type) {
   Sema &S = state.getSema();
 
-  FunctionTypeUnwrapper unwrapped(S, type);
+  SubprogramTypeUnwrapper unwrapped(S, type);
 
   if (attr.getKind() == AttributeList::AT_NoReturn) {
     if (S.CheckNoReturnAttr(attr))
       return true;
 
     // Delay if this is not a function type.
-    if (!unwrapped.isFunctionType())
+    if (!unwrapped.isSubprogramType())
       return false;
 
     // Otherwise we can process right away.
-    FunctionType::ExtInfo EI = unwrapped.get()->getExtInfo().withNoReturn(true);
-    type = unwrapped.wrap(S, S.Context.adjustFunctionType(unwrapped.get(), EI));
+    SubprogramType::ExtInfo EI = unwrapped.get()->getExtInfo().withNoReturn(true);
+    type = unwrapped.wrap(S, S.Context.adjustSubprogramType(unwrapped.get(), EI));
     return true;
   }
 
@@ -3893,12 +3893,12 @@ static bool handleFunctionTypeAttr(TypeProcessingState &state,
     if (attr.getNumArgs()) return true;
 
     // Delay if this is not a function type.
-    if (!unwrapped.isFunctionType())
+    if (!unwrapped.isSubprogramType())
       return false;
 
-    FunctionType::ExtInfo EI
+    SubprogramType::ExtInfo EI
       = unwrapped.get()->getExtInfo().withProducesResult(true);
-    type = unwrapped.wrap(S, S.Context.adjustFunctionType(unwrapped.get(), EI));
+    type = unwrapped.wrap(S, S.Context.adjustSubprogramType(unwrapped.get(), EI));
     return true;
   }
 
@@ -3908,65 +3908,65 @@ static bool handleFunctionTypeAttr(TypeProcessingState &state,
       return true;
 
     // Delay if this is not a function type.
-    if (!unwrapped.isFunctionType())
+    if (!unwrapped.isSubprogramType())
       return false;
 
     // Diagnose regparm with fastcall.
-    const FunctionType *fn = unwrapped.get();
+    const SubprogramType *fn = unwrapped.get();
     CallingConv CC = fn->getCallConv();
     if (CC == CC_X86FastCall) {
       S.Diag(attr.getLoc(), diag::err_attributes_are_not_compatible)
-        << FunctionType::getNameForCallConv(CC)
+        << SubprogramType::getNameForCallConv(CC)
         << "regparm";
       attr.setInvalid();
       return true;
     }
 
-    FunctionType::ExtInfo EI =
+    SubprogramType::ExtInfo EI =
       unwrapped.get()->getExtInfo().withRegParm(value);
-    type = unwrapped.wrap(S, S.Context.adjustFunctionType(unwrapped.get(), EI));
+    type = unwrapped.wrap(S, S.Context.adjustSubprogramType(unwrapped.get(), EI));
     return true;
   }
 
   // Delay if the type didn't work out to a function.
-  if (!unwrapped.isFunctionType()) return false;
+  if (!unwrapped.isSubprogramType()) return false;
 
   // Otherwise, a calling convention.
   CallingConv CC;
   if (S.CheckCallingConvAttr(attr, CC))
     return true;
 
-  const FunctionType *fn = unwrapped.get();
+  const SubprogramType *fn = unwrapped.get();
   CallingConv CCOld = fn->getCallConv();
   if (S.Context.getCanonicalCallConv(CC) ==
       S.Context.getCanonicalCallConv(CCOld)) {
-    FunctionType::ExtInfo EI= unwrapped.get()->getExtInfo().withCallingConv(CC);
-    type = unwrapped.wrap(S, S.Context.adjustFunctionType(unwrapped.get(), EI));
+    SubprogramType::ExtInfo EI= unwrapped.get()->getExtInfo().withCallingConv(CC);
+    type = unwrapped.wrap(S, S.Context.adjustSubprogramType(unwrapped.get(), EI));
     return true;
   }
 
   if (CCOld != (S.LangOpts.MRTD ? CC_X86StdCall : CC_Default)) {
     // Should we diagnose reapplications of the same convention?
     S.Diag(attr.getLoc(), diag::err_attributes_are_not_compatible)
-      << FunctionType::getNameForCallConv(CC)
-      << FunctionType::getNameForCallConv(CCOld);
+      << SubprogramType::getNameForCallConv(CC)
+      << SubprogramType::getNameForCallConv(CCOld);
     attr.setInvalid();
     return true;
   }
 
   // Diagnose the use of X86 fastcall on varargs or unprototyped functions.
   if (CC == CC_X86FastCall) {
-    if (isa<FunctionNoProtoType>(fn)) {
+    if (isa<SubprogramNoProtoType>(fn)) {
       S.Diag(attr.getLoc(), diag::err_cconv_knr)
-        << FunctionType::getNameForCallConv(CC);
+        << SubprogramType::getNameForCallConv(CC);
       attr.setInvalid();
       return true;
     }
 
-    const FunctionProtoType *FnP = cast<FunctionProtoType>(fn);
+    const SubprogramProtoType *FnP = cast<SubprogramProtoType>(fn);
     if (FnP->isVariadic()) {
       S.Diag(attr.getLoc(), diag::err_cconv_varargs)
-        << FunctionType::getNameForCallConv(CC);
+        << SubprogramType::getNameForCallConv(CC);
       attr.setInvalid();
       return true;
     }
@@ -3975,14 +3975,14 @@ static bool handleFunctionTypeAttr(TypeProcessingState &state,
     if (fn->getHasRegParm()) {
       S.Diag(attr.getLoc(), diag::err_attributes_are_not_compatible)
         << "regparm"
-        << FunctionType::getNameForCallConv(CC);
+        << SubprogramType::getNameForCallConv(CC);
       attr.setInvalid();
       return true;
     }
   }
 
-  FunctionType::ExtInfo EI = unwrapped.get()->getExtInfo().withCallingConv(CC);
-  type = unwrapped.wrap(S, S.Context.adjustFunctionType(unwrapped.get(), EI));
+  SubprogramType::ExtInfo EI = unwrapped.get()->getExtInfo().withCallingConv(CC);
+  type = unwrapped.wrap(S, S.Context.adjustSubprogramType(unwrapped.get(), EI));
   return true;
 }
 
@@ -4248,11 +4248,11 @@ static void processTypeAttrs(TypeProcessingState &state, QualType &type,
       // Never process function type attributes as part of the
       // declaration-specifiers.
       if (isDeclSpec)
-        distributeFunctionTypeAttrFromDeclSpec(state, attr, type);
+        distributeSubprogramTypeAttrFromDeclSpec(state, attr, type);
 
       // Otherwise, handle the possible delays.
-      else if (!handleFunctionTypeAttr(state, attr, type))
-        distributeFunctionTypeAttr(state, attr, type);
+      else if (!handleSubprogramTypeAttr(state, attr, type))
+        distributeSubprogramTypeAttr(state, attr, type);
       break;
     }
   } while ((attrs = next));
@@ -4742,7 +4742,7 @@ QualType Sema::BuildAtomicType(QualType T, SourceLocation Loc) {
     int DisallowedKind = -1;
     if (T->isArrayType())
       DisallowedKind = 1;
-    else if (T->isFunctionType())
+    else if (T->isSubprogramType())
       DisallowedKind = 2;
     else if (T->isReferenceType())
       DisallowedKind = 3;

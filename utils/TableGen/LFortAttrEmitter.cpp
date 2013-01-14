@@ -169,7 +169,7 @@ namespace {
                                            std::string(getUpperName()) + "()");
     }
     void writeValue(raw_ostream &OS) const {
-      if (type == "FunctionDecl *") {
+      if (type == "SubprogramDecl *") {
         OS << "\" << get" << getUpperName() << "()->getNameInfo().getAsString() << \"";
       } else if (type == "IdentifierInfo *") {
         OS << "\" << get" << getUpperName() << "()->getName() << \"";
@@ -621,8 +621,8 @@ static Argument *createArgument(Record &Arg, StringRef Attr,
   if (ArgName == "AlignedArgument") Ptr = new AlignedArgument(Arg, Attr);
   else if (ArgName == "EnumArgument") Ptr = new EnumArgument(Arg, Attr);
   else if (ArgName == "ExprArgument") Ptr = new ExprArgument(Arg, Attr);
-  else if (ArgName == "FunctionArgument")
-    Ptr = new SimpleArgument(Arg, Attr, "FunctionDecl *");
+  else if (ArgName == "SubprogramArgument")
+    Ptr = new SimpleArgument(Arg, Attr, "SubprogramDecl *");
   else if (ArgName == "IdentifierArgument")
     Ptr = new SimpleArgument(Arg, Attr, "IdentifierInfo *");
   else if (ArgName == "BoolArgument") Ptr = new SimpleArgument(Arg, Attr, 

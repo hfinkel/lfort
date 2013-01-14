@@ -27,7 +27,7 @@ namespace lfort {
   class CXXConstructorDecl;
   class CXXDestructorDecl;
   class CXXMethodDecl;
-  class FunctionDecl;
+  class SubprogramDecl;
   class NamedDecl;
   class ObjCMethodDecl;
   class VarDecl;
@@ -83,7 +83,7 @@ public:
 
   DiagnosticsEngine &getDiags() const { return Diags; }
 
-  virtual void startNewFunction() { LocalBlockIds.clear(); }
+  virtual void startNewSubprogram() { LocalBlockIds.clear(); }
   
   unsigned getBlockId(const BlockDecl *BD, bool Local) {
     llvm::DenseMap<const BlockDecl *, unsigned> &BlockIds

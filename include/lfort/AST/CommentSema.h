@@ -197,7 +197,7 @@ public:
   /// Emit diagnostics about unknown parametrs.
   void resolveParamCommandIndexes(const FullComment *FC);
 
-  bool isFunctionDecl();
+  bool isSubprogramDecl();
   bool isTemplateOrSpecialization();
 
   ArrayRef<const ParmVarDecl *> getParamVars();

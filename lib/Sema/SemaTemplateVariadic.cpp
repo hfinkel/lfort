@@ -205,9 +205,9 @@ Sema::DiagnoseUnexpandedParameterPacks(SourceLocation Loc,
   // parameter pack, and we are done.
   // FIXME: Store 'Unexpanded' on the lambda so we don't need to recompute it
   // later.
-  for (unsigned N = FunctionScopes.size(); N; --N) {
+  for (unsigned N = SubprogramScopes.size(); N; --N) {
     if (sema::LambdaScopeInfo *LSI =
-          dyn_cast<sema::LambdaScopeInfo>(FunctionScopes[N-1])) {
+          dyn_cast<sema::LambdaScopeInfo>(SubprogramScopes[N-1])) {
       LSI->ContainsUnexpandedParameterPack = true;
       return false;
     }
@@ -311,7 +311,7 @@ bool Sema::DiagnoseUnexpandedParameterPack(const DeclarationNameInfo &NameInfo,
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     // FIXME: We shouldn't need this null check!
     if (TypeSourceInfo *TSInfo = NameInfo.getNamedTypeInfo())
       return DiagnoseUnexpandedParameterPack(NameInfo.getLoc(), TSInfo, UPPC);
@@ -544,7 +544,7 @@ bool Sema::CheckParameterPacksForExpansion(SourceLocation EllipsisLoc,
     // Compute the depth and index for this parameter pack.
     unsigned Depth = 0, Index = 0;
     IdentifierInfo *Name;
-    bool IsFunctionParameterPack = false;
+    bool IsSubprogramParameterPack = false;
     
     if (const TemplateTypeParmType *TTP
         = i->first.dyn_cast<const TemplateTypeParmType *>()) {
@@ -554,7 +554,7 @@ bool Sema::CheckParameterPacksForExpansion(SourceLocation EllipsisLoc,
     } else {
       NamedDecl *ND = i->first.get<NamedDecl *>();
       if (isa<ParmVarDecl>(ND))
-        IsFunctionParameterPack = true;
+        IsSubprogramParameterPack = true;
       else
         llvm::tie(Depth, Index) = getDepthAndIndex(ND);        
       
@@ -563,7 +563,7 @@ bool Sema::CheckParameterPacksForExpansion(SourceLocation EllipsisLoc,
     
     // Determine the size of this argument pack.
     unsigned NewPackSize;    
-    if (IsFunctionParameterPack) {
+    if (IsSubprogramParameterPack) {
       // Figure out whether we're instantiating to an argument pack or not.
       typedef LocalInstantiationScope::DeclArgumentPack DeclArgumentPack;
       
@@ -597,7 +597,7 @@ bool Sema::CheckParameterPacksForExpansion(SourceLocation EllipsisLoc,
     //   Template argument deduction can extend the sequence of template 
     //   arguments corresponding to a template parameter pack, even when the
     //   sequence contains explicitly specified template arguments.
-    if (!IsFunctionParameterPack) {
+    if (!IsSubprogramParameterPack) {
       if (NamedDecl *PartialPack 
                     = CurrentInstantiationScope->getPartiallySubstitutedPack()){
         unsigned PartialDepth, PartialIndex;
@@ -655,7 +655,7 @@ llvm::Optional<unsigned> Sema::getNumArgumentsInExpansion(QualType T,
     } else {      
       NamedDecl *ND = Unexpanded[I].first.get<NamedDecl *>();
       if (isa<ParmVarDecl>(ND)) {
-        // Function parameter pack.
+        // Subprogram parameter pack.
         typedef LocalInstantiationScope::DeclArgumentPack DeclArgumentPack;
         
         llvm::PointerUnion<Decl *, DeclArgumentPack *> *Instantiation
@@ -751,7 +751,7 @@ bool Sema::containsUnexpandedParameterPacks(Declarator &D) {
       break;
         
     case DeclaratorChunk::Array:
-    case DeclaratorChunk::Function:
+    case DeclaratorChunk::Subprogram:
     case DeclaratorChunk::BlockPointer:
       // Syntactically, these kinds of declarator chunks all come after the
       // declarator-id (conceptually), so the parser should not invoke this

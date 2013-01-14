@@ -30,7 +30,7 @@ class CXXBaseSpecifier;
 class DeclaratorDecl;
 class DeclaratorInfo;
 class FieldDecl;
-class FunctionDecl;
+class SubprogramDecl;
 class ParmVarDecl;
 class Sema;
 class TypeLoc;
@@ -392,7 +392,7 @@ private:
     IC_Implicit,       ///< Implicit context (value initialization)
     IC_StaticCast,     ///< Static cast context
     IC_CStyleCast,     ///< C-style cast context
-    IC_FunctionalCast  ///< Functional cast context
+    IC_SubprogramalCast  ///< Subprogramal cast context
   };
   
   /// \brief The kind of initialization being performed.
@@ -446,10 +446,10 @@ public:
   }
 
   /// \brief Create a direct initialization for a functional cast.
-  static InitializationKind CreateFunctionalCast(SourceRange TypeRange,
+  static InitializationKind CreateSubprogramalCast(SourceRange TypeRange,
                                                  bool InitList) {
     return InitializationKind(InitList ? IK_DirectList : IK_Direct,
-                              IC_FunctionalCast, TypeRange.getBegin(),
+                              IC_SubprogramalCast, TypeRange.getBegin(),
                               TypeRange.getBegin(), TypeRange.getEnd());
   }
 
@@ -487,7 +487,7 @@ public:
   }
   
   /// \brief Determine whether this initialization is a C-style cast.
-  bool isCStyleOrFunctionalCast() const { 
+  bool isCStyleOrSubprogramalCast() const { 
     return Context >= IC_CStyleCast; 
   }
 
@@ -497,8 +497,8 @@ public:
   }
 
   /// \brief Determine whether this is a functional-style cast.
-  bool isFunctionalCast() const {
-    return Context == IC_FunctionalCast;
+  bool isSubprogramalCast() const {
+    return Context == IC_SubprogramalCast;
   }
 
   /// \brief Determine whether this initialization is an implicit
@@ -529,7 +529,7 @@ public:
 
   /// \brief Retrieve whether this initialization allows the use of explicit
   /// conversion functions.
-  bool allowExplicitConversionFunctions() const {
+  bool allowExplicitConversionSubprograms() const {
     return !isCopyInit() || Context == IC_ExplicitConvs;
   }
   
@@ -566,7 +566,7 @@ public:
   enum StepKind {
     /// \brief Resolve the address of an overloaded function to a specific
     /// function declaration.
-    SK_ResolveAddressOfOverloadedFunction,
+    SK_ResolveAddressOfOverloadedSubprogram,
     /// \brief Perform a derived-to-base cast, producing an rvalue.
     SK_CastDerivedToBaseRValue,
     /// \brief Perform a derived-to-base cast, producing an xvalue.
@@ -637,21 +637,21 @@ public:
     QualType Type;
     
     union {
-      /// \brief When Kind == SK_ResolvedOverloadedFunction or Kind ==
+      /// \brief When Kind == SK_ResolvedOverloadedSubprogram or Kind ==
       /// SK_UserConversion, the function that the expression should be 
       /// resolved to or the conversion function to call, respectively.
       /// When Kind == SK_ConstructorInitialization or SK_ListConstruction,
       /// the constructor to be called.
       ///
-      /// Always a FunctionDecl, plus a Boolean flag telling if it was
+      /// Always a SubprogramDecl, plus a Boolean flag telling if it was
       /// selected from an overloaded set having size greater than 1.
       /// For conversion decls, the naming class is the source type.
       /// For construct decls, the naming class is the target type.
       struct {
         bool HadMultipleCandidates;
-        FunctionDecl *Function;
+        SubprogramDecl *Subprogram;
         DeclAccessPair FoundDecl;
-      } Function;
+      } Subprogram;
 
       /// \brief When Kind = SK_ConversionSequence, the implicit conversion
       /// sequence.
@@ -854,9 +854,9 @@ public:
   /// \brief Add a new step in the initialization that resolves the address
   /// of an overloaded function to a specific function declaration.
   ///
-  /// \param Function the function to which the overloaded function reference
+  /// \param Subprogram the function to which the overloaded function reference
   /// resolves.
-  void AddAddressOverloadResolutionStep(FunctionDecl *Function,
+  void AddAddressOverloadResolutionStep(SubprogramDecl *Subprogram,
                                         DeclAccessPair Found,
                                         bool HadMultipleCandidates);
 
@@ -891,7 +891,7 @@ public:
 
   /// \brief Add a new step invoking a conversion function, which is either
   /// a constructor or a conversion function.
-  void AddUserConversionStep(FunctionDecl *Function,
+  void AddUserConversionStep(SubprogramDecl *Subprogram,
                              DeclAccessPair FoundDecl,
                              QualType T,
                              bool HadMultipleCandidates);

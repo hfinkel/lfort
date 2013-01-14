@@ -1259,7 +1259,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     // the array type was of an incomplete type.
     return CGF.Builder.CreateBitCast(V, ConvertType(CE->getType()));
   }
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
     return EmitLValue(E).getAddress();
 
   case CK_NullToPointer:
@@ -1493,7 +1493,7 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
         value = Builder.CreateInBoundsGEP(value, numElts, "vla.inc");
     
     // Arithmetic on function pointers (!) is just +-1.
-    } else if (type->isFunctionType()) {
+    } else if (type->isSubprogramType()) {
       llvm::Value *amt = Builder.getInt32(amount);
 
       value = CGF.EmitCastToVoidPtr(value);
@@ -2061,7 +2061,7 @@ Value *ScalarExprEmitter::EmitOverflowCheckedBinOp(const BinOpInfo &Ops) {
   llvm::Type *argTypes[] = { CGF.Int64Ty, CGF.Int64Ty, Int8Ty, Int8Ty };
   llvm::FunctionType *handlerTy =
       llvm::FunctionType::get(CGF.Int64Ty, argTypes, true);
-  llvm::Value *handler = CGF.CGM.CreateRuntimeFunction(handlerTy, *handlerName);
+  llvm::Value *handler = CGF.CGM.CreateRuntimeSubprogram(handlerTy, *handlerName);
 
   // Sign extend the args to 64-bit, so that we can use the same handler for
   // all types of overflow.
@@ -2157,7 +2157,7 @@ static Value *emitPointerArithmetic(CodeGenSubprogram &CGF,
   // Explicitly handle GNU void* and function pointer arithmetic extensions. The
   // GNU void* casts amount to no-ops since our void* type is i8*, but this is
   // future proof.
-  if (elementType->isVoidType() || elementType->isFunctionType()) {
+  if (elementType->isVoidType() || elementType->isSubprogramType()) {
     Value *result = CGF.Builder.CreateBitCast(pointer, CGF.VoidPtrTy);
     result = CGF.Builder.CreateGEP(result, index, "add.ptr");
     return CGF.Builder.CreateBitCast(result, pointer->getType());
@@ -2347,7 +2347,7 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
     CharUnits elementSize;
     // Handle GCC extension for pointer arithmetic on void* and
     // function pointer types.
-    if (elementType->isVoidType() || elementType->isFunctionType())
+    if (elementType->isVoidType() || elementType->isSubprogramType())
       elementSize = CharUnits::One();
     else
       elementSize = CGF.getContext().getTypeSizeInChars(elementType);

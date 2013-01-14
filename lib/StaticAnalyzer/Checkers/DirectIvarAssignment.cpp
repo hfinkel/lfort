@@ -220,7 +220,7 @@ struct InvalidatorMethodFilter : MethodFilter {
 InvalidatorMethodFilter AttrFilter;
 }
 
-void ento::registerDirectIvarAssignmentForAnnotatedFunctions(
+void ento::registerDirectIvarAssignmentForAnnotatedSubprograms(
     CheckerManager &mgr) {
   mgr.registerChecker<DirectIvarAssignment>()->ShouldSkipMethod = &AttrFilter;
 }

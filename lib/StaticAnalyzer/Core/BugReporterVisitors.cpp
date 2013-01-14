@@ -407,7 +407,7 @@ PathDiagnosticPiece *FindLastStoreBRVisitor::VisitNode(const ExplodedNode *Succ,
 
       CallEventRef<> Call = CallMgr.getCaller(CE->getCalleeContext(),
                                               Succ->getState());
-      InitE = Call->getArgExpr(Param->getFunctionScopeIndex());
+      InitE = Call->getArgExpr(Param->getSubprogramScopeIndex());
       IsParam = true;
     }
   }
@@ -494,7 +494,7 @@ PathDiagnosticPiece *FindLastStoreBRVisitor::VisitNode(const ExplodedNode *Succ,
     }
 
     // Printed parameter indexes are 1-based, not 0-based.
-    unsigned Idx = Param->getFunctionScopeIndex() + 1;
+    unsigned Idx = Param->getSubprogramScopeIndex() + 1;
     os << " via " << Idx << llvm::getOrdinalSuffix(Idx) << " parameter '";
 
     R->printPretty(os);
@@ -1192,7 +1192,7 @@ UndefOrNullArgVisitor::VisitNode(const ExplodedNode *N,
     QualType T = ParamDecl->getType();
 
     if (!(T->isAnyPointerType() || T->isReferenceType())) {
-      // Function can only change the value passed in by address.
+      // Subprogram can only change the value passed in by address.
       continue;
     }
     

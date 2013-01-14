@@ -84,7 +84,7 @@ namespace {
       : Writer(Writer), Record(Record), Code(TYPE_EXT_QUAL) { }
 
     void VisitArrayType(const ArrayType *T);
-    void VisitFunctionType(const FunctionType *T);
+    void VisitSubprogramType(const SubprogramType *T);
     void VisitTagType(const TagType *T);
 
 #define TYPE(Class, Base) void Visit##Class##Type(const Class##Type *T);
@@ -166,9 +166,9 @@ void ASTTypeWriter::VisitExtVectorType(const ExtVectorType *T) {
   Code = TYPE_EXT_VECTOR;
 }
 
-void ASTTypeWriter::VisitFunctionType(const FunctionType *T) {
+void ASTTypeWriter::VisitSubprogramType(const SubprogramType *T) {
   Writer.AddTypeRef(T->getResultType(), Record);
-  FunctionType::ExtInfo C = T->getExtInfo();
+  SubprogramType::ExtInfo C = T->getExtInfo();
   Record.push_back(C.getNoReturn());
   Record.push_back(C.getHasRegParm());
   Record.push_back(C.getRegParm());
@@ -177,13 +177,13 @@ void ASTTypeWriter::VisitFunctionType(const FunctionType *T) {
   Record.push_back(C.getProducesResult());
 }
 
-void ASTTypeWriter::VisitFunctionNoProtoType(const FunctionNoProtoType *T) {
-  VisitFunctionType(T);
+void ASTTypeWriter::VisitSubprogramNoProtoType(const SubprogramNoProtoType *T) {
+  VisitSubprogramType(T);
   Code = TYPE_FUNCTION_NO_PROTO;
 }
 
-void ASTTypeWriter::VisitFunctionProtoType(const FunctionProtoType *T) {
-  VisitFunctionType(T);
+void ASTTypeWriter::VisitSubprogramProtoType(const SubprogramProtoType *T) {
+  VisitSubprogramType(T);
   Record.push_back(T->getNumArgs());
   for (unsigned I = 0, N = T->getNumArgs(); I != N; ++I)
     Writer.AddTypeRef(T->getArgType(I), Record);
@@ -420,7 +420,7 @@ public:
 #include "lfort/AST/TypeLocNodes.def"
 
   void VisitArrayTypeLoc(ArrayTypeLoc TyLoc);
-  void VisitFunctionTypeLoc(FunctionTypeLoc TyLoc);
+  void VisitSubprogramTypeLoc(SubprogramTypeLoc TyLoc);
 };
 
 }
@@ -486,7 +486,7 @@ void TypeLocWriter::VisitVectorTypeLoc(VectorTypeLoc TL) {
 void TypeLocWriter::VisitExtVectorTypeLoc(ExtVectorTypeLoc TL) {
   Writer.AddSourceLocation(TL.getNameLoc(), Record);
 }
-void TypeLocWriter::VisitFunctionTypeLoc(FunctionTypeLoc TL) {
+void TypeLocWriter::VisitSubprogramTypeLoc(SubprogramTypeLoc TL) {
   Writer.AddSourceLocation(TL.getLocalRangeBegin(), Record);
   Writer.AddSourceLocation(TL.getLParenLoc(), Record);
   Writer.AddSourceLocation(TL.getRParenLoc(), Record);
@@ -494,11 +494,11 @@ void TypeLocWriter::VisitFunctionTypeLoc(FunctionTypeLoc TL) {
   for (unsigned i = 0, e = TL.getNumArgs(); i != e; ++i)
     Writer.AddDeclRef(TL.getArg(i), Record);
 }
-void TypeLocWriter::VisitFunctionProtoTypeLoc(FunctionProtoTypeLoc TL) {
-  VisitFunctionTypeLoc(TL);
+void TypeLocWriter::VisitSubprogramProtoTypeLoc(SubprogramProtoTypeLoc TL) {
+  VisitSubprogramTypeLoc(TL);
 }
-void TypeLocWriter::VisitFunctionNoProtoTypeLoc(FunctionNoProtoTypeLoc TL) {
-  VisitFunctionTypeLoc(TL);
+void TypeLocWriter::VisitSubprogramNoProtoTypeLoc(SubprogramNoProtoTypeLoc TL) {
+  VisitSubprogramTypeLoc(TL);
 }
 void TypeLocWriter::VisitUnresolvedUsingTypeLoc(UnresolvedUsingTypeLoc TL) {
   Writer.AddSourceLocation(TL.getNameLoc(), Record);
@@ -2909,7 +2909,7 @@ public:
       break;
     case DeclarationName::CXXConstructorName:
     case DeclarationName::CXXDestructorName:
-    case DeclarationName::CXXConversionFunctionName:
+    case DeclarationName::CXXConversionSubprogramName:
       break;
     case DeclarationName::CXXOperatorName:
       ID.AddInteger(Name.getCXXOverloadedOperator());
@@ -2940,7 +2940,7 @@ public:
       break;
     case DeclarationName::CXXConstructorName:
     case DeclarationName::CXXDestructorName:
-    case DeclarationName::CXXConversionFunctionName:
+    case DeclarationName::CXXConversionSubprogramName:
     case DeclarationName::CXXUsingDirective:
       break;
     }
@@ -2976,7 +2976,7 @@ public:
       return;
     case DeclarationName::CXXConstructorName:
     case DeclarationName::CXXDestructorName:
-    case DeclarationName::CXXConversionFunctionName:
+    case DeclarationName::CXXConversionSubprogramName:
     case DeclarationName::CXXUsingDirective:
       return;
     }
@@ -3009,7 +3009,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
 
   // Since there is no name lookup into functions or methods, don't bother to
   // build a visible-declarations table for these entities.
-  if (DC->isFunctionOrMethod())
+  if (DC->isSubprogramOrMethod())
     return 0;
 
   // If not in C++, we perform name lookup for the translation unit via the
@@ -3040,7 +3040,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
     DeclarationName Name = D->first;
     DeclContext::lookup_result Result = D->second.getLookupResult();
     if (!Result.empty()) {
-      if (Name.getNameKind() == DeclarationName::CXXConversionFunctionName) {
+      if (Name.getNameKind() == DeclarationName::CXXConversionSubprogramName) {
         // Hash all conversion function names to the same name. The actual
         // type information in conversion function name is not used in the
         // key (since such type information is not stable across different
@@ -4212,7 +4212,7 @@ void ASTWriter::AddDeclarationName(DeclarationName Name, RecordDataImpl &Record)
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     AddTypeRef(Name.getCXXNameType(), Record);
     break;
 
@@ -4235,7 +4235,7 @@ void ASTWriter::AddDeclarationNameLoc(const DeclarationNameLoc &DNLoc,
   switch (Name.getNameKind()) {
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     AddTypeSourceInfo(DNLoc.NamedType.TInfo, Record);
     break;
 
@@ -4784,8 +4784,8 @@ void ASTWriter::AddedCXXTemplateSpecialization(const ClassTemplateDecl *TD,
   Record.push_back(reinterpret_cast<uint64_t>(D));
 }
 
-void ASTWriter::AddedCXXTemplateSpecialization(const FunctionTemplateDecl *TD,
-                                               const FunctionDecl *D) {
+void ASTWriter::AddedCXXTemplateSpecialization(const SubprogramTemplateDecl *TD,
+                                               const SubprogramDecl *D) {
   // The specializations set is kept in the canonical template.
   assert(!WritingAST && "Already writing the AST!");
   TD = TD->getCanonicalDecl();
@@ -4797,13 +4797,13 @@ void ASTWriter::AddedCXXTemplateSpecialization(const FunctionTemplateDecl *TD,
   Record.push_back(reinterpret_cast<uint64_t>(D));
 }
 
-void ASTWriter::CompletedImplicitDefinition(const FunctionDecl *D) {
+void ASTWriter::CompletedImplicitDefinition(const SubprogramDecl *D) {
   assert(!WritingAST && "Already writing the AST!");
   if (!D->isFromASTFile())
     return; // Declaration not imported from PCH.
 
   // Implicit decl from a PCH was defined.
-  // FIXME: Should implicit definition be a separate FunctionDecl?
+  // FIXME: Should implicit definition be a separate SubprogramDecl?
   RewriteDecl(D);
 }
 

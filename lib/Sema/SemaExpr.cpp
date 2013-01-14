@@ -52,7 +52,7 @@ bool Sema::CanUseDecl(NamedDecl *D) {
     return false;
 
   // See if this is a deleted function.
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->isDeleted())
       return false;
   }
@@ -124,7 +124,7 @@ static AvailabilityResult DiagnoseAvailabilityOfDecl(Sema &S,
           S.Diag(Loc, diag::err_unavailable_message) 
             << D->getDeclName() << Message;
         S.Diag(D->getLocation(), diag::note_unavailable_here)
-                  << isa<FunctionDecl>(D) << false;
+                  << isa<SubprogramDecl>(D) << false;
         if (ObjCPDecl)
           S.Diag(ObjCPDecl->getLocation(), diag::note_property_attribute)
           << ObjCPDecl->getDeclName() << 1;
@@ -135,7 +135,7 @@ static AvailabilityResult DiagnoseAvailabilityOfDecl(Sema &S,
 }
 
 /// \brief Emit a note explaining that this function is deleted or unavailable.
-void Sema::NoteDeletedFunction(FunctionDecl *Decl) {
+void Sema::NoteDeletedSubprogram(SubprogramDecl *Decl) {
   CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(Decl);
 
   if (Method && Method->isDeleted() && !Method->isDeletedAsWritten()) {
@@ -156,10 +156,10 @@ void Sema::NoteDeletedFunction(FunctionDecl *Decl) {
     << 1 << Decl->isDeleted();
 }
 
-/// \brief Determine whether a FunctionDecl was ever declared with an
+/// \brief Determine whether a SubprogramDecl was ever declared with an
 /// explicit storage class.
-static bool hasAnyExplicitStorageClass(const FunctionDecl *D) {
-  for (FunctionDecl::redecl_iterator I = D->redecls_begin(),
+static bool hasAnyExplicitStorageClass(const SubprogramDecl *D) {
+  for (SubprogramDecl::redecl_iterator I = D->redecls_begin(),
                                      E = D->redecls_end();
        I != E; ++I) {
     if (I->getStorageClassAsWritten() != SC_None)
@@ -176,7 +176,7 @@ static bool hasAnyExplicitStorageClass(const FunctionDecl *D) {
 /// because the restriction language is a bit weaker (C++11 [basic.def.odr]p6)
 /// and so while there may still be user mistakes, most of the time we can't
 /// prove that there are errors.
-static void diagnoseUseOfInternalDeclInInlineFunction(Sema &S,
+static void diagnoseUseOfInternalDeclInInlineSubprogram(Sema &S,
                                                       const NamedDecl *D,
                                                       SourceLocation Loc) {
   // This is disabled under C++; there are too many ways for this to fire in
@@ -186,7 +186,7 @@ static void diagnoseUseOfInternalDeclInInlineFunction(Sema &S,
     return;
 
   // Check if this is an inlined function or method.
-  FunctionDecl *Current = S.getCurFunctionDecl();
+  SubprogramDecl *Current = S.getCurSubprogramDecl();
   if (!Current)
     return;
   if (!Current->isInlined())
@@ -205,7 +205,7 @@ static void diagnoseUseOfInternalDeclInInlineFunction(Sema &S,
   //  (3) the thing we're referencing is another inline function.
   // This last can give us false negatives, but it's better than warning on
   // wrappers for simple C library functions.
-  const FunctionDecl *UsedFn = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *UsedFn = dyn_cast<SubprogramDecl>(D);
   bool DowngradeWarning = S.getSourceManager().isFromMainFile(Loc);
   if (!DowngradeWarning && UsedFn)
     DowngradeWarning = UsedFn->isInlined() || UsedFn->hasAttr<ConstAttr>();
@@ -216,7 +216,7 @@ static void diagnoseUseOfInternalDeclInInlineFunction(Sema &S,
 
   // Suggest "static" on the inline function, if possible.
   if (!hasAnyExplicitStorageClass(Current)) {
-    const FunctionDecl *FirstDecl = Current->getCanonicalDecl();
+    const SubprogramDecl *FirstDecl = Current->getCanonicalDecl();
     SourceLocation DeclBegin = FirstDecl->getSourceRange().getBegin();
     S.Diag(DeclBegin, diag::note_convert_inline_to_static)
       << Current << FixItHint::CreateInsertion(DeclBegin, "static ");
@@ -241,7 +241,7 @@ static void diagnoseUseOfInternalDeclInInlineFunction(Sema &S,
 ///
 bool Sema::DiagnoseUseOfDecl(NamedDecl *D, SourceLocation Loc,
                              const ObjCInterfaceDecl *UnknownObjCClass) {
-  if (getLangOpts().CPlusPlus && isa<FunctionDecl>(D)) {
+  if (getLangOpts().CPlusPlus && isa<SubprogramDecl>(D)) {
     // If there were any diagnostics suppressed by template argument deduction,
     // emit them now.
     llvm::DenseMap<Decl *, SmallVector<PartialDiagnosticAt, 1> >::iterator
@@ -267,10 +267,10 @@ bool Sema::DiagnoseUseOfDecl(NamedDecl *D, SourceLocation Loc,
   }
 
   // See if this is a deleted function.
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     if (FD->isDeleted()) {
       Diag(Loc, diag::err_deleted_function_use);
-      NoteDeletedFunction(FD);
+      NoteDeletedSubprogram(FD);
       return true;
     }
   }
@@ -278,7 +278,7 @@ bool Sema::DiagnoseUseOfDecl(NamedDecl *D, SourceLocation Loc,
 
   DiagnoseUnusedOfDecl(*this, D, Loc);
 
-  diagnoseUseOfInternalDeclInInlineFunction(*this, D, Loc);
+  diagnoseUseOfInternalDeclInInlineSubprogram(*this, D, Loc);
 
   return false;
 }
@@ -286,7 +286,7 @@ bool Sema::DiagnoseUseOfDecl(NamedDecl *D, SourceLocation Loc,
 /// \brief Retrieve the message suffix that should be added to a
 /// diagnostic complaining about the given function being deleted or
 /// unavailable.
-std::string Sema::getDeletedOrUnavailableSuffix(const FunctionDecl *FD) {
+std::string Sema::getDeletedOrUnavailableSuffix(const SubprogramDecl *FD) {
   std::string Message;
   if (FD->getAvailability(&Message))
     return ": " + Message;
@@ -309,29 +309,29 @@ void Sema::DiagnoseSentinelCalls(NamedDecl *D, SourceLocation Loc,
 
   // The kind of declaration.  This is also an index into a %select in
   // the diagnostic.
-  enum CalleeType { CT_Function, CT_Method, CT_Block } calleeType;
+  enum CalleeType { CT_Subprogram, CT_Method, CT_Block } calleeType;
 
   if (ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(D)) {
     numFormalParams = MD->param_size();
     calleeType = CT_Method;
-  } else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  } else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     numFormalParams = FD->param_size();
-    calleeType = CT_Function;
+    calleeType = CT_Subprogram;
   } else if (isa<VarDecl>(D)) {
     QualType type = cast<ValueDecl>(D)->getType();
-    const FunctionType *fn = 0;
+    const SubprogramType *fn = 0;
     if (const PointerType *ptr = type->getAs<PointerType>()) {
-      fn = ptr->getPointeeType()->getAs<FunctionType>();
+      fn = ptr->getPointeeType()->getAs<SubprogramType>();
       if (!fn) return;
-      calleeType = CT_Function;
+      calleeType = CT_Subprogram;
     } else if (const BlockPointerType *ptr = type->getAs<BlockPointerType>()) {
-      fn = ptr->getPointeeType()->castAs<FunctionType>();
+      fn = ptr->getPointeeType()->castAs<SubprogramType>();
       calleeType = CT_Block;
     } else {
       return;
     }
 
-    if (const FunctionProtoType *proto = dyn_cast<FunctionProtoType>(fn)) {
+    if (const SubprogramProtoType *proto = dyn_cast<SubprogramProtoType>(fn)) {
       numFormalParams = proto->getNumArgs();
     } else {
       numFormalParams = 0;
@@ -397,8 +397,8 @@ SourceRange Sema::getExprRange(Expr *E) const {
 //  Standard Promotions and Conversions
 //===----------------------------------------------------------------------===//
 
-/// DefaultFunctionArrayConversion (C99 6.3.2.1p3, C99 6.3.2.1p4).
-ExprResult Sema::DefaultFunctionArrayConversion(Expr *E) {
+/// DefaultSubprogramArrayConversion (C99 6.3.2.1p3, C99 6.3.2.1p4).
+ExprResult Sema::DefaultSubprogramArrayConversion(Expr *E) {
   // Handle any placeholder expressions which made it here.
   if (E->getType()->isPlaceholderType()) {
     ExprResult result = CheckPlaceholderExpr(E);
@@ -407,11 +407,11 @@ ExprResult Sema::DefaultFunctionArrayConversion(Expr *E) {
   }
   
   QualType Ty = E->getType();
-  assert(!Ty.isNull() && "DefaultFunctionArrayConversion - missing type");
+  assert(!Ty.isNull() && "DefaultSubprogramArrayConversion - missing type");
 
-  if (Ty->isFunctionType())
+  if (Ty->isSubprogramType())
     E = ImpCastExprToType(E, Context.getPointerType(Ty),
-                          CK_FunctionToPointerDecay).take();
+                          CK_SubprogramToPointerDecay).take();
   else if (Ty->isArrayType()) {
     // In C90 mode, arrays only promote to pointers if the array expression is
     // an lvalue.  The relevant legalese is C90 6.2.2.1p3: "an lvalue that has
@@ -519,8 +519,8 @@ ExprResult Sema::DefaultLvalueConversion(Expr *E) {
   return Res;
 }
 
-ExprResult Sema::DefaultFunctionArrayLvalueConversion(Expr *E) {
-  ExprResult Res = DefaultFunctionArrayConversion(E);
+ExprResult Sema::DefaultSubprogramArrayLvalueConversion(Expr *E) {
+  ExprResult Res = DefaultSubprogramArrayConversion(E);
   if (Res.isInvalid())
     return ExprError();
   Res = DefaultLvalueConversion(Res.take());
@@ -537,7 +537,7 @@ ExprResult Sema::DefaultFunctionArrayLvalueConversion(Expr *E) {
 /// In these instances, this routine should *not* be called.
 ExprResult Sema::UsualUnaryConversions(Expr *E) {
   // First, convert to an r-value.
-  ExprResult Res = DefaultFunctionArrayLvalueConversion(E);
+  ExprResult Res = DefaultSubprogramArrayLvalueConversion(E);
   if (Res.isInvalid())
     return Owned(E);
   E = Res.take();
@@ -682,7 +682,7 @@ bool Sema::variadicArgumentPODCheck(const Expr *E, VariadicCallType CT) {
 /// DefaultVariadicArgumentPromotion - Like DefaultArgumentPromotion, but
 /// will create a trap if the resulting type is not a POD type.
 ExprResult Sema::DefaultVariadicArgumentPromotion(Expr *E, VariadicCallType CT,
-                                                  FunctionDecl *FDecl) {
+                                                  SubprogramDecl *FDecl) {
   if (const BuiltinType *PlaceholderTy = E->getType()->getAsPlaceholderType()) {
     // Strip the unbridged-cast placeholder expression off, if applicable.
     if (PlaceholderTy->getKind() == BuiltinType::ARCUnbridgedCast &&
@@ -705,7 +705,7 @@ ExprResult Sema::DefaultVariadicArgumentPromotion(Expr *E, VariadicCallType CT,
   E = ExprRes.take();
 
   // Diagnostics regarding non-POD argument types are
-  // emitted along with format string checking in Sema::CheckFunctionCall().
+  // emitted along with format string checking in Sema::CheckSubprogramCall().
   if (isValidVarArgType(E->getType()) == VAK_Invalid) {
     // Turn this into a trap.
     CXXScopeSpec SS;
@@ -1402,9 +1402,9 @@ Sema::BuildDeclRefExpr(ValueDecl *D, QualType Ty, ExprValueKind VK,
                        const DeclarationNameInfo &NameInfo,
                        const CXXScopeSpec *SS) {
   if (getLangOpts().CUDA)
-    if (const FunctionDecl *Caller = dyn_cast<FunctionDecl>(CurContext))
-      if (const FunctionDecl *Callee = dyn_cast<FunctionDecl>(D)) {
-        CUDAFunctionTarget CallerTarget = IdentifyCUDATarget(Caller),
+    if (const SubprogramDecl *Caller = dyn_cast<SubprogramDecl>(CurContext))
+      if (const SubprogramDecl *Callee = dyn_cast<SubprogramDecl>(D)) {
+        CUDASubprogramTarget CallerTarget = IdentifyCUDATarget(Caller),
                            CalleeTarget = IdentifyCUDATarget(Callee);
         if (CheckCUDATarget(CallerTarget, CalleeTarget)) {
           Diag(NameInfo.getLoc(), diag::err_ref_bad_target)
@@ -1417,7 +1417,7 @@ Sema::BuildDeclRefExpr(ValueDecl *D, QualType Ty, ExprValueKind VK,
 
   bool refersToEnclosingScope =
     (CurContext != D->getDeclContext() &&
-     D->getDeclContext()->isFunctionOrMethod());
+     D->getDeclContext()->isSubprogramOrMethod());
 
   DeclRefExpr *E = DeclRefExpr::Create(Context,
                                        SS ? SS->getWithLocInContext(Context)
@@ -1434,7 +1434,7 @@ Sema::BuildDeclRefExpr(ValueDecl *D, QualType Ty, ExprValueKind VK,
       Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak,
                                E->getLocStart());
     if (Level != DiagnosticsEngine::Ignored)
-      getCurFunction()->recordUseOfWeak(E);
+      getCurSubprogram()->recordUseOfWeak(E);
   }
 
   // Just in case we're building an illegal pointer-to-member.
@@ -1490,7 +1490,7 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
   unsigned diagnostic_suggest = diag::err_undeclared_var_use_suggest;
   if (Name.getNameKind() == DeclarationName::CXXOperatorName ||
       Name.getNameKind() == DeclarationName::CXXLiteralOperatorName ||
-      Name.getNameKind() == DeclarationName::CXXConversionFunctionName) {
+      Name.getNameKind() == DeclarationName::CXXConversionSubprogramName) {
     diagnostic = diag::err_undeclared_use;
     diagnostic_suggest = diag::err_undeclared_use_suggest;
   }
@@ -1514,7 +1514,7 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
         // function parameter list, hence add an explicit check.
         bool isDefaultArgument = !ActiveTemplateInstantiations.empty() &&
                               ActiveTemplateInstantiations.back().Kind ==
-            ActiveTemplateInstantiation::DefaultFunctionArgumentInstantiation;
+            ActiveTemplateInstantiation::DefaultSubprogramArgumentInstantiation;
         CXXMethodDecl *CurMethod = dyn_cast<CXXMethodDecl>(CurContext);
         bool isInstance = CurMethod &&
                           CurMethod->isInstance() &&
@@ -1535,12 +1535,12 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
           
           CXXMethodDecl *DepMethod;
           if (CurMethod->getTemplatedKind() ==
-              FunctionDecl::TK_FunctionTemplateSpecialization)
+              SubprogramDecl::TK_SubprogramTemplateSpecialization)
             DepMethod = cast<CXXMethodDecl>(CurMethod->getPrimaryTemplate()->
                 getInstantiatedFromMemberTemplate()->getTemplatedDecl());
           else
             DepMethod = cast<CXXMethodDecl>(
-                CurMethod->getInstantiatedFromMemberFunction());
+                CurMethod->getInstantiatedFromMemberSubprogram());
           assert(DepMethod && "No template pattern found");
 
           QualType DepThisType = DepMethod->getThisType(Context);
@@ -1589,8 +1589,8 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
     // function definition declared at class scope then we must set
     // DC to the lexical parent to be able to search into the parent
     // class.
-    if (getLangOpts().MicrosoftMode && isa<FunctionDecl>(DC) &&
-        cast<FunctionDecl>(DC)->getFriendObjectKind() &&
+    if (getLangOpts().MicrosoftMode && isa<SubprogramDecl>(DC) &&
+        cast<SubprogramDecl>(DC)->getFriendObjectKind() &&
         DC->getLexicalParent()->isRecord())
       DC = DC->getLexicalParent();
     else
@@ -1612,26 +1612,26 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
         for (TypoCorrection::decl_iterator CD = Corrected.begin(),
                                         CDEnd = Corrected.end();
              CD != CDEnd; ++CD) {
-          if (FunctionTemplateDecl *FTD =
-                   dyn_cast<FunctionTemplateDecl>(*CD))
+          if (SubprogramTemplateDecl *FTD =
+                   dyn_cast<SubprogramTemplateDecl>(*CD))
             AddTemplateOverloadCandidate(
                 FTD, DeclAccessPair::make(FTD, AS_none), ExplicitTemplateArgs,
                 Args, OCS);
-          else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(*CD))
+          else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(*CD))
             if (!ExplicitTemplateArgs || ExplicitTemplateArgs->size() == 0)
               AddOverloadCandidate(FD, DeclAccessPair::make(FD, AS_none),
                                    Args, OCS);
         }
-        switch (OCS.BestViableFunction(*this, R.getNameLoc(), Best)) {
+        switch (OCS.BestViableSubprogram(*this, R.getNameLoc(), Best)) {
           case OR_Success:
-            ND = Best->Function;
+            ND = Best->Subprogram;
             break;
           default:
             break;
         }
       }
       R.addDecl(ND);
-      if (isa<ValueDecl>(ND) || isa<FunctionTemplateDecl>(ND)) {
+      if (isa<ValueDecl>(ND) || isa<SubprogramTemplateDecl>(ND)) {
         if (SS.isEmpty())
           Diag(R.getNameLoc(), diagnostic_suggest) << Name << CorrectedQuotedStr
             << FixItHint::CreateReplacement(R.getNameLoc(), CorrectedStr);
@@ -1730,7 +1730,7 @@ ExprResult Sema::ActOnIdExpression(Scope *S,
   // Determine whether this is a member of an unknown specialization;
   // we need to handle these differently.
   bool DependentID = false;
-  if (Name.getNameKind() == DeclarationName::CXXConversionFunctionName &&
+  if (Name.getNameKind() == DeclarationName::CXXConversionSubprogramName &&
       Name.getCXXNameType()->isDependentType()) {
     DependentID = true;
   } else if (SS.isSet()) {
@@ -1797,7 +1797,7 @@ ExprResult Sema::ActOnIdExpression(Scope *S,
     // Otherwise, this could be an implicitly declared function reference (legal
     // in C90, extension in C99, forbidden in C++).
     if (HasTrailingLParen && II && !getLangOpts().CPlusPlus) {
-      NamedDecl *D = ImplicitlyDefineFunction(NameLoc, *II, S);
+      NamedDecl *D = ImplicitlyDefineSubprogram(NameLoc, *II, S);
       if (D) R.addDecl(D);
     }
 
@@ -1964,7 +1964,7 @@ Sema::LookupInObjCMethod(LookupResult &Lookup, Scope *S,
     LookForIvars = false;
   else
     LookForIvars = (Lookup.isSingleResult() &&
-                    Lookup.getFoundDecl()->isDefinedOutsideFunctionOrMethod());
+                    Lookup.getFoundDecl()->isDefinedOutsideSubprogramOrMethod());
   ObjCInterfaceDecl *IFace = 0;
   if (LookForIvars) {
     IFace = CurMethod->getClassInterface();
@@ -2024,7 +2024,7 @@ Sema::LookupInObjCMethod(LookupResult &Lookup, Scope *S,
           DiagnosticsEngine::Level Level =
             Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak, Loc);
           if (Level != DiagnosticsEngine::Ignored)
-            getCurFunction()->recordUseOfWeak(Result);
+            getCurSubprogram()->recordUseOfWeak(Result);
         }
         if (CurContext->isClosure())
           Diag(Loc, diag::warn_implicitly_retains_self)
@@ -2044,7 +2044,7 @@ Sema::LookupInObjCMethod(LookupResult &Lookup, Scope *S,
       }
     }
   } else if (Lookup.isSingleResult() &&
-             Lookup.getFoundDecl()->isDefinedOutsideFunctionOrMethod()) {
+             Lookup.getFoundDecl()->isDefinedOutsideSubprogramOrMethod()) {
     // If accessing a stand-alone ivar in a class method, this is an error.
     if (const ObjCIvarDecl *IV = dyn_cast<ObjCIvarDecl>(Lookup.getFoundDecl()))
       return ExprError(Diag(Loc, diag::error_ivar_use_in_class_method)
@@ -2055,7 +2055,7 @@ Sema::LookupInObjCMethod(LookupResult &Lookup, Scope *S,
     // FIXME. Consolidate this with similar code in LookupName.
     if (unsigned BuiltinID = II->getBuiltinID()) {
       if (!(getLangOpts().CPlusPlus &&
-            Context.BuiltinInfo.isPredefinedLibFunction(BuiltinID))) {
+            Context.BuiltinInfo.isPredefinedLibSubprogram(BuiltinID))) {
         NamedDecl *D = LazilyCreateBuiltin((IdentifierInfo *)II, BuiltinID,
                                            S, Lookup.isForRedeclaration(),
                                            Lookup.getNameLoc());
@@ -2269,20 +2269,20 @@ bool Sema::UseArgumentDependentLookup(const CXXScopeSpec &SS,
     // turn off ADL anyway).
     if (isa<UsingShadowDecl>(D))
       D = cast<UsingShadowDecl>(D)->getTargetDecl();
-    else if (D->getDeclContext()->isFunctionOrMethod())
+    else if (D->getDeclContext()->isSubprogramOrMethod())
       return false;
 
     // C++0x [basic.lookup.argdep]p3:
     //     -- a declaration that is neither a function or a function
     //        template
     // And also for builtin functions.
-    if (isa<FunctionDecl>(D)) {
-      FunctionDecl *FDecl = cast<FunctionDecl>(D);
+    if (isa<SubprogramDecl>(D)) {
+      SubprogramDecl *FDecl = cast<SubprogramDecl>(D);
 
       // But also builtin functions.
       if (FDecl->getBuiltinID() && FDecl->isImplicit())
         return false;
-    } else if (!isa<FunctionTemplateDecl>(D))
+    } else if (!isa<SubprogramTemplateDecl>(D))
       return false;
   }
 
@@ -2319,7 +2319,7 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
                                bool NeedsADL) {
   // If this is a single, fully-resolved result and we don't need ADL,
   // just build an ordinary singleton decl ref.
-  if (!NeedsADL && R.isSingleResult() && !R.getAsSingle<FunctionTemplateDecl>())
+  if (!NeedsADL && R.isSingleResult() && !R.getAsSingle<SubprogramTemplateDecl>())
     return BuildDeclarationNameExpr(SS, R.getLookupNameInfo(),
                                     R.getFoundDecl());
 
@@ -2351,7 +2351,7 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
                                const DeclarationNameInfo &NameInfo,
                                NamedDecl *D) {
   assert(D && "Cannot refer to a NULL declaration");
-  assert(!isa<FunctionTemplateDecl>(D) &&
+  assert(!isa<SubprogramTemplateDecl>(D) &&
          "Cannot refer unambiguously to a function template");
 
   SourceLocation Loc = NameInfo.getLoc();
@@ -2482,16 +2482,16 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
     case Decl::MainProgram:
       llvm_unreachable("forming a reference to the main program?");
        
-    case Decl::Function: {
-      if (unsigned BID = cast<FunctionDecl>(VD)->getBuiltinID()) {
-        if (!Context.BuiltinInfo.isPredefinedLibFunction(BID)) {
+    case Decl::Subprogram: {
+      if (unsigned BID = cast<SubprogramDecl>(VD)->getBuiltinID()) {
+        if (!Context.BuiltinInfo.isPredefinedLibSubprogram(BID)) {
           type = Context.BuiltinFnTy;
           valueKind = VK_RValue;
           break;
         }
       }
 
-      const FunctionType *fty = type->castAs<FunctionType>();
+      const SubprogramType *fty = type->castAs<SubprogramType>();
 
       // If we're referring to a function with an __unknown_anytype
       // result type, make the entire expression __unknown_anytype.
@@ -2501,7 +2501,7 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
         break;
       }
 
-      // Functions are l-values in C++.
+      // Subprograms are l-values in C++.
       if (getLangOpts().CPlusPlus) {
         valueKind = VK_LValue;
         break;
@@ -2512,12 +2512,12 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
       // used for checking compatibility. Therefore, when referencing
       // the function, we pretend that we don't have the full function
       // type.
-      if (!cast<FunctionDecl>(VD)->hasPrototype() &&
-          isa<FunctionProtoType>(fty))
-        type = Context.getFunctionNoProtoType(fty->getResultType(),
+      if (!cast<SubprogramDecl>(VD)->hasPrototype() &&
+          isa<SubprogramProtoType>(fty))
+        type = Context.getSubprogramNoProtoType(fty->getResultType(),
                                               fty->getExtInfo());
 
-      // Functions are r-values in C.
+      // Subprograms are r-values in C.
       valueKind = VK_RValue;
       break;
     }
@@ -2526,8 +2526,8 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
       // If we're referring to a method with an __unknown_anytype
       // result type, make the entire expression __unknown_anytype.
       // This should only be possible with a type written directly.
-      if (const FunctionProtoType *proto
-            = dyn_cast<FunctionProtoType>(VD->getType()))
+      if (const SubprogramProtoType *proto
+            = dyn_cast<SubprogramProtoType>(VD->getType()))
         if (proto->getResultType() == Context.UnknownAnyTy) {
           type = Context.UnknownAnyTy;
           valueKind = VK_RValue;
@@ -2558,15 +2558,15 @@ ExprResult Sema::ActOnPredefinedExpr(SourceLocation Loc, tok::TokenKind Kind) {
   switch (Kind) {
   default: llvm_unreachable("Unknown simple primary expr!");
   case tok::kw___func__: IT = PredefinedExpr::Func; break; // [C99 6.4.2.2]
-  case tok::kw___FUNCTION__: IT = PredefinedExpr::Function; break;
-  case tok::kw_L__FUNCTION__: IT = PredefinedExpr::LFunction; break;
-  case tok::kw___PRETTY_FUNCTION__: IT = PredefinedExpr::PrettyFunction; break;
+  case tok::kw___FUNCTION__: IT = PredefinedExpr::Subprogram; break;
+  case tok::kw_L__FUNCTION__: IT = PredefinedExpr::LSubprogram; break;
+  case tok::kw___PRETTY_FUNCTION__: IT = PredefinedExpr::PrettySubprogram; break;
   }
 
   // Pre-defined identifiers are of type char[x], where x is the length of the
   // string.
 
-  Decl *currentDecl = getCurFunctionOrMethodDecl();
+  Decl *currentDecl = getCurSubprogramOrMethodDecl();
   // Blocks and lambdas can occur at global scope. Don't emit a warning.
   if (!currentDecl) {
     if (const BlockScopeInfo *BSI = getCurBlock())
@@ -2587,7 +2587,7 @@ ExprResult Sema::ActOnPredefinedExpr(SourceLocation Loc, tok::TokenKind Kind) {
     unsigned Length = PredefinedExpr::ComputeName(IT, currentDecl).length();
 
     llvm::APInt LengthI(32, Length + 1);
-    if (IT == PredefinedExpr::LFunction)
+    if (IT == PredefinedExpr::LSubprogram)
       ResTy = Context.WCharTy.withConst();
     else
       ResTy = Context.CharTy.withConst();
@@ -2975,7 +2975,7 @@ static bool CheckExtensionTraitOperandType(Sema &S, QualType T,
                                            SourceRange ArgRange,
                                            UnaryExprOrTypeTrait TraitKind) {
   // C99 6.5.3.4p1:
-  if (T->isFunctionType()) {
+  if (T->isSubprogramType()) {
     // alignof(function) is allowed as an extension.
     if (TraitKind == UETT_SizeOf)
       S.Diag(Loc, diag::ext_sizeof_function_type) << ArgRange;
@@ -3341,12 +3341,12 @@ Sema::CreateBuiltinArraySubscriptExpr(Expr *Base, SourceLocation LLoc,
 
   // Perform default conversions.
   if (!LHSExp->getType()->getAs<VectorType>()) {
-    ExprResult Result = DefaultFunctionArrayLvalueConversion(LHSExp);
+    ExprResult Result = DefaultSubprogramArrayLvalueConversion(LHSExp);
     if (Result.isInvalid())
       return ExprError();
     LHSExp = Result.take();
   }
-  ExprResult Result = DefaultFunctionArrayLvalueConversion(RHSExp);
+  ExprResult Result = DefaultSubprogramArrayLvalueConversion(RHSExp);
   if (Result.isInvalid())
     return ExprError();
   RHSExp = Result.take();
@@ -3412,7 +3412,7 @@ Sema::CreateBuiltinArraySubscriptExpr(Expr *Base, SourceLocation LLoc,
     ResultType = VTy->getElementType();
   } else if (LHSTy->isArrayType()) {
     // If we see an array that wasn't promoted by
-    // DefaultFunctionArrayLvalueConversion, it must be an array that
+    // DefaultSubprogramArrayLvalueConversion, it must be an array that
     // wasn't promoted because of the C90 rule that doesn't
     // allow promoting non-lvalue arrays.  Warn, then
     // force the promotion here.
@@ -3452,9 +3452,9 @@ Sema::CreateBuiltinArraySubscriptExpr(Expr *Base, SourceLocation LLoc,
 
   // C99 6.5.2.1p1: "shall have type "pointer to *object* type". Similarly,
   // C++ [expr.sub]p1: The type "T" shall be a completely-defined object
-  // type. Note that Functions are not objects, and that (in C99 parlance)
+  // type. Note that Subprograms are not objects, and that (in C99 parlance)
   // incomplete types are not object types.
-  if (ResultType->isFunctionType()) {
+  if (ResultType->isSubprogramType()) {
     Diag(BaseExpr->getLocStart(), diag::err_subscript_function_type)
       << ResultType << BaseExpr->getSourceRange();
     return ExprError();
@@ -3481,7 +3481,7 @@ Sema::CreateBuiltinArraySubscriptExpr(Expr *Base, SourceLocation LLoc,
 }
 
 ExprResult Sema::BuildCXXDefaultArgExpr(SourceLocation CallLoc,
-                                        FunctionDecl *FD,
+                                        SubprogramDecl *FD,
                                         ParmVarDecl *Param) {
   if (Param->hasUnparsedDefaultArg()) {
     Diag(CallLoc,
@@ -3571,7 +3571,7 @@ ExprResult Sema::BuildCXXDefaultArgExpr(SourceLocation CallLoc,
 
 
 Sema::VariadicCallType
-Sema::getVariadicCallType(FunctionDecl *FDecl, const FunctionProtoType *Proto,
+Sema::getVariadicCallType(SubprogramDecl *FDecl, const SubprogramProtoType *Proto,
                           Expr *Fn) {
   if (Proto && Proto->isVariadic()) {
     if (dyn_cast_or_null<CXXConstructorDecl>(FDecl))
@@ -3583,7 +3583,7 @@ Sema::getVariadicCallType(FunctionDecl *FDecl, const FunctionProtoType *Proto,
         if (Method->isInstance())
           return VariadicMethod;
     }
-    return VariadicFunction;
+    return VariadicSubprogram;
   }
   return VariadicDoesNotApply;
 }
@@ -3596,8 +3596,8 @@ Sema::getVariadicCallType(FunctionDecl *FDecl, const FunctionProtoType *Proto,
 /// true if the call is ill-formed.
 bool
 Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
-                              FunctionDecl *FDecl,
-                              const FunctionProtoType *Proto,
+                              SubprogramDecl *FDecl,
+                              const SubprogramProtoType *Proto,
                               Expr **Args, unsigned NumArgs,
                               SourceLocation RParenLoc,
                               bool IsExecConfig) {
@@ -3693,8 +3693,8 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
 }
 
 bool Sema::GatherArgumentsForCall(SourceLocation CallLoc,
-                                  FunctionDecl *FDecl,
-                                  const FunctionProtoType *Proto,
+                                  SubprogramDecl *FDecl,
+                                  const SubprogramProtoType *Proto,
                                   unsigned FirstProtoArg,
                                   Expr **Args, unsigned NumArgs,
                                   SmallVector<Expr *, 8> &AllArgs,
@@ -3776,7 +3776,7 @@ bool Sema::GatherArgumentsForCall(SourceLocation CallLoc,
       for (unsigned i = ArgIx; i != NumArgs; ++i) {
         ExprResult arg;
         if (isa<ExplicitCastExpr>(Args[i]->IgnoreParens()))
-          arg = DefaultFunctionArrayLvalueConversion(Args[i]);
+          arg = DefaultSubprogramArrayLvalueConversion(Args[i]);
         else
           arg = DefaultVariadicArgumentPromotion(Args[i], CallType, FDecl);
         Invalid |= arg.isInvalid();
@@ -3856,7 +3856,7 @@ Sema::CheckStaticArrayArgument(SourceLocation CallLoc,
 
 /// Given a function expression of unknown-any type, try to rebuild it
 /// to have a function type.
-static ExprResult rebuildUnknownAnyFunction(Sema &S, Expr *fn);
+static ExprResult rebuildUnknownAnySubprogram(Sema &S, Expr *fn);
 
 /// ActOnCallExpr - Handle a call to Fn with the specified array of arguments.
 /// This provides the location of the left/right parens and a list of comma
@@ -3915,13 +3915,13 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
                                                 ArgExprs.size(), RParenLoc));
 
     if (Fn->getType() == Context.UnknownAnyTy) {
-      ExprResult result = rebuildUnknownAnyFunction(*this, Fn);
+      ExprResult result = rebuildUnknownAnySubprogram(*this, Fn);
       if (result.isInvalid()) return ExprError();
       Fn = result.take();
     }
 
     if (Fn->getType() == Context.BoundMemberTy) {
-      return BuildCallToMemberFunction(S, Fn, LParenLoc, ArgExprs.data(),
+      return BuildCallToMemberSubprogram(S, Fn, LParenLoc, ArgExprs.data(),
                                        ArgExprs.size(), RParenLoc);
     }
   }
@@ -3938,7 +3938,7 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
         return BuildOverloadedCallExpr(S, Fn, ULE, LParenLoc, ArgExprs.data(),
                                        ArgExprs.size(), RParenLoc, ExecConfig);
       } else {
-        return BuildCallToMemberFunction(S, Fn, LParenLoc, ArgExprs.data(),
+        return BuildCallToMemberSubprogram(S, Fn, LParenLoc, ArgExprs.data(),
                                          ArgExprs.size(), RParenLoc);
       }
     }
@@ -3946,7 +3946,7 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
 
   // If we're directly calling a function, get the appropriate declaration.
   if (Fn->getType() == Context.UnknownAnyTy) {
-    ExprResult result = rebuildUnknownAnyFunction(*this, Fn);
+    ExprResult result = rebuildUnknownAnySubprogram(*this, Fn);
     if (result.isInvalid()) return ExprError();
     Fn = result.take();
   }
@@ -3971,7 +3971,7 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
 ExprResult
 Sema::ActOnCUDAExecConfigExpr(Scope *S, SourceLocation LLLLoc,
                               MultiExprArg ExecConfig, SourceLocation GGGLoc) {
-  FunctionDecl *ConfigDecl = Context.getcudaConfigureCallDecl();
+  SubprogramDecl *ConfigDecl = Context.getcudaConfigureCallDecl();
   if (!ConfigDecl)
     return ExprError(Diag(LLLLoc, diag::err_undeclared_var_use)
                           << "cudaConfigureCall");
@@ -3979,7 +3979,7 @@ Sema::ActOnCUDAExecConfigExpr(Scope *S, SourceLocation LLLLoc,
 
   DeclRefExpr *ConfigDR = new (Context) DeclRefExpr(
       ConfigDecl, false, ConfigQTy, VK_LValue, LLLLoc);
-  MarkFunctionReferenced(LLLLoc, ConfigDecl);
+  MarkSubprogramReferenced(LLLLoc, ConfigDecl);
 
   return ActOnCallExpr(S, ConfigDR, LLLLoc, ExecConfig, GGGLoc, 0,
                        /*IsExecConfig=*/true);
@@ -4018,7 +4018,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
                             Expr **Args, unsigned NumArgs,
                             SourceLocation RParenLoc,
                             Expr *Config, bool IsExecConfig) {
-  FunctionDecl *FDecl = dyn_cast_or_null<FunctionDecl>(NDecl);
+  SubprogramDecl *FDecl = dyn_cast_or_null<SubprogramDecl>(NDecl);
   unsigned BuiltinID = (FDecl ? FDecl->getBuiltinID() : 0);
 
   // Promote the function operand.
@@ -4055,24 +4055,24 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
 
   // Bail out early if calling a builtin with custom typechecking.
   if (BuiltinID && Context.BuiltinInfo.hasCustomTypechecking(BuiltinID))
-    return CheckBuiltinFunctionCall(BuiltinID, TheCall);
+    return CheckBuiltinSubprogramCall(BuiltinID, TheCall);
 
  retry:
-  const FunctionType *FuncT;
+  const SubprogramType *FuncT;
   if (const PointerType *PT = Fn->getType()->getAs<PointerType>()) {
     // C99 6.5.2.2p1 - "The expression that denotes the called function shall
     // have type pointer to function".
-    FuncT = PT->getPointeeType()->getAs<FunctionType>();
+    FuncT = PT->getPointeeType()->getAs<SubprogramType>();
     if (FuncT == 0)
       return ExprError(Diag(LParenLoc, diag::err_typecheck_call_not_function)
                          << Fn->getType() << Fn->getSourceRange());
   } else if (const BlockPointerType *BPT =
                Fn->getType()->getAs<BlockPointerType>()) {
-    FuncT = BPT->getPointeeType()->castAs<FunctionType>();
+    FuncT = BPT->getPointeeType()->castAs<SubprogramType>();
   } else {
     // Handle calls to expressions of unknown-any type.
     if (Fn->getType() == Context.UnknownAnyTy) {
-      ExprResult rewrite = rebuildUnknownAnyFunction(*this, Fn);
+      ExprResult rewrite = rebuildUnknownAnySubprogram(*this, Fn);
       if (rewrite.isInvalid()) return ExprError();
       Fn = rewrite.take();
       TheCall->setCallee(Fn);
@@ -4112,20 +4112,20 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
   TheCall->setType(FuncT->getCallResultType(Context));
   TheCall->setValueKind(Expr::getValueKindForType(FuncT->getResultType()));
 
-  const FunctionProtoType *Proto = dyn_cast<FunctionProtoType>(FuncT);
+  const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FuncT);
   if (Proto) {
     if (ConvertArgumentsForCall(TheCall, Fn, FDecl, Proto, Args, NumArgs,
                                 RParenLoc, IsExecConfig))
       return ExprError();
   } else {
-    assert(isa<FunctionNoProtoType>(FuncT) && "Unknown FunctionType!");
+    assert(isa<SubprogramNoProtoType>(FuncT) && "Unknown SubprogramType!");
 
     if (FDecl) {
       // Check if we have too few/too many template arguments, based
       // on our knowledge of the function definition.
-      const FunctionDecl *Def = 0;
+      const SubprogramDecl *Def = 0;
       if (FDecl->hasBody(Def) && NumArgs != Def->param_size()) {
-        Proto = Def->getType()->getAs<FunctionProtoType>();
+        Proto = Def->getType()->getAs<SubprogramProtoType>();
         if (!Proto || !(Proto->isVariadic() && NumArgs >= Def->param_size()))
           Diag(RParenLoc, diag::warn_call_wrong_number_of_arguments)
             << (NumArgs > Def->param_size()) << FDecl << Fn->getSourceRange();
@@ -4134,7 +4134,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
       // If the function we're calling isn't a function prototype, but we have
       // a function prototype from a prior declaratiom, use that prototype.
       if (!FDecl->hasPrototype())
-        Proto = FDecl->getType()->getAs<FunctionProtoType>();
+        Proto = FDecl->getType()->getAs<SubprogramProtoType>();
     }
 
     // Promote the arguments (C99 6.5.2.2p6).
@@ -4183,11 +4183,11 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
 
   // Do special checking on direct calls to functions.
   if (FDecl) {
-    if (CheckFunctionCall(FDecl, TheCall, Proto))
+    if (CheckSubprogramCall(FDecl, TheCall, Proto))
       return ExprError();
 
     if (BuiltinID)
-      return CheckBuiltinFunctionCall(BuiltinID, TheCall);
+      return CheckBuiltinSubprogramCall(BuiltinID, TheCall);
   } else if (NDecl) {
     if (CheckBlockCall(NDecl, TheCall, Proto))
       return ExprError();
@@ -4244,7 +4244,7 @@ Sema::BuildCompoundLiteralExpr(SourceLocation LParenLoc, TypeSourceInfo *TInfo,
     return ExprError();
   LiteralExpr = Result.get();
 
-  bool isFileScope = getCurFunctionOrMethodDecl() == 0;
+  bool isFileScope = getCurSubprogramOrMethodDecl() == 0;
   if (isFileScope) { // 6.5.2.5p3
     if (CheckForConstantInitializer(LiteralExpr, literalType))
       return ExprError();
@@ -5463,8 +5463,8 @@ checkPointerTypesForAssignment(Sema &S, QualType LHSType, QualType RHSType) {
       return ConvTy;
 
     // As an extension, we allow cast to/from void* to function pointer.
-    assert(rhptee->isFunctionType());
-    return Sema::FunctionVoidPointer;
+    assert(rhptee->isSubprogramType());
+    return Sema::SubprogramVoidPointer;
   }
 
   if (rhptee->isVoidType()) {
@@ -5472,8 +5472,8 @@ checkPointerTypesForAssignment(Sema &S, QualType LHSType, QualType RHSType) {
       return ConvTy;
 
     // As an extension, we allow cast to/from void* to function pointer.
-    assert(lhptee->isFunctionType());
-    return Sema::FunctionVoidPointer;
+    assert(lhptee->isSubprogramType());
+    return Sema::SubprogramVoidPointer;
   }
 
   // C99 6.5.16.1p1 (constraint 3): both operands are pointers to qualified or
@@ -6024,7 +6024,7 @@ Sema::CheckSingleAssignmentConstraints(QualType LHSType, ExprResult &RHS,
   //
   // Suppress this for references: C++ 8.5.3p5.
   if (!LHSType->isReferenceType()) {
-    RHS = DefaultFunctionArrayLvalueConversion(RHS.take());
+    RHS = DefaultSubprogramArrayLvalueConversion(RHS.take());
     if (RHS.isInvalid())
       return Incompatible;
   }
@@ -6056,11 +6056,11 @@ QualType Sema::InvalidOperands(SourceLocation Loc, ExprResult &LHS,
 QualType Sema::CheckVectorOperands(ExprResult &LHS, ExprResult &RHS,
                                    SourceLocation Loc, bool IsCompAssign) {
   if (!IsCompAssign) {
-    LHS = DefaultFunctionArrayLvalueConversion(LHS.take());
+    LHS = DefaultSubprogramArrayLvalueConversion(LHS.take());
     if (LHS.isInvalid())
       return QualType();
   }
-  RHS = DefaultFunctionArrayLvalueConversion(RHS.take());
+  RHS = DefaultSubprogramArrayLvalueConversion(RHS.take());
   if (RHS.isInvalid())
     return QualType();
 
@@ -6157,7 +6157,7 @@ static void checkArithmeticNull(Sema &S, ExprResult &LHS, ExprResult &RHS,
   // Avoid analyzing cases where the result will either be invalid (and
   // diagnosed as such) or entirely valid and not something to warn about.
   if ((!LHSNull && !RHSNull) || NonNullType->isBlockPointerType() ||
-      NonNullType->isMemberPointerType() || NonNullType->isFunctionType())
+      NonNullType->isMemberPointerType() || NonNullType->isSubprogramType())
     return;
 
   // Comparison operations would not make sense with a null pointer no matter
@@ -6255,7 +6255,7 @@ static void diagnoseArithmeticOnVoidPointer(Sema &S, SourceLocation Loc,
 }
 
 /// \brief Diagnose invalid arithmetic on two function pointers.
-static void diagnoseArithmeticOnTwoFunctionPointers(Sema &S, SourceLocation Loc,
+static void diagnoseArithmeticOnTwoSubprogramPointers(Sema &S, SourceLocation Loc,
                                                     Expr *LHS, Expr *RHS) {
   assert(LHS->getType()->isAnyPointerType());
   assert(RHS->getType()->isAnyPointerType());
@@ -6271,7 +6271,7 @@ static void diagnoseArithmeticOnTwoFunctionPointers(Sema &S, SourceLocation Loc,
 }
 
 /// \brief Diagnose invalid arithmetic on a function pointer.
-static void diagnoseArithmeticOnFunctionPointer(Sema &S, SourceLocation Loc,
+static void diagnoseArithmeticOnSubprogramPointer(Sema &S, SourceLocation Loc,
                                                 Expr *Pointer) {
   assert(Pointer->getType()->isAnyPointerType());
   S.Diag(Loc, S.getLangOpts().CPlusPlus
@@ -6312,8 +6312,8 @@ static bool checkArithmeticOpPointerOperand(Sema &S, SourceLocation Loc,
     diagnoseArithmeticOnVoidPointer(S, Loc, Operand);
     return !S.getLangOpts().CPlusPlus;
   }
-  if (PointeeTy->isFunctionType()) {
-    diagnoseArithmeticOnFunctionPointer(S, Loc, Operand);
+  if (PointeeTy->isSubprogramType()) {
+    diagnoseArithmeticOnSubprogramPointer(S, Loc, Operand);
     return !S.getLangOpts().CPlusPlus;
   }
 
@@ -6352,13 +6352,13 @@ static bool checkArithmeticBinOpPointerOperands(Sema &S, SourceLocation Loc,
     return !S.getLangOpts().CPlusPlus;
   }
 
-  bool isLHSFuncPtr = isLHSPointer && LHSPointeeTy->isFunctionType();
-  bool isRHSFuncPtr = isRHSPointer && RHSPointeeTy->isFunctionType();
+  bool isLHSFuncPtr = isLHSPointer && LHSPointeeTy->isSubprogramType();
+  bool isRHSFuncPtr = isRHSPointer && RHSPointeeTy->isSubprogramType();
   if (isLHSFuncPtr || isRHSFuncPtr) {
-    if (!isRHSFuncPtr) diagnoseArithmeticOnFunctionPointer(S, Loc, LHSExpr);
-    else if (!isLHSFuncPtr) diagnoseArithmeticOnFunctionPointer(S, Loc,
+    if (!isRHSFuncPtr) diagnoseArithmeticOnSubprogramPointer(S, Loc, LHSExpr);
+    else if (!isLHSFuncPtr) diagnoseArithmeticOnSubprogramPointer(S, Loc,
                                                                 RHSExpr);
-    else diagnoseArithmeticOnTwoFunctionPointers(S, Loc, LHSExpr, RHSExpr);
+    else diagnoseArithmeticOnTwoSubprogramPointers(S, Loc, LHSExpr, RHSExpr);
 
     return !S.getLangOpts().CPlusPlus;
   }
@@ -6693,8 +6693,8 @@ static bool IsWithinTemplateSpecialization(Decl *D) {
   if (DeclContext *DC = D->getDeclContext()) {
     if (isa<ClassTemplateSpecializationDecl>(DC))
       return true;
-    if (FunctionDecl *FD = dyn_cast<FunctionDecl>(DC))
-      return FD->isFunctionTemplateSpecialization();
+    if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(DC))
+      return FD->isSubprogramTemplateSpecialization();
   }
   return false;
 }
@@ -6783,7 +6783,7 @@ static bool convertPointersToCompositeType(Sema &S, SourceLocation Loc,
   return false;
 }
 
-static void diagnoseFunctionPointerToVoidComparison(Sema &S, SourceLocation Loc,
+static void diagnoseSubprogramPointerToVoidComparison(Sema &S, SourceLocation Loc,
                                                     ExprResult &LHS,
                                                     ExprResult &RHS,
                                                     bool IsError) {
@@ -7113,9 +7113,9 @@ QualType Sema::CheckCompareOperands(ExprResult &LHS, ExprResult &RHS,
         // This is a gcc extension compatibility comparison.
         // In a SFINAE context, we treat this as a hard error to maintain
         // conformance with the C++ standard.
-        if ((LCanPointeeTy->isFunctionType() || RCanPointeeTy->isFunctionType())
+        if ((LCanPointeeTy->isSubprogramType() || RCanPointeeTy->isSubprogramType())
             && !LHSIsNull && !RHSIsNull) {
-          diagnoseFunctionPointerToVoidComparison(
+          diagnoseSubprogramPointerToVoidComparison(
               *this, Loc, LHS, RHS, /*isError*/ isSFINAEContext());
           
           if (isSFINAEContext())
@@ -7135,7 +7135,7 @@ QualType Sema::CheckCompareOperands(ExprResult &LHS, ExprResult &RHS,
     if (Context.typesAreCompatible(LCanPointeeTy.getUnqualifiedType(),
                                    RCanPointeeTy.getUnqualifiedType())) {
       // Valid unless a relational comparison of function pointers
-      if (IsRelational && LCanPointeeTy->isFunctionType()) {
+      if (IsRelational && LCanPointeeTy->isSubprogramType()) {
         Diag(Loc, diag::ext_typecheck_ordered_comparison_of_function_pointers)
           << LHSType << RHSType << LHS.get()->getSourceRange()
           << RHS.get()->getSourceRange();
@@ -7143,9 +7143,9 @@ QualType Sema::CheckCompareOperands(ExprResult &LHS, ExprResult &RHS,
     } else if (!IsRelational &&
                (LCanPointeeTy->isVoidType() || RCanPointeeTy->isVoidType())) {
       // Valid unless comparison between non-null pointer and function pointer
-      if ((LCanPointeeTy->isFunctionType() || RCanPointeeTy->isFunctionType())
+      if ((LCanPointeeTy->isSubprogramType() || RCanPointeeTy->isSubprogramType())
           && !LHSIsNull && !RHSIsNull)
-        diagnoseFunctionPointerToVoidComparison(*this, Loc, LHS, RHS,
+        diagnoseSubprogramPointerToVoidComparison(*this, Loc, LHS, RHS,
                                                 /*isError*/false);
     } else {
       // Invalid
@@ -7657,7 +7657,7 @@ static bool CheckForModifiableLvalue(Expr *E, SourceLocation Loc, Sema &S) {
   case Expr::MLV_Valid:
     llvm_unreachable("did not take early return for MLV_Valid");
   case Expr::MLV_InvalidExpression:
-  case Expr::MLV_MemberFunction:
+  case Expr::MLV_MemberSubprogram:
   case Expr::MLV_ClassTemporary:
     Diag = diag::err_typecheck_expression_not_modifiable_lvalue;
     break;
@@ -7789,7 +7789,7 @@ QualType Sema::CheckAssignmentOperands(Expr *LHSExpr, ExprResult &RHS,
           Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak,
                                    RHS.get()->getLocStart());
         if (Level != DiagnosticsEngine::Ignored)
-          getCurFunction()->markSafeWeakUse(RHS.get());
+          getCurSubprogram()->markSafeWeakUse(RHS.get());
 
       } else if (getLangOpts().ObjCAutoRefCount) {
         checkUnsafeExprAssigns(Loc, LHSExpr, RHS.get());
@@ -7838,7 +7838,7 @@ static QualType CheckCommaOperands(Sema &S, ExprResult &LHS, ExprResult &RHS,
   S.DiagnoseUnusedExprResult(LHS.get());
 
   if (!S.getLangOpts().CPlusPlus) {
-    RHS = S.DefaultFunctionArrayLvalueConversion(RHS.take());
+    RHS = S.DefaultSubprogramArrayLvalueConversion(RHS.take());
     if (RHS.isInvalid())
       return QualType();
     if (!RHS.get()->getType()->isVoidType())
@@ -8059,7 +8059,7 @@ static QualType CheckAddressOfOperand(Sema &S, ExprResult &OrigOp,
       return QualType();
   } else if (isa<ObjCSelectorExpr>(op)) {
     return S.Context.getPointerType(op->getType());
-  } else if (lval == Expr::LV_MemberFunction) {
+  } else if (lval == Expr::LV_MemberSubprogram) {
     // If it's an instance method, make a member pointer.
     // The expression must have exactly the form &A::foo.
 
@@ -8096,7 +8096,7 @@ static QualType CheckAddressOfOperand(Sema &S, ExprResult &OrigOp,
   } else if (lval != Expr::LV_Valid && lval != Expr::LV_IncompleteVoidType) {
     // C99 6.5.3.2p1
     // The operand must be either an l-value or a function designator
-    if (!op->getType()->isFunctionType()) {
+    if (!op->getType()->isSubprogramType()) {
       // Use a special diagnostic for loads from property references.
       if (isa<PseudoObjectExpr>(op)) {
         AddressOfError = AO_Property_Expansion;
@@ -8123,7 +8123,7 @@ static QualType CheckAddressOfOperand(Sema &S, ExprResult &OrigOp,
           !S.getLangOpts().CPlusPlus) {
         AddressOfError = AO_Register_Variable;
       }
-    } else if (isa<FunctionTemplateDecl>(dcl)) {
+    } else if (isa<SubprogramTemplateDecl>(dcl)) {
       return S.Context.OverloadTy;
     } else if (isa<FieldDecl>(dcl) || isa<IndirectFieldDecl>(dcl)) {
       // Okay: we can take the address of a field.
@@ -8145,7 +8145,7 @@ static QualType CheckAddressOfOperand(Sema &S, ExprResult &OrigOp,
                 S.Context.getTypeDeclType(cast<RecordDecl>(Ctx)).getTypePtr());
         }
       }
-    } else if (!isa<FunctionDecl>(dcl) && !isa<NonTypeTemplateParmDecl>(dcl))
+    } else if (!isa<SubprogramDecl>(dcl) && !isa<NonTypeTemplateParmDecl>(dcl))
       llvm_unreachable("Unknown/unexpected decl type");
   }
 
@@ -8665,16 +8665,16 @@ static ExprResult BuildOverloadedBinOp(Sema &S, Scope *Sc, SourceLocation OpLoc,
   // point. We perform both an operator-name lookup from the local
   // scope and an argument-dependent lookup based on the types of
   // the arguments.
-  UnresolvedSet<16> Functions;
+  UnresolvedSet<16> Subprograms;
   OverloadedOperatorKind OverOp
     = BinaryOperator::getOverloadedOperator(Opc);
   if (Sc && OverOp != OO_None)
     S.LookupOverloadedOperatorName(OverOp, Sc, LHS->getType(),
-                                   RHS->getType(), Functions);
+                                   RHS->getType(), Subprograms);
 
   // Build the (potentially-overloaded, potentially-dependent)
   // binary operation.
-  return S.CreateOverloadedBinOp(OpLoc, Opc, Functions, LHS, RHS);
+  return S.CreateOverloadedBinOp(OpLoc, Opc, Subprograms, LHS, RHS);
 }
 
 ExprResult Sema::BuildBinOp(Scope *S, SourceLocation OpLoc,
@@ -8777,7 +8777,7 @@ ExprResult Sema::CreateBuiltinUnaryOp(SourceLocation OpLoc,
     resultType = CheckAddressOfOperand(*this, Input, OpLoc);
     break;
   case UO_Deref: {
-    Input = DefaultFunctionArrayLvalueConversion(Input.take());
+    Input = DefaultSubprogramArrayLvalueConversion(Input.take());
     if (Input.isInvalid()) return ExprError();
     resultType = CheckIndirectionOperand(*this, Input.get(), VK, OpLoc);
     break;
@@ -8824,7 +8824,7 @@ ExprResult Sema::CreateBuiltinUnaryOp(SourceLocation OpLoc,
 
   case UO_LNot: // logical negation
     // Unlike +/-/~, integer promotions aren't done here (C99 6.5.3.3p5).
-    Input = DefaultFunctionArrayLvalueConversion(Input.take());
+    Input = DefaultSubprogramArrayLvalueConversion(Input.take());
     if (Input.isInvalid()) return ExprError();
     resultType = Input.get()->getType();
 
@@ -8969,13 +8969,13 @@ ExprResult Sema::BuildUnaryOp(Scope *S, SourceLocation OpLoc,
     // point. We perform both an operator-name lookup from the local
     // scope and an argument-dependent lookup based on the types of
     // the arguments.
-    UnresolvedSet<16> Functions;
+    UnresolvedSet<16> Subprograms;
     OverloadedOperatorKind OverOp = UnaryOperator::getOverloadedOperator(Opc);
     if (S && OverOp != OO_None)
       LookupOverloadedOperatorName(OverOp, S, Input->getType(), QualType(),
-                                   Functions);
+                                   Subprograms);
 
-    return CreateOverloadedUnaryOp(OpLoc, Opc, Functions, Input);
+    return CreateOverloadedUnaryOp(OpLoc, Opc, Subprograms, Input);
   }
 
   return CreateBuiltinUnaryOp(OpLoc, Opc, Input);
@@ -9037,13 +9037,13 @@ Sema::ActOnStmtExpr(SourceLocation LPLoc, Stmt *SubStmt,
   assert(SubStmt && isa<CompoundStmt>(SubStmt) && "Invalid action invocation!");
   CompoundStmt *Compound = cast<CompoundStmt>(SubStmt);
 
-  if (hasAnyUnrecoverableErrorsInThisFunction())
+  if (hasAnyUnrecoverableErrorsInThisSubprogram())
     DiscardCleanupsInEvaluationContext();
   assert(!ExprNeedsCleanups && "cleanups within StmtExpr not correctly bound!");
   PopExpressionEvaluationContext();
 
   bool isFileScope
-    = (getCurFunctionOrMethodDecl() == 0) && (getCurBlock() == 0);
+    = (getCurSubprogramOrMethodDecl() == 0) && (getCurBlock() == 0);
   if (isFileScope)
     return ExprError(Diag(LPLoc, diag::err_stmtexpr_file_scope));
 
@@ -9067,7 +9067,7 @@ Sema::ActOnStmtExpr(SourceLocation LPLoc, Stmt *SubStmt,
     if (Expr *LastE = dyn_cast<Expr>(LastStmt)) {
       // Do function/array conversion on the last expression, but not
       // lvalue-to-rvalue.  However, initialize an unqualified type.
-      ExprResult LastExpr = DefaultFunctionArrayConversion(LastE);
+      ExprResult LastExpr = DefaultSubprogramArrayConversion(LastE);
       if (LastExpr.isInvalid())
         return ExprError();
       Ty = LastExpr.get()->getType().getUnqualifiedType();
@@ -9375,26 +9375,26 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
   // in turn, make the block expression contain unexpanded parameter packs.
   if (DiagnoseUnexpandedParameterPack(CaretLoc, Sig, UPPC_Block)) {
     // Drop the parameters.
-    FunctionProtoType::ExtProtoInfo EPI;
+    SubprogramProtoType::ExtProtoInfo EPI;
     EPI.HasTrailingReturn = false;
     EPI.TypeQuals |= DeclSpec::TQ_const;
-    T = Context.getFunctionType(Context.DependentTy, /*Args=*/0, /*NumArgs=*/0,
+    T = Context.getSubprogramType(Context.DependentTy, /*Args=*/0, /*NumArgs=*/0,
                                 EPI);
     Sig = Context.getTrivialTypeSourceInfo(T);
   }
   
   // GetTypeForDeclarator always produces a function type for a block
-  // literal signature.  Furthermore, it is always a FunctionProtoType
+  // literal signature.  Furthermore, it is always a SubprogramProtoType
   // unless the function was written with a typedef.
-  assert(T->isFunctionType() &&
+  assert(T->isSubprogramType() &&
          "GetTypeForDeclarator made a non-function block signature");
 
   // Look for an explicit signature in that function type.
-  FunctionProtoTypeLoc ExplicitSignature;
+  SubprogramProtoTypeLoc ExplicitSignature;
 
   TypeLoc tmp = Sig->getTypeLoc().IgnoreParens();
-  if (isa<FunctionProtoTypeLoc>(tmp)) {
-    ExplicitSignature = cast<FunctionProtoTypeLoc>(tmp);
+  if (isa<SubprogramProtoTypeLoc>(tmp)) {
+    ExplicitSignature = cast<SubprogramProtoTypeLoc>(tmp);
 
     // Check whether that explicit signature was synthesized by
     // GetTypeForDeclarator.  If so, don't save that as part of the
@@ -9408,17 +9408,17 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
       Sig = Context.CreateTypeSourceInfo(Result.getType(), Size);
       Sig->getTypeLoc().initializeFullCopy(Result, Size);
 
-      ExplicitSignature = FunctionProtoTypeLoc();
+      ExplicitSignature = SubprogramProtoTypeLoc();
     }
   }
 
   CurBlock->TheDecl->setSignatureAsWritten(Sig);
-  CurBlock->FunctionType = T;
+  CurBlock->SubprogramType = T;
 
-  const FunctionType *Fn = T->getAs<FunctionType>();
+  const SubprogramType *Fn = T->getAs<SubprogramType>();
   QualType RetTy = Fn->getResultType();
   bool isVariadic =
-    (isa<FunctionProtoType>(Fn) && cast<FunctionProtoType>(Fn)->isVariadic());
+    (isa<SubprogramProtoType>(Fn) && cast<SubprogramProtoType>(Fn)->isVariadic());
 
   CurBlock->TheDecl->setIsVariadic(isVariadic);
 
@@ -9454,8 +9454,8 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
 
   // Fake up parameter variables if we have a typedef, like
   //   ^ fntype { ... }
-  } else if (const FunctionProtoType *Fn = T->getAs<FunctionProtoType>()) {
-    for (FunctionProtoType::arg_type_iterator
+  } else if (const SubprogramProtoType *Fn = T->getAs<SubprogramProtoType>()) {
+    for (SubprogramProtoType::arg_type_iterator
            I = Fn->arg_type_begin(), E = Fn->arg_type_end(); I != E; ++I) {
       ParmVarDecl *Param =
         BuildParmVarDeclForTypedef(CurBlock->TheDecl,
@@ -9468,7 +9468,7 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
   // Set the parameters on the block decl.
   if (!Params.empty()) {
     CurBlock->TheDecl->setParams(Params);
-    CheckParmsForFunctionDef(CurBlock->TheDecl->param_begin(),
+    CheckParmsForSubprogramDef(CurBlock->TheDecl->param_begin(),
                              CurBlock->TheDecl->param_end(),
                              /*CheckParameterNames=*/false);
   }
@@ -9483,7 +9483,7 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
 
   for (BlockDecl::param_iterator AI = CurBlock->TheDecl->param_begin(),
          E = CurBlock->TheDecl->param_end(); AI != E; ++AI) {
-    (*AI)->setOwningFunction(CurBlock->TheDecl);
+    (*AI)->setOwningSubprogram(CurBlock->TheDecl);
 
     // If this has an identifier, add it to the scope stack.
     if ((*AI)->getIdentifier()) {
@@ -9503,7 +9503,7 @@ void Sema::ActOnBlockError(SourceLocation CaretLoc, Scope *CurScope) {
 
   // Pop off CurBlock, handle nested blocks.
   PopDeclContext();
-  PopFunctionScopeInfo();
+  PopSubprogramScopeInfo();
 }
 
 /// ActOnBlockStmtExpr - This is called when the body of a block statement
@@ -9515,12 +9515,12 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
     Diag(CaretLoc, diag::err_blocks_disable);
 
   // Leave the expression-evaluation context.
-  if (hasAnyUnrecoverableErrorsInThisFunction())
+  if (hasAnyUnrecoverableErrorsInThisSubprogram())
     DiscardCleanupsInEvaluationContext();
   assert(!ExprNeedsCleanups && "cleanups within block not correctly bound!");
   PopExpressionEvaluationContext();
 
-  BlockScopeInfo *BSI = cast<BlockScopeInfo>(FunctionScopes.back());
+  BlockScopeInfo *BSI = cast<BlockScopeInfo>(SubprogramScopes.back());
 
   if (BSI->HasImplicitReturnType)
     deduceClosureReturnType(*BSI);
@@ -9549,31 +9549,31 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
                             BSI->CXXThisCaptureIndex != 0);
 
   // If the user wrote a function type in some form, try to use that.
-  if (!BSI->FunctionType.isNull()) {
-    const FunctionType *FTy = BSI->FunctionType->getAs<FunctionType>();
+  if (!BSI->SubprogramType.isNull()) {
+    const SubprogramType *FTy = BSI->SubprogramType->getAs<SubprogramType>();
 
-    FunctionType::ExtInfo Ext = FTy->getExtInfo();
+    SubprogramType::ExtInfo Ext = FTy->getExtInfo();
     if (NoReturn && !Ext.getNoReturn()) Ext = Ext.withNoReturn(true);
     
     // Turn protoless block types into nullary block types.
-    if (isa<FunctionNoProtoType>(FTy)) {
-      FunctionProtoType::ExtProtoInfo EPI;
+    if (isa<SubprogramNoProtoType>(FTy)) {
+      SubprogramProtoType::ExtProtoInfo EPI;
       EPI.ExtInfo = Ext;
-      BlockTy = Context.getFunctionType(RetTy, 0, 0, EPI);
+      BlockTy = Context.getSubprogramType(RetTy, 0, 0, EPI);
 
     // Otherwise, if we don't need to change anything about the function type,
     // preserve its sugar structure.
     } else if (FTy->getResultType() == RetTy &&
                (!NoReturn || FTy->getNoReturnAttr())) {
-      BlockTy = BSI->FunctionType;
+      BlockTy = BSI->SubprogramType;
 
     // Otherwise, make the minimal modifications to the function type.
     } else {
-      const FunctionProtoType *FPT = cast<FunctionProtoType>(FTy);
-      FunctionProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
+      const SubprogramProtoType *FPT = cast<SubprogramProtoType>(FTy);
+      SubprogramProtoType::ExtProtoInfo EPI = FPT->getExtProtoInfo();
       EPI.TypeQuals = 0; // FIXME: silently?
       EPI.ExtInfo = Ext;
-      BlockTy = Context.getFunctionType(RetTy,
+      BlockTy = Context.getSubprogramType(RetTy,
                                         FPT->arg_type_begin(),
                                         FPT->getNumArgs(),
                                         EPI);
@@ -9581,9 +9581,9 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
 
   // If we don't have a function type, just build one from nothing.
   } else {
-    FunctionProtoType::ExtProtoInfo EPI;
-    EPI.ExtInfo = FunctionType::ExtInfo().withNoReturn(NoReturn);
-    BlockTy = Context.getFunctionType(RetTy, 0, 0, EPI);
+    SubprogramProtoType::ExtProtoInfo EPI;
+    EPI.ExtInfo = SubprogramType::ExtInfo().withNoReturn(NoReturn);
+    BlockTy = Context.getSubprogramType(RetTy, 0, 0, EPI);
   }
 
   DiagnoseUnusedParameters(BSI->TheDecl->param_begin(),
@@ -9591,8 +9591,8 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
   BlockTy = Context.getBlockPointerType(BlockTy);
 
   // If needed, diagnose invalid gotos and switches in the block.
-  if (getCurFunction()->NeedsScopeChecking() &&
-      !hasAnyUnrecoverableErrorsInThisFunction() &&
+  if (getCurSubprogram()->NeedsScopeChecking() &&
+      !hasAnyUnrecoverableErrorsInThisSubprogram() &&
       !PP.isCodeCompletionEnabled())
     DiagnoseInvalidJumps(cast<CompoundStmt>(Body));
 
@@ -9607,7 +9607,7 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
   
   BlockExpr *Result = new (Context) BlockExpr(BSI->TheDecl, BlockTy);
   const AnalysisBasedWarnings::Policy &WP = AnalysisWarnings.getDefaultPolicy();
-  PopFunctionScopeInfo(&WP, Result->getBlockDecl(), Result);
+  PopSubprogramScopeInfo(&WP, Result->getBlockDecl(), Result);
 
   // If the block isn't obviously global, i.e. it captures anything at
   // all, then we need to do a few things in the surrounding context:
@@ -9623,7 +9623,7 @@ ExprResult Sema::ActOnBlockStmtExpr(SourceLocation CaretLoc,
            ce = Result->getBlockDecl()->capture_end(); ci != ce; ++ci) {
       const VarDecl *var = ci->getVariable();
       if (var->getType().isDestructedType() != QualType::DK_none) {
-        getCurFunction()->setHasBranchProtectedScope();
+        getCurSubprogram()->setHasBranchProtectedScope();
         break;
       }
     }
@@ -9790,7 +9790,7 @@ bool Sema::DiagnoseAssignmentResult(AssignConvertType ConvTy,
   FixItHint Hint;
   ConversionFixItGenerator ConvHints;
   bool MayHaveConvFixit = false;
-  bool MayHaveFunctionDiff = false;
+  bool MayHaveSubprogramDiff = false;
 
   switch (ConvTy) {
   case Compatible:
@@ -9820,7 +9820,7 @@ bool Sema::DiagnoseAssignmentResult(AssignConvertType ConvTy,
   case IncompatiblePointerSign:
     DiagKind = diag::ext_typecheck_convert_incompatible_pointer_sign;
     break;
-  case FunctionVoidPointer:
+  case SubprogramVoidPointer:
     DiagKind = diag::ext_typecheck_convert_pointer_void_func;
     break;
   case IncompatiblePointerDiscardsQualifiers: {
@@ -9882,7 +9882,7 @@ bool Sema::DiagnoseAssignmentResult(AssignConvertType ConvTy,
     ConvHints.tryToFixConversion(SrcExpr, SrcType, DstType, *this);
     MayHaveConvFixit = true;
     isInvalid = true;
-    MayHaveFunctionDiff = true;
+    MayHaveSubprogramDiff = true;
     break;
   }
 
@@ -9920,8 +9920,8 @@ bool Sema::DiagnoseAssignmentResult(AssignConvertType ConvTy,
   }
   if (MayHaveConvFixit) { FDiag << (unsigned) (ConvHints.Kind); }
 
-  if (MayHaveFunctionDiff)
-    HandleFunctionTypeMismatch(FDiag, SecondType, FirstType);
+  if (MayHaveSubprogramDiff)
+    HandleSubprogramTypeMismatch(FDiag, SecondType, FirstType);
 
   Diag(Loc, FDiag);
 
@@ -10335,7 +10335,7 @@ static bool IsPotentiallyEvaluatedContext(Sema &SemaRef) {
 
 /// \brief Mark a function referenced, and check whether it is odr-used
 /// (C++ [basic.def.odr]p2, C99 6.9p3)
-void Sema::MarkFunctionReferenced(SourceLocation Loc, FunctionDecl *Func) {
+void Sema::MarkSubprogramReferenced(SourceLocation Loc, SubprogramDecl *Func) {
   assert(Func && "No function?");
 
   Func->setReferenced();
@@ -10420,7 +10420,7 @@ void Sema::MarkFunctionReferenced(SourceLocation Loc, FunctionDecl *Func) {
       if (Conversion->isLambdaToBlockPointerConversion())
         DefineImplicitLambdaToBlockPointerConversion(Loc, Conversion);
       else
-        DefineImplicitLambdaToFunctionPointerConversion(Loc, Conversion);
+        DefineImplicitLambdaToSubprogramPointerConversion(Loc, Conversion);
     } else if (MethodDecl->isVirtual())
       MarkVTableUsed(Loc, MethodDecl->getParent());
   }
@@ -10431,7 +10431,7 @@ void Sema::MarkFunctionReferenced(SourceLocation Loc, FunctionDecl *Func) {
 
   // Resolve the exception specification for any function which is
   // used: CodeGen will need it.
-  const FunctionProtoType *FPT = Func->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = Func->getType()->getAs<SubprogramProtoType>();
   if (FPT && isUnresolvedExceptionSpec(FPT->getExceptionSpecType()))
     ResolveExceptionSpec(Loc, FPT);
 
@@ -10440,7 +10440,7 @@ void Sema::MarkFunctionReferenced(SourceLocation Loc, FunctionDecl *Func) {
   if (Func->isImplicitlyInstantiable()) {
     bool AlreadyInstantiated = false;
     SourceLocation PointOfInstantiation = Loc;
-    if (FunctionTemplateSpecializationInfo *SpecInfo
+    if (SubprogramTemplateSpecializationInfo *SpecInfo
                               = Func->getTemplateSpecializationInfo()) {
       if (SpecInfo->getPointOfInstantiation().isInvalid())
         SpecInfo->setPointOfInstantiation(Loc);
@@ -10469,20 +10469,20 @@ void Sema::MarkFunctionReferenced(SourceLocation Loc, FunctionDecl *Func) {
         // Do not defer instantiations of constexpr functions, to avoid the
         // expression evaluator needing to call back into Sema if it sees a
         // call to such a function.
-        InstantiateFunctionDefinition(PointOfInstantiation, Func);
+        InstantiateSubprogramDefinition(PointOfInstantiation, Func);
       else {
         PendingInstantiations.push_back(std::make_pair(Func,
                                                        PointOfInstantiation));
         // Notify the consumer that a function was implicitly instantiated.
-        Consumer.HandleCXXImplicitFunctionInstantiation(Func);
+        Consumer.HandleCXXImplicitSubprogramInstantiation(Func);
       }
     }
   } else {
     // Walk redefinitions, as some of them may be instantiable.
-    for (FunctionDecl::redecl_iterator i(Func->redecls_begin()),
+    for (SubprogramDecl::redecl_iterator i(Func->redecls_begin()),
          e(Func->redecls_end()); i != e; ++i) {
       if (!i->isUsed(false) && i->isImplicitlyInstantiable())
-        MarkFunctionReferenced(Loc, *i);
+        MarkSubprogramReferenced(Loc, *i);
     }
   }
 
@@ -10515,14 +10515,14 @@ diagnoseUncapturableValueReference(Sema &S, SourceLocation loc,
   // For C++, things get a bit more nasty... it would be nice to suppress this
   // diagnostic for certain cases like using a local variable in an array bound
   // for a member of a local class, but the correct predicate is not obvious.
-  if (!S.getLangOpts().CPlusPlus && !S.CurContext->isFunctionOrMethod())
+  if (!S.getLangOpts().CPlusPlus && !S.CurContext->isSubprogramOrMethod())
     return;
 
   if (isa<CXXMethodDecl>(VarDC) &&
       cast<CXXRecordDecl>(VarDC->getParent())->isLambda()) {
     S.Diag(loc, diag::err_reference_to_local_var_in_enclosing_lambda)
       << var->getIdentifier();
-  } else if (FunctionDecl *fn = dyn_cast<FunctionDecl>(VarDC)) {
+  } else if (SubprogramDecl *fn = dyn_cast<SubprogramDecl>(VarDC)) {
     S.Diag(loc, diag::err_reference_to_local_var_in_enclosing_function)
       << var->getIdentifier() << fn->getDeclName();
   } else if (isa<BlockDecl>(VarDC)) {
@@ -10682,7 +10682,7 @@ bool Sema::tryCaptureVariable(VarDecl *Var, SourceLocation Loc,
   CaptureType = Var->getType();
   DeclRefType = CaptureType.getNonReferenceType();
   bool Explicit = (Kind != TryCapture_Implicit);
-  unsigned FunctionScopesIndex = FunctionScopes.size() - 1;
+  unsigned SubprogramScopesIndex = SubprogramScopes.size() - 1;
   do {
     // Only block literals and lambda expressions can capture; other
     // scopes don't work.
@@ -10700,7 +10700,7 @@ bool Sema::tryCaptureVariable(VarDecl *Var, SourceLocation Loc,
     }
 
     CapturingScopeInfo *CSI =
-      cast<CapturingScopeInfo>(FunctionScopes[FunctionScopesIndex]);
+      cast<CapturingScopeInfo>(SubprogramScopes[SubprogramScopesIndex]);
 
     // Check whether we've already captured it.
     if (CSI->CaptureMap.count(Var)) {
@@ -10772,7 +10772,7 @@ bool Sema::tryCaptureVariable(VarDecl *Var, SourceLocation Loc,
       return true;
     }
 
-    FunctionScopesIndex--;
+    SubprogramScopesIndex--;
     DC = ParentDC;
     Explicit = false;
   } while (!Var->getDeclContext()->Equals(DC));
@@ -10780,9 +10780,9 @@ bool Sema::tryCaptureVariable(VarDecl *Var, SourceLocation Loc,
   // Walk back down the scope stack, computing the type of the capture at
   // each step, checking type-specific requirements, and adding captures if
   // requested.
-  for (unsigned I = ++FunctionScopesIndex, N = FunctionScopes.size(); I != N; 
+  for (unsigned I = ++SubprogramScopesIndex, N = SubprogramScopes.size(); I != N; 
        ++I) {
-    CapturingScopeInfo *CSI = cast<CapturingScopeInfo>(FunctionScopes[I]);
+    CapturingScopeInfo *CSI = cast<CapturingScopeInfo>(SubprogramScopes[I]);
     
     // Compute the type of the capture and of a reference to the capture within
     // this scope.
@@ -10901,7 +10901,7 @@ bool Sema::tryCaptureVariable(VarDecl *Var, SourceLocation Loc,
       //   corresponding data member is also a reference to a
       //   function. - end note ]
       if (const ReferenceType *RefType = CaptureType->getAs<ReferenceType>()){
-        if (!RefType->getPointeeType()->isFunctionType())
+        if (!RefType->getPointeeType()->isSubprogramType())
           CaptureType = RefType->getPointeeType();
       }
 
@@ -11133,8 +11133,8 @@ void Sema::MarkMemberReferenced(MemberExpr *E) {
 void Sema::MarkAnyDeclReferenced(SourceLocation Loc, Decl *D) {
   if (VarDecl *VD = dyn_cast<VarDecl>(D))
     MarkVariableReferenced(Loc, VD);
-  else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    MarkFunctionReferenced(Loc, FD);
+  else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    MarkSubprogramReferenced(Loc, FD);
   else
     D->setReferenced();
 }
@@ -11212,26 +11212,26 @@ namespace {
     }
     
     void VisitCXXBindTemporaryExpr(CXXBindTemporaryExpr *E) {
-      S.MarkFunctionReferenced(E->getLocStart(),
+      S.MarkSubprogramReferenced(E->getLocStart(),
             const_cast<CXXDestructorDecl*>(E->getTemporary()->getDestructor()));
       Visit(E->getSubExpr());
     }
     
     void VisitCXXNewExpr(CXXNewExpr *E) {
       if (E->getOperatorNew())
-        S.MarkFunctionReferenced(E->getLocStart(), E->getOperatorNew());
+        S.MarkSubprogramReferenced(E->getLocStart(), E->getOperatorNew());
       if (E->getOperatorDelete())
-        S.MarkFunctionReferenced(E->getLocStart(), E->getOperatorDelete());
+        S.MarkSubprogramReferenced(E->getLocStart(), E->getOperatorDelete());
       Inherited::VisitCXXNewExpr(E);
     }
 
     void VisitCXXDeleteExpr(CXXDeleteExpr *E) {
       if (E->getOperatorDelete())
-        S.MarkFunctionReferenced(E->getLocStart(), E->getOperatorDelete());
+        S.MarkSubprogramReferenced(E->getLocStart(), E->getOperatorDelete());
       QualType Destroyed = S.Context.getBaseElementType(E->getDestroyedType());
       if (const RecordType *DestroyedRec = Destroyed->getAs<RecordType>()) {
         CXXRecordDecl *Record = cast<CXXRecordDecl>(DestroyedRec->getDecl());
-        S.MarkFunctionReferenced(E->getLocStart(), 
+        S.MarkSubprogramReferenced(E->getLocStart(), 
                                     S.LookupDestructor(Record));
       }
       
@@ -11239,7 +11239,7 @@ namespace {
     }
     
     void VisitCXXConstructExpr(CXXConstructExpr *E) {
-      S.MarkFunctionReferenced(E->getLocStart(), E->getConstructor());
+      S.MarkSubprogramReferenced(E->getLocStart(), E->getConstructor());
       Inherited::VisitCXXConstructExpr(E);
     }
     
@@ -11295,8 +11295,8 @@ bool Sema::DiagRuntimeBehavior(SourceLocation Loc, const Stmt *Statement,
 
   case PotentiallyEvaluated:
   case PotentiallyEvaluatedIfUsed:
-    if (Statement && getCurFunctionOrMethodDecl()) {
-      FunctionScopes.back()->PossiblyUnreachableDiags.
+    if (Statement && getCurSubprogramOrMethodDecl()) {
+      SubprogramScopes.back()->PossiblyUnreachableDiags.
         push_back(sema::PossiblyUnreachableDiag(PD, Loc, Statement));
     }
     else
@@ -11309,7 +11309,7 @@ bool Sema::DiagRuntimeBehavior(SourceLocation Loc, const Stmt *Statement,
 }
 
 bool Sema::CheckCallReturnType(QualType ReturnType, SourceLocation Loc,
-                               CallExpr *CE, FunctionDecl *FD) {
+                               CallExpr *CE, SubprogramDecl *FD) {
   if (ReturnType->isVoidType() || !ReturnType->isIncompleteType())
     return false;
 
@@ -11321,11 +11321,11 @@ bool Sema::CheckCallReturnType(QualType ReturnType, SourceLocation Loc,
   }
 
   class CallReturnIncompleteDiagnoser : public TypeDiagnoser {
-    FunctionDecl *FD;
+    SubprogramDecl *FD;
     CallExpr *CE;
     
   public:
-    CallReturnIncompleteDiagnoser(FunctionDecl *FD, CallExpr *CE)
+    CallReturnIncompleteDiagnoser(SubprogramDecl *FD, CallExpr *CE)
       : FD(FD), CE(CE) { }
     
     virtual void diagnose(Sema &S, SourceLocation Loc, QualType T) {
@@ -11449,7 +11449,7 @@ ExprResult Sema::CheckBooleanCondition(Expr *E, SourceLocation Loc) {
     if (getLangOpts().CPlusPlus)
       return CheckCXXBooleanCondition(E); // C++ 6.4p4
 
-    ExprResult ERes = DefaultFunctionArrayLvalueConversion(E);
+    ExprResult ERes = DefaultSubprogramArrayLvalueConversion(E);
     if (ERes.isInvalid())
       return ExprError();
     E = ERes.take();
@@ -11476,12 +11476,12 @@ ExprResult Sema::ActOnBooleanCondition(Scope *S, SourceLocation Loc,
 namespace {
   /// A visitor for rebuilding a call to an __unknown_any expression
   /// to have an appropriate type.
-  struct RebuildUnknownAnyFunction
-    : StmtVisitor<RebuildUnknownAnyFunction, ExprResult> {
+  struct RebuildUnknownAnySubprogram
+    : StmtVisitor<RebuildUnknownAnySubprogram, ExprResult> {
 
     Sema &S;
 
-    RebuildUnknownAnyFunction(Sema &S) : S(S) {}
+    RebuildUnknownAnySubprogram(Sema &S) : S(S) {}
 
     ExprResult VisitStmt(Stmt *S) {
       llvm_unreachable("unexpected statement!");
@@ -11528,7 +11528,7 @@ namespace {
     }
 
     ExprResult resolveDecl(Expr *E, ValueDecl *VD) {
-      if (!isa<FunctionDecl>(VD)) return VisitExpr(E);
+      if (!isa<SubprogramDecl>(VD)) return VisitExpr(E);
 
       E->setType(VD->getType());
 
@@ -11553,10 +11553,10 @@ namespace {
 
 /// Given a function expression of unknown-any type, try to rebuild it
 /// to have a function type.
-static ExprResult rebuildUnknownAnyFunction(Sema &S, Expr *FunctionExpr) {
-  ExprResult Result = RebuildUnknownAnyFunction(S).Visit(FunctionExpr);
+static ExprResult rebuildUnknownAnySubprogram(Sema &S, Expr *SubprogramExpr) {
+  ExprResult Result = RebuildUnknownAnySubprogram(S).Visit(SubprogramExpr);
   if (Result.isInvalid()) return ExprError();
-  return S.DefaultFunctionArrayConversion(Result.take());
+  return S.DefaultSubprogramArrayConversion(Result.take());
 }
 
 namespace {
@@ -11647,8 +11647,8 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
   Expr *CalleeExpr = E->getCallee();
 
   enum FnKind {
-    FK_MemberFunction,
-    FK_FunctionPointer,
+    FK_MemberSubprogram,
+    FK_SubprogramPointer,
     FK_BlockPointer
   };
 
@@ -11656,25 +11656,25 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
   QualType CalleeType = CalleeExpr->getType();
   if (CalleeType == S.Context.BoundMemberTy) {
     assert(isa<CXXMemberCallExpr>(E) || isa<CXXOperatorCallExpr>(E));
-    Kind = FK_MemberFunction;
+    Kind = FK_MemberSubprogram;
     CalleeType = Expr::findBoundMemberType(CalleeExpr);
   } else if (const PointerType *Ptr = CalleeType->getAs<PointerType>()) {
     CalleeType = Ptr->getPointeeType();
-    Kind = FK_FunctionPointer;
+    Kind = FK_SubprogramPointer;
   } else {
     CalleeType = CalleeType->castAs<BlockPointerType>()->getPointeeType();
     Kind = FK_BlockPointer;
   }
-  const FunctionType *FnType = CalleeType->castAs<FunctionType>();
+  const SubprogramType *FnType = CalleeType->castAs<SubprogramType>();
 
   // Verify that this is a legal result type of a function.
-  if (DestType->isArrayType() || DestType->isFunctionType()) {
+  if (DestType->isArrayType() || DestType->isSubprogramType()) {
     unsigned diagID = diag::err_func_returning_array_function;
     if (Kind == FK_BlockPointer)
       diagID = diag::err_block_returning_array_function;
 
     S.Diag(E->getExprLoc(), diagID)
-      << DestType->isFunctionType() << DestType;
+      << DestType->isSubprogramType() << DestType;
     return ExprError();
   }
 
@@ -11684,22 +11684,22 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
   assert(E->getObjectKind() == OK_Ordinary);
 
   // Rebuild the function type, replacing the result type with DestType.
-  if (const FunctionProtoType *Proto = dyn_cast<FunctionProtoType>(FnType))
-    DestType = S.Context.getFunctionType(DestType,
+  if (const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FnType))
+    DestType = S.Context.getSubprogramType(DestType,
                                          Proto->arg_type_begin(),
                                          Proto->getNumArgs(),
                                          Proto->getExtProtoInfo());
   else
-    DestType = S.Context.getFunctionNoProtoType(DestType,
+    DestType = S.Context.getSubprogramNoProtoType(DestType,
                                                 FnType->getExtInfo());
 
   // Rebuild the appropriate pointer-to-function type.
   switch (Kind) { 
-  case FK_MemberFunction:
+  case FK_MemberSubprogram:
     // Nothing to do.
     break;
 
-  case FK_FunctionPointer:
+  case FK_SubprogramPointer:
     DestType = S.Context.getPointerType(DestType);
     break;
 
@@ -11719,9 +11719,9 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
 
 ExprResult RebuildUnknownAnyExpr::VisitObjCMessageExpr(ObjCMessageExpr *E) {
   // Verify that this is a legal result type of a call.
-  if (DestType->isArrayType() || DestType->isFunctionType()) {
+  if (DestType->isArrayType() || DestType->isSubprogramType()) {
     S.Diag(E->getExprLoc(), diag::err_func_returning_array_function)
-      << DestType->isFunctionType() << DestType;
+      << DestType->isSubprogramType() << DestType;
     return ExprError();
   }
 
@@ -11740,7 +11740,7 @@ ExprResult RebuildUnknownAnyExpr::VisitObjCMessageExpr(ObjCMessageExpr *E) {
 
 ExprResult RebuildUnknownAnyExpr::VisitImplicitCastExpr(ImplicitCastExpr *E) {
   // The only case we should ever see here is a function-to-pointer decay.
-  if (E->getCastKind() == CK_FunctionToPointerDecay) {
+  if (E->getCastKind() == CK_SubprogramToPointerDecay) {
     assert(E->getValueKind() == VK_RValue);
     assert(E->getObjectKind() == OK_Ordinary);
   
@@ -11782,16 +11782,16 @@ ExprResult RebuildUnknownAnyExpr::resolveDecl(Expr *E, ValueDecl *VD) {
   // We know how to make this work for certain kinds of decls:
 
   //  - functions
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(VD)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(VD)) {
     if (const PointerType *Ptr = Type->getAs<PointerType>()) {
       DestType = Ptr->getPointeeType();
       ExprResult Result = resolveDecl(E, VD);
       if (Result.isInvalid()) return ExprError();
       return S.ImpCastExprToType(Result.take(), Type,
-                                 CK_FunctionToPointerDecay, VK_RValue);
+                                 CK_SubprogramToPointerDecay, VK_RValue);
     }
 
-    if (!Type->isFunctionType()) {
+    if (!Type->isSubprogramType()) {
       S.Diag(E->getExprLoc(), diag::err_unknown_any_function)
         << VD << E->getSourceRange();
       return ExprError();
@@ -11803,7 +11803,7 @@ ExprResult RebuildUnknownAnyExpr::resolveDecl(Expr *E, ValueDecl *VD) {
         Type = S.Context.BoundMemberTy;
       }
 
-    // Function references aren't l-values in C.
+    // Subprogram references aren't l-values in C.
     if (!S.getLangOpts().CPlusPlus)
       ValueKind = VK_RValue;
 
@@ -11811,7 +11811,7 @@ ExprResult RebuildUnknownAnyExpr::resolveDecl(Expr *E, ValueDecl *VD) {
   } else if (isa<VarDecl>(VD)) {
     if (const ReferenceType *RefTy = Type->getAs<ReferenceType>()) {
       Type = RefTy->getPointeeType();
-    } else if (Type->isFunctionType()) {
+    } else if (Type->isSubprogramType()) {
       S.Diag(E->getExprLoc(), diag::err_unknown_any_var_function_type)
         << VD << E->getSourceRange();
       return ExprError();
@@ -11922,7 +11922,7 @@ ExprResult Sema::CheckPlaceholderExpr(Expr *E) {
     // Try to resolve a single function template specialization.
     // This is obligatory.
     ExprResult result = Owned(E);
-    if (ResolveAndFixSingleFunctionTemplateSpecialization(result, false)) {
+    if (ResolveAndFixSingleSubprogramTemplateSpecialization(result, false)) {
       return result;
 
     // If that failed, try to recover with a call.

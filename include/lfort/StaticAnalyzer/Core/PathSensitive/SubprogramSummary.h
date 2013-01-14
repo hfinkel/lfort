@@ -1,4 +1,4 @@
-//== FunctionSummary.h - Stores summaries of functions. ------------*- C++ -*-//
+//== SubprogramSummary.h - Stores summaries of functions. ------------*- C++ -*-//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -25,8 +25,8 @@ namespace ento {
 typedef std::deque<Decl*> SetOfDecls;
 typedef llvm::DenseSet<const Decl*> SetOfConstDecls;
 
-class FunctionSummariesTy {
-  struct FunctionSummary {
+class SubprogramSummariesTy {
+  struct SubprogramSummary {
     /// True if this function has reached a max block count while inlined from
     /// at least one call site.
     bool MayReachMaxBlockCount;
@@ -40,25 +40,25 @@ class FunctionSummariesTy {
     /// The number of times the function has been inlined.
     unsigned TimesInlined;
 
-    FunctionSummary() :
+    SubprogramSummary() :
       MayReachMaxBlockCount(false),
       TotalBasicBlocks(0),
       VisitedBasicBlocks(0),
       TimesInlined(0) {}
   };
 
-  typedef llvm::DenseMap<const Decl*, FunctionSummary*> MapTy;
+  typedef llvm::DenseMap<const Decl*, SubprogramSummary*> MapTy;
   MapTy Map;
 
 public:
-  ~FunctionSummariesTy();
+  ~SubprogramSummariesTy();
 
   MapTy::iterator findOrInsertSummary(const Decl *D) {
     MapTy::iterator I = Map.find(D);
     if (I != Map.end())
       return I;
-    FunctionSummary *DS = new FunctionSummary();
-    I = Map.insert(std::pair<const Decl*, FunctionSummary*>(D, DS)).first;
+    SubprogramSummary *DS = new SubprogramSummary();
+    I = Map.insert(std::pair<const Decl*, SubprogramSummary*>(D, DS)).first;
     assert(I != Map.end());
     return I;
   }

@@ -375,7 +375,7 @@ PathDiagnosticBuilder::ExecutionContinues(llvm::raw_string_ostream &os,
     const Decl *D = N->getLocationContext()->getDecl();
     if (isa<ObjCMethodDecl>(D))
       os << "method";
-    else if (isa<FunctionDecl>(D))
+    else if (isa<SubprogramDecl>(D))
       os << "function";
     else {
       assert(isa<BlockDecl>(D));
@@ -1276,8 +1276,8 @@ static void reversePropagateInterestingSymbols(BugReport &R,
   const StackFrameContext *Callee = CalleeCtx->getCurrentStackFrame();
   const Stmt *CallSite = Callee->getCallSite();
   if (const CallExpr *CE = dyn_cast_or_null<CallExpr>(CallSite)) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(CalleeCtx->getDecl())) {
-      FunctionDecl::param_const_iterator PI = FD->param_begin(), 
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CalleeCtx->getDecl())) {
+      SubprogramDecl::param_const_iterator PI = FD->param_begin(), 
                                          PE = FD->param_end();
       CallExpr::const_arg_iterator AI = CE->arg_begin(), AE = CE->arg_end();
       for (; AI != AE && PI != PE; ++AI, ++PI) {

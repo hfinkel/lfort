@@ -164,8 +164,8 @@ getLVForTemplateArgumentList(const TemplateArgumentList &TArgs,
   return getLVForTemplateArgumentList(TArgs.data(), TArgs.size(), OnlyTemplate);
 }
 
-static bool shouldConsiderTemplateVis(const FunctionDecl *fn,
-                               const FunctionTemplateSpecializationInfo *spec) {
+static bool shouldConsiderTemplateVis(const SubprogramDecl *fn,
+                               const SubprogramTemplateSpecializationInfo *spec) {
   return !fn->hasAttr<VisibilityAttr>() || spec->isExplicitSpecialization();
 }
 
@@ -180,12 +180,12 @@ static bool useInlineVisibilityHidden(const NamedDecl *D) {
   if (!Opts.CPlusPlus || !Opts.InlineVisibilityHidden)
     return false;
 
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (!FD)
     return false;
 
   TemplateSpecializationKind TSK = TSK_Undeclared;
-  if (FunctionTemplateSpecializationInfo *spec
+  if (SubprogramTemplateSpecializationInfo *spec
       = FD->getTemplateSpecializationInfo()) {
     TSK = spec->getTemplateSpecializationKind();
   } else if (MemberSpecializationInfo *MSI =
@@ -193,7 +193,7 @@ static bool useInlineVisibilityHidden(const NamedDecl *D) {
     TSK = MSI->getTemplateSpecializationKind();
   }
 
-  const FunctionDecl *Def = 0;
+  const SubprogramDecl *Def = 0;
   // InlineVisibilityHidden only applies to definitions, and
   // isInlined() only gives meaningful answers on definitions
   // anyway.
@@ -245,19 +245,19 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
       if (PrevVar)
         return PrevVar->getLinkageAndVisibility();
     }
-  } else if (isa<FunctionDecl>(D) || isa<FunctionTemplateDecl>(D)) {
+  } else if (isa<SubprogramDecl>(D) || isa<SubprogramTemplateDecl>(D)) {
     // C++ [temp]p4:
     //   A non-member function template can have internal linkage; any
     //   other template name shall have external linkage.
-    const FunctionDecl *Function = 0;
-    if (const FunctionTemplateDecl *FunTmpl
-                                        = dyn_cast<FunctionTemplateDecl>(D))
-      Function = FunTmpl->getTemplatedDecl();
+    const SubprogramDecl *Subprogram = 0;
+    if (const SubprogramTemplateDecl *FunTmpl
+                                        = dyn_cast<SubprogramTemplateDecl>(D))
+      Subprogram = FunTmpl->getTemplatedDecl();
     else
-      Function = cast<FunctionDecl>(D);
+      Subprogram = cast<SubprogramDecl>(D);
 
     // Explicitly declared static.
-    if (Function->getStorageClass() == SC_Static)
+    if (Subprogram->getStorageClass() == SC_Static)
       return LinkageInfo(InternalLinkage, DefaultVisibility, false);
   } else if (const FieldDecl *Field = dyn_cast<FieldDecl>(D)) {
     //   - a data member of an anonymous union.
@@ -267,7 +267,7 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
 
   if (D->isInAnonymousNamespace()) {
     const VarDecl *Var = dyn_cast<VarDecl>(D);
-    const FunctionDecl *Func = dyn_cast<FunctionDecl>(D);
+    const SubprogramDecl *Func = dyn_cast<SubprogramDecl>(D);
     if ((!Var || !Var->hasCLanguageLinkage()) &&
         (!Func || !Func->hasCLanguageLinkage()))
       return LinkageInfo::uniqueExternal();
@@ -352,16 +352,16 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
     // to do it here.
 
   //     - a function, unless it has internal linkage; or
-  } else if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
+  } else if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
     // In theory, we can modify the function's LV by the LV of its
     // type unless it has C linkage (see comment above about variables
     // for justification).  In practice, GCC doesn't do this, so it's
     // just too painful to make work.
 
-    if (Function->getStorageClass() == SC_PrivateExtern)
+    if (Subprogram->getStorageClass() == SC_PrivateExtern)
       LV.mergeVisibility(HiddenVisibility, true);
 
-    // Note that Sema::MergeCompatibleFunctionDecls already takes care of
+    // Note that Sema::MergeCompatibleSubprogramDecls already takes care of
     // merging storage classes and visibility attributes, so we don't have to
     // look at previous decls in here.
 
@@ -370,19 +370,19 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
     // this translation unit.  However, we should use the C linkage
     // rules instead for extern "C" declarations.
     if (Context.getLangOpts().CPlusPlus &&
-        !Function->getDeclContext()->isExternCContext() &&
-        Function->getType()->getLinkage() == UniqueExternalLinkage)
+        !Subprogram->getDeclContext()->isExternCContext() &&
+        Subprogram->getType()->getLinkage() == UniqueExternalLinkage)
       return LinkageInfo::uniqueExternal();
 
     // Consider LV from the template and the template arguments unless
     // this is an explicit specialization with a visibility attribute.
-    if (FunctionTemplateSpecializationInfo *specInfo
-                               = Function->getTemplateSpecializationInfo()) {
+    if (SubprogramTemplateSpecializationInfo *specInfo
+                               = Subprogram->getTemplateSpecializationInfo()) {
       LinkageInfo TempLV = getLVForDecl(specInfo->getTemplate(), true);
       const TemplateArgumentList &templateArgs = *specInfo->TemplateArguments;
       LinkageInfo ArgsLV = getLVForTemplateArgumentList(templateArgs,
                                                         OnlyTemplate);
-      if (shouldConsiderTemplateVis(Function, specInfo)) {
+      if (shouldConsiderTemplateVis(Subprogram, specInfo)) {
         LV.mergeWithMin(TempLV);
         LV.mergeWithMin(ArgsLV);
       } else {
@@ -513,7 +513,7 @@ static LinkageInfo getLVForClassMember(const NamedDecl *D, bool OnlyTemplate) {
 
     // If this is a method template specialization, use the linkage for
     // the template parameters and arguments.
-    if (FunctionTemplateSpecializationInfo *spec
+    if (SubprogramTemplateSpecializationInfo *spec
            = MD->getTemplateSpecializationInfo()) {
       const TemplateArgumentList &TemplateArgs = *spec->TemplateArguments;
       LinkageInfo ArgsLV = getLVForTemplateArgumentList(TemplateArgs,
@@ -607,10 +607,10 @@ void NamedDecl::ClearLVCache() {
   }
 
   // Clear cached linkage for function template decls, too.
-  if (FunctionTemplateDecl *temp =
-        dyn_cast<FunctionTemplateDecl>(const_cast<NamedDecl*>(this))) {
+  if (SubprogramTemplateDecl *temp =
+        dyn_cast<SubprogramTemplateDecl>(const_cast<NamedDecl*>(this))) {
     temp->getTemplatedDecl()->ClearLVCache();
-    for (FunctionTemplateDecl::spec_iterator
+    for (SubprogramTemplateDecl::spec_iterator
            i = temp->spec_begin(), e = temp->spec_end(); i != e; ++i)
       i->ClearLVCache();
   }
@@ -678,19 +678,19 @@ llvm::Optional<Visibility> NamedDecl::getExplicitVisibility() const {
   }
   // Use the most recent declaration of a function, and also handle
   // function template specializations.
-  if (const FunctionDecl *fn = dyn_cast<FunctionDecl>(this)) {
+  if (const SubprogramDecl *fn = dyn_cast<SubprogramDecl>(this)) {
     if (llvm::Optional<Visibility> V = getVisibilityOf(fn))
       return V;
 
     // If the function is a specialization of a template with an
     // explicit visibility attribute, use that.
-    if (FunctionTemplateSpecializationInfo *templateInfo
+    if (SubprogramTemplateSpecializationInfo *templateInfo
           = fn->getTemplateSpecializationInfo())
       return getVisibilityOf(templateInfo->getTemplate()->getTemplatedDecl());
 
     // If the function is a member of a specialization of a class template
     // and the corresponding decl has explicit visibility, use that.
-    FunctionDecl *InstantiatedFrom = fn->getInstantiatedFromMemberFunction();
+    SubprogramDecl *InstantiatedFrom = fn->getInstantiatedFromMemberSubprogram();
     if (InstantiatedFrom)
       return getVisibilityOf(InstantiatedFrom);
 
@@ -797,19 +797,19 @@ static LinkageInfo computeLVForDecl(const NamedDecl *D, bool OnlyTemplate) {
   //   one such matching entity, the program is ill-formed. Otherwise,
   //   if no matching entity is found, the block scope entity receives
   //   external linkage.
-  if (D->getDeclContext()->isFunctionOrMethod()) {
-    if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
-      if (Function->isInAnonymousNamespace() &&
-          !Function->getDeclContext()->isExternCContext())
+  if (D->getDeclContext()->isSubprogramOrMethod()) {
+    if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
+      if (Subprogram->isInAnonymousNamespace() &&
+          !Subprogram->getDeclContext()->isExternCContext())
         return LinkageInfo::uniqueExternal();
 
       LinkageInfo LV;
       if (!OnlyTemplate) {
-        if (llvm::Optional<Visibility> Vis = Function->getExplicitVisibility())
+        if (llvm::Optional<Visibility> Vis = Subprogram->getExplicitVisibility())
           LV.mergeVisibility(*Vis, true);
       }
 
-      // Note that Sema::MergeCompatibleFunctionDecls already takes care of
+      // Note that Sema::MergeCompatibleSubprogramDecls already takes care of
       // merging storage classes and visibility attributes, so we don't have to
       // look at previous decls in here.
 
@@ -854,7 +854,7 @@ std::string NamedDecl::getQualifiedNameAsString() const {
 std::string NamedDecl::getQualifiedNameAsString(const PrintingPolicy &P) const {
   const DeclContext *Ctx = getDeclContext();
 
-  if (Ctx->isFunctionOrMethod())
+  if (Ctx->isSubprogramOrMethod())
     return getNameAsString();
 
   typedef SmallVector<const DeclContext *, 8> ContextsTy;
@@ -890,10 +890,10 @@ std::string NamedDecl::getQualifiedNameAsString(const PrintingPolicy &P) const {
         OS << "<anonymous " << RD->getKindName() << '>';
       else
         OS << *RD;
-    } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(*I)) {
-      const FunctionProtoType *FT = 0;
+    } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(*I)) {
+      const SubprogramProtoType *FT = 0;
       if (FD->hasWrittenPrototype())
-        FT = dyn_cast<FunctionProtoType>(FD->getType()->castAs<FunctionType>());
+        FT = dyn_cast<SubprogramProtoType>(FD->getType()->castAs<SubprogramType>());
 
       OS << *FD << '(';
       if (FT) {
@@ -937,17 +937,17 @@ bool NamedDecl::declarationReplaces(NamedDecl *OldD) const {
              ->getOriginalNamespace();
   }
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(this))
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(this))
     // For function declarations, we keep track of redeclarations.
     return FD->getPreviousDecl() == OldD;
 
   // For function templates, the underlying function declarations are linked.
-  if (const FunctionTemplateDecl *FunctionTemplate
-        = dyn_cast<FunctionTemplateDecl>(this))
-    if (const FunctionTemplateDecl *OldFunctionTemplate
-          = dyn_cast<FunctionTemplateDecl>(OldD))
-      return FunctionTemplate->getTemplatedDecl()
-               ->declarationReplaces(OldFunctionTemplate->getTemplatedDecl());
+  if (const SubprogramTemplateDecl *SubprogramTemplate
+        = dyn_cast<SubprogramTemplateDecl>(this))
+    if (const SubprogramTemplateDecl *OldSubprogramTemplate
+          = dyn_cast<SubprogramTemplateDecl>(OldD))
+      return SubprogramTemplate->getTemplatedDecl()
+               ->declarationReplaces(OldSubprogramTemplate->getTemplatedDecl());
 
   // For method declarations, we keep track of redeclarations.
   if (isa<ObjCMethodDecl>(this))
@@ -1007,8 +1007,8 @@ bool NamedDecl::isCXXInstanceMember() const {
     return true;
   if (isa<CXXMethodDecl>(D))
     return cast<CXXMethodDecl>(D)->isInstance();
-  if (isa<FunctionTemplateDecl>(D))
-    return cast<CXXMethodDecl>(cast<FunctionTemplateDecl>(D)
+  if (isa<SubprogramTemplateDecl>(D))
+    return cast<CXXMethodDecl>(cast<SubprogramTemplateDecl>(D)
                                  ->getTemplatedDecl())->isInstance();
   return false;
 }
@@ -1114,8 +1114,8 @@ bool typeIsPostfix(lfort::QualType QT) {
     case Type::DependentSizedArray:
     case Type::IncompleteArray:
     case Type::VariableArray:
-    case Type::FunctionProto:
-    case Type::FunctionNoProto:
+    case Type::SubprogramProto:
+    case Type::SubprogramNoProto:
       return true;
     }
   }
@@ -1634,10 +1634,10 @@ unsigned ParmVarDecl::getParameterIndexLarge() const {
 }
 
 //===----------------------------------------------------------------------===//
-// FunctionDecl Implementation
+// SubprogramDecl Implementation
 //===----------------------------------------------------------------------===//
 
-void FunctionDecl::getNameForDiagnostic(std::string &S,
+void SubprogramDecl::getNameForDiagnostic(std::string &S,
                                         const PrintingPolicy &Policy,
                                         bool Qualified) const {
   NamedDecl::getNameForDiagnostic(S, Policy, Qualified);
@@ -1650,13 +1650,13 @@ void FunctionDecl::getNameForDiagnostic(std::string &S,
     
 }
 
-bool FunctionDecl::isVariadic() const {
-  if (const FunctionProtoType *FT = getType()->getAs<FunctionProtoType>())
+bool SubprogramDecl::isVariadic() const {
+  if (const SubprogramProtoType *FT = getType()->getAs<SubprogramProtoType>())
     return FT->isVariadic();
   return false;
 }
 
-bool FunctionDecl::hasBody(const FunctionDecl *&Definition) const {
+bool SubprogramDecl::hasBody(const SubprogramDecl *&Definition) const {
   for (redecl_iterator I = redecls_begin(), E = redecls_end(); I != E; ++I) {
     if (I->Body || I->IsLateTemplateParsed) {
       Definition = *I;
@@ -1667,7 +1667,7 @@ bool FunctionDecl::hasBody(const FunctionDecl *&Definition) const {
   return false;
 }
 
-bool FunctionDecl::hasTrivialBody() const
+bool SubprogramDecl::hasTrivialBody() const
 {
   Stmt *S = getBody();
   if (!S) {
@@ -1681,7 +1681,7 @@ bool FunctionDecl::hasTrivialBody() const
   return false;
 }
 
-bool FunctionDecl::isDefined(const FunctionDecl *&Definition) const {
+bool SubprogramDecl::isDefined(const SubprogramDecl *&Definition) const {
   for (redecl_iterator I = redecls_begin(), E = redecls_end(); I != E; ++I) {
     if (I->IsDeleted || I->IsDefaulted || I->Body || I->IsLateTemplateParsed) {
       Definition = I->IsDeleted ? I->getCanonicalDecl() : *I;
@@ -1692,7 +1692,7 @@ bool FunctionDecl::isDefined(const FunctionDecl *&Definition) const {
   return false;
 }
 
-Stmt *FunctionDecl::getBody(const FunctionDecl *&Definition) const {
+Stmt *SubprogramDecl::getBody(const SubprogramDecl *&Definition) const {
   for (redecl_iterator I = redecls_begin(), E = redecls_end(); I != E; ++I) {
     if (I->Body) {
       Definition = *I;
@@ -1706,7 +1706,7 @@ Stmt *FunctionDecl::getBody(const FunctionDecl *&Definition) const {
   return 0;
 }
 
-void FunctionDecl::setBody(Stmt *B) {
+void SubprogramDecl::setBody(Stmt *B) {
   Body = B;
   if (B)
     EndRangeLoc = B->getLocEnd();
@@ -1715,14 +1715,14 @@ void FunctionDecl::setBody(Stmt *B) {
     R->ClearLVCache();
 }
 
-void FunctionDecl::setPure(bool P) {
+void SubprogramDecl::setPure(bool P) {
   IsPure = P;
   if (P)
     if (CXXRecordDecl *Parent = dyn_cast<CXXRecordDecl>(getDeclContext()))
-      Parent->markedVirtualFunctionPure();
+      Parent->markedVirtualSubprogramPure();
 }
 
-bool FunctionDecl::isMain() const {
+bool SubprogramDecl::isMain() const {
   const TranslationUnitDecl *tunit =
     dyn_cast<TranslationUnitDecl>(getDeclContext()->getRedeclContext());
   return tunit &&
@@ -1731,7 +1731,7 @@ bool FunctionDecl::isMain() const {
          getIdentifier()->isStr("main");
 }
 
-bool FunctionDecl::isReservedGlobalPlacementOperator() const {
+bool SubprogramDecl::isReservedGlobalPlacementOperator() const {
   assert(getDeclName().getNameKind() == DeclarationName::CXXOperatorName);
   assert(getDeclName().getCXXOverloadedOperator() == OO_New ||
          getDeclName().getCXXOverloadedOperator() == OO_Delete ||
@@ -1741,7 +1741,7 @@ bool FunctionDecl::isReservedGlobalPlacementOperator() const {
   if (isa<CXXRecordDecl>(getDeclContext())) return false;
   assert(getDeclContext()->getRedeclContext()->isTranslationUnit());
 
-  const FunctionProtoType *proto = getType()->castAs<FunctionProtoType>();
+  const SubprogramProtoType *proto = getType()->castAs<SubprogramProtoType>();
   if (proto->getNumArgs() != 2 || proto->isVariadic()) return false;
 
   ASTContext &Context =
@@ -1753,11 +1753,11 @@ bool FunctionDecl::isReservedGlobalPlacementOperator() const {
   return (proto->getArgType(1).getCanonicalType() == Context.VoidPtrTy);
 }
 
-bool FunctionDecl::hasCLanguageLinkage() const {
+bool SubprogramDecl::hasCLanguageLinkage() const {
   return hasCLanguageLinkageTemplate(*this);
 }
 
-bool FunctionDecl::isExternC() const {
+bool SubprogramDecl::isExternC() const {
   if (getLinkage() != ExternalLinkage)
     return false;
 
@@ -1775,7 +1775,7 @@ bool FunctionDecl::isExternC() const {
   return isMain() || DC->isExternCContext();
 }
 
-bool FunctionDecl::isGlobal() const {
+bool SubprogramDecl::isGlobal() const {
   if (const CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(this))
     return Method->isStatic();
 
@@ -1796,13 +1796,13 @@ bool FunctionDecl::isGlobal() const {
 }
 
 void
-FunctionDecl::setPreviousDeclaration(FunctionDecl *PrevDecl) {
+SubprogramDecl::setPreviousDeclaration(SubprogramDecl *PrevDecl) {
   redeclarable_base::setPreviousDeclaration(PrevDecl);
 
-  if (FunctionTemplateDecl *FunTmpl = getDescribedFunctionTemplate()) {
-    FunctionTemplateDecl *PrevFunTmpl
-      = PrevDecl? PrevDecl->getDescribedFunctionTemplate() : 0;
-    assert((!PrevDecl || PrevFunTmpl) && "Function/function template mismatch");
+  if (SubprogramTemplateDecl *FunTmpl = getDescribedSubprogramTemplate()) {
+    SubprogramTemplateDecl *PrevFunTmpl
+      = PrevDecl? PrevDecl->getDescribedSubprogramTemplate() : 0;
+    assert((!PrevDecl || PrevFunTmpl) && "Subprogram/function template mismatch");
     FunTmpl->setPreviousDeclaration(PrevFunTmpl);
   }
   
@@ -1810,16 +1810,16 @@ FunctionDecl::setPreviousDeclaration(FunctionDecl *PrevDecl) {
     IsInline = true;
 }
 
-const FunctionDecl *FunctionDecl::getCanonicalDecl() const {
+const SubprogramDecl *SubprogramDecl::getCanonicalDecl() const {
   return getFirstDeclaration();
 }
 
-FunctionDecl *FunctionDecl::getCanonicalDecl() {
+SubprogramDecl *SubprogramDecl::getCanonicalDecl() {
   return getFirstDeclaration();
 }
 
-void FunctionDecl::setStorageClass(StorageClass SC) {
-  assert(isLegalForFunction(SC));
+void SubprogramDecl::setStorageClass(StorageClass SC) {
+  assert(isLegalForSubprogram(SC));
   if (getStorageClass() != SC)
     ClearLVCache();
   
@@ -1835,7 +1835,7 @@ void FunctionDecl::setStorageClass(StorageClass SC) {
 /// will be 0 for functions that do not correspond to a builtin, a
 /// value of type \c Builtin::ID if in the target-independent range
 /// \c [1,Builtin::First), or a target-specific builtin value.
-unsigned FunctionDecl::getBuiltinID() const {
+unsigned SubprogramDecl::getBuiltinID() const {
   if (!getIdentifier())
     return 0;
 
@@ -1844,7 +1844,7 @@ unsigned FunctionDecl::getBuiltinID() const {
     return 0;
 
   ASTContext &Context = getASTContext();
-  if (!Context.BuiltinInfo.isPredefinedLibFunction(BuiltinID))
+  if (!Context.BuiltinInfo.isPredefinedLibSubprogram(BuiltinID))
     return BuiltinID;
 
   // This function has the name of a known C library
@@ -1875,17 +1875,17 @@ unsigned FunctionDecl::getBuiltinID() const {
 
 
 /// getNumParams - Return the number of parameters this function must have
-/// based on its FunctionType.  This is the length of the ParamInfo array
+/// based on its SubprogramType.  This is the length of the ParamInfo array
 /// after it has been created.
-unsigned FunctionDecl::getNumParams() const {
-  const FunctionType *FT = getType()->castAs<FunctionType>();
-  if (isa<FunctionNoProtoType>(FT))
+unsigned SubprogramDecl::getNumParams() const {
+  const SubprogramType *FT = getType()->castAs<SubprogramType>();
+  if (isa<SubprogramNoProtoType>(FT))
     return 0;
-  return cast<FunctionProtoType>(FT)->getNumArgs();
+  return cast<SubprogramProtoType>(FT)->getNumArgs();
 
 }
 
-void FunctionDecl::setParams(ASTContext &C,
+void SubprogramDecl::setParams(ASTContext &C,
                              llvm::ArrayRef<ParmVarDecl *> NewParamInfo) {
   assert(ParamInfo == 0 && "Already has param info!");
   assert(NewParamInfo.size() == getNumParams() && "Parameter count mismatch!");
@@ -1897,7 +1897,7 @@ void FunctionDecl::setParams(ASTContext &C,
   }
 }
 
-void FunctionDecl::setDeclsInPrototypeScope(llvm::ArrayRef<NamedDecl *> NewDecls) {
+void SubprogramDecl::setDeclsInPrototypeScope(llvm::ArrayRef<NamedDecl *> NewDecls) {
   assert(DeclsInPrototypeScope.empty() && "Already has prototype decls!");
 
   if (!NewDecls.empty()) {
@@ -1911,7 +1911,7 @@ void FunctionDecl::setDeclsInPrototypeScope(llvm::ArrayRef<NamedDecl *> NewDecls
 /// needed to call this function. This may be fewer than the number of
 /// function parameters, if some of the parameters have default
 /// arguments (in C++) or the last parameter is a parameter pack.
-unsigned FunctionDecl::getMinRequiredArguments() const {
+unsigned SubprogramDecl::getMinRequiredArguments() const {
   if (!getASTContext().getLangOpts().CPlusPlus)
     return getNumParams();
   
@@ -1942,7 +1942,7 @@ unsigned FunctionDecl::getMinRequiredArguments() const {
   return NumRequiredArgs;
 }
 
-bool FunctionDecl::isInlined() const {
+bool SubprogramDecl::isInlined() const {
   if (IsInline)
     return true;
   
@@ -1963,7 +1963,7 @@ bool FunctionDecl::isInlined() const {
     break;
   }
 
-  const FunctionDecl *PatternDecl = getTemplateInstantiationPattern();
+  const SubprogramDecl *PatternDecl = getTemplateInstantiationPattern();
   bool HasPattern = false;
   if (PatternDecl)
     HasPattern = PatternDecl->hasBody(PatternDecl);
@@ -1974,7 +1974,7 @@ bool FunctionDecl::isInlined() const {
   return false;
 }
 
-static bool RedeclForcesDefC99(const FunctionDecl *Redecl) {
+static bool RedeclForcesDefC99(const SubprogramDecl *Redecl) {
   // Only consider file-scope declarations in this test.
   if (!Redecl->getLexicalDeclContext()->isTranslationUnit())
     return false;
@@ -1996,7 +1996,7 @@ static bool RedeclForcesDefC99(const FunctionDecl *Redecl) {
 /// Specifically, this determines if adding the current declaration to the set
 /// of redeclarations of the given functions causes
 /// isInlineDefinitionExternallyVisible to change from false to true.
-bool FunctionDecl::doesDeclarationForceExternallyVisibleDefinition() const {
+bool SubprogramDecl::doesDeclarationForceExternallyVisibleDefinition() const {
   assert(!doesThisDeclarationHaveABody() &&
          "Must have a declaration without a body.");
 
@@ -2011,7 +2011,7 @@ bool FunctionDecl::doesDeclarationForceExternallyVisibleDefinition() const {
     if (!isInlineSpecified() || getStorageClassAsWritten() == SC_Extern)
       return false;
 
-    const FunctionDecl *Prev = this;
+    const SubprogramDecl *Prev = this;
     bool FoundBody = false;
     while ((Prev = Prev->getPreviousDecl())) {
       FoundBody |= Prev->Body;
@@ -2039,7 +2039,7 @@ bool FunctionDecl::doesDeclarationForceExternallyVisibleDefinition() const {
   //   then the definition in that translation unit is an inline definition.
   if (isInlineSpecified() && getStorageClass() != SC_Extern)
     return false;
-  const FunctionDecl *Prev = this;
+  const SubprogramDecl *Prev = this;
   bool FoundBody = false;
   while ((Prev = Prev->getPreviousDecl())) {
     FoundBody |= Prev->Body;
@@ -2066,9 +2066,9 @@ bool FunctionDecl::doesDeclarationForceExternallyVisibleDefinition() const {
 /// opposite of C99 semantics. In particular, "inline" by itself will create 
 /// an externally visible symbol, but "extern inline" will not create an 
 /// externally visible symbol.
-bool FunctionDecl::isInlineDefinitionExternallyVisible() const {
+bool SubprogramDecl::isInlineDefinitionExternallyVisible() const {
   assert(doesThisDeclarationHaveABody() && "Must have the function definition");
-  assert(isInlined() && "Function must be inline");
+  assert(isInlined() && "Subprogram must be inline");
   ASTContext &Context = getASTContext();
   
   if (Context.getLangOpts().GNUInline || hasAttr<GNUInlineAttr>()) {
@@ -2114,7 +2114,7 @@ bool FunctionDecl::isInlineDefinitionExternallyVisible() const {
 
 /// getOverloadedOperator - Which C++ overloaded operator this
 /// function represents, if any.
-OverloadedOperatorKind FunctionDecl::getOverloadedOperator() const {
+OverloadedOperatorKind SubprogramDecl::getOverloadedOperator() const {
   if (getDeclName().getNameKind() == DeclarationName::CXXOperatorName)
     return getDeclName().getCXXOverloadedOperator();
   else
@@ -2123,43 +2123,43 @@ OverloadedOperatorKind FunctionDecl::getOverloadedOperator() const {
 
 /// getLiteralIdentifier - The literal suffix identifier this function
 /// represents, if any.
-const IdentifierInfo *FunctionDecl::getLiteralIdentifier() const {
+const IdentifierInfo *SubprogramDecl::getLiteralIdentifier() const {
   if (getDeclName().getNameKind() == DeclarationName::CXXLiteralOperatorName)
     return getDeclName().getCXXLiteralIdentifier();
   else
     return 0;
 }
 
-FunctionDecl::TemplatedKind FunctionDecl::getTemplatedKind() const {
+SubprogramDecl::TemplatedKind SubprogramDecl::getTemplatedKind() const {
   if (TemplateOrSpecialization.isNull())
     return TK_NonTemplate;
-  if (TemplateOrSpecialization.is<FunctionTemplateDecl *>())
-    return TK_FunctionTemplate;
+  if (TemplateOrSpecialization.is<SubprogramTemplateDecl *>())
+    return TK_SubprogramTemplate;
   if (TemplateOrSpecialization.is<MemberSpecializationInfo *>())
     return TK_MemberSpecialization;
-  if (TemplateOrSpecialization.is<FunctionTemplateSpecializationInfo *>())
-    return TK_FunctionTemplateSpecialization;
+  if (TemplateOrSpecialization.is<SubprogramTemplateSpecializationInfo *>())
+    return TK_SubprogramTemplateSpecialization;
   if (TemplateOrSpecialization.is
-                               <DependentFunctionTemplateSpecializationInfo*>())
-    return TK_DependentFunctionTemplateSpecialization;
+                               <DependentSubprogramTemplateSpecializationInfo*>())
+    return TK_DependentSubprogramTemplateSpecialization;
 
   llvm_unreachable("Did we miss a TemplateOrSpecialization type?");
 }
 
-FunctionDecl *FunctionDecl::getInstantiatedFromMemberFunction() const {
+SubprogramDecl *SubprogramDecl::getInstantiatedFromMemberSubprogram() const {
   if (MemberSpecializationInfo *Info = getMemberSpecializationInfo())
-    return cast<FunctionDecl>(Info->getInstantiatedFrom());
+    return cast<SubprogramDecl>(Info->getInstantiatedFrom());
   
   return 0;
 }
 
-MemberSpecializationInfo *FunctionDecl::getMemberSpecializationInfo() const {
+MemberSpecializationInfo *SubprogramDecl::getMemberSpecializationInfo() const {
   return TemplateOrSpecialization.dyn_cast<MemberSpecializationInfo*>();
 }
 
 void 
-FunctionDecl::setInstantiationOfMemberFunction(ASTContext &C,
-                                               FunctionDecl *FD,
+SubprogramDecl::setInstantiationOfMemberSubprogram(ASTContext &C,
+                                               SubprogramDecl *FD,
                                                TemplateSpecializationKind TSK) {
   assert(TemplateOrSpecialization.isNull() && 
          "Member function is already a specialization");
@@ -2168,7 +2168,7 @@ FunctionDecl::setInstantiationOfMemberFunction(ASTContext &C,
   TemplateOrSpecialization = Info;
 }
 
-bool FunctionDecl::isImplicitlyInstantiable() const {
+bool SubprogramDecl::isImplicitlyInstantiable() const {
   // If the function is invalid, it can't be implicitly instantiated.
   if (isInvalidDecl())
     return false;
@@ -2182,7 +2182,7 @@ bool FunctionDecl::isImplicitlyInstantiable() const {
     return true;
 
   // It is possible to instantiate TSK_ExplicitSpecialization kind
-  // if the FunctionDecl has a class scope specialization pattern.
+  // if the SubprogramDecl has a class scope specialization pattern.
   case TSK_ExplicitSpecialization:
     return getClassScopeSpecializationPattern() != 0;
 
@@ -2192,7 +2192,7 @@ bool FunctionDecl::isImplicitlyInstantiable() const {
   }
 
   // Find the actual template from which we will instantiate.
-  const FunctionDecl *PatternDecl = getTemplateInstantiationPattern();
+  const SubprogramDecl *PatternDecl = getTemplateInstantiationPattern();
   bool HasPattern = false;
   if (PatternDecl)
     HasPattern = PatternDecl->hasBody(PatternDecl);
@@ -2207,7 +2207,7 @@ bool FunctionDecl::isImplicitlyInstantiable() const {
   return PatternDecl->isInlined();
 }
 
-bool FunctionDecl::isTemplateInstantiation() const {
+bool SubprogramDecl::isTemplateInstantiation() const {
   switch (getTemplateSpecializationKind()) {
     case TSK_Undeclared:
     case TSK_ExplicitSpecialization:
@@ -2220,12 +2220,12 @@ bool FunctionDecl::isTemplateInstantiation() const {
   llvm_unreachable("All TSK values handled.");
 }
    
-FunctionDecl *FunctionDecl::getTemplateInstantiationPattern() const {
+SubprogramDecl *SubprogramDecl::getTemplateInstantiationPattern() const {
   // Handle class scope explicit specialization special case.
   if (getTemplateSpecializationKind() == TSK_ExplicitSpecialization)
     return getClassScopeSpecializationPattern();
 
-  if (FunctionTemplateDecl *Primary = getPrimaryTemplate()) {
+  if (SubprogramTemplateDecl *Primary = getPrimaryTemplate()) {
     while (Primary->getInstantiatedFromMemberTemplate()) {
       // If we have hit a point where the user provided a specialization of
       // this template, we're done looking.
@@ -2238,45 +2238,45 @@ FunctionDecl *FunctionDecl::getTemplateInstantiationPattern() const {
     return Primary->getTemplatedDecl();
   } 
     
-  return getInstantiatedFromMemberFunction();
+  return getInstantiatedFromMemberSubprogram();
 }
 
-FunctionTemplateDecl *FunctionDecl::getPrimaryTemplate() const {
-  if (FunctionTemplateSpecializationInfo *Info
+SubprogramTemplateDecl *SubprogramDecl::getPrimaryTemplate() const {
+  if (SubprogramTemplateSpecializationInfo *Info
         = TemplateOrSpecialization
-            .dyn_cast<FunctionTemplateSpecializationInfo*>()) {
+            .dyn_cast<SubprogramTemplateSpecializationInfo*>()) {
     return Info->Template.getPointer();
   }
   return 0;
 }
 
-FunctionDecl *FunctionDecl::getClassScopeSpecializationPattern() const {
+SubprogramDecl *SubprogramDecl::getClassScopeSpecializationPattern() const {
     return getASTContext().getClassScopeSpecializationPattern(this);
 }
 
 const TemplateArgumentList *
-FunctionDecl::getTemplateSpecializationArgs() const {
-  if (FunctionTemplateSpecializationInfo *Info
+SubprogramDecl::getTemplateSpecializationArgs() const {
+  if (SubprogramTemplateSpecializationInfo *Info
         = TemplateOrSpecialization
-            .dyn_cast<FunctionTemplateSpecializationInfo*>()) {
+            .dyn_cast<SubprogramTemplateSpecializationInfo*>()) {
     return Info->TemplateArguments;
   }
   return 0;
 }
 
 const ASTTemplateArgumentListInfo *
-FunctionDecl::getTemplateSpecializationArgsAsWritten() const {
-  if (FunctionTemplateSpecializationInfo *Info
+SubprogramDecl::getTemplateSpecializationArgsAsWritten() const {
+  if (SubprogramTemplateSpecializationInfo *Info
         = TemplateOrSpecialization
-            .dyn_cast<FunctionTemplateSpecializationInfo*>()) {
+            .dyn_cast<SubprogramTemplateSpecializationInfo*>()) {
     return Info->TemplateArgumentsAsWritten;
   }
   return 0;
 }
 
 void
-FunctionDecl::setFunctionTemplateSpecialization(ASTContext &C,
-                                                FunctionTemplateDecl *Template,
+SubprogramDecl::setSubprogramTemplateSpecialization(ASTContext &C,
+                                                SubprogramTemplateDecl *Template,
                                      const TemplateArgumentList *TemplateArgs,
                                                 void *InsertPos,
                                                 TemplateSpecializationKind TSK,
@@ -2284,10 +2284,10 @@ FunctionDecl::setFunctionTemplateSpecialization(ASTContext &C,
                                           SourceLocation PointOfInstantiation) {
   assert(TSK != TSK_Undeclared && 
          "Must specify the type of function template specialization");
-  FunctionTemplateSpecializationInfo *Info
-    = TemplateOrSpecialization.dyn_cast<FunctionTemplateSpecializationInfo*>();
+  SubprogramTemplateSpecializationInfo *Info
+    = TemplateOrSpecialization.dyn_cast<SubprogramTemplateSpecializationInfo*>();
   if (!Info)
-    Info = FunctionTemplateSpecializationInfo::Create(C, this, Template, TSK,
+    Info = SubprogramTemplateSpecializationInfo::Create(C, this, Template, TSK,
                                                       TemplateArgs,
                                                       TemplateArgsAsWritten,
                                                       PointOfInstantiation);
@@ -2296,32 +2296,32 @@ FunctionDecl::setFunctionTemplateSpecialization(ASTContext &C,
 }
 
 void
-FunctionDecl::setDependentTemplateSpecialization(ASTContext &Context,
+SubprogramDecl::setDependentTemplateSpecialization(ASTContext &Context,
                                     const UnresolvedSetImpl &Templates,
                              const TemplateArgumentListInfo &TemplateArgs) {
   assert(TemplateOrSpecialization.isNull());
-  size_t Size = sizeof(DependentFunctionTemplateSpecializationInfo);
-  Size += Templates.size() * sizeof(FunctionTemplateDecl*);
+  size_t Size = sizeof(DependentSubprogramTemplateSpecializationInfo);
+  Size += Templates.size() * sizeof(SubprogramTemplateDecl*);
   Size += TemplateArgs.size() * sizeof(TemplateArgumentLoc);
   void *Buffer = Context.Allocate(Size);
-  DependentFunctionTemplateSpecializationInfo *Info =
-    new (Buffer) DependentFunctionTemplateSpecializationInfo(Templates,
+  DependentSubprogramTemplateSpecializationInfo *Info =
+    new (Buffer) DependentSubprogramTemplateSpecializationInfo(Templates,
                                                              TemplateArgs);
   TemplateOrSpecialization = Info;
 }
 
-DependentFunctionTemplateSpecializationInfo::
-DependentFunctionTemplateSpecializationInfo(const UnresolvedSetImpl &Ts,
+DependentSubprogramTemplateSpecializationInfo::
+DependentSubprogramTemplateSpecializationInfo(const UnresolvedSetImpl &Ts,
                                       const TemplateArgumentListInfo &TArgs)
   : AngleLocs(TArgs.getLAngleLoc(), TArgs.getRAngleLoc()) {
 
   d.NumTemplates = Ts.size();
   d.NumArgs = TArgs.size();
 
-  FunctionTemplateDecl **TsArray =
-    const_cast<FunctionTemplateDecl**>(getTemplates());
+  SubprogramTemplateDecl **TsArray =
+    const_cast<SubprogramTemplateDecl**>(getTemplates());
   for (unsigned I = 0, E = Ts.size(); I != E; ++I)
-    TsArray[I] = cast<FunctionTemplateDecl>(Ts[I]->getUnderlyingDecl());
+    TsArray[I] = cast<SubprogramTemplateDecl>(Ts[I]->getUnderlyingDecl());
 
   TemplateArgumentLoc *ArgsArray =
     const_cast<TemplateArgumentLoc*>(getTemplateArgs());
@@ -2329,11 +2329,11 @@ DependentFunctionTemplateSpecializationInfo(const UnresolvedSetImpl &Ts,
     new (&ArgsArray[I]) TemplateArgumentLoc(TArgs[I]);
 }
 
-TemplateSpecializationKind FunctionDecl::getTemplateSpecializationKind() const {
+TemplateSpecializationKind SubprogramDecl::getTemplateSpecializationKind() const {
   // For a function template specialization, query the specialization
   // information object.
-  FunctionTemplateSpecializationInfo *FTSInfo
-    = TemplateOrSpecialization.dyn_cast<FunctionTemplateSpecializationInfo*>();
+  SubprogramTemplateSpecializationInfo *FTSInfo
+    = TemplateOrSpecialization.dyn_cast<SubprogramTemplateSpecializationInfo*>();
   if (FTSInfo)
     return FTSInfo->getTemplateSpecializationKind();
 
@@ -2346,11 +2346,11 @@ TemplateSpecializationKind FunctionDecl::getTemplateSpecializationKind() const {
 }
 
 void
-FunctionDecl::setTemplateSpecializationKind(TemplateSpecializationKind TSK,
+SubprogramDecl::setTemplateSpecializationKind(TemplateSpecializationKind TSK,
                                           SourceLocation PointOfInstantiation) {
-  if (FunctionTemplateSpecializationInfo *FTSInfo
+  if (SubprogramTemplateSpecializationInfo *FTSInfo
         = TemplateOrSpecialization.dyn_cast<
-                                    FunctionTemplateSpecializationInfo*>()) {
+                                    SubprogramTemplateSpecializationInfo*>()) {
     FTSInfo->setTemplateSpecializationKind(TSK);
     if (TSK != TSK_ExplicitSpecialization &&
         PointOfInstantiation.isValid() &&
@@ -2364,13 +2364,13 @@ FunctionDecl::setTemplateSpecializationKind(TemplateSpecializationKind TSK,
         MSInfo->getPointOfInstantiation().isInvalid())
       MSInfo->setPointOfInstantiation(PointOfInstantiation);
   } else
-    llvm_unreachable("Function cannot have a template specialization kind");
+    llvm_unreachable("Subprogram cannot have a template specialization kind");
 }
 
-SourceLocation FunctionDecl::getPointOfInstantiation() const {
-  if (FunctionTemplateSpecializationInfo *FTSInfo
+SourceLocation SubprogramDecl::getPointOfInstantiation() const {
+  if (SubprogramTemplateSpecializationInfo *FTSInfo
         = TemplateOrSpecialization.dyn_cast<
-                                        FunctionTemplateSpecializationInfo*>())
+                                        SubprogramTemplateSpecializationInfo*>())
     return FTSInfo->getPointOfInstantiation();
   else if (MemberSpecializationInfo *MSInfo
              = TemplateOrSpecialization.dyn_cast<MemberSpecializationInfo*>())
@@ -2379,22 +2379,22 @@ SourceLocation FunctionDecl::getPointOfInstantiation() const {
   return SourceLocation();
 }
 
-bool FunctionDecl::isOutOfLine() const {
+bool SubprogramDecl::isOutOfLine() const {
   if (Decl::isOutOfLine())
     return true;
   
   // If this function was instantiated from a member function of a 
   // class template, check whether that member function was defined out-of-line.
-  if (FunctionDecl *FD = getInstantiatedFromMemberFunction()) {
-    const FunctionDecl *Definition;
+  if (SubprogramDecl *FD = getInstantiatedFromMemberSubprogram()) {
+    const SubprogramDecl *Definition;
     if (FD->hasBody(Definition))
       return Definition->isOutOfLine();
   }
   
   // If this function was instantiated from a function template,
   // check whether that function template was defined out-of-line.
-  if (FunctionTemplateDecl *FunTmpl = getPrimaryTemplate()) {
-    const FunctionDecl *Definition;
+  if (SubprogramTemplateDecl *FunTmpl = getPrimaryTemplate()) {
+    const SubprogramDecl *Definition;
     if (FunTmpl->getTemplatedDecl()->hasBody(Definition))
       return Definition->isOutOfLine();
   }
@@ -2402,11 +2402,11 @@ bool FunctionDecl::isOutOfLine() const {
   return false;
 }
 
-SourceRange FunctionDecl::getSourceRange() const {
+SourceRange SubprogramDecl::getSourceRange() const {
   return SourceRange(getOuterLocStart(), EndRangeLoc);
 }
 
-unsigned FunctionDecl::getMemoryFunctionKind() const {
+unsigned SubprogramDecl::getMemorySubprogramKind() const {
   IdentifierInfo *FnInfo = getIdentifier();
 
   if (!FnInfo)
@@ -2928,7 +2928,7 @@ ImplicitParamDecl *ImplicitParamDecl::CreateDeserialized(ASTContext &C,
   return new (Mem) ImplicitParamDecl(0, SourceLocation(), 0, QualType());
 }
 
-FunctionDecl *FunctionDecl::Create(ASTContext &C, DeclContext *DC,
+SubprogramDecl *SubprogramDecl::Create(ASTContext &C, DeclContext *DC,
                                    SourceLocation StartLoc,
                                    const DeclarationNameInfo &NameInfo,
                                    QualType T, TypeSourceInfo *TInfo,
@@ -2936,7 +2936,7 @@ FunctionDecl *FunctionDecl::Create(ASTContext &C, DeclContext *DC,
                                    bool isInlineSpecified, 
                                    bool hasWrittenPrototype,
                                    bool isConstexprSpecified) {
-  FunctionDecl *New = new (C) FunctionDecl(Function, DC, StartLoc, NameInfo,
+  SubprogramDecl *New = new (C) SubprogramDecl(Subprogram, DC, StartLoc, NameInfo,
                                            T, TInfo, SC, SCAsWritten,
                                            isInlineSpecified,
                                            isConstexprSpecified);
@@ -2944,9 +2944,9 @@ FunctionDecl *FunctionDecl::Create(ASTContext &C, DeclContext *DC,
   return New;
 }
 
-FunctionDecl *FunctionDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
-  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(FunctionDecl));
-  return new (Mem) FunctionDecl(Function, 0, SourceLocation(), 
+SubprogramDecl *SubprogramDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
+  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(SubprogramDecl));
+  return new (Mem) SubprogramDecl(Subprogram, 0, SourceLocation(), 
                                 DeclarationNameInfo(), QualType(), 0,
                                 SC_None, SC_None, false, false);
 }

@@ -26,7 +26,7 @@
 using namespace lfort;
 
 //===----------------------------------------------------------------------===//
-// Functional HTML pretty-printing.
+// Subprogramal HTML pretty-printing.
 //===----------------------------------------------------------------------===//
 
 namespace {

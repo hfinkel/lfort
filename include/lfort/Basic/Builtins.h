@@ -111,14 +111,14 @@ public:
 
   /// \brief Return true if this is a builtin for a libc/libm function,
   /// with a "__builtin_" prefix (e.g. __builtin_abs).
-  bool isLibFunction(unsigned ID) const {
+  bool isLibSubprogram(unsigned ID) const {
     return strchr(GetRecord(ID).Attributes, 'F') != 0;
   }
 
   /// \brief Determines whether this builtin is a predefined libc/libm
   /// function, such as "malloc", where we know the signature a
   /// priori.
-  bool isPredefinedLibFunction(unsigned ID) const {
+  bool isPredefinedLibSubprogram(unsigned ID) const {
     return strchr(GetRecord(ID).Attributes, 'f') != 0;
   }
 

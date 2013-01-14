@@ -78,8 +78,8 @@ SourceLocation CXXScalarValueInitExpr::getLocStart() const {
 }
 
 // CXXNewExpr
-CXXNewExpr::CXXNewExpr(ASTContext &C, bool globalNew, FunctionDecl *operatorNew,
-                       FunctionDecl *operatorDelete,
+CXXNewExpr::CXXNewExpr(ASTContext &C, bool globalNew, SubprogramDecl *operatorNew,
+                       SubprogramDecl *operatorDelete,
                        bool usualArrayDeleteWantsSize,
                        ArrayRef<Expr*> placementArgs,
                        SourceRange typeIdParens, Expr *arraySize,
@@ -150,7 +150,7 @@ void CXXNewExpr::AllocateArgsArray(ASTContext &C, bool isArray,
 
 bool CXXNewExpr::shouldNullCheckAllocation(ASTContext &Ctx) const {
   return getOperatorNew()->getType()->
-    castAs<FunctionProtoType>()->isNothrow(Ctx);
+    castAs<SubprogramProtoType>()->isNothrow(Ctx);
 }
 
 // CXXDeleteExpr
@@ -178,8 +178,8 @@ CXXPseudoDestructorExpr::CXXPseudoDestructorExpr(ASTContext &Context,
                 SourceLocation ColonColonLoc, SourceLocation TildeLoc, 
                 PseudoDestructorTypeStorage DestroyedType)
   : Expr(CXXPseudoDestructorExprClass,
-         Context.getPointerType(Context.getFunctionType(Context.VoidTy, 0, 0,
-                                         FunctionProtoType::ExtProtoInfo())),
+         Context.getPointerType(Context.getSubprogramType(Context.VoidTy, 0, 0,
+                                         SubprogramProtoType::ExtProtoInfo())),
          VK_RValue, OK_Ordinary,
          /*isTypeDependent=*/(Base->isTypeDependent() ||
            (DestroyedType.getTypeSourceInfo() &&
@@ -636,25 +636,25 @@ CXXConstCastExpr *CXXConstCastExpr::CreateEmpty(ASTContext &C) {
   return new (C) CXXConstCastExpr(EmptyShell());
 }
 
-CXXFunctionalCastExpr *
-CXXFunctionalCastExpr::Create(ASTContext &C, QualType T, ExprValueKind VK,
+CXXSubprogramalCastExpr *
+CXXSubprogramalCastExpr::Create(ASTContext &C, QualType T, ExprValueKind VK,
                               TypeSourceInfo *Written, SourceLocation L,
                               CastKind K, Expr *Op, const CXXCastPath *BasePath,
                                SourceLocation R) {
   unsigned PathSize = (BasePath ? BasePath->size() : 0);
-  void *Buffer = C.Allocate(sizeof(CXXFunctionalCastExpr)
+  void *Buffer = C.Allocate(sizeof(CXXSubprogramalCastExpr)
                             + PathSize * sizeof(CXXBaseSpecifier*));
-  CXXFunctionalCastExpr *E =
-    new (Buffer) CXXFunctionalCastExpr(T, VK, Written, L, K, Op, PathSize, R);
+  CXXSubprogramalCastExpr *E =
+    new (Buffer) CXXSubprogramalCastExpr(T, VK, Written, L, K, Op, PathSize, R);
   if (PathSize) E->setCastPath(*BasePath);
   return E;
 }
 
-CXXFunctionalCastExpr *
-CXXFunctionalCastExpr::CreateEmpty(ASTContext &C, unsigned PathSize) {
-  void *Buffer = C.Allocate(sizeof(CXXFunctionalCastExpr)
+CXXSubprogramalCastExpr *
+CXXSubprogramalCastExpr::CreateEmpty(ASTContext &C, unsigned PathSize) {
+  void *Buffer = C.Allocate(sizeof(CXXSubprogramalCastExpr)
                             + PathSize * sizeof(CXXBaseSpecifier*));
-  return new (Buffer) CXXFunctionalCastExpr(EmptyShell(), PathSize);
+  return new (Buffer) CXXSubprogramalCastExpr(EmptyShell(), PathSize);
 }
 
 UserDefinedLiteral::LiteralOperatorKind
@@ -666,7 +666,7 @@ UserDefinedLiteral::getLiteralOperatorKind() const {
 
   assert(getNumArgs() == 1 && "unexpected #args in literal operator call");
   QualType ParamTy =
-    cast<FunctionDecl>(getCalleeDecl())->getParamDecl(0)->getType();
+    cast<SubprogramDecl>(getCalleeDecl())->getParamDecl(0)->getType();
   if (ParamTy->isPointerType())
     return LOK_Raw;
   if (ParamTy->isAnyCharacterType())
@@ -688,7 +688,7 @@ Expr *UserDefinedLiteral::getCookedLiteral() {
 }
 
 const IdentifierInfo *UserDefinedLiteral::getUDSuffix() const {
-  return cast<FunctionDecl>(getCalleeDecl())->getLiteralIdentifier();
+  return cast<SubprogramDecl>(getCalleeDecl())->getLiteralIdentifier();
 }
 
 CXXDefaultArgExpr *
@@ -1185,7 +1185,7 @@ bool CXXDependentScopeMemberExpr::isImplicitAccess() const {
   return cast<Expr>(Base)->isImplicitCXXThis();
 }
 
-static bool hasOnlyNonStaticMemberFunctions(UnresolvedSetIterator begin,
+static bool hasOnlyNonStaticMemberSubprograms(UnresolvedSetIterator begin,
                                             UnresolvedSetIterator end) {
   do {
     NamedDecl *decl = *begin;
@@ -1196,10 +1196,10 @@ static bool hasOnlyNonStaticMemberFunctions(UnresolvedSetIterator begin,
 
     // Unresolved member expressions should only contain methods and
     // method templates.
-    assert(isa<CXXMethodDecl>(decl) || isa<FunctionTemplateDecl>(decl));
+    assert(isa<CXXMethodDecl>(decl) || isa<SubprogramTemplateDecl>(decl));
 
-    if (isa<FunctionTemplateDecl>(decl))
-      decl = cast<FunctionTemplateDecl>(decl)->getTemplatedDecl();
+    if (isa<SubprogramTemplateDecl>(decl))
+      decl = cast<SubprogramTemplateDecl>(decl)->getTemplatedDecl();
     if (cast<CXXMethodDecl>(decl)->isStatic())
       return false;
   } while (++begin != end);
@@ -1233,7 +1233,7 @@ UnresolvedMemberExpr::UnresolvedMemberExpr(ASTContext &C,
 
   // Check whether all of the members are non-static member functions,
   // and if so, mark give this bound-member type instead of overload type.
-  if (hasOnlyNonStaticMemberFunctions(Begin, End))
+  if (hasOnlyNonStaticMemberSubprograms(Begin, End))
     setType(C.BoundMemberTy);
 }
 
@@ -1324,11 +1324,11 @@ TemplateArgument SubstNonTypeTemplateParmPackExpr::getArgumentPack() const {
   return TemplateArgument(Arguments, NumArguments);
 }
 
-FunctionParmPackExpr::FunctionParmPackExpr(QualType T, ParmVarDecl *ParamPack,
+SubprogramParmPackExpr::SubprogramParmPackExpr(QualType T, ParmVarDecl *ParamPack,
                                            SourceLocation NameLoc,
                                            unsigned NumParams,
                                            Decl * const *Params)
-  : Expr(FunctionParmPackExprClass, T, VK_LValue, OK_Ordinary,
+  : Expr(SubprogramParmPackExprClass, T, VK_LValue, OK_Ordinary,
          true, true, true, true),
     ParamPack(ParamPack), NameLoc(NameLoc), NumParameters(NumParams) {
   if (Params)
@@ -1336,20 +1336,20 @@ FunctionParmPackExpr::FunctionParmPackExpr(QualType T, ParmVarDecl *ParamPack,
                             reinterpret_cast<Decl**>(this+1));
 }
 
-FunctionParmPackExpr *
-FunctionParmPackExpr::Create(ASTContext &Context, QualType T,
+SubprogramParmPackExpr *
+SubprogramParmPackExpr::Create(ASTContext &Context, QualType T,
                              ParmVarDecl *ParamPack, SourceLocation NameLoc,
                              llvm::ArrayRef<Decl*> Params) {
-  return new (Context.Allocate(sizeof(FunctionParmPackExpr) +
+  return new (Context.Allocate(sizeof(SubprogramParmPackExpr) +
                                sizeof(ParmVarDecl*) * Params.size()))
-    FunctionParmPackExpr(T, ParamPack, NameLoc, Params.size(), Params.data());
+    SubprogramParmPackExpr(T, ParamPack, NameLoc, Params.size(), Params.data());
 }
 
-FunctionParmPackExpr *
-FunctionParmPackExpr::CreateEmpty(ASTContext &Context, unsigned NumParams) {
-  return new (Context.Allocate(sizeof(FunctionParmPackExpr) +
+SubprogramParmPackExpr *
+SubprogramParmPackExpr::CreateEmpty(ASTContext &Context, unsigned NumParams) {
+  return new (Context.Allocate(sizeof(SubprogramParmPackExpr) +
                                sizeof(ParmVarDecl*) * NumParams))
-    FunctionParmPackExpr(QualType(), 0, SourceLocation(), 0, 0);
+    SubprogramParmPackExpr(QualType(), 0, SourceLocation(), 0, 0);
 }
 
 TypeTraitExpr::TypeTraitExpr(QualType T, SourceLocation Loc, TypeTrait Kind,

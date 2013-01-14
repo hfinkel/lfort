@@ -30,10 +30,10 @@
 namespace llvm {
   class Module;
   class Constant;
-  class Function;
+  class Subprogram;
   class GlobalValue;
   class DataLayout;
-  class FunctionType;
+  class SubprogramType;
   class PointerType;
   class Value;
   class LLVMContext;

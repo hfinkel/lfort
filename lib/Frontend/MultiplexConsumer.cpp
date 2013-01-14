@@ -94,9 +94,9 @@ public:
   virtual void AddedCXXImplicitMember(const CXXRecordDecl *RD, const Decl *D);
   virtual void AddedCXXTemplateSpecialization(const ClassTemplateDecl *TD,
                                     const ClassTemplateSpecializationDecl *D);
-  virtual void AddedCXXTemplateSpecialization(const FunctionTemplateDecl *TD,
-                                              const FunctionDecl *D);
-  virtual void CompletedImplicitDefinition(const FunctionDecl *D);
+  virtual void AddedCXXTemplateSpecialization(const SubprogramTemplateDecl *TD,
+                                              const SubprogramDecl *D);
+  virtual void CompletedImplicitDefinition(const SubprogramDecl *D);
   virtual void StaticDataMemberInstantiated(const VarDecl *D);
   virtual void AddedObjCCategoryToInterface(const ObjCCategoryDecl *CatD,
                                             const ObjCInterfaceDecl *IFD);
@@ -134,12 +134,12 @@ void MultiplexASTMutationListener::AddedCXXTemplateSpecialization(
     Listeners[i]->AddedCXXTemplateSpecialization(TD, D);
 }
 void MultiplexASTMutationListener::AddedCXXTemplateSpecialization(
-    const FunctionTemplateDecl *TD, const FunctionDecl *D) {
+    const SubprogramTemplateDecl *TD, const SubprogramDecl *D) {
   for (size_t i = 0, e = Listeners.size(); i != e; ++i)
     Listeners[i]->AddedCXXTemplateSpecialization(TD, D);
 }
 void MultiplexASTMutationListener::CompletedImplicitDefinition(
-                                                        const FunctionDecl *D) {
+                                                        const SubprogramDecl *D) {
   for (size_t i = 0, e = Listeners.size(); i != e; ++i)
     Listeners[i]->CompletedImplicitDefinition(D);
 }
@@ -228,9 +228,9 @@ void MultiplexConsumer::HandleTagDeclDefinition(TagDecl *D) {
     Consumers[i]->HandleTagDeclDefinition(D);
 }
 
-void MultiplexConsumer::HandleCXXImplicitFunctionInstantiation(FunctionDecl *D){
+void MultiplexConsumer::HandleCXXImplicitSubprogramInstantiation(SubprogramDecl *D){
   for (size_t i = 0, e = Consumers.size(); i != e; ++i)
-    Consumers[i]->HandleCXXImplicitFunctionInstantiation(D);
+    Consumers[i]->HandleCXXImplicitSubprogramInstantiation(D);
 }
 
 void MultiplexConsumer::HandleTopLevelDeclInObjCContainer(DeclGroupRef D) {

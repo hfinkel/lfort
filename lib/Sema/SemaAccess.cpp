@@ -107,13 +107,13 @@ struct EffectiveContext {
         CXXRecordDecl *Record = cast<CXXRecordDecl>(DC);
         Records.push_back(Record->getCanonicalDecl());
         DC = Record->getDeclContext();
-      } else if (isa<FunctionDecl>(DC)) {
-        FunctionDecl *Function = cast<FunctionDecl>(DC);
-        Functions.push_back(Function->getCanonicalDecl());
-        if (Function->getFriendObjectKind())
-          DC = Function->getLexicalDeclContext();
+      } else if (isa<SubprogramDecl>(DC)) {
+        SubprogramDecl *Subprogram = cast<SubprogramDecl>(DC);
+        Subprograms.push_back(Subprogram->getCanonicalDecl());
+        if (Subprogram->getFriendObjectKind())
+          DC = Subprogram->getLexicalDeclContext();
         else
-          DC = Function->getDeclContext();
+          DC = Subprogram->getDeclContext();
       } else if (DC->isFileContext()) {
         break;
       } else {
@@ -139,7 +139,7 @@ struct EffectiveContext {
   typedef SmallVectorImpl<CXXRecordDecl*>::const_iterator record_iterator;
 
   DeclContext *Inner;
-  SmallVector<FunctionDecl*, 4> Functions;
+  SmallVector<SubprogramDecl*, 4> Subprograms;
   SmallVector<CXXRecordDecl*, 4> Records;
   bool Dependent;
 };
@@ -346,8 +346,8 @@ static bool MightInstantiateTo(Sema &S, CanQualType Context, CanQualType Friend)
 }
 
 static bool MightInstantiateTo(Sema &S,
-                               FunctionDecl *Context,
-                               FunctionDecl *Friend) {
+                               SubprogramDecl *Context,
+                               SubprogramDecl *Friend) {
   if (Context->getDeclName() != Friend->getDeclName())
     return false;
 
@@ -356,12 +356,12 @@ static bool MightInstantiateTo(Sema &S,
                           Friend->getDeclContext()))
     return false;
 
-  CanQual<FunctionProtoType> FriendTy
+  CanQual<SubprogramProtoType> FriendTy
     = S.Context.getCanonicalType(Friend->getType())
-         ->getAs<FunctionProtoType>();
-  CanQual<FunctionProtoType> ContextTy
+         ->getAs<SubprogramProtoType>();
+  CanQual<SubprogramProtoType> ContextTy
     = S.Context.getCanonicalType(Context->getType())
-         ->getAs<FunctionProtoType>();
+         ->getAs<SubprogramProtoType>();
 
   // There isn't any way that I know of to add qualifiers
   // during instantiation.
@@ -386,8 +386,8 @@ static bool MightInstantiateTo(Sema &S,
 }
 
 static bool MightInstantiateTo(Sema &S,
-                               FunctionTemplateDecl *Context,
-                               FunctionTemplateDecl *Friend) {
+                               SubprogramTemplateDecl *Context,
+                               SubprogramTemplateDecl *Friend) {
   return MightInstantiateTo(S,
                             Context->getTemplatedDecl(),
                             Friend->getTemplatedDecl());
@@ -485,11 +485,11 @@ static AccessResult MatchesFriend(Sema &S,
 /// the effective context.
 static AccessResult MatchesFriend(Sema &S,
                                   const EffectiveContext &EC,
-                                  FunctionDecl *Friend) {
+                                  SubprogramDecl *Friend) {
   AccessResult OnFailure = AR_inaccessible;
 
-  for (SmallVectorImpl<FunctionDecl*>::const_iterator
-         I = EC.Functions.begin(), E = EC.Functions.end(); I != E; ++I) {
+  for (SmallVectorImpl<SubprogramDecl*>::const_iterator
+         I = EC.Subprograms.begin(), E = EC.Subprograms.end(); I != E; ++I) {
     if (Friend == *I)
       return AR_accessible;
 
@@ -504,17 +504,17 @@ static AccessResult MatchesFriend(Sema &S,
 /// anything in the effective context.
 static AccessResult MatchesFriend(Sema &S,
                                   const EffectiveContext &EC,
-                                  FunctionTemplateDecl *Friend) {
-  if (EC.Functions.empty()) return AR_inaccessible;
+                                  SubprogramTemplateDecl *Friend) {
+  if (EC.Subprograms.empty()) return AR_inaccessible;
 
   AccessResult OnFailure = AR_inaccessible;
 
-  for (SmallVectorImpl<FunctionDecl*>::const_iterator
-         I = EC.Functions.begin(), E = EC.Functions.end(); I != E; ++I) {
+  for (SmallVectorImpl<SubprogramDecl*>::const_iterator
+         I = EC.Subprograms.begin(), E = EC.Subprograms.end(); I != E; ++I) {
 
-    FunctionTemplateDecl *FTD = (*I)->getPrimaryTemplate();
+    SubprogramTemplateDecl *FTD = (*I)->getPrimaryTemplate();
     if (!FTD)
-      FTD = (*I)->getDescribedFunctionTemplate();
+      FTD = (*I)->getDescribedSubprogramTemplate();
     if (!FTD)
       continue;
 
@@ -551,14 +551,14 @@ static AccessResult MatchesFriend(Sema &S,
   if (isa<ClassTemplateDecl>(Friend))
     return MatchesFriend(S, EC, cast<ClassTemplateDecl>(Friend));
 
-  if (isa<FunctionTemplateDecl>(Friend))
-    return MatchesFriend(S, EC, cast<FunctionTemplateDecl>(Friend));
+  if (isa<SubprogramTemplateDecl>(Friend))
+    return MatchesFriend(S, EC, cast<SubprogramTemplateDecl>(Friend));
 
   if (isa<CXXRecordDecl>(Friend))
     return MatchesFriend(S, EC, cast<CXXRecordDecl>(Friend));
 
-  assert(isa<FunctionDecl>(Friend) && "unknown friend decl kind");
-  return MatchesFriend(S, EC, cast<FunctionDecl>(Friend));
+  assert(isa<SubprogramDecl>(Friend) && "unknown friend decl kind");
+  return MatchesFriend(S, EC, cast<SubprogramDecl>(Friend));
 }
 
 static AccessResult GetFriendKind(Sema &S,
@@ -789,8 +789,8 @@ static AccessResult HasAccess(Sema &S,
         // Emulate a MSVC bug where the creation of pointer-to-member
         // to protected member of base class is allowed but only from
         // static member functions.
-        if (S.getLangOpts().MicrosoftMode && !EC.Functions.empty())
-          if (CXXMethodDecl* MD = dyn_cast<CXXMethodDecl>(EC.Functions.front()))
+        if (S.getLangOpts().MicrosoftMode && !EC.Subprograms.empty())
+          if (CXXMethodDecl* MD = dyn_cast<CXXMethodDecl>(EC.Subprograms.front()))
             if (MD->isStatic()) return AR_accessible;
 
         // Despite the standard's confident wording, there is a case
@@ -1072,9 +1072,9 @@ static bool TryDiagnoseProtectedAccess(Sema &S, const EffectiveContext &EC,
 
     // Use a special diagnostic for constructors and destructors.
     if (isa<CXXConstructorDecl>(D) || isa<CXXDestructorDecl>(D) ||
-        (isa<FunctionTemplateDecl>(D) &&
+        (isa<SubprogramTemplateDecl>(D) &&
          isa<CXXConstructorDecl>(
-                cast<FunctionTemplateDecl>(D)->getTemplatedDecl()))) {
+                cast<SubprogramTemplateDecl>(D)->getTemplatedDecl()))) {
       S.Diag(D->getLocation(), diag::note_access_protected_restricted_ctordtor)
         << isa<CXXDestructorDecl>(D);
       return true;
@@ -1114,7 +1114,7 @@ static void DiagnoseAccessPath(Sema &S,
         NamedDecl *PrevDecl = 0;
         if (VarDecl *VD = dyn_cast<VarDecl>(D))
           PrevDecl = VD->getPreviousDecl();
-        else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+        else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
           PrevDecl = FD->getPreviousDecl();
         else if (TypedefNameDecl *TND = dyn_cast<TypedefNameDecl>(D))
           PrevDecl = TND->getPreviousDecl();
@@ -1430,9 +1430,9 @@ void Sema::HandleDelayedAccessCheck(DelayedDiagnostic &DD, Decl *decl) {
   // However, this does not apply to local extern declarations.
 
   DeclContext *DC = decl->getDeclContext();
-  if (FunctionDecl *fn = dyn_cast<FunctionDecl>(decl)) {
-    if (!DC->isFunctionOrMethod()) DC = fn;
-  } else if (FunctionTemplateDecl *fnt = dyn_cast<FunctionTemplateDecl>(decl)) {
+  if (SubprogramDecl *fn = dyn_cast<SubprogramDecl>(decl)) {
+    if (!DC->isSubprogramOrMethod()) DC = fn;
+  } else if (SubprogramTemplateDecl *fnt = dyn_cast<SubprogramTemplateDecl>(decl)) {
     // Never a local declaration.
     DC = fnt->getTemplatedDecl();
   }
@@ -1682,8 +1682,8 @@ Sema::AccessResult Sema::CheckMemberOperatorAccess(SourceLocation OpLoc,
 /// Checks access to the target of a friend declaration.
 Sema::AccessResult Sema::CheckFriendAccess(NamedDecl *target) {
   assert(isa<CXXMethodDecl>(target) ||
-         (isa<FunctionTemplateDecl>(target) &&
-          isa<CXXMethodDecl>(cast<FunctionTemplateDecl>(target)
+         (isa<SubprogramTemplateDecl>(target) &&
+          isa<CXXMethodDecl>(cast<SubprogramTemplateDecl>(target)
                                ->getTemplatedDecl())));
 
   // Friendship lookup is a redeclaration lookup, so there's never an
@@ -1696,7 +1696,7 @@ Sema::AccessResult Sema::CheckFriendAccess(NamedDecl *target) {
   CXXMethodDecl *method = dyn_cast<CXXMethodDecl>(target);
   if (!method)
     method = cast<CXXMethodDecl>(
-                     cast<FunctionTemplateDecl>(target)->getTemplatedDecl());
+                     cast<SubprogramTemplateDecl>(target)->getTemplatedDecl());
   assert(method->getQualifier());
 
   AccessTarget entity(Context, AccessTarget::Member,
@@ -1827,7 +1827,7 @@ bool Sema::IsSimplyAccessible(NamedDecl *Decl, DeclContext *Ctx) {
     ObjCInterfaceDecl *ClassOfMethodDecl = 0;
     if (ObjCMethodDecl *MD = getCurMethodDecl())
       ClassOfMethodDecl =  MD->getClassInterface();
-    else if (FunctionDecl *FD = getCurFunctionDecl()) {
+    else if (SubprogramDecl *FD = getCurSubprogramDecl()) {
       if (ObjCImplDecl *Impl 
             = dyn_cast<ObjCImplDecl>(FD->getLexicalDeclContext())) {
         if (ObjCImplementationDecl *IMPD

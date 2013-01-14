@@ -52,7 +52,7 @@ class EmitAssemblyHelper {
 
   mutable PassManager *CodeGenPasses;
   mutable PassManager *PerModulePasses;
-  mutable FunctionPassManager *PerFunctionPasses;
+  mutable FunctionPassManager *PerSubprogramPasses;
 
 private:
   PassManager *getCodeGenPasses(TargetMachine *TM) const {
@@ -81,17 +81,17 @@ private:
     return PerModulePasses;
   }
 
-  FunctionPassManager *getPerFunctionPasses(TargetMachine *TM) const {
-    if (!PerFunctionPasses) {
-      PerFunctionPasses = new FunctionPassManager(TheModule);
-      PerFunctionPasses->add(new DataLayout(TheModule));
+  FunctionPassManager *getPerSubprogramPasses(TargetMachine *TM) const {
+    if (!PerSubprogramPasses) {
+      PerSubprogramPasses = new FunctionPassManager(TheModule);
+      PerSubprogramPasses->add(new DataLayout(TheModule));
       if (TM) {
-        PerFunctionPasses->add(
+        PerSubprogramPasses->add(
             createNoTTIPass(TM->getScalarTargetTransformInfo(),
                             TM->getVectorTargetTransformInfo()));
       }
     }
-    return PerFunctionPasses;
+    return PerSubprogramPasses;
   }
 
 
@@ -121,12 +121,12 @@ public:
                      Module *M)
     : Diags(_Diags), CodeGenOpts(CGOpts), TargetOpts(TOpts), LangOpts(LOpts),
       TheModule(M), CodeGenerationTime("Code Generation Time"),
-      CodeGenPasses(0), PerModulePasses(0), PerFunctionPasses(0) {}
+      CodeGenPasses(0), PerModulePasses(0), PerSubprogramPasses(0) {}
 
   ~EmitAssemblyHelper() {
     delete CodeGenPasses;
     delete PerModulePasses;
-    delete PerFunctionPasses;
+    delete PerSubprogramPasses;
   }
 
   void EmitAssembly(BackendAction Action, raw_ostream *OS);
@@ -287,7 +287,7 @@ void EmitAssemblyHelper::CreatePasses(TargetMachine *TM) {
   }
 
   // Set up the per-function pass manager.
-  FunctionPassManager *FPM = getPerFunctionPasses(TM);
+  FunctionPassManager *FPM = getPerSubprogramPasses(TM);
   if (CodeGenOpts.VerifyModule)
     FPM->add(createVerifierPass());
   PMBuilder.populateFunctionPassManager(*FPM);
@@ -326,7 +326,7 @@ TargetMachine *EmitAssemblyHelper::CreateTargetMachine(bool MustCreateTM) {
 
   TargetMachine::setAsmVerbosityDefault(CodeGenOpts.AsmVerbose);
 
-  TargetMachine::setFunctionSections(CodeGenOpts.FunctionSections);
+  TargetMachine::setFunctionSections(CodeGenOpts.SubprogramSections);
   TargetMachine::setDataSections    (CodeGenOpts.DataSections);
 
   // FIXME: Parse this earlier.
@@ -542,15 +542,15 @@ void EmitAssemblyHelper::EmitAssembly(BackendAction Action, raw_ostream *OS) {
   // Run passes. For now we do all passes at once, but eventually we
   // would like to have the option of streaming code generation.
 
-  if (PerFunctionPasses) {
+  if (PerSubprogramPasses) {
     PrettyStackTraceString CrashInfo("Per-function optimization");
 
-    PerFunctionPasses->doInitialization();
+    PerSubprogramPasses->doInitialization();
     for (Module::iterator I = TheModule->begin(),
            E = TheModule->end(); I != E; ++I)
       if (!I->isDeclaration())
-        PerFunctionPasses->run(*I);
-    PerFunctionPasses->doFinalization();
+        PerSubprogramPasses->run(*I);
+    PerSubprogramPasses->doFinalization();
   }
 
   if (PerModulePasses) {

@@ -70,22 +70,22 @@ static const CXXRecordDecl *GetLocalClassDecl(const NamedDecl *ND) {
     DC = getEffectiveDeclContext(ND);
   while (!DC->isNamespace() && !DC->isTranslationUnit()) {
     const DeclContext *Parent = getEffectiveDeclContext(cast<Decl>(DC));
-    if (isa<FunctionDecl>(Parent))
+    if (isa<SubprogramDecl>(Parent))
       return dyn_cast<CXXRecordDecl>(DC);
     DC = Parent;
   }
   return 0;
 }
 
-static const FunctionDecl *getStructor(const FunctionDecl *fn) {
-  if (const FunctionTemplateDecl *ftd = fn->getPrimaryTemplate())
+static const SubprogramDecl *getStructor(const SubprogramDecl *fn) {
+  if (const SubprogramTemplateDecl *ftd = fn->getPrimaryTemplate())
     return ftd->getTemplatedDecl();
 
   return fn;
 }
 
 static const NamedDecl *getStructor(const NamedDecl *decl) {
-  const FunctionDecl *fn = dyn_cast_or_null<FunctionDecl>(decl);
+  const SubprogramDecl *fn = dyn_cast_or_null<SubprogramDecl>(decl);
   return (fn ? getStructor(fn) : decl);
 }
                                                     
@@ -108,8 +108,8 @@ public:
     return Result.first->second;
   }
 
-  void startNewFunction() {
-    MangleContext::startNewFunction();
+  void startNewSubprogram() {
+    MangleContext::startNewSubprogram();
     mangleInitDiscriminator();
   }
 
@@ -179,13 +179,13 @@ class CXXNameMangler {
   /// SeqID - The next subsitution sequence number.
   unsigned SeqID;
 
-  class FunctionTypeDepthState {
+  class SubprogramTypeDepthState {
     unsigned Bits;
 
     enum { InResultTypeMask = 1 };
 
   public:
-    FunctionTypeDepthState() : Bits(0) {}
+    SubprogramTypeDepthState() : Bits(0) {}
 
     /// The number of function types we're inside.
     unsigned getDepth() const {
@@ -197,8 +197,8 @@ class CXXNameMangler {
       return Bits & InResultTypeMask;
     }
 
-    FunctionTypeDepthState push() {
-      FunctionTypeDepthState tmp = *this;
+    SubprogramTypeDepthState push() {
+      SubprogramTypeDepthState tmp = *this;
       Bits = (Bits & ~InResultTypeMask) + 2;
       return tmp;
     }
@@ -211,12 +211,12 @@ class CXXNameMangler {
       Bits &= ~InResultTypeMask;
     }
 
-    void pop(FunctionTypeDepthState saved) {
+    void pop(SubprogramTypeDepthState saved) {
       assert(getDepth() == saved.getDepth() + 1);
       Bits = saved.Bits;
     }
 
-  } FunctionTypeDepth;
+  } SubprogramTypeDepth;
 
   llvm::DenseMap<uintptr_t, unsigned> Substitutions;
 
@@ -258,7 +258,7 @@ public:
   void mangleNumber(const llvm::APSInt &I);
   void mangleNumber(int64_t Number);
   void mangleFloat(const llvm::APFloat &F);
-  void mangleFunctionEncoding(const FunctionDecl *FD);
+  void mangleSubprogramEncoding(const SubprogramDecl *FD);
   void mangleName(const NamedDecl *ND);
   void mangleType(QualType T);
   void mangleNameOrStandardSubstitution(const NamedDecl *ND);
@@ -306,12 +306,12 @@ private:
   void mangleLocalName(const NamedDecl *ND);
   void mangleLambda(const CXXRecordDecl *Lambda);
   void mangleNestedName(const NamedDecl *ND, const DeclContext *DC,
-                        bool NoFunction=false);
+                        bool NoSubprogram=false);
   void mangleNestedName(const TemplateDecl *TD,
                         const TemplateArgument *TemplateArgs,
                         unsigned NumTemplateArgs);
   void manglePrefix(NestedNameSpecifier *qualifier);
-  void manglePrefix(const DeclContext *DC, bool NoFunction=false);
+  void manglePrefix(const DeclContext *DC, bool NoSubprogram=false);
   void manglePrefix(QualType type);
   void mangleTemplatePrefix(const TemplateDecl *ND);
   void mangleTemplatePrefix(TemplateName Template);
@@ -329,7 +329,7 @@ private:
 
   void mangleType(const TagType*);
   void mangleType(TemplateName);
-  void mangleBareFunctionType(const FunctionType *T,
+  void mangleBareSubprogramType(const SubprogramType *T,
                               bool MangleReturnType);
   void mangleNeonVectorType(const VectorType *T);
 
@@ -351,7 +351,7 @@ private:
 
   void mangleTemplateParameter(unsigned Index);
 
-  void mangleFunctionParam(const ParmVarDecl *parm);
+  void mangleSubprogramParam(const ParmVarDecl *parm);
 };
 
 }
@@ -385,7 +385,7 @@ bool ItaniumMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   // LFort's "overloadable" attribute extension to C/C++ implies name mangling
   // (always) as does passing a C++ member function and a function
   // whose name is not a simple identifier.
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   if (FD && (FD->hasAttr<OverloadableAttr>() || isa<CXXMethodDecl>(FD) ||
              !FD->getDeclName().isIdentifier()))
     return true;
@@ -394,7 +394,7 @@ bool ItaniumMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   if (!FD) {
     const DeclContext *DC = getEffectiveDeclContext(D);
     // Check for extern variable declared locally.
-    if (DC->isFunctionOrMethod() && D->hasLinkage())
+    if (DC->isSubprogramOrMethod() && D->hasLinkage())
       while (!DC->isNamespace() && !DC->isTranslationUnit())
         DC = getEffectiveParentContext(DC);
     if (DC->isTranslationUnit() && D->getLinkage() != InternalLinkage)
@@ -448,15 +448,15 @@ void CXXNameMangler::mangle(const NamedDecl *D, StringRef Prefix) {
   //            ::= <data name>
   //            ::= <special-name>
   Out << Prefix;
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    mangleFunctionEncoding(FD);
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    mangleSubprogramEncoding(FD);
   else if (const VarDecl *VD = dyn_cast<VarDecl>(D))
     mangleName(VD);
   else
     mangleName(cast<FieldDecl>(D));
 }
 
-void CXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
+void CXXNameMangler::mangleSubprogramEncoding(const SubprogramDecl *FD) {
   // <encoding> ::= <function name> <bare-function-type>
   mangleName(FD);
 
@@ -470,7 +470,7 @@ void CXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
   //
   //   1. Template functions (names or types) have return types encoded, with
   //   the exceptions listed below.
-  //   2. Function types not appearing as part of a function name mangling,
+  //   2. Subprogram types not appearing as part of a function name mangling,
   //   e.g. parameters, pointer types, etc., have return type encoded, with the
   //   exceptions listed below.
   //   3. Non-template function names do not have return types encoded.
@@ -481,7 +481,7 @@ void CXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
   //   2. Destructors.
   //   3. Conversion operator functions, e.g. operator int.
   bool MangleReturnType = false;
-  if (FunctionTemplateDecl *PrimaryTemplate = FD->getPrimaryTemplate()) {
+  if (SubprogramTemplateDecl *PrimaryTemplate = FD->getPrimaryTemplate()) {
     if (!(isa<CXXConstructorDecl>(FD) || isa<CXXDestructorDecl>(FD) ||
           isa<CXXConversionDecl>(FD)))
       MangleReturnType = true;
@@ -490,7 +490,7 @@ void CXXNameMangler::mangleFunctionEncoding(const FunctionDecl *FD) {
     FD = PrimaryTemplate->getTemplatedDecl();
   }
 
-  mangleBareFunctionType(FD->getType()->getAs<FunctionType>(), 
+  mangleBareSubprogramType(FD->getType()->getAs<SubprogramType>(), 
                          MangleReturnType);
 }
 
@@ -524,7 +524,7 @@ static bool isStdNamespace(const DeclContext *DC) {
 static const TemplateDecl *
 isTemplate(const NamedDecl *ND, const TemplateArgumentList *&TemplateArgs) {
   // Check if we have a function template.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(ND)){
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND)){
     if (const TemplateDecl *TD = FD->getPrimaryTemplate()) {
       TemplateArgs = FD->getTemplateSpecializationArgs();
       return TD;
@@ -561,7 +561,7 @@ void CXXNameMangler::mangleName(const NamedDecl *ND) {
   // is that of the containing namespace, or the translation unit.
   // FIXME: This is a hack; extern variables declared locally should have
   // a proper semantic declaration context!
-  if (isa<FunctionDecl>(DC) && ND->hasLinkage() && !isLambda(ND))
+  if (isa<SubprogramDecl>(DC) && ND->hasLinkage() && !isLambda(ND))
     while (!DC->isNamespace() && !DC->isTranslationUnit())
       DC = getEffectiveParentContext(DC);
   else if (GetLocalClassDecl(ND)) {
@@ -584,7 +584,7 @@ void CXXNameMangler::mangleName(const NamedDecl *ND) {
     return;
   }
 
-  if (isa<FunctionDecl>(DC) || isa<ObjCMethodDecl>(DC)) {
+  if (isa<SubprogramDecl>(DC) || isa<ObjCMethodDecl>(DC)) {
     mangleLocalName(ND);
     return;
   }
@@ -848,8 +848,8 @@ void CXXNameMangler::mangleUnresolvedPrefix(NestedNameSpecifier *qualifier,
     case Type::DependentSizedExtVector:
     case Type::Vector:
     case Type::ExtVector:
-    case Type::FunctionProto:
-    case Type::FunctionNoProto:
+    case Type::SubprogramProto:
+    case Type::SubprogramNoProto:
     case Type::Enum:
     case Type::Paren:
     case Type::Elaborated:
@@ -1182,7 +1182,7 @@ void CXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
       mangleCXXDtorType(Dtor_Complete);
     break;
 
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     // <operator-name> ::= cv <type>    # (cast)
     Out << "cv";
     mangleType(Name.getCXXNameType());
@@ -1191,7 +1191,7 @@ void CXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
   case DeclarationName::CXXOperatorName: {
     unsigned Arity;
     if (ND) {
-      Arity = cast<FunctionDecl>(ND)->getNumParams();
+      Arity = cast<SubprogramDecl>(ND)->getNumParams();
 
       // If we have a C++ member function, we need to include the 'this' pointer.
       // FIXME: This does not make sense for operators that are static, but their
@@ -1225,7 +1225,7 @@ void CXXNameMangler::mangleSourceName(const IdentifierInfo *II) {
 
 void CXXNameMangler::mangleNestedName(const NamedDecl *ND,
                                       const DeclContext *DC,
-                                      bool NoFunction) {
+                                      bool NoSubprogram) {
   // <nested-name> 
   //   ::= N [<CV-qualifiers>] [<ref-qualifier>] <prefix> <unqualified-name> E
   //   ::= N [<CV-qualifiers>] [<ref-qualifier>] <template-prefix> 
@@ -1244,7 +1244,7 @@ void CXXNameMangler::mangleNestedName(const NamedDecl *ND,
     mangleTemplateArgs(*TemplateArgs);
   }
   else {
-    manglePrefix(DC, NoFunction);
+    manglePrefix(DC, NoSubprogram);
     mangleUnqualifiedName(ND);
   }
 
@@ -1270,7 +1270,7 @@ void CXXNameMangler::mangleLocalName(const NamedDecl *ND) {
   //                 _ <entity name>
   // <discriminator> := _ <non-negative number>
   const DeclContext *DC = getEffectiveDeclContext(ND);
-  if (isa<ObjCMethodDecl>(DC) && isa<FunctionDecl>(ND)) {
+  if (isa<ObjCMethodDecl>(DC) && isa<SubprogramDecl>(ND)) {
     // Don't add objc method name mangling to locally declared function
     mangleUnqualifiedName(ND);
     return;
@@ -1281,7 +1281,7 @@ void CXXNameMangler::mangleLocalName(const NamedDecl *ND) {
   if (const ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(DC)) {
    mangleObjCMethodName(MD);
   } else if (const CXXRecordDecl *RD = GetLocalClassDecl(ND)) {
-    mangleFunctionEncoding(cast<FunctionDecl>(getEffectiveDeclContext(RD)));
+    mangleSubprogramEncoding(cast<SubprogramDecl>(getEffectiveDeclContext(RD)));
     Out << 'E';
 
     // The parameter number is omitted for the last parameter, 0 for the 
@@ -1293,10 +1293,10 @@ void CXXNameMangler::mangleLocalName(const NamedDecl *ND) {
     if (RD->isLambda()) {
       if (const ParmVarDecl *Parm
                  = dyn_cast_or_null<ParmVarDecl>(RD->getLambdaContextDecl())) {
-        if (const FunctionDecl *Func
-              = dyn_cast<FunctionDecl>(Parm->getDeclContext())) {
+        if (const SubprogramDecl *Func
+              = dyn_cast<SubprogramDecl>(Parm->getDeclContext())) {
           Out << 'd';
-          unsigned Num = Func->getNumParams() - Parm->getFunctionScopeIndex();
+          unsigned Num = Func->getNumParams() - Parm->getSubprogramScopeIndex();
           if (Num > 1)
             mangleNumber(Num - 2);
           Out << '_';
@@ -1309,7 +1309,7 @@ void CXXNameMangler::mangleLocalName(const NamedDecl *ND) {
     if (ND == RD) // equality ok because RD derived from ND above
       mangleUnqualifiedName(ND);
     else
-      mangleNestedName(ND, DC, true /*NoFunction*/);
+      mangleNestedName(ND, DC, true /*NoSubprogram*/);
 
     if (!SkipDiscriminator) {
       unsigned disc;
@@ -1324,7 +1324,7 @@ void CXXNameMangler::mangleLocalName(const NamedDecl *ND) {
     return;
   }
   else
-    mangleFunctionEncoding(cast<FunctionDecl>(DC));
+    mangleSubprogramEncoding(cast<SubprogramDecl>(DC));
 
   Out << 'E';
   mangleUnqualifiedName(ND);
@@ -1352,9 +1352,9 @@ void CXXNameMangler::mangleLambda(const CXXRecordDecl *Lambda) {
   }
 
   Out << "Ul";
-  const FunctionProtoType *Proto = Lambda->getLambdaTypeInfo()->getType()->
-                                   getAs<FunctionProtoType>();
-  mangleBareFunctionType(Proto, /*MangleReturnType=*/false);        
+  const SubprogramProtoType *Proto = Lambda->getLambdaTypeInfo()->getType()->
+                                   getAs<SubprogramProtoType>();
+  mangleBareSubprogramType(Proto, /*MangleReturnType=*/false);        
   Out << "E";
   
   // The number is omitted for the first closure type with a given 
@@ -1401,7 +1401,7 @@ void CXXNameMangler::manglePrefix(NestedNameSpecifier *qualifier) {
   llvm_unreachable("unexpected nested name specifier");
 }
 
-void CXXNameMangler::manglePrefix(const DeclContext *DC, bool NoFunction) {
+void CXXNameMangler::manglePrefix(const DeclContext *DC, bool NoSubprogram) {
   //  <prefix> ::= <prefix> <unqualified-name>
   //           ::= <template-prefix> <template-args>
   //           ::= <template-param>
@@ -1414,7 +1414,7 @@ void CXXNameMangler::manglePrefix(const DeclContext *DC, bool NoFunction) {
     return;
 
   if (const BlockDecl *Block = dyn_cast<BlockDecl>(DC)) {
-    manglePrefix(getEffectiveParentContext(DC), NoFunction);    
+    manglePrefix(getEffectiveParentContext(DC), NoSubprogram);    
     SmallString<64> Name;
     llvm::raw_svector_ostream NameStream(Name);
     Context.mangleBlock(Block, NameStream);
@@ -1433,12 +1433,12 @@ void CXXNameMangler::manglePrefix(const DeclContext *DC, bool NoFunction) {
     mangleTemplatePrefix(TD);
     mangleTemplateArgs(*TemplateArgs);
   }
-  else if(NoFunction && (isa<FunctionDecl>(ND) || isa<ObjCMethodDecl>(ND)))
+  else if(NoSubprogram && (isa<SubprogramDecl>(ND) || isa<ObjCMethodDecl>(ND)))
     return;
   else if (const ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(ND))
     mangleObjCMethodName(Method);
   else {
-    manglePrefix(getEffectiveDeclContext(ND), NoFunction);
+    manglePrefix(getEffectiveDeclContext(ND), NoSubprogram);
     mangleUnqualifiedName(ND);
   }
 
@@ -1905,7 +1905,7 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
 // <function-type> ::= [<CV-qualifiers>] F [Y]
 //                      <bare-function-type> [<ref-qualifier>] E
 // (Proposal to cxx-abi-dev, 2012-05-11)
-void CXXNameMangler::mangleType(const FunctionProtoType *T) {
+void CXXNameMangler::mangleType(const SubprogramProtoType *T) {
   // Mangle CV-qualifiers, if present.  These are 'this' qualifiers,
   // e.g. "const" in "int (A::*)() const".
   mangleQualifiers(Qualifiers::fromCVRMask(T->getTypeQuals()));
@@ -1914,46 +1914,46 @@ void CXXNameMangler::mangleType(const FunctionProtoType *T) {
 
   // FIXME: We don't have enough information in the AST to produce the 'Y'
   // encoding for extern "C" function types.
-  mangleBareFunctionType(T, /*MangleReturnType=*/true);
+  mangleBareSubprogramType(T, /*MangleReturnType=*/true);
 
   // Mangle the ref-qualifier, if present.
   mangleRefQualifier(T->getRefQualifier());
 
   Out << 'E';
 }
-void CXXNameMangler::mangleType(const FunctionNoProtoType *T) {
+void CXXNameMangler::mangleType(const SubprogramNoProtoType *T) {
   llvm_unreachable("Can't mangle K&R function prototypes");
 }
-void CXXNameMangler::mangleBareFunctionType(const FunctionType *T,
+void CXXNameMangler::mangleBareSubprogramType(const SubprogramType *T,
                                             bool MangleReturnType) {
   // We should never be mangling something without a prototype.
-  const FunctionProtoType *Proto = cast<FunctionProtoType>(T);
+  const SubprogramProtoType *Proto = cast<SubprogramProtoType>(T);
 
-  // Record that we're in a function type.  See mangleFunctionParam
+  // Record that we're in a function type.  See mangleSubprogramParam
   // for details on what we're trying to achieve here.
-  FunctionTypeDepthState saved = FunctionTypeDepth.push();
+  SubprogramTypeDepthState saved = SubprogramTypeDepth.push();
 
   // <bare-function-type> ::= <signature type>+
   if (MangleReturnType) {
-    FunctionTypeDepth.enterResultType();
+    SubprogramTypeDepth.enterResultType();
     mangleType(Proto->getResultType());
-    FunctionTypeDepth.leaveResultType();
+    SubprogramTypeDepth.leaveResultType();
   }
 
   if (Proto->getNumArgs() == 0 && !Proto->isVariadic()) {
     //   <builtin-type> ::= v   # void
     Out << 'v';
 
-    FunctionTypeDepth.pop(saved);
+    SubprogramTypeDepth.pop(saved);
     return;
   }
 
-  for (FunctionProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
+  for (SubprogramProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
                                          ArgEnd = Proto->arg_type_end();
        Arg != ArgEnd; ++Arg)
     mangleType(Context.getASTContext().getSignatureParameterType(*Arg));
 
-  FunctionTypeDepth.pop(saved);
+  SubprogramTypeDepth.pop(saved);
 
   // <builtin-type>      ::= z  # ellipsis
   if (Proto->isVariadic())
@@ -2010,7 +2010,7 @@ void CXXNameMangler::mangleType(const MemberPointerType *T) {
   Out << 'M';
   mangleType(QualType(T->getClass(), 0));
   QualType PointeeType = T->getPointeeType();
-  if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(PointeeType)) {
+  if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(PointeeType)) {
     mangleType(FPT);
     
     // Itanium C++ ABI 5.1.8:
@@ -2765,7 +2765,7 @@ recurse:
   case Expr::CXXDynamicCastExprClass:
   case Expr::CXXReinterpretCastExprClass:
   case Expr::CXXConstCastExprClass:
-  case Expr::CXXFunctionalCastExprClass: {
+  case Expr::CXXSubprogramalCastExprClass: {
     const ExplicitCastExpr *ECE = cast<ExplicitCastExpr>(E);
     Out << "cv";
     mangleType(ECE->getType());
@@ -2799,7 +2799,7 @@ recurse:
       break;
 
     case Decl::ParmVar:
-      mangleFunctionParam(cast<ParmVarDecl>(D));
+      mangleSubprogramParam(cast<ParmVarDecl>(D));
       break;
 
     case Decl::EnumConstant: {
@@ -2827,11 +2827,11 @@ recurse:
     Out << "_SUBSTPACK_";
     break;
 
-  case Expr::FunctionParmPackExprClass: {
+  case Expr::SubprogramParmPackExprClass: {
     // FIXME: not clear how to mangle this!
-    const FunctionParmPackExpr *FPPE = cast<FunctionParmPackExpr>(E);
+    const SubprogramParmPackExpr *FPPE = cast<SubprogramParmPackExpr>(E);
     Out << "v110_SUBSTPACK";
-    mangleFunctionParam(FPPE->getParameterPack());
+    mangleSubprogramParam(FPPE->getParameterPack());
     break;
   }
 
@@ -2952,7 +2952,7 @@ recurse:
                                     = dyn_cast<TemplateTemplateParmDecl>(Pack))
       mangleTemplateParameter(TempTP->getIndex());
     else
-      mangleFunctionParam(cast<ParmVarDecl>(Pack));
+      mangleSubprogramParam(cast<ParmVarDecl>(Pack));
     break;
   }
       
@@ -2995,16 +2995,16 @@ recurse:
 /// I is the zero-based index of the parameter within its parameter
 /// declaration clause.  Note that the original ABI document describes
 /// this using 1-based ordinals.
-void CXXNameMangler::mangleFunctionParam(const ParmVarDecl *parm) {
-  unsigned parmDepth = parm->getFunctionScopeDepth();
-  unsigned parmIndex = parm->getFunctionScopeIndex();
+void CXXNameMangler::mangleSubprogramParam(const ParmVarDecl *parm) {
+  unsigned parmDepth = parm->getSubprogramScopeDepth();
+  unsigned parmIndex = parm->getSubprogramScopeIndex();
 
   // Compute 'L'.
   // parmDepth does not include the declaring function prototype.
-  // FunctionTypeDepth does account for that.
-  assert(parmDepth < FunctionTypeDepth.getDepth());
-  unsigned nestingDepth = FunctionTypeDepth.getDepth() - parmDepth;
-  if (FunctionTypeDepth.isInResultType())
+  // SubprogramTypeDepth does account for that.
+  assert(parmDepth < SubprogramTypeDepth.getDepth());
+  unsigned nestingDepth = SubprogramTypeDepth.getDepth() - parmDepth;
+  if (SubprogramTypeDepth.isInResultType())
     nestingDepth--;
 
   if (nestingDepth == 0) {
@@ -3122,7 +3122,7 @@ void CXXNameMangler::mangleTemplateArg(TemplateArgument A) {
     const Expr *E = A.getAsExpr()->IgnoreParens();
     if (const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E)) {
       const ValueDecl *D = DRE->getDecl();
-      if (isa<VarDecl>(D) || isa<FunctionDecl>(D)) {
+      if (isa<VarDecl>(D) || isa<SubprogramDecl>(D)) {
         Out << "L";
         mangle(D, "_Z");
         Out << 'E';
@@ -3448,7 +3448,7 @@ void CXXNameMangler::addSubstitution(uintptr_t Ptr) {
 /// name.
 void ItaniumMangleContext::mangleName(const NamedDecl *D,
                                       raw_ostream &Out) {
-  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D)) &&
+  assert((isa<SubprogramDecl>(D) || isa<VarDecl>(D)) &&
           "Invalid mangleName() call, argument is not a variable or function!");
   assert(!isa<CXXConstructorDecl>(D) && !isa<CXXDestructorDecl>(D) &&
          "Invalid mangleName() call on 'structor decl!");
@@ -3500,7 +3500,7 @@ void ItaniumMangleContext::mangleThunk(const CXXMethodDecl *MD,
     Mangler.mangleCallOffset(Thunk.Return.NonVirtual,
                              Thunk.Return.VBaseOffsetOffset);
   
-  Mangler.mangleFunctionEncoding(MD);
+  Mangler.mangleSubprogramEncoding(MD);
 }
 
 void 
@@ -3517,7 +3517,7 @@ ItaniumMangleContext::mangleCXXDtorThunk(const CXXDestructorDecl *DD,
   Mangler.mangleCallOffset(ThisAdjustment.NonVirtual, 
                            ThisAdjustment.VCallOffsetOffset);
 
-  Mangler.mangleFunctionEncoding(DD);
+  Mangler.mangleSubprogramEncoding(DD);
 }
 
 /// mangleGuardVariable - Returns the mangled name for a guard variable

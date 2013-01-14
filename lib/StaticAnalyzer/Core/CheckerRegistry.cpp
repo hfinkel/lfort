@@ -78,7 +78,7 @@ static void collectCheckers(const CheckerRegistry::CheckerInfoList &checkers,
   }
 }
 
-void CheckerRegistry::addChecker(InitializationFunction fn, StringRef name,
+void CheckerRegistry::addChecker(InitializationSubprogram fn, StringRef name,
                                  StringRef desc) {
   Checkers.push_back(CheckerInfo(fn, name, desc));
 

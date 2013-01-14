@@ -18,7 +18,7 @@
 #include "llvm/ADT/StringRef.h"
 
 namespace lfort {
-class FunctionDecl;
+class SubprogramDecl;
 class QualType;
   
 namespace ento {
@@ -34,7 +34,7 @@ namespace cocoa {
 namespace coreFoundation {
   bool isCFObjectRef(QualType T);
   
-  bool followsCreateRule(const FunctionDecl *FD);
+  bool followsCreateRule(const SubprogramDecl *FD);
 }
 
 }} // end: "lfort:ento"

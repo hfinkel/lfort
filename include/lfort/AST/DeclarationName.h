@@ -53,7 +53,7 @@ public:
     ObjCMultiArgSelector,
     CXXConstructorName,
     CXXDestructorName,
-    CXXConversionFunctionName,
+    CXXConversionSubprogramName,
     CXXOperatorName,
     CXXLiteralOperatorName,
     CXXUsingDirective
@@ -114,7 +114,7 @@ private:
   /// a NULL pointer.
   CXXSpecialName *getAsCXXSpecialName() const {
     NameKind Kind = getNameKind();
-    if (Kind >= CXXConstructorName && Kind <= CXXConversionFunctionName)
+    if (Kind >= CXXConstructorName && Kind <= CXXConversionSubprogramName)
       return reinterpret_cast<CXXSpecialName *>(Ptr & ~PtrMask);
     return 0;
   }
@@ -359,9 +359,9 @@ public:
   /// for the given Type.
   DeclarationName getCXXDestructorName(CanQualType Ty);
 
-  /// getCXXConversionFunctionName - Returns the name of a C++
+  /// getCXXConversionSubprogramName - Returns the name of a C++
   /// conversion function for the given Type.
-  DeclarationName getCXXConversionFunctionName(CanQualType Ty);
+  DeclarationName getCXXConversionSubprogramName(CanQualType Ty);
 
   /// getCXXSpecialName - Returns a declaration name for special kind
   /// of C++ name, e.g., for a constructor, destructor, or conversion
@@ -457,7 +457,7 @@ public:
   TypeSourceInfo *getNamedTypeInfo() const {
     assert(Name.getNameKind() == DeclarationName::CXXConstructorName ||
            Name.getNameKind() == DeclarationName::CXXDestructorName ||
-           Name.getNameKind() == DeclarationName::CXXConversionFunctionName);
+           Name.getNameKind() == DeclarationName::CXXConversionSubprogramName);
     return LocInfo.NamedType.TInfo;
   }
   /// setNamedTypeInfo - Sets the source type info associated to
@@ -465,7 +465,7 @@ public:
   void setNamedTypeInfo(TypeSourceInfo *TInfo) {
     assert(Name.getNameKind() == DeclarationName::CXXConstructorName ||
            Name.getNameKind() == DeclarationName::CXXDestructorName ||
-           Name.getNameKind() == DeclarationName::CXXConversionFunctionName);
+           Name.getNameKind() == DeclarationName::CXXConversionSubprogramName);
     LocInfo.NamedType.TInfo = TInfo;
   }
 

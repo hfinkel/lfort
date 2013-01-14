@@ -33,7 +33,7 @@ public:
     CK_VBaseOffset,
     CK_OffsetToTop,
     CK_RTTI,
-    CK_FunctionPointer,
+    CK_SubprogramPointer,
 
     /// CK_CompleteDtorPointer - A pointer to the complete destructor.
     CK_CompleteDtorPointer,
@@ -41,10 +41,10 @@ public:
     /// CK_DeletingDtorPointer - A pointer to the deleting destructor.
     CK_DeletingDtorPointer,
 
-    /// CK_UnusedFunctionPointer - In some cases, a vtable function pointer
+    /// CK_UnusedSubprogramPointer - In some cases, a vtable function pointer
     /// will end up never being called. Such vtable function pointers are
-    /// represented as a CK_UnusedFunctionPointer.
-    CK_UnusedFunctionPointer
+    /// represented as a CK_UnusedSubprogramPointer.
+    CK_UnusedSubprogramPointer
   };
 
   VTableComponent() { }
@@ -65,11 +65,11 @@ public:
     return VTableComponent(CK_RTTI, reinterpret_cast<uintptr_t>(RD));
   }
 
-  static VTableComponent MakeFunction(const CXXMethodDecl *MD) {
+  static VTableComponent MakeSubprogram(const CXXMethodDecl *MD) {
     assert(!isa<CXXDestructorDecl>(MD) &&
-           "Don't use MakeFunction with destructors!");
+           "Don't use MakeSubprogram with destructors!");
 
-    return VTableComponent(CK_FunctionPointer,
+    return VTableComponent(CK_SubprogramPointer,
                            reinterpret_cast<uintptr_t>(MD));
   }
 
@@ -83,10 +83,10 @@ public:
                            reinterpret_cast<uintptr_t>(DD));
   }
 
-  static VTableComponent MakeUnusedFunction(const CXXMethodDecl *MD) {
+  static VTableComponent MakeUnusedSubprogram(const CXXMethodDecl *MD) {
     assert(!isa<CXXDestructorDecl>(MD) &&
-           "Don't use MakeUnusedFunction with destructors!");
-    return VTableComponent(CK_UnusedFunctionPointer,
+           "Don't use MakeUnusedSubprogram with destructors!");
+    return VTableComponent(CK_UnusedSubprogramPointer,
                            reinterpret_cast<uintptr_t>(MD));
   }
 
@@ -123,8 +123,8 @@ public:
     return reinterpret_cast<CXXRecordDecl *>(getPointer());
   }
 
-  const CXXMethodDecl *getFunctionDecl() const {
-    assert(getKind() == CK_FunctionPointer);
+  const CXXMethodDecl *getSubprogramDecl() const {
+    assert(getKind() == CK_SubprogramPointer);
 
     return reinterpret_cast<CXXMethodDecl *>(getPointer());
   }
@@ -136,8 +136,8 @@ public:
     return reinterpret_cast<CXXDestructorDecl *>(getPointer());
   }
 
-  const CXXMethodDecl *getUnusedFunctionDecl() const {
-    assert(getKind() == CK_UnusedFunctionPointer);
+  const CXXMethodDecl *getUnusedSubprogramDecl() const {
+    assert(getKind() == CK_UnusedSubprogramPointer);
 
     return reinterpret_cast<CXXMethodDecl *>(getPointer());
   }
@@ -155,10 +155,10 @@ private:
 
   VTableComponent(Kind ComponentKind, uintptr_t Ptr) {
     assert((ComponentKind == CK_RTTI ||
-            ComponentKind == CK_FunctionPointer ||
+            ComponentKind == CK_SubprogramPointer ||
             ComponentKind == CK_CompleteDtorPointer ||
             ComponentKind == CK_DeletingDtorPointer ||
-            ComponentKind == CK_UnusedFunctionPointer) &&
+            ComponentKind == CK_UnusedSubprogramPointer) &&
             "Invalid component kind!");
 
     assert((Ptr & 7) == 0 && "Pointer not sufficiently aligned!");
@@ -175,10 +175,10 @@ private:
 
   uintptr_t getPointer() const {
     assert((getKind() == CK_RTTI ||
-            getKind() == CK_FunctionPointer ||
+            getKind() == CK_SubprogramPointer ||
             getKind() == CK_CompleteDtorPointer ||
             getKind() == CK_DeletingDtorPointer ||
-            getKind() == CK_UnusedFunctionPointer) &&
+            getKind() == CK_UnusedSubprogramPointer) &&
            "Invalid component kind!");
 
     return static_cast<uintptr_t>(Value & ~7ULL);
@@ -280,9 +280,9 @@ private:
     VTableLayoutMapTy;
   VTableLayoutMapTy VTableLayouts;
 
-  /// NumVirtualFunctionPointers - Contains the number of virtual function
+  /// NumVirtualSubprogramPointers - Contains the number of virtual function
   /// pointers in the vtable for a given record decl.
-  llvm::DenseMap<const CXXRecordDecl *, uint64_t> NumVirtualFunctionPointers;
+  llvm::DenseMap<const CXXRecordDecl *, uint64_t> NumVirtualSubprogramPointers;
 
   typedef std::pair<const CXXRecordDecl *,
                     const CXXRecordDecl *> ClassPairTy;
@@ -335,9 +335,9 @@ public:
     return &I->second;
   }
 
-  /// getNumVirtualFunctionPointers - Return the number of virtual function
+  /// getNumVirtualSubprogramPointers - Return the number of virtual function
   /// pointers in the vtable for a given record decl.
-  uint64_t getNumVirtualFunctionPointers(const CXXRecordDecl *RD);
+  uint64_t getNumVirtualSubprogramPointers(const CXXRecordDecl *RD);
 
   /// getMethodVTableIndex - Return the index (relative to the vtable address
   /// point) where the function pointer for the given virtual function is

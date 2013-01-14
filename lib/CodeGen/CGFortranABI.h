@@ -62,7 +62,7 @@ protected:
   }
 
   /// Build a parameter variable suitable for 'this'.
-  void BuildThisParam(CodeGenSubprogram &CGF, FunctionArgList &Params);
+  void BuildThisParam(CodeGenSubprogram &CGF, SubprogramArgList &Params);
 
   /// Perform prolog initialization of the parameter variable suitable
   /// for 'this' emitted by BuildThisParam.
@@ -91,7 +91,7 @@ public:
   /// pointer.  Apply the this-adjustment and set 'This' to the
   /// adjusted value.
   virtual llvm::Value *
-  EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
+  EmitLoadOfMemberSubprogramPointer(CodeGenSubprogram &CGF,
                                   llvm::Value *&This,
                                   llvm::Value *MemPtr,
                                   const MemberPointerType *MPT);
@@ -191,12 +191,12 @@ public:
   ///
   /// ABIs may also choose to override the return type, which has been
   /// initialized with the formal return type of the function.
-  virtual void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+  virtual void BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                            QualType &ResTy,
-                                           FunctionArgList &Params) = 0;
+                                           SubprogramArgList &Params) = 0;
 
   /// Emit the ABI-specific prolog for the function.
-  virtual void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) = 0;
+  virtual void EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF) = 0;
 
   virtual void EmitReturnFromThunk(CodeGenSubprogram &CGF,
                                    RValue RV, QualType ResultType);

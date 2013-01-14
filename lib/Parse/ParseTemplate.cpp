@@ -237,7 +237,7 @@ Parser::ParseSingleDeclarationAfterTemplate(
   }
 
   LateParsedAttrList LateParsedAttrs(true);
-  if (DeclaratorInfo.isFunctionDeclarator())
+  if (DeclaratorInfo.isSubprogramDeclarator())
     MaybeParseGNUAttributes(DeclaratorInfo, &LateParsedAttrs);
 
   // If we have a declaration or declarator list, handle it.
@@ -261,8 +261,8 @@ Parser::ParseSingleDeclarationAfterTemplate(
     return ThisDecl;
   }
 
-  if (DeclaratorInfo.isFunctionDeclarator() &&
-      isStartOfFunctionDefinition(DeclaratorInfo)) {
+  if (DeclaratorInfo.isSubprogramDeclarator() &&
+      isStartOfSubprogramDefinition(DeclaratorInfo)) {
     if (DS.getStorageClassSpec() == DeclSpec::SCS_typedef) {
       // Recover by ignoring the 'typedef'. This was probably supposed to be
       // the 'typename' keyword, which we should have already suggested adding
@@ -271,11 +271,11 @@ Parser::ParseSingleDeclarationAfterTemplate(
         << FixItHint::CreateRemoval(DS.getStorageClassSpecLoc());
       DS.ClearStorageClassSpecs();
     }
-    return ParseFunctionDefinition(DeclaratorInfo, TemplateInfo,
+    return ParseSubprogramDefinition(DeclaratorInfo, TemplateInfo,
                                    &LateParsedAttrs);
   }
 
-  if (DeclaratorInfo.isFunctionDeclarator())
+  if (DeclaratorInfo.isSubprogramDeclarator())
     Diag(Tok, diag::err_expected_fn_body);
   else
     Diag(Tok, diag::err_invalid_token_after_toplevel_declarator);
@@ -929,7 +929,7 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
       TemplateId->Operator = OO_None;
     } else {
       TemplateId->Name = 0;
-      TemplateId->Operator = TemplateName.OperatorFunctionId.Operator;
+      TemplateId->Operator = TemplateName.OperatorSubprogramId.Operator;
     }
     TemplateId->SS = SS;
     TemplateId->TemplateKWLoc = TemplateKWLoc;
@@ -1233,13 +1233,13 @@ SourceRange Parser::ParsedTemplateInfo::getSourceRange() const {
   return R;
 }
 
-void Parser::LateTemplateParserCallback(void *P, const FunctionDecl *FD) {
+void Parser::LateTemplateParserCallback(void *P, const SubprogramDecl *FD) {
   ((Parser*)P)->LateTemplateParser(FD);
 }
 
 
-void Parser::LateTemplateParser(const FunctionDecl *FD) {
-  LateParsedTemplatedFunction *LPT = LateParsedTemplateMap[FD];
+void Parser::LateTemplateParser(const SubprogramDecl *FD) {
+  LateParsedTemplatedSubprogram *LPT = LateParsedTemplateMap[FD];
   if (LPT) {
     ParseLateTemplatedFuncDef(*LPT);
     return;
@@ -1249,16 +1249,16 @@ void Parser::LateTemplateParser(const FunctionDecl *FD) {
 }
 
 /// \brief Late parse a C++ function template in Microsoft mode.
-void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedFunction &LMT) {
+void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT) {
   if(!LMT.D)
      return;
 
-  // Get the FunctionDecl.
-  FunctionDecl *FD = 0;
-  if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(LMT.D))
+  // Get the SubprogramDecl.
+  SubprogramDecl *FD = 0;
+  if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(LMT.D))
     FD = FunTmpl->getTemplatedDecl();
   else
-    FD = cast<FunctionDecl>(LMT.D);
+    FD = cast<SubprogramDecl>(LMT.D);
 
   // To restore the context after late parsing.
   Sema::ContextRAII GlobalSavedContext(Actions, Actions.CurContext);
@@ -1314,23 +1314,23 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedFunction &LMT) {
   assert((Tok.is(tok::l_brace) || Tok.is(tok::colon) || Tok.is(tok::kw_try))
          && "Inline method not starting with '{', ':' or 'try'");
 
-  // Parse the method body. Function body parsing code is similar enough
+  // Parse the method body. Subprogram body parsing code is similar enough
   // to be re-used for method bodies as well.
   ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope);
 
   // Recreate the containing function DeclContext.
-  Sema::ContextRAII FunctionSavedContext(Actions, Actions.getContainingDC(FD));
+  Sema::ContextRAII SubprogramSavedContext(Actions, Actions.getContainingDC(FD));
 
-  if (FunctionTemplateDecl *FunctionTemplate
-        = dyn_cast_or_null<FunctionTemplateDecl>(LMT.D))
-    Actions.ActOnStartOfFunctionDef(getCurScope(),
-                                   FunctionTemplate->getTemplatedDecl());
-  if (FunctionDecl *Function = dyn_cast_or_null<FunctionDecl>(LMT.D))
-    Actions.ActOnStartOfFunctionDef(getCurScope(), Function);
+  if (SubprogramTemplateDecl *SubprogramTemplate
+        = dyn_cast_or_null<SubprogramTemplateDecl>(LMT.D))
+    Actions.ActOnStartOfSubprogramDef(getCurScope(),
+                                   SubprogramTemplate->getTemplatedDecl());
+  if (SubprogramDecl *Subprogram = dyn_cast_or_null<SubprogramDecl>(LMT.D))
+    Actions.ActOnStartOfSubprogramDef(getCurScope(), Subprogram);
 
 
   if (Tok.is(tok::kw_try)) {
-    ParseFunctionTryBlock(LMT.D, FnScope);
+    ParseSubprogramTryBlock(LMT.D, FnScope);
   } else {
     if (Tok.is(tok::colon))
       ParseConstructorInitializer(LMT.D);
@@ -1338,10 +1338,10 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedFunction &LMT) {
       Actions.ActOnDefaultCtorInitializers(LMT.D);
 
     if (Tok.is(tok::l_brace)) {
-      ParseFunctionStatementBody(LMT.D, FnScope);
+      ParseSubprogramStatementBody(LMT.D, FnScope);
       Actions.MarkAsLateParsedTemplate(FD, false);
     } else
-      Actions.ActOnFinishFunctionBody(LMT.D, 0);
+      Actions.ActOnFinishSubprogramBody(LMT.D, 0);
   }
 
   // Exit scopes.
@@ -1357,9 +1357,9 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedFunction &LMT) {
 }
 
 /// \brief Lex a delayed template function for late parsing.
-void Parser::LexTemplateFunctionForLateParsing(CachedTokens &Toks) {
+void Parser::LexTemplateSubprogramForLateParsing(CachedTokens &Toks) {
   tok::TokenKind kind = Tok.getKind();
-  if (!ConsumeAndStoreFunctionPrologue(Toks)) {
+  if (!ConsumeAndStoreSubprogramPrologue(Toks)) {
     // Consume everything up to (and including) the matching right brace.
     ConsumeAndStoreUntil(tok::r_brace, Toks, /*StopAtSemi=*/false);
   }

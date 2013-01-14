@@ -105,13 +105,13 @@ SourceLocation TypeLoc::getBeginLoc() const {
     case Elaborated:
       LeftMost = Cur;
       break;
-    case FunctionProto:
-      if (cast<FunctionProtoTypeLoc>(&Cur)->getTypePtr()->hasTrailingReturn()) {
+    case SubprogramProto:
+      if (cast<SubprogramProtoTypeLoc>(&Cur)->getTypePtr()->hasTrailingReturn()) {
         LeftMost = Cur;
         break;
       }
       /* Fall through */
-    case FunctionNoProto:
+    case SubprogramNoProto:
     case ConstantArray:
     case DependentSizedArray:
     case IncompleteArray:
@@ -147,11 +147,11 @@ SourceLocation TypeLoc::getEndLoc() const {
     case DependentSizedArray:
     case IncompleteArray:
     case VariableArray:
-    case FunctionNoProto:
+    case SubprogramNoProto:
       Last = Cur;
       break;
-    case FunctionProto:
-      if (cast<FunctionProtoTypeLoc>(&Cur)->getTypePtr()->hasTrailingReturn())
+    case SubprogramProto:
+      if (cast<SubprogramProtoTypeLoc>(&Cur)->getTypePtr()->hasTrailingReturn())
         Last = TypeLoc();
       else
         Last = Cur;

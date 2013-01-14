@@ -189,8 +189,8 @@ SValBuilder::getDerivedRegionValueSymbolVal(SymbolRef parentSymbol,
   return nonloc::SymbolVal(sym);
 }
 
-DefinedSVal SValBuilder::getFunctionPointer(const FunctionDecl *func) {
-  return loc::MemRegionVal(MemMgr.getFunctionTextRegion(func));
+DefinedSVal SValBuilder::getSubprogramPointer(const SubprogramDecl *func) {
+  return loc::MemRegionVal(MemMgr.getSubprogramTextRegion(func));
 }
 
 DefinedSVal SValBuilder::getBlockPointer(const BlockDecl *block,
@@ -338,7 +338,7 @@ SVal SValBuilder::evalCast(SVal val, QualType castTy, QualType originalTy) {
   }
 
   // Just pass through function and block pointers.
-  if (originalTy->isBlockPointerType() || originalTy->isFunctionPointerType()) {
+  if (originalTy->isBlockPointerType() || originalTy->isSubprogramPointerType()) {
     assert(Loc::isLocType(castTy));
     return val;
   }
@@ -399,7 +399,7 @@ SVal SValBuilder::evalCast(SVal val, QualType castTy, QualType originalTy) {
     //    return bar(x)+1; // no-warning
     //  }
 
-    assert(Loc::isLocType(originalTy) || originalTy->isFunctionType() ||
+    assert(Loc::isLocType(originalTy) || originalTy->isSubprogramType() ||
            originalTy->isBlockPointerType() || castTy->isReferenceType());
 
     StoreManager &storeMgr = StateMgr.getStoreManager();

@@ -173,7 +173,7 @@ StmtResult Sema::ActOnGCCAsmStmt(SourceLocation AsmLoc, bool IsSimple,
       }
     }
 
-    ExprResult Result = DefaultFunctionArrayLvalueConversion(Exprs[i]);
+    ExprResult Result = DefaultSubprogramArrayLvalueConversion(Exprs[i]);
     if (Result.isInvalid())
       return StmtError();
 
@@ -499,7 +499,7 @@ NamedDecl *Sema::LookupInlineAsmIdentifier(StringRef Name, SourceLocation Loc,
   }
 
   NamedDecl *ND = Result.getFoundDecl();
-  if (isa<VarDecl>(ND) || isa<FunctionDecl>(ND)) {
+  if (isa<VarDecl>(ND) || isa<SubprogramDecl>(ND)) {
     if (VarDecl *Var = dyn_cast<VarDecl>(ND))
       Size = Context.getTypeInfo(Var->getType()).first;
 

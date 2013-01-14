@@ -792,7 +792,7 @@ void StmtProfiler::VisitCXXConstructExpr(const CXXConstructExpr *S) {
   ID.AddBoolean(S->isElidable());
 }
 
-void StmtProfiler::VisitCXXFunctionalCastExpr(const CXXFunctionalCastExpr *S) {
+void StmtProfiler::VisitCXXSubprogramalCastExpr(const CXXSubprogramalCastExpr *S) {
   VisitExplicitCastExpr(S);
 }
 
@@ -973,11 +973,11 @@ void StmtProfiler::VisitSubstNonTypeTemplateParmExpr(
   Visit(E->getReplacement());
 }
 
-void StmtProfiler::VisitFunctionParmPackExpr(const FunctionParmPackExpr *S) {
+void StmtProfiler::VisitSubprogramParmPackExpr(const SubprogramParmPackExpr *S) {
   VisitExpr(S);
   VisitDecl(S->getParameterPack());
   ID.AddInteger(S->getNumExpansions());
-  for (FunctionParmPackExpr::iterator I = S->begin(), E = S->end(); I != E; ++I)
+  for (SubprogramParmPackExpr::iterator I = S->begin(), E = S->end(); I != E; ++I)
     VisitDecl(*I);
 }
 
@@ -1097,8 +1097,8 @@ void StmtProfiler::VisitDecl(const Decl *D) {
       // least as strong as the definition of "equivalent" used for
       // name mangling.
       VisitType(Parm->getType());
-      ID.AddInteger(Parm->getFunctionScopeDepth());
-      ID.AddInteger(Parm->getFunctionScopeIndex());
+      ID.AddInteger(Parm->getSubprogramScopeDepth());
+      ID.AddInteger(Parm->getSubprogramScopeIndex());
       return;
     }
 

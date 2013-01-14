@@ -723,12 +723,12 @@ static int CompareCXXCtorInitializers(const void* Xp, const void *Yp) {
     return 0;
 }
 
-bool CursorVisitor::VisitFunctionDecl(FunctionDecl *ND) {
+bool CursorVisitor::VisitSubprogramDecl(SubprogramDecl *ND) {
   if (TypeSourceInfo *TSInfo = ND->getTypeSourceInfo()) {
     // Visit the function declaration's syntactic components in the order
     // written. This requires a bit of work.
     TypeLoc TL = TSInfo->getTypeLoc().IgnoreParens();
-    FunctionTypeLoc *FTL = dyn_cast<FunctionTypeLoc>(&TL);
+    SubprogramTypeLoc *FTL = dyn_cast<SubprogramTypeLoc>(&TL);
     
     // If we have a function declared directly (without the use of a typedef),
     // visit just the return type. Otherwise, just visit the function's type
@@ -749,7 +749,7 @@ bool CursorVisitor::VisitFunctionDecl(FunctionDecl *ND) {
     // FIXME: Visit explicitly-specified template arguments!
     
     // Visit the function parameters, if we have a function type.
-    if (FTL && VisitFunctionTypeLoc(*FTL, true))
+    if (FTL && VisitSubprogramTypeLoc(*FTL, true))
       return true;
     
     // FIXME: Attributes?
@@ -829,13 +829,13 @@ bool CursorVisitor::VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D) {
   return false;  
 }
 
-bool CursorVisitor::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
-  // FIXME: Visit the "outer" template parameter lists on the FunctionDecl
+bool CursorVisitor::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
+  // FIXME: Visit the "outer" template parameter lists on the SubprogramDecl
   // before visiting these template parameters.
   if (VisitTemplateParameters(D->getTemplateParameters()))
     return true;
   
-  return VisitFunctionDecl(D->getTemplatedDecl());
+  return VisitSubprogramDecl(D->getTemplatedDecl());
 }
 
 bool CursorVisitor::VisitClassTemplateDecl(ClassTemplateDecl *D) {
@@ -1158,7 +1158,7 @@ bool CursorVisitor::VisitDeclarationNameInfo(DeclarationNameInfo Name) {
       
   case lfort::DeclarationName::CXXConstructorName:
   case lfort::DeclarationName::CXXDestructorName:
-  case lfort::DeclarationName::CXXConversionFunctionName:
+  case lfort::DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TSInfo = Name.getNamedTypeInfo())
       return Visit(TSInfo->getTypeLoc());
     return false;
@@ -1477,7 +1477,7 @@ bool CursorVisitor::VisitAttributedTypeLoc(AttributedTypeLoc TL) {
   return Visit(TL.getModifiedLoc());
 }
 
-bool CursorVisitor::VisitFunctionTypeLoc(FunctionTypeLoc TL, 
+bool CursorVisitor::VisitSubprogramTypeLoc(SubprogramTypeLoc TL, 
                                          bool SkipResultType) {
   if (!SkipResultType && Visit(TL.getResultLoc()))
     return true;
@@ -1594,8 +1594,8 @@ DEFAULT_TYPELOC_IMPL(DependentSizedArray, ArrayType)
 DEFAULT_TYPELOC_IMPL(DependentSizedExtVector, Type)
 DEFAULT_TYPELOC_IMPL(Vector, Type)
 DEFAULT_TYPELOC_IMPL(ExtVector, VectorType)
-DEFAULT_TYPELOC_IMPL(FunctionProto, FunctionType)
-DEFAULT_TYPELOC_IMPL(FunctionNoProto, FunctionType)
+DEFAULT_TYPELOC_IMPL(SubprogramProto, SubprogramType)
+DEFAULT_TYPELOC_IMPL(SubprogramNoProto, SubprogramType)
 DEFAULT_TYPELOC_IMPL(Record, TagType)
 DEFAULT_TYPELOC_IMPL(Enum, TagType)
 DEFAULT_TYPELOC_IMPL(SubstTemplateTypeParm, Type)
@@ -2328,8 +2328,8 @@ bool CursorVisitor::RunVisitorWorkList(VisitorWorkList &WL) {
             // Visit the whole type.
             if (Visit(TL))
               return true;
-          } else if (isa<FunctionProtoTypeLoc>(TL)) {
-            FunctionProtoTypeLoc Proto = cast<FunctionProtoTypeLoc>(TL);
+          } else if (isa<SubprogramProtoTypeLoc>(TL)) {
+            SubprogramProtoTypeLoc Proto = cast<SubprogramProtoTypeLoc>(TL);
             if (E->hasExplicitParameters()) {
               // Visit parameters.
               for (unsigned I = 0, N = Proto.getNumArgs(); I != N; ++I)
@@ -2561,7 +2561,7 @@ static void lfort_parseTranslationUnit_Impl(void *UserData) {
     = options & CXTranslationUnit_CacheCompletionResults;
   bool IncludeBriefCommentsInCodeCompletion
     = options & CXTranslationUnit_IncludeBriefCommentsInCodeCompletion;
-  bool SkipFunctionBodies = options & CXTranslationUnit_SkipFunctionBodies;
+  bool SkipSubprogramBodies = options & CXTranslationUnit_SkipSubprogramBodies;
   bool ForSerialization = options & CXTranslationUnit_ForSerialization;
 
   // Configure the diagnostics.
@@ -2648,7 +2648,7 @@ static void lfort_parseTranslationUnit_Impl(void *UserData) {
                                  CacheCodeCompetionResults,
                                  IncludeBriefCommentsInCodeCompletion,
                                  /*AllowPCHWithCompilerErrors=*/true,
-                                 SkipFunctionBodies,
+                                 SkipSubprogramBodies,
                                  /*UserFilesAreVolatile=*/true,
                                  ForSerialization,
                                  &ErrUnit));
@@ -3301,24 +3301,24 @@ CXString lfort_getCursorDisplayName(CXCursor C) {
     return createCXString("");
 
   PrintingPolicy Policy = getCursorContext(C).getPrintingPolicy();
-  if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(D))
+  if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(D))
     D = FunTmpl->getTemplatedDecl();
   
-  if (FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
+  if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
     SmallString<64> Str;
     llvm::raw_svector_ostream OS(Str);
-    OS << *Function;
-    if (Function->getPrimaryTemplate())
+    OS << *Subprogram;
+    if (Subprogram->getPrimaryTemplate())
       OS << "<>";
     OS << "(";
-    for (unsigned I = 0, N = Function->getNumParams(); I != N; ++I) {
+    for (unsigned I = 0, N = Subprogram->getNumParams(); I != N; ++I) {
       if (I)
         OS << ", ";
-      OS << Function->getParamDecl(I)->getType().getAsString(Policy);
+      OS << Subprogram->getParamDecl(I)->getType().getAsString(Policy);
     }
     
-    if (Function->isVariadic()) {
-      if (Function->getNumParams())
+    if (Subprogram->isVariadic()) {
+      if (Subprogram->getNumParams())
         OS << ", ";
       OS << "...";
     }
@@ -3378,8 +3378,8 @@ CXString lfort_getCursorDisplayName(CXCursor C) {
   
 CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind) {
   switch (Kind) {
-  case CXCursor_FunctionDecl:
-      return createCXString("FunctionDecl");
+  case CXCursor_SubprogramDecl:
+      return createCXString("SubprogramDecl");
   case CXCursor_TypedefDecl:
       return createCXString("TypedefDecl");
   case CXCursor_EnumDecl:
@@ -3484,8 +3484,8 @@ CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind) {
       return createCXString("CXXReinterpretCastExpr");
   case CXCursor_CXXConstCastExpr:
       return createCXString("CXXConstCastExpr");
-  case CXCursor_CXXFunctionalCastExpr:
-      return createCXString("CXXFunctionalCastExpr");
+  case CXCursor_CXXSubprogramalCastExpr:
+      return createCXString("CXXSubprogramalCastExpr");
   case CXCursor_CXXTypeidExpr:
       return createCXString("CXXTypeidExpr");
   case CXCursor_CXXBoolLiteralExpr:
@@ -3640,7 +3640,7 @@ CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind) {
     return createCXString("CXXConstructor");
   case CXCursor_Destructor:
     return createCXString("CXXDestructor");
-  case CXCursor_ConversionFunction:
+  case CXCursor_ConversionSubprogram:
     return createCXString("CXXConversion");
   case CXCursor_TemplateTypeParameter:
     return createCXString("TemplateTypeParameter");
@@ -3648,8 +3648,8 @@ CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind) {
     return createCXString("NonTypeTemplateParameter");
   case CXCursor_TemplateTemplateParameter:
     return createCXString("TemplateTemplateParameter");
-  case CXCursor_FunctionTemplate:
-    return createCXString("FunctionTemplate");
+  case CXCursor_SubprogramTemplate:
+    return createCXString("SubprogramTemplate");
   case CXCursor_ClassTemplate:
     return createCXString("ClassTemplate");
   case CXCursor_ClassTemplatePartialSpecialization:
@@ -4378,7 +4378,7 @@ CXCursor lfort_getCursorDefinition(CXCursor C) {
   case Decl::StaticAssert:
   case Decl::Block:
   case Decl::Label:  // FIXME: Is this right??
-  case Decl::ClassScopeFunctionSpecialization:
+  case Decl::ClassScopeSubprogramSpecialization:
   case Decl::Import:
     return C;
 
@@ -4408,15 +4408,15 @@ CXCursor lfort_getCursorDefinition(CXCursor C) {
       return MakeCXCursor(Def, TU);
     return lfort_getNullCursor();
 
-  case Decl::Function:
+  case Decl::Subprogram:
   case Decl::CXXMethod:
   case Decl::CXXConstructor:
   case Decl::CXXDestructor:
   case Decl::CXXConversion:
   case Decl::MainProgram: {
-    const FunctionDecl *Def = 0;
-    if (cast<FunctionDecl>(D)->getBody(Def))
-      return MakeCXCursor(const_cast<FunctionDecl *>(Def), TU);
+    const SubprogramDecl *Def = 0;
+    if (cast<SubprogramDecl>(D)->getBody(Def))
+      return MakeCXCursor(const_cast<SubprogramDecl *>(Def), TU);
     return lfort_getNullCursor();
   }
 
@@ -4427,10 +4427,10 @@ CXCursor lfort_getCursorDefinition(CXCursor C) {
     return lfort_getNullCursor();
   }
 
-  case Decl::FunctionTemplate: {
-    const FunctionDecl *Def = 0;
-    if (cast<FunctionTemplateDecl>(D)->getTemplatedDecl()->getBody(Def))
-      return MakeCXCursor(Def->getDescribedFunctionTemplate(), TU);
+  case Decl::SubprogramTemplate: {
+    const SubprogramDecl *Def = 0;
+    if (cast<SubprogramTemplateDecl>(D)->getTemplatedDecl()->getBody(Def))
+      return MakeCXCursor(Def->getDescribedSubprogramTemplate(), TU);
     return lfort_getNullCursor();
   }
 
@@ -4608,7 +4608,7 @@ void lfort_getDefinitionSpellingAndExtent(CXCursor C,
                                           unsigned *endColumn) {
   assert(getCursorDecl(C) && "CXCursor has null decl");
   NamedDecl *ND = static_cast<NamedDecl *>(getCursorDecl(C));
-  FunctionDecl *FD = dyn_cast<FunctionDecl>(ND);
+  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND);
   CompoundStmt *Body = dyn_cast<CompoundStmt>(FD->getBody());
 
   SourceManager &SM = FD->getASTContext().getSourceManager();
@@ -5584,7 +5584,7 @@ static CXLanguageKind getDeclLanguage(const Decl *D) {
     case Decl::ClassTemplateSpecialization:
     case Decl::Friend:
     case Decl::FriendTemplate:
-    case Decl::FunctionTemplate:
+    case Decl::SubprogramTemplate:
     case Decl::LinkageSpec:
     case Decl::Namespace:
     case Decl::NamespaceAlias:
@@ -5608,7 +5608,7 @@ extern "C" {
 enum CXAvailabilityKind lfort_getCursorAvailability(CXCursor cursor) {
   if (lfort_isDeclaration(cursor.kind))
     if (Decl *D = cxcursor::getCursorDecl(cursor)) {
-      if (isa<FunctionDecl>(D) && cast<FunctionDecl>(D)->isDeleted())
+      if (isa<SubprogramDecl>(D) && cast<SubprogramDecl>(D)->isDeleted())
         return CXAvailability_Available;
       
       switch (D->getAvailability()) {
@@ -5725,8 +5725,8 @@ static Decl *maybeGetTemplateCursor(Decl *D) {
   if (!D)
     return 0;
 
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
-    if (FunctionTemplateDecl *FunTmpl = FD->getDescribedFunctionTemplate())
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
+    if (SubprogramTemplateDecl *FunTmpl = FD->getDescribedSubprogramTemplate())
       return FunTmpl;
 
   if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(D))
@@ -5900,7 +5900,7 @@ unsigned lfort_CXXMethod_isStatic(CXCursor C) {
   
   CXXMethodDecl *Method = 0;
   Decl *D = cxcursor::getCursorDecl(C);
-  if (FunctionTemplateDecl *FunTmpl = dyn_cast_or_null<FunctionTemplateDecl>(D))
+  if (SubprogramTemplateDecl *FunTmpl = dyn_cast_or_null<SubprogramTemplateDecl>(D))
     Method = dyn_cast<CXXMethodDecl>(FunTmpl->getTemplatedDecl());
   else
     Method = dyn_cast_or_null<CXXMethodDecl>(D);
@@ -5913,7 +5913,7 @@ unsigned lfort_CXXMethod_isVirtual(CXCursor C) {
   
   CXXMethodDecl *Method = 0;
   Decl *D = cxcursor::getCursorDecl(C);
-  if (FunctionTemplateDecl *FunTmpl = dyn_cast_or_null<FunctionTemplateDecl>(D))
+  if (SubprogramTemplateDecl *FunTmpl = dyn_cast_or_null<SubprogramTemplateDecl>(D))
     Method = dyn_cast<CXXMethodDecl>(FunTmpl->getTemplatedDecl());
   else
     Method = dyn_cast_or_null<CXXMethodDecl>(D);

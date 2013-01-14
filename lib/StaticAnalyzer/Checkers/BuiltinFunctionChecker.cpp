@@ -1,4 +1,4 @@
-//=== BuiltinFunctionChecker.cpp --------------------------------*- C++ -*-===//
+//=== BuiltinSubprogramChecker.cpp --------------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -22,17 +22,17 @@ using namespace ento;
 
 namespace {
 
-class BuiltinFunctionChecker : public Checker<eval::Call> {
+class BuiltinSubprogramChecker : public Checker<eval::Call> {
 public:
   bool evalCall(const CallExpr *CE, CheckerContext &C) const;
 };
 
 }
 
-bool BuiltinFunctionChecker::evalCall(const CallExpr *CE,
+bool BuiltinSubprogramChecker::evalCall(const CallExpr *CE,
                                       CheckerContext &C) const {
   ProgramStateRef state = C.getState();
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
   const LocationContext *LCtx = C.getLocationContext();
   if (!FD)
     return false;
@@ -78,6 +78,6 @@ bool BuiltinFunctionChecker::evalCall(const CallExpr *CE,
   return false;
 }
 
-void ento::registerBuiltinFunctionChecker(CheckerManager &mgr) {
-  mgr.registerChecker<BuiltinFunctionChecker>();
+void ento::registerBuiltinSubprogramChecker(CheckerManager &mgr) {
+  mgr.registerChecker<BuiltinSubprogramChecker>();
 }

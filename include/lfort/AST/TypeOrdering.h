@@ -22,7 +22,7 @@
 
 namespace lfort {
 
-/// QualTypeOrdering - Function object that provides a total ordering
+/// QualTypeOrdering - Subprogram object that provides a total ordering
 /// on QualType values.
 struct QualTypeOrdering : std::binary_function<QualType, QualType, bool> {
   bool operator()(QualType T1, QualType T2) const {

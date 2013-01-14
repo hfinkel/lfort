@@ -654,13 +654,13 @@ void StmtPrinter::VisitPredefinedExpr(PredefinedExpr *Node) {
     case PredefinedExpr::Func:
       OS << "__func__";
       break;
-    case PredefinedExpr::Function:
+    case PredefinedExpr::Subprogram:
       OS << "__FUNCTION__";
       break;
-    case PredefinedExpr::LFunction:
+    case PredefinedExpr::LSubprogram:
       OS << "L__FUNCTION__";
       break;
-    case PredefinedExpr::PrettyFunction:
+    case PredefinedExpr::PrettySubprogram:
       OS << "__PRETTY_FUNCTION__";
       break;
   }
@@ -1241,7 +1241,7 @@ void StmtPrinter::VisitUserDefinedLiteral(UserDefinedLiteral *Node) {
   case UserDefinedLiteral::LOK_Template: {
     DeclRefExpr *DRE = cast<DeclRefExpr>(Node->getCallee()->IgnoreImpCasts());
     const TemplateArgumentList *Args =
-      cast<FunctionDecl>(DRE->getDecl())->getTemplateSpecializationArgs();
+      cast<SubprogramDecl>(DRE->getDecl())->getTemplateSpecializationArgs();
     assert(Args);
     const TemplateArgument &Pack = Args->get(0);
     for (TemplateArgument::pack_iterator I = Pack.pack_begin(),
@@ -1296,7 +1296,7 @@ void StmtPrinter::VisitCXXDefaultArgExpr(CXXDefaultArgExpr *Node) {
   // Nothing to print: we picked up the default argument
 }
 
-void StmtPrinter::VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *Node) {
+void StmtPrinter::VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *Node) {
   OS << Node->getType().getAsString(Policy);
   OS << "(";
   PrintExpr(Node->getSubExpr());
@@ -1391,8 +1391,8 @@ void StmtPrinter::VisitLambdaExpr(LambdaExpr *Node) {
     if (Node->isMutable())
       OS << " mutable";
 
-    const FunctionProtoType *Proto
-      = Method->getType()->getAs<FunctionProtoType>();
+    const SubprogramProtoType *Proto
+      = Method->getType()->getAs<SubprogramProtoType>();
     {
       std::string ExceptionSpec;
       Proto->printExceptionSpecification(ExceptionSpec, Policy);
@@ -1582,13 +1582,13 @@ static const char *getTypeTraitName(UnaryTypeTrait UTT) {
   case UTT_IsEnum:                return "__is_enum";
   case UTT_IsFinal:                 return "__is_final";
   case UTT_IsFloatingPoint:         return "__is_floating_point";
-  case UTT_IsFunction:              return "__is_function";
+  case UTT_IsSubprogram:              return "__is_function";
   case UTT_IsFundamental:           return "__is_fundamental";
   case UTT_IsIntegral:              return "__is_integral";
   case UTT_IsInterfaceClass:        return "__is_interface_class";
   case UTT_IsLiteral:               return "__is_literal";
   case UTT_IsLvalueReference:       return "__is_lvalue_reference";
-  case UTT_IsMemberFunctionPointer: return "__is_member_function_pointer";
+  case UTT_IsMemberSubprogramPointer: return "__is_member_function_pointer";
   case UTT_IsMemberObjectPointer:   return "__is_member_object_pointer";
   case UTT_IsMemberPointer:         return "__is_member_pointer";
   case UTT_IsObject:                return "__is_object";
@@ -1702,7 +1702,7 @@ void StmtPrinter::VisitSubstNonTypeTemplateParmExpr(
   Visit(Node->getReplacement());
 }
 
-void StmtPrinter::VisitFunctionParmPackExpr(FunctionParmPackExpr *E) {
+void StmtPrinter::VisitSubprogramParmPackExpr(SubprogramParmPackExpr *E) {
   OS << *E->getParameterPack();
 }
 
@@ -1822,11 +1822,11 @@ void StmtPrinter::VisitBlockExpr(BlockExpr *Node) {
   BlockDecl *BD = Node->getBlockDecl();
   OS << "^";
 
-  const FunctionType *AFT = Node->getFunctionType();
+  const SubprogramType *AFT = Node->getSubprogramType();
 
-  if (isa<FunctionNoProtoType>(AFT)) {
+  if (isa<SubprogramNoProtoType>(AFT)) {
     OS << "()";
-  } else if (!BD->param_empty() || cast<FunctionProtoType>(AFT)->isVariadic()) {
+  } else if (!BD->param_empty() || cast<SubprogramProtoType>(AFT)->isVariadic()) {
     OS << '(';
     std::string ParamStr;
     for (BlockDecl::param_iterator AI = BD->param_begin(),
@@ -1837,7 +1837,7 @@ void StmtPrinter::VisitBlockExpr(BlockExpr *Node) {
       OS << ParamStr;
     }
 
-    const FunctionProtoType *FT = cast<FunctionProtoType>(AFT);
+    const SubprogramProtoType *FT = cast<SubprogramProtoType>(AFT);
     if (FT->isVariadic()) {
       if (!BD->param_empty()) OS << ", ";
       OS << "...";

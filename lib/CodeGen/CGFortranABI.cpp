@@ -39,17 +39,17 @@ CGFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   return CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
 }
 
-llvm::Value *CGFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
+llvm::Value *CGFortranABI::EmitLoadOfMemberSubprogramPointer(CodeGenSubprogram &CGF,
                                                        llvm::Value *&This,
                                                        llvm::Value *MemPtr,
                                                  const MemberPointerType *MPT) {
   ErrorUnsupportedABI(CGF, "calls through member pointers");
 
-  const FunctionProtoType *FPT = 
-    MPT->getPointeeType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *FPT = 
+    MPT->getPointeeType()->getAs<SubprogramProtoType>();
   const CXXRecordDecl *RD = 
     cast<CXXRecordDecl>(MPT->getClass()->getAs<RecordType>()->getDecl());
-  llvm::FunctionType *FTy = CGM.getTypes().GetFunctionType(
+  llvm::FunctionType *FTy = CGM.getTypes().GetSubprogramType(
                               CGM.getTypes().arrangeCXXMethodType(RD, FPT));
   return llvm::Constant::getNullValue(FTy->getPointerTo());
 }
@@ -118,7 +118,7 @@ bool CGFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
   return true;
 }
 
-void CGFortranABI::BuildThisParam(CodeGenSubprogram &CGF, FunctionArgList &params) {
+void CGFortranABI::BuildThisParam(CodeGenSubprogram &CGF, SubprogramArgList &params) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(CGF.CurGD.getDecl());
 
   // FIXME: I'm not entirely sure I like using a fake decl just for code

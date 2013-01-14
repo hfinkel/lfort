@@ -518,7 +518,7 @@ Sema::ActOnCXXThrow(Scope *S, SourceLocation OpLoc, Expr *Ex) {
             
             if (S->getFlags() &
                 (Scope::FnScope | Scope::ClassScope | Scope::BlockScope |
-                 Scope::FunctionPrototypeScope | Scope::ObjCMethodScope |
+                 Scope::SubprogramPrototypeScope | Scope::ObjCMethodScope |
                  Scope::TryScope))
               break;
           }
@@ -560,7 +560,7 @@ ExprResult Sema::CheckCXXThrowOperand(SourceLocation ThrowLoc, Expr *E,
     E = ImpCastExprToType(E, E->getType().getUnqualifiedType(), CK_NoOp,
                           E->getValueKind()).take();
 
-  ExprResult Res = DefaultFunctionArrayConversion(E);
+  ExprResult Res = DefaultSubprogramArrayConversion(E);
   if (Res.isInvalid())
     return ExprError();
   E = Res.take();
@@ -635,7 +635,7 @@ ExprResult Sema::CheckCXXThrowOperand(SourceLocation ThrowLoc, Expr *E,
   if (!Destructor)
     return Owned(E);
 
-  MarkFunctionReferenced(E->getExprLoc(), Destructor);
+  MarkSubprogramReferenced(E->getExprLoc(), Destructor);
   CheckDestructorAccess(E->getExprLoc(), Destructor,
                         PDiag(diag::err_access_dtor_exception) << Ty);
   DiagnoseUseOfDecl(Destructor, E->getExprLoc());
@@ -643,7 +643,7 @@ ExprResult Sema::CheckCXXThrowOperand(SourceLocation ThrowLoc, Expr *E,
 }
 
 QualType Sema::getCurrentThisType() {
-  DeclContext *DC = getFunctionLevelDeclContext();
+  DeclContext *DC = getSubprogramLevelDeclContext();
   QualType ThisTy = CXXThisTypeOverride;
   if (CXXMethodDecl *method = dyn_cast<CXXMethodDecl>(DC)) {
     if (method && method->isInstance())
@@ -689,9 +689,9 @@ void Sema::CheckCXXThisCapture(SourceLocation Loc, bool Explicit) {
 
   // Otherwise, check that we can capture 'this'.
   unsigned NumClosures = 0;
-  for (unsigned idx = FunctionScopes.size() - 1; idx != 0; idx--) {
+  for (unsigned idx = SubprogramScopes.size() - 1; idx != 0; idx--) {
     if (CapturingScopeInfo *CSI =
-            dyn_cast<CapturingScopeInfo>(FunctionScopes[idx])) {
+            dyn_cast<CapturingScopeInfo>(SubprogramScopes[idx])) {
       if (CSI->CXXThisCaptureIndex != 0) {
         // 'this' is already being captured; there isn't anything more to do.
         break;
@@ -716,9 +716,9 @@ void Sema::CheckCXXThisCapture(SourceLocation Loc, bool Explicit) {
   // Mark that we're implicitly capturing 'this' in all the scopes we skipped.
   // FIXME: We need to delay this marking in PotentiallyPotentiallyEvaluated
   // contexts.
-  for (unsigned idx = FunctionScopes.size() - 1;
+  for (unsigned idx = SubprogramScopes.size() - 1;
        NumClosures; --idx, --NumClosures) {
-    CapturingScopeInfo *CSI = cast<CapturingScopeInfo>(FunctionScopes[idx]);
+    CapturingScopeInfo *CSI = cast<CapturingScopeInfo>(SubprogramScopes[idx]);
     Expr *ThisExpr = 0;
     QualType ThisTy = getCurrentThisType();
     if (LambdaScopeInfo *LSI = dyn_cast<LambdaScopeInfo>(CSI)) {
@@ -750,7 +750,7 @@ ExprResult Sema::ActOnCXXThis(SourceLocation Loc) {
   return Owned(new (Context) CXXThisExpr(Loc, ThisTy, /*isImplicit=*/false));
 }
 
-bool Sema::isThisOutsideMemberFunctionBody(QualType BaseType) {
+bool Sema::isThisOutsideMemberSubprogramBody(QualType BaseType) {
   // If we're outside the body of a member function, then we'll have a specified
   // type for 'this'.
   if (CXXThisTypeOverride.isNull())
@@ -812,7 +812,7 @@ Sema::BuildCXXTypeConstructExpr(TypeSourceInfo *TInfo,
   // corresponding cast expression.
   if (NumExprs == 1 && !ListInitialization) {
     Expr *Arg = Exprs[0];
-    return BuildCXXFunctionalCastExpr(TInfo, LParenLoc, Arg, RParenLoc);
+    return BuildCXXSubprogramalCastExpr(TInfo, LParenLoc, Arg, RParenLoc);
   }
 
   QualType ElemTy = Ty;
@@ -850,7 +850,7 @@ Sema::BuildCXXTypeConstructExpr(TypeSourceInfo *TInfo,
     // want, since it will be treated as an initializer list in further
     // processing. Explicitly insert a cast here.
     InitListExpr *List = cast<InitListExpr>(Result.take());
-    Result = Owned(CXXFunctionalCastExpr::Create(Context, List->getType(),
+    Result = Owned(CXXSubprogramalCastExpr::Create(Context, List->getType(),
                                     Expr::getValueKindForType(TInfo->getType()),
                                                  TInfo, TyBeginLoc, CK_NoOp,
                                                  List, /*Path=*/0, RParenLoc));
@@ -892,7 +892,7 @@ static bool doesUsualArrayDeleteWantSize(Sema &S, SourceLocation loc,
     // C++0x [basic.stc.dynamic.deallocation]p2:
     //   A template instance is never a usual deallocation function,
     //   regardless of its signature.
-    if (isa<FunctionTemplateDecl>(del)) {
+    if (isa<SubprogramTemplateDecl>(del)) {
       filter.erase();
       continue;
     }
@@ -903,7 +903,7 @@ static bool doesUsualArrayDeleteWantSize(Sema &S, SourceLocation loc,
     //   named operator delete[] with exactly two parameters, the
     //   second of which has type std::size_t, then this function
     //   is a usual deallocation function.
-    if (!cast<CXXMethodDecl>(del)->isUsualDeallocationFunction()) {
+    if (!cast<CXXMethodDecl>(del)->isUsualDeallocationSubprogram()) {
       filter.erase();
       continue;
     }
@@ -912,7 +912,7 @@ static bool doesUsualArrayDeleteWantSize(Sema &S, SourceLocation loc,
 
   if (!ops.isSingleResult()) return false;
 
-  const FunctionDecl *del = cast<FunctionDecl>(ops.getFoundDecl());
+  const SubprogramDecl *del = cast<SubprogramDecl>(ops.getFoundDecl());
   return (del->getNumParams() == 2);
 }
 
@@ -1253,15 +1253,15 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
     // be signed, larger than size_t, whatever.
   }
 
-  FunctionDecl *OperatorNew = 0;
-  FunctionDecl *OperatorDelete = 0;
+  SubprogramDecl *OperatorNew = 0;
+  SubprogramDecl *OperatorDelete = 0;
   Expr **PlaceArgs = PlacementArgs.data();
   unsigned NumPlaceArgs = PlacementArgs.size();
 
   if (!AllocType->isDependentType() &&
       !Expr::hasAnyTypeDependentArguments(
         llvm::makeArrayRef(PlaceArgs, NumPlaceArgs)) &&
-      FindAllocationFunctions(StartLoc,
+      FindAllocationSubprograms(StartLoc,
                               SourceRange(PlacementLParen, PlacementRParen),
                               UseGlobal, AllocType, ArraySize, PlaceArgs,
                               NumPlaceArgs, OperatorNew, OperatorDelete))
@@ -1277,10 +1277,10 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
   SmallVector<Expr *, 8> AllPlaceArgs;
   if (OperatorNew) {
     // Add default arguments, if any.
-    const FunctionProtoType *Proto =
-      OperatorNew->getType()->getAs<FunctionProtoType>();
+    const SubprogramProtoType *Proto =
+      OperatorNew->getType()->getAs<SubprogramProtoType>();
     VariadicCallType CallType =
-      Proto->isVariadic() ? VariadicFunction : VariadicDoesNotApply;
+      Proto->isVariadic() ? VariadicSubprogram : VariadicDoesNotApply;
 
     if (GatherArgumentsForCall(PlacementLParen, OperatorNew,
                                Proto, 1, PlaceArgs, NumPlaceArgs,
@@ -1294,7 +1294,7 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
     DiagnoseSentinelCalls(OperatorNew, PlacementLParen,
                           PlaceArgs, NumPlaceArgs);
 
-    // FIXME: Missing call to CheckFunctionCall or equivalent
+    // FIXME: Missing call to CheckSubprogramCall or equivalent
   }
 
   // Warn if the type is over-aligned and is being allocated by global operator
@@ -1376,9 +1376,9 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
 
   // Mark the new and delete operators as referenced.
   if (OperatorNew)
-    MarkFunctionReferenced(StartLoc, OperatorNew);
+    MarkSubprogramReferenced(StartLoc, OperatorNew);
   if (OperatorDelete)
-    MarkFunctionReferenced(StartLoc, OperatorDelete);
+    MarkSubprogramReferenced(StartLoc, OperatorDelete);
 
   // C++0x [expr.new]p17:
   //   If the new expression creates an array of objects of class type,
@@ -1388,7 +1388,7 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
     if (const RecordType *BaseRecordType = BaseAllocType->getAs<RecordType>()) {
       if (CXXDestructorDecl *dtor = LookupDestructor(
               cast<CXXRecordDecl>(BaseRecordType->getDecl()))) {
-        MarkFunctionReferenced(StartLoc, dtor);
+        MarkSubprogramReferenced(StartLoc, dtor);
         CheckDestructorAccess(StartLoc, dtor, 
                               PDiag(diag::err_access_dtor)
                                 << BaseAllocType);
@@ -1413,7 +1413,7 @@ bool Sema::CheckAllocatedType(QualType AllocType, SourceLocation Loc,
                               SourceRange R) {
   // C++ 5.3.4p1: "[The] type shall be a complete object type, but not an
   //   abstract class type or array thereof.
-  if (AllocType->isFunctionType())
+  if (AllocType->isSubprogramType())
     return Diag(Loc, diag::err_bad_new_type)
       << AllocType << 0 << R;
   else if (AllocType->isReferenceType())
@@ -1446,26 +1446,26 @@ bool Sema::CheckAllocatedType(QualType AllocType, SourceLocation Loc,
 
 /// \brief Determine whether the given function is a non-placement
 /// deallocation function.
-static bool isNonPlacementDeallocationFunction(FunctionDecl *FD) {
+static bool isNonPlacementDeallocationSubprogram(SubprogramDecl *FD) {
   if (FD->isInvalidDecl())
     return false;
 
   if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(FD))
-    return Method->isUsualDeallocationFunction();
+    return Method->isUsualDeallocationSubprogram();
 
   return ((FD->getOverloadedOperator() == OO_Delete ||
            FD->getOverloadedOperator() == OO_Array_Delete) &&
           FD->getNumParams() == 1);
 }
 
-/// FindAllocationFunctions - Finds the overloads of operator new and delete
+/// FindAllocationSubprograms - Finds the overloads of operator new and delete
 /// that are appropriate for the allocation.
-bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
+bool Sema::FindAllocationSubprograms(SourceLocation StartLoc, SourceRange Range,
                                    bool UseGlobal, QualType AllocType,
                                    bool IsArray, Expr **PlaceArgs,
                                    unsigned NumPlaceArgs,
-                                   FunctionDecl *&OperatorNew,
-                                   FunctionDecl *&OperatorDelete) {
+                                   SubprogramDecl *&OperatorNew,
+                                   SubprogramDecl *&OperatorDelete) {
   // --- Choosing an allocation function ---
   // C++ 5.3.4p8 - 14 & 18
   // 1) If UseGlobal is true, only look in the global scope. Else, also look
@@ -1554,7 +1554,7 @@ bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
 
   FoundDelete.suppressDiagnostics();
 
-  SmallVector<std::pair<DeclAccessPair,FunctionDecl*>, 2> Matches;
+  SmallVector<std::pair<DeclAccessPair,SubprogramDecl*>, 2> Matches;
 
   // Whether we're looking for a placement operator delete is dictated
   // by whether we selected a placement operator new, not by whether
@@ -1576,39 +1576,39 @@ bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
     // for template argument deduction and for comparison purposes.
     //
     // FIXME: this comparison should ignore CC and the like.
-    QualType ExpectedFunctionType;
+    QualType ExpectedSubprogramType;
     {
-      const FunctionProtoType *Proto
-        = OperatorNew->getType()->getAs<FunctionProtoType>();
+      const SubprogramProtoType *Proto
+        = OperatorNew->getType()->getAs<SubprogramProtoType>();
 
       SmallVector<QualType, 4> ArgTypes;
       ArgTypes.push_back(Context.VoidPtrTy);
       for (unsigned I = 1, N = Proto->getNumArgs(); I < N; ++I)
         ArgTypes.push_back(Proto->getArgType(I));
 
-      FunctionProtoType::ExtProtoInfo EPI;
+      SubprogramProtoType::ExtProtoInfo EPI;
       EPI.Variadic = Proto->isVariadic();
 
-      ExpectedFunctionType
-        = Context.getFunctionType(Context.VoidTy, ArgTypes.data(),
+      ExpectedSubprogramType
+        = Context.getSubprogramType(Context.VoidTy, ArgTypes.data(),
                                   ArgTypes.size(), EPI);
     }
 
     for (LookupResult::iterator D = FoundDelete.begin(),
                              DEnd = FoundDelete.end();
          D != DEnd; ++D) {
-      FunctionDecl *Fn = 0;
-      if (FunctionTemplateDecl *FnTmpl
-            = dyn_cast<FunctionTemplateDecl>((*D)->getUnderlyingDecl())) {
+      SubprogramDecl *Fn = 0;
+      if (SubprogramTemplateDecl *FnTmpl
+            = dyn_cast<SubprogramTemplateDecl>((*D)->getUnderlyingDecl())) {
         // Perform template argument deduction to try to match the
         // expected function type.
         TemplateDeductionInfo Info(StartLoc);
-        if (DeduceTemplateArguments(FnTmpl, 0, ExpectedFunctionType, Fn, Info))
+        if (DeduceTemplateArguments(FnTmpl, 0, ExpectedSubprogramType, Fn, Info))
           continue;
       } else
-        Fn = cast<FunctionDecl>((*D)->getUnderlyingDecl());
+        Fn = cast<SubprogramDecl>((*D)->getUnderlyingDecl());
 
-      if (Context.hasSameType(Fn->getType(), ExpectedFunctionType))
+      if (Context.hasSameType(Fn->getType(), ExpectedSubprogramType))
         Matches.push_back(std::make_pair(D.getPair(), Fn));
     }
   } else {
@@ -1618,8 +1618,8 @@ bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
     for (LookupResult::iterator D = FoundDelete.begin(),
                              DEnd = FoundDelete.end();
          D != DEnd; ++D) {
-      if (FunctionDecl *Fn = dyn_cast<FunctionDecl>((*D)->getUnderlyingDecl()))
-        if (isNonPlacementDeallocationFunction(Fn))
+      if (SubprogramDecl *Fn = dyn_cast<SubprogramDecl>((*D)->getUnderlyingDecl()))
+        if (isNonPlacementDeallocationSubprogram(Fn))
           Matches.push_back(std::make_pair(D.getPair(), Fn));
     }
   }
@@ -1638,7 +1638,7 @@ bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
     //   selected as a match for the allocation function, the program
     //   is ill-formed.
     if (NumPlaceArgs && getLangOpts().CPlusPlus11 &&
-        isNonPlacementDeallocationFunction(OperatorDelete)) {
+        isNonPlacementDeallocationSubprogram(OperatorDelete)) {
       Diag(StartLoc, diag::err_placement_new_non_placement_delete)
         << SourceRange(PlaceArgs[0]->getLocStart(),
                        PlaceArgs[NumPlaceArgs - 1]->getLocEnd());
@@ -1658,7 +1658,7 @@ bool Sema::FindAllocationFunctions(SourceLocation StartLoc, SourceRange Range,
 bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
                                   DeclarationName Name, Expr** Args,
                                   unsigned NumArgs, DeclContext *Ctx,
-                                  bool AllowMissing, FunctionDecl *&Operator,
+                                  bool AllowMissing, SubprogramDecl *&Operator,
                                   bool Diagnose) {
   LookupResult R(*this, Name, StartLoc, LookupOrdinaryName);
   LookupQualifiedName(R, Ctx);
@@ -1681,7 +1681,7 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
     // static, so don't use AddMemberCandidate.
     NamedDecl *D = (*Alloc)->getUnderlyingDecl();
 
-    if (FunctionTemplateDecl *FnTemplate = dyn_cast<FunctionTemplateDecl>(D)) {
+    if (SubprogramTemplateDecl *FnTemplate = dyn_cast<SubprogramTemplateDecl>(D)) {
       AddTemplateOverloadCandidate(FnTemplate, Alloc.getPair(),
                                    /*ExplicitTemplateArgs=*/0,
                                    llvm::makeArrayRef(Args, NumArgs),
@@ -1690,7 +1690,7 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
       continue;
     }
 
-    FunctionDecl *Fn = cast<FunctionDecl>(D);
+    SubprogramDecl *Fn = cast<SubprogramDecl>(D);
     AddOverloadCandidate(Fn, Alloc.getPair(),
                          llvm::makeArrayRef(Args, NumArgs), Candidates,
                          /*SuppressUserConversions=*/false);
@@ -1698,11 +1698,11 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
 
   // Do the resolution.
   OverloadCandidateSet::iterator Best;
-  switch (Candidates.BestViableFunction(*this, StartLoc, Best)) {
+  switch (Candidates.BestViableSubprogram(*this, StartLoc, Best)) {
   case OR_Success: {
     // Got one!
-    FunctionDecl *FnDecl = Best->Function;
-    MarkFunctionReferenced(StartLoc, FnDecl);
+    SubprogramDecl *FnDecl = Best->Subprogram;
+    MarkSubprogramReferenced(StartLoc, FnDecl);
     // The first argument is size_t, and the first parameter must be size_t,
     // too. This is checked on declaration and can be assumed. (It can't be
     // asserted on, though, since invalid decls are left in there.)
@@ -1732,7 +1732,7 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
     return false;
   }
 
-  case OR_No_Viable_Function:
+  case OR_No_Viable_Subprogram:
     if (Diagnose) {
       Diag(StartLoc, diag::err_ovl_no_viable_function_in_call)
         << Name << Range;
@@ -1753,9 +1753,9 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
   case OR_Deleted: {
     if (Diagnose) {
       Diag(StartLoc, diag::err_ovl_deleted_call)
-        << Best->Function->isDeleted()
+        << Best->Subprogram->isDeleted()
         << Name 
-        << getDeletedOrUnavailableSuffix(Best->Function)
+        << getDeletedOrUnavailableSuffix(Best->Subprogram)
         << Range;
       Candidates.NoteCandidates(*this, OCD_AllCandidates,
                                 llvm::makeArrayRef(Args, NumArgs));
@@ -1763,7 +1763,7 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
     return true;
   }
   }
-  llvm_unreachable("Unreachable, bad result from BestViableFunction");
+  llvm_unreachable("Unreachable, bad result from BestViableSubprogram");
 }
 
 
@@ -1830,23 +1830,23 @@ void Sema::DeclareGlobalNewDelete() {
   QualType SizeT = Context.getSizeType();
   bool AssumeSaneOperatorNew = getLangOpts().AssumeSaneOperatorNew;
 
-  DeclareGlobalAllocationFunction(
+  DeclareGlobalAllocationSubprogram(
       Context.DeclarationNames.getCXXOperatorName(OO_New),
       VoidPtr, SizeT, AssumeSaneOperatorNew);
-  DeclareGlobalAllocationFunction(
+  DeclareGlobalAllocationSubprogram(
       Context.DeclarationNames.getCXXOperatorName(OO_Array_New),
       VoidPtr, SizeT, AssumeSaneOperatorNew);
-  DeclareGlobalAllocationFunction(
+  DeclareGlobalAllocationSubprogram(
       Context.DeclarationNames.getCXXOperatorName(OO_Delete),
       Context.VoidTy, VoidPtr);
-  DeclareGlobalAllocationFunction(
+  DeclareGlobalAllocationSubprogram(
       Context.DeclarationNames.getCXXOperatorName(OO_Array_Delete),
       Context.VoidTy, VoidPtr);
 }
 
-/// DeclareGlobalAllocationFunction - Declares a single implicit global
+/// DeclareGlobalAllocationSubprogram - Declares a single implicit global
 /// allocation function if it doesn't already exist.
-void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
+void Sema::DeclareGlobalAllocationSubprogram(DeclarationName Name,
                                            QualType Return, QualType Argument,
                                            bool AddMallocAttr) {
   DeclContext *GlobalCtx = Context.getTranslationUnitDecl();
@@ -1858,7 +1858,7 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
          Alloc != AllocEnd; ++Alloc) {
       // Only look at non-template functions, as it is the predefined,
       // non-templated allocation function we are trying to declare here.
-      if (FunctionDecl *Func = dyn_cast<FunctionDecl>(*Alloc)) {
+      if (SubprogramDecl *Func = dyn_cast<SubprogramDecl>(*Alloc)) {
         QualType InitialParamType =
           Context.getCanonicalType(
             Func->getParamDecl(0)->getType().getUnqualifiedType());
@@ -1881,7 +1881,7 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
     BadAllocType = Context.getTypeDeclType(getStdBadAlloc());
   }
 
-  FunctionProtoType::ExtProtoInfo EPI;
+  SubprogramProtoType::ExtProtoInfo EPI;
   if (HasBadAllocExceptionSpec) {
     if (!getLangOpts().CPlusPlus11) {
       EPI.ExceptionSpecType = EST_Dynamic;
@@ -1893,9 +1893,9 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
                                 EST_BasicNoexcept : EST_DynamicNone;
   }
 
-  QualType FnType = Context.getFunctionType(Return, &Argument, 1, EPI);
-  FunctionDecl *Alloc =
-    FunctionDecl::Create(Context, GlobalCtx, SourceLocation(),
+  QualType FnType = Context.getSubprogramType(Return, &Argument, 1, EPI);
+  SubprogramDecl *Alloc =
+    SubprogramDecl::Create(Context, GlobalCtx, SourceLocation(),
                          SourceLocation(), Name,
                          FnType, /*TInfo=*/0, SC_None,
                          SC_None, false, true);
@@ -1916,9 +1916,9 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
   Context.getTranslationUnitDecl()->addDecl(Alloc);
 }
 
-bool Sema::FindDeallocationFunction(SourceLocation StartLoc, CXXRecordDecl *RD,
+bool Sema::FindDeallocationSubprogram(SourceLocation StartLoc, CXXRecordDecl *RD,
                                     DeclarationName Name,
-                                    FunctionDecl* &Operator, bool Diagnose) {
+                                    SubprogramDecl* &Operator, bool Diagnose) {
   LookupResult Found(*this, Name, StartLoc, LookupOrdinaryName);
   // Try to find operator delete/operator delete[] in class scope.
   LookupQualifiedName(Found, RD);
@@ -1935,10 +1935,10 @@ bool Sema::FindDeallocationFunction(SourceLocation StartLoc, CXXRecordDecl *RD,
 
     // Ignore template operator delete members from the check for a usual
     // deallocation function.
-    if (isa<FunctionTemplateDecl>(ND))
+    if (isa<SubprogramTemplateDecl>(ND))
       continue;
 
-    if (cast<CXXMethodDecl>(ND)->isUsualDeallocationFunction())
+    if (cast<CXXMethodDecl>(ND)->isUsualDeallocationSubprogram())
       Matches.push_back(F.getPair());
   }
 
@@ -1949,7 +1949,7 @@ bool Sema::FindDeallocationFunction(SourceLocation StartLoc, CXXRecordDecl *RD,
     if (Operator->isDeleted()) {
       if (Diagnose) {
         Diag(StartLoc, diag::err_deleted_function_use);
-        NoteDeletedFunction(Operator);
+        NoteDeletedSubprogram(Operator);
       }
       return true;
     }
@@ -2019,7 +2019,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
   // DR599 amends "pointer type" to "pointer to object type" in both cases.
 
   ExprResult Ex = Owned(ExE);
-  FunctionDecl *OperatorDelete = 0;
+  SubprogramDecl *OperatorDelete = 0;
   bool ArrayFormAsWritten = ArrayForm;
   bool UsualArrayDeleteWantsSize = false;
 
@@ -2041,7 +2041,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
       CXXRecordDecl *RD = cast<CXXRecordDecl>(Record->getDecl());
       std::pair<CXXRecordDecl::conversion_iterator,
                 CXXRecordDecl::conversion_iterator>
-        Conversions = RD->getVisibleConversionFunctions();
+        Conversions = RD->getVisibleConversionSubprograms();
       for (CXXRecordDecl::conversion_iterator
              I = Conversions.first, E = Conversions.second; I != E; ++I) {
         NamedDecl *D = I.getDecl();
@@ -2049,7 +2049,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
           D = cast<UsingShadowDecl>(D)->getTargetDecl();
 
         // Skip over templated conversion functions; they aren't considered.
-        if (isa<FunctionTemplateDecl>(D))
+        if (isa<SubprogramTemplateDecl>(D))
           continue;
 
         CXXConversionDecl *Conv = cast<CXXConversionDecl>(D);
@@ -2100,7 +2100,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
       // this, so we treat it as a warning unless we're in a SFINAE context.
       Diag(StartLoc, diag::ext_delete_void_ptr_operand)
         << Type << Ex.get()->getSourceRange();
-    } else if (Pointee->isFunctionType() || Pointee->isVoidType()) {
+    } else if (Pointee->isSubprogramType() || Pointee->isVoidType()) {
       return ExprError(Diag(StartLoc, diag::err_delete_operand)
         << Type << Ex.get()->getSourceRange());
     } else if (!Pointee->isDependentType()) {
@@ -2129,7 +2129,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
 
     if (PointeeRD) {
       if (!UseGlobal &&
-          FindDeallocationFunction(StartLoc, PointeeRD, DeleteName,
+          FindDeallocationSubprogram(StartLoc, PointeeRD, DeleteName,
                                    OperatorDelete))
         return ExprError();
 
@@ -2150,7 +2150,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
 
       if (!PointeeRD->hasIrrelevantDestructor())
         if (CXXDestructorDecl *Dtor = LookupDestructor(PointeeRD)) {
-          MarkFunctionReferenced(StartLoc,
+          MarkSubprogramReferenced(StartLoc,
                                     const_cast<CXXDestructorDecl*>(Dtor));
           DiagnoseUseOfDecl(Dtor, StartLoc);
         }
@@ -2195,7 +2195,7 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
         return ExprError();
     }
 
-    MarkFunctionReferenced(StartLoc, OperatorDelete);
+    MarkSubprogramReferenced(StartLoc, OperatorDelete);
     
     // Check access and ambiguity of operator delete and destructor.
     if (PointeeRD) {
@@ -2222,7 +2222,7 @@ ExprResult Sema::CheckConditionVariable(VarDecl *ConditionVar,
 
   // C++ [stmt.select]p2:
   //   The declarator shall not specify a function or an array.
-  if (T->isFunctionType())
+  if (T->isSubprogramType())
     return ExprError(Diag(ConditionVar->getLocation(),
                           diag::err_invalid_use_of_function_type)
                        << ConditionVar->getSourceRange());
@@ -2380,7 +2380,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
 
   case ImplicitConversionSequence::UserDefinedConversion: {
 
-      FunctionDecl *FD = ICS.UserDefined.ConversionFunction;
+      SubprogramDecl *FD = ICS.UserDefined.ConversionSubprogram;
       CastKind CastKind;
       QualType BeforeToType;
       assert(FD && "FIXME: aggregate initialization from init list");
@@ -2418,7 +2418,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
                                From->getLocStart(),
                                ToType.getNonReferenceType(),
                                CastKind, cast<CXXMethodDecl>(FD),
-                               ICS.UserDefined.FoundConversionFunction,
+                               ICS.UserDefined.FoundConversionSubprogram,
                                ICS.UserDefined.HadMultipleCandidates,
                                From);
 
@@ -2458,7 +2458,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
                                 const StandardConversionSequence& SCS,
                                 AssignmentAction Action, 
                                 CheckedConversionKind CCK) {
-  bool CStyle = (CCK == CCK_CStyleCast || CCK == CCK_FunctionalCast);
+  bool CStyle = (CCK == CCK_CStyleCast || CCK == CCK_SubprogramalCast);
   
   // Overall FIXME: we are recomputing too many types here and doing far too
   // much extra work. What this means is that we need to keep track of more
@@ -2494,7 +2494,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
   // Resolve overloaded function references.
   if (Context.hasSameType(FromType, Context.OverloadTy)) {
     DeclAccessPair Found;
-    FunctionDecl *Fn = ResolveAddressOfOverloadedFunction(From, ToType,
+    SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(From, ToType,
                                                           true, Found);
     if (!Fn)
       return ExprError();
@@ -2502,7 +2502,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
     if (DiagnoseUseOfDecl(Fn, From->getLocStart()))
       return ExprError();
 
-    From = FixOverloadedFunctionReference(From, Found, Fn);
+    From = FixOverloadedSubprogramReference(From, Found, Fn);
     FromType = From->getType();
   }
 
@@ -2527,9 +2527,9 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
                              VK_RValue, /*BasePath=*/0, CCK).take();
     break;
 
-  case ICK_Function_To_Pointer:
+  case ICK_Subprogram_To_Pointer:
     FromType = Context.getPointerType(FromType);
-    From = ImpCastExprToType(From, FromType, CK_FunctionToPointerDecay, 
+    From = ImpCastExprToType(From, FromType, CK_SubprogramToPointerDecay, 
                              VK_RValue, /*BasePath=*/0, CCK).take();
     break;
 
@@ -2784,7 +2784,7 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
 
   case ICK_Lvalue_To_Rvalue:
   case ICK_Array_To_Pointer:
-  case ICK_Function_To_Pointer:
+  case ICK_Subprogram_To_Pointer:
   case ICK_Qualification:
   case ICK_Num_Conversion_Kinds:
     llvm_unreachable("Improper second standard conversion");
@@ -2872,12 +2872,12 @@ static bool CheckUnaryTypeTraitTypeCompleteness(Sema &S,
   case UTT_IsPointer:
   case UTT_IsLvalueReference:
   case UTT_IsRvalueReference:
-  case UTT_IsMemberFunctionPointer:
+  case UTT_IsMemberSubprogramPointer:
   case UTT_IsMemberObjectPointer:
   case UTT_IsEnum:
   case UTT_IsUnion:
   case UTT_IsClass:
-  case UTT_IsFunction:
+  case UTT_IsSubprogram:
   case UTT_IsReference:
   case UTT_IsArithmetic:
   case UTT_IsFundamental:
@@ -2964,8 +2964,8 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
     return T->isLValueReferenceType();
   case UTT_IsRvalueReference:
     return T->isRValueReferenceType();
-  case UTT_IsMemberFunctionPointer:
-    return T->isMemberFunctionPointerType();
+  case UTT_IsMemberSubprogramPointer:
+    return T->isMemberSubprogramPointerType();
   case UTT_IsMemberObjectPointer:
     return T->isMemberDataPointerType();
   case UTT_IsEnum:
@@ -2974,8 +2974,8 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
     return T->isUnionType();
   case UTT_IsClass:
     return T->isClassType() || T->isStructureType() || T->isInterfaceType();
-  case UTT_IsFunction:
-    return T->isFunctionType();
+  case UTT_IsSubprogram:
+    return T->isSubprogramType();
 
     // Type trait expressions which correspond to the convenient composition
     // predicates in C++0x [meta.unary.comp].
@@ -3059,7 +3059,7 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
     // specifications.
     //
     //   1: http://gcc.gnu/.org/onlinedocs/gcc/Type-Traits.html
-    //   2: http://docwiki.embarcadero.com/RADStudio/XE/en/Type_Trait_Functions_(C%2B%2B0x)_Index
+    //   2: http://docwiki.embarcadero.com/RADStudio/XE/en/Type_Trait_Subprograms_(C%2B%2B0x)_Index
     //
     // Note that these builtins do not behave as documented in g++: if a class
     // has both a trivial and a non-trivial special member of a particular kind,
@@ -3156,14 +3156,14 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
         Res.suppressDiagnostics();
         for (LookupResult::iterator Op = Res.begin(), OpEnd = Res.end();
              Op != OpEnd; ++Op) {
-          if (isa<FunctionTemplateDecl>(*Op))
+          if (isa<SubprogramTemplateDecl>(*Op))
             continue;
           
           CXXMethodDecl *Operator = cast<CXXMethodDecl>(*Op);
           if (Operator->isCopyAssignmentOperator()) {
             FoundAssign = true;
-            const FunctionProtoType *CPT
-                = Operator->getType()->getAs<FunctionProtoType>();
+            const SubprogramProtoType *CPT
+                = Operator->getType()->getAs<SubprogramProtoType>();
             CPT = Self.ResolveExceptionSpec(KeyLoc, CPT);
             if (!CPT)
               return false;
@@ -3197,13 +3197,13 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
         // A template constructor is never a copy constructor.
         // FIXME: However, it may actually be selected at the actual overload
         // resolution point.
-        if (isa<FunctionTemplateDecl>(*Con))
+        if (isa<SubprogramTemplateDecl>(*Con))
           continue;
         CXXConstructorDecl *Constructor = cast<CXXConstructorDecl>(*Con);
         if (Constructor->isCopyConstructor(FoundTQs)) {
           FoundConstructor = true;
-          const FunctionProtoType *CPT
-              = Constructor->getType()->getAs<FunctionProtoType>();
+          const SubprogramProtoType *CPT
+              = Constructor->getType()->getAs<SubprogramProtoType>();
           CPT = Self.ResolveExceptionSpec(KeyLoc, CPT);
           if (!CPT)
             return false;
@@ -3234,12 +3234,12 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
       for (DeclContext::lookup_const_iterator Con = R.begin(),
            ConEnd = R.end(); Con != ConEnd; ++Con) {
         // FIXME: In C++0x, a constructor template can be a default constructor.
-        if (isa<FunctionTemplateDecl>(*Con))
+        if (isa<SubprogramTemplateDecl>(*Con))
           continue;
         CXXConstructorDecl *Constructor = cast<CXXConstructorDecl>(*Con);
         if (Constructor->isDefaultConstructor()) {
-          const FunctionProtoType *CPT
-              = Constructor->getType()->getAs<FunctionProtoType>();
+          const SubprogramProtoType *CPT
+              = Constructor->getType()->getAs<SubprogramProtoType>();
           CPT = Self.ResolveExceptionSpec(KeyLoc, CPT);
           if (!CPT)
             return false;
@@ -3261,7 +3261,7 @@ static bool EvaluateUnaryTypeTrait(Sema &Self, UnaryTypeTrait UTT,
 
     // These type trait expressions are modeled on the specifications for the
     // Embarcadero C++0x type trait functions:
-    //   http://docwiki.embarcadero.com/RADStudio/XE/en/Type_Trait_Functions_(C%2B%2B0x)_Index
+    //   http://docwiki.embarcadero.com/RADStudio/XE/en/Type_Trait_Subprograms_(C%2B%2B0x)_Index
   case UTT_IsCompleteType:
     // http://docwiki.embarcadero.com/RADStudio/XE/en/Is_complete_type_(typename_T_):
     //   Returns True if and only if T is a complete type at the point of the
@@ -3370,7 +3370,7 @@ static bool evaluateTypeTrait(Sema &S, TypeTrait Kind, SourceLocation KWLoc,
     ArgExprs.reserve(Args.size() - 1);
     for (unsigned I = 1, N = Args.size(); I != N; ++I) {
       QualType T = Args[I]->getType();
-      if (T->isObjectType() || T->isFunctionType())
+      if (T->isObjectType() || T->isSubprogramType())
         T = S.Context.getRValueReferenceType(T);
       OpaqueArgExprs.push_back(
         OpaqueValueExpr(Args[I]->getTypeLoc().getLocStart(), 
@@ -3516,8 +3516,8 @@ static bool EvaluateBinaryTypeTrait(Sema &Self, BinaryTypeTrait BTT,
     // of the appropriate type, which for this expression is identical to the
     // return statement (since NRVO doesn't apply).
 
-    // Functions aren't allowed to return function or array types.
-    if (RhsT->isFunctionType() || RhsT->isArrayType())
+    // Subprograms aren't allowed to return function or array types.
+    if (RhsT->isSubprogramType() || RhsT->isArrayType())
       return false;
 
     // A return statement in a void function must have void type.
@@ -3530,7 +3530,7 @@ static bool EvaluateBinaryTypeTrait(Sema &Self, BinaryTypeTrait BTT,
       return false;
 
     // Compute the result of add_rvalue_reference.
-    if (LhsT->isObjectType() || LhsT->isFunctionType())
+    if (LhsT->isObjectType() || LhsT->isSubprogramType())
       LhsT = Self.Context.getRValueReferenceType(LhsT);
 
     // Build a fake source and destination for initialization.
@@ -3581,9 +3581,9 @@ static bool EvaluateBinaryTypeTrait(Sema &Self, BinaryTypeTrait BTT,
 
     // Build expressions that emulate the effect of declval<T>() and 
     // declval<U>().
-    if (LhsT->isObjectType() || LhsT->isFunctionType())
+    if (LhsT->isObjectType() || LhsT->isSubprogramType())
       LhsT = Self.Context.getRValueReferenceType(LhsT);
-    if (RhsT->isObjectType() || RhsT->isFunctionType())
+    if (RhsT->isObjectType() || RhsT->isSubprogramType())
       RhsT = Self.Context.getRValueReferenceType(RhsT);
     OpaqueValueExpr Lhs(KeyLoc, LhsT.getNonLValueExprType(Self.Context),
                         Expr::getValueKindForType(LhsT));
@@ -3878,7 +3878,7 @@ QualType Sema::CheckPointerToMemberOperands(ExprResult &LHS, ExprResult &RHS,
   //   ref-qualifier &. In a ->* expression or in a .* expression whose object
   //   expression is an lvalue, the program is ill-formed if the second operand
   //   is a pointer to member function with ref-qualifier &&.
-  if (const FunctionProtoType *Proto = Result->getAs<FunctionProtoType>()) {
+  if (const SubprogramProtoType *Proto = Result->getAs<SubprogramProtoType>()) {
     switch (Proto->getRefQualifier()) {
     case RQ_None:
       // Do nothing
@@ -3905,7 +3905,7 @@ QualType Sema::CheckPointerToMemberOperands(ExprResult &LHS, ExprResult &RHS,
   //   operand is a pointer to a member function is a prvalue. The
   //   result of an ->* expression is an lvalue if its second operand
   //   is a pointer to data member and a prvalue otherwise.
-  if (Result->isFunctionType()) {
+  if (Result->isSubprogramType()) {
     VK = VK_RValue;
     return Context.BoundMemberTy;
   } else if (isIndirect) {
@@ -4021,7 +4021,7 @@ static bool FindConditionalOverload(Sema &Self, ExprResult &LHS, ExprResult &RHS
                                     CandidateSet);
 
   OverloadCandidateSet::iterator Best;
-  switch (CandidateSet.BestViableFunction(Self, QuestionLoc, Best)) {
+  switch (CandidateSet.BestViableSubprogram(Self, QuestionLoc, Best)) {
     case OR_Success: {
       // We found a match. Perform the conversions on the arguments and move on.
       ExprResult LHSRes =
@@ -4037,12 +4037,12 @@ static bool FindConditionalOverload(Sema &Self, ExprResult &LHS, ExprResult &RHS
       if (RHSRes.isInvalid())
         break;
       RHS = RHSRes;
-      if (Best->Function)
-        Self.MarkFunctionReferenced(QuestionLoc, Best->Function);
+      if (Best->Subprogram)
+        Self.MarkSubprogramReferenced(QuestionLoc, Best->Subprogram);
       return false;
     }
     
-    case OR_No_Viable_Function:
+    case OR_No_Viable_Subprogram:
 
       // Emit a better diagnostic if one of the expressions is a null pointer
       // constant and the other is a pointer type. In this case, the user most
@@ -4122,13 +4122,13 @@ QualType Sema::CXXCheckConditionalOperands(ExprResult &Cond, ExprResult &LHS,
   if (LVoid || RVoid) {
     //   ... then the [l2r] conversions are performed on the second and third
     //   operands ...
-    LHS = DefaultFunctionArrayLvalueConversion(LHS.take());
-    RHS = DefaultFunctionArrayLvalueConversion(RHS.take());
+    LHS = DefaultSubprogramArrayLvalueConversion(LHS.take());
+    RHS = DefaultSubprogramArrayLvalueConversion(RHS.take());
     if (LHS.isInvalid() || RHS.isInvalid())
       return QualType();
 
     // Finish off the lvalue-to-rvalue conversion by copy-initializing a
-    // temporary if necessary. DefaultFunctionArrayLvalueConversion doesn't
+    // temporary if necessary. DefaultSubprogramArrayLvalueConversion doesn't
     // do this part for us.
     ExprResult &NonVoid = LVoid ? RHS : LHS;
     if (NonVoid.get()->getType()->isRecordType() &&
@@ -4262,8 +4262,8 @@ QualType Sema::CXXCheckConditionalOperands(ExprResult &Cond, ExprResult &LHS,
   // C++11 [expr.cond]p6
   //   Lvalue-to-rvalue, array-to-pointer, and function-to-pointer standard
   //   conversions are performed on the second and third operands.
-  LHS = DefaultFunctionArrayLvalueConversion(LHS.take());
-  RHS = DefaultFunctionArrayLvalueConversion(RHS.take());
+  LHS = DefaultSubprogramArrayLvalueConversion(LHS.take());
+  RHS = DefaultSubprogramArrayLvalueConversion(RHS.take());
   if (LHS.isInvalid() || RHS.isInvalid())
     return QualType();
   LTy = LHS.get()->getType();
@@ -4624,7 +4624,7 @@ ExprResult Sema::MaybeBindToTemporary(Expr *E) {
       else if (const MemberPointerType *MemPtr = T->getAs<MemberPointerType>())
         T = MemPtr->getPointeeType();
       
-      const FunctionType *FTy = T->getAs<FunctionType>();
+      const SubprogramType *FTy = T->getAs<SubprogramType>();
       assert(FTy && "call to value not of function type?");
       ReturnsRetained = FTy->getExtInfo().getProducesResult();
 
@@ -4710,7 +4710,7 @@ ExprResult Sema::MaybeBindToTemporary(Expr *E) {
   CXXDestructorDecl *Destructor = IsDecltype ? 0 : LookupDestructor(RD);
 
   if (Destructor) {
-    MarkFunctionReferenced(E->getExprLoc(), Destructor);
+    MarkSubprogramReferenced(E->getExprLoc(), Destructor);
     CheckDestructorAccess(E->getExprLoc(), Destructor,
                           PDiag(diag::err_access_dtor_temp)
                             << E->getType());
@@ -4865,7 +4865,7 @@ ExprResult Sema::ActOnDecltypeExpression(Expr *E) {
     CXXDestructorDecl *Destructor = LookupDestructor(RD);
     Temp->setDestructor(Destructor);
 
-    MarkFunctionReferenced(Bind->getExprLoc(), Destructor);
+    MarkSubprogramReferenced(Bind->getExprLoc(), Destructor);
     CheckDestructorAccess(Bind->getExprLoc(), Destructor,
                           PDiag(diag::err_access_dtor_temp)
                             << Bind->getType());
@@ -4964,7 +4964,7 @@ Sema::ActOnStartCXXMemberReference(Scope *S, Expr *Base, SourceLocation OpLoc,
   //   be of complete type for purposes of class member access (5.2.5) outside 
   //   the member function body.
   if (!BaseType->isDependentType() &&
-      !isThisOutsideMemberFunctionBody(BaseType) &&
+      !isThisOutsideMemberSubprogramBody(BaseType) &&
       RequireCompleteType(OpLoc, BaseType, diag::err_incomplete_member_access))
     return ExprError();
 
@@ -5333,7 +5333,7 @@ ExprResult Sema::BuildCXXMemberCallExpr(Expr *E, NamedDecl *FoundDecl,
   ExprValueKind VK = Expr::getValueKindForType(ResultType);
   ResultType = ResultType.getNonLValueExprType(Context);
 
-  MarkFunctionReferenced(Exp.get()->getLocStart(), Method);
+  MarkSubprogramReferenced(Exp.get()->getLocStart(), Method);
   CXXMemberCallExpr *CE =
     new (Context) CXXMemberCallExpr(Context, ME, MultiExprArg(), ResultType, VK,
                                     Exp.get()->getLocEnd());
@@ -5425,8 +5425,8 @@ ExprResult Sema::IgnoredValueConversions(Expr *E) {
     // are r-values, but we still want to do function-to-pointer decay
     // on them.  This is both technically correct and convenient for
     // some clients.
-    if (!getLangOpts().CPlusPlus && E->getType()->isFunctionType())
-      return DefaultFunctionArrayConversion(E);
+    if (!getLangOpts().CPlusPlus && E->getType()->isSubprogramType())
+      return DefaultSubprogramArrayConversion(E);
 
     return Owned(E);
   }
@@ -5456,7 +5456,7 @@ ExprResult Sema::IgnoredValueConversions(Expr *E) {
     }
   }
 
-  ExprResult Res = DefaultFunctionArrayLvalueConversion(E);
+  ExprResult Res = DefaultSubprogramArrayLvalueConversion(E);
   if (Res.isInvalid())
     return Owned(E);
   E = Res.take();

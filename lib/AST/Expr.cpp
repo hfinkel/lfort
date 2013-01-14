@@ -250,7 +250,7 @@ static void computeDeclRefDependence(ASTContext &Ctx, NamedDecl *D, QualType T,
   
   //  (TD)  - a conversion-function-id that specifies a dependent type
   if (D->getDeclName().getNameKind() 
-                                == DeclarationName::CXXConversionFunctionName) {
+                                == DeclarationName::CXXConversionSubprogramName) {
     QualType T = D->getDeclName().getCXXNameType();
     if (T->isDependentType()) {
       TypeDependent = true;
@@ -461,15 +461,15 @@ SourceLocation DeclRefExpr::getLocEnd() const {
 std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
   ASTContext &Context = CurrentDecl->getASTContext();
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(CurrentDecl)) {
-    if (IT != PrettyFunction && IT != PrettyFunctionNoVirtual)
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CurrentDecl)) {
+    if (IT != PrettySubprogram && IT != PrettySubprogramNoVirtual)
       return FD->getNameAsString();
 
     SmallString<256> Name;
     llvm::raw_svector_ostream Out(Name);
 
     if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD)) {
-      if (MD->isVirtual() && IT != PrettyFunctionNoVirtual)
+      if (MD->isVirtual() && IT != PrettySubprogramNoVirtual)
         Out << "virtual ";
       if (MD->isStatic())
         Out << "static ";
@@ -479,13 +479,13 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
     std::string Proto = FD->getQualifiedNameAsString(Policy);
     llvm::raw_string_ostream POut(Proto);
 
-    const FunctionDecl *Decl = FD;
-    if (const FunctionDecl* Pattern = FD->getTemplateInstantiationPattern())
+    const SubprogramDecl *Decl = FD;
+    if (const SubprogramDecl* Pattern = FD->getTemplateInstantiationPattern())
       Decl = Pattern;
-    const FunctionType *AFT = Decl->getType()->getAs<FunctionType>();
-    const FunctionProtoType *FT = 0;
+    const SubprogramType *AFT = Decl->getType()->getAs<SubprogramType>();
+    const SubprogramProtoType *FT = 0;
     if (FD->hasWrittenPrototype())
-      FT = dyn_cast<FunctionProtoType>(AFT);
+      FT = dyn_cast<SubprogramProtoType>(AFT);
 
     POut << "(";
     if (FT) {
@@ -502,7 +502,7 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
     POut << ")";
 
     if (const CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(FD)) {
-      const FunctionType *FT = MD->getType()->castAs<FunctionType>();
+      const SubprogramType *FT = MD->getType()->castAs<SubprogramType>();
       if (FT->isConst())
         POut << " const";
       if (FT->isVolatile())
@@ -542,7 +542,7 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
       }
     }
 
-    FunctionTemplateSpecializationInfo *FSI 
+    SubprogramTemplateSpecializationInfo *FSI 
                                           = FD->getTemplateSpecializationInfo();
     if (FSI && !FSI->isExplicitSpecialization()) {
       const TemplateParameterList* Params 
@@ -597,7 +597,7 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
     Out.flush();
     return Name.str().str();
   }
-  if (isa<TranslationUnitDecl>(CurrentDecl) && IT == PrettyFunction) {
+  if (isa<TranslationUnitDecl>(CurrentDecl) && IT == PrettySubprogram) {
     // __PRETTY_FUNCTION__ -> "top level", the others produce an empty string.
     return "top level";
   }
@@ -1080,8 +1080,8 @@ Decl *CallExpr::getCalleeDecl() {
   return 0;
 }
 
-FunctionDecl *CallExpr::getDirectCallee() {
-  return dyn_cast_or_null<FunctionDecl>(getCalleeDecl());
+SubprogramDecl *CallExpr::getDirectCallee() {
+  return dyn_cast_or_null<SubprogramDecl>(getCalleeDecl());
 }
 
 /// setNumArgs - This changes the number of arguments present in this call.
@@ -1127,7 +1127,7 @@ unsigned CallExpr::isBuiltinCall() const {
   if (!DRE)
     return 0;
 
-  const FunctionDecl *FDecl = dyn_cast<FunctionDecl>(DRE->getDecl());
+  const SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(DRE->getDecl());
   if (!FDecl)
     return 0;
 
@@ -1147,7 +1147,7 @@ QualType CallExpr::getCallReturnType() const {
     // This should never be overloaded and so should never return null.
     CalleeType = Expr::findBoundMemberType(getCallee());
     
-  const FunctionType *FnType = CalleeType->castAs<FunctionType>();
+  const SubprogramType *FnType = CalleeType->castAs<SubprogramType>();
   return FnType->getResultType();
 }
 
@@ -1361,9 +1361,9 @@ void CastExpr::CheckCastConsistency() const {
     assert(getSubExpr()->getType()->isBlockPointerType());
     goto CheckNoBasePath;
 
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
     assert(getType()->isPointerType());
-    assert(getSubExpr()->getType()->isFunctionType());
+    assert(getSubExpr()->getType()->isSubprogramType());
     goto CheckNoBasePath;
 
   // These should not have an inheritance path.
@@ -1441,8 +1441,8 @@ const char *CastExpr::getCastKindName() const {
     return "ToUnion";
   case CK_ArrayToPointerDecay:
     return "ArrayToPointerDecay";
-  case CK_FunctionToPointerDecay:
-    return "FunctionToPointerDecay";
+  case CK_SubprogramToPointerDecay:
+    return "SubprogramToPointerDecay";
   case CK_NullToMemberPointer:
     return "NullToMemberPointer";
   case CK_NullToPointer:
@@ -1821,12 +1821,12 @@ SourceLocation InitListExpr::getLocEnd() const {
   return End;
 }
 
-/// getFunctionType - Return the underlying function type for this block.
+/// getSubprogramType - Return the underlying function type for this block.
 ///
-const FunctionProtoType *BlockExpr::getFunctionType() const {
+const SubprogramProtoType *BlockExpr::getSubprogramType() const {
   // The block pointer is never sugared, but the function type might be.
   return cast<BlockPointerType>(getType())
-           ->getPointeeType()->castAs<FunctionProtoType>();
+           ->getPointeeType()->castAs<SubprogramProtoType>();
 }
 
 SourceLocation BlockExpr::getCaretLocation() const {
@@ -2081,7 +2081,7 @@ bool Expr::isUnusedResultAWarning(const Expr *&WarnE, SourceLocation &Loc,
     R1 = getSourceRange();
     return true;
   }
-  case CXXFunctionalCastExprClass:
+  case CXXSubprogramalCastExprClass:
   case CStyleCastExprClass: {
     // Ignore an explicit cast to void unless the operand is a non-trivial
     // volatile lvalue.
@@ -2110,8 +2110,8 @@ bool Expr::isUnusedResultAWarning(const Expr *&WarnE, SourceLocation &Loc,
       return CE->getSubExpr()->isUnusedResultAWarning(WarnE, Loc, R1, R2, Ctx);
 
     WarnE = this;
-    if (const CXXFunctionalCastExpr *CXXCE =
-            dyn_cast<CXXFunctionalCastExpr>(this)) {
+    if (const CXXSubprogramalCastExpr *CXXCE =
+            dyn_cast<CXXSubprogramalCastExpr>(this)) {
       Loc = CXXCE->getTypeBeginLoc();
       R1 = CXXCE->getSubExpr()->getSourceRange();
     } else {
@@ -2190,10 +2190,10 @@ bool Expr::isOBJCGCCandidate(ASTContext &Ctx) const {
   }
 }
 
-bool Expr::isBoundMemberFunction(ASTContext &Ctx) const {
+bool Expr::isBoundMemberSubprogram(ASTContext &Ctx) const {
   if (isTypeDependent())
     return false;
-  return ClassifyLValue(Ctx) == Expr::LV_MemberFunction;
+  return ClassifyLValue(Ctx) == Expr::LV_MemberSubprogram;
 }
 
 QualType Expr::findBoundMemberType(const Expr *expr) {
@@ -2212,7 +2212,7 @@ QualType Expr::findBoundMemberType(const Expr *expr) {
   if (const BinaryOperator *op = dyn_cast<BinaryOperator>(expr)) {
     QualType type = op->getRHS()->getType()->castAs<MemberPointerType>()
                       ->getPointeeType();
-    assert(type->isFunctionType());
+    assert(type->isSubprogramType());
     return type;
   }
 
@@ -2655,7 +2655,7 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
       return Exp->getSubExpr()->isConstantInitializer(Ctx, false);
     break;
   }
-  case CXXFunctionalCastExprClass:
+  case CXXSubprogramalCastExprClass:
   case CXXStaticCastExprClass:
   case ImplicitCastExprClass:
   case CStyleCastExprClass: {
@@ -2713,7 +2713,7 @@ bool Expr::HasSideEffects(const ASTContext &Ctx) const {
   case UnresolvedMemberExprClass:
   case PackExpansionExprClass:
   case SubstNonTypeTemplateParmPackExprClass:
-  case FunctionParmPackExprClass:
+  case SubprogramParmPackExprClass:
     llvm_unreachable("shouldn't see dependent / unresolved nodes here");
 
   case DeclRefExprClass:
@@ -2822,7 +2822,7 @@ bool Expr::HasSideEffects(const ASTContext &Ctx) const {
   case CXXStaticCastExprClass:
   case CXXReinterpretCastExprClass:
   case CXXConstCastExprClass:
-  case CXXFunctionalCastExprClass: {
+  case CXXSubprogramalCastExprClass: {
     const CastExpr *CE = cast<CastExpr>(this);
     if (CE->getCastKind() == CK_LValueToRValue &&
         CE->getSubExpr()->getType().isVolatileQualified())

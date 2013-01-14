@@ -22,7 +22,7 @@ enum TemplateNameKind {
   TNK_Non_template = 0,
   /// The name refers to a function template or a set of overloaded
   /// functions that includes at least one function template.
-  TNK_Function_template,
+  TNK_Subprogram_template,
   /// The name refers to a template whose specialization produces a
   /// type. The template itself could be a class template, template
   /// template parameter, or C++0x template alias.

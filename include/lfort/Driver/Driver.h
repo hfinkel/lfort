@@ -213,7 +213,7 @@ public:
   }
 
   /// @}
-  /// @name Primary Functionality
+  /// @name Primary Subprogramality
   /// @{
 
   /// BuildCompilation - Construct a compilation object for a command

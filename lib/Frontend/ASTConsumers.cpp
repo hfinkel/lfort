@@ -148,7 +148,7 @@ namespace {
 }
 
 void ASTViewer::HandleTopLevelSingleDecl(Decl *D) {
-  if (isa<FunctionDecl>(D) || isa<ObjCMethodDecl>(D)) {
+  if (isa<SubprogramDecl>(D) || isa<ObjCMethodDecl>(D)) {
     D->print(llvm::errs());
   
     if (Stmt *Body = D->getBody()) {
@@ -244,8 +244,8 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
   case Decl::Block:
     Out << "[block]";
     break;
-  case Decl::Function: {
-    const FunctionDecl* FD = cast<FunctionDecl>(DC);
+  case Decl::Subprogram: {
+    const SubprogramDecl* FD = cast<SubprogramDecl>(DC);
     if (FD->doesThisDeclarationHaveABody())
       Out << "[function] ";
     else
@@ -254,7 +254,7 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
     // Print the parameters.
     Out << "(";
     bool PrintComma = false;
-    for (FunctionDecl::param_const_iterator I = FD->param_begin(),
+    for (SubprogramDecl::param_const_iterator I = FD->param_begin(),
            E = FD->param_end(); I != E; ++I) {
       if (PrintComma)
         Out << ", ";
@@ -277,7 +277,7 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
     // Print the parameters.
     Out << "(";
     bool PrintComma = false;
-    for (FunctionDecl::param_const_iterator I = D->param_begin(),
+    for (SubprogramDecl::param_const_iterator I = D->param_begin(),
            E = D->param_end(); I != E; ++I) {
       if (PrintComma)
         Out << ", ";
@@ -307,7 +307,7 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
     // Print the parameters.
     Out << "(";
     bool PrintComma = false;
-    for (FunctionDecl::param_const_iterator I = D->param_begin(),
+    for (SubprogramDecl::param_const_iterator I = D->param_begin(),
            E = D->param_end(); I != E; ++I) {
       if (PrintComma)
         Out << ", ";
@@ -383,7 +383,7 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
     case Decl::ObjCCategoryImpl:
     case Decl::LinkageSpec:
     case Decl::Block:
-    case Decl::Function:
+    case Decl::Subprogram:
     case Decl::CXXMethod:
     case Decl::CXXConstructor:
     case Decl::CXXDestructor:
@@ -439,8 +439,8 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
       Out << "<objc property> " << *OPD << '\n';
       break;
     }
-    case Decl::FunctionTemplate: {
-      FunctionTemplateDecl* FTD = cast<FunctionTemplateDecl>(*I);
+    case Decl::SubprogramTemplate: {
+      SubprogramTemplateDecl* FTD = cast<SubprogramTemplateDecl>(*I);
       Out << "<function template> " << *FTD << '\n';
       break;
     }

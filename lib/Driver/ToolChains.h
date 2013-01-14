@@ -131,7 +131,7 @@ public:
   virtual bool isPICDefaultForced() const;
 
 protected:
-  /// \name ToolChain Implementation Helper Functions
+  /// \name ToolChain Implementation Helper Subprograms
   /// @{
 
   /// \brief Check whether the target triple's architecture is 64-bits.

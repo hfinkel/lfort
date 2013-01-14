@@ -85,7 +85,7 @@ Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
     NSDictionaryDecl(0), DictionaryWithObjectsMethod(0),
     GlobalNewDeleteDeclared(false), 
     TUKind(TUKind),
-    NumSFINAEErrors(0), InFunctionDeclarator(0),
+    NumSFINAEErrors(0), InSubprogramDeclarator(0),
     AccessCheckingSFINAE(false), InNonInstantiationSFINAEContext(false),
     NonInstantiationEntries(0), ArgumentPackSubstitutionIndex(-1),
     CurrentInstantiationScope(0), TyposCorrected(0),
@@ -111,7 +111,7 @@ Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
         ExpressionEvaluationContextRecord(PotentiallyEvaluated, 0,
                                           false, 0, false));
 
-  FunctionScopes.push_back(new FunctionScopeInfo(Diags));
+  SubprogramScopes.push_back(new SubprogramScopeInfo(Diags));
 }
 
 void Sema::Initialize() {
@@ -177,10 +177,10 @@ Sema::~Sema() {
   delete TheTargetAttributesSema;
   MSStructPragmaOn = false;
   // Kill all the active scopes.
-  for (unsigned I = 1, E = FunctionScopes.size(); I != E; ++I)
-    delete FunctionScopes[I];
-  if (FunctionScopes.size() == 1)
-    delete FunctionScopes[0];
+  for (unsigned I = 1, E = SubprogramScopes.size(); I != E; ++I)
+    delete SubprogramScopes[I];
+  if (SubprogramScopes.size() == 1)
+    delete SubprogramScopes[0];
   
   // Tell the SemaConsumer to forget about us; we're going out of scope.
   if (SemaConsumer *SC = dyn_cast<SemaConsumer>(&Consumer))
@@ -203,7 +203,7 @@ Sema::~Sema() {
 bool Sema::makeUnavailableInSystemHeader(SourceLocation loc,
                                          StringRef msg) {
   // If we're not in a function, it's an error.
-  FunctionDecl *fn = dyn_cast<FunctionDecl>(CurContext);
+  SubprogramDecl *fn = dyn_cast<SubprogramDecl>(CurContext);
   if (!fn) return false;
 
   // If we're in template instantiation, it's an error.
@@ -269,7 +269,7 @@ ExprResult Sema::ImpCastExprToType(Expr *E, QualType Ty,
       assert(0 && "can't implicitly cast lvalue to rvalue with this cast kind");
     case CK_LValueToRValue:
     case CK_ArrayToPointerDecay:
-    case CK_FunctionToPointerDecay:
+    case CK_SubprogramToPointerDecay:
     case CK_ToVoid:
       break;
     }
@@ -335,10 +335,10 @@ static bool ShouldRemoveFromUnused(Sema *SemaRef, const DeclaratorDecl *D) {
   if (D->isUsed() || D->getMostRecentDecl()->isUsed())
     return true;
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // UnusedFileScopedDecls stores the first declaration.
     // The declaration may have become definition so check again.
-    const FunctionDecl *DeclToCheck;
+    const SubprogramDecl *DeclToCheck;
     if (FD->hasBody(DeclToCheck))
       return !SemaRef->ShouldWarnIfUnusedFileScopedDecl(DeclToCheck);
 
@@ -403,7 +403,7 @@ static void checkUndefinedInternals(Sema &S) {
     // __attribute__((weakref)) is basically a definition.
     if (decl->hasAttr<WeakRefAttr>()) continue;
 
-    if (FunctionDecl *fn = dyn_cast<FunctionDecl>(decl)) {
+    if (SubprogramDecl *fn = dyn_cast<SubprogramDecl>(decl)) {
       if (fn->isPure() || fn->hasBody())
         continue;
     } else {
@@ -468,7 +468,7 @@ static bool MethodsAndNestedClassesComplete(const CXXRecordDecl *RD,
        I != E && Complete; ++I) {
     if (const CXXMethodDecl *M = dyn_cast<CXXMethodDecl>(*I))
       Complete = M->isDefined() || (M->isPure() && !isa<CXXDestructorDecl>(M));
-    else if (const FunctionTemplateDecl *F = dyn_cast<FunctionTemplateDecl>(*I))
+    else if (const SubprogramTemplateDecl *F = dyn_cast<SubprogramTemplateDecl>(*I))
       Complete = F->getTemplatedDecl()->isDefined();
     else if (const CXXRecordDecl *R = dyn_cast<CXXRecordDecl>(*I)) {
       if (R->isInjectedClassName())
@@ -510,8 +510,8 @@ static bool IsRecordFullyDefined(const CXXRecordDecl *RD,
         Complete = false;
     } else {
       // Friend functions are available through the NamedDecl of FriendDecl.
-      if (const FunctionDecl *FD =
-          dyn_cast<FunctionDecl>((*I)->getFriendDecl()))
+      if (const SubprogramDecl *FD =
+          dyn_cast<SubprogramDecl>((*I)->getFriendDecl()))
         Complete = FD->isDefined();
       else
         // This is a template friend, give up.
@@ -547,9 +547,9 @@ void Sema::ActOnEndOfTranslationUnit() {
          I != E; ++I) {
       assert(!(*I)->isDependentType() &&
              "Should not see dependent types here!");
-      if (const CXXMethodDecl *KeyFunction = Context.getKeyFunction(*I)) {
-        const FunctionDecl *Definition = 0;
-        if (KeyFunction->hasBody(Definition))
+      if (const CXXMethodDecl *KeySubprogram = Context.getKeySubprogram(*I)) {
+        const SubprogramDecl *Definition = 0;
+        if (KeySubprogram->hasBody(Definition))
           MarkVTableUsed(Definition->getLocation(), *I, true);
       }
     }
@@ -699,8 +699,8 @@ void Sema::ActOnEndOfTranslationUnit() {
       if (ShouldRemoveFromUnused(this, *I))
         continue;
       
-      if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(*I)) {
-        const FunctionDecl *DiagD;
+      if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(*I)) {
+        const SubprogramDecl *DiagD;
         if (!FD->hasBody(DiagD))
           DiagD = FD;
         if (DiagD->isDeleted())
@@ -774,7 +774,7 @@ void Sema::ActOnEndOfTranslationUnit() {
 // Helper functions.
 //===----------------------------------------------------------------------===//
 
-DeclContext *Sema::getFunctionLevelDeclContext() {
+DeclContext *Sema::getSubprogramLevelDeclContext() {
   DeclContext *DC = CurContext;
 
   while (true) {
@@ -791,22 +791,22 @@ DeclContext *Sema::getFunctionLevelDeclContext() {
   return DC;
 }
 
-/// getCurFunctionDecl - If inside of a function body, this returns a pointer
+/// getCurSubprogramDecl - If inside of a function body, this returns a pointer
 /// to the function decl for the function being parsed.  If we're currently
 /// in a 'block', this returns the containing context.
-FunctionDecl *Sema::getCurFunctionDecl() {
-  DeclContext *DC = getFunctionLevelDeclContext();
-  return dyn_cast<FunctionDecl>(DC);
+SubprogramDecl *Sema::getCurSubprogramDecl() {
+  DeclContext *DC = getSubprogramLevelDeclContext();
+  return dyn_cast<SubprogramDecl>(DC);
 }
 
 ObjCMethodDecl *Sema::getCurMethodDecl() {
-  DeclContext *DC = getFunctionLevelDeclContext();
+  DeclContext *DC = getSubprogramLevelDeclContext();
   return dyn_cast<ObjCMethodDecl>(DC);
 }
 
-NamedDecl *Sema::getCurFunctionOrMethodDecl() {
-  DeclContext *DC = getFunctionLevelDeclContext();
-  if (isa<ObjCMethodDecl>(DC) || isa<FunctionDecl>(DC))
+NamedDecl *Sema::getCurSubprogramOrMethodDecl() {
+  DeclContext *DC = getSubprogramLevelDeclContext();
+  if (isa<ObjCMethodDecl>(DC) || isa<SubprogramDecl>(DC))
     return cast<NamedDecl>(DC);
   return 0;
 }
@@ -972,33 +972,33 @@ Scope *Sema::getScopeForContext(DeclContext *Ctx) {
 }
 
 /// \brief Enter a new function scope
-void Sema::PushFunctionScope() {
-  if (FunctionScopes.size() == 1) {
+void Sema::PushSubprogramScope() {
+  if (SubprogramScopes.size() == 1) {
     // Use the "top" function scope rather than having to allocate
     // memory for a new scope.
-    FunctionScopes.back()->Clear();
-    FunctionScopes.push_back(FunctionScopes.back());
+    SubprogramScopes.back()->Clear();
+    SubprogramScopes.push_back(SubprogramScopes.back());
     return;
   }
   
-  FunctionScopes.push_back(new FunctionScopeInfo(getDiagnostics()));
+  SubprogramScopes.push_back(new SubprogramScopeInfo(getDiagnostics()));
 }
 
 void Sema::PushBlockScope(Scope *BlockScope, BlockDecl *Block) {
-  FunctionScopes.push_back(new BlockScopeInfo(getDiagnostics(),
+  SubprogramScopes.push_back(new BlockScopeInfo(getDiagnostics(),
                                               BlockScope, Block));
 }
 
 void Sema::PushLambdaScope(CXXRecordDecl *Lambda, 
                            CXXMethodDecl *CallOperator) {
-  FunctionScopes.push_back(new LambdaScopeInfo(getDiagnostics(), Lambda,
+  SubprogramScopes.push_back(new LambdaScopeInfo(getDiagnostics(), Lambda,
                                                CallOperator));
 }
 
-void Sema::PopFunctionScopeInfo(const AnalysisBasedWarnings::Policy *WP,
+void Sema::PopSubprogramScopeInfo(const AnalysisBasedWarnings::Policy *WP,
                                 const Decl *D, const BlockExpr *blkExpr) {
-  FunctionScopeInfo *Scope = FunctionScopes.pop_back_val();  
-  assert(!FunctionScopes.empty() && "mismatched push/pop!");
+  SubprogramScopeInfo *Scope = SubprogramScopes.pop_back_val();  
+  assert(!SubprogramScopes.empty() && "mismatched push/pop!");
   
   // Issue any analysis-based warnings.
   if (WP && D)
@@ -1013,40 +1013,40 @@ void Sema::PopFunctionScopeInfo(const AnalysisBasedWarnings::Policy *WP,
     }
   }
 
-  if (FunctionScopes.back() != Scope) {
+  if (SubprogramScopes.back() != Scope) {
     delete Scope;
   }
 }
 
 void Sema::PushCompoundScope() {
-  getCurFunction()->CompoundScopes.push_back(CompoundScopeInfo());
+  getCurSubprogram()->CompoundScopes.push_back(CompoundScopeInfo());
 }
 
 void Sema::PopCompoundScope() {
-  FunctionScopeInfo *CurFunction = getCurFunction();
-  assert(!CurFunction->CompoundScopes.empty() && "mismatched push/pop");
+  SubprogramScopeInfo *CurSubprogram = getCurSubprogram();
+  assert(!CurSubprogram->CompoundScopes.empty() && "mismatched push/pop");
 
-  CurFunction->CompoundScopes.pop_back();
+  CurSubprogram->CompoundScopes.pop_back();
 }
 
 /// \brief Determine whether any errors occurred within this function/method/
 /// block.
-bool Sema::hasAnyUnrecoverableErrorsInThisFunction() const {
-  return getCurFunction()->ErrorTrap.hasUnrecoverableErrorOccurred();
+bool Sema::hasAnyUnrecoverableErrorsInThisSubprogram() const {
+  return getCurSubprogram()->ErrorTrap.hasUnrecoverableErrorOccurred();
 }
 
 BlockScopeInfo *Sema::getCurBlock() {
-  if (FunctionScopes.empty())
+  if (SubprogramScopes.empty())
     return 0;
   
-  return dyn_cast<BlockScopeInfo>(FunctionScopes.back());  
+  return dyn_cast<BlockScopeInfo>(SubprogramScopes.back());  
 }
 
 LambdaScopeInfo *Sema::getCurLambda() {
-  if (FunctionScopes.empty())
+  if (SubprogramScopes.empty())
     return 0;
   
-  return dyn_cast<LambdaScopeInfo>(FunctionScopes.back());  
+  return dyn_cast<LambdaScopeInfo>(SubprogramScopes.back());  
 }
 
 void Sema::ActOnComment(SourceRange Comment) {
@@ -1128,8 +1128,8 @@ bool Sema::isExprCallable(const Expr &E, QualType &ZeroArgCallReturnTy,
 
       // Check whether the function is a non-template which takes no
       // arguments.
-      if (const FunctionDecl *OverloadDecl
-            = dyn_cast<FunctionDecl>((*it)->getUnderlyingDecl())) {
+      if (const SubprogramDecl *OverloadDecl
+            = dyn_cast<SubprogramDecl>((*it)->getUnderlyingDecl())) {
         if (OverloadDecl->getMinRequiredArguments() == 0)
           ZeroArgCallReturnTy = OverloadDecl->getResultType();
       }
@@ -1143,33 +1143,33 @@ bool Sema::isExprCallable(const Expr &E, QualType &ZeroArgCallReturnTy,
   }
 
   if (const DeclRefExpr *DeclRef = dyn_cast<DeclRefExpr>(E.IgnoreParens())) {
-    if (const FunctionDecl *Fun = dyn_cast<FunctionDecl>(DeclRef->getDecl())) {
+    if (const SubprogramDecl *Fun = dyn_cast<SubprogramDecl>(DeclRef->getDecl())) {
       if (Fun->getMinRequiredArguments() == 0)
         ZeroArgCallReturnTy = Fun->getResultType();
       return true;
     }
   }
 
-  // We don't have an expression that's convenient to get a FunctionDecl from,
+  // We don't have an expression that's convenient to get a SubprogramDecl from,
   // but we can at least check if the type is "function of 0 arguments".
   QualType ExprTy = E.getType();
-  const FunctionType *FunTy = NULL;
+  const SubprogramType *FunTy = NULL;
   QualType PointeeTy = ExprTy->getPointeeType();
   if (!PointeeTy.isNull())
-    FunTy = PointeeTy->getAs<FunctionType>();
+    FunTy = PointeeTy->getAs<SubprogramType>();
   if (!FunTy)
-    FunTy = ExprTy->getAs<FunctionType>();
+    FunTy = ExprTy->getAs<SubprogramType>();
   if (!FunTy && ExprTy == Context.BoundMemberTy) {
     // Look for the bound-member type.  If it's still overloaded, give up,
     // although we probably should have fallen into the OverloadExpr case above
     // if we actually have an overloaded bound member.
     QualType BoundMemberTy = Expr::findBoundMemberType(&E);
     if (!BoundMemberTy.isNull())
-      FunTy = BoundMemberTy->castAs<FunctionType>();
+      FunTy = BoundMemberTy->castAs<SubprogramType>();
   }
 
-  if (const FunctionProtoType *FPT =
-      dyn_cast_or_null<FunctionProtoType>(FunTy)) {
+  if (const SubprogramProtoType *FPT =
+      dyn_cast_or_null<SubprogramProtoType>(FunTy)) {
     if (FPT->getNumArgs() == 0)
       ZeroArgCallReturnTy = FunTy->getResultType();
     return true;
@@ -1221,7 +1221,7 @@ static void notePlausibleOverloads(Sema &S, SourceLocation Loc,
   UnresolvedSet<2> PlausibleOverloads;
   for (OverloadExpr::decls_iterator It = Overloads.begin(),
          DeclsEnd = Overloads.end(); It != DeclsEnd; ++It) {
-    const FunctionDecl *OverloadDecl = cast<FunctionDecl>(*It);
+    const SubprogramDecl *OverloadDecl = cast<SubprogramDecl>(*It);
     QualType OverloadResultTy = OverloadDecl->getResultType();
     if (IsPlausibleResult(OverloadResultTy))
       PlausibleOverloads.addDecl(It.getDecl());

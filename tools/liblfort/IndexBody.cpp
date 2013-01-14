@@ -129,7 +129,7 @@ public:
   }
 
   bool VisitDeclStmt(DeclStmt *S) {
-    if (IndexCtx.shouldIndexFunctionLocalSymbols()) {
+    if (IndexCtx.shouldIndexSubprogramLocalSymbols()) {
       IndexCtx.indexDeclGroupRef(S->getDeclGroup());
       return true;
     }
@@ -139,7 +139,7 @@ public:
       const Decl *D = *I;
       if (!D)
         continue;
-      if (!IndexCtx.isFunctionLocalDecl(D))
+      if (!IndexCtx.isSubprogramLocalDecl(D))
         IndexCtx.indexTopLevelDecl(D);
     }
 
@@ -150,7 +150,7 @@ public:
     if (C.capturesThis())
       return true;
 
-    if (IndexCtx.shouldIndexFunctionLocalSymbols())
+    if (IndexCtx.shouldIndexSubprogramLocalSymbols())
       IndexCtx.handleReference(C.getCapturedVar(), C.getLocation(),
                                Parent, ParentDC);
     return true;

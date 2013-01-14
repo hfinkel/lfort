@@ -31,21 +31,21 @@ using namespace sema;
 /// These constants match the enumerated choices of
 /// warn_attribute_wrong_decl_type and err_attribute_wrong_decl_type.
 enum AttributeDeclKind {
-  ExpectedFunction,
+  ExpectedSubprogram,
   ExpectedUnion,
-  ExpectedVariableOrFunction,
-  ExpectedFunctionOrMethod,
+  ExpectedVariableOrSubprogram,
+  ExpectedSubprogramOrMethod,
   ExpectedParameter,
-  ExpectedFunctionMethodOrBlock,
-  ExpectedFunctionMethodOrClass,
-  ExpectedFunctionMethodOrParameter,
+  ExpectedSubprogramMethodOrBlock,
+  ExpectedSubprogramMethodOrClass,
+  ExpectedSubprogramMethodOrParameter,
   ExpectedClass,
   ExpectedVariable,
   ExpectedMethod,
-  ExpectedVariableFunctionOrLabel,
+  ExpectedVariableSubprogramOrLabel,
   ExpectedFieldOrGlobalVar,
   ExpectedStruct,
-  ExpectedVariableFunctionOrTag,
+  ExpectedVariableSubprogramOrTag,
   ExpectedTLSVar
 };
 
@@ -53,7 +53,7 @@ enum AttributeDeclKind {
 //  Helper functions
 //===----------------------------------------------------------------------===//
 
-static const FunctionType *getFunctionType(const Decl *D,
+static const SubprogramType *getSubprogramType(const Decl *D,
                                            bool blocksToo = true) {
   QualType Ty;
   if (const ValueDecl *decl = dyn_cast<ValueDecl>(D))
@@ -65,35 +65,35 @@ static const FunctionType *getFunctionType(const Decl *D,
   else
     return 0;
 
-  if (Ty->isFunctionPointerType())
+  if (Ty->isSubprogramPointerType())
     Ty = Ty->getAs<PointerType>()->getPointeeType();
   else if (blocksToo && Ty->isBlockPointerType())
     Ty = Ty->getAs<BlockPointerType>()->getPointeeType();
 
-  return Ty->getAs<FunctionType>();
+  return Ty->getAs<SubprogramType>();
 }
 
 // FIXME: We should provide an abstraction around a method or function
 // to provide the following bits of information.
 
-/// isFunction - Return true if the given decl has function
+/// isSubprogram - Return true if the given decl has function
 /// type (function or function-typed variable).
-static bool isFunction(const Decl *D) {
-  return getFunctionType(D, false) != NULL;
+static bool isSubprogram(const Decl *D) {
+  return getSubprogramType(D, false) != NULL;
 }
 
-/// isFunctionOrMethod - Return true if the given decl has function
+/// isSubprogramOrMethod - Return true if the given decl has function
 /// type (function or function-typed variable) or an Objective-C
 /// method.
-static bool isFunctionOrMethod(const Decl *D) {
-  return isFunction(D) || isa<ObjCMethodDecl>(D);
+static bool isSubprogramOrMethod(const Decl *D) {
+  return isSubprogram(D) || isa<ObjCMethodDecl>(D);
 }
 
-/// isFunctionOrMethodOrBlock - Return true if the given decl has function
+/// isSubprogramOrMethodOrBlock - Return true if the given decl has function
 /// type (function or function-typed variable) or an Objective-C
 /// method or a block.
-static bool isFunctionOrMethodOrBlock(const Decl *D) {
-  if (isFunctionOrMethod(D))
+static bool isSubprogramOrMethodOrBlock(const Decl *D) {
+  if (isSubprogramOrMethod(D))
     return true;
   // check for block is more involved.
   if (const VarDecl *V = dyn_cast<VarDecl>(D)) {
@@ -111,47 +111,47 @@ static bool hasDeclarator(const Decl *D) {
          isa<ObjCPropertyDecl>(D);
 }
 
-/// hasFunctionProto - Return true if the given decl has a argument
+/// hasSubprogramProto - Return true if the given decl has a argument
 /// information. This decl should have already passed
-/// isFunctionOrMethod or isFunctionOrMethodOrBlock.
-static bool hasFunctionProto(const Decl *D) {
-  if (const FunctionType *FnTy = getFunctionType(D))
-    return isa<FunctionProtoType>(FnTy);
+/// isSubprogramOrMethod or isSubprogramOrMethodOrBlock.
+static bool hasSubprogramProto(const Decl *D) {
+  if (const SubprogramType *FnTy = getSubprogramType(D))
+    return isa<SubprogramProtoType>(FnTy);
   else {
     assert(isa<ObjCMethodDecl>(D) || isa<BlockDecl>(D));
     return true;
   }
 }
 
-/// getFunctionOrMethodNumArgs - Return number of function or method
+/// getSubprogramOrMethodNumArgs - Return number of function or method
 /// arguments. It is an error to call this on a K&R function (use
-/// hasFunctionProto first).
-static unsigned getFunctionOrMethodNumArgs(const Decl *D) {
-  if (const FunctionType *FnTy = getFunctionType(D))
-    return cast<FunctionProtoType>(FnTy)->getNumArgs();
+/// hasSubprogramProto first).
+static unsigned getSubprogramOrMethodNumArgs(const Decl *D) {
+  if (const SubprogramType *FnTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(FnTy)->getNumArgs();
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->getNumParams();
   return cast<ObjCMethodDecl>(D)->param_size();
 }
 
-static QualType getFunctionOrMethodArgType(const Decl *D, unsigned Idx) {
-  if (const FunctionType *FnTy = getFunctionType(D))
-    return cast<FunctionProtoType>(FnTy)->getArgType(Idx);
+static QualType getSubprogramOrMethodArgType(const Decl *D, unsigned Idx) {
+  if (const SubprogramType *FnTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(FnTy)->getArgType(Idx);
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->getParamDecl(Idx)->getType();
 
   return cast<ObjCMethodDecl>(D)->param_begin()[Idx]->getType();
 }
 
-static QualType getFunctionOrMethodResultType(const Decl *D) {
-  if (const FunctionType *FnTy = getFunctionType(D))
-    return cast<FunctionProtoType>(FnTy)->getResultType();
+static QualType getSubprogramOrMethodResultType(const Decl *D) {
+  if (const SubprogramType *FnTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(FnTy)->getResultType();
   return cast<ObjCMethodDecl>(D)->getResultType();
 }
 
-static bool isFunctionOrMethodVariadic(const Decl *D) {
-  if (const FunctionType *FnTy = getFunctionType(D)) {
-    const FunctionProtoType *proto = cast<FunctionProtoType>(FnTy);
+static bool isSubprogramOrMethodVariadic(const Decl *D) {
+  if (const SubprogramType *FnTy = getSubprogramType(D)) {
+    const SubprogramProtoType *proto = cast<SubprogramProtoType>(FnTy);
     return proto->isVariadic();
   } else if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->isVariadic();
@@ -227,19 +227,19 @@ static bool checkAttributeAtLeastNumArgs(Sema &S, const AttributeList &Attr,
 /// instance method D.  May output an error.
 ///
 /// \returns true if IdxExpr is a valid index.
-static bool checkFunctionOrMethodArgumentIndex(Sema &S, const Decl *D,
+static bool checkSubprogramOrMethodArgumentIndex(Sema &S, const Decl *D,
                                                StringRef AttrName,
                                                SourceLocation AttrLoc,
                                                unsigned AttrArgNum,
                                                const Expr *IdxExpr,
                                                uint64_t &Idx)
 {
-  assert(isFunctionOrMethod(D) && hasFunctionProto(D));
+  assert(isSubprogramOrMethod(D) && hasSubprogramProto(D));
 
   // In C++ the implicit 'this' function parameter also counts.
   // Parameters are counted from one.
   const bool HasImplicitThisParam = isInstanceMethod(D);
-  const unsigned NumArgs = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  const unsigned NumArgs = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
   const unsigned FirstIdx = 1;
 
   llvm::APSInt IdxInt;
@@ -251,7 +251,7 @@ static bool checkFunctionOrMethodArgumentIndex(Sema &S, const Decl *D,
   }
 
   Idx = IdxInt.getLimitedValue();
-  if (Idx < FirstIdx || (!isFunctionOrMethodVariadic(D) && Idx > NumArgs)) {
+  if (Idx < FirstIdx || (!isSubprogramOrMethodVariadic(D) && Idx > NumArgs)) {
     S.Diag(AttrLoc, diag::err_attribute_argument_out_of_bounds)
       << AttrName << AttrArgNum << IdxExpr->getSourceRange();
     return false;
@@ -448,7 +448,7 @@ static void checkAttrArgsAreLockableObjs(Sema &S, Decl *D,
 
     // Now check if we index into a record type function param.
     if(!RT && ParamIdxOk) {
-      FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+      SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
       IntegerLiteral *IL = dyn_cast<IntegerLiteral>(ArgExp);
       if(FD && IL) {
         unsigned int NumParams = FD->getNumParams();
@@ -480,7 +480,7 @@ static void checkAttrArgsAreLockableObjs(Sema &S, Decl *D,
 
 enum ThreadAttributeDeclKind {
   ThreadExpectedFieldOrGlobalVar,
-  ThreadExpectedFunctionOrMethod,
+  ThreadExpectedSubprogramOrMethod,
   ThreadExpectedClassOrStruct
 };
 
@@ -606,9 +606,9 @@ static void handleNoThreadSafetyAttr(Sema &S, Decl *D,
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return;
   }
 
@@ -623,9 +623,9 @@ static void handleNoAddressSafetyAttr(Sema &S, Decl *D,
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionOrMethod;
+      << Attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -698,9 +698,9 @@ static bool checkLockFunAttrCommon(Sema &S, Decl *D,
   // zero or more arguments ok
 
   // check that the attribute is applied to a function
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return false;
   }
 
@@ -710,7 +710,7 @@ static bool checkLockFunAttrCommon(Sema &S, Decl *D,
   return true;
 }
 
-static void handleSharedLockFunctionAttr(Sema &S, Decl *D,
+static void handleSharedLockSubprogramAttr(Sema &S, Decl *D,
                                          const AttributeList &Attr) {
   SmallVector<Expr*, 1> Args;
   if (!checkLockFunAttrCommon(S, D, Attr, Args))
@@ -718,12 +718,12 @@ static void handleSharedLockFunctionAttr(Sema &S, Decl *D,
 
   unsigned Size = Args.size();
   Expr **StartArg = Size == 0 ? 0 : &Args[0];
-  D->addAttr(::new (S.Context) SharedLockFunctionAttr(Attr.getRange(),
+  D->addAttr(::new (S.Context) SharedLockSubprogramAttr(Attr.getRange(),
                                                       S.Context,
                                                       StartArg, Size));
 }
 
-static void handleExclusiveLockFunctionAttr(Sema &S, Decl *D,
+static void handleExclusiveLockSubprogramAttr(Sema &S, Decl *D,
                                             const AttributeList &Attr) {
   SmallVector<Expr*, 1> Args;
   if (!checkLockFunAttrCommon(S, D, Attr, Args))
@@ -731,7 +731,7 @@ static void handleExclusiveLockFunctionAttr(Sema &S, Decl *D,
 
   unsigned Size = Args.size();
   Expr **StartArg = Size == 0 ? 0 : &Args[0];
-  D->addAttr(::new (S.Context) ExclusiveLockFunctionAttr(Attr.getRange(),
+  D->addAttr(::new (S.Context) ExclusiveLockSubprogramAttr(Attr.getRange(),
                                                          S.Context,
                                                          StartArg, Size));
 }
@@ -744,9 +744,9 @@ static bool checkTryLockFunAttrCommon(Sema &S, Decl *D,
   if (!checkAttributeAtLeastNumArgs(S, Attr, 1))
     return false;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return false;
   }
 
@@ -762,7 +762,7 @@ static bool checkTryLockFunAttrCommon(Sema &S, Decl *D,
   return true;
 }
 
-static void handleSharedTrylockFunctionAttr(Sema &S, Decl *D,
+static void handleSharedTrylockSubprogramAttr(Sema &S, Decl *D,
                                             const AttributeList &Attr) {
   SmallVector<Expr*, 2> Args;
   if (!checkTryLockFunAttrCommon(S, D, Attr, Args))
@@ -770,13 +770,13 @@ static void handleSharedTrylockFunctionAttr(Sema &S, Decl *D,
 
   unsigned Size = Args.size();
   Expr **StartArg = Size == 0 ? 0 : &Args[0];
-  D->addAttr(::new (S.Context) SharedTrylockFunctionAttr(Attr.getRange(),
+  D->addAttr(::new (S.Context) SharedTrylockSubprogramAttr(Attr.getRange(),
                                                          S.Context,
                                                          Attr.getArg(0),
                                                          StartArg, Size));
 }
 
-static void handleExclusiveTrylockFunctionAttr(Sema &S, Decl *D,
+static void handleExclusiveTrylockSubprogramAttr(Sema &S, Decl *D,
                                                const AttributeList &Attr) {
   SmallVector<Expr*, 2> Args;
   if (!checkTryLockFunAttrCommon(S, D, Attr, Args))
@@ -784,7 +784,7 @@ static void handleExclusiveTrylockFunctionAttr(Sema &S, Decl *D,
 
   unsigned Size = Args.size();
   Expr **StartArg = Size == 0 ? 0 : &Args[0];
-  D->addAttr(::new (S.Context) ExclusiveTrylockFunctionAttr(Attr.getRange(),
+  D->addAttr(::new (S.Context) ExclusiveTrylockSubprogramAttr(Attr.getRange(),
                                                             S.Context,
                                                             Attr.getArg(0),
                                                             StartArg, Size));
@@ -798,9 +798,9 @@ static bool checkLocksRequiredCommon(Sema &S, Decl *D,
   if (!checkAttributeAtLeastNumArgs(S, Attr, 1))
     return false;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return false;
   }
 
@@ -844,9 +844,9 @@ static void handleUnlockFunAttr(Sema &S, Decl *D,
 
   // zero or more arguments ok
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return;
   }
 
@@ -856,7 +856,7 @@ static void handleUnlockFunAttr(Sema &S, Decl *D,
   unsigned Size = Args.size();
   Expr **StartArg = Size == 0 ? 0 : &Args[0];
 
-  D->addAttr(::new (S.Context) UnlockFunctionAttr(Attr.getRange(), S.Context,
+  D->addAttr(::new (S.Context) UnlockSubprogramAttr(Attr.getRange(), S.Context,
                                                   StartArg, Size));
 }
 
@@ -867,9 +867,9 @@ static void handleLockReturnedAttr(Sema &S, Decl *D,
   if (!checkAttributeNumArgs(S, Attr, 1))
     return;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return;
   }
 
@@ -891,9 +891,9 @@ static void handleLocksExcludedAttr(Sema &S, Decl *D,
   if (!checkAttributeAtLeastNumArgs(S, Attr, 1))
     return;
 
-  if (!isa<FunctionDecl>(D) && !isa<FunctionTemplateDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<SubprogramTemplateDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_thread_attribute_wrong_decl_type)
-      << Attr.getName() << ThreadExpectedFunctionOrMethod;
+      << Attr.getName() << ThreadExpectedSubprogramOrMethod;
     return;
   }
 
@@ -1086,9 +1086,9 @@ static void possibleTransparentUnionPointerType(QualType &T) {
 }
 
 static void handleAllocSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
-  if (!isFunctionOrMethod(D)) {
+  if (!isSubprogramOrMethod(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-    << "alloc_size" << ExpectedFunctionOrMethod;
+    << "alloc_size" << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -1098,7 +1098,7 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   // In C++ the implicit 'this' function parameter also counts, and they are
   // counted from one.
   bool HasImplicitThisParam = isInstanceMethod(D);
-  unsigned NumArgs = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  unsigned NumArgs = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
 
   SmallVector<unsigned, 8> SizeArgs;
 
@@ -1134,7 +1134,7 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     }
 
     // check if the function argument is of an integer type
-    QualType T = getFunctionOrMethodArgType(D, x).getNonReferenceType();
+    QualType T = getSubprogramOrMethodArgType(D, x).getNonReferenceType();
     if (!T->isIntegerType()) {
       S.Diag(Attr.getLoc(), diag::err_attribute_argument_not_int)
       << "alloc_size" << Ex->getSourceRange();
@@ -1145,7 +1145,7 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   }
 
   // check if the function returns a pointer
-  if (!getFunctionType(D)->getResultType()->isAnyPointerType()) {
+  if (!getSubprogramType(D)->getResultType()->isAnyPointerType()) {
     S.Diag(Attr.getLoc(), diag::warn_ns_attribute_wrong_return_type)
     << "alloc_size" << 0 /*function*/<< 1 /*pointer*/ << D->getSourceRange();
   }
@@ -1157,16 +1157,16 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 static void handleNonNullAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   // GCC ignores the nonnull attribute on K&R style function prototypes, so we
   // ignore it as well
-  if (!isFunctionOrMethod(D) || !hasFunctionProto(D)) {
+  if (!isSubprogramOrMethod(D) || !hasSubprogramProto(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
   // In C++ the implicit 'this' function parameter also counts, and they are
   // counted from one.
   bool HasImplicitThisParam = isInstanceMethod(D);
-  unsigned NumArgs  = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  unsigned NumArgs  = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
 
   // The nonnull attribute only applies to pointers.
   SmallVector<unsigned, 10> NonNullArgs;
@@ -1205,7 +1205,7 @@ static void handleNonNullAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     }
 
     // Is the function argument a pointer type?
-    QualType T = getFunctionOrMethodArgType(D, x).getNonReferenceType();
+    QualType T = getSubprogramOrMethodArgType(D, x).getNonReferenceType();
     possibleTransparentUnionPointerType(T);
     
     if (!T->isAnyPointerType() && !T->isBlockPointerType()) {
@@ -1221,8 +1221,8 @@ static void handleNonNullAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   // If no arguments were specified to __attribute__((nonnull)) then all pointer
   // arguments have a nonnull attribute.
   if (NonNullArgs.empty()) {
-    for (unsigned I = 0, E = getFunctionOrMethodNumArgs(D); I != E; ++I) {
-      QualType T = getFunctionOrMethodArgType(D, I).getNonReferenceType();
+    for (unsigned I = 0, E = getSubprogramOrMethodNumArgs(D); I != E; ++I) {
+      QualType T = getSubprogramOrMethodArgType(D, I).getNonReferenceType();
       possibleTransparentUnionPointerType(T);
       if (T->isAnyPointerType() || T->isBlockPointerType())
         NonNullArgs.push_back(I);
@@ -1290,16 +1290,16 @@ static void handleOwnershipAttr(Sema &S, Decl *D, const AttributeList &AL) {
     llvm_unreachable("Unknown ownership attribute");
   }
 
-  if (!isFunction(D) || !hasFunctionProto(D)) {
+  if (!isSubprogram(D) || !hasSubprogramProto(D)) {
     S.Diag(AL.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << AL.getName() << ExpectedFunction;
+      << AL.getName() << ExpectedSubprogram;
     return;
   }
 
   // In C++ the implicit 'this' function parameter also counts, and they are
   // counted from one.
   bool HasImplicitThisParam = isInstanceMethod(D);
-  unsigned NumArgs  = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  unsigned NumArgs  = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
 
   StringRef Module = AL.getParameterName()->getName();
 
@@ -1342,7 +1342,7 @@ static void handleOwnershipAttr(Sema &S, Decl *D, const AttributeList &AL) {
     case OwnershipAttr::Takes:
     case OwnershipAttr::Holds: {
       // Is the function argument a pointer type?
-      QualType T = getFunctionOrMethodArgType(D, x);
+      QualType T = getSubprogramOrMethodArgType(D, x);
       if (!T->isAnyPointerType() && !T->isBlockPointerType()) {
         // FIXME: Should also highlight argument in decl.
         S.Diag(AL.getLoc(), diag::err_ownership_type)
@@ -1427,9 +1427,9 @@ static void handleWeakRefAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (!isa<VarDecl>(D) && !isa<FunctionDecl>(D)) {
+  if (!isa<VarDecl>(D) && !isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::err_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedVariableOrFunction;
+      << Attr.getName() << ExpectedVariableOrSubprogram;
     return;
   }
 
@@ -1531,9 +1531,9 @@ static void handleMinSizeAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D) && !isa<ObjCMethodDecl>(D)) {
+  if (!isa<SubprogramDecl>(D) && !isa<ObjCMethodDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::err_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionOrMethod;
+      << Attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -1545,9 +1545,9 @@ static void handleColdAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1565,9 +1565,9 @@ static void handleHotAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1585,9 +1585,9 @@ static void handleNakedAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1602,9 +1602,9 @@ static void handleAlwaysInlineAttr(Sema &S, Decl *D,
     return;
   }
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1654,7 +1654,7 @@ static void handleMallocAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     QualType RetTy = FD->getResultType();
     if (RetTy->isAnyPointerType() || RetTy->isBlockPointerType()) {
       D->addAttr(::new (S.Context) MallocAttr(Attr.getRange(), S.Context));
@@ -1698,7 +1698,7 @@ static void handleNoReturnAttr(Sema &S, Decl *D, const AttributeList &attr) {
 
   if (!isa<ObjCMethodDecl>(D)) {
     S.Diag(attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << attr.getName() << ExpectedFunctionOrMethod;
+      << attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -1724,14 +1724,14 @@ static void handleAnalyzerNoReturnAttr(Sema &S, Decl *D,
   if(!checkAttributeNumArgs(S, Attr, 0))
       return;
   
-  if (!isFunctionOrMethod(D) && !isa<BlockDecl>(D)) {
+  if (!isSubprogramOrMethod(D) && !isa<BlockDecl>(D)) {
     ValueDecl *VD = dyn_cast<ValueDecl>(D);
     if (VD == 0 || (!VD->getType()->isBlockPointerType()
-                    && !VD->getType()->isFunctionPointerType())) {
+                    && !VD->getType()->isSubprogramPointerType())) {
       S.Diag(Attr.getLoc(),
              Attr.isCXX11Attribute() ? diag::err_attribute_wrong_decl_type
              : diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedFunctionMethodOrBlock;
+        << Attr.getName() << ExpectedSubprogramMethodOrBlock;
       return;
     }
   }
@@ -1801,9 +1801,9 @@ static void handleVecReturnAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 }
 
 static void handleDependencyAttr(Sema &S, Decl *D, const AttributeList &Attr) {
-  if (!isFunctionOrMethod(D) && !isa<ParmVarDecl>(D)) {
+  if (!isSubprogramOrMethod(D) && !isa<ParmVarDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::err_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionMethodOrParameter;
+      << Attr.getName() << ExpectedSubprogramMethodOrParameter;
     return;
   }
   // FIXME: Actually store the attribute on the declaration
@@ -1816,10 +1816,10 @@ static void handleUnusedAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (!isa<VarDecl>(D) && !isa<ObjCIvarDecl>(D) && !isFunctionOrMethod(D) &&
+  if (!isa<VarDecl>(D) && !isa<ObjCIvarDecl>(D) && !isSubprogramOrMethod(D) &&
       !isa<TypeDecl>(D) && !isa<LabelDecl>(D) && !isa<FieldDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedVariableFunctionOrLabel;
+      << Attr.getName() << ExpectedVariableSubprogramOrLabel;
     return;
   }
 
@@ -1834,9 +1834,9 @@ static void handleReturnsTwiceAttr(Sema &S, Decl *D,
     return;
   }
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1855,9 +1855,9 @@ static void handleUsedAttr(Sema &S, Decl *D, const AttributeList &Attr) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_ignored) << "used";
       return;
     }
-  } else if (!isFunctionOrMethod(D)) {
+  } else if (!isSubprogramOrMethod(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedVariableOrFunction;
+      << Attr.getName() << ExpectedVariableOrSubprogram;
     return;
   }
 
@@ -1884,9 +1884,9 @@ static void handleConstructorAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     priority = Idx.getZExtValue();
   }
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -1914,9 +1914,9 @@ static void handleDestructorAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     priority = Idx.getZExtValue();
   }
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -2325,7 +2325,7 @@ handleOverloadableAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::err_attribute_overloadable_not_function);
     return;
   }
@@ -2405,14 +2405,14 @@ static void handleSentinelAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     }
   }
 
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    const FunctionType *FT = FD->getType()->castAs<FunctionType>();
-    if (isa<FunctionNoProtoType>(FT)) {
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    const SubprogramType *FT = FD->getType()->castAs<SubprogramType>();
+    if (isa<SubprogramNoProtoType>(FT)) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_sentinel_named_arguments);
       return;
     }
 
-    if (!cast<FunctionProtoType>(FT)->isVariadic()) {
+    if (!cast<SubprogramProtoType>(FT)->isVariadic()) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_sentinel_not_variadic) << 0;
       return;
     }
@@ -2428,22 +2428,22 @@ static void handleSentinelAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     }
   } else if (const VarDecl *V = dyn_cast<VarDecl>(D)) {
     QualType Ty = V->getType();
-    if (Ty->isBlockPointerType() || Ty->isFunctionPointerType()) {
-      const FunctionType *FT = Ty->isFunctionPointerType() ? getFunctionType(D)
-       : Ty->getAs<BlockPointerType>()->getPointeeType()->getAs<FunctionType>();
-      if (!cast<FunctionProtoType>(FT)->isVariadic()) {
-        int m = Ty->isFunctionPointerType() ? 0 : 1;
+    if (Ty->isBlockPointerType() || Ty->isSubprogramPointerType()) {
+      const SubprogramType *FT = Ty->isSubprogramPointerType() ? getSubprogramType(D)
+       : Ty->getAs<BlockPointerType>()->getPointeeType()->getAs<SubprogramType>();
+      if (!cast<SubprogramProtoType>(FT)->isVariadic()) {
+        int m = Ty->isSubprogramPointerType() ? 0 : 1;
         S.Diag(Attr.getLoc(), diag::warn_attribute_sentinel_not_variadic) << m;
         return;
       }
     } else {
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedFunctionMethodOrBlock;
+        << Attr.getName() << ExpectedSubprogramMethodOrBlock;
       return;
     }
   } else {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionMethodOrBlock;
+      << Attr.getName() << ExpectedSubprogramMethodOrBlock;
     return;
   }
   D->addAttr(::new (S.Context) SentinelAttr(Attr.getRange(), S.Context, sentinel,
@@ -2455,13 +2455,13 @@ static void handleWarnUnusedResult(Sema &S, Decl *D, const AttributeList &Attr) 
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  if (!isFunction(D) && !isa<ObjCMethodDecl>(D) && !isa<CXXRecordDecl>(D)) {
+  if (!isSubprogram(D) && !isa<ObjCMethodDecl>(D) && !isa<CXXRecordDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionMethodOrClass;
+      << Attr.getName() << ExpectedSubprogramMethodOrClass;
     return;
   }
 
-  if (isFunction(D) && getFunctionType(D)->getResultType()->isVoidType()) {
+  if (isSubprogram(D) && getSubprogramType(D)->getResultType()->isVoidType()) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_void_function_method)
       << Attr.getName() << 0;
     return;
@@ -2483,13 +2483,13 @@ static void handleWeakAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (!isa<VarDecl>(D) && !isa<FunctionDecl>(D)) {
+  if (!isa<VarDecl>(D) && !isa<SubprogramDecl>(D)) {
     if (isa<CXXRecordDecl>(D)) {
       D->addAttr(::new (S.Context) WeakAttr(Attr.getRange(), S.Context));
       return;
     }
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedVariableOrFunction;
+      << Attr.getName() << ExpectedVariableOrSubprogram;
     return;
   }
 
@@ -2523,7 +2523,7 @@ static void handleWeakImportAttr(Sema &S, Decl *D, const AttributeList &Attr) {
       // Nothing to warn about here.
     } else
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedVariableOrFunction;
+        << Attr.getName() << ExpectedVariableOrSubprogram;
 
     return;
   }
@@ -2698,7 +2698,7 @@ static void handleCleanupAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  FunctionDecl *FD = dyn_cast<FunctionDecl>(CleanupDecl);
+  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CleanupDecl);
   if (!FD) {
     S.Diag(Attr.getParameterLoc(),
            diag::err_attribute_cleanup_arg_not_function)
@@ -2726,25 +2726,25 @@ static void handleCleanupAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   }
 
   D->addAttr(::new (S.Context) CleanupAttr(Attr.getRange(), S.Context, FD));
-  S.MarkFunctionReferenced(Attr.getParameterLoc(), FD);
+  S.MarkSubprogramReferenced(Attr.getParameterLoc(), FD);
 }
 
 /// Handle __attribute__((format_arg((idx)))) attribute based on
-/// http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+/// http://gcc.gnu.org/onlinedocs/gcc/Subprogram-Attributes.html
 static void handleFormatArgAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 1))
     return;
 
-  if (!isFunctionOrMethod(D) || !hasFunctionProto(D)) {
+  if (!isSubprogramOrMethod(D) || !hasSubprogramProto(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
   // In C++ the implicit 'this' function parameter also counts, and they are
   // counted from one.
   bool HasImplicitThisParam = isInstanceMethod(D);
-  unsigned NumArgs  = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  unsigned NumArgs  = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
   unsigned FirstIdx = 1;
 
   // checks for the 2nd argument
@@ -2775,7 +2775,7 @@ static void handleFormatArgAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   }
 
   // make sure the format string is really a string
-  QualType Ty = getFunctionOrMethodArgType(D, ArgIdx);
+  QualType Ty = getSubprogramOrMethodArgType(D, ArgIdx);
 
   bool not_nsstring_type = !isNSStringType(Ty, S.Context);
   if (not_nsstring_type &&
@@ -2788,7 +2788,7 @@ static void handleFormatArgAttr(Sema &S, Decl *D, const AttributeList &Attr) {
        << IdxExpr->getSourceRange();
     return;
   }
-  Ty = getFunctionOrMethodResultType(D);
+  Ty = getSubprogramOrMethodResultType(D);
   if (!isNSStringType(Ty, S.Context) &&
       !isCFStringType(Ty, S.Context) &&
       (!Ty->isPointerType() ||
@@ -2840,7 +2840,7 @@ static void handleInitPriorityAttr(Sema &S, Decl *D,
     return;
   }
   
-  if (!isa<VarDecl>(D) || S.getCurFunctionOrMethodDecl()) {
+  if (!isa<VarDecl>(D) || S.getCurSubprogramOrMethodDecl()) {
     S.Diag(Attr.getLoc(), diag::err_init_priority_object_attr);
     Attr.setInvalid();
     return;
@@ -2904,7 +2904,7 @@ FormatAttr *Sema::mergeFormatAttr(Decl *D, SourceRange Range, StringRef Format,
 }
 
 /// Handle __attribute__((format(type,idx,firstarg))) attributes based on
-/// http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
+/// http://gcc.gnu.org/onlinedocs/gcc/Subprogram-Attributes.html
 static void handleFormatAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 
   if (!Attr.getParameterName()) {
@@ -2918,16 +2918,16 @@ static void handleFormatAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
   }
 
-  if (!isFunctionOrMethodOrBlock(D) || !hasFunctionProto(D)) {
+  if (!isSubprogramOrMethodOrBlock(D) || !hasSubprogramProto(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
   // In C++ the implicit 'this' function parameter also counts, and they are
   // counted from one.
   bool HasImplicitThisParam = isInstanceMethod(D);
-  unsigned NumArgs  = getFunctionOrMethodNumArgs(D) + HasImplicitThisParam;
+  unsigned NumArgs  = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
   unsigned FirstIdx = 1;
 
   StringRef Format = Attr.getParameterName()->getName();
@@ -2978,7 +2978,7 @@ static void handleFormatAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   }
 
   // make sure the format string is really a string
-  QualType Ty = getFunctionOrMethodArgType(D, ArgIdx);
+  QualType Ty = getSubprogramOrMethodArgType(D, ArgIdx);
 
   if (Kind == CFStringFormat) {
     if (!isCFStringType(Ty, S.Context)) {
@@ -3015,7 +3015,7 @@ static void handleFormatAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 
   // check if the function is variadic if the 3rd argument non-zero
   if (FirstArg != 0) {
-    if (isFunctionOrMethodVariadic(D)) {
+    if (isSubprogramOrMethodVariadic(D)) {
       ++NumArgs; // +1 for ...
     } else {
       S.Diag(D->getLocation(), diag::err_format_attribute_requires_variadic);
@@ -3389,7 +3389,7 @@ static void handleNoDebugAttr(Sema &S, Decl *D, const AttributeList &Attr) {
       S.Diag(Attr.getLoc(),
              diag::warn_attribute_requires_functions_or_static_globals)
         << Attr.getName();
-  } else if (!isFunctionOrMethod(D)) {
+  } else if (!isSubprogramOrMethod(D)) {
     S.Diag(Attr.getLoc(),
            diag::warn_attribute_requires_functions_or_static_globals)
       << Attr.getName();
@@ -3405,29 +3405,29 @@ static void handleNoInlineAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     return;
 
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
   D->addAttr(::new (S.Context) NoInlineAttr(Attr.getRange(), S.Context));
 }
 
-static void handleNoInstrumentFunctionAttr(Sema &S, Decl *D,
+static void handleNoInstrumentSubprogramAttr(Sema &S, Decl *D,
                                            const AttributeList &Attr) {
   // check the attribute arguments.
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
 
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
-  D->addAttr(::new (S.Context) NoInstrumentFunctionAttr(Attr.getRange(),
+  D->addAttr(::new (S.Context) NoInstrumentSubprogramAttr(Attr.getRange(),
                                                         S.Context));
 }
 
@@ -3459,9 +3459,9 @@ static void handleDeviceAttr(Sema &S, Decl *D, const AttributeList &Attr) {
       return;
     }
 
-    if (!isa<FunctionDecl>(D) && !isa<VarDecl>(D)) {
+    if (!isa<SubprogramDecl>(D) && !isa<VarDecl>(D)) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedVariableOrFunction;
+        << Attr.getName() << ExpectedVariableOrSubprogram;
       return;
     }
 
@@ -3477,16 +3477,16 @@ static void handleGlobalAttr(Sema &S, Decl *D, const AttributeList &Attr) {
     if (!checkAttributeNumArgs(S, Attr, 0))
       return;
 
-    if (!isa<FunctionDecl>(D)) {
+    if (!isa<SubprogramDecl>(D)) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedFunction;
+        << Attr.getName() << ExpectedSubprogram;
       return;
     }
 
-    FunctionDecl *FD = cast<FunctionDecl>(D);
+    SubprogramDecl *FD = cast<SubprogramDecl>(D);
     if (!FD->getResultType()->isVoidType()) {
       TypeLoc TL = FD->getTypeSourceInfo()->getTypeLoc().IgnoreParens();
-      if (FunctionTypeLoc* FTL = dyn_cast<FunctionTypeLoc>(&TL)) {
+      if (SubprogramTypeLoc* FTL = dyn_cast<SubprogramTypeLoc>(&TL)) {
         S.Diag(FD->getTypeSpecStartLoc(), diag::err_kern_type_not_void_return)
           << FD->getType()
           << FixItHint::CreateReplacement(FTL->getResultLoc().getSourceRange(),
@@ -3511,9 +3511,9 @@ static void handleHostAttr(Sema &S, Decl *D, const AttributeList &Attr) {
       return;
 
 
-    if (!isa<FunctionDecl>(D)) {
+    if (!isa<SubprogramDecl>(D)) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedFunction;
+        << Attr.getName() << ExpectedSubprogram;
       return;
     }
 
@@ -3547,10 +3547,10 @@ static void handleGNUInlineAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  FunctionDecl *Fn = dyn_cast<FunctionDecl>(D);
+  SubprogramDecl *Fn = dyn_cast<SubprogramDecl>(D);
   if (Fn == 0) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunction;
+      << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -3565,7 +3565,7 @@ static void handleGNUInlineAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 static void handleCallConvAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (hasDeclarator(D)) return;
 
-  const FunctionDecl *FD = dyn_cast<FunctionDecl>(D);
+  const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
   // Diagnostic is emitted elsewhere: here we store the (valid) Attr
   // in the Decl node for syntactic reasoning, e.g., pretty-printing.
   CallingConv CC;
@@ -3574,7 +3574,7 @@ static void handleCallConvAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 
   if (!isa<ObjCMethodDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionOrMethod;
+      << Attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -3628,7 +3628,7 @@ static void handleOpenCLKernelAttr(Sema &S, Decl *D, const AttributeList &Attr){
 }
 
 bool Sema::CheckCallingConvAttr(const AttributeList &attr, CallingConv &CC, 
-                                const FunctionDecl *FD) {
+                                const SubprogramDecl *FD) {
   if (attr.isInvalid())
     return true;
 
@@ -3699,7 +3699,7 @@ static void handleRegparmAttr(Sema &S, Decl *D, const AttributeList &Attr) {
 
   if (!isa<ObjCMethodDecl>(D)) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionOrMethod;
+      << Attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -3755,9 +3755,9 @@ static void handleLaunchBoundsAttr(Sema &S, Decl *D, const AttributeList &Attr){
       return;
     }
 
-    if (!isFunctionOrMethod(D)) {
+    if (!isSubprogramOrMethod(D)) {
       S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
-        << Attr.getName() << ExpectedFunctionOrMethod;
+        << Attr.getName() << ExpectedSubprogramOrMethod;
       return;
     }
 
@@ -3808,20 +3808,20 @@ static void handleArgumentWithTypeTagAttr(Sema &S, Decl *D,
 
   IdentifierInfo *ArgumentKind = Attr.getParameterName();
 
-  if (!isFunctionOrMethod(D) || !hasFunctionProto(D)) {
+  if (!isSubprogramOrMethod(D) || !hasSubprogramProto(D)) {
     S.Diag(Attr.getLoc(), diag::err_attribute_wrong_decl_type)
-      << Attr.getName() << ExpectedFunctionOrMethod;
+      << Attr.getName() << ExpectedSubprogramOrMethod;
     return;
   }
 
   uint64_t ArgumentIdx;
-  if (!checkFunctionOrMethodArgumentIndex(S, D, AttrName,
+  if (!checkSubprogramOrMethodArgumentIndex(S, D, AttrName,
                                           Attr.getLoc(), 2,
                                           Attr.getArg(0), ArgumentIdx))
     return;
 
   uint64_t TypeTagIdx;
-  if (!checkFunctionOrMethodArgumentIndex(S, D, AttrName,
+  if (!checkSubprogramOrMethodArgumentIndex(S, D, AttrName,
                                           Attr.getLoc(), 3,
                                           Attr.getArg(1), TypeTagIdx))
     return;
@@ -3829,7 +3829,7 @@ static void handleArgumentWithTypeTagAttr(Sema &S, Decl *D,
   bool IsPointer = (AttrName == "pointer_with_type_tag");
   if (IsPointer) {
     // Ensure that buffer has a pointer type.
-    QualType BufferTy = getFunctionOrMethodArgType(D, ArgumentIdx);
+    QualType BufferTy = getSubprogramOrMethodArgType(D, ArgumentIdx);
     if (!BufferTy->isPointerType()) {
       S.Diag(Attr.getLoc(), diag::err_attribute_pointers_only)
         << AttrName;
@@ -3931,12 +3931,12 @@ static void handleNSReturnsRetainedAttr(Sema &S, Decl *D,
     return; // ignore: was handled as a type attribute
   else if (ObjCPropertyDecl *PD = dyn_cast<ObjCPropertyDecl>(D))
     returnType = PD->getType();
-  else if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D))
+  else if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
     returnType = FD->getResultType();
   else {
     S.Diag(D->getLocStart(), diag::warn_attribute_wrong_decl_type)
         << Attr.getRange() << Attr.getName()
-        << ExpectedFunctionOrMethod;
+        << ExpectedSubprogramOrMethod;
     return;
   }
 
@@ -4048,9 +4048,9 @@ static void handleObjCRequiresSuperAttr(Sema &S, Decl *D,
 
 /// Handle cf_audited_transfer and cf_unknown_transfer.
 static void handleCFTransferAttr(Sema &S, Decl *D, const AttributeList &A) {
-  if (!isa<FunctionDecl>(D)) {
+  if (!isa<SubprogramDecl>(D)) {
     S.Diag(D->getLocStart(), diag::err_attribute_wrong_decl_type)
-      << A.getRange() << A.getName() << ExpectedFunction;
+      << A.getRange() << A.getName() << ExpectedSubprogram;
     return;
   }
 
@@ -4434,8 +4434,8 @@ static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
   case AttributeList::IgnoredAttribute:
     // Just ignore
     break;
-  case AttributeList::AT_NoInstrumentFunction:  // Interacts with -pg.
-    handleNoInstrumentFunctionAttr(S, D, Attr);
+  case AttributeList::AT_NoInstrumentSubprogram:  // Interacts with -pg.
+    handleNoInstrumentSubprogramAttr(S, D, Attr);
     break;
   case AttributeList::AT_StdCall:
   case AttributeList::AT_CDecl:
@@ -4497,14 +4497,14 @@ static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
   case AttributeList::AT_PtGuardedBy:
     handlePtGuardedByAttr(S, D, Attr);
     break;
-  case AttributeList::AT_ExclusiveLockFunction:
-    handleExclusiveLockFunctionAttr(S, D, Attr);
+  case AttributeList::AT_ExclusiveLockSubprogram:
+    handleExclusiveLockSubprogramAttr(S, D, Attr);
     break;
   case AttributeList::AT_ExclusiveLocksRequired:
     handleExclusiveLocksRequiredAttr(S, D, Attr);
     break;
-  case AttributeList::AT_ExclusiveTrylockFunction:
-    handleExclusiveTrylockFunctionAttr(S, D, Attr);
+  case AttributeList::AT_ExclusiveTrylockSubprogram:
+    handleExclusiveTrylockSubprogramAttr(S, D, Attr);
     break;
   case AttributeList::AT_LockReturned:
     handleLockReturnedAttr(S, D, Attr);
@@ -4512,16 +4512,16 @@ static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
   case AttributeList::AT_LocksExcluded:
     handleLocksExcludedAttr(S, D, Attr);
     break;
-  case AttributeList::AT_SharedLockFunction:
-    handleSharedLockFunctionAttr(S, D, Attr);
+  case AttributeList::AT_SharedLockSubprogram:
+    handleSharedLockSubprogramAttr(S, D, Attr);
     break;
   case AttributeList::AT_SharedLocksRequired:
     handleSharedLocksRequiredAttr(S, D, Attr);
     break;
-  case AttributeList::AT_SharedTrylockFunction:
-    handleSharedTrylockFunctionAttr(S, D, Attr);
+  case AttributeList::AT_SharedTrylockSubprogram:
+    handleSharedTrylockSubprogramAttr(S, D, Attr);
     break;
-  case AttributeList::AT_UnlockFunction:
+  case AttributeList::AT_UnlockSubprogram:
     handleUnlockFunAttr(S, D, Attr);
     break;
   case AttributeList::AT_AcquiredBefore:
@@ -4641,15 +4641,15 @@ void Sema::checkUnusedDeclAttributes(Declarator &D) {
 /// \#pragma weak needs a non-definition decl and source may not have one.
 NamedDecl * Sema::DeclClonePragmaWeak(NamedDecl *ND, IdentifierInfo *II,
                                       SourceLocation Loc) {
-  assert(isa<FunctionDecl>(ND) || isa<VarDecl>(ND));
+  assert(isa<SubprogramDecl>(ND) || isa<VarDecl>(ND));
   NamedDecl *NewD = 0;
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(ND)) {
-    FunctionDecl *NewFD;
-    // FIXME: Missing call to CheckFunctionDeclaration().
+  if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ND)) {
+    SubprogramDecl *NewFD;
+    // FIXME: Missing call to CheckSubprogramDeclaration().
     // FIXME: Mangling?
     // FIXME: Is the qualifier info correct?
     // FIXME: Is the DeclContext correct?
-    NewFD = FunctionDecl::Create(FD->getASTContext(), FD->getDeclContext(),
+    NewFD = SubprogramDecl::Create(FD->getASTContext(), FD->getDeclContext(),
                                  Loc, Loc, DeclarationName(II),
                                  FD->getType(), FD->getTypeSourceInfo(),
                                  SC_None, SC_None,
@@ -4664,9 +4664,9 @@ NamedDecl * Sema::DeclClonePragmaWeak(NamedDecl *ND, IdentifierInfo *II,
     // Fake up parameter variables; they are declared as if this were
     // a typedef.
     QualType FDTy = FD->getType();
-    if (const FunctionProtoType *FT = FDTy->getAs<FunctionProtoType>()) {
+    if (const SubprogramProtoType *FT = FDTy->getAs<SubprogramProtoType>()) {
       SmallVector<ParmVarDecl*, 16> Params;
-      for (FunctionProtoType::arg_type_iterator AI = FT->arg_type_begin(),
+      for (SubprogramProtoType::arg_type_iterator AI = FT->arg_type_begin(),
            AE = FT->arg_type_end(); AI != AE; ++AI) {
         ParmVarDecl *Param = BuildParmVarDeclForTypedef(NewFD, Loc, *AI);
         Param->setScopeInfo(0, Params.size());
@@ -4757,9 +4757,9 @@ static bool isForbiddenTypeAllowed(Sema &S, Decl *decl) {
   // Private ivars are always okay.  Unfortunately, people don't
   // always properly make their ivars private, even in system headers.
   // Plus we need to make fields okay, too.
-  // Function declarations in sys headers will be marked unavailable.
+  // Subprogram declarations in sys headers will be marked unavailable.
   if (!isa<FieldDecl>(decl) && !isa<ObjCPropertyDecl>(decl) &&
-      !isa<FunctionDecl>(decl))
+      !isa<SubprogramDecl>(decl))
     return false;
 
   // Require it to be declared in a system header.
@@ -4775,7 +4775,7 @@ static void handleDelayedForbiddenType(Sema &S, DelayedDiagnostic &diag,
     return;
   }
   if (S.getLangOpts().ObjCAutoRefCount)
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(decl)) {
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(decl)) {
       // FIXME: we may want to suppress diagnostics for all
       // kind of forbidden type messages on unavailable functions. 
       if (FD->hasAttr<UnavailableAttr>() &&

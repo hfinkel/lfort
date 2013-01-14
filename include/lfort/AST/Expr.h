@@ -256,7 +256,7 @@ public:
     LV_DuplicateVectorComponents,
     LV_InvalidExpression,
     LV_InvalidMessageExpression,
-    LV_MemberFunction,
+    LV_MemberSubprogram,
     LV_SubObjCPropertySetting,
     LV_ClassTemporary,
     LV_ArrayTemporary
@@ -276,7 +276,7 @@ public:
     MLV_ArrayType,
     MLV_ReadonlyProperty,
     MLV_NoSetterProperty,
-    MLV_MemberFunction,
+    MLV_MemberSubprogram,
     MLV_SubObjCPropertySetting,
     MLV_InvalidMessageExpression,
     MLV_ClassTemporary,
@@ -302,11 +302,11 @@ public:
     enum Kinds {
       CL_LValue,
       CL_XValue,
-      CL_Function, // Functions cannot be lvalues in C.
+      CL_Subprogram, // Subprograms cannot be lvalues in C.
       CL_Void, // Void cannot be an lvalue in C.
       CL_AddressableVoid, // Void expression whose address can be taken in C.
       CL_DuplicateVectorComponents, // A vector shuffle with dupes.
-      CL_MemberFunction, // An expression referring to a member function
+      CL_MemberSubprogram, // An expression referring to a member function
       CL_SubObjCPropertySetting,
       CL_ClassTemporary, // A temporary of class type, or subobject thereof.
       CL_ArrayTemporary, // A temporary of array type.
@@ -318,7 +318,7 @@ public:
       CM_Untested, // testModifiable was false.
       CM_Modifiable,
       CM_RValue, // Not modifiable because it's an rvalue
-      CM_Function, // Not modifiable because it's a function; C++ only
+      CM_Subprogram, // Not modifiable because it's a function; C++ only
       CM_LValueCast, // Same as CM_RValue, but indicates GCC cast-as-lvalue ext
       CM_NoSetterProperty,// Implicit assignment to ObjC property without setter
       CM_ConstQualified,
@@ -347,7 +347,7 @@ public:
     bool isLValue() const { return Kind == CL_LValue; }
     bool isXValue() const { return Kind == CL_XValue; }
     bool isGLValue() const { return Kind <= CL_XValue; }
-    bool isPRValue() const { return Kind >= CL_Function; }
+    bool isPRValue() const { return Kind >= CL_Subprogram; }
     bool isRValue() const { return Kind >= CL_XValue; }
     bool isModifiable() const { return getModifiable() == CM_Modifiable; }
 
@@ -391,7 +391,7 @@ public:
     if (const ReferenceType *RT = T->getAs<ReferenceType>())
       return (isa<LValueReferenceType>(RT)
                 ? VK_LValue
-                : (RT->getPointeeType()->isFunctionType()
+                : (RT->getPointeeType()->isSubprogramType()
                      ? VK_LValue : VK_XValue));
     return VK_RValue;
   }
@@ -489,7 +489,7 @@ public:
   /// might be usable in a constant expression in C++11, if it were marked
   /// constexpr. Return false if the function can never produce a constant
   /// expression, along with diagnostics describing why not.
-  static bool isPotentialConstantExpr(const FunctionDecl *FD,
+  static bool isPotentialConstantExpr(const SubprogramDecl *FD,
                                       llvm::SmallVectorImpl<
                                         PartialDiagnosticAt> &Diags);
 
@@ -632,7 +632,7 @@ public:
   bool isOBJCGCCandidate(ASTContext &Ctx) const;
 
   /// \brief Returns true if this expression is a bound member function.
-  bool isBoundMemberFunction(ASTContext &Ctx) const;
+  bool isBoundMemberSubprogram(ASTContext &Ctx) const;
 
   /// \brief Given an expression of bound-member type, find the type
   /// of the member.  Returns null if this is an *overloaded* bound
@@ -1130,12 +1130,12 @@ class PredefinedExpr : public Expr {
 public:
   enum IdentType {
     Func,
-    Function,
-    LFunction,  // Same as Function, but as wide string.
-    PrettyFunction,
-    /// PrettyFunctionNoVirtual - The same as PrettyFunction, except that the
+    Subprogram,
+    LSubprogram,  // Same as Subprogram, but as wide string.
+    PrettySubprogram,
+    /// PrettySubprogramNoVirtual - The same as PrettySubprogram, except that the
     /// 'virtual' keyword is omitted for virtual member functions.
-    PrettyFunctionNoVirtual
+    PrettySubprogramNoVirtual
   };
 
 private:
@@ -2131,9 +2131,9 @@ public:
     return const_cast<CallExpr*>(this)->getCalleeDecl();
   }
 
-  /// \brief If the callee is a FunctionDecl, return it. Otherwise return 0.
-  FunctionDecl *getDirectCallee();
-  const FunctionDecl *getDirectCallee() const {
+  /// \brief If the callee is a SubprogramDecl, return it. Otherwise return 0.
+  SubprogramDecl *getDirectCallee();
+  const SubprogramDecl *getDirectCallee() const {
     return const_cast<CallExpr*>(this)->getDirectCallee();
   }
 
@@ -4358,8 +4358,8 @@ public:
   SourceLocation getLocStart() const LLVM_READONLY { return getCaretLocation(); }
   SourceLocation getLocEnd() const LLVM_READONLY { return getBody()->getLocEnd(); }
 
-  /// getFunctionType - Return the underlying function type for this block.
-  const FunctionProtoType *getFunctionType() const;
+  /// getSubprogramType - Return the underlying function type for this block.
+  const SubprogramProtoType *getSubprogramType() const;
 
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == BlockExprClass;

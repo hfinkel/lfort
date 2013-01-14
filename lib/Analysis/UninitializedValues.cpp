@@ -630,7 +630,7 @@ void TransferFunctions::VisitCallExpr(CallExpr *ce) {
       vals.setAllScratchValues(Initialized);
     }
     else if (Callee->hasAttr<AnalyzerNoReturnAttr>()) {
-      // Functions labeled like "analyzer_noreturn" are often used to denote
+      // Subprograms labeled like "analyzer_noreturn" are often used to denote
       // "panic" functions that in special debug situations can still return,
       // but for the most part should not be treated as returning.  This is a
       // useful annotation borrowed from the static analyzer that is useful for

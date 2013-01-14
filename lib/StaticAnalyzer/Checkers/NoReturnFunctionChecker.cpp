@@ -1,4 +1,4 @@
-//=== NoReturnFunctionChecker.cpp -------------------------------*- C++ -*-===//
+//=== NoReturnSubprogramChecker.cpp -------------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This defines NoReturnFunctionChecker, which evaluates functions that do not
+// This defines NoReturnSubprogramChecker, which evaluates functions that do not
 // return to the caller.
 //
 //===----------------------------------------------------------------------===//
@@ -26,7 +26,7 @@ using namespace ento;
 
 namespace {
 
-class NoReturnFunctionChecker : public Checker< check::PostStmt<CallExpr>,
+class NoReturnSubprogramChecker : public Checker< check::PostStmt<CallExpr>,
                                                 check::PostObjCMessage > {
 public:
   void checkPostStmt(const CallExpr *CE, CheckerContext &C) const;
@@ -35,16 +35,16 @@ public:
 
 }
 
-void NoReturnFunctionChecker::checkPostStmt(const CallExpr *CE,
+void NoReturnSubprogramChecker::checkPostStmt(const CallExpr *CE,
                                             CheckerContext &C) const {
   ProgramStateRef state = C.getState();
   const Expr *Callee = CE->getCallee();
 
-  bool BuildSinks = getFunctionExtInfo(Callee->getType()).getNoReturn();
+  bool BuildSinks = getSubprogramExtInfo(Callee->getType()).getNoReturn();
 
   if (!BuildSinks) {
     SVal L = state->getSVal(Callee, C.getLocationContext());
-    const FunctionDecl *FD = L.getAsFunctionDecl();
+    const SubprogramDecl *FD = L.getAsSubprogramDecl();
     if (!FD)
       return;
 
@@ -99,13 +99,13 @@ static bool END_WITH_NULL isMultiArgSelector(const Selector *Sel, ...) {
   return (Arg == NULL);
 }
 
-void NoReturnFunctionChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
+void NoReturnSubprogramChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
                                                    CheckerContext &C) const {
   // HACK: This entire check is to handle two messages in the Cocoa frameworks:
   // -[NSAssertionHandler
   //    handleFailureInMethod:object:file:lineNumber:description:]
   // -[NSAssertionHandler
-  //    handleFailureInFunction:file:lineNumber:description:]
+  //    handleFailureInSubprogram:file:lineNumber:description:]
   // Eventually these should be annotated with __attribute__((noreturn)).
   // Because ObjC messages use dynamic dispatch, it is not generally safe to
   // assume certain methods can't return. In cases where it is definitely valid,
@@ -126,7 +126,7 @@ void NoReturnFunctionChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
   default:
     return;
   case 4:
-    if (!isMultiArgSelector(&Sel, "handleFailureInFunction", "file",
+    if (!isMultiArgSelector(&Sel, "handleFailureInSubprogram", "file",
                             "lineNumber", "description", NULL))
       return;
     break;
@@ -142,6 +142,6 @@ void NoReturnFunctionChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
 }
 
 
-void ento::registerNoReturnFunctionChecker(CheckerManager &mgr) {
-  mgr.registerChecker<NoReturnFunctionChecker>();
+void ento::registerNoReturnSubprogramChecker(CheckerManager &mgr) {
+  mgr.registerChecker<NoReturnSubprogramChecker>();
 }

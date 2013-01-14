@@ -12,7 +12,7 @@
 // compiler interface.  See ARM document DUI0348B.
 //
 // Each NEON instruction is implemented in terms of 1 or more functions which
-// are suffixed with the element type of the input vectors.  Functions may be
+// are suffixed with the element type of the input vectors.  Subprograms may be
 // implemented in terms of generic vector operations such as +, *, -, etc. or
 // by calling a __builtin_-prefixed function which will be handled by lfort's
 // CodeGen library.
@@ -1213,7 +1213,7 @@ static std::string GenIntrinsic(const std::string &name,
   else
     s += "__ai " + TypeString(proto[0], outTypeStr) + " ";
 
-  // Function name with type suffix
+  // Subprogram name with type suffix
   std::string mangledName = MangleName(name, outTypeStr, ClassS);
   if (outTypeStr != inTypeStr) {
     // If the input type is different (e.g., for vreinterpret), append a suffix
@@ -1225,7 +1225,7 @@ static std::string GenIntrinsic(const std::string &name,
   }
   s += mangledName;
 
-  // Function arguments
+  // Subprogram arguments
   s += GenArgs(proto, inTypeStr);
 
   // Definition.
@@ -1448,7 +1448,7 @@ void NeonEmitter::runHeader(raw_ostream &OS) {
 
     std::string Proto = R->getValueAsString("Prototype");
 
-    // Functions with 'a' (the splat code) in the type prototype should not get
+    // Subprograms with 'a' (the splat code) in the type prototype should not get
     // their own builtin as they use the non-splat variant.
     if (Proto.find('a') != std::string::npos)
       continue;
@@ -1489,12 +1489,12 @@ void NeonEmitter::runHeader(raw_ostream &OS) {
     std::string Types = R->getValueAsString("Types");
     std::string name = R->getValueAsString("Name");
 
-    // Functions with 'a' (the splat code) in the type prototype should not get
+    // Subprograms with 'a' (the splat code) in the type prototype should not get
     // their own builtin as they use the non-splat variant.
     if (Proto.find('a') != std::string::npos)
       continue;
 
-    // Functions which have a scalar argument cannot be overloaded, no need to
+    // Subprograms which have a scalar argument cannot be overloaded, no need to
     // check them if we are emitting the type checking code.
     if (Proto.find('s') != std::string::npos)
       continue;
@@ -1587,12 +1587,12 @@ void NeonEmitter::runHeader(raw_ostream &OS) {
     std::string Proto = R->getValueAsString("Prototype");
     std::string Types = R->getValueAsString("Types");
 
-    // Functions with 'a' (the splat code) in the type prototype should not get
+    // Subprograms with 'a' (the splat code) in the type prototype should not get
     // their own builtin as they use the non-splat variant.
     if (Proto.find('a') != std::string::npos)
       continue;
 
-    // Functions which do not have an immediate do not need to have range
+    // Subprograms which do not have an immediate do not need to have range
     // checking code emitted.
     size_t immPos = Proto.find('i');
     if (immPos == std::string::npos)
@@ -1672,7 +1672,7 @@ static std::string GenTest(const std::string &name,
   assert(!proto.empty() && "");
   std::string s;
 
-  // Function name with type suffix
+  // Subprogram name with type suffix
   std::string mangledName = MangleName(name, outTypeStr, ClassS);
   if (outTypeStr != inTypeStr) {
     // If the input type is different (e.g., for vreinterpret), append a suffix

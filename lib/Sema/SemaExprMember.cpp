@@ -89,7 +89,7 @@ static IMAKind ClassifyImplicitMemberAccess(Sema &SemaRef,
                                             const LookupResult &R) {
   assert(!R.empty() && (*R.begin())->isCXXClassMember());
 
-  DeclContext *DC = SemaRef.getFunctionLevelDeclContext();
+  DeclContext *DC = SemaRef.getSubprogramLevelDeclContext();
 
   bool isStaticContext = SemaRef.CXXThisTypeOverride.isNull() &&
     (!isa<CXXMethodDecl>(DC) || cast<CXXMethodDecl>(DC)->isStatic());
@@ -186,8 +186,8 @@ static void diagnoseInstanceReference(Sema &SemaRef,
   SourceRange Range(Loc);
   if (SS.isSet()) Range.setBegin(SS.getRange().getBegin());
 
-  DeclContext *FunctionLevelDC = SemaRef.getFunctionLevelDeclContext();
-  CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(FunctionLevelDC);
+  DeclContext *SubprogramLevelDC = SemaRef.getSubprogramLevelDeclContext();
+  CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(SubprogramLevelDC);
   CXXRecordDecl *ContextClass = Method ? Method->getParent() : 0;
   CXXRecordDecl *RepClass = dyn_cast<CXXRecordDecl>(Rep->getDeclContext());
 
@@ -520,12 +520,12 @@ bool Sema::CheckQualifiedMemberReference(Expr *BaseExpr,
 namespace {
 
 // Callback to only accept typo corrections that are either a ValueDecl or a
-// FunctionTemplateDecl.
+// SubprogramTemplateDecl.
 class RecordMemberExprValidatorCCC : public CorrectionCandidateCallback {
  public:
   virtual bool ValidateCandidate(const TypoCorrection &candidate) {
     NamedDecl *ND = candidate.getCorrectionDecl();
-    return ND && (isa<ValueDecl>(ND) || isa<FunctionTemplateDecl>(ND));
+    return ND && (isa<ValueDecl>(ND) || isa<SubprogramTemplateDecl>(ND));
   }
 };
 
@@ -537,7 +537,7 @@ LookupMemberExprInRecord(Sema &SemaRef, LookupResult &R,
                          SourceLocation OpLoc, CXXScopeSpec &SS,
                          bool HasTemplateArgs) {
   RecordDecl *RDecl = RTy->getDecl();
-  if (!SemaRef.isThisOutsideMemberFunctionBody(QualType(RTy, 0)) &&
+  if (!SemaRef.isThisOutsideMemberSubprogramBody(QualType(RTy, 0)) &&
       SemaRef.RequireCompleteType(OpLoc, QualType(RTy, 0),
                                   diag::err_typecheck_incomplete_tag,
                                   BaseRange))
@@ -964,7 +964,7 @@ Sema::BuildMemberReferenceExpr(Expr *BaseExpr, QualType BaseExprType,
                                  MemberNameInfo, type, valueKind,
                                  OK_Ordinary));
   }
-  assert(!isa<FunctionDecl>(MemberDecl) && "member function not C++ method?");
+  assert(!isa<SubprogramDecl>(MemberDecl) && "member function not C++ method?");
 
   if (EnumConstantDecl *Enum = dyn_cast<EnumConstantDecl>(MemberDecl)) {
     return Owned(BuildMemberExpr(*this, Context, BaseExpr, IsArrow, SS,
@@ -1032,8 +1032,8 @@ static bool isPointerToRecordType(QualType T) {
 /// Perform conversions on the LHS of a member access expression.
 ExprResult
 Sema::PerformMemberExprBaseConversion(Expr *Base, bool IsArrow) {
-  if (IsArrow && !Base->getType()->isFunctionType())
-    return DefaultFunctionArrayLvalueConversion(Base);
+  if (IsArrow && !Base->getType()->isSubprogramType())
+    return DefaultSubprogramArrayLvalueConversion(Base);
 
   return CheckPlaceholderExpr(Base);
 }
@@ -1087,7 +1087,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
         << BaseType << int(IsArrow) << BaseExpr.get()->getSourceRange()
         << FixItHint::CreateReplacement(OpLoc, ".");
       IsArrow = false;
-    } else if (BaseType->isFunctionType()) {
+    } else if (BaseType->isSubprogramType()) {
       goto fail;
     } else {
       Diag(MemberLoc, diag::err_typecheck_member_reference_arrow)
@@ -1216,7 +1216,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
       ObjCInterfaceDecl *ClassOfMethodDecl = 0;
       if (ObjCMethodDecl *MD = getCurMethodDecl())
         ClassOfMethodDecl =  MD->getClassInterface();
-      else if (ObjCImpDecl && getCurFunctionDecl()) {
+      else if (ObjCImpDecl && getCurSubprogramDecl()) {
         // Case of a c-function declared inside an objc implementation.
         // FIXME: For a c-style function nested inside an objc implementation
         // class, there is no implementation context available, so we pass
@@ -1276,7 +1276,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
           Diags.getDiagnosticLevel(diag::warn_arc_repeated_use_of_weak,
                                    MemberLoc);
         if (Level != DiagnosticsEngine::Ignored)
-          getCurFunction()->recordUseOfWeak(Result);
+          getCurSubprogram()->recordUseOfWeak(Result);
       }
     }
 
@@ -1466,7 +1466,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
                            IsArrow ? &isPointerToRecordType : &isRecordType)) {
     if (BaseExpr.isInvalid())
       return ExprError();
-    BaseExpr = DefaultFunctionArrayConversion(BaseExpr.take());
+    BaseExpr = DefaultSubprogramArrayConversion(BaseExpr.take());
     return LookupMemberExpr(R, BaseExpr, IsArrow, OpLoc, SS,
                             ObjCImpDecl, HasTemplateArgs);
   }

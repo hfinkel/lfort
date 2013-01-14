@@ -106,7 +106,7 @@ public:
   /// Retrieves the source range for the friend declaration.
   SourceRange getSourceRange() const LLVM_READONLY {
     if (NamedDecl *ND = getFriendDecl()) {
-      if (FunctionTemplateDecl *FTD = dyn_cast<FunctionTemplateDecl>(ND))
+      if (SubprogramTemplateDecl *FTD = dyn_cast<SubprogramTemplateDecl>(ND))
         return FTD->getSourceRange();
       if (DeclaratorDecl *DD = dyn_cast<DeclaratorDecl>(ND)) {
         if (DD->getOuterLocStart() != DD->getInnerLocStart())

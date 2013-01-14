@@ -360,7 +360,7 @@ static ProgramStateRef removeRefBinding(ProgramStateRef State, SymbolRef Sym) {
 }
 
 //===----------------------------------------------------------------------===//
-// Function/Method behavior summaries.
+// Subprogram/Method behavior summaries.
 //===----------------------------------------------------------------------===//
 
 namespace {
@@ -570,7 +570,7 @@ class RetainSummaryManager {
   //  Typedefs.
   //==-----------------------------------------------------------------==//
 
-  typedef llvm::DenseMap<const FunctionDecl*, const RetainSummary *>
+  typedef llvm::DenseMap<const SubprogramDecl*, const RetainSummary *>
           FuncSummariesTy;
 
   typedef ObjCSummaryCache ObjCMethodSummariesTy;
@@ -590,7 +590,7 @@ class RetainSummaryManager {
   /// Records whether or not the analyzed code runs in ARC mode.
   const bool ARCEnabled;
 
-  /// FuncSummaries - A map from FunctionDecls to summaries.
+  /// FuncSummaries - A map from SubprogramDecls to summaries.
   FuncSummariesTy FuncSummaries;
 
   /// ObjCClassMethodSummaries - A map from selectors (for instance methods)
@@ -632,12 +632,12 @@ class RetainSummaryManager {
 
   enum UnaryFuncKind { cfretain, cfrelease, cfmakecollectable };
   
-  const RetainSummary *getUnarySummary(const FunctionType* FT,
+  const RetainSummary *getUnarySummary(const SubprogramType* FT,
                                        UnaryFuncKind func);
 
-  const RetainSummary *getCFSummaryCreateRule(const FunctionDecl *FD);
-  const RetainSummary *getCFSummaryGetRule(const FunctionDecl *FD);
-  const RetainSummary *getCFCreateGetRuleSummary(const FunctionDecl *FD);
+  const RetainSummary *getCFSummaryCreateRule(const SubprogramDecl *FD);
+  const RetainSummary *getCFSummaryGetRule(const SubprogramDecl *FD);
+  const RetainSummary *getCFCreateGetRuleSummary(const SubprogramDecl *FD);
 
   const RetainSummary *getPersistentSummary(const RetainSummary &OldSumm);
 
@@ -746,7 +746,7 @@ public:
   const RetainSummary *getSummary(const CallEvent &Call,
                                   ProgramStateRef State = 0);
 
-  const RetainSummary *getFunctionSummary(const FunctionDecl *FD);
+  const RetainSummary *getSubprogramSummary(const SubprogramDecl *FD);
 
   const RetainSummary *getMethodSummary(Selector S, const ObjCInterfaceDecl *ID,
                                         const ObjCMethodDecl *MD,
@@ -787,7 +787,7 @@ public:
                                     const ObjCMethodDecl *MD);
 
   void updateSummaryFromAnnotations(const RetainSummary *&Summ,
-                                    const FunctionDecl *FD);
+                                    const SubprogramDecl *FD);
 
   void updateSummaryForCall(const RetainSummary *&Summ,
                             const CallEvent &Call);
@@ -872,16 +872,16 @@ RetainSummaryManager::getPersistentSummary(const RetainSummary &OldSumm) {
 // Summary creation for functions (largely uses of Core Foundation).
 //===----------------------------------------------------------------------===//
 
-static bool isRetain(const FunctionDecl *FD, StringRef FName) {
+static bool isRetain(const SubprogramDecl *FD, StringRef FName) {
   return FName.endswith("Retain");
 }
 
-static bool isRelease(const FunctionDecl *FD, StringRef FName) {
+static bool isRelease(const SubprogramDecl *FD, StringRef FName) {
   return FName.endswith("Release");
 }
 
-static bool isMakeCollectable(const FunctionDecl *FD, StringRef FName) {
-  // FIXME: Remove FunctionDecl parameter.
+static bool isMakeCollectable(const SubprogramDecl *FD, StringRef FName) {
+  // FIXME: Remove SubprogramDecl parameter.
   // FIXME: Is it really okay if MakeCollectable isn't a suffix?
   return FName.find("MakeCollectable") != StringRef::npos;
 }
@@ -934,7 +934,7 @@ void RetainSummaryManager::updateSummaryForCall(const RetainSummary *&S,
     // Special cases where the callback argument CANNOT free the return value.
     // This can generally only happen if we know that the callback will only be
     // called when the return value is already being deallocated.
-    if (const FunctionCall *FC = dyn_cast<FunctionCall>(&Call)) {
+    if (const SubprogramCall *FC = dyn_cast<SubprogramCall>(&Call)) {
       if (IdentifierInfo *Name = FC->getDecl()->getIdentifier()) {
         // When the CGBitmapContext is deallocated, the callback here will free
         // the associated data buffer.
@@ -981,8 +981,8 @@ RetainSummaryManager::getSummary(const CallEvent &Call,
                                  ProgramStateRef State) {
   const RetainSummary *Summ;
   switch (Call.getKind()) {
-  case CE_Function:
-    Summ = getFunctionSummary(cast<FunctionCall>(Call).getDecl());
+  case CE_Subprogram:
+    Summ = getSubprogramSummary(cast<SubprogramCall>(Call).getDecl());
     break;
   case CE_CXXMember:
   case CE_CXXMemberOperator:
@@ -1009,12 +1009,12 @@ RetainSummaryManager::getSummary(const CallEvent &Call,
 }
 
 const RetainSummary *
-RetainSummaryManager::getFunctionSummary(const FunctionDecl *FD) {
+RetainSummaryManager::getSubprogramSummary(const SubprogramDecl *FD) {
   // If we don't know what function we're calling, use our default summary.
   if (!FD)
     return getDefaultSummary();
 
-  // Look up a summary in our cache of FunctionDecls -> Summaries.
+  // Look up a summary in our cache of SubprogramDecls -> Summaries.
   FuncSummariesTy::iterator I = FuncSummaries.find(FD);
   if (I != FuncSummaries.end())
     return I->second;
@@ -1030,9 +1030,9 @@ RetainSummaryManager::getFunctionSummary(const FunctionDecl *FD) {
       break;
     }
 
-    // [PR 3337] Use 'getAs<FunctionType>' to strip away any typedefs on the
+    // [PR 3337] Use 'getAs<SubprogramType>' to strip away any typedefs on the
     // function's type.
-    const FunctionType* FT = FD->getType()->getAs<FunctionType>();
+    const SubprogramType* FT = FD->getType()->getAs<SubprogramType>();
     const IdentifierInfo *II = FD->getIdentifier();
     if (!II)
       break;
@@ -1225,7 +1225,7 @@ RetainSummaryManager::getFunctionSummary(const FunctionDecl *FD) {
 }
 
 const RetainSummary *
-RetainSummaryManager::getCFCreateGetRuleSummary(const FunctionDecl *FD) {
+RetainSummaryManager::getCFCreateGetRuleSummary(const SubprogramDecl *FD) {
   if (coreFoundation::followsCreateRule(FD))
     return getCFSummaryCreateRule(FD);
 
@@ -1233,12 +1233,12 @@ RetainSummaryManager::getCFCreateGetRuleSummary(const FunctionDecl *FD) {
 }
 
 const RetainSummary *
-RetainSummaryManager::getUnarySummary(const FunctionType* FT,
+RetainSummaryManager::getUnarySummary(const SubprogramType* FT,
                                       UnaryFuncKind func) {
 
   // Sanity check that this is *really* a unary function.  This can
   // happen if people do weird things.
-  const FunctionProtoType* FTP = dyn_cast<FunctionProtoType>(FT);
+  const SubprogramProtoType* FTP = dyn_cast<SubprogramProtoType>(FT);
   if (!FTP || FTP->getNumArgs() != 1)
     return getPersistentStopSummary();
 
@@ -1256,14 +1256,14 @@ RetainSummaryManager::getUnarySummary(const FunctionType* FT,
 }
 
 const RetainSummary * 
-RetainSummaryManager::getCFSummaryCreateRule(const FunctionDecl *FD) {
+RetainSummaryManager::getCFSummaryCreateRule(const SubprogramDecl *FD) {
   assert (ScratchArgs.isEmpty());
 
   return getPersistentSummary(RetEffect::MakeOwned(RetEffect::CF, true));
 }
 
 const RetainSummary * 
-RetainSummaryManager::getCFSummaryGetRule(const FunctionDecl *FD) {
+RetainSummaryManager::getCFSummaryGetRule(const SubprogramDecl *FD) {
   assert (ScratchArgs.isEmpty());
   return getPersistentSummary(RetEffect::MakeNotOwned(RetEffect::CF),
                               DoNothing, DoNothing);
@@ -1275,7 +1275,7 @@ RetainSummaryManager::getCFSummaryGetRule(const FunctionDecl *FD) {
 
 void
 RetainSummaryManager::updateSummaryFromAnnotations(const RetainSummary *&Summ,
-                                                   const FunctionDecl *FD) {
+                                                   const SubprogramDecl *FD) {
   if (!FD)
     return;
 
@@ -1284,7 +1284,7 @@ RetainSummaryManager::updateSummaryFromAnnotations(const RetainSummary *&Summ,
 
   // Effects on the parameters.
   unsigned parm_idx = 0;
-  for (FunctionDecl::param_const_iterator pi = FD->param_begin(), 
+  for (SubprogramDecl::param_const_iterator pi = FD->param_begin(), 
          pe = FD->param_end(); pi != pe; ++pi, ++parm_idx) {
     const ParmVarDecl *pd = *pi;
     if (pd->getAttr<NSConsumedAttr>()) {
@@ -1927,7 +1927,7 @@ PathDiagnosticPiece *CFRefReportVisitor::VisitNode(const ExplodedNode *N,
       if (const CallExpr *CE = dyn_cast<CallExpr>(S)) {
         // Get the name of the callee (if it is available).
         SVal X = CurrSt->getSValAsScalarOrLoc(CE->getCallee(), LCtx);
-        if (const FunctionDecl *FD = X.getAsFunctionDecl())
+        if (const SubprogramDecl *FD = X.getAsSubprogramDecl())
           os << "Call to function '" << *FD << '\'';
         else
           os << "function call";
@@ -2039,7 +2039,7 @@ PathDiagnosticPiece *CFRefReportVisitor::VisitNode(const ExplodedNode *N,
       const Stmt *S = cast<StmtPoint>(N->getLocation()).getStmt();
       SVal X =
         CurrSt->getSValAsScalarOrLoc(cast<CallExpr>(S)->getCallee(), LCtx);
-      const FunctionDecl *FD = X.getAsFunctionDecl();
+      const SubprogramDecl *FD = X.getAsSubprogramDecl();
 
       if (GCEnabled) {
         // Determine if the object's reference count was pushed to zero.
@@ -2272,7 +2272,7 @@ CFRefLeakReportVisitor::getEndPath(BugReporterContext &BRC,
               " given in the Memory Management Guide for Cocoa";
       }
       else {
-        const FunctionDecl *FD = cast<FunctionDecl>(D);
+        const SubprogramDecl *FD = cast<SubprogramDecl>(D);
         os << "whose name ('" << *FD
            << "') does not contain 'Copy' or 'Create'.  This violates the naming"
               " convention rules given in the Memory Management Guide for Core"
@@ -2352,7 +2352,7 @@ class RetainCountChecker
   : public Checker< check::Bind,
                     check::DeadSymbols,
                     check::EndAnalysis,
-                    check::EndFunction,
+                    check::EndSubprogram,
                     check::PostStmt<BlockExpr>,
                     check::PostStmt<CastExpr>,
                     check::PostStmt<ObjCArrayLiteral>,
@@ -2366,8 +2366,8 @@ class RetainCountChecker
   mutable OwningPtr<CFRefBug> useAfterRelease, releaseNotOwned;
   mutable OwningPtr<CFRefBug> deallocGC, deallocNotOwned;
   mutable OwningPtr<CFRefBug> overAutorelease, returnNotOwnedForOwned;
-  mutable OwningPtr<CFRefBug> leakWithinFunction, leakAtReturn;
-  mutable OwningPtr<CFRefBug> leakWithinFunctionGC, leakAtReturnGC;
+  mutable OwningPtr<CFRefBug> leakWithinSubprogram, leakAtReturn;
+  mutable OwningPtr<CFRefBug> leakWithinSubprogramGC, leakAtReturnGC;
 
   typedef llvm::DenseMap<SymbolRef, const SimpleProgramPointTag *> SymbolTagMap;
 
@@ -2422,24 +2422,24 @@ public:
     ShouldResetSummaryLog = !SummaryLog.empty();
   }
 
-  CFRefBug *getLeakWithinFunctionBug(const LangOptions &LOpts,
+  CFRefBug *getLeakWithinSubprogramBug(const LangOptions &LOpts,
                                      bool GCEnabled) const {
     if (GCEnabled) {
-      if (!leakWithinFunctionGC)
-        leakWithinFunctionGC.reset(new Leak("Leak of object when using "
+      if (!leakWithinSubprogramGC)
+        leakWithinSubprogramGC.reset(new Leak("Leak of object when using "
                                              "garbage collection"));
-      return leakWithinFunctionGC.get();
+      return leakWithinSubprogramGC.get();
     } else {
-      if (!leakWithinFunction) {
+      if (!leakWithinSubprogram) {
         if (LOpts.getGC() == LangOptions::HybridGC) {
-          leakWithinFunction.reset(new Leak("Leak of object when not using "
+          leakWithinSubprogram.reset(new Leak("Leak of object when not using "
                                             "garbage collection (GC) in "
                                             "dual GC/non-GC code"));
         } else {
-          leakWithinFunction.reset(new Leak("Leak"));
+          leakWithinSubprogram.reset(new Leak("Leak"));
         }
       }
-      return leakWithinFunction.get();
+      return leakWithinSubprogram.get();
     }
   }
 
@@ -2529,7 +2529,7 @@ public:
                                 SymbolRef Sym, ProgramStateRef state) const;
                                               
   void checkDeadSymbols(SymbolReaper &SymReaper, CheckerContext &C) const;
-  void checkEndFunction(CheckerContext &C) const;
+  void checkEndSubprogram(CheckerContext &C) const;
 
   ProgramStateRef updateSymbol(ProgramStateRef state, SymbolRef sym,
                                RefVal V, ArgEffect E, RefVal::Kind &hasErr,
@@ -3119,7 +3119,7 @@ void RetainCountChecker::processNonLeakError(ProgramStateRef St,
 bool RetainCountChecker::evalCall(const CallExpr *CE, CheckerContext &C) const {
   // Get the callee. We're only interested in simple C functions.
   ProgramStateRef state = C.getState();
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
   if (!FD)
     return false;
 
@@ -3283,9 +3283,9 @@ void RetainCountChecker::checkPreStmt(const ReturnStmt *S,
   if (const ObjCMethodDecl *MD = dyn_cast<ObjCMethodDecl>(CD)) {
     const RetainSummary *Summ = Summaries.getMethodSummary(MD);
     RE = Summ->getRetEffect();
-  } else if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(CD)) {
+  } else if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CD)) {
     if (!isa<CXXMethodDecl>(FD)) {
-      const RetainSummary *Summ = Summaries.getFunctionSummary(FD);
+      const RetainSummary *Summ = Summaries.getSubprogramSummary(FD);
       RE = Summ->getRetEffect();
     }
   }
@@ -3567,7 +3567,7 @@ RetainCountChecker::processLeaks(ProgramStateRef state,
 
       const LangOptions &LOpts = Ctx.getASTContext().getLangOpts();
       bool GCEnabled = Ctx.isObjCGCEnabled();
-      CFRefBug *BT = Pred ? getLeakWithinFunctionBug(LOpts, GCEnabled)
+      CFRefBug *BT = Pred ? getLeakWithinSubprogramBug(LOpts, GCEnabled)
                           : getLeakAtReturnBug(LOpts, GCEnabled);
       assert(BT && "BugType not initialized.");
 
@@ -3580,7 +3580,7 @@ RetainCountChecker::processLeaks(ProgramStateRef state,
   return N;
 }
 
-void RetainCountChecker::checkEndFunction(CheckerContext &Ctx) const {
+void RetainCountChecker::checkEndSubprogram(CheckerContext &Ctx) const {
   ProgramStateRef state = Ctx.getState();
   RefBindingsTy B = state->get<RefBindings>();
   ExplodedNode *Pred = Ctx.getPredecessor();

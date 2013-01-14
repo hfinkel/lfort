@@ -111,7 +111,7 @@ int DeclarationName::compare(DeclarationName LHS, DeclarationName RHS) {
   
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (QualTypeOrdering()(LHS.getCXXNameType(), RHS.getCXXNameType()))
       return -1;
     if (QualTypeOrdering()(RHS.getCXXNameType(), LHS.getCXXNameType()))
@@ -149,8 +149,8 @@ DeclarationName::NameKind DeclarationName::getNameKind() const {
     case DeclarationNameExtra::CXXDestructor:
       return CXXDestructorName;
 
-    case DeclarationNameExtra::CXXConversionFunction:
-      return CXXConversionFunctionName;
+    case DeclarationNameExtra::CXXConversionSubprogram:
+      return CXXConversionSubprogramName;
 
     case DeclarationNameExtra::CXXLiteralOperator:
       return CXXLiteralOperatorName;
@@ -237,7 +237,7 @@ void DeclarationName::printName(raw_ostream &OS) const {
     OS << "operator \"\" " << getCXXLiteralIdentifier()->getName();
     return;
 
-  case CXXConversionFunctionName: {
+  case CXXConversionSubprogramName: {
     OS << "operator ";
     QualType Type = getCXXNameType();
     if (const RecordType *Rec = Type->getAs<RecordType>())
@@ -264,7 +264,7 @@ QualType DeclarationName::getCXXNameType() const {
 OverloadedOperatorKind DeclarationName::getCXXOverloadedOperator() const {
   if (CXXOperatorIdName *CXXOp = getAsCXXOperatorIdName()) {
     unsigned value
-      = CXXOp->ExtraKindOrNumArgs - DeclarationNameExtra::CXXConversionFunction;
+      = CXXOp->ExtraKindOrNumArgs - DeclarationNameExtra::CXXConversionSubprogram;
     return static_cast<OverloadedOperatorKind>(value);
   } else {
     return OO_None;
@@ -285,7 +285,7 @@ void *DeclarationName::getFETokenInfoAsVoidSlow() const {
 
   case CXXConstructorName:
   case CXXDestructorName:
-  case CXXConversionFunctionName:
+  case CXXConversionSubprogramName:
     return getAsCXXSpecialName()->FETokenInfo;
 
   case CXXOperatorName:
@@ -307,7 +307,7 @@ void DeclarationName::setFETokenInfo(void *T) {
 
   case CXXConstructorName:
   case CXXDestructorName:
-  case CXXConversionFunctionName:
+  case CXXConversionSubprogramName:
     getAsCXXSpecialName()->FETokenInfo = T;
     break;
 
@@ -348,7 +348,7 @@ DeclarationNameTable::DeclarationNameTable(const ASTContext &C) : Ctx(C) {
   CXXOperatorNames = new (Ctx) CXXOperatorIdName[NUM_OVERLOADED_OPERATORS];
   for (unsigned Op = 0; Op < NUM_OVERLOADED_OPERATORS; ++Op) {
     CXXOperatorNames[Op].ExtraKindOrNumArgs
-      = Op + DeclarationNameExtra::CXXConversionFunction;
+      = Op + DeclarationNameExtra::CXXConversionSubprogram;
     CXXOperatorNames[Op].FETokenInfo = 0;
   }
 }
@@ -375,15 +375,15 @@ DeclarationName DeclarationNameTable::getCXXDestructorName(CanQualType Ty) {
 }
 
 DeclarationName
-DeclarationNameTable::getCXXConversionFunctionName(CanQualType Ty) {
-  return getCXXSpecialName(DeclarationName::CXXConversionFunctionName, Ty);
+DeclarationNameTable::getCXXConversionSubprogramName(CanQualType Ty) {
+  return getCXXSpecialName(DeclarationName::CXXConversionSubprogramName, Ty);
 }
 
 DeclarationName
 DeclarationNameTable::getCXXSpecialName(DeclarationName::NameKind Kind,
                                         CanQualType Ty) {
   assert(Kind >= DeclarationName::CXXConstructorName &&
-         Kind <= DeclarationName::CXXConversionFunctionName &&
+         Kind <= DeclarationName::CXXConversionSubprogramName &&
          "Kind must be a C++ special name kind");
   llvm::FoldingSet<CXXSpecialName> *SpecialNames
     = static_cast<llvm::FoldingSet<CXXSpecialName>*>(CXXSpecialNamesImpl);
@@ -398,8 +398,8 @@ DeclarationNameTable::getCXXSpecialName(DeclarationName::NameKind Kind,
     EKind = DeclarationNameExtra::CXXDestructor;
     assert(!Ty.hasQualifiers() && "Destructor type must be unqualified");
     break;
-  case DeclarationName::CXXConversionFunctionName:
-    EKind = DeclarationNameExtra::CXXConversionFunction;
+  case DeclarationName::CXXConversionSubprogramName:
+    EKind = DeclarationNameExtra::CXXConversionSubprogram;
     break;
   default:
     return DeclarationName();
@@ -457,7 +457,7 @@ DeclarationNameLoc::DeclarationNameLoc(DeclarationName Name) {
     break;
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     NamedType.TInfo = 0;
     break;
   case DeclarationName::CXXOperatorName:
@@ -490,7 +490,7 @@ bool DeclarationNameInfo::containsUnexpandedParameterPack() const {
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TInfo = LocInfo.NamedType.TInfo)
       return TInfo->getType()->containsUnexpandedParameterPack();
 
@@ -512,7 +512,7 @@ bool DeclarationNameInfo::isInstantiationDependent() const {
     
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TInfo = LocInfo.NamedType.TInfo)
       return TInfo->getType()->isInstantiationDependentType();
     
@@ -542,11 +542,11 @@ void DeclarationNameInfo::printName(raw_ostream &OS) const {
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TInfo = LocInfo.NamedType.TInfo) {
       if (Name.getNameKind() == DeclarationName::CXXDestructorName)
         OS << '~';
-      else if (Name.getNameKind() == DeclarationName::CXXConversionFunctionName)
+      else if (Name.getNameKind() == DeclarationName::CXXConversionSubprogramName)
         OS << "operator ";
       OS << TInfo->getType().getAsString();
     }
@@ -574,7 +574,7 @@ SourceLocation DeclarationNameInfo::getEndLoc() const {
 
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
-  case DeclarationName::CXXConversionFunctionName:
+  case DeclarationName::CXXConversionSubprogramName:
     if (TypeSourceInfo *TInfo = LocInfo.NamedType.TInfo)
       return TInfo->getTypeLoc().getEndLoc();
     else

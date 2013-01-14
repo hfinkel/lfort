@@ -43,8 +43,8 @@ CodeGenTypes::~CodeGenTypes() {
       I != E; ++I)
     delete I->second;
 
-  for (llvm::FoldingSet<CGFunctionInfo>::iterator
-       I = FunctionInfos.begin(), E = FunctionInfos.end(); I != E; )
+  for (llvm::FoldingSet<CGSubprogramInfo>::iterator
+       I = SubprogramInfos.begin(), E = SubprogramInfos.end(); I != E; )
     delete &*I++;
 }
 
@@ -221,11 +221,11 @@ bool CodeGenTypes::isFuncTypeArgumentConvertible(QualType Ty) {
 /// a RS_StructPointer context, and if so whether any struct types have been
 /// pended.  If so, we don't want to ask the ABI lowering code to handle a type
 /// that cannot be converted to an IR type.
-bool CodeGenTypes::isFuncTypeConvertible(const FunctionType *FT) {
+bool CodeGenTypes::isFuncTypeConvertible(const SubprogramType *FT) {
   if (!isFuncTypeArgumentConvertible(FT->getResultType()))
     return false;
   
-  if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT))
+  if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(FT))
     for (unsigned i = 0, e = FPT->getNumArgs(); i != e; i++)
       if (!isFuncTypeArgumentConvertible(FPT->getArgType(i)))
         return false;
@@ -455,9 +455,9 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
                                        VT->getNumElements());
     break;
   }
-  case Type::FunctionNoProto:
-  case Type::FunctionProto: {
-    const FunctionType *FT = cast<FunctionType>(Ty);
+  case Type::SubprogramNoProto:
+  case Type::SubprogramProto: {
+    const SubprogramType *FT = cast<SubprogramType>(Ty);
     // First, check whether we can build the full function type.  If the
     // function type depends on an incomplete type (e.g. a struct or enum), we
     // cannot lower the function type.
@@ -465,10 +465,10 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
       // This function's type depends on an incomplete tag type.
 
       // Force conversion of all the relevant record types, to make sure
-      // we re-convert the FunctionType when appropriate.
+      // we re-convert the SubprogramType when appropriate.
       if (const RecordType *RT = FT->getResultType()->getAs<RecordType>())
         ConvertRecordDeclType(RT->getDecl());
-      if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT))
+      if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(FT))
         for (unsigned i = 0, e = FPT->getNumArgs(); i != e; i++)
           if (const RecordType *RT = FPT->getArgType(i)->getAs<RecordType>())
             ConvertRecordDeclType(RT->getDecl());
@@ -492,26 +492,26 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     
     // The function type can be built; call the appropriate routines to
     // build it.
-    const CGFunctionInfo *FI;
-    if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT)) {
-      FI = &arrangeFreeFunctionType(
-                   CanQual<FunctionProtoType>::CreateUnsafe(QualType(FPT, 0)));
+    const CGSubprogramInfo *FI;
+    if (const SubprogramProtoType *FPT = dyn_cast<SubprogramProtoType>(FT)) {
+      FI = &arrangeFreeSubprogramType(
+                   CanQual<SubprogramProtoType>::CreateUnsafe(QualType(FPT, 0)));
     } else {
-      const FunctionNoProtoType *FNPT = cast<FunctionNoProtoType>(FT);
-      FI = &arrangeFreeFunctionType(
-                CanQual<FunctionNoProtoType>::CreateUnsafe(QualType(FNPT, 0)));
+      const SubprogramNoProtoType *FNPT = cast<SubprogramNoProtoType>(FT);
+      FI = &arrangeFreeSubprogramType(
+                CanQual<SubprogramNoProtoType>::CreateUnsafe(QualType(FNPT, 0)));
     }
     
-    // If there is something higher level prodding our CGFunctionInfo, then
+    // If there is something higher level prodding our CGSubprogramInfo, then
     // don't recurse into it again.
-    if (FunctionsBeingProcessed.count(FI)) {
+    if (SubprogramsBeingProcessed.count(FI)) {
 
       ResultType = llvm::StructType::get(getLLVMContext());
       SkippedLayout = true;
     } else {
 
       // Otherwise, we're good to go, go ahead and convert it.
-      ResultType = GetFunctionType(*FI);
+      ResultType = GetSubprogramType(*FI);
     }
 
     RecordsBeingLaidOut.erase(Ty);
@@ -636,7 +636,7 @@ llvm::StructType *CodeGenTypes::ConvertRecordDeclType(const RecordDecl *RD) {
   bool EraseResult = RecordsBeingLaidOut.erase(Key); (void)EraseResult;
   assert(EraseResult && "struct not in RecordsBeingLaidOut set?");
    
-  // If this struct blocked a FunctionType conversion, then recompute whatever
+  // If this struct blocked a SubprogramType conversion, then recompute whatever
   // was derived from that.
   // FIXME: This is hugely overconservative.
   if (SkippedLayout)

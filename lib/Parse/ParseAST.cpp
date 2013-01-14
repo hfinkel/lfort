@@ -75,17 +75,17 @@ void lfort::ParseAST(Preprocessor &PP, ASTConsumer *Consumer,
                      ASTContext &Ctx, bool PrintStats,
                      TranslationUnitKind TUKind,
                      CodeCompleteConsumer *CompletionConsumer,
-                     bool SkipFunctionBodies) {
+                     bool SkipSubprogramBodies) {
 
   OwningPtr<Sema> S(new Sema(PP, Ctx, *Consumer, TUKind, CompletionConsumer));
 
   // Recover resources if we crash before exiting this method.
   llvm::CrashRecoveryContextCleanupRegistrar<Sema> CleanupSema(S.get());
   
-  ParseAST(*S.get(), PrintStats, SkipFunctionBodies);
+  ParseAST(*S.get(), PrintStats, SkipSubprogramBodies);
 }
 
-void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipFunctionBodies) {
+void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipSubprogramBodies) {
   // Collect global stats on Decls/Stmts (until we have a module streamer).
   if (PrintStats) {
     Decl::EnableStatistics();
@@ -99,7 +99,7 @@ void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipFunctionBodies) {
   ASTConsumer *Consumer = &S.getASTConsumer();
 
   OwningPtr<Parser> ParseOP(new Parser(S.getPreprocessor(), S,
-                                       SkipFunctionBodies));
+                                       SkipSubprogramBodies));
   Parser &P = *ParseOP.get();
 
   PrettyStackTraceParserEntry CrashInfo(P);

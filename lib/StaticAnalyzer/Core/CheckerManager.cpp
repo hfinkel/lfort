@@ -30,7 +30,7 @@ bool CheckerManager::hasPathSensitiveCheckers() const {
          !LocationCheckers.empty()          ||
          !BindCheckers.empty()              ||
          !EndAnalysisCheckers.empty()       ||
-         !EndFunctionCheckers.empty()           ||
+         !EndSubprogramCheckers.empty()           ||
          !BranchConditionCheckers.empty()   ||
          !LiveSymbolsCheckers.empty()       ||
          !DeadSymbolsCheckers.empty()       ||
@@ -50,7 +50,7 @@ void CheckerManager::finishedCheckerRegistration() {
 }
 
 //===----------------------------------------------------------------------===//
-// Functions for running checkers for AST traversing..
+// Subprograms for running checkers for AST traversing..
 //===----------------------------------------------------------------------===//
 
 void CheckerManager::runCheckersOnASTDecl(const Decl *D, AnalysisManager& mgr,
@@ -87,7 +87,7 @@ void CheckerManager::runCheckersOnASTBody(const Decl *D, AnalysisManager& mgr,
 }
 
 //===----------------------------------------------------------------------===//
-// Functions for running checkers for path-sensitive checking.
+// Subprograms for running checkers for path-sensitive checking.
 //===----------------------------------------------------------------------===//
 
 template <typename CHECK_CTX>
@@ -353,7 +353,7 @@ void CheckerManager::runCheckersForEndAnalysis(ExplodedGraph &G,
 /// \brief Run checkers for end of path.
 // Note, We do not chain the checker output (like in expandGraphWithCheckers)
 // for this callback since end of path nodes are expected to be final.
-void CheckerManager::runCheckersForEndFunction(NodeBuilderContext &BC,
+void CheckerManager::runCheckersForEndSubprogram(NodeBuilderContext &BC,
                                                ExplodedNodeSet &Dst,
                                                ExplodedNode *Pred,
                                                ExprEngine &Eng) {
@@ -362,8 +362,8 @@ void CheckerManager::runCheckersForEndFunction(NodeBuilderContext &BC,
   // creates a sucsessor for Pred, we do not need to generate an 
   // autotransition for it.
   NodeBuilder Bldr(Pred, Dst, BC);
-  for (unsigned i = 0, e = EndFunctionCheckers.size(); i != e; ++i) {
-    CheckEndFunctionFunc checkFn = EndFunctionCheckers[i];
+  for (unsigned i = 0, e = EndSubprogramCheckers.size(); i != e; ++i) {
+    CheckEndSubprogramFunc checkFn = EndSubprogramCheckers[i];
 
     const ProgramPoint &L = BlockEntrance(BC.Block,
                                           Pred->getLocationContext(),
@@ -633,8 +633,8 @@ void CheckerManager::_registerForEndAnalysis(CheckEndAnalysisFunc checkfn) {
   EndAnalysisCheckers.push_back(checkfn);
 }
 
-void CheckerManager::_registerForEndFunction(CheckEndFunctionFunc checkfn) {
-  EndFunctionCheckers.push_back(checkfn);
+void CheckerManager::_registerForEndSubprogram(CheckEndSubprogramFunc checkfn) {
+  EndSubprogramCheckers.push_back(checkfn);
 }
 
 void CheckerManager::_registerForBranchCondition(

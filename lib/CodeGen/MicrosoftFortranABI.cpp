@@ -50,11 +50,11 @@ public:
     // TODO: 'for base' flag
   }
 
-  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+  void BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
-                                   FunctionArgList &Params);
+                                   SubprogramArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
+  void EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF);
 
   void EmitGuardedInit(CodeGenSubprogram &CGF, const VarDecl &D,
                        llvm::GlobalVariable *DeclPtr,
@@ -124,16 +124,16 @@ void MicrosoftFortranABI::BuildConstructorSignature(const CXXConstructorDecl *Ct
   ResTy = ArgTys[0];
 }
 
-void MicrosoftFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
+void MicrosoftFortranABI::BuildInstanceSubprogramParams(CodeGenSubprogram &CGF,
                                                   QualType &ResTy,
-                                                  FunctionArgList &Params) {
+                                                  SubprogramArgList &Params) {
   BuildThisParam(CGF, Params);
   if (needThisReturn(CGF.CurGD)) {
     ResTy = Params[0]->getType();
   }
 }
 
-void MicrosoftFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
+void MicrosoftFortranABI::EmitInstanceSubprogramProlog(CodeGenSubprogram &CGF) {
   EmitThisParam(CGF);
   if (needThisReturn(CGF.CurGD)) {
     CGF.Builder.CreateStore(getThisValue(CGF), CGF.ReturnValue);

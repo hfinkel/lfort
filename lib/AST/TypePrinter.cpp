@@ -209,8 +209,8 @@ bool TypePrinter::canPrefixQualifiers(const Type *T,
     case Type::DependentSizedExtVector:
     case Type::Vector:
     case Type::ExtVector:
-    case Type::FunctionProto:
-    case Type::FunctionNoProto:
+    case Type::SubprogramProto:
+    case Type::SubprogramNoProto:
     case Type::Paren:
     case Type::Attributed:
     case Type::PackExpansion:
@@ -552,7 +552,7 @@ void TypePrinter::printExtVectorAfter(const ExtVectorType *T, raw_ostream &OS) {
 }
 
 void 
-FunctionProtoType::printExceptionSpecification(raw_ostream &OS, 
+SubprogramProtoType::printExceptionSpecification(raw_ostream &OS, 
                                                const PrintingPolicy &Policy)
                                                                          const {
   
@@ -578,7 +578,7 @@ FunctionProtoType::printExceptionSpecification(raw_ostream &OS,
   }
 }
 
-void TypePrinter::printFunctionProtoBefore(const FunctionProtoType *T, 
+void TypePrinter::printSubprogramProtoBefore(const SubprogramProtoType *T, 
                                            raw_ostream &OS) {
   if (T->hasTrailingReturn()) {
     OS << "auto ";
@@ -593,7 +593,7 @@ void TypePrinter::printFunctionProtoBefore(const FunctionProtoType *T,
   }
 }
 
-void TypePrinter::printFunctionProtoAfter(const FunctionProtoType *T, 
+void TypePrinter::printSubprogramProtoAfter(const SubprogramProtoType *T, 
                                           raw_ostream &OS) { 
   // If needed for precedence reasons, wrap the inner part in grouping parens.
   if (!HasEmptyPlaceHolder)
@@ -620,7 +620,7 @@ void TypePrinter::printFunctionProtoAfter(const FunctionProtoType *T,
   
   OS << ')';
 
-  FunctionType::ExtInfo Info = T->getExtInfo();
+  SubprogramType::ExtInfo Info = T->getExtInfo();
   switch(Info.getCC()) {
   case CC_Default: break;
   case CC_C:
@@ -683,7 +683,7 @@ void TypePrinter::printFunctionProtoAfter(const FunctionProtoType *T,
     printAfter(T->getResultType(), OS);
 }
 
-void TypePrinter::printFunctionNoProtoBefore(const FunctionNoProtoType *T, 
+void TypePrinter::printSubprogramNoProtoBefore(const SubprogramNoProtoType *T, 
                                              raw_ostream &OS) { 
   // If needed for precedence reasons, wrap the inner part in grouping parens.
   SaveAndRestore<bool> PrevPHIsEmpty(HasEmptyPlaceHolder, false);
@@ -691,7 +691,7 @@ void TypePrinter::printFunctionNoProtoBefore(const FunctionNoProtoType *T,
   if (!PrevPHIsEmpty.get())
     OS << '(';
 }
-void TypePrinter::printFunctionNoProtoAfter(const FunctionNoProtoType *T, 
+void TypePrinter::printSubprogramNoProtoAfter(const SubprogramNoProtoType *T, 
                                             raw_ostream &OS) {
   // If needed for precedence reasons, wrap the inner part in grouping parens.
   if (!HasEmptyPlaceHolder)
@@ -802,7 +802,7 @@ void TypePrinter::printAtomicAfter(const AtomicType *T, raw_ostream &OS) { }
 /// Appends the given scope to the end of a string.
 void TypePrinter::AppendScope(DeclContext *DC, raw_ostream &OS) {
   if (DC->isTranslationUnit()) return;
-  if (DC->isFunctionOrMethod()) return;
+  if (DC->isSubprogramOrMethod()) return;
   AppendScope(DC->getParent(), OS);
 
   if (NamespaceDecl *NS = dyn_cast<NamespaceDecl>(DC)) {
@@ -1006,14 +1006,14 @@ void TypePrinter::printElaboratedAfter(const ElaboratedType *T,
 }
 
 void TypePrinter::printParenBefore(const ParenType *T, raw_ostream &OS) {
-  if (!HasEmptyPlaceHolder && !isa<FunctionType>(T->getInnerType())) {
+  if (!HasEmptyPlaceHolder && !isa<SubprogramType>(T->getInnerType())) {
     printBefore(T->getInnerType(), OS);
     OS << '(';
   } else
     printBefore(T->getInnerType(), OS);
 }
 void TypePrinter::printParenAfter(const ParenType *T, raw_ostream &OS) {
-  if (!HasEmptyPlaceHolder && !isa<FunctionType>(T->getInnerType())) {
+  if (!HasEmptyPlaceHolder && !isa<SubprogramType>(T->getInnerType())) {
     OS << ')';
     printAfter(T->getInnerType(), OS);
   } else
@@ -1117,9 +1117,9 @@ void TypePrinter::printAttributedAfter(const AttributedType *T,
   case AttributedType::attr_regparm: {
     OS << "regparm(";
     QualType t = T->getEquivalentType();
-    while (!t->isFunctionType())
+    while (!t->isSubprogramType())
       t = t->getPointeeType();
-    OS << t->getAs<FunctionType>()->getRegParmType();
+    OS << t->getAs<SubprogramType>()->getRegParmType();
     OS << ')';
     break;
   }
@@ -1163,9 +1163,9 @@ void TypePrinter::printAttributedAfter(const AttributedType *T,
   case AttributedType::attr_pcs: {
     OS << "pcs(";
    QualType t = T->getEquivalentType();
-   while (!t->isFunctionType())
+   while (!t->isSubprogramType())
      t = t->getPointeeType();
-   OS << (t->getAs<FunctionType>()->getCallConv() == CC_AAPCS ?
+   OS << (t->getAs<SubprogramType>()->getCallConv() == CC_AAPCS ?
          "\"aapcs\"" : "\"aapcs-vfp\"");
    OS << ')';
    break;
@@ -1349,7 +1349,7 @@ PrintTemplateArgumentList(raw_ostream &OS,
 }
 
 void 
-FunctionProtoType::printExceptionSpecification(std::string &S, 
+SubprogramProtoType::printExceptionSpecification(std::string &S, 
                                                const PrintingPolicy &Policy)
                                                                          const {
   

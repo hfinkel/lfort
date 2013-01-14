@@ -72,7 +72,7 @@ ParamCommandComment *Sema::actOnParamCommandStart(SourceLocation LocBegin,
   ParamCommandComment *Command =
       new (Allocator) ParamCommandComment(LocBegin, LocEnd, CommandID);
 
-  if (!isFunctionDecl())
+  if (!isSubprogramDecl())
     Diag(Command->getLocation(),
          diag::warn_doc_param_not_attached_to_a_function_decl)
       << Command->getCommandNameRange(Traits);
@@ -439,7 +439,7 @@ void Sema::checkBlockCommandEmptyParagraph(BlockCommandComment *Command) {
 void Sema::checkReturnsCommand(const BlockCommandComment *Command) {
   if (!Traits.getCommandInfo(Command->getCommandID())->IsReturnsCommand)
     return;
-  if (isFunctionDecl()) {
+  if (isSubprogramDecl()) {
     if (ThisDeclInfo->ResultType->isVoidType()) {
       unsigned DiagKind;
       switch (ThisDeclInfo->CommentDecl->getKind()) {
@@ -523,7 +523,7 @@ void Sema::checkDeprecatedCommand(const BlockCommandComment *Command) {
     << Command->getSourceRange();
 
   // Try to emit a fixit with a deprecation attribute.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // Don't emit a Fix-It for non-member function definitions.  GCC does not
     // accept attributes on them.
     const DeclContext *Ctx = FD->getDeclContext();
@@ -554,7 +554,7 @@ void Sema::checkDeprecatedCommand(const BlockCommandComment *Command) {
 }
 
 void Sema::resolveParamCommandIndexes(const FullComment *FC) {
-  if (!isFunctionDecl()) {
+  if (!isSubprogramDecl()) {
     // We already warned that \\param commands are not attached to a function
     // decl.
     return;
@@ -638,12 +638,12 @@ void Sema::resolveParamCommandIndexes(const FullComment *FC) {
   }
 }
 
-bool Sema::isFunctionDecl() {
+bool Sema::isSubprogramDecl() {
   if (!ThisDeclInfo)
     return false;
   if (!ThisDeclInfo->IsFilled)
     inspectThisDecl();
-  return ThisDeclInfo->getKind() == DeclInfo::FunctionKind;
+  return ThisDeclInfo->getKind() == DeclInfo::SubprogramKind;
 }
 
 bool Sema::isTemplateOrSpecialization() {

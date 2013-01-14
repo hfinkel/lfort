@@ -724,7 +724,7 @@ protected:
                                     CharUnits Offset);
 
   bool needsVFTable(const CXXRecordDecl *RD) const;
-  bool hasNewVirtualFunction(const CXXRecordDecl *RD,
+  bool hasNewVirtualSubprogram(const CXXRecordDecl *RD,
                              bool IgnoreDestructor = false) const;
   bool isPossiblePrimaryBase(const CXXRecordDecl *Base) const;
 
@@ -792,7 +792,7 @@ protected:
   RecordLayoutBuilder(const RecordLayoutBuilder &) LLVM_DELETED_FUNCTION;
   void operator=(const RecordLayoutBuilder &) LLVM_DELETED_FUNCTION;
 public:
-  static const CXXMethodDecl *ComputeKeyFunction(const CXXRecordDecl *RD);
+  static const CXXMethodDecl *ComputeKeySubprogram(const CXXRecordDecl *RD);
 };
 } // end anonymous namespace
 
@@ -1193,7 +1193,7 @@ bool RecordLayoutBuilder::needsVFTable(const CXXRecordDecl *RD) const {
   //    case we would have a primary base.
   if (RD->getNumVBases() == 0) return true;
 
-  return hasNewVirtualFunction(RD);
+  return hasNewVirtualSubprogram(RD);
 }
 
 /// Does the given class inherit non-virtually from any of the classes
@@ -1353,11 +1353,11 @@ void RecordLayoutBuilder::computeVtordisps(const CXXRecordDecl *RD,
   }
 }
 
-/// hasNewVirtualFunction - Does the given polymorphic class declare a
+/// hasNewVirtualSubprogram - Does the given polymorphic class declare a
 /// virtual function that does not override a method from any of its
 /// base classes?
 bool 
-RecordLayoutBuilder::hasNewVirtualFunction(const CXXRecordDecl *RD, 
+RecordLayoutBuilder::hasNewVirtualSubprogram(const CXXRecordDecl *RD, 
                                            bool IgnoreDestructor) const {
   if (!RD->getNumBases()) 
     return true;
@@ -2344,7 +2344,7 @@ void RecordLayoutBuilder::CheckFieldPadding(uint64_t Offset,
 }
 
 const CXXMethodDecl *
-RecordLayoutBuilder::ComputeKeyFunction(const CXXRecordDecl *RD) {
+RecordLayoutBuilder::ComputeKeySubprogram(const CXXRecordDecl *RD) {
   // If a class isn't polymorphic it doesn't have a key function.
   if (!RD->isPolymorphic())
     return 0;
@@ -2492,13 +2492,13 @@ ASTContext::getASTRecordLayout(const RecordDecl *D) const {
   return *NewEntry;
 }
 
-const CXXMethodDecl *ASTContext::getKeyFunction(const CXXRecordDecl *RD) {
+const CXXMethodDecl *ASTContext::getKeySubprogram(const CXXRecordDecl *RD) {
   RD = cast<CXXRecordDecl>(RD->getDefinition());
   assert(RD && "Cannot get key function for forward declarations!");
 
-  const CXXMethodDecl *&Entry = KeyFunctions[RD];
+  const CXXMethodDecl *&Entry = KeySubprograms[RD];
   if (!Entry)
-    Entry = RecordLayoutBuilder::ComputeKeyFunction(RD);
+    Entry = RecordLayoutBuilder::ComputeKeySubprogram(RD);
 
   return Entry;
 }

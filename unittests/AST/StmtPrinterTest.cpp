@@ -100,21 +100,21 @@ public:
 
 ::testing::AssertionResult PrintedStmtCXX98Matches(
                                               StringRef Code,
-                                              StringRef ContainingFunction,
+                                              StringRef ContainingSubprogram,
                                               StringRef ExpectedPrinted) {
   std::vector<std::string> Args;
   Args.push_back("-std=c++98");
   Args.push_back("-Wno-unused-value");
   return PrintedStmtMatches(Code,
                             Args,
-                            functionDecl(hasName(ContainingFunction),
+                            functionDecl(hasName(ContainingSubprogram),
                                          has(compoundStmt(has(stmt().bind("id"))))),
                             ExpectedPrinted);
 }
 
 ::testing::AssertionResult PrintedStmtMSMatches(
                                               StringRef Code,
-                                              StringRef ContainingFunction,
+                                              StringRef ContainingSubprogram,
                                               StringRef ExpectedPrinted) {
   std::vector<std::string> Args;
   Args.push_back("-std=c++98");
@@ -122,7 +122,7 @@ public:
   Args.push_back("-Wno-unused-value");
   return PrintedStmtMatches(Code,
                             Args,
-                            functionDecl(hasName(ContainingFunction),
+                            functionDecl(hasName(ContainingSubprogram),
                                          has(compoundStmt(has(stmt().bind("id"))))),
                             ExpectedPrinted);
 }

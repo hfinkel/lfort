@@ -23,7 +23,7 @@ namespace lfort {
   class ASTContext;
 
   namespace CodeGen {
-    class CGFunctionInfo;
+    class CGSubprogramInfo;
     class CodeGenSubprogram;
     class CodeGenTypes;
   }
@@ -190,7 +190,7 @@ namespace lfort {
     llvm::LLVMContext &getVMContext() const;
     const llvm::DataLayout &getDataLayout() const;
 
-    virtual void computeInfo(CodeGen::CGFunctionInfo &FI) const = 0;
+    virtual void computeInfo(CodeGen::CGSubprogramInfo &FI) const = 0;
 
     /// EmitVAArg - Emit the target dependent code to load a value of
     /// \arg Ty from the va_list pointed to by \arg VAListAddr.

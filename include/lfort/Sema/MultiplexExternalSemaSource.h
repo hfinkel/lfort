@@ -91,7 +91,7 @@ public:
   ///
   /// This operation is meant to be used via a LazyOffsetPtr.  It only
   /// needs to be implemented if the AST source uses methods like
-  /// FunctionDecl::setLazyBody when building decls.
+  /// SubprogramDecl::setLazyBody when building decls.
   ///
   /// The default implementation of this method is a no-op.
   virtual Stmt *GetExternalDeclStmt(uint64_t Offset);
@@ -182,7 +182,7 @@ public:
   /// The default implementation of this method is a no-op.
   virtual void FinishedDeserializing();
 
-  /// \brief Function that will be invoked when we begin parsing a new
+  /// \brief Subprogram that will be invoked when we begin parsing a new
   /// translation unit involving this external AST source.
   ///
   /// The default implementation of this method is a no-op.

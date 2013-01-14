@@ -99,7 +99,7 @@ def CXXStaticCastExpr : DStmt<CXXNamedCastExpr>;
 def CXXDynamicCastExpr : DStmt<CXXNamedCastExpr>;
 def CXXReinterpretCastExpr : DStmt<CXXNamedCastExpr>;
 def CXXConstCastExpr : DStmt<CXXNamedCastExpr>;
-def CXXFunctionalCastExpr : DStmt<ExplicitCastExpr>;
+def CXXSubprogramalCastExpr : DStmt<ExplicitCastExpr>;
 def CXXTypeidExpr : DStmt<Expr>;
 def UserDefinedLiteral : DStmt<CallExpr>;
 def CXXBoolLiteralExpr : DStmt<Expr>;
@@ -131,7 +131,7 @@ def PackExpansionExpr : DStmt<Expr>;
 def SizeOfPackExpr : DStmt<Expr>;
 def SubstNonTypeTemplateParmExpr : DStmt<Expr>;
 def SubstNonTypeTemplateParmPackExpr : DStmt<Expr>;
-def FunctionParmPackExpr : DStmt<Expr>;
+def SubprogramParmPackExpr : DStmt<Expr>;
 def MaterializeTemporaryExpr : DStmt<Expr>;
 def LambdaExpr : DStmt<Expr>;
 

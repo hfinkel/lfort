@@ -313,7 +313,7 @@ void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
 
   // Allow all of Sema to see that we are entering a method definition.
   PushDeclContext(FnBodyScope, MDecl);
-  PushFunctionScope();
+  PushSubprogramScope();
   
   // Create Decl objects for each parameter, entrring them in the scope for
   // binding to their use.
@@ -393,24 +393,24 @@ void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
 
     // If this is "dealloc" or "finalize", set some bit here.
     // Then in ActOnSuperMessage() (SemaExprObjC), set it back to false.
-    // Finally, in ActOnFinishFunctionBody() (SemaDecl), warn if flag is set.
+    // Finally, in ActOnFinishSubprogramBody() (SemaDecl), warn if flag is set.
     // Only do this if the current class actually has a superclass.
     if (IC->getSuperClass()) {
       ObjCMethodFamily Family = MDecl->getMethodFamily();
       if (Family == OMF_dealloc) {
         if (!(getLangOpts().ObjCAutoRefCount ||
               getLangOpts().getGC() == LangOptions::GCOnly))
-          getCurFunction()->ObjCShouldCallSuper = true;
+          getCurSubprogram()->ObjCShouldCallSuper = true;
 
       } else if (Family == OMF_finalize) {
         if (Context.getLangOpts().getGC() != LangOptions::NonGC)
-          getCurFunction()->ObjCShouldCallSuper = true;
+          getCurSubprogram()->ObjCShouldCallSuper = true;
         
       } else {
         const ObjCMethodDecl *SuperMethod =
           IC->getSuperClass()->lookupMethod(MDecl->getSelector(),
                                             MDecl->isInstanceMethod());
-        getCurFunction()->ObjCShouldCallSuper = 
+        getCurSubprogram()->ObjCShouldCallSuper = 
           (SuperMethod && SuperMethod->hasAttr<ObjCRequiresSuperAttr>());
       }
     }
@@ -3164,7 +3164,7 @@ Decl *Sema::ActOnObjCExceptionDecl(Scope *S, Declarator &D) {
     Diag(D.getDeclSpec().getThreadSpecLoc(), diag::err_invalid_thread);
   D.getMutableDeclSpec().ClearStorageClassSpecs();
 
-  DiagnoseFunctionSpecifiers(D);
+  DiagnoseSubprogramSpecifiers(D);
   
   // Check that there are no default arguments inside the type of this
   // exception object (C++ only).

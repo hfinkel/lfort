@@ -776,7 +776,7 @@ public:
                                       bool CacheCodeCompletionResults = false,
                             bool IncludeBriefCommentsInCodeCompletion = false,
                                       bool AllowPCHWithCompilerErrors = false,
-                                      bool SkipFunctionBodies = false,
+                                      bool SkipSubprogramBodies = false,
                                       bool UserFilesAreVolatile = false,
                                       bool ForSerialization = false,
                                       OwningPtr<ASTUnit> *ErrAST = 0);

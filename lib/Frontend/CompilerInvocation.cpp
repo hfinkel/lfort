@@ -228,7 +228,7 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
   Opts.AnalyzeNestedBlocks =
     Args.hasArg(OPT_analyzer_opt_analyze_nested_blocks);
   Opts.eagerlyAssumeBinOpBifurcation = Args.hasArg(OPT_analyzer_eagerly_assume);
-  Opts.AnalyzeSpecificFunction = Args.getLastArgValue(OPT_analyze_function);
+  Opts.AnalyzeSpecificSubprogram = Args.getLastArgValue(OPT_analyze_function);
   Opts.UnoptimizedCFG = Args.hasArg(OPT_analysis_UnoptimizedCFG);
   Opts.TrimGraph = Args.hasArg(OPT_trim_egraph);
   Opts.MaxNodes = Args.getLastArgIntValue(OPT_analyzer_max_nodes, 150000,Diags);
@@ -237,9 +237,9 @@ static bool ParseAnalyzerArgs(AnalyzerOptions &Opts, ArgList &Args,
   Opts.InlineMaxStackDepth =
     Args.getLastArgIntValue(OPT_analyzer_inline_max_stack_depth,
                             Opts.InlineMaxStackDepth, Diags);
-  Opts.InlineMaxFunctionSize =
+  Opts.InlineMaxSubprogramSize =
     Args.getLastArgIntValue(OPT_analyzer_inline_max_function_size,
-                            Opts.InlineMaxFunctionSize, Diags);
+                            Opts.InlineMaxSubprogramSize, Diags);
 
   Opts.CheckersControlList.clear();
   for (arg_iterator it = Args.filtered_begin(OPT_analyzer_checker,
@@ -384,14 +384,14 @@ static bool ParseCodeGenArgs(CodeGenOptions &Opts, ArgList &Args, InputKind IK,
   Opts.TrapFuncName = Args.getLastArgValue(OPT_ftrap_function_EQ);
   Opts.UseInitArray = Args.hasArg(OPT_fuse_init_array);
 
-  Opts.FunctionSections = Args.hasArg(OPT_ffunction_sections);
+  Opts.SubprogramSections = Args.hasArg(OPT_ffunction_sections);
   Opts.DataSections = Args.hasArg(OPT_fdata_sections);
 
   Opts.MainFileName = Args.getLastArgValue(OPT_main_file_name);
   Opts.VerifyModule = !Args.hasArg(OPT_disable_llvm_verifier);
   Opts.SanitizeRecover = !Args.hasArg(OPT_fno_sanitize_recover);
 
-  Opts.InstrumentFunctions = Args.hasArg(OPT_finstrument_functions);
+  Opts.InstrumentSubprograms = Args.hasArg(OPT_finstrument_functions);
   Opts.InstrumentForProfiling = Args.hasArg(OPT_pg);
   Opts.EmitGcovArcs = Args.hasArg(OPT_femit_coverage_data);
   Opts.EmitGcovNotes = Args.hasArg(OPT_femit_coverage_notes);

@@ -26,11 +26,11 @@ using namespace lfort;
 using namespace CodeGen;
 using namespace llvm;
 
-/// getBuiltinLibFunction - Given a builtin id for a function like
-/// "__builtin_fabsf", return a Function* for "fabsf".
-llvm::Value *CodeGenModule::getBuiltinLibFunction(const FunctionDecl *FD,
+/// getBuiltinLibSubprogram - Given a builtin id for a function like
+/// "__builtin_fabsf", return a Subprogram* for "fabsf".
+llvm::Value *CodeGenModule::getBuiltinLibSubprogram(const SubprogramDecl *FD,
                                                   unsigned BuiltinID) {
-  assert(Context.BuiltinInfo.isLibFunction(BuiltinID));
+  assert(Context.BuiltinInfo.isLibSubprogram(BuiltinID));
 
   // Get the name, skip over the __builtin_ prefix (if necessary).
   StringRef Name;
@@ -47,7 +47,7 @@ llvm::Value *CodeGenModule::getBuiltinLibFunction(const FunctionDecl *FD,
   llvm::FunctionType *Ty =
     cast<llvm::FunctionType>(getTypes().ConvertType(FD->getType()));
 
-  return GetOrCreateLLVMFunction(Name, Ty, D, /*ForVTable=*/false);
+  return GetOrCreateLLVMSubprogram(Name, Ty, D, /*ForVTable=*/false);
 }
 
 /// Emit the conversions required to turn the given value into an
@@ -158,18 +158,18 @@ static Value *EmitFAbs(CodeGenSubprogram &CGF, Value *V, QualType ValTy) {
   // The prototype is something that takes and returns whatever V's type is.
   llvm::FunctionType *FT = llvm::FunctionType::get(V->getType(), V->getType(),
                                                    false);
-  llvm::Value *Fn = CGF.CGM.CreateRuntimeFunction(FT, FnName);
+  llvm::Value *Fn = CGF.CGM.CreateRuntimeSubprogram(FT, FnName);
 
   return CGF.Builder.CreateCall(Fn, V, "abs");
 }
 
-static RValue emitLibraryCall(CodeGenSubprogram &CGF, const FunctionDecl *Fn,
+static RValue emitLibraryCall(CodeGenSubprogram &CGF, const SubprogramDecl *Fn,
                               const CallExpr *E, llvm::Value *calleeValue) {
   return CGF.EmitCall(E->getCallee()->getType(), calleeValue,
                       ReturnValueSlot(), E->arg_begin(), E->arg_end(), Fn);
 }
 
-RValue CodeGenSubprogram::EmitBuiltinExpr(const FunctionDecl *FD,
+RValue CodeGenSubprogram::EmitBuiltinExpr(const SubprogramDecl *FD,
                                         unsigned BuiltinID, const CallExpr *E) {
   // See if we can constant fold this builtin.  If so, don't emit it at all.
   Expr::EvalResult Result;
@@ -1029,12 +1029,12 @@ RValue CodeGenSubprogram::EmitBuiltinExpr(const FunctionDecl *FD,
     else
       Args.add(RValue::get(llvm::Constant::getNullValue(VoidPtrTy)),
                getContext().VoidPtrTy);
-    const CGFunctionInfo &FuncInfo =
-        CGM.getTypes().arrangeFreeFunctionCall(E->getType(), Args,
-                                               FunctionType::ExtInfo(),
+    const CGSubprogramInfo &FuncInfo =
+        CGM.getTypes().arrangeFreeSubprogramCall(E->getType(), Args,
+                                               SubprogramType::ExtInfo(),
                                                RequiredArgs::All);
-    llvm::FunctionType *FTy = CGM.getTypes().GetFunctionType(FuncInfo);
-    llvm::Constant *Func = CGM.CreateRuntimeFunction(FTy, LibCallName);
+    llvm::FunctionType *FTy = CGM.getTypes().GetSubprogramType(FuncInfo);
+    llvm::Constant *Func = CGM.CreateRuntimeSubprogram(FTy, LibCallName);
     return EmitCall(FuncInfo, Func, ReturnValueSlot(), Args);
   }
 
@@ -1328,13 +1328,13 @@ RValue CodeGenSubprogram::EmitBuiltinExpr(const FunctionDecl *FD,
   // If this is an alias for a lib function (e.g. __builtin_sin), emit
   // the call using the normal call path, but using the unmangled
   // version of the function name.
-  if (getContext().BuiltinInfo.isLibFunction(BuiltinID))
+  if (getContext().BuiltinInfo.isLibSubprogram(BuiltinID))
     return emitLibraryCall(*this, FD, E,
-                           CGM.getBuiltinLibFunction(FD, BuiltinID));
+                           CGM.getBuiltinLibSubprogram(FD, BuiltinID));
 
   // If this is a predefined lib function (e.g. malloc), emit the call
   // using exactly the normal call path.
-  if (getContext().BuiltinInfo.isPredefinedLibFunction(BuiltinID))
+  if (getContext().BuiltinInfo.isPredefinedLibSubprogram(BuiltinID))
     return emitLibraryCall(*this, FD, E, EmitScalarExpr(E->getCallee()));
 
   // See if we have a target specific intrinsic.
@@ -1537,7 +1537,7 @@ CodeGenSubprogram::EmitPointerWithAlignment(const Expr *Addr) {
 Value *CodeGenSubprogram::EmitARMBuiltinExpr(unsigned BuiltinID,
                                            const CallExpr *E) {
   if (BuiltinID == ARM::BI__clear_cache) {
-    const FunctionDecl *FD = E->getDirectCallee();
+    const SubprogramDecl *FD = E->getDirectCallee();
     // Oddly people write this call without args on occasion and gcc accepts
     // it - it's also marked as varargs in the description file.
     SmallVector<Value*, 2> Ops;
@@ -1546,7 +1546,7 @@ Value *CodeGenSubprogram::EmitARMBuiltinExpr(unsigned BuiltinID,
     llvm::Type *Ty = CGM.getTypes().ConvertType(FD->getType());
     llvm::FunctionType *FTy = cast<llvm::FunctionType>(Ty);
     StringRef Name = FD->getName();
-    return Builder.CreateCall(CGM.CreateRuntimeFunction(FTy, Name), Ops);
+    return Builder.CreateCall(CGM.CreateRuntimeSubprogram(FTy, Name), Ops);
   }
 
   if (BuiltinID == ARM::BI__builtin_arm_ldrexd) {

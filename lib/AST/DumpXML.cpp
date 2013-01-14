@@ -482,8 +482,8 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
 
   // ParmVarDecl?
 
-  // FunctionDecl
-  void visitFunctionDeclAttrs(FunctionDecl *D) {
+  // SubprogramDecl
+  void visitSubprogramDeclAttrs(SubprogramDecl *D) {
     visitRedeclarableAttrs(D);
     setFlag("pure", D->isPure());
     setFlag("trivial", D->isTrivial());
@@ -498,8 +498,8 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
       set("asmlabel", ALA->getLabel());
     // TODO: instantiation, etc.
   }
-  void visitFunctionDeclChildren(FunctionDecl *D) {
-    for (FunctionDecl::param_iterator
+  void visitSubprogramDeclChildren(SubprogramDecl *D) {
+    for (SubprogramDecl::param_iterator
            I = D->param_begin(), E = D->param_end(); I != E; ++I)
       dispatch(*I);
     for (llvm::ArrayRef<NamedDecl*>::iterator
@@ -618,7 +618,7 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
     setFlag("variadic", D->isVariadic());
   }
   void visitBlockDeclChildren(BlockDecl *D) {
-    for (FunctionDecl::param_iterator
+    for (SubprogramDecl::param_iterator
            I = D->param_begin(), E = D->param_end(); I != E; ++I)
       dispatch(*I);
     dispatch(D->getBody());
@@ -636,16 +636,16 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
       dispatch(D->getTemplatedDecl());
   }
 
-  // FunctionTemplateDecl
-  void visitFunctionTemplateDeclAttrs(FunctionTemplateDecl *D) {
+  // SubprogramTemplateDecl
+  void visitSubprogramTemplateDeclAttrs(SubprogramTemplateDecl *D) {
     visitRedeclarableAttrs(D);
   }
-  void visitFunctionTemplateDeclChildren(FunctionTemplateDecl *D) {
+  void visitSubprogramTemplateDeclChildren(SubprogramTemplateDecl *D) {
     // Mention all the specializations which don't have explicit
     // declarations elsewhere.
-    for (FunctionTemplateDecl::spec_iterator
+    for (SubprogramTemplateDecl::spec_iterator
            I = D->spec_begin(), E = D->spec_end(); I != E; ++I) {
-      FunctionTemplateSpecializationInfo *Info
+      SubprogramTemplateSpecializationInfo *Info
         = I->getTemplateSpecializationInfo();
 
       bool Unknown = false;
@@ -662,7 +662,7 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
       TemporaryContainer C(*this,
                            Unknown ? "uninstantiated" : "instantiation");
       visitTemplateArguments(*Info->TemplateArguments);
-      dispatch(Info->Function);
+      dispatch(Info->Subprogram);
     }
   }
 
@@ -967,16 +967,16 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
     visitDeclRef(T->getDecl());
   }
 
-  void visitFunctionTypeAttrs(FunctionType *T) {
+  void visitSubprogramTypeAttrs(SubprogramType *T) {
     setFlag("noreturn", T->getNoReturnAttr());
     setCallingConv(T->getCallConv());
     if (T->getHasRegParm()) setInteger("regparm", T->getRegParmType());
   }
-  void visitFunctionTypeChildren(FunctionType *T) {
+  void visitSubprogramTypeChildren(SubprogramType *T) {
     dispatch(T->getResultType());
   }
 
-  void visitFunctionProtoTypeAttrs(FunctionProtoType *T) {
+  void visitSubprogramProtoTypeAttrs(SubprogramProtoType *T) {
     setFlag("const", T->isConst());
     setFlag("volatile", T->isVolatile());
     setFlag("restrict", T->isRestrict());
@@ -991,11 +991,11 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
     case EST_Uninstantiated: set("exception_spec", "uninstantiated"); break;
     }
   }
-  void visitFunctionProtoTypeChildren(FunctionProtoType *T) {
+  void visitSubprogramProtoTypeChildren(SubprogramProtoType *T) {
     push("parameters");
     setFlag("variadic", T->isVariadic());
     completeAttrs();
-    for (FunctionProtoType::arg_type_iterator
+    for (SubprogramProtoType::arg_type_iterator
            I = T->arg_type_begin(), E = T->arg_type_end(); I != E; ++I)
       dispatch(*I);
     pop();
@@ -1004,7 +1004,7 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
       push("exception_specifiers");
       setFlag("any", T->getExceptionSpecType() == EST_MSAny);
       completeAttrs();
-      for (FunctionProtoType::exception_iterator
+      for (SubprogramProtoType::exception_iterator
              I = T->exception_begin(), E = T->exception_end(); I != E; ++I)
         dispatch(*I);
       pop();

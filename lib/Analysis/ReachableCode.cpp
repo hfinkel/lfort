@@ -224,8 +224,8 @@ static SourceLocation GetUnreachableLoc(const Stmt *S,
       R1 = CSC->getSubExpr()->getSourceRange();
       return CSC->getLParenLoc();
     }
-    case Expr::CXXFunctionalCastExprClass: {
-      const CXXFunctionalCastExpr *CE = cast <CXXFunctionalCastExpr>(S);
+    case Expr::CXXSubprogramalCastExprClass: {
+      const CXXSubprogramalCastExpr *CE = cast <CXXSubprogramalCastExpr>(S);
       R1 = CE->getSubExpr()->getSourceRange();
       return CE->getTypeBeginLoc();
     }

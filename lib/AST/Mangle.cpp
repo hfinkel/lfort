@@ -36,7 +36,7 @@ using namespace lfort;
 
 namespace {
 
-static void mangleFunctionBlock(MangleContext &Context,
+static void mangleSubprogramBlock(MangleContext &Context,
                                 StringRef Outer,
                                 const BlockDecl *BD,
                                 raw_ostream &Out) {
@@ -90,7 +90,7 @@ void MangleContext::mangleCtorBlock(const CXXConstructorDecl *CD,
   llvm::raw_svector_ostream Out(Buffer);
   mangleCXXCtor(CD, CT, Out);
   Out.flush();
-  mangleFunctionBlock(*this, Buffer, BD, ResStream);
+  mangleSubprogramBlock(*this, Buffer, BD, ResStream);
 }
 
 void MangleContext::mangleDtorBlock(const CXXDestructorDecl *DD,
@@ -101,7 +101,7 @@ void MangleContext::mangleDtorBlock(const CXXDestructorDecl *DD,
   llvm::raw_svector_ostream Out(Buffer);
   mangleCXXDtor(DD, DT, Out);
   Out.flush();
-  mangleFunctionBlock(*this, Buffer, BD, ResStream);
+  mangleSubprogramBlock(*this, Buffer, BD, ResStream);
 }
 
 void MangleContext::mangleBlock(const DeclContext *DC, const BlockDecl *BD,
@@ -127,7 +127,7 @@ void MangleContext::mangleBlock(const DeclContext *DC, const BlockDecl *BD,
     }
   }
   Stream.flush();
-  mangleFunctionBlock(*this, Buffer, BD, Out);
+  mangleSubprogramBlock(*this, Buffer, BD, Out);
 }
 
 void MangleContext::mangleObjCMethodName(const ObjCMethodDecl *MD,
@@ -152,7 +152,7 @@ void MangleContext::mangleBlock(const BlockDecl *BD,
   const DeclContext *DC = BD->getDeclContext();
   while (isa<BlockDecl>(DC) || isa<EnumDecl>(DC))
     DC = DC->getParent();
-  if (DC->isFunctionOrMethod())
+  if (DC->isSubprogramOrMethod())
     mangleBlock(DC, BD, Out);
   else
     mangleGlobalBlock(BD, ID, Out);

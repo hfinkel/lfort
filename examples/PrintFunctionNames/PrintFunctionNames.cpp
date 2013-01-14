@@ -1,4 +1,4 @@
-//===- PrintFunctionNames.cpp ---------------------------------------------===//
+//===- PrintSubprogramNames.cpp ---------------------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -21,7 +21,7 @@ using namespace lfort;
 
 namespace {
 
-class PrintFunctionsConsumer : public ASTConsumer {
+class PrintSubprogramsConsumer : public ASTConsumer {
 public:
   virtual bool HandleTopLevelDecl(DeclGroupRef DG) {
     for (DeclGroupRef::iterator i = DG.begin(), e = DG.end(); i != e; ++i) {
@@ -34,16 +34,16 @@ public:
   }
 };
 
-class PrintFunctionNamesAction : public PluginASTAction {
+class PrintSubprogramNamesAction : public PluginASTAction {
 protected:
   ASTConsumer *CreateASTConsumer(CompilerInstance &CI, llvm::StringRef) {
-    return new PrintFunctionsConsumer();
+    return new PrintSubprogramsConsumer();
   }
 
   bool ParseArgs(const CompilerInstance &CI,
                  const std::vector<std::string>& args) {
     for (unsigned i = 0, e = args.size(); i != e; ++i) {
-      llvm::errs() << "PrintFunctionNames arg = " << args[i] << "\n";
+      llvm::errs() << "PrintSubprogramNames arg = " << args[i] << "\n";
 
       // Example error handling.
       if (args[i] == "-an-error") {
@@ -60,12 +60,12 @@ protected:
     return true;
   }
   void PrintHelp(llvm::raw_ostream& ros) {
-    ros << "Help for PrintFunctionNames plugin goes here\n";
+    ros << "Help for PrintSubprogramNames plugin goes here\n";
   }
 
 };
 
 }
 
-static FrontendPluginRegistry::Add<PrintFunctionNamesAction>
+static FrontendPluginRegistry::Add<PrintSubprogramNamesAction>
 X("print-fns", "print function names");

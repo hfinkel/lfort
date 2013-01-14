@@ -840,7 +840,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     if (isAddressOfOperand && isPostfixExpressionSuffixStart())
       isAddressOfOperand = false;
    
-    // Function designators are allowed to be undeclared (C99 6.5.1p2), so we
+    // Subprogram designators are allowed to be undeclared (C99 6.5.1p2), so we
     // need to know whether or not this identifier is a function designator or
     // not.
     UnqualifiedId Name;
@@ -2432,7 +2432,7 @@ ExprResult Parser::ParseBlockLiteralExpression() {
     // Otherwise, pretend we saw (void).
     ParsedAttributes attrs(AttrFactory);
     SourceLocation NoLoc;
-    ParamInfo.AddTypeInfo(DeclaratorChunk::getFunction(/*HasProto=*/true,
+    ParamInfo.AddTypeInfo(DeclaratorChunk::getSubprogram(/*HasProto=*/true,
                                              /*IsAmbiguous=*/false,
                                              /*RParenLoc=*/NoLoc,
                                              /*ArgInfo=*/0,

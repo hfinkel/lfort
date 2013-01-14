@@ -397,7 +397,7 @@ namespace lfort {
     Decl *VisitEnumDecl(EnumDecl *D);
     Decl *VisitEnumConstantDecl(EnumConstantDecl *D);
     Decl *VisitFriendDecl(FriendDecl *D);
-    Decl *VisitFunctionDecl(FunctionDecl *D,
+    Decl *VisitSubprogramDecl(SubprogramDecl *D,
                             TemplateParameterList *TemplateParams = 0);
     Decl *VisitCXXRecordDecl(CXXRecordDecl *D);
     Decl *VisitCXXMethodDecl(CXXMethodDecl *D,
@@ -410,7 +410,7 @@ namespace lfort {
     Decl *VisitClassTemplateDecl(ClassTemplateDecl *D);
     Decl *VisitClassTemplatePartialSpecializationDecl(
                                     ClassTemplatePartialSpecializationDecl *D);
-    Decl *VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+    Decl *VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
     Decl *VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D);
     Decl *VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D);
     Decl *VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D);
@@ -419,8 +419,8 @@ namespace lfort {
     Decl *VisitUsingShadowDecl(UsingShadowDecl *D);
     Decl *VisitUnresolvedUsingValueDecl(UnresolvedUsingValueDecl *D);
     Decl *VisitUnresolvedUsingTypenameDecl(UnresolvedUsingTypenameDecl *D);
-    Decl *VisitClassScopeFunctionSpecializationDecl(
-                                      ClassScopeFunctionSpecializationDecl *D);
+    Decl *VisitClassScopeSubprogramSpecializationDecl(
+                                      ClassScopeSubprogramSpecializationDecl *D);
 
     // Base case. FIXME: Remove once we can instantiate everything.
     Decl *VisitDecl(Decl *D) {
@@ -471,9 +471,9 @@ namespace lfort {
     }
 
     // Helper functions for instantiating methods.
-    TypeSourceInfo *SubstFunctionType(FunctionDecl *D,
+    TypeSourceInfo *SubstSubprogramType(SubprogramDecl *D,
                              SmallVectorImpl<ParmVarDecl *> &Params);
-    bool InitFunctionInstantiation(FunctionDecl *New, FunctionDecl *Tmpl);
+    bool InitSubprogramInstantiation(SubprogramDecl *New, SubprogramDecl *Tmpl);
     bool InitMethodInstantiation(CXXMethodDecl *New, CXXMethodDecl *Tmpl);
 
     TemplateParameterList *

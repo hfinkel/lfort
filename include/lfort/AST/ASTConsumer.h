@@ -26,7 +26,7 @@ namespace lfort {
   class SemaConsumer; // layering violation required for safe SemaConsumer
   class TagDecl;
   class VarDecl;
-  class FunctionDecl;
+  class SubprogramDecl;
   class ImportDecl;
 
 /// ASTConsumer - This is an abstract interface that should be implemented by
@@ -75,7 +75,7 @@ public:
   /// Note that at this point point it does not have a body, its body is
   /// instantiated at the end of the translation unit and passed to
   /// HandleTopLevelDecl.
-  virtual void HandleCXXImplicitFunctionInstantiation(FunctionDecl *D) {}
+  virtual void HandleCXXImplicitSubprogramInstantiation(SubprogramDecl *D) {}
 
   /// \brief Handle the specified top-level declaration that occurred inside
   /// and ObjC container.
@@ -133,12 +133,12 @@ public:
   virtual void PrintStats() {}
 
   /// \brief This callback is called for each function if the Parser was
-  /// initialized with \c SkipFunctionBodies set to \c true.
+  /// initialized with \c SkipSubprogramBodies set to \c true.
   ///
   /// \return \c true if the function's body should be skipped. The function
   /// body may be parsed anyway if it is needed (for instance, if it contains
   /// the code completion point or is constexpr).
-  virtual bool shouldSkipFunctionBody(Decl *D) { return true; }
+  virtual bool shouldSkipSubprogramBody(Decl *D) { return true; }
 };
 
 } // end namespace lfort.

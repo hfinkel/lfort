@@ -121,7 +121,7 @@ void SimpleStreamChecker::checkPostCall(const CallEvent &Call,
                                         CheckerContext &C) const {
   initIdentifierInfo(C.getASTContext());
 
-  if (!Call.isGlobalCFunction())
+  if (!Call.isGlobalCSubprogram())
     return;
 
   if (Call.getCalleeIdentifier() != IIfopen)
@@ -142,7 +142,7 @@ void SimpleStreamChecker::checkPreCall(const CallEvent &Call,
                                        CheckerContext &C) const {
   initIdentifierInfo(C.getASTContext());
 
-  if (!Call.isGlobalCFunction())
+  if (!Call.isGlobalCSubprogram())
     return;
 
   if (Call.getCalleeIdentifier() != IIfclose)

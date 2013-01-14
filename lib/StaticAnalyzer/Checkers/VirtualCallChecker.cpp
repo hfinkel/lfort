@@ -37,20 +37,20 @@ class WalkAST : public StmtVisitor<WalkAST> {
   /// A vector representing the worklist which has a chain of CallExprs.
   DFSWorkList WList;
   
-  // PreVisited : A CallExpr to this FunctionDecl is in the worklist, but the
+  // PreVisited : A CallExpr to this SubprogramDecl is in the worklist, but the
   // body has not been visited yet.
-  // PostVisited : A CallExpr to this FunctionDecl is in the worklist, and the
+  // PostVisited : A CallExpr to this SubprogramDecl is in the worklist, and the
   // body has been visited.
   enum Kind { NotVisited,
-              PreVisited,  /**< A CallExpr to this FunctionDecl is in the 
+              PreVisited,  /**< A CallExpr to this SubprogramDecl is in the 
                                 worklist, but the body has not yet been
                                 visited. */
-              PostVisited  /**< A CallExpr to this FunctionDecl is in the
+              PostVisited  /**< A CallExpr to this SubprogramDecl is in the
                                 worklist, and the body has been visited. */
   };
 
-  /// A DenseMap that records visited states of FunctionDecls.
-  llvm::DenseMap<const FunctionDecl *, Kind> VisitedFunctions;
+  /// A DenseMap that records visited states of SubprogramDecls.
+  llvm::DenseMap<const SubprogramDecl *, Kind> VisitedSubprograms;
 
   /// The CallExpr whose body is currently being visited.  This is used for
   /// generating bug reports.  This is null while visiting the body of a
@@ -68,10 +68,10 @@ public:
   /// This method adds a CallExpr to the worklist and marks the callee as
   /// being PreVisited.
   void Enqueue(WorkListUnit WLUnit) {
-    const FunctionDecl *FD = WLUnit->getDirectCallee();
+    const SubprogramDecl *FD = WLUnit->getDirectCallee();
     if (!FD || !FD->getBody())
       return;    
-    Kind &K = VisitedFunctions[FD];
+    Kind &K = VisitedSubprograms[FD];
     if (K != NotVisited)
       return;
     K = PreVisited;
@@ -87,10 +87,10 @@ public:
   void Execute() {
     while (hasWork()) {
       WorkListUnit WLUnit = Dequeue();
-      const FunctionDecl *FD = WLUnit->getDirectCallee();
+      const SubprogramDecl *FD = WLUnit->getDirectCallee();
       assert(FD && FD->getBody());
 
-      if (VisitedFunctions[FD] == PreVisited) {
+      if (VisitedSubprograms[FD] == PreVisited) {
         // If the callee is PreVisited, walk its body.
         // Visit the body.
         SaveAndRestore<const CallExpr *> SaveCall(visitingCallExpr, WLUnit);
@@ -98,13 +98,13 @@ public:
         
         // Mark the function as being PostVisited to indicate we have
         // scanned the body.
-        VisitedFunctions[FD] = PostVisited;
+        VisitedSubprograms[FD] = PostVisited;
         continue;
       }
 
       // Otherwise, the callee is PostVisited.
       // Remove it from the worklist.
-      assert(VisitedFunctions[FD] == PostVisited);
+      assert(VisitedSubprograms[FD] == PostVisited);
       WList.pop_back();
     }
   }
@@ -171,12 +171,12 @@ void WalkAST::ReportVirtualCall(const CallExpr *CE, bool isPure) {
   // Name of the CallExpr whose body is current walking.
   if (visitingCallExpr)
     os << " <-- " << *visitingCallExpr->getDirectCallee();
-  // Names of FunctionDecls in worklist with state PostVisited.
+  // Names of SubprogramDecls in worklist with state PostVisited.
   for (SmallVectorImpl<const CallExpr *>::iterator I = WList.end(),
          E = WList.begin(); I != E; --I) {
-    const FunctionDecl *FD = (*(I-1))->getDirectCallee();
+    const SubprogramDecl *FD = (*(I-1))->getDirectCallee();
     assert(FD);
-    if (VisitedFunctions[FD] == PostVisited)
+    if (VisitedSubprograms[FD] == PostVisited)
       os << " <-- " << *FD;
   }
 

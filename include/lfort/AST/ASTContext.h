@@ -106,9 +106,9 @@ class ASTContext : public RefCountedBase<ASTContext> {
   mutable llvm::FoldingSet<DependentSizedExtVectorType>
     DependentSizedExtVectorTypes;
   mutable llvm::FoldingSet<VectorType> VectorTypes;
-  mutable llvm::FoldingSet<FunctionNoProtoType> FunctionNoProtoTypes;
-  mutable llvm::ContextualFoldingSet<FunctionProtoType, ASTContext&>
-    FunctionProtoTypes;
+  mutable llvm::FoldingSet<SubprogramNoProtoType> SubprogramNoProtoTypes;
+  mutable llvm::ContextualFoldingSet<SubprogramProtoType, ASTContext&>
+    SubprogramProtoTypes;
   mutable llvm::FoldingSet<DependentTypeOfExprType> DependentTypeOfExprTypes;
   mutable llvm::FoldingSet<DependentDecltypeType> DependentDecltypeTypes;
   mutable llvm::FoldingSet<TemplateTypeParmType> TemplateTypeParmTypes;
@@ -160,7 +160,7 @@ class ASTContext : public RefCountedBase<ASTContext> {
   mutable TypeInfoMap MemoizedTypeInfo;
 
   /// \brief A cache mapping from CXXRecordDecls to key functions.
-  llvm::DenseMap<const CXXRecordDecl*, const CXXMethodDecl*> KeyFunctions;
+  llvm::DenseMap<const CXXRecordDecl*, const CXXMethodDecl*> KeySubprograms;
   
   /// \brief Mapping from ObjCContainers to their ObjCImplementations.
   llvm::DenseMap<ObjCContainerDecl*, ObjCImplDecl*> ObjCImpls;
@@ -174,7 +174,7 @@ class ASTContext : public RefCountedBase<ASTContext> {
     
   /// \brief Mapping from class scope functions specialization to their
   /// template patterns.
-  llvm::DenseMap<const FunctionDecl*, FunctionDecl*>
+  llvm::DenseMap<const SubprogramDecl*, SubprogramDecl*>
     ClassScopeSpecializationPattern;
 
   /// \brief Representation of a "canonical" template template parameter that
@@ -265,7 +265,7 @@ class ASTContext : public RefCountedBase<ASTContext> {
   mutable RecordDecl *BlockDescriptorExtendedType;
 
   /// \brief Declaration for the CUDA cudaConfigureCall function.
-  FunctionDecl *cudaConfigureCallDecl;
+  SubprogramDecl *cudaConfigureCallDecl;
 
   TypeSourceInfo NullTypeSourceInfo;
 
@@ -566,10 +566,10 @@ public:
   MemberSpecializationInfo *getInstantiatedFromStaticDataMember(
                                                            const VarDecl *Var);
 
-  FunctionDecl *getClassScopeSpecializationPattern(const FunctionDecl *FD);
+  SubprogramDecl *getClassScopeSpecializationPattern(const SubprogramDecl *FD);
 
-  void setClassScopeSpecializationPattern(FunctionDecl *FD,
-                                          FunctionDecl *Pattern);
+  void setClassScopeSpecializationPattern(SubprogramDecl *FD,
+                                          SubprogramDecl *Pattern);
 
   /// \brief Note that the static data member \p Inst is an instantiation of
   /// the static data member template \p Tmpl of a class template.
@@ -825,8 +825,8 @@ public:
   QualType getConstType(QualType T) const { return T.withConst(); }
 
   /// \brief Change the ExtInfo on a function type.
-  const FunctionType *adjustFunctionType(const FunctionType *Fn,
-                                         FunctionType::ExtInfo EInfo);
+  const SubprogramType *adjustSubprogramType(const SubprogramType *Fn,
+                                         SubprogramType::ExtInfo EInfo);
 
   /// \brief Return the uniqued reference to the type for a complex
   /// number with the specified element type.
@@ -858,10 +858,10 @@ public:
   /// pointer to blocks.
   QualType getBlockDescriptorExtendedType() const;
 
-  void setcudaConfigureCallDecl(FunctionDecl *FD) {
+  void setcudaConfigureCallDecl(SubprogramDecl *FD) {
     cudaConfigureCallDecl = FD;
   }
-  FunctionDecl *getcudaConfigureCallDecl() {
+  SubprogramDecl *getcudaConfigureCallDecl() {
     return cudaConfigureCallDecl;
   }
 
@@ -946,17 +946,17 @@ public:
                                           SourceLocation AttrLoc) const;
 
   /// \brief Return a K&R style C function type like 'int()'.
-  QualType getFunctionNoProtoType(QualType ResultTy,
-                                  const FunctionType::ExtInfo &Info) const;
+  QualType getSubprogramNoProtoType(QualType ResultTy,
+                                  const SubprogramType::ExtInfo &Info) const;
 
-  QualType getFunctionNoProtoType(QualType ResultTy) const {
-    return getFunctionNoProtoType(ResultTy, FunctionType::ExtInfo());
+  QualType getSubprogramNoProtoType(QualType ResultTy) const {
+    return getSubprogramNoProtoType(ResultTy, SubprogramType::ExtInfo());
   }
 
   /// \brief Return a normal function type with a typed argument list.
-  QualType getFunctionType(QualType ResultTy,
+  QualType getSubprogramType(QualType ResultTy,
                            const QualType *Args, unsigned NumArgs,
-                           const FunctionProtoType::ExtProtoInfo &EPI) const;
+                           const SubprogramProtoType::ExtProtoInfo &EPI) const;
 
   /// \brief Return the unique reference to the type for the specified type
   /// declaration.
@@ -1265,7 +1265,7 @@ public:
   ///
   /// \returns true if an error occurred (e.g., because one of the parameter
   /// types is incomplete), false otherwise.
-  bool getObjCEncodingForFunctionDecl(const FunctionDecl *Decl, std::string& S);
+  bool getObjCEncodingForSubprogramDecl(const SubprogramDecl *Decl, std::string& S);
 
   /// \brief Emit the encoded type for the method declaration \p Decl into
   /// \p S.
@@ -1569,7 +1569,7 @@ public:
   ///
   /// ...the first non-pure virtual function that is not inline at the point
   /// of class definition.
-  const CXXMethodDecl *getKeyFunction(const CXXRecordDecl *RD);
+  const CXXMethodDecl *getKeySubprogram(const CXXRecordDecl *RD);
 
   /// Get the offset of a FieldDecl or IndirectFieldDecl, in bits.
   uint64_t getFieldOffset(const ValueDecl *FD) const;
@@ -1863,12 +1863,12 @@ public:
                                    const ObjCObjectPointerType *RHSOPT);
   bool canBindObjCObjectType(QualType To, QualType From);
 
-  // Functions for calculating composite types
+  // Subprograms for calculating composite types
   QualType mergeTypes(QualType, QualType, bool OfBlockPointer=false,
                       bool Unqualified = false, bool BlockReturnType = false);
-  QualType mergeFunctionTypes(QualType, QualType, bool OfBlockPointer=false,
+  QualType mergeSubprogramTypes(QualType, QualType, bool OfBlockPointer=false,
                               bool Unqualified = false);
-  QualType mergeFunctionArgumentTypes(QualType, QualType,
+  QualType mergeSubprogramArgumentTypes(QualType, QualType,
                                       bool OfBlockPointer=false,
                                       bool Unqualified = false);
   QualType mergeTransparentUnionType(QualType, QualType,
@@ -1877,9 +1877,9 @@ public:
   
   QualType mergeObjCGCQualifiers(QualType, QualType);
     
-  bool FunctionTypesMatchOnNSConsumedAttrs(
-         const FunctionProtoType *FromFunctionType,
-         const FunctionProtoType *ToFunctionType);
+  bool SubprogramTypesMatchOnNSConsumedAttrs(
+         const SubprogramProtoType *FromSubprogramType,
+         const SubprogramProtoType *ToSubprogramType);
 
   void ResetObjCLayout(const ObjCContainerDecl *CD) {
     ObjCLayouts[CD] = 0;
@@ -1999,7 +1999,7 @@ public:
   /// when it is called.
   void AddDeallocation(void (*Callback)(void*), void *Data);
 
-  GVALinkage GetGVALinkageForFunction(const FunctionDecl *FD);
+  GVALinkage GetGVALinkageForSubprogram(const SubprogramDecl *FD);
   GVALinkage GetGVALinkageForVariable(const VarDecl *VD);
 
   /// \brief Determines if the decl can be CodeGen'ed or deserialized from PCH

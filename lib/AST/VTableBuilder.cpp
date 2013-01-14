@@ -270,8 +270,8 @@ static BaseOffset
 ComputeReturnAdjustmentBaseOffset(ASTContext &Context, 
                                   const CXXMethodDecl *DerivedMD,
                                   const CXXMethodDecl *BaseMD) {
-  const FunctionType *BaseFT = BaseMD->getType()->getAs<FunctionType>();
-  const FunctionType *DerivedFT = DerivedMD->getType()->getAs<FunctionType>();
+  const SubprogramType *BaseFT = BaseMD->getType()->getAs<SubprogramType>();
+  const SubprogramType *DerivedFT = DerivedMD->getType()->getAs<SubprogramType>();
   
   // Canonicalize the return types.
   CanQualType CanDerivedReturnType = 
@@ -468,10 +468,10 @@ public:
 
 static bool HasSameVirtualSignature(const CXXMethodDecl *LHS,
                                     const CXXMethodDecl *RHS) {
-  const FunctionProtoType *LT =
-    cast<FunctionProtoType>(LHS->getType().getCanonicalType());
-  const FunctionProtoType *RT =
-    cast<FunctionProtoType>(RHS->getType().getCanonicalType());
+  const SubprogramProtoType *LT =
+    cast<SubprogramProtoType>(LHS->getType().getCanonicalType());
+  const SubprogramProtoType *RT =
+    cast<SubprogramProtoType>(RHS->getType().getCanonicalType());
 
   // Fast-path matches in the canonical types.
   if (LT == RT) return true;
@@ -1100,7 +1100,7 @@ void VTableBuilder::ComputeThisAdjustments() {
     // Ignore adjustments for unused function pointers.
     uint64_t VTableIndex = MethodInfo.VTableIndex;
     if (Components[VTableIndex].getKind() == 
-        VTableComponent::CK_UnusedFunctionPointer)
+        VTableComponent::CK_UnusedSubprogramPointer)
       continue;
     
     // Get the final overrider for this method.
@@ -1150,8 +1150,8 @@ void VTableBuilder::ComputeThisAdjustments() {
     switch (Component.getKind()) {
     default:
       llvm_unreachable("Unexpected vtable component kind!");
-    case VTableComponent::CK_FunctionPointer:
-      MD = Component.getFunctionDecl();
+    case VTableComponent::CK_SubprogramPointer:
+      MD = Component.getSubprogramDecl();
       break;
     case VTableComponent::CK_CompleteDtorPointer:
       MD = Component.getDestructorDecl();
@@ -1305,7 +1305,7 @@ VTableBuilder::AddMethod(const CXXMethodDecl *MD,
       VTableThunks[Components.size()].Return = ReturnAdjustment;
 
     // Add the function.
-    Components.push_back(VTableComponent::MakeFunction(MD));
+    Components.push_back(VTableComponent::MakeSubprogram(MD));
   }
 }
 
@@ -1546,7 +1546,7 @@ VTableBuilder::AddMethods(BaseSubobject Base, CharUnits BaseOffsetInLayoutClass,
     if (!IsOverriderUsed(OverriderMD, BaseOffsetInLayoutClass,
                          FirstBaseInPrimaryBaseChain, 
                          FirstBaseOffsetInLayoutClass)) {
-      Components.push_back(VTableComponent::MakeUnusedFunction(OverriderMD));
+      Components.push_back(VTableComponent::MakeUnusedSubprogram(OverriderMD));
       continue;
     }
     
@@ -1882,11 +1882,11 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       Out << Component.getRTTIDecl()->getQualifiedNameAsString() << " RTTI";
       break;
     
-    case VTableComponent::CK_FunctionPointer: {
-      const CXXMethodDecl *MD = Component.getFunctionDecl();
+    case VTableComponent::CK_SubprogramPointer: {
+      const CXXMethodDecl *MD = Component.getSubprogramDecl();
 
       std::string Str = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual, 
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual, 
                                     MD);
       Out << Str;
       if (MD->isPure())
@@ -1962,11 +1962,11 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       break;
     }
 
-    case VTableComponent::CK_UnusedFunctionPointer: {
-      const CXXMethodDecl *MD = Component.getUnusedFunctionDecl();
+    case VTableComponent::CK_UnusedSubprogramPointer: {
+      const CXXMethodDecl *MD = Component.getUnusedSubprogramDecl();
 
       std::string Str = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual, 
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual, 
                                     MD);
       Out << "[unused] " << Str;
       if (MD->isPure())
@@ -2050,7 +2050,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
          I != E; ++I) {
       const CXXMethodDecl *MD = I->first;
       std::string MethodName = 
-        PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual,
+        PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual,
                                     MD);
       
       MethodNamesAndDecls.insert(std::make_pair(MethodName, MD));
@@ -2117,7 +2117,7 @@ void VTableBuilder::dumpLayout(raw_ostream& Out) {
       continue;
 
     std::string MethodName =
-      PredefinedExpr::ComputeName(PredefinedExpr::PrettyFunctionNoVirtual,
+      PredefinedExpr::ComputeName(PredefinedExpr::PrettySubprogramNoVirtual,
                                   MD);
 
     if (const CXXDestructorDecl *DD = dyn_cast<CXXDestructorDecl>(MD)) {
@@ -2210,7 +2210,7 @@ void VTableContext::ComputeMethodVTableIndices(const CXXRecordDecl *RD) {
 
     // Since the record decl shares its vtable pointer with the primary base
     // we need to start counting at the end of the primary base's vtable.
-    CurrentIndex = getNumVirtualFunctionPointers(PrimaryBase);
+    CurrentIndex = getNumVirtualSubprogramPointers(PrimaryBase);
   }
 
   // Collect all the primary bases, so we can check whether methods override
@@ -2288,19 +2288,19 @@ void VTableContext::ComputeMethodVTableIndices(const CXXRecordDecl *RD) {
       CurrentIndex++;
   }
   
-  NumVirtualFunctionPointers[RD] = CurrentIndex;
+  NumVirtualSubprogramPointers[RD] = CurrentIndex;
 }
 
-uint64_t VTableContext::getNumVirtualFunctionPointers(const CXXRecordDecl *RD) {
+uint64_t VTableContext::getNumVirtualSubprogramPointers(const CXXRecordDecl *RD) {
   llvm::DenseMap<const CXXRecordDecl *, uint64_t>::iterator I = 
-    NumVirtualFunctionPointers.find(RD);
-  if (I != NumVirtualFunctionPointers.end())
+    NumVirtualSubprogramPointers.find(RD);
+  if (I != NumVirtualSubprogramPointers.end())
     return I->second;
 
   ComputeMethodVTableIndices(RD);
 
-  I = NumVirtualFunctionPointers.find(RD);
-  assert(I != NumVirtualFunctionPointers.end() && "Did not find entry!");
+  I = NumVirtualSubprogramPointers.find(RD);
+  assert(I != NumVirtualSubprogramPointers.end() && "Did not find entry!");
   return I->second;
 }
       

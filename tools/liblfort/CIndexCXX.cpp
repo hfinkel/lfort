@@ -55,7 +55,7 @@ enum CXCursorKind lfort_getTemplateCursorKind(CXCursor C) {
   
   switch (C.kind) {
   case CXCursor_ClassTemplate: 
-  case CXCursor_FunctionTemplate:
+  case CXCursor_SubprogramTemplate:
     if (TemplateDecl *Template
                            = dyn_cast_or_null<TemplateDecl>(getCursorDecl(C)))
       return MakeCXCursor(Template->getTemplatedDecl(), 
@@ -108,10 +108,10 @@ CXCursor lfort_getSpecializedCursorTemplate(CXCursor C) {
       
     } else 
       Template = CXXRecord->getInstantiatedFromMemberClass();
-  } else if (FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
-    Template = Function->getPrimaryTemplate();
+  } else if (SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
+    Template = Subprogram->getPrimaryTemplate();
     if (!Template)
-      Template = Function->getInstantiatedFromMemberFunction();
+      Template = Subprogram->getInstantiatedFromMemberSubprogram();
   } else if (VarDecl *Var = dyn_cast<VarDecl>(D)) {
     if (Var->isStaticDataMember())
       Template = Var->getInstantiatedFromStaticDataMember();

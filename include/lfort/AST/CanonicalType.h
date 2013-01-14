@@ -272,8 +272,8 @@ public:
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isAggregateType)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isAnyPointerType)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isVoidPointerType)
-  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isFunctionPointerType)
-  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isMemberFunctionPointerType)
+  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isSubprogramPointerType)
+  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isMemberSubprogramPointerType)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isClassType)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isStructureType)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isInterfaceType)
@@ -543,23 +543,23 @@ struct CanProxyAdaptor<ExtVectorType> : public CanProxyBase<ExtVectorType> {
 };
 
 template<>
-struct CanProxyAdaptor<FunctionType> : public CanProxyBase<FunctionType> {
+struct CanProxyAdaptor<SubprogramType> : public CanProxyBase<SubprogramType> {
   LLVM_LFORT_CANPROXY_TYPE_ACCESSOR(getResultType)
-  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(FunctionType::ExtInfo, getExtInfo)
+  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(SubprogramType::ExtInfo, getExtInfo)
 };
 
 template<>
-struct CanProxyAdaptor<FunctionNoProtoType>
-  : public CanProxyBase<FunctionNoProtoType> {
+struct CanProxyAdaptor<SubprogramNoProtoType>
+  : public CanProxyBase<SubprogramNoProtoType> {
   LLVM_LFORT_CANPROXY_TYPE_ACCESSOR(getResultType)
-  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(FunctionType::ExtInfo, getExtInfo)
+  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(SubprogramType::ExtInfo, getExtInfo)
 };
 
 template<>
-struct CanProxyAdaptor<FunctionProtoType>
-  : public CanProxyBase<FunctionProtoType> {
+struct CanProxyAdaptor<SubprogramProtoType>
+  : public CanProxyBase<SubprogramProtoType> {
   LLVM_LFORT_CANPROXY_TYPE_ACCESSOR(getResultType)
-  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(FunctionType::ExtInfo, getExtInfo)
+  LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(SubprogramType::ExtInfo, getExtInfo)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(unsigned, getNumArgs)
   CanQualType getArgType(unsigned i) const {
     return CanQualType::CreateUnsafe(this->getTypePtr()->getArgType(i));
@@ -568,7 +568,7 @@ struct CanProxyAdaptor<FunctionProtoType>
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(bool, isVariadic)
   LLVM_LFORT_CANPROXY_SIMPLE_ACCESSOR(unsigned, getTypeQuals)
 
-  typedef CanTypeIterator<FunctionProtoType::arg_type_iterator>
+  typedef CanTypeIterator<SubprogramProtoType::arg_type_iterator>
     arg_type_iterator;
 
   arg_type_iterator arg_type_begin() const {

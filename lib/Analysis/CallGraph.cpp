@@ -39,7 +39,7 @@ public:
   void VisitStmt(Stmt *S) { VisitChildren(S); }
 
   Decl *getDeclFromCall(CallExpr *CE) {
-    if (FunctionDecl *CalleeDecl = CE->getDirectCallee())
+    if (SubprogramDecl *CalleeDecl = CE->getDirectCallee())
       return CalleeDecl;
 
     // Simple detection of a call through a block.
@@ -106,11 +106,11 @@ CallGraph::CallGraph() {
 }
 
 CallGraph::~CallGraph() {
-  if (!FunctionMap.empty()) {
-    for (FunctionMapTy::iterator I = FunctionMap.begin(), E = FunctionMap.end();
+  if (!SubprogramMap.empty()) {
+    for (SubprogramMapTy::iterator I = SubprogramMap.begin(), E = SubprogramMap.end();
         I != E; ++I)
       delete I->second;
-    FunctionMap.clear();
+    SubprogramMap.clear();
   }
 }
 
@@ -119,7 +119,7 @@ bool CallGraph::includeInGraph(const Decl *D) {
   if (!D->getBody())
     return false;
 
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     // We skip function template definitions, as their semantics is
     // only determined when they are instantiated.
     if (!FD->isThisDeclarationADefinition() ||
@@ -152,13 +152,13 @@ void CallGraph::addNodeForDecl(Decl* D, bool IsGlobal) {
 }
 
 CallGraphNode *CallGraph::getNode(const Decl *F) const {
-  FunctionMapTy::const_iterator I = FunctionMap.find(F);
-  if (I == FunctionMap.end()) return 0;
+  SubprogramMapTy::const_iterator I = SubprogramMap.find(F);
+  if (I == SubprogramMap.end()) return 0;
   return I->second;
 }
 
 CallGraphNode *CallGraph::getOrInsertNode(Decl *F) {
-  CallGraphNode *&Node = FunctionMap[F];
+  CallGraphNode *&Node = SubprogramMap[F];
   if (Node)
     return Node;
 
@@ -179,7 +179,7 @@ void CallGraph::print(raw_ostream &OS) const {
          I = RPOT.begin(), E = RPOT.end(); I != E; ++I) {
     const CallGraphNode *N = *I;
 
-    OS << "  Function: ";
+    OS << "  Subprogram: ";
     if (N == Root)
       OS << "< root >";
     else

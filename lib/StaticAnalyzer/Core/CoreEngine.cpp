@@ -176,7 +176,7 @@ bool CoreEngine::ExecuteWorkList(const LocationContext *L, unsigned Steps,
             "Entry block must have 1 successor.");
 
     // Mark the entry block as visited.
-    FunctionSummaries->markVisitedBasicBlock(Entry->getBlockID(),
+    SubprogramSummaries->markVisitedBasicBlock(Entry->getBlockID(),
                                              L->getDecl(),
                                              L->getCFG()->getNumBlockIDs());
 
@@ -287,7 +287,7 @@ void CoreEngine::HandleBlockEdge(const BlockEdge &L, ExplodedNode *Pred) {
 
   // Mark this block as visited.
   const LocationContext *LC = Pred->getLocationContext();
-  FunctionSummaries->markVisitedBasicBlock(Blk->getBlockID(),
+  SubprogramSummaries->markVisitedBasicBlock(Blk->getBlockID(),
                                            LC->getDecl(),
                                            LC->getCFG()->getNumBlockIDs());
 
@@ -298,7 +298,7 @@ void CoreEngine::HandleBlockEdge(const BlockEdge &L, ExplodedNode *Pred) {
             && "EXIT block cannot contain Stmts.");
 
     // Process the final state transition.
-    SubEng.processEndOfFunction(BuilderCtx, Pred);
+    SubEng.processEndOfSubprogram(BuilderCtx, Pred);
 
     // This path is done. Don't enqueue any more nodes.
     return;
@@ -563,7 +563,7 @@ void CoreEngine::enqueue(ExplodedNodeSet &Set,
   }
 }
 
-void CoreEngine::enqueueEndOfFunction(ExplodedNodeSet &Set) {
+void CoreEngine::enqueueEndOfSubprogram(ExplodedNodeSet &Set) {
   for (ExplodedNodeSet::iterator I = Set.begin(), E = Set.end(); I != E; ++I) {
     ExplodedNode *N = *I;
     // If we are in an inlined call, generate CallExitBegin node.

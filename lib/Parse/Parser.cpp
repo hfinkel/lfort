@@ -50,12 +50,12 @@ IdentifierInfo *Parser::getSEHExceptKeyword() {
   return Ident__except;
 }
 
-Parser::Parser(Preprocessor &pp, Sema &actions, bool skipFunctionBodies)
+Parser::Parser(Preprocessor &pp, Sema &actions, bool skipSubprogramBodies)
   : PP(pp), Actions(actions), Diags(PP.getDiagnostics()),
     GreaterThanIsOperator(true), ColonIsSacred(false), 
     InMessageExpression(false), TemplateParameterDepth(0),
     ParsingInObjCContainer(false) {
-  SkipFunctionBodies = pp.isCodeCompletionEnabled() || skipFunctionBodies;
+  SkipSubprogramBodies = pp.isCodeCompletionEnabled() || skipSubprogramBodies;
   Tok.startToken();
   Tok.setKind(tok::eof);
   Actions.CurScope = 0;
@@ -219,7 +219,7 @@ void Parser::ConsumeExtraSemi(ExtraSemiKind Kind, unsigned TST) {
 
   // C++11 allows extra semicolons at namespace scope, but not in any of the
   // other contexts.
-  if (Kind == OutsideFunction && getLangOpts().CPlusPlus) {
+  if (Kind == OutsideSubprogram && getLangOpts().CPlusPlus) {
     if (getLangOpts().CPlusPlus11)
       Diag(StartLoc, diag::warn_cxx98_compat_top_level_semi)
           << FixItHint::CreateRemoval(SourceRange(StartLoc, EndLoc));
@@ -229,7 +229,7 @@ void Parser::ConsumeExtraSemi(ExtraSemiKind Kind, unsigned TST) {
     return;
   }
 
-  if (Kind != AfterMemberFunctionDefinition || HadMultipleSemis)
+  if (Kind != AfterMemberSubprogramDefinition || HadMultipleSemis)
     Diag(StartLoc, diag::ext_extra_semi)
         << Kind << DeclSpec::getSpecifierName((DeclSpec::TST)TST)
         << FixItHint::CreateRemoval(SourceRange(StartLoc, EndLoc));
@@ -402,7 +402,7 @@ Parser::~Parser() {
   for (unsigned i = 0, e = NumCachedScopes; i != e; ++i)
     delete ScopeCache[i];
 
-  // Free LateParsedTemplatedFunction nodes.
+  // Free LateParsedTemplatedSubprogram nodes.
   for (LateParsedTemplateMapT::iterator it = LateParsedTemplateMap.begin();
       it != LateParsedTemplateMap.end(); ++it)
     delete it->second;
@@ -595,7 +595,7 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
   case tok::kw_subroutine:
     return ParseSubroutine();
   case tok::kw_function:
-    return ParseFunction();
+    return ParseSubprogram();
   case tok::kw_submodule:
     return ParseSubmodule();
   case tok::kw_blockdata:
@@ -666,7 +666,7 @@ Parser::ParseProgram() {
   ParsedAttributes FnAttrs(AttrFactory);
 
   // Remember that we parsed a function type, and remember the attributes.
-  D.AddTypeInfo(DeclaratorChunk::getFunction(true,
+  D.AddTypeInfo(DeclaratorChunk::getSubprogram(true,
                                              false,
                                              SourceLocation(),
                                              ParamInfo.data(),
@@ -695,7 +695,7 @@ Parser::ParseProgram() {
   // Enter a scope for the MAIN__ function body.
   ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
 
-  Decl *Res = Actions.ActOnStartOfFunctionDef(getCurScope(), D);
+  Decl *Res = Actions.ActOnStartOfSubprogramDef(getCurScope(), D);
 
   // Break out of the ParsingDeclarator context before we parse the body.
   D.complete(Res);
@@ -737,7 +737,7 @@ Parser::ParseProgram() {
 
   BodyScope.Exit();
 
-  Decl *TheDecl = Actions.ActOnFinishFunctionBody(Res, FnBody.take());
+  Decl *TheDecl = Actions.ActOnFinishSubprogramBody(Res, FnBody.take());
   return Actions.ConvertDeclToDeclGroup(TheDecl);
 }
 
@@ -795,7 +795,7 @@ Parser::ParseSubroutine() {
 }
 
 Parser::DeclGroupPtrTy
-Parser::ParseFunction() {
+Parser::ParseSubprogram() {
   return DeclGroupPtrTy();
 }
 
@@ -887,7 +887,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
     HandlePragmaOpenCLExtension();
     return DeclGroupPtrTy();
   case tok::semi:
-    ConsumeExtraSemi(OutsideFunction);
+    ConsumeExtraSemi(OutsideSubprogram);
     // TODO: Invoke action for top-level semicolon.
     return DeclGroupPtrTy();
   case tok::r_brace:
@@ -1008,7 +1008,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
   default:
   dont_know:
     // We can't tell whether this is a function-definition or declaration yet.
-    return ParseDeclarationOrFunctionDefinition(attrs, DS);
+    return ParseDeclarationOrSubprogramDefinition(attrs, DS);
   }
 
   // This routine returns a DeclGroup, if the thing we parsed only contains a
@@ -1037,14 +1037,14 @@ bool Parser::isDeclarationAfterDeclarator() {
 
 /// \brief Determine whether the current token, if it occurs after a
 /// declarator, indicates the start of a function definition.
-bool Parser::isStartOfFunctionDefinition(const ParsingDeclarator &Declarator) {
-  assert(Declarator.isFunctionDeclarator() && "Isn't a function declarator");
+bool Parser::isStartOfSubprogramDefinition(const ParsingDeclarator &Declarator) {
+  assert(Declarator.isSubprogramDeclarator() && "Isn't a function declarator");
   if (Tok.is(tok::l_brace))   // int X() {}
     return true;
   
   // Handle K&R C argument lists: int X(f) int f; {}
   if (!getLangOpts().CPlusPlus &&
-      Declarator.getFunctionTypeInfo().isKNRPrototype()) 
+      Declarator.getSubprogramTypeInfo().isKNRPrototype()) 
     return isDeclarationSpecifier();
 
   if (getLangOpts().CPlusPlus && Tok.is(tok::equal)) {
@@ -1056,7 +1056,7 @@ bool Parser::isStartOfFunctionDefinition(const ParsingDeclarator &Declarator) {
          Tok.is(tok::kw_try);          // X() try { ... }
 }
 
-/// ParseDeclarationOrFunctionDefinition - Parse either a function-definition or
+/// ParseDeclarationOrSubprogramDefinition - Parse either a function-definition or
 /// a declaration.  We can't tell which we have until we read up to the
 /// compound-statement in function-definition. TemplateParams, if
 /// non-NULL, provides the template parameters when we're parsing a
@@ -1073,7 +1073,7 @@ bool Parser::isStartOfFunctionDefinition(const ParsingDeclarator &Declarator) {
 /// [OMP]   threadprivate-directive                              [TODO]
 ///
 Parser::DeclGroupPtrTy
-Parser::ParseDeclOrFunctionDefInternal(ParsedAttributesWithRange &attrs,
+Parser::ParseDeclOrSubprogramDefInternal(ParsedAttributesWithRange &attrs,
                                        ParsingDeclSpec &DS,
                                        AccessSpecifier AS) {
   // Parse the common declaration-specifiers piece.
@@ -1131,11 +1131,11 @@ Parser::ParseDeclOrFunctionDefInternal(ParsedAttributesWithRange &attrs,
 }
 
 Parser::DeclGroupPtrTy
-Parser::ParseDeclarationOrFunctionDefinition(ParsedAttributesWithRange &attrs,
+Parser::ParseDeclarationOrSubprogramDefinition(ParsedAttributesWithRange &attrs,
                                              ParsingDeclSpec *DS,
                                              AccessSpecifier AS) {
   if (DS) {
-    return ParseDeclOrFunctionDefInternal(attrs, *DS, AS);
+    return ParseDeclOrSubprogramDefInternal(attrs, *DS, AS);
   } else {
     ParsingDeclSpec PDS(*this);
     // Must temporarily exit the objective-c container scope for
@@ -1143,11 +1143,11 @@ Parser::ParseDeclarationOrFunctionDefinition(ParsedAttributesWithRange &attrs,
     // afterwards.
     ObjCDeclContextSwitch ObjCDC(*this);
       
-    return ParseDeclOrFunctionDefInternal(attrs, PDS, AS);
+    return ParseDeclOrSubprogramDefInternal(attrs, PDS, AS);
   }
 }
 
-/// ParseFunctionDefinition - We parsed and verified that the specified
+/// ParseSubprogramDefinition - We parsed and verified that the specified
 /// Declarator is well formed.  If this is a K&R-style function, read the
 /// parameters declaration-list, then start the compound-statement.
 ///
@@ -1161,12 +1161,12 @@ Parser::ParseDeclarationOrFunctionDefinition(ParsedAttributesWithRange &attrs,
 /// [C++] function-definition: [C++ 8.4]
 ///         decl-specifier-seq[opt] declarator function-try-block
 ///
-Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
+Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
                                       const ParsedTemplateInfo &TemplateInfo,
                                       LateParsedAttrList *LateParsedAttrs) {
   // Poison the SEH identifiers so they are flagged as illegal in function bodies
   PoisonSEHIdentifiersRAIIObject PoisonSEHIdentifiers(*this, true);
-  const DeclaratorChunk::FunctionTypeInfo &FTI = D.getFunctionTypeInfo();
+  const DeclaratorChunk::SubprogramTypeInfo &FTI = D.getSubprogramTypeInfo();
 
   // If this is C90 and the declspecs were completely missing, fudge in an
   // implicit int.  We do this here because this is the only place where
@@ -1225,28 +1225,28 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
     ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
     Scope *ParentScope = getCurScope()->getParent();
 
-    D.setFunctionDefinitionKind(FDK_Definition);
+    D.setSubprogramDefinitionKind(FDK_Definition);
     Decl *DP = Actions.HandleDeclarator(ParentScope, D,
                                         TemplateParameterLists);
     D.complete(DP);
     D.getMutableDeclSpec().abort();
 
     if (DP) {
-      LateParsedTemplatedFunction *LPT = new LateParsedTemplatedFunction(DP);
+      LateParsedTemplatedSubprogram *LPT = new LateParsedTemplatedSubprogram(DP);
 
-      FunctionDecl *FnD = 0;
-      if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(DP))
+      SubprogramDecl *FnD = 0;
+      if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(DP))
         FnD = FunTmpl->getTemplatedDecl();
       else
-        FnD = cast<FunctionDecl>(DP);
-      Actions.CheckForFunctionRedefinition(FnD);
+        FnD = cast<SubprogramDecl>(DP);
+      Actions.CheckForSubprogramRedefinition(FnD);
 
       LateParsedTemplateMap[FnD] = LPT;
       Actions.MarkAsLateParsedTemplate(FnD);
-      LexTemplateFunctionForLateParsing(LPT->Toks);
+      LexTemplateSubprogramForLateParsing(LPT->Toks);
     } else {
       CachedTokens Toks;
-      LexTemplateFunctionForLateParsing(Toks);
+      LexTemplateSubprogramForLateParsing(Toks);
     }
     return DP;
   }
@@ -1258,15 +1258,15 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
     ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
     Scope *ParentScope = getCurScope()->getParent();
     
-    D.setFunctionDefinitionKind(FDK_Definition);
+    D.setSubprogramDefinitionKind(FDK_Definition);
     Decl *FuncDecl = Actions.HandleDeclarator(ParentScope, D,
                                               MultiTemplateParamsArg());
     D.complete(FuncDecl);
     D.getMutableDeclSpec().abort();
     if (FuncDecl) {
       // Consume the tokens and store them for later parsing.
-      StashAwayMethodOrFunctionBodyTokens(FuncDecl);
-      CurParsedObjCImpl->HasCFunction = true;
+      StashAwayMethodOrSubprogramBodyTokens(FuncDecl);
+      CurParsedObjCImpl->HasCSubprogram = true;
       return FuncDecl;
     }
   }
@@ -1277,9 +1277,9 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
   // Tell the actions module that we have entered a function definition with the
   // specified Declarator for the function.
   Decl *Res = TemplateInfo.TemplateParams?
-      Actions.ActOnStartOfFunctionTemplateDef(getCurScope(),
+      Actions.ActOnStartOfSubprogramTemplateDef(getCurScope(),
                                               *TemplateInfo.TemplateParams, D)
-    : Actions.ActOnStartOfFunctionDef(getCurScope(), D);
+    : Actions.ActOnStartOfSubprogramDef(getCurScope(), D);
 
   // Break out of the ParsingDeclarator context before we parse the body.
   D.complete(Res);
@@ -1292,7 +1292,7 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
     assert(getLangOpts().CPlusPlus && "Only C++ function definitions have '='");
     ConsumeToken();
 
-    Actions.ActOnFinishFunctionBody(Res, 0, false);
+    Actions.ActOnFinishSubprogramBody(Res, 0, false);
  
     bool Delete = false;
     SourceLocation KWLoc;
@@ -1328,7 +1328,7 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
   }
 
   if (Tok.is(tok::kw_try))
-    return ParseFunctionTryBlock(Res, BodyScope);
+    return ParseSubprogramTryBlock(Res, BodyScope);
 
   // If we have a colon, then we're probably parsing a C++
   // ctor-initializer.
@@ -1338,7 +1338,7 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
     // Recover from error.
     if (!Tok.is(tok::l_brace)) {
       BodyScope.Exit();
-      Actions.ActOnFinishFunctionBody(Res, 0);
+      Actions.ActOnFinishSubprogramBody(Res, 0);
       return Res;
     }
   } else
@@ -1348,18 +1348,18 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
   if (LateParsedAttrs)
     ParseLexedAttributeList(*LateParsedAttrs, Res, false, true);
 
-  return ParseFunctionStatementBody(Res, BodyScope);
+  return ParseSubprogramStatementBody(Res, BodyScope);
 }
 
 /// ParseKNRParamDeclarations - Parse 'declaration-list[opt]' which provides
 /// types for a function with a K&R-style identifier list for arguments.
 void Parser::ParseKNRParamDeclarations(Declarator &D) {
   // We know that the top-level of this declarator is a function.
-  DeclaratorChunk::FunctionTypeInfo &FTI = D.getFunctionTypeInfo();
+  DeclaratorChunk::SubprogramTypeInfo &FTI = D.getSubprogramTypeInfo();
 
   // Enter function-declaration scope, limiting any declarators to the
   // function prototype scope, including parameter declarators.
-  ParseScope PrototypeScope(this, Scope::FunctionPrototypeScope|Scope::DeclScope);
+  ParseScope PrototypeScope(this, Scope::SubprogramPrototypeScope|Scope::DeclScope);
 
   // Read all the argument declarations.
   while (isDeclarationSpecifier()) {
@@ -1659,7 +1659,7 @@ Parser::TryAnnotateName(bool IsAddressOfOperand,
       return ANK_TemplateName;
     }
     // Fall through.
-  case Sema::NC_FunctionTemplate: {
+  case Sema::NC_SubprogramTemplate: {
     // We have a type or function template followed by '<'.
     ConsumeToken();
     UnqualifiedId Id;
@@ -1751,7 +1751,7 @@ bool Parser::TryAnnotateTypeOrScopeToken(bool EnteringContext, bool NeedType) {
                                      Tok.getLocation());
     } else if (Tok.is(tok::annot_template_id)) {
       TemplateIdAnnotation *TemplateId = takeTemplateIdAnnotation(Tok);
-      if (TemplateId->Kind == TNK_Function_template) {
+      if (TemplateId->Kind == TNK_Subprogram_template) {
         Diag(Tok, diag::err_typename_refers_to_non_type_template)
           << Tok.getAnnotationRange();
         return true;
@@ -1942,7 +1942,7 @@ SourceLocation Parser::handleUnexpectedCodeCompletionToken() {
 
   for (Scope *S = getCurScope(); S; S = S->getParent()) {
     if (S->getFlags() & Scope::FnScope) {
-      Actions.CodeCompleteOrdinaryName(getCurScope(), Sema::PCC_RecoveryInFunction);
+      Actions.CodeCompleteOrdinaryName(getCurScope(), Sema::PCC_RecoveryInSubprogram);
       cutOffParsing();
       return PrevTokLocation;
     }

@@ -1050,7 +1050,7 @@ TEST(Matcher, VariableUsage) {
       "}", Reference));
 }
 
-TEST(Matcher, FindsVarDeclInFunctionParameter) {
+TEST(Matcher, FindsVarDeclInSubprogramParameter) {
   EXPECT_TRUE(matches(
       "void f(int i) {}",
       varDecl(hasName("i"))));
@@ -1104,7 +1104,7 @@ TEST(MemberExpression, DoesNotMatchClasses) {
   EXPECT_TRUE(notMatches("class Y { void x() {} };", memberExpr()));
 }
 
-TEST(MemberExpression, MatchesMemberFunctionCall) {
+TEST(MemberExpression, MatchesMemberSubprogramCall) {
   EXPECT_TRUE(matches("class Y { void x() { x(); } };", memberExpr()));
 }
 
@@ -1182,45 +1182,45 @@ TEST(Callee, MatchesMemberExpressions) {
       notMatches("class Y { void x() { this->x(); } };", callExpr(callee(callExpr()))));
 }
 
-TEST(Function, MatchesFunctionDeclarations) {
-  StatementMatcher CallFunctionF = callExpr(callee(functionDecl(hasName("f"))));
+TEST(Subprogram, MatchesSubprogramDeclarations) {
+  StatementMatcher CallSubprogramF = callExpr(callee(functionDecl(hasName("f"))));
 
-  EXPECT_TRUE(matches("void f() { f(); }", CallFunctionF));
-  EXPECT_TRUE(notMatches("void f() { }", CallFunctionF));
+  EXPECT_TRUE(matches("void f() { f(); }", CallSubprogramF));
+  EXPECT_TRUE(notMatches("void f() { }", CallSubprogramF));
 
 #if !defined(_MSC_VER)
   // FIXME: Make this work for MSVC.
   // Dependent contexts, but a non-dependent call.
   EXPECT_TRUE(matches("void f(); template <int N> void g() { f(); }",
-                      CallFunctionF));
+                      CallSubprogramF));
   EXPECT_TRUE(
       matches("void f(); template <int N> struct S { void g() { f(); } };",
-              CallFunctionF));
+              CallSubprogramF));
 #endif
 
   // Depedent calls don't match.
   EXPECT_TRUE(
       notMatches("void f(int); template <typename T> void g(T t) { f(t); }",
-                 CallFunctionF));
+                 CallSubprogramF));
   EXPECT_TRUE(
       notMatches("void f(int);"
                  "template <typename T> struct S { void g(T t) { f(t); } };",
-                 CallFunctionF));
+                 CallSubprogramF));
 }
 
-TEST(FunctionTemplate, MatchesFunctionTemplateDeclarations) {
+TEST(SubprogramTemplate, MatchesSubprogramTemplateDeclarations) {
   EXPECT_TRUE(
       matches("template <typename T> void f(T t) {}",
       functionTemplateDecl(hasName("f"))));
 }
 
-TEST(FunctionTemplate, DoesNotMatchFunctionDeclarations) {
+TEST(SubprogramTemplate, DoesNotMatchSubprogramDeclarations) {
   EXPECT_TRUE(
       notMatches("void f(double d); void f(int t) {}",
       functionTemplateDecl(hasName("f"))));
 }
 
-TEST(FunctionTemplate, DoesNotMatchFunctionTemplateSpecializations) {
+TEST(SubprogramTemplate, DoesNotMatchSubprogramTemplateSpecializations) {
   EXPECT_TRUE(
       notMatches("void g(); template <typename T> void f(T t) {}"
                  "template <> void f(int t) { g(); }",
@@ -1260,11 +1260,11 @@ TEST(Matcher, ArgumentCount) {
 }
 
 TEST(Matcher, ParameterCount) {
-  DeclarationMatcher Function1Arg = functionDecl(parameterCountIs(1));
-  EXPECT_TRUE(matches("void f(int i) {}", Function1Arg));
-  EXPECT_TRUE(matches("class X { void f(int i) {} };", Function1Arg));
-  EXPECT_TRUE(notMatches("void f() {}", Function1Arg));
-  EXPECT_TRUE(notMatches("void f(int i, int j, int k) {}", Function1Arg));
+  DeclarationMatcher Subprogram1Arg = functionDecl(parameterCountIs(1));
+  EXPECT_TRUE(matches("void f(int i) {}", Subprogram1Arg));
+  EXPECT_TRUE(matches("class X { void f(int i) {} };", Subprogram1Arg));
+  EXPECT_TRUE(notMatches("void f() {}", Subprogram1Arg));
+  EXPECT_TRUE(notMatches("void f(int i, int j, int k) {}", Subprogram1Arg));
 }
 
 TEST(Matcher, References) {
@@ -1322,7 +1322,7 @@ TEST(Returns, MatchesReturnTypes) {
                           recordDecl(hasName("Y")))))));
 }
 
-TEST(IsExternC, MatchesExternCFunctionDeclarations) {
+TEST(IsExternC, MatchesExternCSubprogramDeclarations) {
   EXPECT_TRUE(matches("extern \"C\" void f() {}", functionDecl(isExternC())));
   EXPECT_TRUE(matches("extern \"C\" { void f() {} }",
               functionDecl(isExternC())));
@@ -1463,18 +1463,18 @@ TEST(Matcher, BindTemporaryExpression) {
   EXPECT_TRUE(
       matches(ClassString +
               "string GetStringByValue();"
-              "void FunctionTakesString(string s);"
-              "void run() { FunctionTakesString(GetStringByValue()); }",
+              "void SubprogramTakesString(string s);"
+              "void run() { SubprogramTakesString(GetStringByValue()); }",
               TempExpression));
 
   EXPECT_TRUE(
       notMatches(ClassString +
                  "string* GetStringPointer(); "
-                 "void FunctionTakesStringPtr(string* s);"
+                 "void SubprogramTakesStringPtr(string* s);"
                  "void run() {"
                  "  string* s = GetStringPointer();"
-                 "  FunctionTakesStringPtr(GetStringPointer());"
-                 "  FunctionTakesStringPtr(s);"
+                 "  SubprogramTakesStringPtr(GetStringPointer());"
+                 "  SubprogramTakesStringPtr(s);"
                  "}",
                  TempExpression));
 
@@ -1493,18 +1493,18 @@ TEST(MaterializeTemporaryExpr, MatchesTemporary) {
   EXPECT_TRUE(
       matches(ClassString +
               "string GetStringByValue();"
-              "void FunctionTakesString(string s);"
-              "void run() { FunctionTakesString(GetStringByValue()); }",
+              "void SubprogramTakesString(string s);"
+              "void run() { SubprogramTakesString(GetStringByValue()); }",
               materializeTemporaryExpr()));
 
   EXPECT_TRUE(
       notMatches(ClassString +
                  "string* GetStringPointer(); "
-                 "void FunctionTakesStringPtr(string* s);"
+                 "void SubprogramTakesStringPtr(string* s);"
                  "void run() {"
                  "  string* s = GetStringPointer();"
-                 "  FunctionTakesStringPtr(GetStringPointer());"
-                 "  FunctionTakesStringPtr(s);"
+                 "  SubprogramTakesStringPtr(GetStringPointer());"
+                 "  SubprogramTakesStringPtr(s);"
                  "}",
                  materializeTemporaryExpr()));
 
@@ -1884,7 +1884,7 @@ TEST(Matcher, UnaryOperatorTypes) {
   // We don't match conversion operators.
   EXPECT_TRUE(notMatches("int i; double d = (double)i;", unaryOperator()));
 
-  // Function calls are not represented as operator.
+  // Subprogram calls are not represented as operator.
   EXPECT_TRUE(notMatches("void f(); void x() { f(); }", unaryOperator()));
 
   // Overloaded operators do not match at all.
@@ -2246,7 +2246,7 @@ TEST(Member, DoesNotMatchTheBaseExpression) {
                          memberExpr(member(hasName("first")))));
 }
 
-TEST(Member, MatchesInMemberFunctionCall) {
+TEST(Member, MatchesInMemberSubprogramCall) {
   EXPECT_TRUE(matches("void f() {"
                       "  struct { void first() {}; } s;"
                       "  s.first();"
@@ -2263,7 +2263,7 @@ TEST(Member, MatchesMember) {
       memberExpr(hasDeclaration(fieldDecl(hasType(isInteger()))))));
 }
 
-TEST(Member, MatchesMemberAllocationFunction) {
+TEST(Member, MatchesMemberAllocationSubprogram) {
   // Fails in C++11 mode
   EXPECT_TRUE(matchesConditionally(
       "namespace std { typedef typeof(sizeof(int)) size_t; }"
@@ -2380,13 +2380,13 @@ TEST(ReinterpretCast, DoesNotMatchOtherCasts) {
                          reinterpretCastExpr()));
 }
 
-TEST(FunctionalCast, MatchesSimpleCase) {
+TEST(SubprogramalCast, MatchesSimpleCase) {
   std::string foo_class = "class Foo { public: Foo(char*); };";
   EXPECT_TRUE(matches(foo_class + "void r() { Foo f = Foo(\"hello world\"); }",
                       functionalCastExpr()));
 }
 
-TEST(FunctionalCast, DoesNotMatchOtherCasts) {
+TEST(SubprogramalCast, DoesNotMatchOtherCasts) {
   std::string FooClass = "class Foo { public: Foo(char*); };";
   EXPECT_TRUE(
       notMatches(FooClass + "void r() { Foo f = (Foo) \"hello world\"; }",
@@ -2854,7 +2854,7 @@ TEST(ForEachDescendant, BindsCorrectNodes) {
   EXPECT_TRUE(matchAndVerifyResultTrue(
       "class C { void f() {} int i; };",
       recordDecl(hasName("C"), forEachDescendant(decl().bind("decl"))),
-      new VerifyIdIsBoundTo<FunctionDecl>("decl", 1)));
+      new VerifyIdIsBoundTo<SubprogramDecl>("decl", 1)));
 }
 
 
@@ -2872,7 +2872,7 @@ TEST(IsTemplateInstantiation, MatchesImplicitClassTemplateInstantiation) {
           fieldDecl(hasType(recordDecl(hasName("A"))))))));
 }
 
-TEST(IsTemplateInstantiation, MatchesImplicitFunctionTemplateInstantiation) {
+TEST(IsTemplateInstantiation, MatchesImplicitSubprogramTemplateInstantiation) {
   EXPECT_TRUE(matches(
       "template <typename T> void f(T t) {} class A {}; void g() { f(A()); }",
       functionDecl(hasParameter(0, hasType(recordDecl(hasName("A")))),
@@ -3196,7 +3196,7 @@ TEST(TypeMatching, MatchesAutoTypes) {
                          autoType(hasDeducedType(isInteger()))));
 }
 
-TEST(TypeMatching, MatchesFunctionTypes) {
+TEST(TypeMatching, MatchesSubprogramTypes) {
   EXPECT_TRUE(matches("int (*f)(int);", functionType()));
   EXPECT_TRUE(matches("void f(int i) {}", functionType()));
 }

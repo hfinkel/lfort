@@ -78,7 +78,7 @@ private:
     EOP_NVar,      ///< Named variable.
     EOP_LVar,      ///< Local variable.
     EOP_Dot,       ///< Field access
-    EOP_Call,      ///< Function call
+    EOP_Call,      ///< Subprogram call
     EOP_MCall,     ///< Method call
     EOP_Index,     ///< Array index
     EOP_Unary,     ///< Unary operation
@@ -110,7 +110,7 @@ private:
       return reinterpret_cast<const NamedDecl*>(Data);
     }
 
-    const NamedDecl* getFunctionDecl() const {
+    const NamedDecl* getSubprogramDecl() const {
       assert(Op == EOP_Call || Op == EOP_MCall);
       return reinterpret_cast<const NamedDecl*>(Data);
     }
@@ -169,7 +169,7 @@ private:
     const Expr*        SelfArg;    // Implicit object argument -- e.g. 'this'
     bool               SelfArrow;  // is Self referred to with -> or .?
     unsigned           NumArgs;    // Number of funArgs
-    const Expr* const* FunArgs;    // Function arguments
+    const Expr* const* FunArgs;    // Subprogram arguments
     CallingContext*    PrevCtx;    // The previous context; or 0 if none.
 
     CallingContext(const NamedDecl *D = 0, const Expr *S = 0,
@@ -283,9 +283,9 @@ private:
       const NamedDecl *ND = cast<NamedDecl>(DRE->getDecl()->getCanonicalDecl());
       const ParmVarDecl *PV = dyn_cast_or_null<ParmVarDecl>(ND);
       if (PV) {
-        const FunctionDecl *FD =
-          cast<FunctionDecl>(PV->getDeclContext())->getCanonicalDecl();
-        unsigned i = PV->getFunctionScopeIndex();
+        const SubprogramDecl *FD =
+          cast<SubprogramDecl>(PV->getDeclContext())->getCanonicalDecl();
+        unsigned i = PV->getSubprogramScopeIndex();
 
         if (CallCtx && CallCtx->FunArgs &&
             FD == CallCtx->AttrDecl->getCanonicalDecl()) {
@@ -353,8 +353,8 @@ private:
       NodeVec[Root].setSize(Sz + 1);
       return Sz + 1;
     } else if (const CallExpr *CE = dyn_cast<CallExpr>(Exp)) {
-      const FunctionDecl* FD =
-        cast<FunctionDecl>(CE->getDirectCallee()->getMostRecentDecl());
+      const SubprogramDecl* FD =
+        cast<SubprogramDecl>(CE->getDirectCallee()->getMostRecentDecl());
       if (LockReturnedAttr* At = FD->getAttr<LockReturnedAttr>()) {
         CallingContext LRCallCtx(CE->getDirectCallee());
         LRCallCtx.NumArgs = CE->getNumArgs();
@@ -670,7 +670,7 @@ public:
         std::string S = "";
         if (NodeVec[i+1].kind() != EOP_This)
           S = toString(i+1) + ".";
-        if (const NamedDecl *D = N->getFunctionDecl())
+        if (const NamedDecl *D = N->getSubprogramDecl())
           S += D->getNameAsString() + "(";
         else
           S += "#(";
@@ -1695,16 +1695,16 @@ void ThreadSafetyAnalyzer::getEdgeLockset(FactSet& Result,
   for (unsigned i = 0; i < ArgAttrs.size(); ++i) {
     Attr *Attr = ArgAttrs[i];
     switch (Attr->getKind()) {
-      case attr::ExclusiveTrylockFunction: {
-        ExclusiveTrylockFunctionAttr *A =
-          cast<ExclusiveTrylockFunctionAttr>(Attr);
+      case attr::ExclusiveTrylockSubprogram: {
+        ExclusiveTrylockSubprogramAttr *A =
+          cast<ExclusiveTrylockSubprogramAttr>(Attr);
         getMutexIDs(ExclusiveLocksToAdd, A, Exp, FunDecl,
                     PredBlock, CurrBlock, A->getSuccessValue(), Negate);
         break;
       }
-      case attr::SharedTrylockFunction: {
-        SharedTrylockFunctionAttr *A =
-          cast<SharedTrylockFunctionAttr>(Attr);
+      case attr::SharedTrylockSubprogram: {
+        SharedTrylockSubprogramAttr *A =
+          cast<SharedTrylockSubprogramAttr>(Attr);
         getMutexIDs(SharedLocksToAdd, A, Exp, FunDecl,
                     PredBlock, CurrBlock, A->getSuccessValue(), Negate);
         break;
@@ -1921,24 +1921,24 @@ void BuildLockset::handleCall(Expr *Exp, const NamedDecl *D, VarDecl *VD) {
     switch (At->getKind()) {
       // When we encounter an exclusive lock function, we need to add the lock
       // to our lockset with kind exclusive.
-      case attr::ExclusiveLockFunction: {
-        ExclusiveLockFunctionAttr *A = cast<ExclusiveLockFunctionAttr>(At);
+      case attr::ExclusiveLockSubprogram: {
+        ExclusiveLockSubprogramAttr *A = cast<ExclusiveLockSubprogramAttr>(At);
         Analyzer->getMutexIDs(ExclusiveLocksToAdd, A, Exp, D, VD);
         break;
       }
 
       // When we encounter a shared lock function, we need to add the lock
       // to our lockset with kind shared.
-      case attr::SharedLockFunction: {
-        SharedLockFunctionAttr *A = cast<SharedLockFunctionAttr>(At);
+      case attr::SharedLockSubprogram: {
+        SharedLockSubprogramAttr *A = cast<SharedLockSubprogramAttr>(At);
         Analyzer->getMutexIDs(SharedLocksToAdd, A, Exp, D, VD);
         break;
       }
 
       // When we encounter an unlock function, we need to remove unlocked
       // mutexes from the lockset, and flag a warning if they are not there.
-      case attr::UnlockFunction: {
-        UnlockFunctionAttr *A = cast<UnlockFunctionAttr>(At);
+      case attr::UnlockSubprogram: {
+        UnlockSubprogramAttr *A = cast<UnlockSubprogramAttr>(At);
         Analyzer->getMutexIDs(LocksToRemove, A, Exp, D, VD);
         break;
       }
@@ -1948,7 +1948,7 @@ void BuildLockset::handleCall(Expr *Exp, const NamedDecl *D, VarDecl *VD) {
 
         for (ExclusiveLocksRequiredAttr::args_iterator
              I = A->args_begin(), E = A->args_end(); I != E; ++I)
-          warnIfMutexNotHeld(D, Exp, AK_Written, *I, POK_FunctionCall);
+          warnIfMutexNotHeld(D, Exp, AK_Written, *I, POK_SubprogramCall);
         break;
       }
 
@@ -1957,7 +1957,7 @@ void BuildLockset::handleCall(Expr *Exp, const NamedDecl *D, VarDecl *VD) {
 
         for (SharedLocksRequiredAttr::args_iterator I = A->args_begin(),
              E = A->args_end(); I != E; ++I)
-          warnIfMutexNotHeld(D, Exp, AK_Read, *I, POK_FunctionCall);
+          warnIfMutexNotHeld(D, Exp, AK_Read, *I, POK_SubprogramCall);
         break;
       }
 
@@ -2291,19 +2291,19 @@ void ThreadSafetyAnalyzer::runAnalysis(AnalysisDeclContext &AC) {
       } else if (SharedLocksRequiredAttr *A
                    = dyn_cast<SharedLocksRequiredAttr>(Attr)) {
         getMutexIDs(SharedLocksToAdd, A, (Expr*) 0, D);
-      } else if (isa<UnlockFunctionAttr>(Attr)) {
+      } else if (isa<UnlockSubprogramAttr>(Attr)) {
         // Don't try to check unlock functions for now
         return;
-      } else if (isa<ExclusiveLockFunctionAttr>(Attr)) {
+      } else if (isa<ExclusiveLockSubprogramAttr>(Attr)) {
         // Don't try to check lock functions for now
         return;
-      } else if (isa<SharedLockFunctionAttr>(Attr)) {
+      } else if (isa<SharedLockSubprogramAttr>(Attr)) {
         // Don't try to check lock functions for now
         return;
-      } else if (isa<ExclusiveTrylockFunctionAttr>(Attr)) {
+      } else if (isa<ExclusiveTrylockSubprogramAttr>(Attr)) {
         // Don't try to check trylock functions for now
         return;
-      } else if (isa<SharedTrylockFunctionAttr>(Attr)) {
+      } else if (isa<SharedTrylockSubprogramAttr>(Attr)) {
         // Don't try to check trylock functions for now
         return;
       }
@@ -2486,8 +2486,8 @@ void ThreadSafetyAnalyzer::runAnalysis(AnalysisDeclContext &AC) {
   // FIXME: Should we call this function for all blocks which exit the function?
   intersectAndWarn(Initial->EntrySet, Final->ExitSet,
                    Final->ExitLoc,
-                   LEK_LockedAtEndOfFunction,
-                   LEK_NotLockedAtEndOfFunction,
+                   LEK_LockedAtEndOfSubprogram,
+                   LEK_NotLockedAtEndOfSubprogram,
                    false);
 }
 

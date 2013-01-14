@@ -87,7 +87,7 @@ static BodyFarm &getBodyFarm(ASTContext &C) {
 }
 
 Stmt *AnalysisDeclContext::getBody() const {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
     Stmt *Body = FD->getBody();
     if (!Body && Manager && Manager->synthesizeBodies())
       return getBodyFarm(getASTContext()).getBody(FD);
@@ -97,8 +97,8 @@ Stmt *AnalysisDeclContext::getBody() const {
     return MD->getBody();
   else if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->getBody();
-  else if (const FunctionTemplateDecl *FunTmpl
-           = dyn_cast_or_null<FunctionTemplateDecl>(D))
+  else if (const SubprogramTemplateDecl *FunTmpl
+           = dyn_cast_or_null<SubprogramTemplateDecl>(D))
     return FunTmpl->getTemplatedDecl()->getBody();
 
   llvm_unreachable("unknown code decl");
@@ -216,8 +216,8 @@ PseudoConstantAnalysis *AnalysisDeclContext::getPseudoConstantAnalysis() {
 }
 
 AnalysisDeclContext *AnalysisDeclContextManager::getContext(const Decl *D) {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    // Calling 'hasBody' replaces 'FD' in place with the FunctionDecl
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
+    // Calling 'hasBody' replaces 'FD' in place with the SubprogramDecl
     // that has the body.
     FD->hasBody(FD);
     D = FD;

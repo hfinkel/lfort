@@ -27,9 +27,9 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
                                       ParsingDeclarator &D,
                                       const ParsedTemplateInfo &TemplateInfo,
                                       const VirtSpecifiers& VS, 
-                                      FunctionDefinitionKind DefinitionKind,
+                                      SubprogramDefinitionKind DefinitionKind,
                                       ExprResult& Init) {
-  assert(D.isFunctionDeclarator() && "This isn't a function declarator!");
+  assert(D.isSubprogramDeclarator() && "This isn't a function declarator!");
   assert((Tok.is(tok::l_brace) || Tok.is(tok::colon) || Tok.is(tok::kw_try) ||
           Tok.is(tok::equal)) &&
          "Current token not a '{', ':', '=', or 'try'!");
@@ -39,9 +39,9 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
           TemplateInfo.TemplateParams ? TemplateInfo.TemplateParams->size() : 0);
 
   Decl *FnD;
-  D.setFunctionDefinitionKind(DefinitionKind);
+  D.setSubprogramDefinitionKind(DefinitionKind);
   if (D.getDeclSpec().isFriendSpecified())
-    FnD = Actions.ActOnFriendFunctionDecl(getCurScope(), D,
+    FnD = Actions.ActOnFriendSubprogramDecl(getCurScope(), D,
                                           TemplateParams);
   else {
     FnD = Actions.ActOnCXXMemberDeclarator(getCurScope(), AS, D,
@@ -60,7 +60,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
     }
   }
 
-  HandleMemberFunctionDeclDelays(D, FnD);
+  HandleMemberSubprogramDeclDelays(D, FnD);
 
   D.complete(FnD);
 
@@ -112,24 +112,24 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
       DefinitionKind == FDK_Definition && 
       ((Actions.CurContext->isDependentContext() ||
         TemplateInfo.Kind != ParsedTemplateInfo::NonTemplate) && 
-        !Actions.IsInsideALocalClassWithinATemplateFunction())) {
+        !Actions.IsInsideALocalClassWithinATemplateSubprogram())) {
 
     if (FnD) {
-      LateParsedTemplatedFunction *LPT = new LateParsedTemplatedFunction(FnD);
+      LateParsedTemplatedSubprogram *LPT = new LateParsedTemplatedSubprogram(FnD);
 
-      FunctionDecl *FD = 0;
-      if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(FnD))
+      SubprogramDecl *FD = 0;
+      if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(FnD))
         FD = FunTmpl->getTemplatedDecl();
       else
-        FD = cast<FunctionDecl>(FnD);
-      Actions.CheckForFunctionRedefinition(FD);
+        FD = cast<SubprogramDecl>(FnD);
+      Actions.CheckForSubprogramRedefinition(FD);
 
       LateParsedTemplateMap[FD] = LPT;
       Actions.MarkAsLateParsedTemplate(FD);
-      LexTemplateFunctionForLateParsing(LPT->Toks);
+      LexTemplateSubprogramForLateParsing(LPT->Toks);
     } else {
       CachedTokens Toks;
-      LexTemplateFunctionForLateParsing(Toks);
+      LexTemplateSubprogramForLateParsing(Toks);
     }
 
     return FnD;
@@ -145,7 +145,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
   tok::TokenKind kind = Tok.getKind();
   // Consume everything up to (and including) the left brace of the
   // function body.
-  if (ConsumeAndStoreFunctionPrologue(Toks)) {
+  if (ConsumeAndStoreSubprogramPrologue(Toks)) {
     // We didn't find the left-brace we expected after the
     // constructor initializer; we already printed an error, and it's likely
     // impossible to recover, so don't try to parse this method later.
@@ -294,7 +294,7 @@ void Parser::ParseLexedMethodDeclaration(LateParsedMethodDeclaration &LM) {
   // Introduce the parameters into scope and parse their default
   // arguments.
   ParseScope PrototypeScope(this,
-                            Scope::FunctionPrototypeScope|Scope::DeclScope);
+                            Scope::SubprogramPrototypeScope|Scope::DeclScope);
   for (unsigned I = 0, N = LM.DefaultArgs.size(); I != N; ++I) {
     // Introduce the parameter into scope.
     Actions.ActOnDelayedCXXMethodParameter(getCurScope(), 
@@ -395,16 +395,16 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
   assert((Tok.is(tok::l_brace) || Tok.is(tok::colon) || Tok.is(tok::kw_try))
          && "Inline method not starting with '{', ':' or 'try'");
 
-  // Parse the method body. Function body parsing code is similar enough
+  // Parse the method body. Subprogram body parsing code is similar enough
   // to be re-used for method bodies as well.
   ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope);
-  Actions.ActOnStartOfFunctionDef(getCurScope(), LM.D);
+  Actions.ActOnStartOfSubprogramDef(getCurScope(), LM.D);
 
   if (Tok.is(tok::kw_try)) {
-    ParseFunctionTryBlock(LM.D, FnScope);
+    ParseSubprogramTryBlock(LM.D, FnScope);
     assert(!PP.getSourceManager().isBeforeInTranslationUnit(origLoc,
                                                          Tok.getLocation()) &&
-           "ParseFunctionTryBlock went over the cached tokens!");
+           "ParseSubprogramTryBlock went over the cached tokens!");
     // There could be leftover tokens (e.g. because of an error).
     // Skip through until we reach the original token position.
     while (Tok.getLocation() != origLoc && Tok.isNot(tok::eof))
@@ -417,7 +417,7 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
     // Error recovery.
     if (!Tok.is(tok::l_brace)) {
       FnScope.Exit();
-      Actions.ActOnFinishFunctionBody(LM.D, 0);
+      Actions.ActOnFinishSubprogramBody(LM.D, 0);
       while (Tok.getLocation() != origLoc && Tok.isNot(tok::eof))
         ConsumeAnyToken();
       return;
@@ -425,7 +425,7 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
   } else
     Actions.ActOnDefaultCtorInitializers(LM.D);
 
-  ParseFunctionStatementBody(LM.D, FnScope);
+  ParseSubprogramStatementBody(LM.D, FnScope);
 
   if (Tok.getLocation() != origLoc) {
     // Due to parsing error, we either went over the cached tokens or
@@ -495,7 +495,7 @@ void Parser::ParseLexedMemberInitializer(LateParsedMemberInitializer &MI) {
 
   SourceLocation EqualLoc;
 
-  ExprResult Init = ParseCXXMemberInitializer(MI.Field, /*IsFunction=*/false, 
+  ExprResult Init = ParseCXXMemberInitializer(MI.Field, /*IsSubprogram=*/false, 
                                               EqualLoc);
 
   Actions.ActOnCXXInClassMemberInitializer(MI.Field, EqualLoc, Init.release());
@@ -618,7 +618,7 @@ bool Parser::ConsumeAndStoreUntil(tok::TokenKind T1, tok::TokenKind T2,
 /// if and only if there was no error.
 ///
 /// \return True on error. 
-bool Parser::ConsumeAndStoreFunctionPrologue(CachedTokens &Toks) {
+bool Parser::ConsumeAndStoreSubprogramPrologue(CachedTokens &Toks) {
   if (Tok.is(tok::kw_try)) {
     Toks.push_back(Tok);
     ConsumeToken();

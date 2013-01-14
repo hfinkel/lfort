@@ -29,10 +29,10 @@ namespace lfort {
 struct ASTTemplateArgumentListInfo;
 class CXXTemporary;
 class CompoundStmt;
-class DependentFunctionTemplateSpecializationInfo;
+class DependentSubprogramTemplateSpecializationInfo;
 class Expr;
-class FunctionTemplateDecl;
-class FunctionTemplateSpecializationInfo;
+class SubprogramTemplateDecl;
+class SubprogramTemplateSpecializationInfo;
 class LabelStmt;
 class MemberSpecializationInfo;
 class Module;
@@ -919,17 +919,17 @@ public:
     if (getKind() != Decl::Var)
       return false;
     if (const DeclContext *DC = getDeclContext())
-      return DC->getRedeclContext()->isFunctionOrMethod();
+      return DC->getRedeclContext()->isSubprogramOrMethod();
     return false;
   }
 
-  /// isFunctionOrMethodVarDecl - Similar to isLocalVarDecl, but
+  /// isSubprogramOrMethodVarDecl - Similar to isLocalVarDecl, but
   /// excludes variables declared in blocks.
-  bool isFunctionOrMethodVarDecl() const {
+  bool isSubprogramOrMethodVarDecl() const {
     if (getKind() != Decl::Var)
       return false;
     const DeclContext *DC = getDeclContext()->getRedeclContext();
-    return DC->isFunctionOrMethod() && DC->getDeclKind() != Decl::Block;
+    return DC->isSubprogramOrMethod() && DC->getDeclKind() != Decl::Block;
   }
 
   /// \brief Determines whether this is a static data member.
@@ -1243,8 +1243,8 @@ public:
 /// ParmVarDecl - Represents a parameter to a function.
 class ParmVarDecl : public VarDecl {
 public:
-  enum { MaxFunctionScopeDepth = 255 };
-  enum { MaxFunctionScopeIndex = 255 };
+  enum { MaxSubprogramScopeDepth = 255 };
+  enum { MaxSubprogramScopeIndex = 255 };
 
 protected:
   ParmVarDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
@@ -1289,13 +1289,13 @@ public:
     return ParmVarDeclBits.IsObjCMethodParam;
   }
 
-  unsigned getFunctionScopeDepth() const {
+  unsigned getSubprogramScopeDepth() const {
     if (ParmVarDeclBits.IsObjCMethodParam) return 0;
     return ParmVarDeclBits.ScopeDepthOrObjCQuals;
   }
 
   /// Returns the index of this parameter in its prototype or method scope.
-  unsigned getFunctionScopeIndex() const {
+  unsigned getSubprogramScopeIndex() const {
     return getParameterIndex();
   }
 
@@ -1397,11 +1397,11 @@ public:
   /// parameter pack.
   bool isParameterPack() const;
 
-  /// setOwningFunction - Sets the function declaration that owns this
+  /// setOwningSubprogram - Sets the function declaration that owns this
   /// ParmVarDecl. Since ParmVarDecls are often created before the
-  /// FunctionDecls that own them, this routine is required to update
+  /// SubprogramDecls that own them, this routine is required to update
   /// the DeclContext appropriately.
-  void setOwningFunction(DeclContext *FD) { setDeclContext(FD); }
+  void setOwningSubprogram(DeclContext *FD) { setDeclContext(FD); }
 
   // Implement isa/cast/dyncast/etc.
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
@@ -1428,29 +1428,29 @@ private:
   unsigned getParameterIndexLarge() const;
 };
 
-/// FunctionDecl - An instance of this class is created to represent a
+/// SubprogramDecl - An instance of this class is created to represent a
 /// function declaration or definition.
 ///
 /// Since a given function can be declared several times in a program,
-/// there may be several FunctionDecls that correspond to that
-/// function. Only one of those FunctionDecls will be found when
+/// there may be several SubprogramDecls that correspond to that
+/// function. Only one of those SubprogramDecls will be found when
 /// traversing the list of declarations in the context of the
-/// FunctionDecl (e.g., the translation unit); this FunctionDecl
+/// SubprogramDecl (e.g., the translation unit); this SubprogramDecl
 /// contains all of the information known about the function. Other,
 /// previous declarations of the function are available via the
 /// getPreviousDecl() chain.
-class FunctionDecl : public DeclaratorDecl, public DeclContext,
-                     public Redeclarable<FunctionDecl> {
+class SubprogramDecl : public DeclaratorDecl, public DeclContext,
+                     public Redeclarable<SubprogramDecl> {
 public:
   typedef lfort::StorageClass StorageClass;
 
-  /// \brief The kind of templated function a FunctionDecl can be.
+  /// \brief The kind of templated function a SubprogramDecl can be.
   enum TemplatedKind {
     TK_NonTemplate,
-    TK_FunctionTemplate,
+    TK_SubprogramTemplate,
     TK_MemberSpecialization,
-    TK_FunctionTemplateSpecialization,
-    TK_DependentFunctionTemplateSpecialization
+    TK_SubprogramTemplateSpecialization,
+    TK_DependentSubprogramTemplateSpecialization
   };
 
 private:
@@ -1488,7 +1488,7 @@ private:
   /// skipped.
   unsigned HasSkippedBody : 1;
 
-  /// \brief End part of this FunctionDecl's source range.
+  /// \brief End part of this SubprogramDecl's source range.
   ///
   /// We could compute the full range in getSourceRange(). However, when we're
   /// dealing with a function definition deserialized from a PCH/AST file,
@@ -1502,17 +1502,17 @@ private:
   ///
   /// For non-templates, this value will be NULL. For function
   /// declarations that describe a function template, this will be a
-  /// pointer to a FunctionTemplateDecl. For member functions
+  /// pointer to a SubprogramTemplateDecl. For member functions
   /// of class template specializations, this will be a MemberSpecializationInfo
   /// pointer containing information about the specialization.
   /// For function template specializations, this will be a
-  /// FunctionTemplateSpecializationInfo, which contains information about
+  /// SubprogramTemplateSpecializationInfo, which contains information about
   /// the template being specialized and the template arguments involved in
   /// that specialization.
-  llvm::PointerUnion4<FunctionTemplateDecl *,
+  llvm::PointerUnion4<SubprogramTemplateDecl *,
                       MemberSpecializationInfo *,
-                      FunctionTemplateSpecializationInfo *,
-                      DependentFunctionTemplateSpecializationInfo *>
+                      SubprogramTemplateSpecializationInfo *,
+                      DependentSubprogramTemplateSpecializationInfo *>
     TemplateOrSpecialization;
 
   /// DNLoc - Provides source/type location info for the
@@ -1540,8 +1540,8 @@ private:
   ///
   /// \param PointOfInstantiation point at which the function template
   /// specialization was first instantiated.
-  void setFunctionTemplateSpecialization(ASTContext &C,
-                                         FunctionTemplateDecl *Template,
+  void setSubprogramTemplateSpecialization(ASTContext &C,
+                                         SubprogramTemplateDecl *Template,
                                        const TemplateArgumentList *TemplateArgs,
                                          void *InsertPos,
                                          TemplateSpecializationKind TSK,
@@ -1550,13 +1550,13 @@ private:
 
   /// \brief Specify that this record is an instantiation of the
   /// member function FD.
-  void setInstantiationOfMemberFunction(ASTContext &C, FunctionDecl *FD,
+  void setInstantiationOfMemberSubprogram(ASTContext &C, SubprogramDecl *FD,
                                         TemplateSpecializationKind TSK);
 
   void setParams(ASTContext &C, llvm::ArrayRef<ParmVarDecl *> NewParamInfo);
 
 protected:
-  FunctionDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
+  SubprogramDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
                const DeclarationNameInfo &NameInfo,
                QualType T, TypeSourceInfo *TInfo,
                StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
@@ -1577,12 +1577,12 @@ protected:
       TemplateOrSpecialization(),
       DNLoc(NameInfo.getInfo()) {}
 
-  typedef Redeclarable<FunctionDecl> redeclarable_base;
-  virtual FunctionDecl *getNextRedeclaration() { return RedeclLink.getNext(); }
-  virtual FunctionDecl *getPreviousDeclImpl() {
+  typedef Redeclarable<SubprogramDecl> redeclarable_base;
+  virtual SubprogramDecl *getNextRedeclaration() { return RedeclLink.getNext(); }
+  virtual SubprogramDecl *getPreviousDeclImpl() {
     return getPreviousDecl();
   }
-  virtual FunctionDecl *getMostRecentDeclImpl() {
+  virtual SubprogramDecl *getMostRecentDeclImpl() {
     return getMostRecentDecl();
   }
 
@@ -1593,7 +1593,7 @@ public:
   using redeclarable_base::getPreviousDecl;
   using redeclarable_base::getMostRecentDecl;
 
-  static FunctionDecl *Create(ASTContext &C, DeclContext *DC,
+  static SubprogramDecl *Create(ASTContext &C, DeclContext *DC,
                               SourceLocation StartLoc, SourceLocation NLoc,
                               DeclarationName N, QualType T,
                               TypeSourceInfo *TInfo,
@@ -1603,13 +1603,13 @@ public:
                               bool hasWrittenPrototype = true,
                               bool isConstexprSpecified = false) {
     DeclarationNameInfo NameInfo(N, NLoc);
-    return FunctionDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
+    return SubprogramDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
                                 SC, SCAsWritten,
                                 isInlineSpecified, hasWrittenPrototype,
                                 isConstexprSpecified);
   }
 
-  static FunctionDecl *Create(ASTContext &C, DeclContext *DC,
+  static SubprogramDecl *Create(ASTContext &C, DeclContext *DC,
                               SourceLocation StartLoc,
                               const DeclarationNameInfo &NameInfo,
                               QualType T, TypeSourceInfo *TInfo,
@@ -1619,7 +1619,7 @@ public:
                               bool hasWrittenPrototype = true,
                               bool isConstexprSpecified = false);
 
-  static FunctionDecl *CreateDeserialized(ASTContext &C, unsigned ID);
+  static SubprogramDecl *CreateDeserialized(ASTContext &C, unsigned ID);
                        
   DeclarationNameInfo getNameInfo() const {
     return DeclarationNameInfo(getDeclName(), getLocation(), DNLoc);
@@ -1635,13 +1635,13 @@ public:
 
   /// \brief Returns true if the function has a body (definition). The
   /// function body might be in any of the (re-)declarations of this
-  /// function. The variant that accepts a FunctionDecl pointer will
+  /// function. The variant that accepts a SubprogramDecl pointer will
   /// set that function declaration to the actual declaration
   /// containing the body (if there is one).
-  bool hasBody(const FunctionDecl *&Definition) const;
+  bool hasBody(const SubprogramDecl *&Definition) const;
 
   virtual bool hasBody() const {
-    const FunctionDecl* Definition;
+    const SubprogramDecl* Definition;
     return hasBody(Definition);
   }
 
@@ -1652,24 +1652,24 @@ public:
   /// isDefined - Returns true if the function is defined at all, including
   /// a deleted definition. Except for the behavior when the function is
   /// deleted, behaves like hasBody.
-  bool isDefined(const FunctionDecl *&Definition) const;
+  bool isDefined(const SubprogramDecl *&Definition) const;
 
   virtual bool isDefined() const {
-    const FunctionDecl* Definition;
+    const SubprogramDecl* Definition;
     return isDefined(Definition);
   }
 
   /// getBody - Retrieve the body (definition) of the function. The
   /// function body might be in any of the (re-)declarations of this
-  /// function. The variant that accepts a FunctionDecl pointer will
+  /// function. The variant that accepts a SubprogramDecl pointer will
   /// set that function declaration to the actual declaration
   /// containing the body (if there is one).
   /// NOTE: For checking if there is a body, use hasBody() instead, to avoid
   /// unnecessary AST de-serialization of the body.
-  Stmt *getBody(const FunctionDecl *&Definition) const;
+  Stmt *getBody(const SubprogramDecl *&Definition) const;
 
   virtual Stmt *getBody() const {
-    const FunctionDecl* Definition;
+    const SubprogramDecl* Definition;
     return getBody(Definition);
   }
 
@@ -1813,10 +1813,10 @@ public:
   bool hasSkippedBody() const { return HasSkippedBody; }
   void setHasSkippedBody(bool Skipped = true) { HasSkippedBody = Skipped; }
 
-  void setPreviousDeclaration(FunctionDecl * PrevDecl);
+  void setPreviousDeclaration(SubprogramDecl * PrevDecl);
 
-  virtual const FunctionDecl *getCanonicalDecl() const;
-  virtual FunctionDecl *getCanonicalDecl();
+  virtual const SubprogramDecl *getCanonicalDecl() const;
+  virtual SubprogramDecl *getCanonicalDecl();
 
   unsigned getBuiltinID() const;
 
@@ -1832,7 +1832,7 @@ public:
   param_const_iterator param_end() const   { return ParamInfo+param_size(); }
 
   /// getNumParams - Return the number of parameters this function must have
-  /// based on its FunctionType.  This is the length of the ParamInfo array
+  /// based on its SubprogramType.  This is the length of the ParamInfo array
   /// after it has been created.
   unsigned getNumParams() const;
 
@@ -1860,12 +1860,12 @@ public:
   unsigned getMinRequiredArguments() const;
 
   QualType getResultType() const {
-    return getType()->getAs<FunctionType>()->getResultType();
+    return getType()->getAs<SubprogramType>()->getResultType();
   }
 
   /// \brief Determine the type of an expression that calls this function.
   QualType getCallResultType() const {
-    return getType()->getAs<FunctionType>()->getCallResultType(getASTContext());
+    return getType()->getAs<SubprogramType>()->getCallResultType(getASTContext());
   }
 
   StorageClass getStorageClass() const { return StorageClass(SClass); }
@@ -1924,13 +1924,13 @@ public:
   /// };
   /// \endcode
   ///
-  /// The declaration for X<int>::f is a (non-templated) FunctionDecl
+  /// The declaration for X<int>::f is a (non-templated) SubprogramDecl
   /// whose parent is the class template specialization X<int>. For
-  /// this declaration, getInstantiatedFromFunction() will return
-  /// the FunctionDecl X<T>::A. When a complete definition of
+  /// this declaration, getInstantiatedFromSubprogram() will return
+  /// the SubprogramDecl X<T>::A. When a complete definition of
   /// X<int>::A is required, it will be instantiated from the
-  /// declaration returned by getInstantiatedFromMemberFunction().
-  FunctionDecl *getInstantiatedFromMemberFunction() const;
+  /// declaration returned by getInstantiatedFromMemberSubprogram().
+  SubprogramDecl *getInstantiatedFromMemberSubprogram() const;
 
   /// \brief What kind of templated function this is.
   TemplatedKind getTemplatedKind() const;
@@ -1942,47 +1942,47 @@ public:
 
   /// \brief Specify that this record is an instantiation of the
   /// member function FD.
-  void setInstantiationOfMemberFunction(FunctionDecl *FD,
+  void setInstantiationOfMemberSubprogram(SubprogramDecl *FD,
                                         TemplateSpecializationKind TSK) {
-    setInstantiationOfMemberFunction(getASTContext(), FD, TSK);
+    setInstantiationOfMemberSubprogram(getASTContext(), FD, TSK);
   }
 
   /// \brief Retrieves the function template that is described by this
   /// function declaration.
   ///
-  /// Every function template is represented as a FunctionTemplateDecl
-  /// and a FunctionDecl (or something derived from FunctionDecl). The
+  /// Every function template is represented as a SubprogramTemplateDecl
+  /// and a SubprogramDecl (or something derived from SubprogramDecl). The
   /// former contains template properties (such as the template
   /// parameter lists) while the latter contains the actual
   /// description of the template's
-  /// contents. FunctionTemplateDecl::getTemplatedDecl() retrieves the
-  /// FunctionDecl that describes the function template,
-  /// getDescribedFunctionTemplate() retrieves the
-  /// FunctionTemplateDecl from a FunctionDecl.
-  FunctionTemplateDecl *getDescribedFunctionTemplate() const {
-    return TemplateOrSpecialization.dyn_cast<FunctionTemplateDecl*>();
+  /// contents. SubprogramTemplateDecl::getTemplatedDecl() retrieves the
+  /// SubprogramDecl that describes the function template,
+  /// getDescribedSubprogramTemplate() retrieves the
+  /// SubprogramTemplateDecl from a SubprogramDecl.
+  SubprogramTemplateDecl *getDescribedSubprogramTemplate() const {
+    return TemplateOrSpecialization.dyn_cast<SubprogramTemplateDecl*>();
   }
 
-  void setDescribedFunctionTemplate(FunctionTemplateDecl *Template) {
+  void setDescribedSubprogramTemplate(SubprogramTemplateDecl *Template) {
     TemplateOrSpecialization = Template;
   }
 
   /// \brief Determine whether this function is a function template
   /// specialization.
-  bool isFunctionTemplateSpecialization() const {
+  bool isSubprogramTemplateSpecialization() const {
     return getPrimaryTemplate() != 0;
   }
 
   /// \brief Retrieve the class scope template pattern that this function
   ///  template specialization is instantiated from.
-  FunctionDecl *getClassScopeSpecializationPattern() const;
+  SubprogramDecl *getClassScopeSpecializationPattern() const;
 
   /// \brief If this function is actually a function template specialization,
   /// retrieve information about this function template specialization.
   /// Otherwise, returns NULL.
-  FunctionTemplateSpecializationInfo *getTemplateSpecializationInfo() const {
+  SubprogramTemplateSpecializationInfo *getTemplateSpecializationInfo() const {
     return TemplateOrSpecialization.
-             dyn_cast<FunctionTemplateSpecializationInfo*>();
+             dyn_cast<SubprogramTemplateSpecializationInfo*>();
   }
 
   /// \brief Determines whether this function is a function template
@@ -1997,14 +1997,14 @@ public:
   /// \brief Retrieve the function declaration from which this function could
   /// be instantiated, if it is an instantiation (rather than a non-template
   /// or a specialization, for example).
-  FunctionDecl *getTemplateInstantiationPattern() const;
+  SubprogramDecl *getTemplateInstantiationPattern() const;
 
   /// \brief Retrieve the primary template that this function template
   /// specialization either specializes or was instantiated from.
   ///
   /// If this function declaration is not a function template specialization,
   /// returns NULL.
-  FunctionTemplateDecl *getPrimaryTemplate() const;
+  SubprogramTemplateDecl *getPrimaryTemplate() const;
 
   /// \brief Retrieve the template arguments used to produce this function
   /// template specialization from the primary template.
@@ -2042,13 +2042,13 @@ public:
   ///
   /// \param PointOfInstantiation point at which the function template
   /// specialization was first instantiated.
-  void setFunctionTemplateSpecialization(FunctionTemplateDecl *Template,
+  void setSubprogramTemplateSpecialization(SubprogramTemplateDecl *Template,
                                       const TemplateArgumentList *TemplateArgs,
                                          void *InsertPos,
                     TemplateSpecializationKind TSK = TSK_ImplicitInstantiation,
                     const TemplateArgumentListInfo *TemplateArgsAsWritten = 0,
                     SourceLocation PointOfInstantiation = SourceLocation()) {
-    setFunctionTemplateSpecialization(getASTContext(), Template, TemplateArgs,
+    setSubprogramTemplateSpecialization(getASTContext(), Template, TemplateArgs,
                                       InsertPos, TSK, TemplateArgsAsWritten,
                                       PointOfInstantiation);
   }
@@ -2059,10 +2059,10 @@ public:
                              const UnresolvedSetImpl &Templates,
                       const TemplateArgumentListInfo &TemplateArgs);
 
-  DependentFunctionTemplateSpecializationInfo *
+  DependentSubprogramTemplateSpecializationInfo *
   getDependentSpecializationInfo() const {
     return TemplateOrSpecialization.
-             dyn_cast<DependentFunctionTemplateSpecializationInfo*>();
+             dyn_cast<DependentSubprogramTemplateSpecializationInfo*>();
   }
 
   /// \brief Determine what kind of template instantiation this function
@@ -2090,18 +2090,18 @@ public:
   /// If the given function is a memory copy or setting function, returns
   /// the corresponding Builtin ID. If the function is not a memory function,
   /// returns 0.
-  unsigned getMemoryFunctionKind() const;
+  unsigned getMemorySubprogramKind() const;
 
   // Implement isa/cast/dyncast/etc.
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
   static bool classofKind(Kind K) {
-    return K >= firstFunction && K <= lastFunction;
+    return K >= firstSubprogram && K <= lastSubprogram;
   }
-  static DeclContext *castToDeclContext(const FunctionDecl *D) {
-    return static_cast<DeclContext *>(const_cast<FunctionDecl*>(D));
+  static DeclContext *castToDeclContext(const SubprogramDecl *D) {
+    return static_cast<DeclContext *>(const_cast<SubprogramDecl*>(D));
   }
-  static FunctionDecl *castFromDeclContext(const DeclContext *DC) {
-    return static_cast<FunctionDecl *>(const_cast<DeclContext*>(DC));
+  static SubprogramDecl *castFromDeclContext(const DeclContext *DC) {
+    return static_cast<SubprogramDecl *>(const_cast<DeclContext*>(DC));
   }
 
   friend class ASTDeclReader;
@@ -2109,7 +2109,7 @@ public:
 };
 
 /// A Fortran program.
-class MainProgramDecl : public FunctionDecl {
+class MainProgramDecl : public SubprogramDecl {
 protected:
   // FIXME: Minimize this argument list.
   MainProgramDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
@@ -2117,7 +2117,7 @@ protected:
                QualType T, TypeSourceInfo *TInfo,
                StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
                bool isConstexprSpecified) :
-    FunctionDecl(DK, DC, StartLoc, NameInfo, T, TInfo, S, SCAsWritten,
+    SubprogramDecl(DK, DC, StartLoc, NameInfo, T, TInfo, S, SCAsWritten,
                  isInlineSpecified, isConstexprSpecified) {}
 
 public:
@@ -3129,7 +3129,7 @@ public:
 };
 
 /// BlockDecl - This represents a block literal declaration, which is like an
-/// unnamed FunctionDecl.  For example:
+/// unnamed SubprogramDecl.  For example:
 /// ^{ statement-body }   or   ^(int arg1, float arg2){ statement-body }
 ///
 class BlockDecl : public Decl, public DeclContext {

@@ -349,14 +349,14 @@ public:
       IndexCtx.indexDecl(D);
   }
 
-  virtual void HandleCXXImplicitFunctionInstantiation(FunctionDecl *D) {
+  virtual void HandleCXXImplicitSubprogramInstantiation(SubprogramDecl *D) {
     if (!IndexCtx.shouldIndexImplicitTemplateInsts())
       return;
 
     IndexCtx.indexDecl(D);
   }
 
-  virtual bool shouldSkipFunctionBody(Decl *D) {
+  virtual bool shouldSkipSubprogramBody(Decl *D) {
     if (!SKCtrl) {
       // Always skip bodies.
       return true;
@@ -622,7 +622,7 @@ static void lfort_indexSourceFile_Impl(void *UserData) {
   bool SkipBodies = (index_options & CXIndexOpt_SkipParsedBodiesInSession) &&
       CInvok->getLangOpts()->CPlusPlus;
   if (SkipBodies)
-    CInvok->getFrontendOpts().SkipFunctionBodies = true;
+    CInvok->getFrontendOpts().SkipSubprogramBodies = true;
 
   OwningPtr<IndexingFrontendAction> IndexAction;
   IndexAction.reset(new IndexingFrontendAction(client_data, CB,

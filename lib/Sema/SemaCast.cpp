@@ -40,7 +40,7 @@ enum CastType {
   CT_Reinterpret, ///< reinterpret_cast
   CT_Dynamic,     ///< dynamic_cast
   CT_CStyle,      ///< (Type)expr
-  CT_Functional   ///< Type(expr)
+  CT_Subprogramal   ///< Type(expr)
 };
 
 namespace {
@@ -77,7 +77,7 @@ namespace {
     void CheckReinterpretCast();
     void CheckStaticCast();
     void CheckDynamicCast();
-    void CheckCXXCStyleCast(bool FunctionalCast, bool ListInitialization);
+    void CheckCXXCStyleCast(bool SubprogramalCast, bool ListInitialization);
     void CheckCStyleCast();
 
     /// Complete an apparently-successful cast operation that yields
@@ -313,7 +313,7 @@ static bool tryDiagnoseOverloadedCast(Sema &S, CastType CT,
   // These do.
   case CT_Static:
   case CT_CStyle:
-  case CT_Functional:
+  case CT_Subprogramal:
     break;
   }
 
@@ -325,7 +325,7 @@ static bool tryDiagnoseOverloadedCast(Sema &S, CastType CT,
   InitializationKind initKind
     = (CT == CT_CStyle)? InitializationKind::CreateCStyleCast(range.getBegin(),
                                                       range, listInitialization)
-    : (CT == CT_Functional)? InitializationKind::CreateFunctionalCast(range,
+    : (CT == CT_Subprogramal)? InitializationKind::CreateSubprogramalCast(range,
                                                              listInitialization)
     : InitializationKind::CreateCast(/*type range?*/ range);
   InitializationSequence sequence(S, entity, initKind, &src, 1);
@@ -346,7 +346,7 @@ static bool tryDiagnoseOverloadedCast(Sema &S, CastType CT,
 
   switch (sequence.getFailedOverloadResult()) {
   case OR_Success: llvm_unreachable("successful failed overload");
-  case OR_No_Viable_Function:
+  case OR_No_Viable_Subprogram:
     if (candidates.empty())
       msg = diag::err_ovl_no_conversion_in_cast;
     else
@@ -531,7 +531,7 @@ CastsAwayConstness(Sema &Self, QualType SrcType, QualType DestType,
 /// checked downcasts in class hierarchies.
 void CastOperation::CheckDynamicCast() {
   if (ValueKind == VK_RValue)
-    SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+    SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
   else if (isPlaceholder())
     SrcExpr = Self.CheckPlaceholderExpr(SrcExpr.take());
   if (SrcExpr.isInvalid()) // if conversion failed, don't report another error
@@ -665,7 +665,7 @@ void CastOperation::CheckDynamicCast() {
 /// legacy_function(const_cast\<char*\>(str));
 void CastOperation::CheckConstCast() {
   if (ValueKind == VK_RValue)
-    SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+    SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
   else if (isPlaceholder())
     SrcExpr = Self.CheckPlaceholderExpr(SrcExpr.take());
   if (SrcExpr.isInvalid()) // if conversion failed, don't report another error
@@ -685,7 +685,7 @@ void CastOperation::CheckConstCast() {
 /// char *bytes = reinterpret_cast\<char*\>(int_ptr);
 void CastOperation::CheckReinterpretCast() {
   if (ValueKind == VK_RValue && !isPlaceholder(BuiltinType::Overload))
-    SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+    SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
   else
     checkNonOverloadPlaceholders();
   if (SrcExpr.isInvalid()) // if conversion failed, don't report another error
@@ -733,8 +733,8 @@ void CastOperation::CheckStaticCast() {
     Kind = CK_ToVoid;
 
     if (claimPlaceholder(BuiltinType::Overload)) {
-      Self.ResolveAndFixSingleFunctionTemplateSpecialization(SrcExpr, 
-                false, // Decay Function to ptr 
+      Self.ResolveAndFixSingleSubprogramTemplateSpecialization(SrcExpr, 
+                false, // Decay Subprogram to ptr 
                 true, // Complain
                 OpRange, DestType, diag::err_bad_static_cast_overload);
       if (SrcExpr.isInvalid())
@@ -747,7 +747,7 @@ void CastOperation::CheckStaticCast() {
 
   if (ValueKind == VK_RValue && !DestType->isRecordType() &&
       !isPlaceholder(BuiltinType::Overload)) {
-    SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+    SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
     if (SrcExpr.isInvalid()) // if conversion failed, don't report another error
       return;
   }
@@ -790,7 +790,7 @@ static TryCastResult TryStaticCast(Sema &Self, ExprResult &SrcExpr,
                                    bool ListInitialization) {
   // Determine whether we have the semantics of a C-style cast.
   bool CStyle 
-    = (CCK == Sema::CCK_CStyleCast || CCK == Sema::CCK_FunctionalCast);
+    = (CCK == Sema::CCK_CStyleCast || CCK == Sema::CCK_SubprogramalCast);
   
   // The order the tests is not entirely arbitrary. There is one conversion
   // that can be handled in two different ways. Given:
@@ -1194,16 +1194,16 @@ TryStaticMemberPointerUpcast(Sema &Self, ExprResult &SrcExpr, QualType SrcType,
   if (!DestMemPtr)
     return TC_NotApplicable;
 
-  bool WasOverloadedFunction = false;
+  bool WasOverloadedSubprogram = false;
   DeclAccessPair FoundOverload;
   if (SrcExpr.get()->getType() == Self.Context.OverloadTy) {
-    if (FunctionDecl *Fn
-          = Self.ResolveAddressOfOverloadedFunction(SrcExpr.get(), DestType, false,
+    if (SubprogramDecl *Fn
+          = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(), DestType, false,
                                                     FoundOverload)) {
       CXXMethodDecl *M = cast<CXXMethodDecl>(Fn);
       SrcType = Self.Context.getMemberPointerType(Fn->getType(),
                       Self.Context.getTypeDeclType(M->getParent()).getTypePtr());
-      WasOverloadedFunction = true;
+      WasOverloadedSubprogram = true;
     }
   }
   
@@ -1266,10 +1266,10 @@ TryStaticMemberPointerUpcast(Sema &Self, ExprResult &SrcExpr, QualType SrcType,
     }
   }
 
-  if (WasOverloadedFunction) {
+  if (WasOverloadedSubprogram) {
     // Resolve the address of the overloaded function again, this time
     // allowing complaints if something goes wrong.
-    FunctionDecl *Fn = Self.ResolveAddressOfOverloadedFunction(SrcExpr.get(), 
+    SubprogramDecl *Fn = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(), 
                                                                DestType, 
                                                                true,
                                                                FoundOverload);
@@ -1278,7 +1278,7 @@ TryStaticMemberPointerUpcast(Sema &Self, ExprResult &SrcExpr, QualType SrcType,
       return TC_Failed;
     }
 
-    SrcExpr = Self.FixOverloadedFunctionReference(SrcExpr, FoundOverload, Fn);
+    SrcExpr = Self.FixOverloadedSubprogramReference(SrcExpr, FoundOverload, Fn);
     if (!SrcExpr.isUsable()) {
       msg = 0;
       return TC_Failed;
@@ -1315,8 +1315,8 @@ TryStaticImplicitCast(Sema &Self, ExprResult &SrcExpr, QualType DestType,
     = (CCK == Sema::CCK_CStyleCast)
         ? InitializationKind::CreateCStyleCast(OpRange.getBegin(), OpRange,
                                                ListInitialization)
-    : (CCK == Sema::CCK_FunctionalCast)
-        ? InitializationKind::CreateFunctionalCast(OpRange, ListInitialization)
+    : (CCK == Sema::CCK_SubprogramalCast)
+        ? InitializationKind::CreateSubprogramalCast(OpRange, ListInitialization)
     : InitializationKind::CreateCast(OpRange);
   Expr *SrcExprRaw = SrcExpr.get();
   InitializationSequence InitSeq(Self, Entity, InitKind, &SrcExprRaw, 1);
@@ -1327,7 +1327,7 @@ TryStaticImplicitCast(Sema &Self, ExprResult &SrcExpr, QualType DestType,
   // On the other hand, if we're checking a C-style cast, we've still got
   // the reinterpret_cast way.
   bool CStyle 
-    = (CCK == Sema::CCK_CStyleCast || CCK == Sema::CCK_FunctionalCast);
+    = (CCK == Sema::CCK_CStyleCast || CCK == Sema::CCK_SubprogramalCast);
   if (InitSeq.Failed() && (CStyle || !DestType->isReferenceType()))
     return TC_NotApplicable;
     
@@ -1382,8 +1382,8 @@ static TryCastResult TryConstCast(Sema &Self, Expr *SrcExpr, QualType DestType,
       msg = diag::err_bad_const_cast_dest;
     return TC_NotApplicable;
   }
-  if (DestType->isFunctionPointerType() ||
-      DestType->isMemberFunctionPointerType()) {
+  if (DestType->isSubprogramPointerType() ||
+      DestType->isMemberSubprogramPointerType()) {
     // Cannot cast direct function pointers.
     // C++ 5.2.11p2: [...] where T is any object type or the void type [...]
     // T is the ultimate pointee of source and target type.
@@ -1525,12 +1525,12 @@ static TryCastResult TryReinterpretCast(Sema &Self, ExprResult &SrcExpr,
     // ... unless foo<int> resolves to an lvalue unambiguously.
     // TODO: what if this fails because of DiagnoseUseOfDecl or something
     // like it?
-    ExprResult SingleFunctionExpr = SrcExpr;
-    if (Self.ResolveAndFixSingleFunctionTemplateSpecialization(
-          SingleFunctionExpr,
+    ExprResult SingleSubprogramExpr = SrcExpr;
+    if (Self.ResolveAndFixSingleSubprogramTemplateSpecialization(
+          SingleSubprogramExpr,
           Expr::getValueKindForType(DestType) == VK_RValue // Convert Fun to Ptr 
-        ) && SingleFunctionExpr.isUsable()) {
-      SrcExpr = SingleFunctionExpr;
+        ) && SingleSubprogramExpr.isUsable()) {
+      SrcExpr = SingleSubprogramExpr;
       SrcType = SrcExpr.get()->getType();
     } else {
       return TC_NotApplicable;
@@ -1589,8 +1589,8 @@ static TryCastResult TryReinterpretCast(Sema &Self, ExprResult &SrcExpr,
     //   can be explicitly converted to an rvalue of type "pointer to member
     //   of Y of type T2" if T1 and T2 are both function types or both object
     //   types.
-    if (DestMemPtr->getPointeeType()->isFunctionType() !=
-        SrcMemPtr->getPointeeType()->isFunctionType())
+    if (DestMemPtr->getPointeeType()->isSubprogramType() !=
+        SrcMemPtr->getPointeeType()->isSubprogramType())
       return TC_NotApplicable;
 
     // C++ 5.2.10p2: The reinterpret_cast operator shall not cast away
@@ -1761,8 +1761,8 @@ static TryCastResult TryReinterpretCast(Sema &Self, ExprResult &SrcExpr,
   // Not casting away constness, so the only remaining check is for compatible
   // pointer categories.
 
-  if (SrcType->isFunctionPointerType()) {
-    if (DestType->isFunctionPointerType()) {
+  if (SrcType->isSubprogramPointerType()) {
+    if (DestType->isSubprogramPointerType()) {
       // C++ 5.2.10p6: A pointer to a function can be explicitly converted to
       // a pointer to a function of a different type.
       return TC_Success;
@@ -1781,7 +1781,7 @@ static TryCastResult TryReinterpretCast(Sema &Self, ExprResult &SrcExpr,
     return TC_Success;
   }
 
-  if (DestType->isFunctionPointerType()) {
+  if (DestType->isSubprogramPointerType()) {
     // See above.
     Self.Diag(OpRange.getBegin(),
               Self.getLangOpts().CPlusPlus11 ?
@@ -1798,7 +1798,7 @@ static TryCastResult TryReinterpretCast(Sema &Self, ExprResult &SrcExpr,
   return TC_Success;
 }                                     
 
-void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
+void CastOperation::CheckCXXCStyleCast(bool SubprogramalStyle,
                                        bool ListInitialization) {
   // Handle placeholders.
   if (isPlaceholder()) {
@@ -1822,8 +1822,8 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
     Kind = CK_ToVoid;
 
     if (claimPlaceholder(BuiltinType::Overload)) {
-      Self.ResolveAndFixSingleFunctionTemplateSpecialization(
-                  SrcExpr, /* Decay Function to ptr */ false, 
+      Self.ResolveAndFixSingleSubprogramTemplateSpecialization(
+                  SrcExpr, /* Decay Subprogram to ptr */ false, 
                   /* Complain */ true, DestRange, DestType,
                   diag::err_bad_cstyle_cast_overload);
       if (SrcExpr.isInvalid())
@@ -1845,7 +1845,7 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
 
   if (ValueKind == VK_RValue && !DestType->isRecordType() &&
       !isPlaceholder(BuiltinType::Overload)) {
-    SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+    SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
     if (SrcExpr.isInvalid())
       return;
   }
@@ -1877,7 +1877,7 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
     Kind = CK_NoOp;
 
   Sema::CheckedConversionKind CCK
-    = FunctionalStyle? Sema::CCK_FunctionalCast
+    = SubprogramalStyle? Sema::CCK_SubprogramalCast
                      : Sema::CCK_CStyleCast;
   if (tcr == TC_NotApplicable) {
     // ... or if that is not possible, a static_cast, ignoring const, ...
@@ -1901,7 +1901,7 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
   if (tcr != TC_Success && msg != 0) {
     if (SrcExpr.get()->getType() == Self.Context.OverloadTy) {
       DeclAccessPair Found;
-      FunctionDecl *Fn = Self.ResolveAddressOfOverloadedFunction(SrcExpr.get(),
+      SubprogramDecl *Fn = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(),
                                 DestType,
                                 /*Complain*/ true,
                                 Found);
@@ -1910,7 +1910,7 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
       (void)Fn;
 
     } else {
-      diagnoseBadCast(Self, msg, (FunctionalStyle ? CT_Functional : CT_CStyle),
+      diagnoseBadCast(Self, msg, (SubprogramalStyle ? CT_Subprogramal : CT_CStyle),
                       OpRange, SrcExpr.get(), DestType, ListInitialization);
     }
   } else if (Kind == CK_BitCast) {
@@ -1922,10 +1922,10 @@ void CastOperation::CheckCXXCStyleCast(bool FunctionalStyle,
     SrcExpr = ExprError();
 }
 
-/// DiagnoseBadFunctionCast - Warn whenever a function call is cast to a 
+/// DiagnoseBadSubprogramCast - Warn whenever a function call is cast to a 
 ///  non-matching type. Such as enum function call to int, int call to
 /// pointer; etc. Cast to 'void' is an exception.
-static void DiagnoseBadFunctionCast(Sema &Self, const ExprResult &SrcExpr,
+static void DiagnoseBadSubprogramCast(Sema &Self, const ExprResult &SrcExpr,
                                   QualType DestType) {
   if (Self.Diags.getDiagnosticLevel(diag::warn_bad_function_cast,
                                     SrcExpr.get()->getExprLoc()) 
@@ -1984,7 +1984,7 @@ void CastOperation::CheckCStyleCast() {
     return;
   }
 
-  SrcExpr = Self.DefaultFunctionArrayLvalueConversion(SrcExpr.take());
+  SrcExpr = Self.DefaultSubprogramArrayLvalueConversion(SrcExpr.take());
   if (SrcExpr.isInvalid())
     return;
   QualType SrcType = SrcExpr.get()->getType();
@@ -2134,7 +2134,7 @@ void CastOperation::CheckCStyleCast() {
     }
   }
   DiagnoseCastOfObjCSEL(Self, SrcExpr, DestType);
-  DiagnoseBadFunctionCast(Self, SrcExpr, DestType);
+  DiagnoseBadSubprogramCast(Self, SrcExpr, DestType);
   Kind = Self.PrepareScalarCast(SrcExpr, DestType);
   if (SrcExpr.isInvalid())
     return;
@@ -2152,7 +2152,7 @@ ExprResult Sema::BuildCStyleCastExpr(SourceLocation LPLoc,
   Op.OpRange = SourceRange(LPLoc, CastExpr->getLocEnd());
 
   if (getLangOpts().CPlusPlus) {
-    Op.CheckCXXCStyleCast(/*FunctionalStyle=*/ false,
+    Op.CheckCXXCStyleCast(/*SubprogramalStyle=*/ false,
                           isa<InitListExpr>(CastExpr));
   } else {
     Op.CheckCStyleCast();
@@ -2166,7 +2166,7 @@ ExprResult Sema::BuildCStyleCastExpr(SourceLocation LPLoc,
                               &Op.BasePath, CastTypeInfo, LPLoc, RPLoc));
 }
 
-ExprResult Sema::BuildCXXFunctionalCastExpr(TypeSourceInfo *CastTypeInfo,
+ExprResult Sema::BuildCXXSubprogramalCastExpr(TypeSourceInfo *CastTypeInfo,
                                             SourceLocation LPLoc,
                                             Expr *CastExpr,
                                             SourceLocation RPLoc) {
@@ -2175,14 +2175,14 @@ ExprResult Sema::BuildCXXFunctionalCastExpr(TypeSourceInfo *CastTypeInfo,
   Op.DestRange = CastTypeInfo->getTypeLoc().getSourceRange();
   Op.OpRange = SourceRange(Op.DestRange.getBegin(), CastExpr->getLocEnd());
 
-  Op.CheckCXXCStyleCast(/*FunctionalStyle=*/true, /*ListInit=*/false);
+  Op.CheckCXXCStyleCast(/*SubprogramalStyle=*/true, /*ListInit=*/false);
   if (Op.SrcExpr.isInvalid())
     return ExprError();
   
   if (CXXConstructExpr *ConstructExpr = dyn_cast<CXXConstructExpr>(Op.SrcExpr.get()))
     ConstructExpr->setParenRange(SourceRange(LPLoc, RPLoc));
 
-  return Op.complete(CXXFunctionalCastExpr::Create(Context, Op.ResultType,
+  return Op.complete(CXXSubprogramalCastExpr::Create(Context, Op.ResultType,
                          Op.ValueKind, CastTypeInfo, Op.DestRange.getBegin(),
                          Op.Kind, Op.SrcExpr.take(), &Op.BasePath, RPLoc));
 }

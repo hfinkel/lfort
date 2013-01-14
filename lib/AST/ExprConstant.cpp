@@ -276,7 +276,7 @@ namespace {
     SourceLocation CallLoc;
 
     /// Callee - The function which was called.
-    const FunctionDecl *Callee;
+    const SubprogramDecl *Callee;
 
     /// Index - The call index of this call.
     unsigned Index;
@@ -296,7 +296,7 @@ namespace {
     MapTy Temporaries;
 
     CallStackFrame(EvalInfo &Info, SourceLocation CallLoc,
-                   const FunctionDecl *Callee, const LValue *This,
+                   const SubprogramDecl *Callee, const LValue *This,
                    const APValue *Arguments);
     ~CallStackFrame();
   };
@@ -572,7 +572,7 @@ void SubobjectDesignator::diagnosePointerArithmetic(EvalInfo &Info,
 }
 
 CallStackFrame::CallStackFrame(EvalInfo &Info, SourceLocation CallLoc,
-                               const FunctionDecl *Callee, const LValue *This,
+                               const SubprogramDecl *Callee, const LValue *This,
                                const APValue *Arguments)
     : Info(Info), Caller(Info.CurrentCall), CallLoc(CallLoc), Callee(Callee),
       Index(Info.NextCallIndex++), This(This), Arguments(Arguments) {
@@ -596,7 +596,7 @@ static void describeCall(CallStackFrame *Frame, llvm::raw_ostream &Out) {
   if (!IsMemberCall)
     Out << *Frame->Callee << '(';
 
-  for (FunctionDecl::param_const_iterator I = Frame->Callee->param_begin(),
+  for (SubprogramDecl::param_const_iterator I = Frame->Callee->param_begin(),
        E = Frame->Callee->param_end(); I != E; ++I, ++ArgIndex) {
     if (ArgIndex > (unsigned)IsMemberCall)
       Out << ", ";
@@ -909,7 +909,7 @@ static bool IsGlobalLValue(APValue::LValueBase B) {
     if (const VarDecl *VD = dyn_cast<VarDecl>(D))
       return VD->hasGlobalStorage();
     // ... the address of a function,
-    return isa<FunctionDecl>(D);
+    return isa<SubprogramDecl>(D);
   }
 
   const Expr *E = B.get<const Expr*>();
@@ -1365,7 +1365,7 @@ static bool HandleSizeof(EvalInfo &Info, SourceLocation Loc,
                          QualType Type, CharUnits &Size) {
   // sizeof(void), __alignof__(void), sizeof(function) = 1 as a gcc
   // extension.
-  if (Type->isVoidType() || Type->isFunctionType()) {
+  if (Type->isVoidType() || Type->isSubprogramType()) {
     Size = CharUnits::One();
     return true;
   }
@@ -1433,7 +1433,7 @@ static bool EvaluateVarDeclInit(EvalInfo &Info, const Expr *E,
       Info.Diag(E, diag::note_invalid_subexpr_in_const_expr);
       return false;
     }
-    Result = Frame->Arguments[PVD->getFunctionScopeIndex()];
+    Result = Frame->Arguments[PVD->getSubprogramScopeIndex()];
     return true;
   }
 
@@ -2094,11 +2094,11 @@ static bool CheckTrivialDefaultConstructor(EvalInfo &Info, SourceLocation Loc,
   return true;
 }
 
-/// CheckConstexprFunction - Check that a function can be called in a constant
+/// CheckConstexprSubprogram - Check that a function can be called in a constant
 /// expression.
-static bool CheckConstexprFunction(EvalInfo &Info, SourceLocation CallLoc,
-                                   const FunctionDecl *Declaration,
-                                   const FunctionDecl *Definition) {
+static bool CheckConstexprSubprogram(EvalInfo &Info, SourceLocation CallLoc,
+                                   const SubprogramDecl *Declaration,
+                                   const SubprogramDecl *Definition) {
   // Potential constant expressions can contain calls to declared, but not yet
   // defined, constexpr functions.
   if (Info.CheckingPotentialConstantExpression && !Definition &&
@@ -2110,7 +2110,7 @@ static bool CheckConstexprFunction(EvalInfo &Info, SourceLocation CallLoc,
     return true;
 
   if (Info.getLangOpts().CPlusPlus11) {
-    const FunctionDecl *DiagDecl = Definition ? Definition : Declaration;
+    const SubprogramDecl *DiagDecl = Definition ? Definition : Declaration;
     // FIXME: If DiagDecl is an implicitly-declared special member function, we
     // should be much more explicit about why it's not constexpr.
     Info.Diag(CallLoc, diag::note_constexpr_invalid_function, 1)
@@ -2145,8 +2145,8 @@ static bool EvaluateArgs(ArrayRef<const Expr*> Args, ArgVector &ArgValues,
 }
 
 /// Evaluate a function call.
-static bool HandleFunctionCall(SourceLocation CallLoc,
-                               const FunctionDecl *Callee, const LValue *This,
+static bool HandleSubprogramCall(SourceLocation CallLoc,
+                               const SubprogramDecl *Callee, const LValue *This,
                                ArrayRef<const Expr*> Args, const Stmt *Body,
                                EvalInfo &Info, APValue &Result) {
   ArgVector ArgValues(Args.size());
@@ -2481,7 +2481,7 @@ public:
     const Expr *Callee = E->getCallee()->IgnoreParens();
     QualType CalleeType = Callee->getType();
 
-    const FunctionDecl *FD = 0;
+    const SubprogramDecl *FD = 0;
     LValue *This = 0, ThisVal;
     llvm::ArrayRef<const Expr*> Args(E->getArgs(), E->getNumArgs());
     bool HasQualifier = false;
@@ -2504,17 +2504,17 @@ public:
       } else
         return Error(Callee);
 
-      FD = dyn_cast<FunctionDecl>(Member);
+      FD = dyn_cast<SubprogramDecl>(Member);
       if (!FD)
         return Error(Callee);
-    } else if (CalleeType->isFunctionPointerType()) {
+    } else if (CalleeType->isSubprogramPointerType()) {
       LValue Call;
       if (!EvaluatePointer(Callee, Call, Info))
         return false;
 
       if (!Call.getLValueOffset().isZero())
         return Error(Callee);
-      FD = dyn_cast_or_null<FunctionDecl>(
+      FD = dyn_cast_or_null<SubprogramDecl>(
                              Call.getLValueBase().dyn_cast<const ValueDecl*>());
       if (!FD)
         return Error(Callee);
@@ -2550,12 +2550,12 @@ public:
         isa<CXXMethodDecl>(FD) && cast<CXXMethodDecl>(FD)->isVirtual())
       return Error(E, diag::note_constexpr_virtual_call);
 
-    const FunctionDecl *Definition = 0;
+    const SubprogramDecl *Definition = 0;
     Stmt *Body = FD->getBody(Definition);
     APValue Result;
 
-    if (!CheckConstexprFunction(Info, E->getExprLoc(), FD, Definition) ||
-        !HandleFunctionCall(E->getExprLoc(), Definition, This, Args, Body,
+    if (!CheckConstexprSubprogram(Info, E->getExprLoc(), FD, Definition) ||
+        !HandleSubprogramCall(E->getExprLoc(), Definition, This, Args, Body,
                             Info, Result))
       return false;
 
@@ -2760,7 +2760,7 @@ public:
 // following types:
 // - Declarations
 //  * VarDecl
-//  * FunctionDecl
+//  * SubprogramDecl
 // - Literals
 //  * CompoundLiteralExpr in C
 //  * StringLiteral
@@ -2826,14 +2826,14 @@ public:
 ///  * "extern void" objects,
 ///  * temporaries, if building with -Wno-address-of-temporary.
 static bool EvaluateLValue(const Expr* E, LValue& Result, EvalInfo &Info) {
-  assert((E->isGLValue() || E->getType()->isFunctionType() ||
+  assert((E->isGLValue() || E->getType()->isSubprogramType() ||
           E->getType()->isVoidType() || isa<CXXTemporaryObjectExpr>(E)) &&
          "can't evaluate expression as an lvalue");
   return LValueExprEvaluator(Info, Result).Visit(E);
 }
 
 bool LValueExprEvaluator::VisitDeclRefExpr(const DeclRefExpr *E) {
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(E->getDecl()))
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(E->getDecl()))
     return Success(FD);
   if (const VarDecl *VD = dyn_cast<VarDecl>(E->getDecl()))
     return VisitVarDecl(E, VD);
@@ -3147,7 +3147,7 @@ bool PointerExprEvaluator::VisitCastExpr(const CastExpr* E) {
       Result.Designator.setInvalid();
     return true;
 
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
     return EvaluateLValue(SubExpr, Result, Info);
   }
 
@@ -3473,10 +3473,10 @@ bool RecordExprEvaluator::VisitCXXConstructExpr(const CXXConstructExpr *E) {
     return true;
   }
 
-  const FunctionDecl *Definition = 0;
+  const SubprogramDecl *Definition = 0;
   FD->getBody(Definition);
 
-  if (!CheckConstexprFunction(Info, E->getExprLoc(), FD, Definition))
+  if (!CheckConstexprSubprogram(Info, E->getExprLoc(), FD, Definition))
     return false;
 
   // Avoid materializing a temporary for an elidable copy/move constructor.
@@ -3887,10 +3887,10 @@ bool ArrayExprEvaluator::VisitCXXConstructExpr(const CXXConstructExpr *E) {
     return true;
   }
 
-  const FunctionDecl *Definition = 0;
+  const SubprogramDecl *Definition = 0;
   FD->getBody(Definition);
 
-  if (!CheckConstexprFunction(Info, E->getExprLoc(), FD, Definition))
+  if (!CheckConstexprSubprogram(Info, E->getExprLoc(), FD, Definition))
     return false;
 
   if (ZeroInit && !HadZeroInit) {
@@ -4152,7 +4152,7 @@ static int EvaluateBuiltinClassifyType(const CallExpr *E) {
     return real_type_class;
   else if (ArgTy->isComplexType())
     return complex_type_class;
-  else if (ArgTy->isFunctionType())
+  else if (ArgTy->isSubprogramType())
     return function_type_class;
   else if (ArgTy->isStructureOrClassType())
     return record_type_class;
@@ -4253,7 +4253,7 @@ bool IntExprEvaluator::TryEvaluateBuiltinObjectSize(const CallExpr *E) {
   QualType T = GetObjectType(Base.getLValueBase());
   if (T.isNull() ||
       T->isIncompleteType() ||
-      T->isFunctionType() ||
+      T->isSubprogramType() ||
       T->isVariablyModifiedType() ||
       T->isDependentType())
     return Error(E);
@@ -5339,7 +5339,7 @@ bool IntExprEvaluator::VisitCastExpr(const CastExpr *E) {
   case CK_Dynamic:
   case CK_ToUnion:
   case CK_ArrayToPointerDecay:
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
   case CK_NullToPointer:
   case CK_NullToMemberPointer:
   case CK_BaseToDerivedMemberPointer:
@@ -5817,7 +5817,7 @@ bool ComplexExprEvaluator::VisitCastExpr(const CastExpr *E) {
   case CK_Dynamic:
   case CK_ToUnion:
   case CK_ArrayToPointerDecay:
-  case CK_FunctionToPointerDecay:
+  case CK_SubprogramToPointerDecay:
   case CK_NullToPointer:
   case CK_NullToMemberPointer:
   case CK_BaseToDerivedMemberPointer:
@@ -6147,7 +6147,7 @@ static bool EvaluateVoid(const Expr *E, EvalInfo &Info) {
 static bool Evaluate(APValue &Result, EvalInfo &Info, const Expr *E) {
   // In C, function designators are not lvalues, but we evaluate them as if they
   // are.
-  if (E->isGLValue() || E->getType()->isFunctionType()) {
+  if (E->isGLValue() || E->getType()->isSubprogramType()) {
     LValue LV;
     if (!EvaluateLValue(E, LV, Info))
       return false;
@@ -6484,7 +6484,7 @@ static ICEDiag CheckICE(const Expr* E, ASTContext &Ctx) {
   case Expr::OpaqueValueExprClass:
   case Expr::PackExpansionExprClass:
   case Expr::SubstNonTypeTemplateParmPackExprClass:
-  case Expr::FunctionParmPackExprClass:
+  case Expr::SubprogramParmPackExprClass:
   case Expr::AsTypeExprClass:
   case Expr::ObjCIndirectCopyRestoreExprClass:
   case Expr::MaterializeTemporaryExprClass:
@@ -6688,7 +6688,7 @@ static ICEDiag CheckICE(const Expr* E, ASTContext &Ctx) {
   }
   case Expr::ImplicitCastExprClass:
   case Expr::CStyleCastExprClass:
-  case Expr::CXXFunctionalCastExprClass:
+  case Expr::CXXSubprogramalCastExprClass:
   case Expr::CXXStaticCastExprClass:
   case Expr::CXXReinterpretCastExprClass:
   case Expr::CXXConstCastExprClass:
@@ -6849,7 +6849,7 @@ bool Expr::isCXX11ConstantExpr(ASTContext &Ctx, APValue *Result,
   return IsConstExpr;
 }
 
-bool Expr::isPotentialConstantExpr(const FunctionDecl *FD,
+bool Expr::isPotentialConstantExpr(const SubprogramDecl *FD,
                                    llvm::SmallVectorImpl<
                                      PartialDiagnosticAt> &Diags) {
   // FIXME: It would be useful to check constexpr function templates, but at the
@@ -6881,7 +6881,7 @@ bool Expr::isPotentialConstantExpr(const FunctionDecl *FD,
   if (const CXXConstructorDecl *CD = dyn_cast<CXXConstructorDecl>(FD))
     HandleConstructorCall(Loc, This, Args, CD, Info, Scratch);
   else
-    HandleFunctionCall(Loc, FD, (MD && MD->isInstance()) ? &This : 0,
+    HandleSubprogramCall(Loc, FD, (MD && MD->isInstance()) ? &This : 0,
                        Args, FD->getBody(), Info, Scratch);
 
   return Diags.empty();

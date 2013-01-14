@@ -299,7 +299,7 @@ public:
     PQ_StorageClassSpecifier = 1,
     PQ_TypeSpecifier         = 2,
     PQ_TypeQualifier         = 4,
-    PQ_FunctionSpecifier     = 8
+    PQ_SubprogramSpecifier     = 8
   };
 
 private:
@@ -518,7 +518,7 @@ public:
   bool isExplicitSpecified() const { return FS_explicit_specified; }
   SourceLocation getExplicitSpecLoc() const { return FS_explicitLoc; }
 
-  void ClearFunctionSpecs() {
+  void ClearSubprogramSpecs() {
     FS_inline_specified = false;
     FS_inlineLoc = SourceLocation();
     FS_virtual_specified = false;
@@ -608,9 +608,9 @@ public:
   bool SetTypeQual(TQ T, SourceLocation Loc, const char *&PrevSpec,
                    unsigned &DiagID, const LangOptions &Lang);
 
-  bool setFunctionSpecInline(SourceLocation Loc);
-  bool setFunctionSpecVirtual(SourceLocation Loc);
-  bool setFunctionSpecExplicit(SourceLocation Loc);
+  bool setSubprogramSpecInline(SourceLocation Loc);
+  bool setSubprogramSpecVirtual(SourceLocation Loc);
+  bool setSubprogramSpecExplicit(SourceLocation Loc);
 
   bool SetFriendSpec(SourceLocation Loc, const char *&PrevSpec,
                      unsigned &DiagID);
@@ -794,9 +794,9 @@ public:
     /// \brief An identifier.
     IK_Identifier,
     /// \brief An overloaded operator name, e.g., operator+.
-    IK_OperatorFunctionId,
+    IK_OperatorSubprogramId,
     /// \brief A conversion function name, e.g., operator int.
-    IK_ConversionFunctionId,
+    IK_ConversionSubprogramId,
     /// \brief A user-defined literal name, e.g., operator "" _i.
     IK_LiteralOperatorId,
     /// \brief A constructor name.
@@ -818,7 +818,7 @@ public:
     /// == IK_UserLiteralId, the identifier suffix.
     IdentifierInfo *Identifier;
     
-    /// \brief When Kind == IK_OperatorFunctionId, the overloaded operator
+    /// \brief When Kind == IK_OperatorSubprogramId, the overloaded operator
     /// that we parsed.
     struct {
       /// \brief The kind of overloaded operator.
@@ -832,11 +832,11 @@ public:
       /// up to three. Any remaining source locations in this array will be
       /// set to an invalid value for operators with fewer than three tokens.
       unsigned SymbolLocations[3];
-    } OperatorFunctionId;
+    } OperatorSubprogramId;
     
-    /// \brief When Kind == IK_ConversionFunctionId, the type that the 
+    /// \brief When Kind == IK_ConversionSubprogramId, the type that the 
     /// conversion function names.
-    UnionParsedType ConversionFunctionId;
+    UnionParsedType ConversionSubprogramId;
 
     /// \brief When Kind == IK_ConstructorName, the class-name of the type
     /// whose constructor is being referenced.
@@ -900,7 +900,7 @@ public:
   ///
   /// \param SymbolLocations the locations of the individual operator symbols
   /// in the operator.
-  void setOperatorFunctionId(SourceLocation OperatorLoc, 
+  void setOperatorSubprogramId(SourceLocation OperatorLoc, 
                              OverloadedOperatorKind Op,
                              SourceLocation SymbolLocations[3]);
   
@@ -912,13 +912,13 @@ public:
   /// \param Ty the type to which this conversion function is converting.
   ///
   /// \param EndLoc the location of the last token that makes up the type name.
-  void setConversionFunctionId(SourceLocation OperatorLoc, 
+  void setConversionSubprogramId(SourceLocation OperatorLoc, 
                                ParsedType Ty,
                                SourceLocation EndLoc) {
-    Kind = IK_ConversionFunctionId;
+    Kind = IK_ConversionSubprogramId;
     StartLocation = OperatorLoc;
     EndLocation = EndLoc;
-    ConversionFunctionId = Ty;
+    ConversionSubprogramId = Ty;
   }
 
   /// \brief Specific that this unqualified-id was parsed as a
@@ -1000,7 +1000,7 @@ typedef SmallVector<Token, 4> CachedTokens;
 /// This is intended to be a small value object.
 struct DeclaratorChunk {
   enum {
-    Pointer, Reference, Array, Function, BlockPointer, MemberPointer, Paren
+    Pointer, Reference, Array, Subprogram, BlockPointer, MemberPointer, Paren
   } Kind;
 
   /// Loc - The place where this type was defined.
@@ -1087,7 +1087,7 @@ struct DeclaratorChunk {
     SourceRange Range;
   };
 
-  struct FunctionTypeInfo : TypeInfoCommon {
+  struct SubprogramTypeInfo : TypeInfoCommon {
     /// hasPrototype - This is true if the function had at least one typed
     /// argument.  If the function is () or (a,b,c), then it has no prototype,
     /// and is treated as a K&R-style function.
@@ -1300,14 +1300,14 @@ struct DeclaratorChunk {
     PointerTypeInfo       Ptr;
     ReferenceTypeInfo     Ref;
     ArrayTypeInfo         Arr;
-    FunctionTypeInfo      Fun;
+    SubprogramTypeInfo      Fun;
     BlockPointerTypeInfo  Cls;
     MemberPointerTypeInfo Mem;
   };
 
   void destroy() {
     switch (Kind) {
-    case DeclaratorChunk::Function:      return Fun.destroy();
+    case DeclaratorChunk::Subprogram:      return Fun.destroy();
     case DeclaratorChunk::Pointer:       return Ptr.destroy();
     case DeclaratorChunk::BlockPointer:  return Cls.destroy();
     case DeclaratorChunk::Reference:     return Ref.destroy();
@@ -1371,9 +1371,9 @@ struct DeclaratorChunk {
     return I;
   }
 
-  /// DeclaratorChunk::getFunction - Return a DeclaratorChunk for a function.
+  /// DeclaratorChunk::getSubprogram - Return a DeclaratorChunk for a function.
   /// "TheDeclarator" is the declarator that this will be added to.
-  static DeclaratorChunk getFunction(bool hasProto,
+  static DeclaratorChunk getSubprogram(bool hasProto,
                                      bool isAmbiguous,
                                      SourceLocation LParenLoc,
                                      ParamInfo *ArgInfo, unsigned NumArgs,
@@ -1436,7 +1436,7 @@ struct DeclaratorChunk {
 
 /// \brief Described the kind of function definition (if any) provided for
 /// a function.
-enum FunctionDefinitionKind {
+enum SubprogramDefinitionKind {
   FDK_Declaration,
   FDK_Definition,
   FDK_Defaulted,
@@ -1501,11 +1501,11 @@ private:
   /// GroupingParens - Set by Parser::ParseParenDeclarator().
   bool GroupingParens : 1;
 
-  /// FunctionDefinition - Is this Declarator for a function or member 
+  /// SubprogramDefinition - Is this Declarator for a function or member 
   /// definition and, if so, what kind?
   ///
-  /// Actually a FunctionDefinitionKind.
-  unsigned FunctionDefinition : 2;
+  /// Actually a SubprogramDefinitionKind.
+  unsigned SubprogramDefinition : 2;
 
   /// \brief Is this Declarator a redeclaration?
   bool Redeclaration : 1;
@@ -1539,7 +1539,7 @@ public:
   Declarator(const DeclSpec &ds, TheContext C)
     : DS(ds), Range(ds.getSourceRange()), Context(C),
       InvalidType(DS.getTypeSpecType() == DeclSpec::TST_error),
-      GroupingParens(false), FunctionDefinition(FDK_Declaration), 
+      GroupingParens(false), SubprogramDefinition(FDK_Declaration), 
       Redeclaration(false),
       Attrs(ds.getAttributePool().getFactory()), AsmLabel(0),
       InlineParamsUsed(false), Extension(false) {
@@ -1808,7 +1808,7 @@ public:
       switch (DeclTypeInfo[i].Kind) {
       case DeclaratorChunk::Paren:
         continue;
-      case DeclaratorChunk::Function:
+      case DeclaratorChunk::Subprogram:
       case DeclaratorChunk::Pointer:
       case DeclaratorChunk::Reference:
       case DeclaratorChunk::BlockPointer:
@@ -1822,14 +1822,14 @@ public:
     return false;
   }
 
-  /// isFunctionDeclarator - This method returns true if the declarator
+  /// isSubprogramDeclarator - This method returns true if the declarator
   /// is a function declarator (looking through parentheses).
   /// If true is returned, then the reference type parameter idx is
   /// assigned with the index of the declaration chunk.
-  bool isFunctionDeclarator(unsigned& idx) const {
+  bool isSubprogramDeclarator(unsigned& idx) const {
     for (unsigned i = 0, i_end = DeclTypeInfo.size(); i < i_end; ++i) {
       switch (DeclTypeInfo[i].Kind) {
-      case DeclaratorChunk::Function:
+      case DeclaratorChunk::Subprogram:
         idx = i;
         return true;
       case DeclaratorChunk::Paren:
@@ -1846,27 +1846,27 @@ public:
     return false;
   }
 
-  /// isFunctionDeclarator - Once this declarator is fully parsed and formed,
+  /// isSubprogramDeclarator - Once this declarator is fully parsed and formed,
   /// this method returns true if the identifier is a function declarator
   /// (looking through parentheses).
-  bool isFunctionDeclarator() const {
+  bool isSubprogramDeclarator() const {
     unsigned index;
-    return isFunctionDeclarator(index);
+    return isSubprogramDeclarator(index);
   }
 
-  /// getFunctionTypeInfo - Retrieves the function type info object
+  /// getSubprogramTypeInfo - Retrieves the function type info object
   /// (looking through parentheses).
-  DeclaratorChunk::FunctionTypeInfo &getFunctionTypeInfo() {
-    assert(isFunctionDeclarator() && "Not a function declarator!");
+  DeclaratorChunk::SubprogramTypeInfo &getSubprogramTypeInfo() {
+    assert(isSubprogramDeclarator() && "Not a function declarator!");
     unsigned index = 0;
-    isFunctionDeclarator(index);
+    isSubprogramDeclarator(index);
     return DeclTypeInfo[index].Fun;
   }
 
-  /// getFunctionTypeInfo - Retrieves the function type info object
+  /// getSubprogramTypeInfo - Retrieves the function type info object
   /// (looking through parentheses).
-  const DeclaratorChunk::FunctionTypeInfo &getFunctionTypeInfo() const {
-    return const_cast<Declarator*>(this)->getFunctionTypeInfo();
+  const DeclaratorChunk::SubprogramTypeInfo &getSubprogramTypeInfo() const {
+    return const_cast<Declarator*>(this)->getSubprogramTypeInfo();
   }
 
   /// \brief Determine whether the declaration that will be produced from 
@@ -1875,7 +1875,7 @@ public:
   /// A declaration can declare a function even if the declarator itself
   /// isn't a function declarator, if the type specifier refers to a function
   /// type. This routine checks for both cases.
-  bool isDeclarationOfFunction() const;
+  bool isDeclarationOfSubprogram() const;
   
   /// takeAttributes - Takes attributes from the given parsed-attributes
   /// set and add them to this declarator.
@@ -1940,16 +1940,16 @@ public:
   SourceLocation getEllipsisLoc() const { return EllipsisLoc; }
   void setEllipsisLoc(SourceLocation EL) { EllipsisLoc = EL; }
 
-  void setFunctionDefinitionKind(FunctionDefinitionKind Val) { 
-    FunctionDefinition = Val; 
+  void setSubprogramDefinitionKind(SubprogramDefinitionKind Val) { 
+    SubprogramDefinition = Val; 
   }
   
-  bool isFunctionDefinition() const {
-    return getFunctionDefinitionKind() != FDK_Declaration;
+  bool isSubprogramDefinition() const {
+    return getSubprogramDefinitionKind() != FDK_Declaration;
   }
   
-  FunctionDefinitionKind getFunctionDefinitionKind() const { 
-    return (FunctionDefinitionKind)FunctionDefinition; 
+  SubprogramDefinitionKind getSubprogramDefinitionKind() const { 
+    return (SubprogramDefinitionKind)SubprogramDefinition; 
   }
 
   void setRedeclaration(bool Val) { Redeclaration = Val; }

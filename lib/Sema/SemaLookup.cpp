@@ -113,7 +113,7 @@ namespace {
         DeclContext *Ctx = static_cast<DeclContext*>(S->getEntity());
         if (Ctx && Ctx->isFileContext()) {
           visit(Ctx, Ctx);
-        } else if (!Ctx || Ctx->isFunctionOrMethod()) {
+        } else if (!Ctx || Ctx->isSubprogramOrMethod()) {
           Scope::udir_iterator I = S->using_directives_begin(),
                              End = S->using_directives_end();
           for (; I != End; ++I)
@@ -312,7 +312,7 @@ void LookupResult::sanityImpl() const {
   assert(ResultKind != Found || Decls.size() == 1);
   assert(ResultKind != FoundOverloaded || Decls.size() > 1 ||
          (Decls.size() == 1 &&
-          isa<FunctionTemplateDecl>((*begin())->getUnderlyingDecl())));
+          isa<SubprogramTemplateDecl>((*begin())->getUnderlyingDecl())));
   assert(ResultKind != FoundUnresolvedValue || sanityCheckUnresolved());
   assert(ResultKind != Ambiguous || Decls.size() > 1 ||
          (Decls.size() == 1 && (Ambiguity == AmbiguousBaseSubobjects ||
@@ -347,7 +347,7 @@ void LookupResult::resolveKind() {
   // kind of lookup this is.
   if (N == 1) {
     NamedDecl *D = (*Decls.begin())->getUnderlyingDecl();
-    if (isa<FunctionTemplateDecl>(D))
+    if (isa<SubprogramTemplateDecl>(D))
       ResultKind = FoundOverloaded;
     else if (isa<UnresolvedUsingValueDecl>(D))
       ResultKind = FoundUnresolvedValue;
@@ -361,8 +361,8 @@ void LookupResult::resolveKind() {
   llvm::SmallPtrSet<QualType, 16> UniqueTypes;
 
   bool Ambiguous = false;
-  bool HasTag = false, HasFunction = false, HasNonFunction = false;
-  bool HasFunctionTemplate = false, HasUnresolved = false;
+  bool HasTag = false, HasSubprogram = false, HasNonSubprogram = false;
+  bool HasSubprogramTemplate = false, HasUnresolved = false;
 
   unsigned UniqueTagIndex = 0;
 
@@ -403,15 +403,15 @@ void LookupResult::resolveKind() {
         Ambiguous = true;
       UniqueTagIndex = I;
       HasTag = true;
-    } else if (isa<FunctionTemplateDecl>(D)) {
-      HasFunction = true;
-      HasFunctionTemplate = true;
-    } else if (isa<FunctionDecl>(D)) {
-      HasFunction = true;
+    } else if (isa<SubprogramTemplateDecl>(D)) {
+      HasSubprogram = true;
+      HasSubprogramTemplate = true;
+    } else if (isa<SubprogramDecl>(D)) {
+      HasSubprogram = true;
     } else {
-      if (HasNonFunction)
+      if (HasNonSubprogram)
         Ambiguous = true;
-      HasNonFunction = true;
+      HasNonSubprogram = true;
     }
     I++;
   }
@@ -426,7 +426,7 @@ void LookupResult::resolveKind() {
   // But it's still an error if there are distinct tag types found,
   // even if they're not visible. (ref?)
   if (HideTags && HasTag && !Ambiguous &&
-      (HasFunction || HasNonFunction || HasUnresolved)) {
+      (HasSubprogram || HasNonSubprogram || HasUnresolved)) {
     if (Decls[UniqueTagIndex]->getDeclContext()->getRedeclContext()->Equals(
          Decls[UniqueTagIndex? 0 : N-1]->getDeclContext()->getRedeclContext()))
       Decls[UniqueTagIndex] = Decls[--N];
@@ -436,14 +436,14 @@ void LookupResult::resolveKind() {
 
   Decls.set_size(N);
 
-  if (HasNonFunction && (HasFunction || HasUnresolved))
+  if (HasNonSubprogram && (HasSubprogram || HasUnresolved))
     Ambiguous = true;
 
   if (Ambiguous)
     setAmbiguous(LookupResult::AmbiguousReference);
   else if (HasUnresolved)
     ResultKind = LookupResult::FoundUnresolvedValue;
-  else if (N > 1 || HasFunctionTemplate)
+  else if (N > 1 || HasSubprogramTemplate)
     ResultKind = LookupResult::FoundOverloaded;
   else
     ResultKind = LookupResult::Found;
@@ -501,7 +501,7 @@ static bool LookupBuiltin(Sema &S, LookupResult &R) {
         // In C++, we don't have any predefined library functions like
         // 'malloc'. Instead, we'll just error.
         if (S.getLangOpts().CPlusPlus &&
-            S.Context.BuiltinInfo.isPredefinedLibFunction(BuiltinID))
+            S.Context.BuiltinInfo.isPredefinedLibSubprogram(BuiltinID))
           return false;
 
         if (NamedDecl *D = S.LazilyCreateBuiltin((IdentifierInfo *)II,
@@ -528,7 +528,7 @@ static bool LookupBuiltin(Sema &S, LookupResult &R) {
 
 /// \brief Determine whether we can declare a special member function within
 /// the class at this point.
-static bool CanDeclareSpecialMemberFunction(const CXXRecordDecl *Class) {
+static bool CanDeclareSpecialMemberSubprogram(const CXXRecordDecl *Class) {
   // We need to have a definition for the class.
   if (!Class->getDefinition() || Class->isDependentContext())
     return false;
@@ -538,7 +538,7 @@ static bool CanDeclareSpecialMemberFunction(const CXXRecordDecl *Class) {
 }
 
 void Sema::ForceDeclarationOfImplicitMembers(CXXRecordDecl *Class) {
-  if (!CanDeclareSpecialMemberFunction(Class))
+  if (!CanDeclareSpecialMemberSubprogram(Class))
     return;
 
   // If the default constructor has not yet been declared, do so now.
@@ -570,7 +570,7 @@ void Sema::ForceDeclarationOfImplicitMembers(CXXRecordDecl *Class) {
 
 /// \brief Determine whether this is the name of an implicitly-declared
 /// special member function.
-static bool isImplicitlyDeclaredMemberFunctionName(DeclarationName Name) {
+static bool isImplicitlyDeclaredMemberSubprogramName(DeclarationName Name) {
   switch (Name.getNameKind()) {
   case DeclarationName::CXXConstructorName:
   case DeclarationName::CXXDestructorName:
@@ -588,7 +588,7 @@ static bool isImplicitlyDeclaredMemberFunctionName(DeclarationName Name) {
 
 /// \brief If there are any implicit member functions with the given name
 /// that need to be declared in the given declaration context, do so.
-static void DeclareImplicitMemberFunctionsWithName(Sema &S,
+static void DeclareImplicitMemberSubprogramsWithName(Sema &S,
                                                    DeclarationName Name,
                                                    const DeclContext *DC) {
   if (!DC)
@@ -597,7 +597,7 @@ static void DeclareImplicitMemberFunctionsWithName(Sema &S,
   switch (Name.getNameKind()) {
   case DeclarationName::CXXConstructorName:
     if (const CXXRecordDecl *Record = dyn_cast<CXXRecordDecl>(DC))
-      if (Record->getDefinition() && CanDeclareSpecialMemberFunction(Record)) {
+      if (Record->getDefinition() && CanDeclareSpecialMemberSubprogram(Record)) {
         CXXRecordDecl *Class = const_cast<CXXRecordDecl *>(Record);
         if (Record->needsImplicitDefaultConstructor())
           S.DeclareImplicitDefaultConstructor(Class);
@@ -612,7 +612,7 @@ static void DeclareImplicitMemberFunctionsWithName(Sema &S,
   case DeclarationName::CXXDestructorName:
     if (const CXXRecordDecl *Record = dyn_cast<CXXRecordDecl>(DC))
       if (Record->getDefinition() && Record->needsImplicitDestructor() &&
-          CanDeclareSpecialMemberFunction(Record))
+          CanDeclareSpecialMemberSubprogram(Record))
         S.DeclareImplicitDestructor(const_cast<CXXRecordDecl *>(Record));
     break;
 
@@ -621,7 +621,7 @@ static void DeclareImplicitMemberFunctionsWithName(Sema &S,
       break;
 
     if (const CXXRecordDecl *Record = dyn_cast<CXXRecordDecl>(DC)) {
-      if (Record->getDefinition() && CanDeclareSpecialMemberFunction(Record)) {
+      if (Record->getDefinition() && CanDeclareSpecialMemberSubprogram(Record)) {
         CXXRecordDecl *Class = const_cast<CXXRecordDecl *>(Record);
         if (Record->needsImplicitCopyAssignment())
           S.DeclareImplicitCopyAssignment(Class);
@@ -644,7 +644,7 @@ static bool LookupDirect(Sema &S, LookupResult &R, const DeclContext *DC) {
 
   // Lazily declare C++ special member functions.
   if (S.getLangOpts().CPlusPlus)
-    DeclareImplicitMemberFunctionsWithName(S, R.getLookupName(), DC);
+    DeclareImplicitMemberSubprogramsWithName(S, R.getLookupName(), DC);
 
   // Perform lookup into this declaration context.
   DeclContext::lookup_const_result DR = DC->lookup(R.getLookupName());
@@ -661,7 +661,7 @@ static bool LookupDirect(Sema &S, LookupResult &R, const DeclContext *DC) {
     return true;
 
   if (R.getLookupName().getNameKind()
-        != DeclarationName::CXXConversionFunctionName ||
+        != DeclarationName::CXXConversionSubprogramName ||
       R.getLookupName().getCXXNameType()->isDependentType() ||
       !isa<CXXRecordDecl>(DC))
     return Found;
@@ -676,7 +676,7 @@ static bool LookupDirect(Sema &S, LookupResult &R, const DeclContext *DC) {
 
   for (CXXRecordDecl::conversion_iterator U = Record->conversion_begin(),
          UEnd = Record->conversion_end(); U != UEnd; ++U) {
-    FunctionTemplateDecl *ConvTemplate = dyn_cast<FunctionTemplateDecl>(*U);
+    SubprogramTemplateDecl *ConvTemplate = dyn_cast<SubprogramTemplateDecl>(*U);
     if (!ConvTemplate)
       continue;
 
@@ -701,21 +701,21 @@ static bool LookupDirect(Sema &S, LookupResult &R, const DeclContext *DC) {
     // specialization into the result set. We do this to avoid forcing all
     // callers to perform special deduction for conversion functions.
     TemplateDeductionInfo Info(R.getNameLoc());
-    FunctionDecl *Specialization = 0;
+    SubprogramDecl *Specialization = 0;
 
-    const FunctionProtoType *ConvProto
-      = ConvTemplate->getTemplatedDecl()->getType()->getAs<FunctionProtoType>();
+    const SubprogramProtoType *ConvProto
+      = ConvTemplate->getTemplatedDecl()->getType()->getAs<SubprogramProtoType>();
     assert(ConvProto && "Nonsensical conversion function template type");
 
     // Compute the type of the function that we would expect the conversion
     // function to have, if it were to match the name given.
     // FIXME: Calling convention!
-    FunctionProtoType::ExtProtoInfo EPI = ConvProto->getExtProtoInfo();
+    SubprogramProtoType::ExtProtoInfo EPI = ConvProto->getExtProtoInfo();
     EPI.ExtInfo = EPI.ExtInfo.withCallingConv(CC_Default);
     EPI.ExceptionSpecType = EST_None;
     EPI.NumExceptions = 0;
     QualType ExpectedType
-      = R.getSema().Context.getFunctionType(R.getLookupName().getCXXNameType(),
+      = R.getSema().Context.getSubprogramType(R.getLookupName().getCXXNameType(),
                                             0, 0, EPI);
 
     // Perform template argument deduction against the type that we would
@@ -837,10 +837,10 @@ bool Sema::CppLookupName(LookupResult &R, Scope *S) {
 
   // If this is the name of an implicitly-declared special member function,
   // go through the scope stack to implicitly declare
-  if (isImplicitlyDeclaredMemberFunctionName(Name)) {
+  if (isImplicitlyDeclaredMemberSubprogramName(Name)) {
     for (Scope *PreS = S; PreS; PreS = PreS->getParent())
       if (DeclContext *DC = static_cast<DeclContext *>(PreS->getEntity()))
-        DeclareImplicitMemberFunctionsWithName(*this, Name, DC);
+        DeclareImplicitMemberSubprogramsWithName(*this, Name, DC);
   }
 
   // Implicitly declare member functions with the name we're looking for, if in
@@ -917,7 +917,7 @@ bool Sema::CppLookupName(LookupResult &R, Scope *S) {
         // We do not look directly into function or method contexts,
         // since all of the local variables and parameters of the
         // function/method are present within the Scope.
-        if (Ctx->isFunctionOrMethod()) {
+        if (Ctx->isSubprogramOrMethod()) {
           // If we have an Objective-C instance method, look for ivars
           // in the corresponding interface.
           if (ObjCMethodDecl *Method = dyn_cast<ObjCMethodDecl>(Ctx)) {
@@ -1985,16 +1985,16 @@ addAssociatedClassesAndNamespaces(AssociatedLookup &Result, QualType Ty) {
     //     -- If T is a function type, its associated namespaces and
     //        classes are those associated with the function parameter
     //        types and those associated with the return type.
-    case Type::FunctionProto: {
-      const FunctionProtoType *Proto = cast<FunctionProtoType>(T);
-      for (FunctionProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
+    case Type::SubprogramProto: {
+      const SubprogramProtoType *Proto = cast<SubprogramProtoType>(T);
+      for (SubprogramProtoType::arg_type_iterator Arg = Proto->arg_type_begin(),
                                              ArgEnd = Proto->arg_type_end();
              Arg != ArgEnd; ++Arg)
         Queue.push_back(Arg->getTypePtr());
       // fallthrough
     }
-    case Type::FunctionNoProto: {
-      const FunctionType *FnType = cast<FunctionType>(T);
+    case Type::SubprogramNoProto: {
+      const SubprogramType *FnType = cast<SubprogramType>(T);
       T = FnType->getResultType().getTypePtr();
       continue;
     }
@@ -2112,9 +2112,9 @@ Sema::FindAssociatedClassesAndNamespaces(SourceLocation InstantiationLoc,
       // Look through any using declarations to find the underlying function.
       NamedDecl *Fn = (*I)->getUnderlyingDecl();
 
-      FunctionDecl *FDecl = dyn_cast<FunctionDecl>(Fn);
+      SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(Fn);
       if (!FDecl)
-        FDecl = cast<FunctionTemplateDecl>(Fn)->getTemplatedDecl();
+        FDecl = cast<SubprogramTemplateDecl>(Fn)->getTemplatedDecl();
 
       // Add the classes and namespaces associated with the parameter
       // types and return type of this function.
@@ -2129,7 +2129,7 @@ Sema::FindAssociatedClassesAndNamespaces(SourceLocation InstantiationLoc,
 /// implements the check in C++ [over.match.oper]p3b2 concerning
 /// enumeration types.
 static bool
-IsAcceptableNonMemberOperatorCandidate(FunctionDecl *Fn,
+IsAcceptableNonMemberOperatorCandidate(SubprogramDecl *Fn,
                                        QualType T1, QualType T2,
                                        ASTContext &Context) {
   if (T1->isDependentType() || (!T2.isNull() && T2->isDependentType()))
@@ -2138,7 +2138,7 @@ IsAcceptableNonMemberOperatorCandidate(FunctionDecl *Fn,
   if (T1->isRecordType() || (!T2.isNull() && T2->isRecordType()))
     return true;
 
-  const FunctionProtoType *Proto = Fn->getType()->getAs<FunctionProtoType>();
+  const SubprogramProtoType *Proto = Fn->getType()->getAs<SubprogramProtoType>();
   if (Proto->getNumArgs() < 1)
     return false;
 
@@ -2180,7 +2180,7 @@ ObjCProtocolDecl *Sema::LookupProtocol(IdentifierInfo *II,
 
 void Sema::LookupOverloadedOperatorName(OverloadedOperatorKind Op, Scope *S,
                                         QualType T1, QualType T2,
-                                        UnresolvedSetImpl &Functions) {
+                                        UnresolvedSetImpl &Subprograms) {
   // C++ [over.match.oper]p3:
   //     -- The set of non-member candidates is the result of the
   //        unqualified lookup of operator@ in the context of the
@@ -2205,16 +2205,16 @@ void Sema::LookupOverloadedOperatorName(OverloadedOperatorKind Op, Scope *S,
   for (LookupResult::iterator Op = Operators.begin(), OpEnd = Operators.end();
        Op != OpEnd; ++Op) {
     NamedDecl *Found = (*Op)->getUnderlyingDecl();
-    if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Found)) {
+    if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(Found)) {
       if (IsAcceptableNonMemberOperatorCandidate(FD, T1, T2, Context))
-        Functions.addDecl(*Op, Op.getAccess()); // FIXME: canonical FD
-    } else if (FunctionTemplateDecl *FunTmpl
-                 = dyn_cast<FunctionTemplateDecl>(Found)) {
+        Subprograms.addDecl(*Op, Op.getAccess()); // FIXME: canonical FD
+    } else if (SubprogramTemplateDecl *FunTmpl
+                 = dyn_cast<SubprogramTemplateDecl>(Found)) {
       // FIXME: friend operators?
       // FIXME: do we need to check IsAcceptableNonMemberOperatorCandidate,
       // later?
       if (!FunTmpl->getDeclContext()->isRecord())
-        Functions.addDecl(*Op, Op.getAccess());
+        Subprograms.addDecl(*Op, Op.getAccess());
     }
   }
 }
@@ -2226,7 +2226,7 @@ Sema::SpecialMemberOverloadResult *Sema::LookupSpecialMember(CXXRecordDecl *RD,
                                                             bool RValueThis,
                                                             bool ConstThis,
                                                             bool VolatileThis) {
-  assert(CanDeclareSpecialMemberFunction(RD) &&
+  assert(CanDeclareSpecialMemberSubprogram(RD) &&
          "doing special member lookup into record that isn't fully complete");
   RD = RD->getDefinition();
   if (RValueThis || ConstThis || VolatileThis)
@@ -2367,8 +2367,8 @@ Sema::SpecialMemberOverloadResult *Sema::LookupSpecialMember(CXXRecordDecl *RD,
       else
         AddOverloadCandidate(M, DeclAccessPair::make(M, AS_public),
                              llvm::makeArrayRef(&Arg, NumArgs), OCS, true);
-    } else if (FunctionTemplateDecl *Tmpl =
-                 dyn_cast<FunctionTemplateDecl>(Cand)) {
+    } else if (SubprogramTemplateDecl *Tmpl =
+                 dyn_cast<SubprogramTemplateDecl>(Cand)) {
       if (SM == CXXCopyAssignment || SM == CXXMoveAssignment)
         AddMethodTemplateCandidate(Tmpl, DeclAccessPair::make(Tmpl, AS_public),
                                    RD, 0, ThisTy, Classification,
@@ -2384,14 +2384,14 @@ Sema::SpecialMemberOverloadResult *Sema::LookupSpecialMember(CXXRecordDecl *RD,
   }
 
   OverloadCandidateSet::iterator Best;
-  switch (OCS.BestViableFunction(*this, SourceLocation(), Best)) {
+  switch (OCS.BestViableSubprogram(*this, SourceLocation(), Best)) {
     case OR_Success:
-      Result->setMethod(cast<CXXMethodDecl>(Best->Function));
+      Result->setMethod(cast<CXXMethodDecl>(Best->Subprogram));
       Result->setKind(SpecialMemberOverloadResult::Success);
       break;
 
     case OR_Deleted:
-      Result->setMethod(cast<CXXMethodDecl>(Best->Function));
+      Result->setMethod(cast<CXXMethodDecl>(Best->Subprogram));
       Result->setKind(SpecialMemberOverloadResult::NoMemberOrDeleted);
       break;
 
@@ -2400,7 +2400,7 @@ Sema::SpecialMemberOverloadResult *Sema::LookupSpecialMember(CXXRecordDecl *RD,
       Result->setKind(SpecialMemberOverloadResult::Ambiguous);
       break;
 
-    case OR_No_Viable_Function:
+    case OR_No_Viable_Subprogram:
       Result->setMethod(0);
       Result->setKind(SpecialMemberOverloadResult::NoMemberOrDeleted);
       break;
@@ -2443,7 +2443,7 @@ CXXConstructorDecl *Sema::LookupMovingConstructor(CXXRecordDecl *Class,
 /// \brief Look up the constructors for the given class.
 DeclContext::lookup_result Sema::LookupConstructors(CXXRecordDecl *Class) {
   // If the implicit constructors have not yet been declared, do so now.
-  if (CanDeclareSpecialMemberFunction(Class)) {
+  if (CanDeclareSpecialMemberSubprogram(Class)) {
     if (Class->needsImplicitDefaultConstructor())
       DeclareImplicitDefaultConstructor(Class);
     if (Class->needsImplicitCopyConstructor())
@@ -2528,11 +2528,11 @@ Sema::LookupLiteralOperator(Scope *S, LookupResult &R,
     if (UsingShadowDecl *USD = dyn_cast<UsingShadowDecl>(D))
       D = USD->getTargetDecl();
 
-    bool IsTemplate = isa<FunctionTemplateDecl>(D);
+    bool IsTemplate = isa<SubprogramTemplateDecl>(D);
     bool IsRaw = false;
     bool IsExactMatch = false;
 
-    if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       if (FD->getNumParams() == 1 &&
           FD->getParamDecl(0)->getType()->getAs<PointerType>())
         IsRaw = true;
@@ -2581,9 +2581,9 @@ Sema::LookupLiteralOperator(Scope *S, LookupResult &R,
       Decl *D = *I;
       if (UsingShadowDecl *USD = dyn_cast<UsingShadowDecl>(D))
         D = USD->getTargetDecl();
-      if (FunctionTemplateDecl *FunTmpl = dyn_cast<FunctionTemplateDecl>(D))
+      if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(D))
         D = FunTmpl->getTemplatedDecl();
-      NoteOverloadCandidate(cast<FunctionDecl>(D));
+      NoteOverloadCandidate(cast<SubprogramDecl>(D));
     }
     return LOLR_Error;
   }
@@ -2612,16 +2612,16 @@ void ADLResult::insert(NamedDecl *New) {
   }
 
   // Otherwise, decide which is a more recent redeclaration.
-  FunctionDecl *OldFD, *NewFD;
-  if (isa<FunctionTemplateDecl>(New)) {
-    OldFD = cast<FunctionTemplateDecl>(Old)->getTemplatedDecl();
-    NewFD = cast<FunctionTemplateDecl>(New)->getTemplatedDecl();
+  SubprogramDecl *OldFD, *NewFD;
+  if (isa<SubprogramTemplateDecl>(New)) {
+    OldFD = cast<SubprogramTemplateDecl>(Old)->getTemplatedDecl();
+    NewFD = cast<SubprogramTemplateDecl>(New)->getTemplatedDecl();
   } else {
-    OldFD = cast<FunctionDecl>(Old);
-    NewFD = cast<FunctionDecl>(New);
+    OldFD = cast<SubprogramDecl>(Old);
+    NewFD = cast<SubprogramDecl>(New);
   }
 
-  FunctionDecl *Cursor = NewFD;
+  SubprogramDecl *Cursor = NewFD;
   while (true) {
     Cursor = Cursor->getPreviousDecl();
 
@@ -2697,12 +2697,12 @@ void Sema::ArgumentDependentLookup(DeclarationName Name, bool Operator,
       if (isa<UsingShadowDecl>(D))
         D = cast<UsingShadowDecl>(D)->getTargetDecl();
 
-      if (isa<FunctionDecl>(D)) {
+      if (isa<SubprogramDecl>(D)) {
         if (Operator &&
-            !IsAcceptableNonMemberOperatorCandidate(cast<FunctionDecl>(D),
+            !IsAcceptableNonMemberOperatorCandidate(cast<SubprogramDecl>(D),
                                                     T1, T2, Context))
           continue;
-      } else if (!isa<FunctionTemplateDecl>(D))
+      } else if (!isa<SubprogramTemplateDecl>(D))
         continue;
 
       Result.insert(D);
@@ -2808,11 +2808,11 @@ NamedDecl *VisibleDeclsRecord::checkHidden(NamedDecl *ND) {
           (*I)->getIdentifierNamespace() != IDNS)
         continue;
 
-      // Functions and function templates in the same scope overload
+      // Subprograms and function templates in the same scope overload
       // rather than hide.  FIXME: Look for hiding based on function
       // signatures!
-      if ((*I)->isFunctionOrFunctionTemplate() &&
-          ND->isFunctionOrFunctionTemplate() &&
+      if ((*I)->isSubprogramOrSubprogramTemplate() &&
+          ND->isSubprogramOrSubprogramTemplate() &&
           SM == ShadowMaps.rbegin())
         continue;
 
@@ -2977,7 +2977,7 @@ static void LookupVisibleDecls(Scope *S, LookupResult &Result,
   if (!S->getEntity() ||
       (!S->getParent() &&
        !Visited.alreadyVisitedContext((DeclContext *)S->getEntity())) ||
-      ((DeclContext *)S->getEntity())->isFunctionOrMethod()) {
+      ((DeclContext *)S->getEntity())->isSubprogramOrMethod()) {
     // Walk through the declarations in this Scope.
     for (Scope::decl_iterator D = S->decl_begin(), DEnd = S->decl_end();
          D != DEnd; ++D) {
@@ -3017,7 +3017,7 @@ static void LookupVisibleDecls(Scope *S, LookupResult &Result,
         break;
       }
 
-      if (Ctx->isFunctionOrMethod())
+      if (Ctx->isSubprogramOrMethod())
         continue;
 
       LookupVisibleDecls(Ctx, Result, /*QualifiedNameLookup=*/false,
@@ -3503,7 +3503,7 @@ static void LookupPotentialTypoResult(Sema &SemaRef,
     if (Method->isInstanceMethod() && Method->getClassInterface() &&
         (Res.empty() ||
          (Res.isSingleResult() &&
-          Res.getFoundDecl()->isDefinedOutsideFunctionOrMethod()))) {
+          Res.getFoundDecl()->isDefinedOutsideSubprogramOrMethod()))) {
        if (ObjCIvarDecl *IV
              = Method->getClassInterface()->lookupInstanceVariable(Name)) {
          Res.addDecl(IV);
@@ -3608,7 +3608,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
   }
 
   if (CCC.WantRemainingKeywords) {
-    if (SemaRef.getCurFunctionOrMethodDecl() || SemaRef.getCurBlock()) {
+    if (SemaRef.getCurSubprogramOrMethodDecl() || SemaRef.getCurBlock()) {
       // Statements.
       const char *CStmts[] = {
         "do", "else", "for", "goto", "if", "return", "switch", "while" };
@@ -3627,7 +3627,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
       if (S && S->getContinueParent())
         Consumer.addKeywordResult("continue");
 
-      if (!SemaRef.getCurFunction()->SwitchStack.empty()) {
+      if (!SemaRef.getCurSubprogram()->SwitchStack.empty()) {
         Consumer.addKeywordResult("case");
         Consumer.addKeywordResult("default");
       }

@@ -1,4 +1,4 @@
-//===--- CodeGenSubprogram.cpp - Emit LLVM Code from ASTs for a Function ----===//
+//===--- CodeGenSubprogram.cpp - Emit LLVM Code from ASTs for a Subprogram ----===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -46,7 +46,7 @@ CodeGenSubprogram::CodeGenSubprogram(CodeGenModule &cgm, bool suppressNewContext
     CXXVTTValue(0), OutermostConditional(0), TerminateLandingPad(0),
     TerminateHandler(0), TrapBB(0) {
   if (!suppressNewContext)
-    CGM.getFortranABI().getMangleContext().startNewFunction();
+    CGM.getFortranABI().getMangleContext().startNewSubprogram();
 
   llvm::FastMathFlags FMF;
   if (CGM.getLangOpts().FastMath)
@@ -93,8 +93,8 @@ bool CodeGenSubprogram::hasAggregateLLVMType(QualType type) {
   case Type::MemberPointer:
   case Type::Vector:
   case Type::ExtVector:
-  case Type::FunctionProto:
-  case Type::FunctionNoProto:
+  case Type::SubprogramProto:
+  case Type::SubprogramNoProto:
   case Type::Enum:
   case Type::ObjCObjectPointer:
     return false;
@@ -165,7 +165,7 @@ static void EmitIfUsed(CodeGenSubprogram &CGF, llvm::BasicBlock *BB) {
   delete BB;
 }
 
-void CodeGenSubprogram::FinishFunction(SourceLocation EndLoc) {
+void CodeGenSubprogram::FinishSubprogram(SourceLocation EndLoc) {
   assert(BreakContinueStack.empty() &&
          "mismatched push/pop in break/continue stack!");
 
@@ -179,16 +179,16 @@ void CodeGenSubprogram::FinishFunction(SourceLocation EndLoc) {
   // Emit function epilog (to return).
   EmitReturnBlock();
 
-  if (ShouldInstrumentFunction())
-    EmitFunctionInstrumentation("__cyg_profile_func_exit");
+  if (ShouldInstrumentSubprogram())
+    EmitSubprogramInstrumentation("__cyg_profile_func_exit");
 
   // Emit debug descriptor for function end.
   if (CGDebugInfo *DI = getDebugInfo()) {
     DI->setLocation(EndLoc);
-    DI->EmitFunctionEnd(Builder);
+    DI->EmitSubprogramEnd(Builder);
   }
 
-  EmitFunctionEpilog(*CurFnInfo);
+  EmitSubprogramEpilog(*CurFnInfo);
   EmitEndEHSpec(CurCodeDecl);
 
   assert(EHStack.empty() &&
@@ -225,27 +225,27 @@ void CodeGenSubprogram::FinishFunction(SourceLocation EndLoc) {
     EmitDeclMetadata();
 }
 
-/// ShouldInstrumentFunction - Return true if the current function should be
+/// ShouldInstrumentSubprogram - Return true if the current function should be
 /// instrumented with __cyg_profile_func_* calls
-bool CodeGenSubprogram::ShouldInstrumentFunction() {
-  if (!CGM.getCodeGenOpts().InstrumentFunctions)
+bool CodeGenSubprogram::ShouldInstrumentSubprogram() {
+  if (!CGM.getCodeGenOpts().InstrumentSubprograms)
     return false;
-  if (!CurFuncDecl || CurFuncDecl->hasAttr<NoInstrumentFunctionAttr>())
+  if (!CurFuncDecl || CurFuncDecl->hasAttr<NoInstrumentSubprogramAttr>())
     return false;
   return true;
 }
 
-/// EmitFunctionInstrumentation - Emit LLVM code to call the specified
+/// EmitSubprogramInstrumentation - Emit LLVM code to call the specified
 /// instrumentation function with the current function and the call site, if
 /// function instrumentation is enabled.
-void CodeGenSubprogram::EmitFunctionInstrumentation(const char *Fn) {
+void CodeGenSubprogram::EmitSubprogramInstrumentation(const char *Fn) {
   // void __cyg_profile_func_{enter,exit} (void *this_fn, void *call_site);
   llvm::PointerType *PointerTy = Int8PtrTy;
   llvm::Type *ProfileFuncArgs[] = { PointerTy, PointerTy };
-  llvm::FunctionType *FunctionTy =
+  llvm::FunctionType *SubprogramTy =
     llvm::FunctionType::get(VoidTy, ProfileFuncArgs, false);
 
-  llvm::Constant *F = CGM.CreateRuntimeFunction(FunctionTy, Fn);
+  llvm::Constant *F = CGM.CreateRuntimeSubprogram(SubprogramTy, Fn);
   llvm::CallInst *CallSite = Builder.CreateCall(
     CGM.getIntrinsic(llvm::Intrinsic::returnaddress),
     llvm::ConstantInt::get(Int32Ty, 0),
@@ -259,7 +259,7 @@ void CodeGenSubprogram::EmitFunctionInstrumentation(const char *Fn) {
 void CodeGenSubprogram::EmitMCountInstrumentation() {
   llvm::FunctionType *FTy = llvm::FunctionType::get(VoidTy, false);
 
-  llvm::Constant *MCountFn = CGM.CreateRuntimeFunction(FTy,
+  llvm::Constant *MCountFn = CGM.CreateRuntimeSubprogram(FTy,
                                                        Target.getMCountName());
   Builder.CreateCall(MCountFn);
 }
@@ -268,7 +268,7 @@ void CodeGenSubprogram::EmitMCountInstrumentation() {
 // information in the program executable. The argument information stored
 // includes the argument name, its type, the address and access qualifiers used.
 // FIXME: Add type, address, and access qualifiers.
-static void GenOpenCLArgMetadata(const FunctionDecl *FD, llvm::Function *Fn,
+static void GenOpenCLArgMetadata(const SubprogramDecl *FD, llvm::Function *Fn,
                                  CodeGenModule &CGM,llvm::LLVMContext &Context,
                                  llvm::SmallVector <llvm::Value*, 5> &kernelMDArgs) {
 
@@ -291,7 +291,7 @@ static void GenOpenCLArgMetadata(const FunctionDecl *FD, llvm::Function *Fn,
   kernelMDArgs.push_back(llvm::MDNode::get(Context, argNames));
 }
 
-void CodeGenSubprogram::EmitOpenCLKernelMetadata(const FunctionDecl *FD,
+void CodeGenSubprogram::EmitOpenCLKernelMetadata(const SubprogramDecl *FD,
                                                llvm::Function *Fn)
 {
   if (!FD->hasAttr<OpenCLKernelAttr>())
@@ -333,10 +333,10 @@ void CodeGenSubprogram::EmitOpenCLKernelMetadata(const FunctionDecl *FD,
   OpenCLKernelMetadata->addOperand(kernelMDNode);
 }
 
-void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
+void CodeGenSubprogram::StartSubprogram(GlobalDecl GD, QualType RetTy,
                                     llvm::Function *Fn,
-                                    const CGFunctionInfo &FnInfo,
-                                    const FunctionArgList &Args,
+                                    const CGSubprogramInfo &FnInfo,
+                                    const SubprogramArgList &Args,
                                     SourceLocation StartLoc) {
   const Decl *D = GD.getDecl();
 
@@ -345,13 +345,13 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
   FnRetTy = RetTy;
   CurFn = Fn;
   CurFnInfo = &FnInfo;
-  assert(CurFn->isDeclaration() && "Function already has body?");
+  assert(CurFn->isDeclaration() && "Subprogram already has body?");
 
   // Pass inline keyword to optimizer if it appears explicitly on any
   // declaration.
   if (!CGM.getCodeGenOpts().NoInline)
-    if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D))
-      for (FunctionDecl::redecl_iterator RI = FD->redecls_begin(),
+    if (const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(D))
+      for (SubprogramDecl::redecl_iterator RI = FD->redecls_begin(),
              RE = FD->redecls_end(); RI != RE; ++RI)
         if (RI->isInlineSpecified()) {
           Fn->addFnAttr(llvm::Attribute::InlineHint);
@@ -360,7 +360,7 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
 
   if (getLangOpts().OpenCL) {
     // Add metadata for a kernel function.
-    if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D))
+    if (const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(D))
       EmitOpenCLKernelMetadata(FD, Fn);
   }
 
@@ -382,23 +382,23 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
   if (CGDebugInfo *DI = getDebugInfo()) {
     unsigned NumArgs = 0;
     QualType *ArgsArray = new QualType[Args.size()];
-    for (FunctionArgList::const_iterator i = Args.begin(), e = Args.end();
+    for (SubprogramArgList::const_iterator i = Args.begin(), e = Args.end();
 	 i != e; ++i) {
       ArgsArray[NumArgs++] = (*i)->getType();
     }
 
     QualType FnType =
-      getContext().getFunctionType(RetTy, ArgsArray, NumArgs,
-                                   FunctionProtoType::ExtProtoInfo());
+      getContext().getSubprogramType(RetTy, ArgsArray, NumArgs,
+                                   SubprogramProtoType::ExtProtoInfo());
 
     delete[] ArgsArray;
 
     DI->setLocation(StartLoc);
-    DI->EmitFunctionStart(GD, FnType, CurFn, Builder);
+    DI->EmitSubprogramStart(GD, FnType, CurFn, Builder);
   }
 
-  if (ShouldInstrumentFunction())
-    EmitFunctionInstrumentation("__cyg_profile_func_enter");
+  if (ShouldInstrumentSubprogram())
+    EmitSubprogramInstrumentation("__cyg_profile_func_enter");
 
   if (CGM.getCodeGenOpts().InstrumentForProfiling)
     EmitMCountInstrumentation();
@@ -426,10 +426,10 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
   EmitStartEHSpec(CurCodeDecl);
 
   PrologueCleanupDepth = EHStack.stable_begin();
-  EmitFunctionProlog(*CurFnInfo, CurFn, Args);
+  EmitSubprogramProlog(*CurFnInfo, CurFn, Args);
 
   if (D && isa<CXXMethodDecl>(D) && cast<CXXMethodDecl>(D)->isInstance()) {
-    CGM.getFortranABI().EmitInstanceFunctionProlog(*this);
+    CGM.getFortranABI().EmitInstanceSubprogramProlog(*this);
     const CXXMethodDecl *MD = cast<CXXMethodDecl>(D);
     if (MD->getParent()->isLambda() &&
         MD->getOverloadedOperator() == OO_Call) {
@@ -456,7 +456,7 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
 
   // If any of the arguments have a variably modified type, make sure to
   // emit the type size.
-  for (FunctionArgList::const_iterator i = Args.begin(), e = Args.end();
+  for (SubprogramArgList::const_iterator i = Args.begin(), e = Args.end();
        i != e; ++i) {
     const VarDecl *VD = *i;
 
@@ -477,8 +477,8 @@ void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
     DI->EmitLocation(Builder, StartLoc);
 }
 
-void CodeGenSubprogram::EmitFunctionBody(FunctionArgList &Args) {
-  const FunctionDecl *FD = cast<FunctionDecl>(CurGD.getDecl());
+void CodeGenSubprogram::EmitSubprogramBody(SubprogramArgList &Args) {
+  const SubprogramDecl *FD = cast<SubprogramDecl>(CurGD.getDecl());
   assert(FD->getBody());
   EmitStmt(FD->getBody());
 }
@@ -504,19 +504,19 @@ static void TryMarkNoThrow(llvm::Function *F) {
 }
 
 void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
-                                   const CGFunctionInfo &FnInfo) {
-  const FunctionDecl *FD = cast<FunctionDecl>(GD.getDecl());
+                                   const CGSubprogramInfo &FnInfo) {
+  const SubprogramDecl *FD = cast<SubprogramDecl>(GD.getDecl());
 
   // Check if we should generate debug info for this function.
   if (!FD->hasAttr<NoDebugAttr>())
     maybeInitializeDebugInfo();
 
-  FunctionArgList Args;
+  SubprogramArgList Args;
   QualType ResTy = FD->getResultType();
 
   CurGD = GD;
   if (isa<CXXMethodDecl>(FD) && cast<CXXMethodDecl>(FD)->isInstance())
-    CGM.getFortranABI().BuildInstanceFunctionParams(*this, ResTy, Args);
+    CGM.getFortranABI().BuildInstanceSubprogramParams(*this, ResTy, Args);
 
   for (unsigned i = 0, e = FD->getNumParams(); i != e; ++i)
     Args.push_back(FD->getParamDecl(i));
@@ -525,7 +525,7 @@ void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
   if (Stmt *Body = FD->getBody()) BodyRange = Body->getSourceRange();
 
   // Emit the standard function prologue.
-  StartFunction(GD, ResTy, Fn, FnInfo, Args, BodyRange.getBegin());
+  StartSubprogram(GD, ResTy, Fn, FnInfo, Args, BodyRange.getBegin());
 
   // Generate the body of the function.
   if (isa<CXXDestructorDecl>(FD))
@@ -545,10 +545,10 @@ void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
              cast<CXXMethodDecl>(FD)->isLambdaStaticInvoker()) {
     // The lambda "__invoke" function is special, because it forwards or
     // clones the body of the function call operator (but is actually static).
-    EmitLambdaStaticInvokeFunction(cast<CXXMethodDecl>(FD));
+    EmitLambdaStaticInvokeSubprogram(cast<CXXMethodDecl>(FD));
   }
   else
-    EmitFunctionBody(Args);
+    EmitSubprogramBody(Args);
 
   // C++11 [stmt.return]p2:
   //   Flowing off the end of a function [...] results in undefined behavior in
@@ -569,7 +569,7 @@ void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
   }
 
   // Emit the standard function epilogue.
-  FinishFunction(BodyRange.getEnd());
+  FinishSubprogram(BodyRange.getEnd());
 
   // If we haven't marked the function nothrow through other means, do
   // a quick pass now to see if we can.
@@ -1164,9 +1164,9 @@ void CodeGenSubprogram::EmitVariablyModifiedType(QualType type) {
       break;
     }
 
-    case Type::FunctionProto:
-    case Type::FunctionNoProto:
-      type = cast<FunctionType>(ty)->getResultType();
+    case Type::SubprogramProto:
+    case Type::SubprogramNoProto:
+      type = cast<SubprogramType>(ty)->getResultType();
       break;
 
     case Type::Paren:

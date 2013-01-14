@@ -99,7 +99,7 @@ private:
 public:
   ExprEngine(AnalysisManager &mgr, bool gcEnabled,
              SetOfConstDecls *VisitedCalleesIn,
-             FunctionSummariesTy *FS,
+             SubprogramSummariesTy *FS,
              InliningModes HowToInlineIn);
 
   ~ExprEngine();
@@ -232,11 +232,11 @@ public:
 
   /// Called by CoreEngine.  Used to generate end-of-path
   /// nodes when the control reaches the end of a function.
-  void processEndOfFunction(NodeBuilderContext& BC,
+  void processEndOfSubprogram(NodeBuilderContext& BC,
                             ExplodedNode *Pred);
 
   /// Remove dead bindings/symbols before exiting a function.
-  void removeDeadOnEndOfFunction(NodeBuilderContext& BC,
+  void removeDeadOnEndOfSubprogram(NodeBuilderContext& BC,
                                  ExplodedNode *Pred,
                                  ExplodedNodeSet &Dst);
 
@@ -288,7 +288,7 @@ public:
   SymbolManager& getSymbolManager() { return SymMgr; }
   const SymbolManager& getSymbolManager() const { return SymMgr; }
 
-  // Functions for external checking of whether we have unfinished work
+  // Subprograms for external checking of whether we have unfinished work
   bool wasBlocksExhausted() const { return Engine.wasBlocksExhausted(); }
   bool hasEmptyWorkList() const { return !Engine.getWorkList()->hasWork(); }
   bool hasWorkRemaining() const { return Engine.hasWorkRemaining(); }

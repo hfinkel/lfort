@@ -998,7 +998,7 @@ class IsDefinitionMatcher : public SingleNodeMatcherInterface<T> {
   TOOLING_COMPILE_ASSERT(
     (llvm::is_base_of<TagDecl, T>::value) ||
     (llvm::is_base_of<VarDecl, T>::value) ||
-    (llvm::is_base_of<FunctionDecl, T>::value),
+    (llvm::is_base_of<SubprogramDecl, T>::value),
     is_definition_requires_isThisDeclarationADefinition_method);
 public:
   virtual bool matchesNode(const T &Node) const {
@@ -1006,11 +1006,11 @@ public:
   }
 };
 
-/// \brief Matches on template instantiations for FunctionDecl, VarDecl or
+/// \brief Matches on template instantiations for SubprogramDecl, VarDecl or
 /// CXXRecordDecl nodes.
 template <typename T>
 class IsTemplateInstantiationMatcher : public MatcherInterface<T> {
-  TOOLING_COMPILE_ASSERT((llvm::is_base_of<FunctionDecl, T>::value) ||
+  TOOLING_COMPILE_ASSERT((llvm::is_base_of<SubprogramDecl, T>::value) ||
                          (llvm::is_base_of<VarDecl, T>::value) ||
                          (llvm::is_base_of<CXXRecordDecl, T>::value),
                          requires_getTemplateSpecializationKind_method);
@@ -1025,11 +1025,11 @@ class IsTemplateInstantiationMatcher : public MatcherInterface<T> {
   }
 };
 
-/// \brief Matches on explicit template specializations for FunctionDecl,
+/// \brief Matches on explicit template specializations for SubprogramDecl,
 /// VarDecl or CXXRecordDecl nodes.
 template <typename T>
 class IsExplicitTemplateSpecializationMatcher : public MatcherInterface<T> {
-  TOOLING_COMPILE_ASSERT((llvm::is_base_of<FunctionDecl, T>::value) ||
+  TOOLING_COMPILE_ASSERT((llvm::is_base_of<SubprogramDecl, T>::value) ||
                          (llvm::is_base_of<VarDecl, T>::value) ||
                          (llvm::is_base_of<CXXRecordDecl, T>::value),
                          requires_getTemplateSpecializationKind_method);
@@ -1191,13 +1191,13 @@ template <typename T>
 class TypeTraverseMatcher : public MatcherInterface<T> {
 public:
   explicit TypeTraverseMatcher(const Matcher<QualType> &InnerMatcher,
-                               QualType (T::*TraverseFunction)() const)
-      : InnerMatcher(InnerMatcher), TraverseFunction(TraverseFunction) {}
+                               QualType (T::*TraverseSubprogram)() const)
+      : InnerMatcher(InnerMatcher), TraverseSubprogram(TraverseSubprogram) {}
 
   virtual bool matches(const T &Node,
                        ASTMatchFinder *Finder,
                        BoundNodesTreeBuilder *Builder) const {
-    QualType NextNode = (Node.*TraverseFunction)();
+    QualType NextNode = (Node.*TraverseSubprogram)();
     if (NextNode.isNull())
       return false;
     return InnerMatcher.matches(NextNode, Finder, Builder);
@@ -1205,7 +1205,7 @@ public:
 
 private:
   const Matcher<QualType> InnerMatcher;
-  QualType (T::*TraverseFunction)() const;
+  QualType (T::*TraverseSubprogram)() const;
 };
 
 /// \brief Matches nodes of type \c T in a ..Loc hierarchy, for which the inner
@@ -1215,13 +1215,13 @@ template <typename T>
 class TypeLocTraverseMatcher : public MatcherInterface<T> {
 public:
   explicit TypeLocTraverseMatcher(const Matcher<TypeLoc> &InnerMatcher,
-                                  TypeLoc (T::*TraverseFunction)() const)
-      : InnerMatcher(InnerMatcher), TraverseFunction(TraverseFunction) {}
+                                  TypeLoc (T::*TraverseSubprogram)() const)
+      : InnerMatcher(InnerMatcher), TraverseSubprogram(TraverseSubprogram) {}
 
   virtual bool matches(const T &Node,
                        ASTMatchFinder *Finder,
                        BoundNodesTreeBuilder *Builder) const {
-    TypeLoc NextNode = (Node.*TraverseFunction)();
+    TypeLoc NextNode = (Node.*TraverseSubprogram)();
     if (!NextNode)
       return false;
     return InnerMatcher.matches(NextNode, Finder, Builder);
@@ -1229,7 +1229,7 @@ public:
 
 private:
   const Matcher<TypeLoc> InnerMatcher;
-  TypeLoc (T::*TraverseFunction)() const;
+  TypeLoc (T::*TraverseSubprogram)() const;
 };
 
 template <typename T, typename InnerT>

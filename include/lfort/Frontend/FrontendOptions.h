@@ -132,7 +132,7 @@ public:
   unsigned FixToTemporaries : 1;           ///< Apply fixes to temporary files.
   unsigned ARCMTMigrateEmitARCErrors : 1;  /// Emit ARC errors even if the
                                            /// migrator can fix them
-  unsigned SkipFunctionBodies : 1;         ///< Skip over function bodies to
+  unsigned SkipSubprogramBodies : 1;         ///< Skip over function bodies to
                                            /// speed up parsing in cases you do
                                            /// not need them (e.g. with code
                                            /// completion).
@@ -208,7 +208,7 @@ public:
     ShowStats(false), ShowTimers(false), ShowVersion(false),
     FixWhatYouCan(false), FixOnlyWarnings(false), FixAndRecompile(false),
     FixToTemporaries(false), ARCMTMigrateEmitARCErrors(false),
-    SkipFunctionBodies(false), ARCMTAction(ARCMT_None),
+    SkipSubprogramBodies(false), ARCMTAction(ARCMT_None),
     ObjCMTAction(ObjCMT_None), ProgramAction(frontend::ParseSyntaxOnly)
   {}
 

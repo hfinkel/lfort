@@ -294,7 +294,7 @@ TEST(DeclPrinter, TestCXXRecordDecl11) {
     // Should be: with semicolon, with { ... }
 }
 
-TEST(DeclPrinter, TestFunctionDecl1) {
+TEST(DeclPrinter, TestSubprogramDecl1) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A();",
     "A",
@@ -302,7 +302,7 @@ TEST(DeclPrinter, TestFunctionDecl1) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl2) {
+TEST(DeclPrinter, TestSubprogramDecl2) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A() {}",
     "A",
@@ -310,7 +310,7 @@ TEST(DeclPrinter, TestFunctionDecl2) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl3) {
+TEST(DeclPrinter, TestSubprogramDecl3) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void Z();"
     "void A() { Z(); }",
@@ -319,7 +319,7 @@ TEST(DeclPrinter, TestFunctionDecl3) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl4) {
+TEST(DeclPrinter, TestSubprogramDecl4) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "extern void A();",
     "A",
@@ -327,7 +327,7 @@ TEST(DeclPrinter, TestFunctionDecl4) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl5) {
+TEST(DeclPrinter, TestSubprogramDecl5) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "static void A();",
     "A",
@@ -335,7 +335,7 @@ TEST(DeclPrinter, TestFunctionDecl5) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl6) {
+TEST(DeclPrinter, TestSubprogramDecl6) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "inline void A();",
     "A",
@@ -343,7 +343,7 @@ TEST(DeclPrinter, TestFunctionDecl6) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl7) {
+TEST(DeclPrinter, TestSubprogramDecl7) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "constexpr int A(int a);",
     "A",
@@ -351,7 +351,7 @@ TEST(DeclPrinter, TestFunctionDecl7) {
     // WRONG; Should be: "constexpr int A(int a);"
 }
 
-TEST(DeclPrinter, TestFunctionDecl8) {
+TEST(DeclPrinter, TestSubprogramDecl8) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A(int a);",
     "A",
@@ -359,7 +359,7 @@ TEST(DeclPrinter, TestFunctionDecl8) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl9) {
+TEST(DeclPrinter, TestSubprogramDecl9) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A(...);",
     "A",
@@ -367,7 +367,7 @@ TEST(DeclPrinter, TestFunctionDecl9) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl10) {
+TEST(DeclPrinter, TestSubprogramDecl10) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A(int a, ...);",
     "A",
@@ -375,7 +375,7 @@ TEST(DeclPrinter, TestFunctionDecl10) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl11) {
+TEST(DeclPrinter, TestSubprogramDecl11) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "typedef long size_t;"
     "typedef int *pInt;"
@@ -385,7 +385,7 @@ TEST(DeclPrinter, TestFunctionDecl11) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl12) {
+TEST(DeclPrinter, TestSubprogramDecl12) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void A(int a, int b = 0);",
     "A",
@@ -393,7 +393,7 @@ TEST(DeclPrinter, TestFunctionDecl12) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl13) {
+TEST(DeclPrinter, TestSubprogramDecl13) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "void (*A(int a))(int b);",
     "A",
@@ -401,7 +401,7 @@ TEST(DeclPrinter, TestFunctionDecl13) {
     // Should be: with semicolon, with parameter name (?)
 }
 
-TEST(DeclPrinter, TestFunctionDecl14) {
+TEST(DeclPrinter, TestSubprogramDecl14) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "template<typename T>"
     "void A(T t) { }"
@@ -569,7 +569,7 @@ TEST(DeclPrinter, TestCXXConversionDecl3) {
     // WRONG; Should be: "operator Z();"
 }
 
-TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction1) {
+TEST(DeclPrinter, TestCXXMethodDecl_AllocationSubprogram1) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "namespace std { typedef decltype(sizeof(int)) size_t; }"
     "struct Z {"
@@ -580,7 +580,7 @@ TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction1) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction2) {
+TEST(DeclPrinter, TestCXXMethodDecl_AllocationSubprogram2) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "namespace std { typedef decltype(sizeof(int)) size_t; }"
     "struct Z {"
@@ -591,7 +591,7 @@ TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction2) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction3) {
+TEST(DeclPrinter, TestCXXMethodDecl_AllocationSubprogram3) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "struct Z {"
     "  void operator delete(void *);"
@@ -601,7 +601,7 @@ TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction3) {
     // Should be: with semicolon, without noexcept?
 }
 
-TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction4) {
+TEST(DeclPrinter, TestCXXMethodDecl_AllocationSubprogram4) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "struct Z {"
     "  void operator delete(void *);"
@@ -611,7 +611,7 @@ TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction4) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestCXXMethodDecl_AllocationFunction5) {
+TEST(DeclPrinter, TestCXXMethodDecl_AllocationSubprogram5) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "struct Z {"
     "  void operator delete[](void *);"
@@ -777,7 +777,7 @@ TEST(DeclPrinter, TestCXXMethodDecl_RefQualifier2) {
     // WRONG; Should be: "void A(int a) &&;"
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification1) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification1) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "struct Z {"
     "  void A(int a) throw();"
@@ -787,7 +787,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification1) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification2) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification2) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "struct Z {"
     "  void A(int a) throw(int);"
@@ -797,7 +797,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification2) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification3) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification3) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "class ZZ {};"
     "struct Z {"
@@ -808,7 +808,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification3) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification4) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification4) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "struct Z {"
     "  void A(int a) noexcept;"
@@ -818,7 +818,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification4) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification5) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification5) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "struct Z {"
     "  void A(int a) noexcept(true);"
@@ -828,7 +828,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification5) {
     // WRONG; Should be: "void A(int a) noexcept(true);"
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification6) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification6) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "struct Z {"
     "  void A(int a) noexcept(1 < 2);"
@@ -838,7 +838,7 @@ TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification6) {
     // WRONG; Should be: "void A(int a) noexcept(1 < 2);"
 }
 
-TEST(DeclPrinter, TestFunctionDecl_ExceptionSpecification7) {
+TEST(DeclPrinter, TestSubprogramDecl_ExceptionSpecification7) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "template<int N>"
     "struct Z {"
@@ -1023,7 +1023,7 @@ TEST(DeclPrinter, TestClassTemplateSpecializationDecl1) {
     // WRONG; Should be: "template<> struct A<int> { ... }"
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl1) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl1) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "template<typename T>"
     "void A(T &t);",
@@ -1032,7 +1032,7 @@ TEST(DeclPrinter, TestFunctionTemplateDecl1) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl2) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl2) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "template<typename T>"
     "void A(T &t) { }",
@@ -1041,7 +1041,7 @@ TEST(DeclPrinter, TestFunctionTemplateDecl2) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl3) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl3) {
   ASSERT_TRUE(PrintedDeclCXX11Matches(
     "template<typename... T>"
     "void A(T... a);",
@@ -1052,7 +1052,7 @@ TEST(DeclPrinter, TestFunctionTemplateDecl3) {
     // Should be: with semicolon.
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl4) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl4) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "struct Z { template<typename T> void A(T t); };",
     functionTemplateDecl(hasName("A")).bind("id"),
@@ -1060,7 +1060,7 @@ TEST(DeclPrinter, TestFunctionTemplateDecl4) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl5) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl5) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "struct Z { template<typename T> void A(T t) {} };",
     functionTemplateDecl(hasName("A")).bind("id"),
@@ -1068,7 +1068,7 @@ TEST(DeclPrinter, TestFunctionTemplateDecl5) {
     // Should be: with semicolon
 }
 
-TEST(DeclPrinter, TestFunctionTemplateDecl6) {
+TEST(DeclPrinter, TestSubprogramTemplateDecl6) {
   ASSERT_TRUE(PrintedDeclCXX98Matches(
     "template<typename T >struct Z {"
     "  template<typename U> void A(U t) {}"

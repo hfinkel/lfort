@@ -51,7 +51,7 @@ class IdentifierArgument<string name> : Argument<name>;
 class IntArgument<string name> : Argument<name>;
 class StringArgument<string name> : Argument<name>;
 class ExprArgument<string name> : Argument<name>;
-class FunctionArgument<string name> : Argument<name>;
+class SubprogramArgument<string name> : Argument<name>;
 class TypeArgument<string name> : Argument<name>;
 class UnsignedArgument<string name> : Argument<name>;
 class SourceLocArgument<string name> : Argument<name>;
@@ -210,7 +210,7 @@ def Bounded : Attr {
 def CarriesDependency : InheritableParamAttr {
   let Spellings = [GNU<"carries_dependency">, CXX11<"","carries_dependency">,
                    CXX11<"std","carries_dependency">];
-  let Subjects = [ParmVar, Function];
+  let Subjects = [ParmVar, Subprogram];
 }
 
 def CDecl : InheritableAttr {
@@ -223,7 +223,7 @@ def CDecl : InheritableAttr {
 // '#pragma lfort arc_cf_code_audited' rather than explicitly.
 def CFAuditedTransfer : InheritableAttr {
   let Spellings = [GNU<"cf_audited_transfer">];
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
 // cf_unknown_transfer is an explicit opt-out of cf_audited_transfer.
@@ -231,17 +231,17 @@ def CFAuditedTransfer : InheritableAttr {
 // transfer semantics.
 def CFUnknownTransfer : InheritableAttr {
   let Spellings = [GNU<"cf_unknown_transfer">];
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
 def CFReturnsRetained : InheritableAttr {
   let Spellings = [GNU<"cf_returns_retained">];
-  let Subjects = [ObjCMethod, Function];
+  let Subjects = [ObjCMethod, Subprogram];
 }
 
 def CFReturnsNotRetained : InheritableAttr {
   let Spellings = [GNU<"cf_returns_not_retained">];
-  let Subjects = [ObjCMethod, Function];
+  let Subjects = [ObjCMethod, Subprogram];
 }
 
 def CFConsumed : InheritableParamAttr {
@@ -251,7 +251,7 @@ def CFConsumed : InheritableParamAttr {
 
 def Cleanup : InheritableAttr {
   let Spellings = [GNU<"cleanup">];
-  let Args = [FunctionArgument<"FunctionDecl">];
+  let Args = [SubprogramArgument<"SubprogramDecl">];
 }
 
 def Cold : InheritableAttr {
@@ -338,7 +338,7 @@ def Final : InheritableAttr {
 
 def MinSize : InheritableAttr {
   let Spellings = [GNU<"minsize">];
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
 def Format : InheritableAttr {
@@ -458,12 +458,12 @@ def NoReturn : InheritableAttr {
   let Spellings = [GNU<"noreturn">, CXX11<"","noreturn">,
                    CXX11<"std","noreturn">];
   // FIXME: Does GCC allow this on the function instead?
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
-def NoInstrumentFunction : InheritableAttr {
+def NoInstrumentSubprogram : InheritableAttr {
   let Spellings = [GNU<"no_instrument_function">];
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
 def NoThrow : InheritableAttr {
@@ -478,17 +478,17 @@ def NSBridged : InheritableAttr {
 
 def NSReturnsRetained : InheritableAttr {
   let Spellings = [GNU<"ns_returns_retained">];
-  let Subjects = [ObjCMethod, Function];
+  let Subjects = [ObjCMethod, Subprogram];
 }
 
 def NSReturnsNotRetained : InheritableAttr {
   let Spellings = [GNU<"ns_returns_not_retained">];
-  let Subjects = [ObjCMethod, Function];
+  let Subjects = [ObjCMethod, Subprogram];
 }
 
 def NSReturnsAutoreleased : InheritableAttr {
   let Spellings = [GNU<"ns_returns_autoreleased">];
-  let Subjects = [ObjCMethod, Function];
+  let Subjects = [ObjCMethod, Subprogram];
 }
 
 def NSConsumesSelf : InheritableAttr {
@@ -772,14 +772,14 @@ def AcquiredBefore : InheritableAttr {
   let TemplateDependent = 1;
 }
 
-def ExclusiveLockFunction : InheritableAttr {
+def ExclusiveLockSubprogram : InheritableAttr {
   let Spellings = [GNU<"exclusive_lock_function">];
   let Args = [VariadicExprArgument<"Args">];
   let LateParsed = 1;
   let TemplateDependent = 1;
 }
 
-def SharedLockFunction : InheritableAttr {
+def SharedLockSubprogram : InheritableAttr {
   let Spellings = [GNU<"shared_lock_function">];
   let Args = [VariadicExprArgument<"Args">];
   let LateParsed = 1;
@@ -788,7 +788,7 @@ def SharedLockFunction : InheritableAttr {
 
 // The first argument is an integer or boolean value specifying the return value
 // of a successful lock acquisition.
-def ExclusiveTrylockFunction : InheritableAttr {
+def ExclusiveTrylockSubprogram : InheritableAttr {
   let Spellings = [GNU<"exclusive_trylock_function">];
   let Args = [ExprArgument<"SuccessValue">, VariadicExprArgument<"Args">];
   let LateParsed = 1;
@@ -797,14 +797,14 @@ def ExclusiveTrylockFunction : InheritableAttr {
 
 // The first argument is an integer or boolean value specifying the return value
 // of a successful lock acquisition.
-def SharedTrylockFunction : InheritableAttr {
+def SharedTrylockSubprogram : InheritableAttr {
   let Spellings = [GNU<"shared_trylock_function">];
   let Args = [ExprArgument<"SuccessValue">, VariadicExprArgument<"Args">];
   let LateParsed = 1;
   let TemplateDependent = 1;
 }
 
-def UnlockFunction : InheritableAttr {
+def UnlockSubprogram : InheritableAttr {
   let Spellings = [GNU<"unlock_function">];
   let Args = [VariadicExprArgument<"Args">];
   let LateParsed = 1;
@@ -848,7 +848,7 @@ def ArgumentWithTypeTag : InheritableAttr {
               UnsignedArgument<"ArgumentIdx">,
               UnsignedArgument<"TypeTagIdx">,
               BoolArgument<"IsPointer">];
-  let Subjects = [Function];
+  let Subjects = [Subprogram];
 }
 
 def TypeTagForDatatype : InheritableAttr {

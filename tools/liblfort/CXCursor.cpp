@@ -361,8 +361,8 @@ CXCursor cxcursor::MakeCXCursor(Stmt *S, Decl *Parent, CXTranslationUnit TU,
     K = CXCursor_CXXConstCastExpr;
     break;
 
-  case Stmt::CXXFunctionalCastExprClass:
-    K = CXCursor_CXXFunctionalCastExpr;
+  case Stmt::CXXSubprogramalCastExprClass:
+    K = CXCursor_CXXSubprogramalCastExpr;
     break;
 
   case Stmt::CXXTypeidExprClass:
@@ -433,7 +433,7 @@ CXCursor cxcursor::MakeCXCursor(Stmt *S, Decl *Parent, CXTranslationUnit TU,
   case Stmt::DependentScopeDeclRefExprClass:
   case Stmt::SubstNonTypeTemplateParmExprClass:
   case Stmt::SubstNonTypeTemplateParmPackExprClass:
-  case Stmt::FunctionParmPackExprClass:
+  case Stmt::SubprogramParmPackExprClass:
   case Stmt::UnresolvedLookupExprClass:
     K = CXCursor_DeclRefExpr;
     break;
@@ -925,7 +925,7 @@ int lfort_Cursor_getNumArguments(CXCursor C) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (const ObjCMethodDecl *MD = dyn_cast_or_null<ObjCMethodDecl>(D))
       return MD->param_size();
-    if (const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D))
+    if (const SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(D))
       return FD->param_size();
   }
 
@@ -939,7 +939,7 @@ CXCursor lfort_Cursor_getArgument(CXCursor C, unsigned i) {
       if (i < MD->param_size())
         return cxcursor::MakeCXCursor(MD->param_begin()[i],
                                       cxcursor::getCursorTU(C));
-    } else if (FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D)) {
+    } else if (SubprogramDecl *FD = dyn_cast_or_null<SubprogramDecl>(D)) {
       if (i < FD->param_size())
         return cxcursor::MakeCXCursor(FD->param_begin()[i],
                                       cxcursor::getCursorTU(C));

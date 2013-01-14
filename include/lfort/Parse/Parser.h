@@ -189,10 +189,10 @@ class Parser : public CodeCompletionHandler {
   /// be NULL.
   bool ParsingInObjCContainer;
 
-  bool SkipFunctionBodies;
+  bool SkipSubprogramBodies;
 
 public:
-  Parser(Preprocessor &PP, Sema &Actions, bool SkipFunctionBodies);
+  Parser(Preprocessor &PP, Sema &Actions, bool SkipSubprogramBodies);
   ~Parser();
 
   const LangOptions &getLangOpts() const { return PP.getLangOpts(); }
@@ -646,10 +646,10 @@ private:
 
   /// \brief The kind of extra semi diagnostic to emit.
   enum ExtraSemiKind {
-    OutsideFunction = 0,
+    OutsideSubprogram = 0,
     InsideStruct = 1,
     InstanceVariableList = 2,
-    AfterMemberFunctionDefinition = 3
+    AfterMemberSubprogramDefinition = 3
   };
 
   /// \brief Consume any extra semi-colons until the end of the line.
@@ -1051,8 +1051,8 @@ private:
 
   /// \brief Contains a late templated function.
   /// Will be parsed at the end of the translation unit.
-  struct LateParsedTemplatedFunction {
-    explicit LateParsedTemplatedFunction(Decl *MD)
+  struct LateParsedTemplatedSubprogram {
+    explicit LateParsedTemplatedSubprogram(Decl *MD)
       : D(MD) {}
 
     CachedTokens Toks;
@@ -1061,14 +1061,14 @@ private:
     Decl *D;
   };
 
-  void LexTemplateFunctionForLateParsing(CachedTokens &Toks);
-  void ParseLateTemplatedFuncDef(LateParsedTemplatedFunction &LMT);
-  typedef llvm::DenseMap<const FunctionDecl*, LateParsedTemplatedFunction*>
+  void LexTemplateSubprogramForLateParsing(CachedTokens &Toks);
+  void ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT);
+  typedef llvm::DenseMap<const SubprogramDecl*, LateParsedTemplatedSubprogram*>
     LateParsedTemplateMapT;
   LateParsedTemplateMapT LateParsedTemplateMap;
 
-  static void LateTemplateParserCallback(void *P, const FunctionDecl *FD);
-  void LateTemplateParser(const FunctionDecl *FD);
+  static void LateTemplateParserCallback(void *P, const SubprogramDecl *FD);
+  void LateTemplateParser(const SubprogramDecl *FD);
 
   Sema::ParsingClassState
   PushParsingClass(Decl *TagOrTemplate, bool TopLevelClass, bool IsInterface);
@@ -1079,7 +1079,7 @@ private:
                                 ParsingDeclarator &D,
                                 const ParsedTemplateInfo &TemplateInfo,
                                 const VirtSpecifiers& VS,
-                                FunctionDefinitionKind DefinitionKind,
+                                SubprogramDefinitionKind DefinitionKind,
                                 ExprResult& Init);
   void ParseCXXNonStaticMemberInitializer(Decl *VarD);
   void ParseLexedAttributes(ParsingClass &Class);
@@ -1094,7 +1094,7 @@ private:
   void ParseLexedMemberInitializers(ParsingClass &Class);
   void ParseLexedMemberInitializer(LateParsedMemberInitializer &MI);
   void ParseLexedObjCMethodDefs(LexedMethod &LM, bool parseMethod);
-  bool ConsumeAndStoreFunctionPrologue(CachedTokens &Toks);
+  bool ConsumeAndStoreSubprogramPrologue(CachedTokens &Toks);
   bool ConsumeAndStoreUntil(tok::TokenKind T1,
                             CachedTokens &Toks,
                             bool StopAtSemi = true,
@@ -1118,16 +1118,16 @@ private:
   DeclGroupPtrTy ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
                                           ParsingDeclSpec *DS = 0);
   bool isDeclarationAfterDeclarator();
-  bool isStartOfFunctionDefinition(const ParsingDeclarator &Declarator);
-  DeclGroupPtrTy ParseDeclarationOrFunctionDefinition(
+  bool isStartOfSubprogramDefinition(const ParsingDeclarator &Declarator);
+  DeclGroupPtrTy ParseDeclarationOrSubprogramDefinition(
                                                   ParsedAttributesWithRange &attrs,
                                                   ParsingDeclSpec *DS = 0,
                                                   AccessSpecifier AS = AS_none);
-  DeclGroupPtrTy ParseDeclOrFunctionDefInternal(ParsedAttributesWithRange &attrs,
+  DeclGroupPtrTy ParseDeclOrSubprogramDefInternal(ParsedAttributesWithRange &attrs,
                                                 ParsingDeclSpec &DS,
                                                 AccessSpecifier AS);
 
-  Decl *ParseFunctionDefinition(ParsingDeclarator &D,
+  Decl *ParseSubprogramDefinition(ParsingDeclarator &D,
                  const ParsedTemplateInfo &TemplateInfo = ParsedTemplateInfo(),
                  LateParsedAttrList *LateParsedAttrs = 0);
   void ParseKNRParamDeclarations(Declarator &D);
@@ -1158,12 +1158,12 @@ private:
   struct ObjCImplParsingDataRAII {
     Parser &P;
     Decl *Dcl;
-    bool HasCFunction;
+    bool HasCSubprogram;
     typedef SmallVector<LexedMethod*, 8> LateParsedObjCMethodContainer;
     LateParsedObjCMethodContainer LateParsedObjCMethods;
 
     ObjCImplParsingDataRAII(Parser &parser, Decl *D)
-      : P(parser), Dcl(D), HasCFunction(false) {
+      : P(parser), Dcl(D), HasCSubprogram(false) {
       P.CurParsedObjCImpl = this;
       Finished = false;
     }
@@ -1176,7 +1176,7 @@ private:
     bool Finished;
   };
   ObjCImplParsingDataRAII *CurParsedObjCImpl;
-  void StashAwayMethodOrFunctionBodyTokens(Decl *MDecl);
+  void StashAwayMethodOrSubprogramBodyTokens(Decl *MDecl);
 
   DeclGroupPtrTy ParseObjCAtImplementationDeclaration(SourceLocation AtLoc);
   DeclGroupPtrTy ParseObjCAtEndDeclaration(SourceRange atEnd);
@@ -1365,7 +1365,7 @@ private:
                                   SmallVectorImpl<SourceRange> &Ranges);
 
   //===--------------------------------------------------------------------===//
-  // C++0x 8: Function declaration trailing-return-type
+  // C++0x 8: Subprogram declaration trailing-return-type
   TypeResult ParseTrailingReturnType(SourceRange &Range);
 
   //===--------------------------------------------------------------------===//
@@ -1596,7 +1596,7 @@ private:
                                         ForRangeInit *FRI = 0);
   bool MightBeDeclarator(unsigned Context);
   DeclGroupPtrTy ParseDeclGroup(ParsingDeclSpec &DS, unsigned Context,
-                                bool AllowFunctionDefinitions,
+                                bool AllowSubprogramDefinitions,
                                 SourceLocation *DeclEnd = 0,
                                 ForRangeInit *FRI = 0);
   Decl *ParseDeclarationAfterDeclarator(Declarator &D,
@@ -1604,14 +1604,14 @@ private:
   bool ParseAsmAttributesAfterDeclarator(Declarator &D);
   Decl *ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
                const ParsedTemplateInfo &TemplateInfo = ParsedTemplateInfo());
-  Decl *ParseFunctionStatementBody(Decl *Decl, ParseScope &BodyScope);
-  Decl *ParseFunctionTryBlock(Decl *Decl, ParseScope &BodyScope);
+  Decl *ParseSubprogramStatementBody(Decl *Decl, ParseScope &BodyScope);
+  Decl *ParseSubprogramTryBlock(Decl *Decl, ParseScope &BodyScope);
 
   /// \brief When in code-completion, skip parsing of the function/method body
   /// unless the body contains the code-completion point.
   ///
   /// \returns true if the function body was skipped.
-  bool trySkippingFunctionBody();
+  bool trySkippingSubprogramBody();
 
   bool ParseImplicitInt(DeclSpec &DS, CXXScopeSpec *SS,
                         const ParsedTemplateInfo &TemplateInfo,
@@ -1728,14 +1728,14 @@ private:
   /// Returns false if the statement is disambiguated as expression.
   bool isCXXSimpleDeclaration(bool AllowForRangeDecl);
 
-  /// isCXXFunctionDeclarator - Disambiguates between a function declarator or
+  /// isCXXSubprogramDeclarator - Disambiguates between a function declarator or
   /// a constructor-style initializer, when parsing declaration statements.
   /// Returns true for function declarator and false for constructor-style
   /// initializer. Sets 'IsAmbiguous' to true to indicate that this declaration 
   /// might be a constructor-style initializer.
   /// If during the disambiguation process a parsing error is encountered,
   /// the function returns true to let the declaration parsing code handle it.
-  bool isCXXFunctionDeclarator(bool *IsAmbiguous = 0);
+  bool isCXXSubprogramDeclarator(bool *IsAmbiguous = 0);
 
   /// isCXXConditionDeclaration - Disambiguates between a declaration or an
   /// expression for a condition of a if/switch/while/for statement.
@@ -1814,7 +1814,7 @@ private:
   TPResult TryParseInitDeclaratorList();
   TPResult TryParseDeclarator(bool mayBeAbstract, bool mayHaveIdentifier=true);
   TPResult TryParseParameterDeclarationClause(bool *InvalidAsDeclaration = 0);
-  TPResult TryParseFunctionDeclarator();
+  TPResult TryParseSubprogramDeclarator();
   TPResult TryParseBracketDeclarator();
 
 public:
@@ -2001,21 +2001,21 @@ private:
   /// ParseDeclarator - Parse and verify a newly-initialized declarator.
   void ParseDeclarator(Declarator &D);
   /// A function that parses a variant of direct-declarator.
-  typedef void (Parser::*DirectDeclParseFunction)(Declarator&);
+  typedef void (Parser::*DirectDeclParseSubprogram)(Declarator&);
   void ParseDeclaratorInternal(Declarator &D,
-                               DirectDeclParseFunction DirectDeclParser);
+                               DirectDeclParseSubprogram DirectDeclParser);
 
   void ParseTypeQualifierListOpt(DeclSpec &DS, bool GNUAttributesAllowed = true,
                                  bool CXX11AttributesAllowed = true);
   void ParseDirectDeclarator(Declarator &D);
   void ParseParenDeclarator(Declarator &D);
-  void ParseFunctionDeclarator(Declarator &D,
+  void ParseSubprogramDeclarator(Declarator &D,
                                ParsedAttributes &attrs,
                                BalancedDelimiterTracker &Tracker,
                                bool IsAmbiguous,
                                bool RequiresArg = false);
-  bool isFunctionDeclaratorIdentifierList();
-  void ParseFunctionDeclaratorIdentifierList(
+  bool isSubprogramDeclaratorIdentifierList();
+  void ParseSubprogramDeclaratorIdentifierList(
          Declarator &D,
          SmallVector<DeclaratorChunk::ParamInfo, 16> &ParamInfo);
   void ParseParameterDeclarationClause(
@@ -2081,14 +2081,14 @@ private:
                            ParsedAttributesWithRange &Attributes);
   void ParseCXXMemberSpecification(SourceLocation StartLoc, unsigned TagType,
                                    Decl *TagDecl);
-  ExprResult ParseCXXMemberInitializer(Decl *D, bool IsFunction,
+  ExprResult ParseCXXMemberInitializer(Decl *D, bool IsSubprogram,
                                        SourceLocation &EqualLoc);
   void ParseCXXClassMemberDeclaration(AccessSpecifier AS, AttributeList *Attr,
                 const ParsedTemplateInfo &TemplateInfo = ParsedTemplateInfo(),
                                  ParsingDeclRAIIObject *DiagsFromTParams = 0);
   void ParseConstructorInitializer(Decl *ConstructorDecl);
   MemInitResult ParseMemInitializer(Decl *ConstructorDecl);
-  void HandleMemberFunctionDeclDelays(Declarator& DeclaratorInfo,
+  void HandleMemberSubprogramDeclDelays(Declarator& DeclaratorInfo,
                                       Decl *ThisDecl);
 
   //===--------------------------------------------------------------------===//
@@ -2217,7 +2217,7 @@ public:
   DeclGroupPtrTy ParseUseStmt();
 
   DeclGroupPtrTy ParseSubroutine();
-  DeclGroupPtrTy ParseFunction();
+  DeclGroupPtrTy ParseSubprogram();
   DeclGroupPtrTy ParseSubmodule();
   DeclGroupPtrTy ParseBlockData();
   DeclGroupPtrTy ParseModule();

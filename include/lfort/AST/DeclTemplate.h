@@ -27,7 +27,7 @@ namespace lfort {
 class TemplateParameterList;
 class TemplateDecl;
 class RedeclarableTemplateDecl;
-class FunctionTemplateDecl;
+class SubprogramTemplateDecl;
 class ClassTemplateDecl;
 class ClassTemplatePartialSpecializationDecl;
 class TemplateTypeParmDecl;
@@ -268,24 +268,24 @@ public:
 };
 
 /// \brief Provides information about a function template specialization,
-/// which is a FunctionDecl that has been explicitly specialization or
+/// which is a SubprogramDecl that has been explicitly specialization or
 /// instantiated from a function template.
-class FunctionTemplateSpecializationInfo : public llvm::FoldingSetNode {
-  FunctionTemplateSpecializationInfo(FunctionDecl *FD,
-                                     FunctionTemplateDecl *Template,
+class SubprogramTemplateSpecializationInfo : public llvm::FoldingSetNode {
+  SubprogramTemplateSpecializationInfo(SubprogramDecl *FD,
+                                     SubprogramTemplateDecl *Template,
                                      TemplateSpecializationKind TSK,
                                      const TemplateArgumentList *TemplateArgs,
                        const ASTTemplateArgumentListInfo *TemplateArgsAsWritten,
                                      SourceLocation POI)
-  : Function(FD),
+  : Subprogram(FD),
     Template(Template, TSK - 1),
     TemplateArguments(TemplateArgs),
     TemplateArgumentsAsWritten(TemplateArgsAsWritten),
     PointOfInstantiation(POI) { }
 
 public:
-  static FunctionTemplateSpecializationInfo *
-  Create(ASTContext &C, FunctionDecl *FD, FunctionTemplateDecl *Template,
+  static SubprogramTemplateSpecializationInfo *
+  Create(ASTContext &C, SubprogramDecl *FD, SubprogramTemplateDecl *Template,
          TemplateSpecializationKind TSK,
          const TemplateArgumentList *TemplateArgs,
          const TemplateArgumentListInfo *TemplateArgsAsWritten,
@@ -293,13 +293,13 @@ public:
 
   /// \brief The function template specialization that this structure
   /// describes.
-  FunctionDecl *Function;
+  SubprogramDecl *Subprogram;
 
   /// \brief The function template from which this function template
   /// specialization was generated.
   ///
   /// The two bits are contain the top 4 values of TemplateSpecializationKind.
-  llvm::PointerIntPair<FunctionTemplateDecl *, 2> Template;
+  llvm::PointerIntPair<SubprogramTemplateDecl *, 2> Template;
 
   /// \brief The template arguments used to produce the function template
   /// specialization from the function template.
@@ -313,7 +313,7 @@ public:
   SourceLocation PointOfInstantiation;
 
   /// \brief Retrieve the template from which this function was specialized.
-  FunctionTemplateDecl *getTemplate() const { return Template.getPointer(); }
+  SubprogramTemplateDecl *getTemplate() const { return Template.getPointer(); }
 
   /// \brief Determine what kind of template specialization this is.
   TemplateSpecializationKind getTemplateSpecializationKind() const {
@@ -349,7 +349,7 @@ public:
   void Profile(llvm::FoldingSetNodeID &ID) {
     Profile(ID, TemplateArguments->data(),
             TemplateArguments->size(),
-            Function->getASTContext());
+            Subprogram->getASTContext());
   }
 
   static void
@@ -424,7 +424,7 @@ public:
 ///     friend void foo<>(T);
 ///   };
 /// \endcode
-class DependentFunctionTemplateSpecializationInfo {
+class DependentSubprogramTemplateSpecializationInfo {
   union {
     // Force sizeof to be a multiple of sizeof(void*) so that the
     // trailing data is aligned.
@@ -442,12 +442,12 @@ class DependentFunctionTemplateSpecializationInfo {
   /// The locations of the left and right angle brackets.
   SourceRange AngleLocs;
 
-  FunctionTemplateDecl * const *getTemplates() const {
-    return reinterpret_cast<FunctionTemplateDecl*const*>(this+1);
+  SubprogramTemplateDecl * const *getTemplates() const {
+    return reinterpret_cast<SubprogramTemplateDecl*const*>(this+1);
   }
 
 public:
-  DependentFunctionTemplateSpecializationInfo(
+  DependentSubprogramTemplateSpecializationInfo(
                                  const UnresolvedSetImpl &Templates,
                                  const TemplateArgumentListInfo &TemplateArgs);
 
@@ -458,7 +458,7 @@ public:
   }
 
   /// \brief Returns the i'th template candidate.
-  FunctionTemplateDecl *getTemplate(unsigned I) const {
+  SubprogramTemplateDecl *getTemplate(unsigned I) const {
     assert(I < getNumTemplates() && "template index out of range");
     return getTemplates()[I];
   }
@@ -648,7 +648,7 @@ public:
   /// };
   /// \endcode
   ///
-  /// \c X<int>::f is a FunctionTemplateDecl that describes the function
+  /// \c X<int>::f is a SubprogramTemplateDecl that describes the function
   /// template
   ///
   /// \code
@@ -656,8 +656,8 @@ public:
   /// \endcode
   ///
   /// which was itself created during the instantiation of \c X<int>. Calling
-  /// getInstantiatedFromMemberTemplate() on this FunctionTemplateDecl will
-  /// retrieve the FunctionTemplateDecl for the original template \c f within
+  /// getInstantiatedFromMemberTemplate() on this SubprogramTemplateDecl will
+  /// retrieve the SubprogramTemplateDecl for the original template \c f within
   /// the class template \c X<T>, i.e.,
   ///
   /// \code
@@ -692,17 +692,17 @@ public:
 };
 
 template <> struct RedeclarableTemplateDecl::
-SpecEntryTraits<FunctionTemplateSpecializationInfo> {
-  typedef FunctionDecl DeclType;
+SpecEntryTraits<SubprogramTemplateSpecializationInfo> {
+  typedef SubprogramDecl DeclType;
 
   static DeclType *
-  getMostRecentDecl(FunctionTemplateSpecializationInfo *I) {
-    return I->Function->getMostRecentDecl();
+  getMostRecentDecl(SubprogramTemplateSpecializationInfo *I) {
+    return I->Subprogram->getMostRecentDecl();
   }
 };
 
 /// Declaration of a template function.
-class FunctionTemplateDecl : public RedeclarableTemplateDecl {
+class SubprogramTemplateDecl : public RedeclarableTemplateDecl {
   static void DeallocateCommon(void *Ptr);
 
 protected:
@@ -713,7 +713,7 @@ protected:
 
     /// \brief The function template specializations for this function
     /// template, including explicit specializations and instantiations.
-    llvm::FoldingSetVector<FunctionTemplateSpecializationInfo> Specializations;
+    llvm::FoldingSetVector<SubprogramTemplateSpecializationInfo> Specializations;
 
     /// \brief The set of "injected" template arguments used within this
     /// function template.
@@ -725,9 +725,9 @@ protected:
     TemplateArgument *InjectedArgs;
   };
 
-  FunctionTemplateDecl(DeclContext *DC, SourceLocation L, DeclarationName Name,
+  SubprogramTemplateDecl(DeclContext *DC, SourceLocation L, DeclarationName Name,
                        TemplateParameterList *Params, NamedDecl *Decl)
-    : RedeclarableTemplateDecl(FunctionTemplate, DC, L, Name, Params, Decl) { }
+    : RedeclarableTemplateDecl(SubprogramTemplate, DC, L, Name, Params, Decl) { }
 
   CommonBase *newCommon(ASTContext &C);
 
@@ -735,11 +735,11 @@ protected:
     return static_cast<Common *>(RedeclarableTemplateDecl::getCommonPtr());
   }
 
-  friend class FunctionDecl;
+  friend class SubprogramDecl;
 
   /// \brief Retrieve the set of function template specializations of this
   /// function template.
-  llvm::FoldingSetVector<FunctionTemplateSpecializationInfo> &
+  llvm::FoldingSetVector<SubprogramTemplateSpecializationInfo> &
   getSpecializations() {
     return getCommonPtr()->Specializations;
   }
@@ -748,13 +748,13 @@ protected:
   ///
   /// \param InsertPos Insert position in the FoldingSetVector, must have been
   ///        retrieved by an earlier call to findSpecialization().
-  void addSpecialization(FunctionTemplateSpecializationInfo* Info,
+  void addSpecialization(SubprogramTemplateSpecializationInfo* Info,
                          void *InsertPos);
 
 public:
   /// Get the underlying function declaration of the template.
-  FunctionDecl *getTemplatedDecl() const {
-    return static_cast<FunctionDecl*>(TemplatedDecl);
+  SubprogramDecl *getTemplatedDecl() const {
+    return static_cast<SubprogramDecl*>(TemplatedDecl);
   }
 
   /// Returns whether this template declaration defines the primary
@@ -765,38 +765,38 @@ public:
 
   /// \brief Return the specialization with the provided arguments if it exists,
   /// otherwise return the insertion point.
-  FunctionDecl *findSpecialization(const TemplateArgument *Args,
+  SubprogramDecl *findSpecialization(const TemplateArgument *Args,
                                    unsigned NumArgs, void *&InsertPos);
 
-  FunctionTemplateDecl *getCanonicalDecl() {
-    return cast<FunctionTemplateDecl>(
+  SubprogramTemplateDecl *getCanonicalDecl() {
+    return cast<SubprogramTemplateDecl>(
              RedeclarableTemplateDecl::getCanonicalDecl());
   }
-  const FunctionTemplateDecl *getCanonicalDecl() const {
-    return cast<FunctionTemplateDecl>(
+  const SubprogramTemplateDecl *getCanonicalDecl() const {
+    return cast<SubprogramTemplateDecl>(
              RedeclarableTemplateDecl::getCanonicalDecl());
   }
 
   /// \brief Retrieve the previous declaration of this function template, or
   /// NULL if no such declaration exists.
-  FunctionTemplateDecl *getPreviousDecl() {
-    return cast_or_null<FunctionTemplateDecl>(
+  SubprogramTemplateDecl *getPreviousDecl() {
+    return cast_or_null<SubprogramTemplateDecl>(
              RedeclarableTemplateDecl::getPreviousDecl());
   }
 
   /// \brief Retrieve the previous declaration of this function template, or
   /// NULL if no such declaration exists.
-  const FunctionTemplateDecl *getPreviousDecl() const {
-    return cast_or_null<FunctionTemplateDecl>(
+  const SubprogramTemplateDecl *getPreviousDecl() const {
+    return cast_or_null<SubprogramTemplateDecl>(
              RedeclarableTemplateDecl::getPreviousDecl());
   }
 
-  FunctionTemplateDecl *getInstantiatedFromMemberTemplate() {
-    return cast_or_null<FunctionTemplateDecl>(
+  SubprogramTemplateDecl *getInstantiatedFromMemberTemplate() {
+    return cast_or_null<SubprogramTemplateDecl>(
              RedeclarableTemplateDecl::getInstantiatedFromMemberTemplate());
   }
 
-  typedef SpecIterator<FunctionTemplateSpecializationInfo> spec_iterator;
+  typedef SpecIterator<SubprogramTemplateSpecializationInfo> spec_iterator;
 
   spec_iterator spec_begin() {
     return makeSpecIterator(getSpecializations(), false);
@@ -816,18 +816,18 @@ public:
   std::pair<const TemplateArgument *, unsigned> getInjectedTemplateArgs();
 
   /// \brief Create a function template node.
-  static FunctionTemplateDecl *Create(ASTContext &C, DeclContext *DC,
+  static SubprogramTemplateDecl *Create(ASTContext &C, DeclContext *DC,
                                       SourceLocation L,
                                       DeclarationName Name,
                                       TemplateParameterList *Params,
                                       NamedDecl *Decl);
 
   /// \brief Create an empty function template node.
-  static FunctionTemplateDecl *CreateDeserialized(ASTContext &C, unsigned ID);
+  static SubprogramTemplateDecl *CreateDeserialized(ASTContext &C, unsigned ID);
 
   // Implement isa/cast/dyncast support
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
-  static bool classofKind(Kind K) { return K == FunctionTemplate; }
+  static bool classofKind(Kind K) { return K == SubprogramTemplate; }
 
   friend class ASTDeclReader;
   friend class ASTDeclWriter;
@@ -1221,7 +1221,7 @@ public:
   /// parameter pack.
   ///
   /// \code
-  /// template<template <class T> ...MetaFunctions> struct Apply;
+  /// template<template <class T> ...MetaSubprograms> struct Apply;
   /// \endcode
   bool isParameterPack() const { return ParameterPack; }
 
@@ -2139,18 +2139,18 @@ public:
 /// "template<> foo(int a)" will be saved in Specialization as a normal
 /// CXXMethodDecl. Then during an instantiation of class A, it will be
 /// transformed into an actual function specialization.
-class ClassScopeFunctionSpecializationDecl : public Decl {
+class ClassScopeSubprogramSpecializationDecl : public Decl {
   virtual void anchor();
 
-  ClassScopeFunctionSpecializationDecl(DeclContext *DC, SourceLocation Loc,
+  ClassScopeSubprogramSpecializationDecl(DeclContext *DC, SourceLocation Loc,
                                        CXXMethodDecl *FD, bool Args,
                                        TemplateArgumentListInfo TemplArgs)
-    : Decl(Decl::ClassScopeFunctionSpecialization, DC, Loc),
+    : Decl(Decl::ClassScopeSubprogramSpecialization, DC, Loc),
       Specialization(FD), HasExplicitTemplateArgs(Args),
       TemplateArgs(TemplArgs) {}
 
-  ClassScopeFunctionSpecializationDecl(EmptyShell Empty)
-    : Decl(Decl::ClassScopeFunctionSpecialization, Empty) {}
+  ClassScopeSubprogramSpecializationDecl(EmptyShell Empty)
+    : Decl(Decl::ClassScopeSubprogramSpecialization, Empty) {}
 
   CXXMethodDecl *Specialization;
   bool HasExplicitTemplateArgs;
@@ -2161,24 +2161,24 @@ public:
   bool hasExplicitTemplateArgs() const { return HasExplicitTemplateArgs; }
   const TemplateArgumentListInfo& templateArgs() const { return TemplateArgs; }
 
-  static ClassScopeFunctionSpecializationDecl *Create(ASTContext &C,
+  static ClassScopeSubprogramSpecializationDecl *Create(ASTContext &C,
                                                       DeclContext *DC,
                                                       SourceLocation Loc,
                                                       CXXMethodDecl *FD,
                                                    bool HasExplicitTemplateArgs,
                                         TemplateArgumentListInfo TemplateArgs) {
-    return new (C) ClassScopeFunctionSpecializationDecl(DC , Loc, FD,
+    return new (C) ClassScopeSubprogramSpecializationDecl(DC , Loc, FD,
                                                         HasExplicitTemplateArgs,
                                                         TemplateArgs);
   }
 
-  static ClassScopeFunctionSpecializationDecl *
+  static ClassScopeSubprogramSpecializationDecl *
   CreateDeserialized(ASTContext &Context, unsigned ID);
   
   // Implement isa/cast/dyncast/etc.
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
   static bool classofKind(Kind K) {
-    return K == Decl::ClassScopeFunctionSpecialization;
+    return K == Decl::ClassScopeSubprogramSpecialization;
   }
 
   friend class ASTDeclReader;
@@ -2186,8 +2186,8 @@ public:
 };
 
 /// Implementation of inline functions that require the template declarations
-inline AnyFunctionDecl::AnyFunctionDecl(FunctionTemplateDecl *FTD)
-  : Function(FTD) { }
+inline AnySubprogramDecl::AnySubprogramDecl(SubprogramTemplateDecl *FTD)
+  : Subprogram(FTD) { }
 
 } /* end of namespace lfort */
 

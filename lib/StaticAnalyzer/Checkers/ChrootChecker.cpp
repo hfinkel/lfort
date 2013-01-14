@@ -62,7 +62,7 @@ private:
 } // end anonymous namespace
 
 bool ChrootChecker::evalCall(const CallExpr *CE, CheckerContext &C) const {
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
   if (!FD)
     return false;
 
@@ -122,7 +122,7 @@ void ChrootChecker::Chdir(CheckerContext &C, const CallExpr *CE) const {
 
 // Check the jail state before any function call except chroot and chdir().
 void ChrootChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const {
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
   if (!FD)
     return;
 

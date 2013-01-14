@@ -168,9 +168,9 @@ private:
 
   /// Check if this is one of the functions which can allocate/reallocate memory 
   /// pointed to by one of its arguments.
-  bool isMemFunction(const FunctionDecl *FD, ASTContext &C) const;
-  bool isFreeFunction(const FunctionDecl *FD, ASTContext &C) const;
-  bool isAllocationFunction(const FunctionDecl *FD, ASTContext &C) const;
+  bool isMemSubprogram(const SubprogramDecl *FD, ASTContext &C) const;
+  bool isFreeSubprogram(const SubprogramDecl *FD, ASTContext &C) const;
+  bool isAllocationSubprogram(const SubprogramDecl *FD, ASTContext &C) const;
 
   static ProgramStateRef MallocMemReturnsAttr(CheckerContext &C,
                                               const CallExpr *CE,
@@ -378,22 +378,22 @@ void MallocChecker::initIdentifierInfo(ASTContext &Ctx) const {
   II_strndup = &Ctx.Idents.get("strndup");
 }
 
-bool MallocChecker::isMemFunction(const FunctionDecl *FD, ASTContext &C) const {
-  if (isFreeFunction(FD, C))
+bool MallocChecker::isMemSubprogram(const SubprogramDecl *FD, ASTContext &C) const {
+  if (isFreeSubprogram(FD, C))
     return true;
 
-  if (isAllocationFunction(FD, C))
+  if (isAllocationSubprogram(FD, C))
     return true;
 
   return false;
 }
 
-bool MallocChecker::isAllocationFunction(const FunctionDecl *FD,
+bool MallocChecker::isAllocationSubprogram(const SubprogramDecl *FD,
                                          ASTContext &C) const {
   if (!FD)
     return false;
 
-  if (FD->getKind() == Decl::Function) {
+  if (FD->getKind() == Decl::Subprogram) {
     IdentifierInfo *FunI = FD->getIdentifier();
     initIdentifierInfo(C);
 
@@ -413,11 +413,11 @@ bool MallocChecker::isAllocationFunction(const FunctionDecl *FD,
   return false;
 }
 
-bool MallocChecker::isFreeFunction(const FunctionDecl *FD, ASTContext &C) const {
+bool MallocChecker::isFreeSubprogram(const SubprogramDecl *FD, ASTContext &C) const {
   if (!FD)
     return false;
 
-  if (FD->getKind() == Decl::Function) {
+  if (FD->getKind() == Decl::Subprogram) {
     IdentifierInfo *FunI = FD->getIdentifier();
     initIdentifierInfo(C);
 
@@ -440,14 +440,14 @@ void MallocChecker::checkPostStmt(const CallExpr *CE, CheckerContext &C) const {
   if (C.wasInlined)
     return;
   
-  const FunctionDecl *FD = C.getCalleeDecl(CE);
+  const SubprogramDecl *FD = C.getCalleeDecl(CE);
   if (!FD)
     return;
 
   ProgramStateRef State = C.getState();
   bool ReleasedAllocatedMemory = false;
 
-  if (FD->getKind() == Decl::Function) {
+  if (FD->getKind() == Decl::Subprogram) {
     initIdentifierInfo(C.getASTContext());
     IdentifierInfo *FunI = FD->getIdentifier();
 
@@ -780,8 +780,8 @@ bool MallocChecker::SummarizeValue(raw_ostream &os, SVal V) {
 bool MallocChecker::SummarizeRegion(raw_ostream &os,
                                     const MemRegion *MR) {
   switch (MR->getKind()) {
-  case MemRegion::FunctionTextRegionKind: {
-    const NamedDecl *FD = cast<FunctionTextRegion>(MR)->getDecl();
+  case MemRegion::SubprogramTextRegionKind: {
+    const NamedDecl *FD = cast<SubprogramTextRegion>(MR)->getDecl();
     if (FD)
       os << "the address of the function '" << *FD << '\'';
     else
@@ -1056,7 +1056,7 @@ void MallocChecker::reportLeak(SymbolRef Sym, ExplodedNode *N,
     BT_Leak.reset(new BugType("Memory leak", "Memory Error"));
     // Leaks should not be reported if they are post-dominated by a sink:
     // (1) Sinks are higher importance bugs.
-    // (2) NoReturnFunctionChecker uses sink nodes to represent paths ending
+    // (2) NoReturnSubprogramChecker uses sink nodes to represent paths ending
     //     with __noreturn functions such as assert() or exit(). We choose not
     //     to report leaks on such paths.
     BT_Leak->setSuppressOnSink(true);
@@ -1143,7 +1143,7 @@ void MallocChecker::checkDeadSymbols(SymbolReaper &SymReaper,
 
 void MallocChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const {
   // We will check for double free in the post visit.
-  if (isFreeFunction(C.getCalleeDecl(CE), C.getASTContext()))
+  if (isFreeSubprogram(C.getCalleeDecl(CE), C.getASTContext()))
     return;
 
   // Check use after free, when a freed pointer is passed to a call.
@@ -1313,7 +1313,7 @@ bool MallocChecker::doesNotFreeMemory(const CallEvent *Call,
   // TODO: If we want to be more optimistic here, we'll need to make sure that
   // regions escape to C++ containers. They seem to do that even now, but for
   // mysterious reasons.
-  if (!(isa<FunctionCall>(Call) || isa<ObjCMethodCall>(Call)))
+  if (!(isa<SubprogramCall>(Call) || isa<ObjCMethodCall>(Call)))
     return false;
 
   // Check Objective-C messages by selector name.
@@ -1360,7 +1360,7 @@ bool MallocChecker::doesNotFreeMemory(const CallEvent *Call,
   }
 
   // At this point the only thing left to handle is straight function calls.
-  const FunctionDecl *FD = cast<FunctionCall>(Call)->getDecl();
+  const SubprogramDecl *FD = cast<SubprogramCall>(Call)->getDecl();
   if (!FD)
     return false;
 
@@ -1368,7 +1368,7 @@ bool MallocChecker::doesNotFreeMemory(const CallEvent *Call,
 
   // If it's one of the allocation functions we can reason about, we model
   // its behavior explicitly.
-  if (isMemFunction(FD, ASTC))
+  if (isMemSubprogram(FD, ASTC))
     return true;
 
   // If it's not a system call, assume it frees memory.

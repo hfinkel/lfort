@@ -24,7 +24,7 @@ namespace CodeGen {
 
 class CodeGenSubprogram;
 class CodeGenModule;
-class FunctionArgList;
+class SubprogramArgList;
 class ReturnValueSlot;
 class RValue;
 
@@ -41,7 +41,7 @@ public:
                                         ReturnValueSlot ReturnValue);
   
   virtual void EmitDeviceStubBody(CodeGenSubprogram &CGF,
-                                  FunctionArgList &Args) = 0;
+                                  SubprogramArgList &Args) = 0;
 
 };
 

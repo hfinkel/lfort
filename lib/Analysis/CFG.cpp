@@ -325,7 +325,7 @@ private:
   CFGBlock *VisitCXXCatchStmt(CXXCatchStmt *S);
   CFGBlock *VisitCXXConstructExpr(CXXConstructExpr *C, AddStmtChoice asc);
   CFGBlock *VisitCXXForRangeStmt(CXXForRangeStmt *S);
-  CFGBlock *VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *E,
+  CFGBlock *VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *E,
                                        AddStmtChoice asc);
   CFGBlock *VisitCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *C,
                                         AddStmtChoice asc);
@@ -807,7 +807,7 @@ void CFGBuilder::addAutomaticObjDtors(LocalScope::const_iterator B,
     Ty = Context->getBaseElementType(Ty);
 
     const CXXDestructorDecl *Dtor = Ty->getAsCXXRecordDecl()->getDestructor();
-    if (cast<FunctionType>(Dtor->getType())->getNoReturnAttr())
+    if (cast<SubprogramType>(Dtor->getType())->getNoReturnAttr())
       Block = createNoReturnBlock();
     else
       autoCreateBlock();
@@ -1060,8 +1060,8 @@ CFGBlock *CFGBuilder::Visit(Stmt * S, AddStmtChoice asc) {
     case Stmt::CXXConstructExprClass:
       return VisitCXXConstructExpr(cast<CXXConstructExpr>(S), asc);
 
-    case Stmt::CXXFunctionalCastExprClass:
-      return VisitCXXFunctionalCastExpr(cast<CXXFunctionalCastExpr>(S), asc);
+    case Stmt::CXXSubprogramalCastExprClass:
+      return VisitCXXSubprogramalCastExpr(cast<CXXSubprogramalCastExpr>(S), asc);
 
     case Stmt::CXXTemporaryObjectExprClass:
       return VisitCXXTemporaryObjectExpr(cast<CXXTemporaryObjectExpr>(S), asc);
@@ -1364,14 +1364,14 @@ CFGBlock *CFGBuilder::VisitBreakStmt(BreakStmt *B) {
 
 static bool CanThrow(Expr *E, ASTContext &Ctx) {
   QualType Ty = E->getType();
-  if (Ty->isFunctionPointerType())
+  if (Ty->isSubprogramPointerType())
     Ty = Ty->getAs<PointerType>()->getPointeeType();
   else if (Ty->isBlockPointerType())
     Ty = Ty->getAs<BlockPointerType>()->getPointeeType();
 
-  const FunctionType *FT = Ty->getAs<FunctionType>();
+  const SubprogramType *FT = Ty->getAs<SubprogramType>();
   if (FT) {
-    if (const FunctionProtoType *Proto = dyn_cast<FunctionProtoType>(FT))
+    if (const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FT))
       if (!isUnresolvedExceptionSpec(Proto->getExceptionSpecType()) &&
           Proto->isNothrow(Ctx))
         return false;
@@ -1391,7 +1391,7 @@ CFGBlock *CFGBuilder::VisitCallExpr(CallExpr *C, AddStmtChoice asc) {
   }
 
   // If this is a call to a no-return function, this stops the block here.
-  bool NoReturn = getFunctionExtInfo(*calleeType).getNoReturn();
+  bool NoReturn = getSubprogramExtInfo(*calleeType).getNoReturn();
 
   bool AddEHEdge = false;
 
@@ -1401,7 +1401,7 @@ CFGBlock *CFGBuilder::VisitCallExpr(CallExpr *C, AddStmtChoice asc) {
       AddEHEdge = true;
   }
 
-  if (FunctionDecl *FD = C->getDirectCallee()) {
+  if (SubprogramDecl *FD = C->getDirectCallee()) {
     if (FD->hasAttr<NoReturnAttr>())
       NoReturn = true;
     if (FD->hasAttr<NoThrowAttr>())
@@ -3005,7 +3005,7 @@ CFGBlock *CFGBuilder::VisitCXXConstructExpr(CXXConstructExpr *C,
   return VisitChildren(C);
 }
 
-CFGBlock *CFGBuilder::VisitCXXFunctionalCastExpr(CXXFunctionalCastExpr *E,
+CFGBlock *CFGBuilder::VisitCXXSubprogramalCastExpr(CXXSubprogramalCastExpr *E,
                                                  AddStmtChoice asc) {
   if (asc.alwaysAdd(*this, E)) {
     autoCreateBlock();
@@ -3190,7 +3190,7 @@ CFGBlock *CFGBuilder::VisitCXXBindTemporaryExprForTemporaryDtors(
     // a new block for the destructor which does not have as a successor
     // anything built thus far. Control won't flow out of this block.
     const CXXDestructorDecl *Dtor = E->getTemporary()->getDestructor();
-    if (cast<FunctionType>(Dtor->getType())->getNoReturnAttr())
+    if (cast<SubprogramType>(Dtor->getType())->getNoReturnAttr())
       Block = createNoReturnBlock();
     else
       autoCreateBlock();
@@ -3329,7 +3329,7 @@ CFGImplicitDtor::getDestructorDecl(ASTContext &astContext) const {
 bool CFGImplicitDtor::isNoReturn(ASTContext &astContext) const {
   if (const CXXDestructorDecl *decl = getDestructorDecl(astContext)) {
     QualType ty = decl->getType();
-    return cast<FunctionType>(ty)->getNoReturnAttr();
+    return cast<SubprogramType>(ty)->getNoReturnAttr();
   }
   return false;
 }

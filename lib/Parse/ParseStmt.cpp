@@ -1994,14 +1994,14 @@ bool Parser::ParseAsmOperandsOpt(SmallVectorImpl<IdentifierInfo *> &Names,
   }
 }
 
-Decl *Parser::ParseFunctionStatementBody(Decl *Decl, ParseScope &BodyScope) {
+Decl *Parser::ParseSubprogramStatementBody(Decl *Decl, ParseScope &BodyScope) {
   assert(Tok.is(tok::l_brace));
   SourceLocation LBraceLoc = Tok.getLocation();
 
-  if (SkipFunctionBodies && Actions.canSkipFunctionBody(Decl) &&
-      trySkippingFunctionBody()) {
+  if (SkipSubprogramBodies && Actions.canSkipSubprogramBody(Decl) &&
+      trySkippingSubprogramBody()) {
     BodyScope.Exit();
-    return Actions.ActOnSkippedFunctionBody(Decl);
+    return Actions.ActOnSkippedSubprogramBody(Decl);
   }
 
   PrettyDeclStackTraceEntry CrashInfo(Actions, Decl, LBraceLoc,
@@ -2020,15 +2020,15 @@ Decl *Parser::ParseFunctionStatementBody(Decl *Decl, ParseScope &BodyScope) {
   }
 
   BodyScope.Exit();
-  return Actions.ActOnFinishFunctionBody(Decl, FnBody.take());
+  return Actions.ActOnFinishSubprogramBody(Decl, FnBody.take());
 }
 
-/// ParseFunctionTryBlock - Parse a C++ function-try-block.
+/// ParseSubprogramTryBlock - Parse a C++ function-try-block.
 ///
 ///       function-try-block:
 ///         'try' ctor-initializer[opt] compound-statement handler-seq
 ///
-Decl *Parser::ParseFunctionTryBlock(Decl *Decl, ParseScope &BodyScope) {
+Decl *Parser::ParseSubprogramTryBlock(Decl *Decl, ParseScope &BodyScope) {
   assert(Tok.is(tok::kw_try) && "Expected 'try'");
   SourceLocation TryLoc = ConsumeToken();
 
@@ -2041,10 +2041,10 @@ Decl *Parser::ParseFunctionTryBlock(Decl *Decl, ParseScope &BodyScope) {
   else
     Actions.ActOnDefaultCtorInitializers(Decl);
 
-  if (SkipFunctionBodies && Actions.canSkipFunctionBody(Decl) &&
-      trySkippingFunctionBody()) {
+  if (SkipSubprogramBodies && Actions.canSkipSubprogramBody(Decl) &&
+      trySkippingSubprogramBody()) {
     BodyScope.Exit();
-    return Actions.ActOnSkippedFunctionBody(Decl);
+    return Actions.ActOnSkippedSubprogramBody(Decl);
   }
 
   SourceLocation LBraceLoc = Tok.getLocation();
@@ -2058,13 +2058,13 @@ Decl *Parser::ParseFunctionTryBlock(Decl *Decl, ParseScope &BodyScope) {
   }
 
   BodyScope.Exit();
-  return Actions.ActOnFinishFunctionBody(Decl, FnBody.take());
+  return Actions.ActOnFinishSubprogramBody(Decl, FnBody.take());
 }
 
-bool Parser::trySkippingFunctionBody() {
+bool Parser::trySkippingSubprogramBody() {
   assert(Tok.is(tok::l_brace));
-  assert(SkipFunctionBodies &&
-         "Should only be called when SkipFunctionBodies is enabled");
+  assert(SkipSubprogramBodies &&
+         "Should only be called when SkipSubprogramBodies is enabled");
 
   if (!PP.isCodeCompletionEnabled()) {
     ConsumeBrace();

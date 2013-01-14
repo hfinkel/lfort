@@ -45,50 +45,50 @@ class UsingDecl;
 
 /// \brief Represents any kind of function declaration, whether it is a
 /// concrete function or a function template.
-class AnyFunctionDecl {
-  NamedDecl *Function;
+class AnySubprogramDecl {
+  NamedDecl *Subprogram;
 
-  AnyFunctionDecl(NamedDecl *ND) : Function(ND) { }
+  AnySubprogramDecl(NamedDecl *ND) : Subprogram(ND) { }
 
 public:
-  AnyFunctionDecl(FunctionDecl *FD) : Function(FD) { }
-  AnyFunctionDecl(FunctionTemplateDecl *FTD);
+  AnySubprogramDecl(SubprogramDecl *FD) : Subprogram(FD) { }
+  AnySubprogramDecl(SubprogramTemplateDecl *FTD);
 
   /// \brief Implicily converts any function or function template into a
   /// named declaration.
-  operator NamedDecl *() const { return Function; }
+  operator NamedDecl *() const { return Subprogram; }
 
   /// \brief Retrieve the underlying function or function template.
-  NamedDecl *get() const { return Function; }
+  NamedDecl *get() const { return Subprogram; }
 
-  static AnyFunctionDecl getFromNamedDecl(NamedDecl *ND) {
-    return AnyFunctionDecl(ND);
+  static AnySubprogramDecl getFromNamedDecl(NamedDecl *ND) {
+    return AnySubprogramDecl(ND);
   }
 };
 
 } // end namespace lfort
 
 namespace llvm {
-  /// Implement simplify_type for AnyFunctionDecl, so that we can dyn_cast from
-  /// AnyFunctionDecl to any function or function template declaration.
-  template<> struct simplify_type<const ::lfort::AnyFunctionDecl> {
+  /// Implement simplify_type for AnySubprogramDecl, so that we can dyn_cast from
+  /// AnySubprogramDecl to any function or function template declaration.
+  template<> struct simplify_type<const ::lfort::AnySubprogramDecl> {
     typedef ::lfort::NamedDecl* SimpleType;
-    static SimpleType getSimplifiedValue(const ::lfort::AnyFunctionDecl &Val) {
+    static SimpleType getSimplifiedValue(const ::lfort::AnySubprogramDecl &Val) {
       return Val;
     }
   };
-  template<> struct simplify_type< ::lfort::AnyFunctionDecl>
-  : public simplify_type<const ::lfort::AnyFunctionDecl> {};
+  template<> struct simplify_type< ::lfort::AnySubprogramDecl>
+  : public simplify_type<const ::lfort::AnySubprogramDecl> {};
 
   // Provide PointerLikeTypeTraits for non-cvr pointers.
   template<>
-  class PointerLikeTypeTraits< ::lfort::AnyFunctionDecl> {
+  class PointerLikeTypeTraits< ::lfort::AnySubprogramDecl> {
   public:
-    static inline void *getAsVoidPointer(::lfort::AnyFunctionDecl F) {
+    static inline void *getAsVoidPointer(::lfort::AnySubprogramDecl F) {
       return F.get();
     }
-    static inline ::lfort::AnyFunctionDecl getFromVoidPointer(void *P) {
-      return ::lfort::AnyFunctionDecl::getFromNamedDecl(
+    static inline ::lfort::AnySubprogramDecl getFromVoidPointer(void *P) {
+      return ::lfort::AnySubprogramDecl::getFromNamedDecl(
                                       static_cast< ::lfort::NamedDecl*>(P));
     }
 
@@ -474,7 +474,7 @@ class CXXRecordDecl : public RecordDecl {
     /// functions of this C++ class and all those inherited conversion
     /// functions that are visible in this class. Each of the entries
     /// in this overload set is a CXXConversionDecl or a
-    /// FunctionTemplateDecl.
+    /// SubprogramTemplateDecl.
     ASTUnresolvedSet VisibleConversions;
 
     /// Definition - The declaration which defines this record.
@@ -593,8 +593,8 @@ class CXXRecordDecl : public RecordDecl {
   /// whenever a member is added to this record.
   void addedMember(Decl *D);
 
-  void markedVirtualFunctionPure();
-  friend void FunctionDecl::setPure(bool);
+  void markedVirtualSubprogramPure();
+  friend void SubprogramDecl::setPure(bool);
 
   friend class ASTNodeImporter;
 
@@ -1013,10 +1013,10 @@ public:
   /// this class must currently be in the process of being defined.
   void removeConversion(const NamedDecl *Old);
 
-  /// getVisibleConversionFunctions - get all conversion functions visible
+  /// getVisibleConversionSubprograms - get all conversion functions visible
   /// in current class; including conversion function templates.
   std::pair<conversion_iterator, conversion_iterator>
-    getVisibleConversionFunctions();
+    getVisibleConversionSubprograms();
 
   /// isAggregate - Whether this class is an aggregate (C++
   /// [dcl.init.aggr]), which is a class with no user-declared
@@ -1290,11 +1290,11 @@ public:
 
   /// isLocalClass - If the class is a local class [class.local], returns
   /// the enclosing function declaration.
-  const FunctionDecl *isLocalClass() const {
+  const SubprogramDecl *isLocalClass() const {
     if (const CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(getDeclContext()))
       return RD->isLocalClass();
 
-    return dyn_cast<FunctionDecl>(getDeclContext());
+    return dyn_cast<SubprogramDecl>(getDeclContext());
   }
 
   /// \brief Determine whether this dependent class is a current instantiation,
@@ -1350,7 +1350,7 @@ public:
   /// the type \p Base.
   bool isProvablyNotDerivedFrom(const CXXRecordDecl *Base) const;
 
-  /// \brief Function type used by forallBases() as a callback.
+  /// \brief Subprogram type used by forallBases() as a callback.
   ///
   /// \param BaseDefinition the definition of the base class
   ///
@@ -1370,7 +1370,7 @@ public:
   bool forallBases(ForallBasesCallback *BaseMatches, void *UserData,
                    bool AllowShortCircuit = true) const;
 
-  /// \brief Function type used by lookupInBases() to determine whether a
+  /// \brief Subprogram type used by lookupInBases() to determine whether a
   /// specific base class subobject matches the lookup criteria.
   ///
   /// \param Specifier the base-class specifier that describes the inheritance
@@ -1571,7 +1571,7 @@ public:
 
 /// CXXMethodDecl - Represents a static or instance method of a
 /// struct/union/class.
-class CXXMethodDecl : public FunctionDecl {
+class CXXMethodDecl : public SubprogramDecl {
   virtual void anchor();
 protected:
   CXXMethodDecl(Kind DK, CXXRecordDecl *RD, SourceLocation StartLoc,
@@ -1579,7 +1579,7 @@ protected:
                 QualType T, TypeSourceInfo *TInfo,
                 bool isStatic, StorageClass SCAsWritten, bool isInline,
                 bool isConstexpr, SourceLocation EndLocation)
-    : FunctionDecl(DK, RD, StartLoc, NameInfo, T, TInfo,
+    : SubprogramDecl(DK, RD, StartLoc, NameInfo, T, TInfo,
                    (isStatic ? SC_Static : SC_None),
                    SCAsWritten, isInline, isConstexpr) {
     if (EndLocation.isValid())
@@ -1602,8 +1602,8 @@ public:
   bool isStatic() const { return getStorageClass() == SC_Static; }
   bool isInstance() const { return !isStatic(); }
 
-  bool isConst() const { return getType()->castAs<FunctionType>()->isConst(); }
-  bool isVolatile() const { return getType()->castAs<FunctionType>()->isVolatile(); }
+  bool isConst() const { return getType()->castAs<SubprogramType>()->isConst(); }
+  bool isVolatile() const { return getType()->castAs<SubprogramType>()->isVolatile(); }
 
   bool isVirtual() const {
     CXXMethodDecl *CD =
@@ -1620,7 +1620,7 @@ public:
   /// \brief Determine whether this is a usual deallocation function
   /// (C++ [basic.stc.dynamic.deallocation]p2), which is an overloaded
   /// delete or delete[] operator with a particular signature.
-  bool isUsualDeallocationFunction() const;
+  bool isUsualDeallocationSubprogram() const;
 
   /// \brief Determine whether this is a copy-assignment operator, regardless
   /// of whether it was declared implicitly or explicitly.
@@ -1630,10 +1630,10 @@ public:
   bool isMoveAssignmentOperator() const;
 
   const CXXMethodDecl *getCanonicalDecl() const {
-    return cast<CXXMethodDecl>(FunctionDecl::getCanonicalDecl());
+    return cast<CXXMethodDecl>(SubprogramDecl::getCanonicalDecl());
   }
   CXXMethodDecl *getCanonicalDecl() {
-    return cast<CXXMethodDecl>(FunctionDecl::getCanonicalDecl());
+    return cast<CXXMethodDecl>(SubprogramDecl::getCanonicalDecl());
   }
 
   /// isUserProvided - True if this method is user-declared and was not
@@ -1654,14 +1654,14 @@ public:
   /// getParent - Returns the parent of this method declaration, which
   /// is the class in which this method is defined.
   const CXXRecordDecl *getParent() const {
-    return cast<CXXRecordDecl>(FunctionDecl::getParent());
+    return cast<CXXRecordDecl>(SubprogramDecl::getParent());
   }
 
   /// getParent - Returns the parent of this method declaration, which
   /// is the class in which this method is defined.
   CXXRecordDecl *getParent() {
     return const_cast<CXXRecordDecl *>(
-             cast<CXXRecordDecl>(FunctionDecl::getParent()));
+             cast<CXXRecordDecl>(SubprogramDecl::getParent()));
   }
 
   /// getThisType - Returns the type of 'this' pointer.
@@ -1669,7 +1669,7 @@ public:
   QualType getThisType(ASTContext &C) const;
 
   unsigned getTypeQualifiers() const {
-    return getType()->getAs<FunctionProtoType>()->getTypeQuals();
+    return getType()->getAs<SubprogramProtoType>()->getTypeQuals();
   }
 
   /// \brief Retrieve the ref-qualifier associated with this method.
@@ -1684,7 +1684,7 @@ public:
   /// };
   /// @endcode
   RefQualifierKind getRefQualifier() const {
-    return getType()->getAs<FunctionProtoType>()->getRefQualifier();
+    return getType()->getAs<SubprogramProtoType>()->getRefQualifier();
   }
 
   bool hasInlineBody() const;
@@ -2187,10 +2187,10 @@ public:
   void setInheritedConstructor(const CXXConstructorDecl *BaseCtor);
 
   const CXXConstructorDecl *getCanonicalDecl() const {
-    return cast<CXXConstructorDecl>(FunctionDecl::getCanonicalDecl());
+    return cast<CXXConstructorDecl>(SubprogramDecl::getCanonicalDecl());
   }
   CXXConstructorDecl *getCanonicalDecl() {
-    return cast<CXXConstructorDecl>(FunctionDecl::getCanonicalDecl());
+    return cast<CXXConstructorDecl>(SubprogramDecl::getCanonicalDecl());
   }
 
   // Implement isa/cast/dyncast/etc.
@@ -2220,7 +2220,7 @@ class CXXDestructorDecl : public CXXMethodDecl {
   /// @c !Implicit && ImplicitlyDefined.
   bool ImplicitlyDefined : 1;
 
-  FunctionDecl *OperatorDelete;
+  SubprogramDecl *OperatorDelete;
 
   CXXDestructorDecl(CXXRecordDecl *RD, SourceLocation StartLoc,
                     const DeclarationNameInfo &NameInfo,
@@ -2261,8 +2261,8 @@ public:
     ImplicitlyDefined = ID;
   }
 
-  void setOperatorDelete(FunctionDecl *OD) { OperatorDelete = OD; }
-  const FunctionDecl *getOperatorDelete() const { return OperatorDelete; }
+  void setOperatorDelete(SubprogramDecl *OD) { OperatorDelete = OD; }
+  const SubprogramDecl *getOperatorDelete() const { return OperatorDelete; }
 
   // Implement isa/cast/dyncast/etc.
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
@@ -2323,7 +2323,7 @@ public:
   /// getConversionType - Returns the type that this conversion
   /// function is converting to.
   QualType getConversionType() const {
-    return getType()->getAs<FunctionType>()->getResultType();
+    return getType()->getAs<SubprogramType>()->getResultType();
   }
 
   /// \brief Determine whether this conversion function is a conversion from

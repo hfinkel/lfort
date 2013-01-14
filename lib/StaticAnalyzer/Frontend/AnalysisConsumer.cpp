@@ -52,11 +52,11 @@ using llvm::SmallPtrSet;
 
 static ExplodedNode::Auditor* CreateUbiViz();
 
-STATISTIC(NumFunctionTopLevel, "The # of functions at top level.");
-STATISTIC(NumFunctionsAnalyzed,
+STATISTIC(NumSubprogramTopLevel, "The # of functions at top level.");
+STATISTIC(NumSubprogramsAnalyzed,
                       "The # of functions and blocks analyzed (as top level "
                       "with inlining turned on).");
-STATISTIC(NumBlocksInAnalyzedFunctions,
+STATISTIC(NumBlocksInAnalyzedSubprograms,
                       "The # of basic blocks in the analyzed functions.");
 STATISTIC(PercentReachableBlocks, "The % of reachable basic blocks.");
 STATISTIC(MaxCFGSize, "The maximum number of basic blocks in a function.");
@@ -163,7 +163,7 @@ public:
 
   /// The information about analyzed functions shared throughout the
   /// translation unit.
-  FunctionSummariesTy FunctionSummaries;
+  SubprogramSummariesTy SubprogramSummaries;
 
   AnalysisConsumer(const Preprocessor& pp,
                    const std::string& outdir,
@@ -219,7 +219,7 @@ public:
     }
   }
 
-  void DisplayFunction(const Decl *D, AnalysisMode Mode) {
+  void DisplaySubprogram(const Decl *D, AnalysisMode Mode) {
     if (!Opts->AnalyzerDisplayProgress)
       return;
 
@@ -236,7 +236,7 @@ public:
         assert(Mode == (AM_Syntax | AM_Path) && "Unexpected mode!");
 
       llvm::errs() << ": " << Loc.getFilename();
-      if (isa<FunctionDecl>(D) || isa<ObjCMethodDecl>(D)) {
+      if (isa<SubprogramDecl>(D) || isa<ObjCMethodDecl>(D)) {
         const NamedDecl *ND = cast<NamedDecl>(D);
         llvm::errs() << ' ' << *ND << '\n';
       }
@@ -275,7 +275,7 @@ public:
   /// \brief Determine which inlining mode should be used when this function is
   /// analyzed. For example, determines if the callees should be inlined.
   ExprEngine::InliningModes
-  getInliningModeForFunction(const Decl *D, SetOfConstDecls Visited);
+  getInliningModeForSubprogram(const Decl *D, SetOfConstDecls Visited);
 
   /// \brief Build the call graph for all the top level decls of this TU and
   /// use it to define the order in which the functions should be visited.
@@ -309,7 +309,7 @@ public:
     return true;
   }
 
-  bool VisitFunctionDecl(FunctionDecl *FD) {
+  bool VisitSubprogramDecl(SubprogramDecl *FD) {
     IdentifierInfo *II = FD->getIdentifier();
     if (II && II->getName().startswith("__inline"))
       return true;
@@ -376,7 +376,7 @@ void AnalysisConsumer::storeTopLevelDecls(DeclGroupRef DG) {
   }
 }
 
-static bool shouldSkipFunction(const Decl *D,
+static bool shouldSkipSubprogram(const Decl *D,
                                SetOfConstDecls Visited,
                                SetOfConstDecls VisitedAsTopLevel) {
   if (VisitedAsTopLevel.count(D))
@@ -397,7 +397,7 @@ static bool shouldSkipFunction(const Decl *D,
 }
 
 ExprEngine::InliningModes
-AnalysisConsumer::getInliningModeForFunction(const Decl *D,
+AnalysisConsumer::getInliningModeForSubprogram(const Decl *D,
                                              SetOfConstDecls Visited) {
   ExprEngine::InliningModes HowToInline =
       (Mgr->shouldInlineCall()) ? ExprEngine::Inline_All :
@@ -438,7 +438,7 @@ void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
   llvm::ReversePostOrderTraversal<lfort::CallGraph*> RPOT(&CG);
   for (llvm::ReversePostOrderTraversal<lfort::CallGraph*>::rpo_iterator
          I = RPOT.begin(), E = RPOT.end(); I != E; ++I) {
-    NumFunctionTopLevel++;
+    NumSubprogramTopLevel++;
 
     CallGraphNode *N = *I;
     Decl *D = N->getDecl();
@@ -449,13 +449,13 @@ void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
 
     // Skip the functions which have been processed already or previously
     // inlined.
-    if (shouldSkipFunction(D, Visited, VisitedAsTopLevel))
+    if (shouldSkipSubprogram(D, Visited, VisitedAsTopLevel))
       continue;
 
     // Analyze the function.
     SetOfConstDecls VisitedCallees;
 
-    HandleCode(D, AM_Path, getInliningModeForFunction(D, Visited),
+    HandleCode(D, AM_Path, getInliningModeForSubprogram(D, Visited),
                (Mgr->options.InliningMode == All ? 0 : &VisitedCallees));
 
     // Add the visited callees to the global visited set.
@@ -518,19 +518,19 @@ void AnalysisConsumer::HandleTranslationUnit(ASTContext &C) {
   if (TUTotalTimer) TUTotalTimer->stopTimer();
 
   // Count how many basic blocks we have not covered.
-  NumBlocksInAnalyzedFunctions = FunctionSummaries.getTotalNumBasicBlocks();
-  if (NumBlocksInAnalyzedFunctions > 0)
+  NumBlocksInAnalyzedSubprograms = SubprogramSummaries.getTotalNumBasicBlocks();
+  if (NumBlocksInAnalyzedSubprograms > 0)
     PercentReachableBlocks =
-      (FunctionSummaries.getTotalNumVisitedBasicBlocks() * 100) /
-        NumBlocksInAnalyzedFunctions;
+      (SubprogramSummaries.getTotalNumVisitedBasicBlocks() * 100) /
+        NumBlocksInAnalyzedSubprograms;
 
 }
 
-static std::string getFunctionName(const Decl *D) {
+static std::string getSubprogramName(const Decl *D) {
   if (const ObjCMethodDecl *ID = dyn_cast<ObjCMethodDecl>(D)) {
     return ID->getSelector().getAsString();
   }
-  if (const FunctionDecl *ND = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *ND = dyn_cast<SubprogramDecl>(D)) {
     IdentifierInfo *II = ND->getIdentifier();
     if (II)
       return II->getName();
@@ -540,8 +540,8 @@ static std::string getFunctionName(const Decl *D) {
 
 AnalysisConsumer::AnalysisMode
 AnalysisConsumer::getModeForDecl(Decl *D, AnalysisMode Mode) {
-  if (!Opts->AnalyzeSpecificFunction.empty() &&
-      getFunctionName(D) != Opts->AnalyzeSpecificFunction)
+  if (!Opts->AnalyzeSpecificSubprogram.empty() &&
+      getSubprogramName(D) != Opts->AnalyzeSpecificSubprogram)
     return AM_None;
 
   // Unless -analyze-all is specified, treat decls differently depending on
@@ -569,7 +569,7 @@ void AnalysisConsumer::HandleCode(Decl *D, AnalysisMode Mode,
   if (Mode == AM_None)
     return;
 
-  DisplayFunction(D, Mode);
+  DisplaySubprogram(D, Mode);
   CFG *DeclCFG = Mgr->getCFG(D);
   if (DeclCFG) {
     unsigned CFGSize = DeclCFG->size();
@@ -585,7 +585,7 @@ void AnalysisConsumer::HandleCode(Decl *D, AnalysisMode Mode,
   if ((Mode & AM_Path) && checkerMgr->hasPathSensitiveCheckers()) {
     RunPathSensitiveChecks(D, IMode, VisitedCallees);
     if (IMode != ExprEngine::Inline_None)
-      NumFunctionsAnalyzed++;
+      NumSubprogramsAnalyzed++;
   }
 }
 
@@ -605,7 +605,7 @@ void AnalysisConsumer::ActionExprEngine(Decl *D, bool ObjCGCEnabled,
   if (!Mgr->getAnalysisDeclContext(D)->getAnalysis<RelaxedLiveVariables>())
     return;
 
-  ExprEngine Eng(*Mgr, ObjCGCEnabled, VisitedCallees, &FunctionSummaries,IMode);
+  ExprEngine Eng(*Mgr, ObjCGCEnabled, VisitedCallees, &SubprogramSummaries,IMode);
 
   // Set the graph auditor.
   OwningPtr<ExplodedNode::Auditor> Auditor;

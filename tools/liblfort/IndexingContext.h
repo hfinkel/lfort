@@ -18,7 +18,7 @@ namespace lfort {
   class FileEntry;
   class ObjCPropertyDecl;
   class ClassTemplateDecl;
-  class FunctionTemplateDecl;
+  class SubprogramTemplateDecl;
   class TypeAliasTemplateDecl;
   class ClassTemplateSpecializationDecl;
 
@@ -352,15 +352,15 @@ public:
     return IndexOptions & CXIndexOpt_SuppressRedundantRefs;
   }
 
-  bool shouldIndexFunctionLocalSymbols() const {
-    return IndexOptions & CXIndexOpt_IndexFunctionLocalSymbols;
+  bool shouldIndexSubprogramLocalSymbols() const {
+    return IndexOptions & CXIndexOpt_IndexSubprogramLocalSymbols;
   }
 
   bool shouldIndexImplicitTemplateInsts() const {
     return IndexOptions & CXIndexOpt_IndexImplicitTemplateInstantiations;
   }
 
-  static bool isFunctionLocalDecl(const Decl *D);
+  static bool isSubprogramLocalDecl(const Decl *D);
 
   bool shouldAbort();
 
@@ -398,7 +398,7 @@ public:
 
   void handleDiagnosticSet(CXDiagnosticSet CXDiagSet);
 
-  bool handleFunction(const FunctionDecl *FD);
+  bool handleSubprogram(const SubprogramDecl *FD);
 
   bool handleVar(const VarDecl *D);
 
@@ -429,7 +429,7 @@ public:
   bool handleNamespace(const NamespaceDecl *D);
 
   bool handleClassTemplate(const ClassTemplateDecl *D);
-  bool handleFunctionTemplate(const FunctionTemplateDecl *D);
+  bool handleSubprogramTemplate(const SubprogramTemplateDecl *D);
   bool handleTypeAliasTemplate(const TypeAliasTemplateDecl *D);
 
   bool handleReference(const NamedDecl *D, SourceLocation Loc, CXCursor Cursor,

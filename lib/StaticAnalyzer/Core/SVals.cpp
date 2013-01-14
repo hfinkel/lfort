@@ -48,11 +48,11 @@ bool SVal::hasConjuredSymbol() const {
   return false;
 }
 
-const FunctionDecl *SVal::getAsFunctionDecl() const {
+const SubprogramDecl *SVal::getAsSubprogramDecl() const {
   if (const loc::MemRegionVal* X = dyn_cast<loc::MemRegionVal>(this)) {
     const MemRegion* R = X->getRegion();
-    if (const FunctionTextRegion *CTR = R->getAs<FunctionTextRegion>())
-      if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(CTR->getDecl()))
+    if (const SubprogramTextRegion *CTR = R->getAs<SubprogramTextRegion>())
+      if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(CTR->getDecl()))
         return FD;
   }
 

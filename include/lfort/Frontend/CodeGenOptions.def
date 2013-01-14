@@ -53,10 +53,10 @@ CODEGENOPT(EmitOpenCLArgMetadata , 1, 0) ///< Emit OpenCL kernel arg metadata.
 ENUM_CODEGENOPT(FPContractMode, FPContractModeKind, 2, FPC_On)
 CODEGENOPT(ForbidGuardVariables , 1, 0) ///< Issue errors if C++ guard variables
                                         ///< are required.
-CODEGENOPT(FunctionSections  , 1, 0) ///< Set when -ffunction-sections is enabled.
+CODEGENOPT(SubprogramSections  , 1, 0) ///< Set when -ffunction-sections is enabled.
 CODEGENOPT(HiddenWeakVTables , 1, 0) ///< Emit weak vtables, RTTI, and thunks with
                                      ///< hidden visibility.
-CODEGENOPT(InstrumentFunctions , 1, 0) ///< Set when -finstrument-functions is
+CODEGENOPT(InstrumentSubprograms , 1, 0) ///< Set when -finstrument-functions is
                                        ///< enabled.
 CODEGENOPT(InstrumentForProfiling , 1, 0) ///< Set when -pg is enabled.
 CODEGENOPT(LessPreciseFPMAD  , 1, 0) ///< Enable less precise MAD instructions to

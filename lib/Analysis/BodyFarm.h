@@ -22,7 +22,7 @@ namespace lfort {
 
 class ASTContext;
 class Decl;
-class FunctionDecl;
+class SubprogramDecl;
 class Stmt;
   
 class BodyFarm {
@@ -30,7 +30,7 @@ public:
   BodyFarm(ASTContext &C) : C(C) {}
   
   /// Factory method for creating bodies for ordinary functions.
-  Stmt *getBody(const FunctionDecl *D);
+  Stmt *getBody(const SubprogramDecl *D);
   
 private:
   typedef llvm::DenseMap<const Decl *, llvm::Optional<Stmt *> > BodyMap;

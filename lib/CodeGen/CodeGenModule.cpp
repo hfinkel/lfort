@@ -166,8 +166,8 @@ void CodeGenModule::Release() {
   EmitCXXGlobalInitFunc();
   EmitCXXGlobalDtorFunc();
   if (ObjCRuntime)
-    if (llvm::Function *ObjCInitFunction = ObjCRuntime->ModuleInitFunction())
-      AddGlobalCtor(ObjCInitFunction);
+    if (llvm::Function *ObjCInitSubprogram = ObjCRuntime->ModuleInitSubprogram())
+      AddGlobalCtor(ObjCInitSubprogram);
   EmitCtorList(GlobalCtors, "llvm.global_ctors");
   EmitCtorList(GlobalDtors, "llvm.global_dtors");
   EmitGlobalAnnotations();
@@ -360,7 +360,7 @@ void CodeGenModule::setTypeVisibility(llvm::GlobalValue *GV,
   // that don't have the key function's definition.  But ignore
   // this if we're emitting RTTI under -fno-rtti.
   if (!(TVK != TVK_ForRTTI) || LangOpts.RTTI) {
-    if (Context.getKeyFunction(RD))
+    if (Context.getKeySubprogram(RD))
       return;
   }
 
@@ -470,8 +470,8 @@ void CodeGenModule::EmitCtorList(const CtorList &Fns, const char *GlobalName) {
 }
 
 llvm::GlobalValue::LinkageTypes
-CodeGenModule::getFunctionLinkage(const FunctionDecl *D) {
-  GVALinkage Linkage = getContext().GetGVALinkageForFunction(D);
+CodeGenModule::getSubprogramLinkage(const SubprogramDecl *D) {
+  GVALinkage Linkage = getContext().GetGVALinkageForSubprogram(D);
 
   if (Linkage == GVA_Internal)
     return llvm::Function::InternalLinkage;
@@ -518,17 +518,17 @@ CodeGenModule::getFunctionLinkage(const FunctionDecl *D) {
 }
 
 
-/// SetFunctionDefinitionAttributes - Set attributes for a global.
+/// SetSubprogramDefinitionAttributes - Set attributes for a global.
 ///
 /// FIXME: This is currently only done for aliases and functions, but not for
 /// variables (these details are set in EmitGlobalVarDefinition for variables).
-void CodeGenModule::SetFunctionDefinitionAttributes(const FunctionDecl *D,
+void CodeGenModule::SetSubprogramDefinitionAttributes(const SubprogramDecl *D,
                                                     llvm::GlobalValue *GV) {
   SetCommonAttributes(D, GV);
 }
 
-void CodeGenModule::SetLLVMFunctionAttributes(const Decl *D,
-                                              const CGFunctionInfo &Info,
+void CodeGenModule::SetLLVMSubprogramAttributes(const Decl *D,
+                                              const CGSubprogramInfo &Info,
                                               llvm::Function *F) {
   unsigned CallingConv;
   AttributeListType AttributeList;
@@ -557,7 +557,7 @@ static bool hasUnwindExceptions(const LangOptions &LangOpts) {
   return true;
 }
 
-void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
+void CodeGenModule::SetLLVMSubprogramAttributesForDefinition(const Decl *D,
                                                            llvm::Function *F) {
   if (CodeGenOpts.UnwindTables)
     F->setHasUWTable();
@@ -631,20 +631,20 @@ void CodeGenModule::SetCommonAttributes(const Decl *D,
   getTargetCodeGenInfo().SetTargetAttributes(D, GV, *this);
 }
 
-void CodeGenModule::SetInternalFunctionAttributes(const Decl *D,
+void CodeGenModule::SetInternalSubprogramAttributes(const Decl *D,
                                                   llvm::Function *F,
-                                                  const CGFunctionInfo &FI) {
-  SetLLVMFunctionAttributes(D, FI, F);
-  SetLLVMFunctionAttributesForDefinition(D, F);
+                                                  const CGSubprogramInfo &FI) {
+  SetLLVMSubprogramAttributes(D, FI, F);
+  SetLLVMSubprogramAttributesForDefinition(D, F);
 
   F->setLinkage(llvm::Function::InternalLinkage);
 
   SetCommonAttributes(D, F);
 }
 
-void CodeGenModule::SetFunctionAttributes(GlobalDecl GD,
+void CodeGenModule::SetSubprogramAttributes(GlobalDecl GD,
                                           llvm::Function *F,
-                                          bool IsIncompleteFunction) {
+                                          bool IsIncompleteSubprogram) {
   if (unsigned IID = F->getIntrinsicID()) {
     // If this is an intrinsic function, set the function's attributes
     // to the intrinsic's attributes.
@@ -653,10 +653,10 @@ void CodeGenModule::SetFunctionAttributes(GlobalDecl GD,
     return;
   }
 
-  const FunctionDecl *FD = cast<FunctionDecl>(GD.getDecl());
+  const SubprogramDecl *FD = cast<SubprogramDecl>(GD.getDecl());
 
-  if (!IsIncompleteFunction)
-    SetLLVMFunctionAttributes(FD, getTypes().arrangeGlobalDeclaration(GD), F);
+  if (!IsIncompleteSubprogram)
+    SetLLVMSubprogramAttributes(FD, getTypes().arrangeGlobalDeclaration(GD), F);
 
   // Only a few attributes are set on declarations; these may later be
   // overridden by a definition.
@@ -893,8 +893,8 @@ llvm::Constant *CodeGenModule::GetWeakRefReference(const ValueDecl *VD) {
 
   llvm::Constant *Aliasee;
   if (isa<llvm::FunctionType>(DeclTy))
-    Aliasee = GetOrCreateLLVMFunction(AA->getAliasee(), DeclTy,
-                                      GlobalDecl(cast<FunctionDecl>(VD)),
+    Aliasee = GetOrCreateLLVMSubprogram(AA->getAliasee(), DeclTy,
+                                      GlobalDecl(cast<SubprogramDecl>(VD)),
                                       /*ForVTable=*/false);
   else
     Aliasee = GetOrCreateLLVMGlobal(AA->getAliasee(),
@@ -937,13 +937,13 @@ void CodeGenModule::EmitGlobal(GlobalDecl GD) {
   }
 
   // Ignore declarations, they will be emitted on their first use.
-  if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(Global)) {
+  if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(Global)) {
     // Forward declarations are emitted lazily on first use.
     if (!FD->doesThisDeclarationHaveABody()) {
       if (!FD->doesDeclarationForceExternallyVisibleDefinition())
         return;
 
-      const FunctionDecl *InlineDefinition = 0;
+      const SubprogramDecl *InlineDefinition = 0;
       FD->getBody(InlineDefinition);
 
       StringRef MangledName = getMangledName(GD);
@@ -989,18 +989,18 @@ void CodeGenModule::EmitGlobal(GlobalDecl GD) {
 }
 
 namespace {
-  struct FunctionIsDirectlyRecursive :
-    public RecursiveASTVisitor<FunctionIsDirectlyRecursive> {
+  struct SubprogramIsDirectlyRecursive :
+    public RecursiveASTVisitor<SubprogramIsDirectlyRecursive> {
     const StringRef Name;
     const Builtin::Context &BI;
     bool Result;
-    FunctionIsDirectlyRecursive(StringRef N, const Builtin::Context &C) :
+    SubprogramIsDirectlyRecursive(StringRef N, const Builtin::Context &C) :
       Name(N), BI(C), Result(false) {
     }
-    typedef RecursiveASTVisitor<FunctionIsDirectlyRecursive> Base;
+    typedef RecursiveASTVisitor<SubprogramIsDirectlyRecursive> Base;
 
     bool TraverseCallExpr(CallExpr *E) {
-      const FunctionDecl *FD = E->getDirectCallee();
+      const SubprogramDecl *FD = E->getDirectCallee();
       if (!FD)
         return true;
       AsmLabelAttr *Attr = FD->getAttr<AsmLabelAttr>();
@@ -1026,7 +1026,7 @@ namespace {
 // decl that, because of the asm attribute or the other decl being a builtin,
 // ends up pointing to itself.
 bool
-CodeGenModule::isTriviallyRecursive(const FunctionDecl *FD) {
+CodeGenModule::isTriviallyRecursive(const SubprogramDecl *FD) {
   StringRef Name;
   if (getFortranABI().getMangleContext().shouldMangleDeclName(FD)) {
     // asm labels are a special kind of mangling we have to support.
@@ -1038,14 +1038,14 @@ CodeGenModule::isTriviallyRecursive(const FunctionDecl *FD) {
     Name = FD->getName();
   }
 
-  FunctionIsDirectlyRecursive Walker(Name, Context.BuiltinInfo);
-  Walker.TraverseFunctionDecl(const_cast<FunctionDecl*>(FD));
+  SubprogramIsDirectlyRecursive Walker(Name, Context.BuiltinInfo);
+  Walker.TraverseSubprogramDecl(const_cast<SubprogramDecl*>(FD));
   return Walker.Result;
 }
 
 bool
-CodeGenModule::shouldEmitFunction(const FunctionDecl *F) {
-  if (getFunctionLinkage(F) != llvm::Function::AvailableExternallyLinkage)
+CodeGenModule::shouldEmitSubprogram(const SubprogramDecl *F) {
+  if (getSubprogramLinkage(F) != llvm::Function::AvailableExternallyLinkage)
     return true;
   if (CodeGenOpts.OptimizationLevel == 0 &&
       !F->hasAttr<AlwaysInlineAttr>() && !F->hasAttr<ForceInlineAttr>())
@@ -1065,10 +1065,10 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD) {
                                  Context.getSourceManager(),
                                  "Generating code for declaration");
   
-  if (const FunctionDecl *Function = dyn_cast<FunctionDecl>(D)) {
+  if (const SubprogramDecl *Subprogram = dyn_cast<SubprogramDecl>(D)) {
     // At -O0, don't generate IR for functions with available_externally 
     // linkage.
-    if (!shouldEmitFunction(Function))
+    if (!shouldEmitSubprogram(Subprogram))
       return;
 
     if (const CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
@@ -1079,7 +1079,7 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD) {
       else if (const CXXDestructorDecl *DD =dyn_cast<CXXDestructorDecl>(Method))
         EmitCXXDestructor(DD, GD.getDtorType());
       else
-        EmitGlobalFunctionDefinition(GD);
+        EmitGlobalSubprogramDefinition(GD);
 
       if (Method->isVirtual())
         getVTables().EmitThunks(GD);
@@ -1087,7 +1087,7 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD) {
       return;
     }
 
-    return EmitGlobalFunctionDefinition(GD);
+    return EmitGlobalSubprogramDefinition(GD);
   }
   
   if (const VarDecl *VD = dyn_cast<VarDecl>(D))
@@ -1096,15 +1096,15 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD) {
   llvm_unreachable("Invalid argument to EmitGlobalDefinition()");
 }
 
-/// GetOrCreateLLVMFunction - If the specified mangled name is not in the
-/// module, create and return an llvm Function with the specified type. If there
+/// GetOrCreateLLVMSubprogram - If the specified mangled name is not in the
+/// module, create and return an llvm Subprogram with the specified type. If there
 /// is something in the module with the specified name, return it potentially
 /// bitcasted to the right type.
 ///
 /// If D is non-null, it specifies a decl that correspond to this.  This is used
 /// to set the attributes on the function when it is first created.
 llvm::Constant *
-CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
+CodeGenModule::GetOrCreateLLVMSubprogram(StringRef MangledName,
                                        llvm::Type *Ty,
                                        GlobalDecl D, bool ForVTable,
                                        llvm::Attribute ExtraAttrs) {
@@ -1112,7 +1112,7 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   llvm::GlobalValue *Entry = GetGlobalValue(MangledName);
   if (Entry) {
     if (WeakRefReferences.erase(Entry)) {
-      const FunctionDecl *FD = cast_or_null<FunctionDecl>(D.getDecl());
+      const SubprogramDecl *FD = cast_or_null<SubprogramDecl>(D.getDecl());
       if (FD && !FD->hasAttr<WeakAttr>())
         Entry->setLinkage(llvm::Function::ExternalLinkage);
     }
@@ -1127,14 +1127,14 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   // This function doesn't have a complete type (for example, the return
   // type is an incomplete struct). Use a fake type instead, and make
   // sure not to try to set attributes.
-  bool IsIncompleteFunction = false;
+  bool IsIncompleteSubprogram = false;
 
   llvm::FunctionType *FTy;
   if (isa<llvm::FunctionType>(Ty)) {
     FTy = cast<llvm::FunctionType>(Ty);
   } else {
     FTy = llvm::FunctionType::get(VoidTy, false);
-    IsIncompleteFunction = true;
+    IsIncompleteSubprogram = true;
   }
   
   llvm::Function *F = llvm::Function::Create(FTy,
@@ -1142,7 +1142,7 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
                                              MangledName, &getModule());
   assert(F->getName() == MangledName && "name was uniqued!");
   if (D.getDecl())
-    SetFunctionAttributes(D, F, IsIncompleteFunction);
+    SetSubprogramAttributes(D, F, IsIncompleteSubprogram);
   if (ExtraAttrs.hasAttributes())
     F->addAttribute(llvm::AttributeSet::FunctionIndex, ExtraAttrs);
 
@@ -1169,7 +1169,7 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   // in a vtable, unless it's already marked as used.
   } else if (getLangOpts().CPlusPlus && D.getDecl()) {
     // Look for a declaration that's lexically in a record.
-    const FunctionDecl *FD = cast<FunctionDecl>(D.getDecl());
+    const SubprogramDecl *FD = cast<SubprogramDecl>(D.getDecl());
     FD = FD->getMostRecentDecl();
     do {
       if (isa<CXXRecordDecl>(FD->getLexicalDeclContext())) {
@@ -1187,7 +1187,7 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   }
 
   // Make sure the result is of the requested type.
-  if (!IsIncompleteFunction) {
+  if (!IsIncompleteSubprogram) {
     assert(F->getType()->getElementType() == Ty);
     return F;
   }
@@ -1196,10 +1196,10 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   return llvm::ConstantExpr::getBitCast(F, PTy);
 }
 
-/// GetAddrOfFunction - Return the address of the given function.  If Ty is
+/// GetAddrOfSubprogram - Return the address of the given function.  If Ty is
 /// non-null, then this function will use the specified type if it has to
 /// create it (this occurs when we see a definition of the function).
-llvm::Constant *CodeGenModule::GetAddrOfFunction(GlobalDecl GD,
+llvm::Constant *CodeGenModule::GetAddrOfSubprogram(GlobalDecl GD,
                                                  llvm::Type *Ty,
                                                  bool ForVTable) {
   // If there was no specific requested type, just convert it now.
@@ -1207,16 +1207,16 @@ llvm::Constant *CodeGenModule::GetAddrOfFunction(GlobalDecl GD,
     Ty = getTypes().ConvertType(cast<ValueDecl>(GD.getDecl())->getType());
   
   StringRef MangledName = getMangledName(GD);
-  return GetOrCreateLLVMFunction(MangledName, Ty, GD, ForVTable);
+  return GetOrCreateLLVMSubprogram(MangledName, Ty, GD, ForVTable);
 }
 
-/// CreateRuntimeFunction - Create a new runtime function with the specified
+/// CreateRuntimeSubprogram - Create a new runtime function with the specified
 /// type and name.
 llvm::Constant *
-CodeGenModule::CreateRuntimeFunction(llvm::FunctionType *FTy,
+CodeGenModule::CreateRuntimeSubprogram(llvm::FunctionType *FTy,
                                      StringRef Name,
                                      llvm::Attribute ExtraAttrs) {
-  return GetOrCreateLLVMFunction(Name, FTy, GlobalDecl(), /*ForVTable=*/false,
+  return GetOrCreateLLVMSubprogram(Name, FTy, GlobalDecl(), /*ForVTable=*/false,
                                  ExtraAttrs);
 }
 
@@ -1414,15 +1414,15 @@ CodeGenModule::getVTableLinkage(const CXXRecordDecl *RD) {
   if (RD->getLinkage() != ExternalLinkage)
     return llvm::GlobalVariable::InternalLinkage;
 
-  if (const CXXMethodDecl *KeyFunction
-                                    = RD->getASTContext().getKeyFunction(RD)) {
+  if (const CXXMethodDecl *KeySubprogram
+                                    = RD->getASTContext().getKeySubprogram(RD)) {
     // If this class has a key function, use that to determine the linkage of
     // the vtable.
-    const FunctionDecl *Def = 0;
-    if (KeyFunction->hasBody(Def))
-      KeyFunction = cast<CXXMethodDecl>(Def);
+    const SubprogramDecl *Def = 0;
+    if (KeySubprogram->hasBody(Def))
+      KeySubprogram = cast<CXXMethodDecl>(Def);
     
-    switch (KeyFunction->getTemplateSpecializationKind()) {
+    switch (KeySubprogram->getTemplateSpecializationKind()) {
       case TSK_Undeclared:
       case TSK_ExplicitSpecialization:
         // When compiling with optimizations turned on, we emit all vtables,
@@ -1431,7 +1431,7 @@ CodeGenModule::getVTableLinkage(const CXXRecordDecl *RD) {
         if (!Def && CodeGenOpts.OptimizationLevel)
           return llvm::GlobalVariable::AvailableExternallyLinkage;
 
-        if (KeyFunction->isInlined())
+        if (KeySubprogram->isInlined())
           return !Context.getLangOpts().AppleKext ?
                    llvm::GlobalVariable::LinkOnceODRLinkage :
                    llvm::Function::InternalLinkage;
@@ -1681,7 +1681,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D) {
     Entry = CE->getOperand(0);
   }
 
-  // Entry is now either a Function or GlobalVariable.
+  // Entry is now either a Subprogram or GlobalVariable.
   llvm::GlobalVariable *GV = dyn_cast<llvm::GlobalVariable>(Entry);
 
   // We have a definition after a declaration with the wrong type.
@@ -1894,7 +1894,7 @@ static void replaceUsesOfNonProtoConstant(llvm::Constant *old,
   }
 }
 
-/// ReplaceUsesOfNonProtoTypeWithRealFunction - This function is called when we
+/// ReplaceUsesOfNonProtoTypeWithRealSubprogram - This function is called when we
 /// implement a function with no prototype, e.g. "int foo() {}".  If there are
 /// existing call uses of the old function in the module, this adjusts them to
 /// call the new function directly.
@@ -1903,7 +1903,7 @@ static void replaceUsesOfNonProtoConstant(llvm::Constant *old,
 /// functions to be able to inline them.  If there is a bitcast in the way, it
 /// won't inline them.  Instcombine normally deletes these calls, but it isn't
 /// run at -O0.
-static void ReplaceUsesOfNonProtoTypeWithRealFunction(llvm::GlobalValue *Old,
+static void ReplaceUsesOfNonProtoTypeWithRealSubprogram(llvm::GlobalValue *Old,
                                                       llvm::Function *NewFn) {
   // If we're redefining a global as a function, don't transform it.
   if (!isa<llvm::Function>(Old)) return;
@@ -1919,15 +1919,15 @@ void CodeGenModule::HandleCXXStaticMemberVarInstantiation(VarDecl *VD) {
     GetAddrOfGlobalVar(VD);
 }
 
-void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
-  const FunctionDecl *D = cast<FunctionDecl>(GD.getDecl());
+void CodeGenModule::EmitGlobalSubprogramDefinition(GlobalDecl GD) {
+  const SubprogramDecl *D = cast<SubprogramDecl>(GD.getDecl());
 
   // Compute the function info and LLVM type.
-  const CGFunctionInfo &FI = getTypes().arrangeGlobalDeclaration(GD);
-  llvm::FunctionType *Ty = getTypes().GetFunctionType(FI);
+  const CGSubprogramInfo &FI = getTypes().arrangeGlobalDeclaration(GD);
+  llvm::FunctionType *Ty = getTypes().GetSubprogramType(FI);
 
   // Get or create the prototype for the function.
-  llvm::Constant *Entry = GetAddrOfFunction(GD, Ty);
+  llvm::Constant *Entry = GetAddrOfSubprogram(GD, Ty);
 
   // Strip off a bitcast if we got one back.
   if (llvm::ConstantExpr *CE = dyn_cast<llvm::ConstantExpr>(Entry)) {
@@ -1943,16 +1943,16 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
     assert(OldFn->isDeclaration() &&
            "Shouldn't replace non-declaration");
 
-    // F is the Function* for the one with the wrong type, we must make a new
-    // Function* and update everything that used F (a declaration) with the new
-    // Function* (which will be a definition).
+    // F is the Subprogram* for the one with the wrong type, we must make a new
+    // Subprogram* and update everything that used F (a declaration) with the new
+    // Subprogram* (which will be a definition).
     //
     // This happens if there is a prototype for a function
     // (e.g. "int f()") and then a definition of a different type
     // (e.g. "int f(int x)").  Move the old function aside so that it
-    // doesn't interfere with GetAddrOfFunction.
+    // doesn't interfere with GetAddrOfSubprogram.
     OldFn->setName(StringRef());
-    llvm::Function *NewFn = cast<llvm::Function>(GetAddrOfFunction(GD, Ty));
+    llvm::Function *NewFn = cast<llvm::Function>(GetAddrOfSubprogram(GD, Ty));
 
     // This might be an implementation of a function without a
     // prototype, in which case, try to do special replacement of
@@ -1962,11 +1962,11 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
     // and suppresses a number of optimizer warnings (!) about
     // dropping arguments.
     if (!OldFn->use_empty()) {
-      ReplaceUsesOfNonProtoTypeWithRealFunction(OldFn, NewFn);
+      ReplaceUsesOfNonProtoTypeWithRealSubprogram(OldFn, NewFn);
       OldFn->removeDeadConstantUsers();
     }
 
-    // Replace uses of F with the Function we will endow with a body.
+    // Replace uses of F with the Subprogram we will endow with a body.
     if (!Entry->use_empty()) {
       llvm::Constant *NewPtrForOldDecl =
         llvm::ConstantExpr::getBitCast(NewFn, Entry->getType());
@@ -1984,15 +1984,15 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
   // want to propagate this information down (e.g. to local static
   // declarations).
   llvm::Function *Fn = cast<llvm::Function>(Entry);
-  setFunctionLinkage(D, Fn);
+  setSubprogramLinkage(D, Fn);
 
-  // FIXME: this is redundant with part of SetFunctionDefinitionAttributes
+  // FIXME: this is redundant with part of SetSubprogramDefinitionAttributes
   setGlobalVisibility(Fn, D);
 
   CodeGenSubprogram(*this).GenerateCode(D, Fn, FI);
 
-  SetFunctionDefinitionAttributes(D, Fn);
-  SetLLVMFunctionAttributesForDefinition(D, Fn);
+  SetSubprogramDefinitionAttributes(D, Fn);
+  SetLLVMSubprogramAttributesForDefinition(D, Fn);
 
   if (const ConstructorAttr *CA = D->getAttr<ConstructorAttr>())
     AddGlobalCtor(Fn, CA->getPriority());
@@ -2021,7 +2021,7 @@ void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {
   // if a deferred decl.
   llvm::Constant *Aliasee;
   if (isa<llvm::FunctionType>(DeclTy))
-    Aliasee = GetOrCreateLLVMFunction(AA->getAliasee(), DeclTy, GD,
+    Aliasee = GetOrCreateLLVMSubprogram(AA->getAliasee(), DeclTy, GD,
                                       /*ForVTable=*/false);
   else
     Aliasee = GetOrCreateLLVMGlobal(AA->getAliasee(),
@@ -2056,7 +2056,7 @@ void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {
   // specialization of the attributes which may be set on a global
   // variable/function.
   if (D->hasAttr<DLLExportAttr>()) {
-    if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       // The dllexport attribute is ignored for undefined symbols.
       if (FD->hasBody())
         GA->setLinkage(llvm::Function::DLLExportLinkage);
@@ -2653,14 +2653,14 @@ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
   switch (D->getKind()) {
   case Decl::CXXConversion:
   case Decl::CXXMethod:
-  case Decl::Function:
+  case Decl::Subprogram:
   case Decl::MainProgram:
     // Skip function templates
-    if (cast<FunctionDecl>(D)->getDescribedFunctionTemplate() ||
-        cast<FunctionDecl>(D)->isLateTemplateParsed())
+    if (cast<SubprogramDecl>(D)->getDescribedSubprogramTemplate() ||
+        cast<SubprogramDecl>(D)->isLateTemplateParsed())
       return;
 
-    EmitGlobal(cast<FunctionDecl>(D));
+    EmitGlobal(cast<SubprogramDecl>(D));
     break;
       
   case Decl::Var:
@@ -2681,7 +2681,7 @@ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
   case Decl::Using:
   case Decl::UsingDirective:
   case Decl::ClassTemplate:
-  case Decl::FunctionTemplate:
+  case Decl::SubprogramTemplate:
   case Decl::TypeAliasTemplate:
   case Decl::NamespaceAlias:
   case Decl::Block:
@@ -2689,14 +2689,14 @@ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
     break;
   case Decl::CXXConstructor:
     // Skip function templates
-    if (cast<FunctionDecl>(D)->getDescribedFunctionTemplate() ||
-        cast<FunctionDecl>(D)->isLateTemplateParsed())
+    if (cast<SubprogramDecl>(D)->getDescribedSubprogramTemplate() ||
+        cast<SubprogramDecl>(D)->isLateTemplateParsed())
       return;
       
     EmitCXXConstructors(cast<CXXConstructorDecl>(D));
     break;
   case Decl::CXXDestructor:
-    if (cast<FunctionDecl>(D)->isLateTemplateParsed())
+    if (cast<SubprogramDecl>(D)->isLateTemplateParsed())
       return;
     EmitCXXDestructors(cast<CXXDestructorDecl>(D));
     break;

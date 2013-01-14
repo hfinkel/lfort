@@ -1096,9 +1096,9 @@ void CommentASTToXMLConverter::visitFullComment(const FullComment *C) {
       RootEndTag = "</Other>";
       Result << "<Other";
       break;
-    case DeclInfo::FunctionKind:
-      RootEndTag = "</Function>";
-      Result << "<Function";
+    case DeclInfo::SubprogramKind:
+      RootEndTag = "</Subprogram>";
+      Result << "<Subprogram";
       switch (DI->TemplateKind) {
       case DeclInfo::NotTemplate:
         break;

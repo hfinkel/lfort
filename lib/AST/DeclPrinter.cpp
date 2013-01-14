@@ -51,7 +51,7 @@ namespace {
     void VisitEnumDecl(EnumDecl *D);
     void VisitRecordDecl(RecordDecl *D);
     void VisitEnumConstantDecl(EnumConstantDecl *D);
-    void VisitFunctionDecl(FunctionDecl *D);
+    void VisitSubprogramDecl(SubprogramDecl *D);
     void VisitFriendDecl(FriendDecl *D);
     void VisitFieldDecl(FieldDecl *D);
     void VisitVarDecl(VarDecl *D);
@@ -66,7 +66,7 @@ namespace {
     void VisitCXXRecordDecl(CXXRecordDecl *D);
     void VisitLinkageSpecDecl(LinkageSpecDecl *D);
     void VisitTemplateDecl(const TemplateDecl *D);
-    void VisitFunctionTemplateDecl(FunctionTemplateDecl *D);
+    void VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D);
     void VisitClassTemplateDecl(ClassTemplateDecl *D);
     void VisitObjCMethodDecl(ObjCMethodDecl *D);
     void VisitObjCImplementationDecl(ObjCImplementationDecl *D);
@@ -111,7 +111,7 @@ static QualType GetBaseType(QualType T) {
       BaseType = BPy->getPointeeType();
     else if (const ArrayType* ATy = dyn_cast<ArrayType>(BaseType))
       BaseType = ATy->getElementType();
-    else if (const FunctionType* FTy = BaseType->getAs<FunctionType>())
+    else if (const SubprogramType* FTy = BaseType->getAs<SubprogramType>())
       BaseType = FTy->getResultType();
     else if (const VectorType *VTy = BaseType->getAs<VectorType>())
       BaseType = VTy->getElementType();
@@ -290,8 +290,8 @@ void DeclPrinter::VisitDeclContext(DeclContext *DC, bool Indent) {
 
     // FIXME: Need to be able to tell the DeclPrinter when
     const char *Terminator = 0;
-    if (isa<FunctionDecl>(*D) &&
-        cast<FunctionDecl>(*D)->isThisDeclarationADefinition())
+    if (isa<SubprogramDecl>(*D) &&
+        cast<SubprogramDecl>(*D)->isThisDeclarationADefinition())
       Terminator = 0;
     else if (isa<ObjCMethodDecl>(*D) && cast<ObjCMethodDecl>(*D)->getBody())
       Terminator = 0;
@@ -386,7 +386,7 @@ void DeclPrinter::VisitEnumConstantDecl(EnumConstantDecl *D) {
   }
 }
 
-void DeclPrinter::VisitFunctionDecl(FunctionDecl *D) {
+void DeclPrinter::VisitSubprogramDecl(SubprogramDecl *D) {
   CXXConstructorDecl *CDecl = dyn_cast<CXXConstructorDecl>(D);
   if (!Policy.SuppressSpecifiers) {
     switch (D->getStorageClassAsWritten()) {
@@ -415,11 +415,11 @@ void DeclPrinter::VisitFunctionDecl(FunctionDecl *D) {
     Ty = PT->getInnerType();
   }
 
-  if (isa<FunctionType>(Ty)) {
-    const FunctionType *AFT = Ty->getAs<FunctionType>();
-    const FunctionProtoType *FT = 0;
+  if (isa<SubprogramType>(Ty)) {
+    const SubprogramType *AFT = Ty->getAs<SubprogramType>();
+    const SubprogramProtoType *FT = 0;
     if (D->hasWrittenPrototype())
-      FT = dyn_cast<FunctionProtoType>(AFT);
+      FT = dyn_cast<SubprogramProtoType>(AFT);
 
     Proto += "(";
     if (FT) {
@@ -583,15 +583,15 @@ void DeclPrinter::VisitFriendDecl(FriendDecl *D) {
     Out << "friend ";
     Out << " " << TSI->getType().getAsString(Policy);
   }
-  else if (FunctionDecl *FD =
-      dyn_cast<FunctionDecl>(D->getFriendDecl())) {
+  else if (SubprogramDecl *FD =
+      dyn_cast<SubprogramDecl>(D->getFriendDecl())) {
     Out << "friend ";
-    VisitFunctionDecl(FD);
+    VisitSubprogramDecl(FD);
   }
-  else if (FunctionTemplateDecl *FTD =
-           dyn_cast<FunctionTemplateDecl>(D->getFriendDecl())) {
+  else if (SubprogramTemplateDecl *FTD =
+           dyn_cast<SubprogramTemplateDecl>(D->getFriendDecl())) {
     Out << "friend ";
-    VisitFunctionTemplateDecl(FTD);
+    VisitSubprogramTemplateDecl(FTD);
   }
   else if (ClassTemplateDecl *CTD =
            dyn_cast<ClassTemplateDecl>(D->getFriendDecl())) {
@@ -848,10 +848,10 @@ void DeclPrinter::VisitTemplateDecl(const TemplateDecl *D) {
   }
 }
 
-void DeclPrinter::VisitFunctionTemplateDecl(FunctionTemplateDecl *D) {
+void DeclPrinter::VisitSubprogramTemplateDecl(SubprogramTemplateDecl *D) {
   if (PrintInstantiation) {
     TemplateParameterList *Params = D->getTemplateParameters();
-    for (FunctionTemplateDecl::spec_iterator I = D->spec_begin(), E = D->spec_end();
+    for (SubprogramTemplateDecl::spec_iterator I = D->spec_begin(), E = D->spec_end();
          I != E; ++I) {
       PrintTemplateParameters(Params, (*I)->getTemplateSpecializationArgs());
       Visit(*I);

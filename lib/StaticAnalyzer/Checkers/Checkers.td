@@ -124,13 +124,13 @@ def SizeofPointerChecker : Checker<"SizeofPtr">,
 
 let ParentPackage = CoreBuiltin in {
 
-def NoReturnFunctionChecker : Checker<"NoReturnFunctions">,
+def NoReturnSubprogramChecker : Checker<"NoReturnSubprograms">,
   HelpText<"Evaluate \"panic\" functions that are known to not return to the caller">,
-  DescFile<"NoReturnFunctionChecker.cpp">;
+  DescFile<"NoReturnSubprogramChecker.cpp">;
 
-def BuiltinFunctionChecker : Checker<"BuiltinFunctions">,
+def BuiltinSubprogramChecker : Checker<"BuiltinSubprograms">,
   HelpText<"Evaluate compiler builtin functions (e.g., alloca())">,
-  DescFile<"BuiltinFunctionChecker.cpp">;
+  DescFile<"BuiltinSubprogramChecker.cpp">;
 
 } // end "core.builtin"
 
@@ -420,7 +420,7 @@ def DirectIvarAssignment : Checker<"DirectIvarAssignment">,
   HelpText<"Check for direct assignments to instance variables">,
   DescFile<"DirectIvarAssignment.cpp">;
 
-def DirectIvarAssignmentForAnnotatedFunctions : Checker<"DirectIvarAssignmentForAnnotatedFunctions">,
+def DirectIvarAssignmentForAnnotatedSubprograms : Checker<"DirectIvarAssignmentForAnnotatedSubprograms">,
   HelpText<"Check for direct assignments to instance variables in the methods annotated with objc_no_direct_instance_variable_assignment">,
   DescFile<"DirectIvarAssignment.cpp">;
 

@@ -757,9 +757,9 @@ namespace lfort {
       TYPE_VECTOR                   = 12,
       /// \brief An ExtVectorType record.
       TYPE_EXT_VECTOR               = 13,
-      /// \brief A FunctionNoProtoType record.
+      /// \brief A SubprogramNoProtoType record.
       TYPE_FUNCTION_NO_PROTO        = 14,
-      /// \brief A FunctionProtoType record.
+      /// \brief A SubprogramProtoType record.
       TYPE_FUNCTION_PROTO           = 15,
       /// \brief A TypedefType record.
       TYPE_TYPEDEF                  = 16,
@@ -901,7 +901,7 @@ namespace lfort {
       DECL_RECORD,
       /// \brief An EnumConstantDecl record.
       DECL_ENUM_CONSTANT,
-      /// \brief A FunctionDecl record.
+      /// \brief A SubprogramDecl record.
       DECL_FUNCTION,
       /// \brief A ObjCMethodDecl record.
       DECL_OBJC_METHOD,
@@ -995,7 +995,7 @@ namespace lfort {
       DECL_CLASS_TEMPLATE_SPECIALIZATION,
       /// \brief A ClassTemplatePartialSpecializationDecl record.
       DECL_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION,
-      /// \brief A FunctionTemplateDecl record.
+      /// \brief A SubprogramTemplateDecl record.
       DECL_FUNCTION_TEMPLATE,
       /// \brief A TemplateTypeParmDecl record.
       DECL_TEMPLATE_TYPE_PARM,
@@ -1017,7 +1017,7 @@ namespace lfort {
       /// \brief A TemplateTemplateParmDecl record that stores an expanded
       /// template template parameter pack.
       DECL_EXPANDED_TEMPLATE_TEMPLATE_PARM_PACK,
-      /// \brief A ClassScopeFunctionSpecializationDecl record a class scope
+      /// \brief A ClassScopeSubprogramSpecializationDecl record a class scope
       /// function specialization. (Microsoft extension).
       DECL_CLASS_SCOPE_FUNCTION_SPECIALIZATION,
       /// \brief An ImportDecl recording a module import.
@@ -1221,7 +1221,7 @@ namespace lfort {
       EXPR_CXX_REINTERPRET_CAST,
       /// \brief A CXXConstCastExpr record.
       EXPR_CXX_CONST_CAST,
-      /// \brief A CXXFunctionalCastExpr record.
+      /// \brief A CXXSubprogramalCastExpr record.
       EXPR_CXX_FUNCTIONAL_CAST,
       /// \brief A UserDefinedLiteral record.
       EXPR_USER_DEFINED_LITERAL,
@@ -1262,7 +1262,7 @@ namespace lfort {
       EXPR_SIZEOF_PACK,           // SizeOfPackExpr
       EXPR_SUBST_NON_TYPE_TEMPLATE_PARM, // SubstNonTypeTemplateParmExpr
       EXPR_SUBST_NON_TYPE_TEMPLATE_PARM_PACK,// SubstNonTypeTemplateParmPackExpr
-      EXPR_FUNCTION_PARM_PACK,    // FunctionParmPackExpr
+      EXPR_FUNCTION_PARM_PACK,    // SubprogramParmPackExpr
       EXPR_MATERIALIZE_TEMPORARY, // MaterializeTemporaryExpr
       
       // CUDA

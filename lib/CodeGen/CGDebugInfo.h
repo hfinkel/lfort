@@ -83,7 +83,7 @@ class CGDebugInfo {
   StringRef CWDName;
 
   llvm::DenseMap<const char *, llvm::WeakVH> DIFileCache;
-  llvm::DenseMap<const FunctionDecl *, llvm::WeakVH> SPCache;
+  llvm::DenseMap<const SubprogramDecl *, llvm::WeakVH> SPCache;
   llvm::DenseMap<const NamespaceDecl *, llvm::WeakVH> NameSpaceCache;
 
   /// Helper functions for getOrCreateType.
@@ -95,7 +95,7 @@ class CGDebugInfo {
                           llvm::DIFile F);
   llvm::DIType CreateType(const PointerType *Ty, llvm::DIFile F);
   llvm::DIType CreateType(const BlockPointerType *Ty, llvm::DIFile F);
-  llvm::DIType CreateType(const FunctionType *Ty, llvm::DIFile F);
+  llvm::DIType CreateType(const SubprogramType *Ty, llvm::DIFile F);
   llvm::DIType CreateType(const RecordType *Ty);
   llvm::DIType CreateLimitedType(const RecordType *Ty);
   llvm::DIType CreateType(const ObjCInterfaceType *Ty, llvm::DIFile F);
@@ -111,7 +111,7 @@ class CGDebugInfo {
   llvm::DIType getCompletedTypeOrNull(const QualType);
   llvm::DIType getOrCreateMethodType(const CXXMethodDecl *Method,
                                      llvm::DIFile F);
-  llvm::DIType getOrCreateFunctionType(const Decl *D, QualType FnType,
+  llvm::DIType getOrCreateSubprogramType(const Decl *D, QualType FnType,
                                        llvm::DIFile F);
   llvm::DIType getOrCreateVTablePtrType(llvm::DIFile F);
   llvm::DINameSpace getOrCreateNameSpace(const NamespaceDecl *N);
@@ -122,11 +122,11 @@ class CGDebugInfo {
 
   llvm::DIType getOrCreateStructPtrType(StringRef Name, llvm::DIType &Cache);
 
-  llvm::DISubprogram CreateCXXMemberFunction(const CXXMethodDecl *Method,
+  llvm::DISubprogram CreateCXXMemberSubprogram(const CXXMethodDecl *Method,
                                              llvm::DIFile F,
                                              llvm::DIType RecordTy);
   
-  void CollectCXXMemberFunctions(const CXXRecordDecl *Decl,
+  void CollectCXXMemberSubprograms(const CXXRecordDecl *Decl,
                                  llvm::DIFile F,
                                  SmallVectorImpl<llvm::Value *> &E,
                                  llvm::DIType T);
@@ -146,7 +146,7 @@ class CGDebugInfo {
                         const TemplateArgumentList &TAList,
                         llvm::DIFile Unit);
   llvm::DIArray
-  CollectFunctionTemplateParams(const FunctionDecl *FD, llvm::DIFile Unit);
+  CollectSubprogramTemplateParams(const SubprogramDecl *FD, llvm::DIFile Unit);
   llvm::DIArray 
   CollectCXXTemplateParams(const ClassTemplateSpecializationDecl *TS,
                            llvm::DIFile F);
@@ -183,13 +183,13 @@ public:
   /// information in the source file.
   void EmitLocation(CGBuilderTy &Builder, SourceLocation Loc);
 
-  /// EmitFunctionStart - Emit a call to llvm.dbg.function.start to indicate
+  /// EmitSubprogramStart - Emit a call to llvm.dbg.function.start to indicate
   /// start of a new function.
-  void EmitFunctionStart(GlobalDecl GD, QualType FnType,
+  void EmitSubprogramStart(GlobalDecl GD, QualType FnType,
                          llvm::Function *Fn, CGBuilderTy &Builder);
 
-  /// EmitFunctionEnd - Constructs the debug code for exiting a function.
-  void EmitFunctionEnd(CGBuilderTy &Builder);
+  /// EmitSubprogramEnd - Constructs the debug code for exiting a function.
+  void EmitSubprogramEnd(CGBuilderTy &Builder);
 
   /// EmitLexicalBlockStart - Emit metadata to indicate the beginning of a
   /// new lexical block and push the block onto the stack.
@@ -292,14 +292,14 @@ private:
   llvm::DIType CreateMemberType(llvm::DIFile Unit, QualType FType,
                                 StringRef Name, uint64_t *Offset);
 
-  /// getFunctionDeclaration - Return debug info descriptor to describe method
+  /// getSubprogramDeclaration - Return debug info descriptor to describe method
   /// declaration for the given method definition.
-  llvm::DISubprogram getFunctionDeclaration(const Decl *D);
+  llvm::DISubprogram getSubprogramDeclaration(const Decl *D);
 
-  /// getFunctionName - Get function name for the given FunctionDecl. If the
+  /// getSubprogramName - Get function name for the given SubprogramDecl. If the
   /// name is constructred on demand (e.g. C++ destructor) then the name
   /// is stored on the side.
-  StringRef getFunctionName(const FunctionDecl *FD);
+  StringRef getSubprogramName(const SubprogramDecl *FD);
 
   /// getObjCMethodName - Returns the unmangled name of an Objective-C method.
   /// This is the display name for the debugging info.  
