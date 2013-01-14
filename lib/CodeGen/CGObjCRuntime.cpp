@@ -16,7 +16,7 @@
 #include "CGObjCRuntime.h"
 #include "CGCleanup.h"
 #include "CGRecordLayout.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/RecordLayout.h"
 #include "lfort/AST/StmtObjC.h"
@@ -82,7 +82,7 @@ unsigned CGObjCRuntime::ComputeBitfieldBitOffset(
   return LookupFieldBitOffset(CGM, ID, ID->getImplementation(), Ivar);
 }
 
-LValue CGObjCRuntime::EmitValueForIvarAtOffset(CodeGen::CodeGenFunction &CGF,
+LValue CGObjCRuntime::EmitValueForIvarAtOffset(CodeGen::CodeGenSubprogram &CGF,
                                                const ObjCInterfaceDecl *OID,
                                                llvm::Value *BaseValue,
                                                const ObjCIvarDecl *Ivar,
@@ -157,7 +157,7 @@ namespace {
     bool MightThrow;
     llvm::Value *Fn;
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       if (!MightThrow) {
         CGF.Builder.CreateCall(Fn)->setDoesNotThrow();
         return;
@@ -169,17 +169,17 @@ namespace {
 }
 
 
-void CGObjCRuntime::EmitTryCatchStmt(CodeGenFunction &CGF,
+void CGObjCRuntime::EmitTryCatchStmt(CodeGenSubprogram &CGF,
                                      const ObjCAtTryStmt &S,
                                      llvm::Constant *beginCatchFn,
                                      llvm::Constant *endCatchFn,
                                      llvm::Constant *exceptionRethrowFn) {
   // Jump destination for falling out of catch bodies.
-  CodeGenFunction::JumpDest Cont;
+  CodeGenSubprogram::JumpDest Cont;
   if (S.getNumCatchStmts())
     Cont = CGF.getJumpDestInCurrentScope("eh.cont");
 
-  CodeGenFunction::FinallyInfo FinallyInfo;
+  CodeGenSubprogram::FinallyInfo FinallyInfo;
   if (const ObjCAtFinallyStmt *Finally = S.getFinallyStmt())
     FinallyInfo.enter(CGF, Finally->getFinallyBody(),
                       beginCatchFn, endCatchFn, exceptionRethrowFn);
@@ -237,7 +237,7 @@ void CGObjCRuntime::EmitTryCatchStmt(CodeGenFunction &CGF,
       cast<llvm::CallInst>(Exn)->setDoesNotThrow();
     }
 
-    CodeGenFunction::LexicalScope cleanups(CGF, Handler.Body->getSourceRange());
+    CodeGenSubprogram::LexicalScope cleanups(CGF, Handler.Body->getSourceRange());
 
     if (endCatchFn) {
       // Add a cleanup to leave the catch.
@@ -302,17 +302,17 @@ namespace {
     CallSyncExit(llvm::Value *SyncExitFn, llvm::Value *SyncArg)
       : SyncExitFn(SyncExitFn), SyncArg(SyncArg) {}
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       CGF.Builder.CreateCall(SyncExitFn, SyncArg)->setDoesNotThrow();
     }
   };
 }
 
-void CGObjCRuntime::EmitAtSynchronizedStmt(CodeGenFunction &CGF,
+void CGObjCRuntime::EmitAtSynchronizedStmt(CodeGenSubprogram &CGF,
                                            const ObjCAtSynchronizedStmt &S,
                                            llvm::Function *syncEnterFn,
                                            llvm::Function *syncExitFn) {
-  CodeGenFunction::RunCleanupsScope cleanups(CGF);
+  CodeGenSubprogram::RunCleanupsScope cleanups(CGF);
 
   // Evaluate the lock operand.  This is guaranteed to dominate the
   // ARC release and lock-release cleanups.

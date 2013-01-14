@@ -17,7 +17,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGCleanup.h"
 
 using namespace lfort;
@@ -32,7 +32,7 @@ bool DominatingValue<RValue>::saved_type::needsSaving(RValue rv) {
 }
 
 DominatingValue<RValue>::saved_type
-DominatingValue<RValue>::saved_type::save(CodeGenFunction &CGF, RValue rv) {
+DominatingValue<RValue>::saved_type::save(CodeGenSubprogram &CGF, RValue rv) {
   if (rv.isScalar()) {
     llvm::Value *V = rv.getScalarVal();
 
@@ -47,7 +47,7 @@ DominatingValue<RValue>::saved_type::save(CodeGenFunction &CGF, RValue rv) {
   }
 
   if (rv.isComplex()) {
-    CodeGenFunction::ComplexPairTy V = rv.getComplexVal();
+    CodeGenSubprogram::ComplexPairTy V = rv.getComplexVal();
     llvm::Type *ComplexTy =
       llvm::StructType::get(V.first->getType(), V.second->getType(),
                             (void*) 0);
@@ -69,7 +69,7 @@ DominatingValue<RValue>::saved_type::save(CodeGenFunction &CGF, RValue rv) {
 /// Given a saved r-value produced by SaveRValue, perform the code
 /// necessary to restore it to usability at the current insertion
 /// point.
-RValue DominatingValue<RValue>::saved_type::restore(CodeGenFunction &CGF) {
+RValue DominatingValue<RValue>::saved_type::restore(CodeGenSubprogram &CGF) {
   switch (K) {
   case ScalarLiteral:
     return RValue::get(Value);
@@ -243,7 +243,7 @@ void EHScopeStack::popNullFixups() {
     BranchFixups.pop_back();
 }
 
-void CodeGenFunction::initFullExprCleanup() {
+void CodeGenSubprogram::initFullExprCleanup() {
   // Create a variable to decide whether the cleanup needs to be run.
   llvm::AllocaInst *active
     = CreateTempAlloca(Builder.getInt1Ty(), "cleanup.cond");
@@ -269,7 +269,7 @@ void EHScopeStack::Cleanup::anchor() {}
 /// All the branch fixups on the EH stack have propagated out past the
 /// outermost normal cleanup; resolve them all by adding cases to the
 /// given switch instruction.
-static void ResolveAllBranchFixups(CodeGenFunction &CGF,
+static void ResolveAllBranchFixups(CodeGenSubprogram &CGF,
                                    llvm::SwitchInst *Switch,
                                    llvm::BasicBlock *CleanupEntry) {
   llvm::SmallPtrSet<llvm::BasicBlock*, 4> CasesAdded;
@@ -306,7 +306,7 @@ static void ResolveAllBranchFixups(CodeGenFunction &CGF,
 
 /// Transitions the terminator of the given exit-block of a cleanup to
 /// be a cleanup switch.
-static llvm::SwitchInst *TransitionToCleanupSwitch(CodeGenFunction &CGF,
+static llvm::SwitchInst *TransitionToCleanupSwitch(CodeGenSubprogram &CGF,
                                                    llvm::BasicBlock *Block) {
   // If it's a branch, turn it into a switch whose default
   // destination is its original target.
@@ -326,7 +326,7 @@ static llvm::SwitchInst *TransitionToCleanupSwitch(CodeGenFunction &CGF,
   }
 }
 
-void CodeGenFunction::ResolveBranchFixups(llvm::BasicBlock *Block) {
+void CodeGenSubprogram::ResolveBranchFixups(llvm::BasicBlock *Block) {
   assert(Block && "resolving a null target block");
   if (!EHStack.getNumBranchFixups()) return;
 
@@ -365,7 +365,7 @@ void CodeGenFunction::ResolveBranchFixups(llvm::BasicBlock *Block) {
 }
 
 /// Pops cleanup blocks until the given savepoint is reached.
-void CodeGenFunction::PopCleanupBlocks(EHScopeStack::stable_iterator Old) {
+void CodeGenSubprogram::PopCleanupBlocks(EHScopeStack::stable_iterator Old) {
   assert(Old.isValid());
 
   while (EHStack.stable_begin() != Old) {
@@ -381,7 +381,7 @@ void CodeGenFunction::PopCleanupBlocks(EHScopeStack::stable_iterator Old) {
   }
 }
 
-static llvm::BasicBlock *CreateNormalEntry(CodeGenFunction &CGF,
+static llvm::BasicBlock *CreateNormalEntry(CodeGenSubprogram &CGF,
                                            EHCleanupScope &Scope) {
   assert(Scope.isNormalCleanup());
   llvm::BasicBlock *Entry = Scope.getNormalBlock();
@@ -397,7 +397,7 @@ static llvm::BasicBlock *CreateNormalEntry(CodeGenFunction &CGF,
 /// simplified/optimized for the tighter constraints on cleanup blocks.
 ///
 /// Returns the new block, whatever it is.
-static llvm::BasicBlock *SimplifyCleanupEntry(CodeGenFunction &CGF,
+static llvm::BasicBlock *SimplifyCleanupEntry(CodeGenSubprogram &CGF,
                                               llvm::BasicBlock *Entry) {
   llvm::BasicBlock *Pred = Entry->getSinglePredecessor();
   if (!Pred) return Entry;
@@ -431,7 +431,7 @@ static llvm::BasicBlock *SimplifyCleanupEntry(CodeGenFunction &CGF,
   return Pred;
 }
 
-static void EmitCleanup(CodeGenFunction &CGF,
+static void EmitCleanup(CodeGenSubprogram &CGF,
                         EHScopeStack::Cleanup *Fn,
                         EHScopeStack::Cleanup::Flags flags,
                         llvm::Value *ActiveFlag) {
@@ -486,7 +486,7 @@ static void ForwardPrebranchedFallthrough(llvm::BasicBlock *Exit,
 ///
 /// The validity of this transformation is very much specific to the
 /// exact ways in which we form branches to cleanup entries.
-static void destroyOptimisticNormalEntry(CodeGenFunction &CGF,
+static void destroyOptimisticNormalEntry(CodeGenSubprogram &CGF,
                                          EHCleanupScope &scope) {
   llvm::BasicBlock *entry = scope.getNormalBlock();
   if (!entry) return;
@@ -526,7 +526,7 @@ static void destroyOptimisticNormalEntry(CodeGenFunction &CGF,
 /// Pops a cleanup block.  If the block includes a normal cleanup, the
 /// current insertion point is threaded through the cleanup, as are
 /// any branch fixups on the cleanup.
-void CodeGenFunction::PopCleanupBlock(bool FallthroughIsBranchThrough) {
+void CodeGenSubprogram::PopCleanupBlock(bool FallthroughIsBranchThrough) {
   assert(!EHStack.empty() && "cleanup stack is empty!");
   assert(isa<EHCleanupScope>(*EHStack.begin()) && "top not a cleanup!");
   EHCleanupScope &Scope = cast<EHCleanupScope>(*EHStack.begin());
@@ -849,7 +849,7 @@ void CodeGenFunction::PopCleanupBlock(bool FallthroughIsBranchThrough) {
 /// isObviouslyBranchWithoutCleanups - Return true if a branch to the
 /// specified destination obviously has no cleanups to run.  'false' is always
 /// a conservatively correct answer for this method.
-bool CodeGenFunction::isObviouslyBranchWithoutCleanups(JumpDest Dest) const {
+bool CodeGenSubprogram::isObviouslyBranchWithoutCleanups(JumpDest Dest) const {
   assert(Dest.getScopeDepth().encloses(EHStack.stable_begin())
          && "stale jump destination");
   
@@ -874,7 +874,7 @@ bool CodeGenFunction::isObviouslyBranchWithoutCleanups(JumpDest Dest) const {
 /// be known, in which case this will require a fixup.
 ///
 /// As a side-effect, this method clears the insertion point.
-void CodeGenFunction::EmitBranchThroughCleanup(JumpDest Dest) {
+void CodeGenSubprogram::EmitBranchThroughCleanup(JumpDest Dest) {
   assert(Dest.getScopeDepth().encloses(EHStack.stable_begin())
          && "stale jump destination");
 
@@ -1000,7 +1000,7 @@ enum ForActivation_t {
 ///
 /// It would be good if we had some way of determining if there were
 /// extra uses *after* the change-over point.
-static void SetupCleanupBlockActivation(CodeGenFunction &CGF,
+static void SetupCleanupBlockActivation(CodeGenSubprogram &CGF,
                                         EHScopeStack::stable_iterator C,
                                         ForActivation_t kind,
                                         llvm::Instruction *dominatingIP) {
@@ -1057,7 +1057,7 @@ static void SetupCleanupBlockActivation(CodeGenFunction &CGF,
 }
 
 /// Activate a cleanup that was created in an inactivated state.
-void CodeGenFunction::ActivateCleanupBlock(EHScopeStack::stable_iterator C,
+void CodeGenSubprogram::ActivateCleanupBlock(EHScopeStack::stable_iterator C,
                                            llvm::Instruction *dominatingIP) {
   assert(C != EHStack.stable_end() && "activating bottom of stack?");
   EHCleanupScope &Scope = cast<EHCleanupScope>(*EHStack.find(C));
@@ -1069,7 +1069,7 @@ void CodeGenFunction::ActivateCleanupBlock(EHScopeStack::stable_iterator C,
 }
 
 /// Deactive a cleanup that was created in an active state.
-void CodeGenFunction::DeactivateCleanupBlock(EHScopeStack::stable_iterator C,
+void CodeGenSubprogram::DeactivateCleanupBlock(EHScopeStack::stable_iterator C,
                                              llvm::Instruction *dominatingIP) {
   assert(C != EHStack.stable_end() && "deactivating bottom of stack?");
   EHCleanupScope &Scope = cast<EHCleanupScope>(*EHStack.find(C));
@@ -1091,7 +1091,7 @@ void CodeGenFunction::DeactivateCleanupBlock(EHScopeStack::stable_iterator C,
   Scope.setActive(false);
 }
 
-llvm::Value *CodeGenFunction::getNormalCleanupDestSlot() {
+llvm::Value *CodeGenSubprogram::getNormalCleanupDestSlot() {
   if (!NormalCleanupDest)
     NormalCleanupDest =
       CreateTempAlloca(Builder.getInt32Ty(), "cleanup.dest.slot");
@@ -1099,7 +1099,7 @@ llvm::Value *CodeGenFunction::getNormalCleanupDestSlot() {
 }
 
 /// Emits all the code to cause the given temporary to be cleaned up.
-void CodeGenFunction::EmitCXXTemporary(const CXXTemporary *Temporary,
+void CodeGenSubprogram::EmitCXXTemporary(const CXXTemporary *Temporary,
                                        QualType TempType,
                                        llvm::Value *Ptr) {
   pushDestroy(NormalAndEHCleanup, Ptr, TempType, destroyCXXObject,

@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGFortranABI.h"
 #include "CGObjCRuntime.h"
 #include "lfort/Frontend/CodeGenOptions.h"
@@ -21,7 +21,7 @@
 using namespace lfort;
 using namespace CodeGen;
 
-static void EmitDeclInit(CodeGenFunction &CGF, const VarDecl &D,
+static void EmitDeclInit(CodeGenSubprogram &CGF, const VarDecl &D,
                          llvm::Constant *DeclPtr) {
   assert(D.hasGlobalStorage() && "VarDecl must have global storage!");
   assert(!D.getType()->isReferenceType() && 
@@ -55,7 +55,7 @@ static void EmitDeclInit(CodeGenFunction &CGF, const VarDecl &D,
 
 /// Emit code to cause the destruction of the given variable with
 /// static storage duration.
-static void EmitDeclDestroy(CodeGenFunction &CGF, const VarDecl &D,
+static void EmitDeclDestroy(CodeGenSubprogram &CGF, const VarDecl &D,
                             llvm::Constant *addr) {
   CodeGenModule &CGM = CGF.CGM;
 
@@ -93,7 +93,7 @@ static void EmitDeclDestroy(CodeGenFunction &CGF, const VarDecl &D,
 
   // Otherwise, the standard logic requires a helper function.
   } else {
-    function = CodeGenFunction(CGM).generateDestroyHelper(addr, type,
+    function = CodeGenSubprogram(CGM).generateDestroyHelper(addr, type,
                                                   CGF.getDestroyer(dtorKind),
                                                   CGF.needsEHCleanup(dtorKind));
     argument = llvm::Constant::getNullValue(CGF.Int8PtrTy);
@@ -104,7 +104,7 @@ static void EmitDeclDestroy(CodeGenFunction &CGF, const VarDecl &D,
 
 /// Emit code to cause the variable at the given address to be considered as
 /// constant from this point onwards.
-static void EmitDeclInvariant(CodeGenFunction &CGF, const VarDecl &D,
+static void EmitDeclInvariant(CodeGenSubprogram &CGF, const VarDecl &D,
                               llvm::Constant *Addr) {
   // Don't emit the intrinsic if we're not optimizing.
   if (!CGF.CGM.getCodeGenOpts().OptimizationLevel)
@@ -122,7 +122,7 @@ static void EmitDeclInvariant(CodeGenFunction &CGF, const VarDecl &D,
   CGF.Builder.CreateCall(InvariantStart, Args);
 }
 
-void CodeGenFunction::EmitCXXGlobalVarDeclInit(const VarDecl &D,
+void CodeGenSubprogram::EmitCXXGlobalVarDeclInit(const VarDecl &D,
                                                llvm::Constant *DeclPtr,
                                                bool PerformInit) {
 
@@ -162,7 +162,7 @@ static llvm::Constant *createAtExitStub(CodeGenModule &CGM,
     CreateGlobalInitOrDestructFunction(CGM, ty,
                                        Twine("__dtor_", addr->getName()));
 
-  CodeGenFunction CGF(CGM);
+  CodeGenSubprogram CGF(CGM);
 
   // Initialize debug info if needed.
   CGF.maybeInitializeDebugInfo();
@@ -184,7 +184,7 @@ static llvm::Constant *createAtExitStub(CodeGenModule &CGM,
 }
 
 /// Register a global destructor using the C atexit runtime function.
-void CodeGenFunction::registerGlobalDtorWithAtExit(llvm::Constant *dtor,
+void CodeGenSubprogram::registerGlobalDtorWithAtExit(llvm::Constant *dtor,
                                                    llvm::Constant *addr) {
   // Create a function which calls the destructor.
   llvm::Constant *dtorStub = createAtExitStub(CGM, dtor, addr);
@@ -201,7 +201,7 @@ void CodeGenFunction::registerGlobalDtorWithAtExit(llvm::Constant *dtor,
   Builder.CreateCall(atexit, dtorStub)->setDoesNotThrow();
 }
 
-void CodeGenFunction::EmitCXXGuardedInit(const VarDecl &D,
+void CodeGenSubprogram::EmitCXXGuardedInit(const VarDecl &D,
                                          llvm::GlobalVariable *DeclPtr,
                                          bool PerformInit) {
   // If we've been asked to forbid guard variables, emit an error now.
@@ -248,7 +248,7 @@ CodeGenModule::EmitCXXGlobalVarDeclInitFunc(const VarDecl *D,
   llvm::Function *Fn =
     CreateGlobalInitOrDestructFunction(*this, FTy, "__cxx_global_var_init");
 
-  CodeGenFunction(*this).GenerateCXXGlobalVarDeclInitFunc(Fn, D, Addr,
+  CodeGenSubprogram(*this).GenerateCXXGlobalVarDeclInitFunc(Fn, D, Addr,
                                                           PerformInit);
 
   if (D->hasAttr<InitPriorityAttr>()) {
@@ -308,7 +308,7 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
       for (; I < PrioE; ++I)
         LocalCXXGlobalInits.push_back(I->second);
 
-      CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn,
+      CodeGenSubprogram(*this).GenerateCXXGlobalInitFunc(Fn,
                                                     &LocalCXXGlobalInits[0],
                                                     LocalCXXGlobalInits.size());
       AddGlobalCtor(Fn, Priority);
@@ -318,7 +318,7 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
   llvm::Function *Fn = 
     CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__I_a");
 
-  CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn,
+  CodeGenSubprogram(*this).GenerateCXXGlobalInitFunc(Fn,
                                                    &CXXGlobalInits[0],
                                                    CXXGlobalInits.size());
   AddGlobalCtor(Fn);
@@ -337,12 +337,12 @@ void CodeGenModule::EmitCXXGlobalDtorFunc() {
   llvm::Function *Fn =
     CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__D_a");
 
-  CodeGenFunction(*this).GenerateCXXGlobalDtorsFunc(Fn, CXXGlobalDtors);
+  CodeGenSubprogram(*this).GenerateCXXGlobalDtorsFunc(Fn, CXXGlobalDtors);
   AddGlobalDtor(Fn);
 }
 
 /// Emit the code necessary to initialize the given global variable.
-void CodeGenFunction::GenerateCXXGlobalVarDeclInitFunc(llvm::Function *Fn,
+void CodeGenSubprogram::GenerateCXXGlobalVarDeclInitFunc(llvm::Function *Fn,
                                                        const VarDecl *D,
                                                  llvm::GlobalVariable *Addr,
                                                        bool PerformInit) {
@@ -367,7 +367,7 @@ void CodeGenFunction::GenerateCXXGlobalVarDeclInitFunc(llvm::Function *Fn,
   FinishFunction();
 }
 
-void CodeGenFunction::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
+void CodeGenSubprogram::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
                                                 llvm::Constant **Decls,
                                                 unsigned NumDecls) {
   // Initialize debug info if needed.
@@ -395,7 +395,7 @@ void CodeGenFunction::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
   FinishFunction();
 }
 
-void CodeGenFunction::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
+void CodeGenSubprogram::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
                   const std::vector<std::pair<llvm::WeakVH, llvm::Constant*> >
                                                 &DtorsAndObjects) {
   // Initialize debug info if needed.
@@ -421,7 +421,7 @@ void CodeGenFunction::GenerateCXXGlobalDtorsFunc(llvm::Function *Fn,
 /// generateDestroyHelper - Generates a helper function which, when
 /// invoked, destroys the given object.
 llvm::Function * 
-CodeGenFunction::generateDestroyHelper(llvm::Constant *addr,
+CodeGenSubprogram::generateDestroyHelper(llvm::Constant *addr,
                                        QualType type,
                                        Destroyer *destroyer,
                                        bool useEHCleanupForArray) {

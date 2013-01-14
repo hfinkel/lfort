@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/StmtVisitor.h"
@@ -25,18 +25,18 @@ using namespace CodeGen;
 //                        Complex Expression Emitter
 //===----------------------------------------------------------------------===//
 
-typedef CodeGenFunction::ComplexPairTy ComplexPairTy;
+typedef CodeGenSubprogram::ComplexPairTy ComplexPairTy;
 
 namespace  {
 class ComplexExprEmitter
   : public StmtVisitor<ComplexExprEmitter, ComplexPairTy> {
-  CodeGenFunction &CGF;
+  CodeGenSubprogram &CGF;
   CGBuilderTy &Builder;
   // True is we should ignore the value of a
   bool IgnoreReal;
   bool IgnoreImag;
 public:
-  ComplexExprEmitter(CodeGenFunction &cgf, bool ir=false, bool ii=false)
+  ComplexExprEmitter(CodeGenSubprogram &cgf, bool ir=false, bool ii=false)
     : CGF(cgf), Builder(CGF.Builder), IgnoreReal(ir), IgnoreImag(ii) {
   }
 
@@ -112,7 +112,7 @@ public:
 
   // l-values.
   ComplexPairTy VisitDeclRefExpr(DeclRefExpr *E) {
-    if (CodeGenFunction::ConstantEmission result = CGF.tryEmitAsConstant(E)) {
+    if (CodeGenSubprogram::ConstantEmission result = CGF.tryEmitAsConstant(E)) {
       if (result.isReference())
         return EmitLoadOfLValue(result.getReferenceLValue(CGF, E));
 
@@ -189,7 +189,7 @@ public:
   }
   ComplexPairTy VisitExprWithCleanups(ExprWithCleanups *E) {
     CGF.enterFullExpression(E);
-    CodeGenFunction::RunCleanupsScope Scope(CGF);
+    CodeGenSubprogram::RunCleanupsScope Scope(CGF);
     return Visit(E->getSubExpr());
   }
   ComplexPairTy VisitCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
@@ -346,7 +346,7 @@ ComplexPairTy ComplexExprEmitter::VisitCallExpr(const CallExpr *E) {
 }
 
 ComplexPairTy ComplexExprEmitter::VisitStmtExpr(const StmtExpr *E) {
-  CodeGenFunction::StmtExprEvaluation eval(CGF);
+  CodeGenSubprogram::StmtExprEvaluation eval(CGF);
   return CGF.EmitCompoundStmt(*E->getSubStmt(), true).getComplexVal();
 }
 
@@ -700,9 +700,9 @@ VisitAbstractConditionalOperator(const AbstractConditionalOperator *E) {
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("cond.end");
 
   // Bind the common expression if necessary.
-  CodeGenFunction::OpaqueValueMapping binding(CGF, E);
+  CodeGenSubprogram::OpaqueValueMapping binding(CGF, E);
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
   CGF.EmitBranchOnBoolExpr(E->getCond(), LHSBlock, RHSBlock);
 
   eval.begin(CGF);
@@ -782,7 +782,7 @@ ComplexPairTy ComplexExprEmitter::VisitVAArgExpr(VAArgExpr *E) {
 
 /// EmitComplexExpr - Emit the computation of the specified expression of
 /// complex type, ignoring the result.
-ComplexPairTy CodeGenFunction::EmitComplexExpr(const Expr *E, bool IgnoreReal,
+ComplexPairTy CodeGenSubprogram::EmitComplexExpr(const Expr *E, bool IgnoreReal,
                                                bool IgnoreImag) {
   assert(E && E->getType()->isAnyComplexType() &&
          "Invalid complex expression to emit");
@@ -793,7 +793,7 @@ ComplexPairTy CodeGenFunction::EmitComplexExpr(const Expr *E, bool IgnoreReal,
 
 /// EmitComplexExprIntoAddr - Emit the computation of the specified expression
 /// of complex type, storing into the specified Value*.
-void CodeGenFunction::EmitComplexExprIntoAddr(const Expr *E,
+void CodeGenSubprogram::EmitComplexExprIntoAddr(const Expr *E,
                                               llvm::Value *DestAddr,
                                               bool DestIsVolatile) {
   assert(E && E->getType()->isAnyComplexType() &&
@@ -804,25 +804,25 @@ void CodeGenFunction::EmitComplexExprIntoAddr(const Expr *E,
 }
 
 /// StoreComplexToAddr - Store a complex number into the specified address.
-void CodeGenFunction::StoreComplexToAddr(ComplexPairTy V,
+void CodeGenSubprogram::StoreComplexToAddr(ComplexPairTy V,
                                          llvm::Value *DestAddr,
                                          bool DestIsVolatile) {
   ComplexExprEmitter(*this).EmitStoreOfComplex(V, DestAddr, DestIsVolatile);
 }
 
 /// LoadComplexFromAddr - Load a complex number from the specified address.
-ComplexPairTy CodeGenFunction::LoadComplexFromAddr(llvm::Value *SrcAddr,
+ComplexPairTy CodeGenSubprogram::LoadComplexFromAddr(llvm::Value *SrcAddr,
                                                    bool SrcIsVolatile) {
   return ComplexExprEmitter(*this).EmitLoadOfComplex(SrcAddr, SrcIsVolatile);
 }
 
-LValue CodeGenFunction::EmitComplexAssignmentLValue(const BinaryOperator *E) {
+LValue CodeGenSubprogram::EmitComplexAssignmentLValue(const BinaryOperator *E) {
   assert(E->getOpcode() == BO_Assign);
   ComplexPairTy Val; // ignored
   return ComplexExprEmitter(*this).EmitBinAssignLValue(E, Val);
 }
 
-LValue CodeGenFunction::
+LValue CodeGenSubprogram::
 EmitComplexCompoundAssignmentLValue(const CompoundAssignOperator *E) {
   ComplexPairTy(ComplexExprEmitter::*Op)(const ComplexExprEmitter::BinOpInfo &);
   switch (E->getOpcode()) {

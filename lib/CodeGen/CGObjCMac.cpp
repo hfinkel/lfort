@@ -15,7 +15,7 @@
 #include "CGBlocks.h"
 #include "CGCleanup.h"
 #include "CGRecordLayout.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Decl.h"
@@ -1014,7 +1014,7 @@ protected:
                                           unsigned Align,
                                           bool AddToUsed);
 
-  CodeGen::RValue EmitMessageSend(CodeGen::CodeGenFunction &CGF,
+  CodeGen::RValue EmitMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                   ReturnValueSlot Return,
                                   QualType ResultType,
                                   llvm::Value *Sel,
@@ -1174,7 +1174,7 @@ public:
 
   virtual llvm::Function *ModuleInitFunction();
 
-  virtual CodeGen::RValue GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
+  virtual CodeGen::RValue GenerateMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                               ReturnValueSlot Return,
                                               QualType ResultType,
                                               Selector Sel,
@@ -1184,7 +1184,7 @@ public:
                                               const ObjCMethodDecl *Method);
 
   virtual CodeGen::RValue
-  GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
+  GenerateMessageSendSuper(CodeGen::CodeGenSubprogram &CGF,
                            ReturnValueSlot Return,
                            QualType ResultType,
                            Selector Sel,
@@ -1227,35 +1227,35 @@ public:
   virtual llvm::Constant *GetCppAtomicObjectSetFunction();
   virtual llvm::Constant *EnumerationMutationFunction();
 
-  virtual void EmitTryStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitTryStmt(CodeGen::CodeGenSubprogram &CGF,
                            const ObjCAtTryStmt &S);
-  virtual void EmitSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                     const ObjCAtSynchronizedStmt &S);
-  void EmitTryOrSynchronizedStmt(CodeGen::CodeGenFunction &CGF, const Stmt &S);
-  virtual void EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
+  void EmitTryOrSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF, const Stmt &S);
+  virtual void EmitThrowStmt(CodeGen::CodeGenSubprogram &CGF,
                              const ObjCAtThrowStmt &S);
-  virtual llvm::Value * EmitObjCWeakRead(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value * EmitObjCWeakRead(CodeGen::CodeGenSubprogram &CGF,
                                          llvm::Value *AddrWeakObj);
-  virtual void EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCWeakAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dst);
-  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenSubprogram &CGF,
                                     llvm::Value *src, llvm::Value *dest,
                                     bool threadlocal = false);
-  virtual void EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCIvarAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dest,
                                   llvm::Value *ivarOffset);
-  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *src, llvm::Value *dest);
-  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *dest, llvm::Value *src,
                                         llvm::Value *size);
 
-  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenFunction &CGF,
+  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenSubprogram &CGF,
                                       QualType ObjectTy,
                                       llvm::Value *BaseValue,
                                       const ObjCIvarDecl *Ivar,
                                       unsigned CVRQualifiers);
-  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenSubprogram &CGF,
                                       const ObjCInterfaceDecl *Interface,
                                       const ObjCIvarDecl *Ivar);
   
@@ -1349,7 +1349,7 @@ private:
                                    ObjCProtocolDecl::protocol_iterator begin,
                                    ObjCProtocolDecl::protocol_iterator end);
 
-  CodeGen::RValue EmitVTableMessageSend(CodeGen::CodeGenFunction &CGF,
+  CodeGen::RValue EmitVTableMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                         ReturnValueSlot Return,
                                         QualType ResultType,
                                         Selector Sel,
@@ -1432,7 +1432,7 @@ public:
   // FIXME. All stubs for now!
   virtual llvm::Function *ModuleInitFunction();
 
-  virtual CodeGen::RValue GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
+  virtual CodeGen::RValue GenerateMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                               ReturnValueSlot Return,
                                               QualType ResultType,
                                               Selector Sel,
@@ -1442,7 +1442,7 @@ public:
                                               const ObjCMethodDecl *Method);
 
   virtual CodeGen::RValue
-  GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
+  GenerateMessageSendSuper(CodeGen::CodeGenSubprogram &CGF,
                            ReturnValueSlot Return,
                            QualType ResultType,
                            Selector Sel,
@@ -1506,33 +1506,33 @@ public:
     return ObjCTypes.getEnumerationMutationFn();
   }
 
-  virtual void EmitTryStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitTryStmt(CodeGen::CodeGenSubprogram &CGF,
                            const ObjCAtTryStmt &S);
-  virtual void EmitSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                     const ObjCAtSynchronizedStmt &S);
-  virtual void EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitThrowStmt(CodeGen::CodeGenSubprogram &CGF,
                              const ObjCAtThrowStmt &S);
-  virtual llvm::Value * EmitObjCWeakRead(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value * EmitObjCWeakRead(CodeGen::CodeGenSubprogram &CGF,
                                          llvm::Value *AddrWeakObj);
-  virtual void EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCWeakAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dst);
-  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenSubprogram &CGF,
                                     llvm::Value *src, llvm::Value *dest,
                                     bool threadlocal = false);
-  virtual void EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCIvarAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dest,
                                   llvm::Value *ivarOffset);
-  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *src, llvm::Value *dest);
-  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *dest, llvm::Value *src,
                                         llvm::Value *size);
-  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenFunction &CGF,
+  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenSubprogram &CGF,
                                       QualType ObjectTy,
                                       llvm::Value *BaseValue,
                                       const ObjCIvarDecl *Ivar,
                                       unsigned CVRQualifiers);
-  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenSubprogram &CGF,
                                       const ObjCInterfaceDecl *Interface,
                                       const ObjCIvarDecl *Ivar);
 };
@@ -1544,7 +1544,7 @@ struct NullReturnState {
   llvm::BasicBlock *callBB;
   NullReturnState() : NullBB(0), callBB(0) {}
 
-  void init(CodeGenFunction &CGF, llvm::Value *receiver) {
+  void init(CodeGenSubprogram &CGF, llvm::Value *receiver) {
     // Make blocks for the null-init and call edges.
     NullBB = CGF.createBasicBlock("msgSend.nullinit");
     callBB = CGF.createBasicBlock("msgSend.call");
@@ -1558,7 +1558,7 @@ struct NullReturnState {
     CGF.EmitBlock(callBB);
   }
 
-  RValue complete(CodeGenFunction &CGF, RValue result, QualType resultType,
+  RValue complete(CodeGenSubprogram &CGF, RValue result, QualType resultType,
                   const CallArgList &CallArgs,
                   const ObjCMethodDecl *Method) {
     if (!NullBB) return result;
@@ -1612,7 +1612,7 @@ struct NullReturnState {
     // FIXME. Now easy to handle any other scalar type whose result is returned
     // in memory due to ABI limitations.
     CGF.EmitBlock(contBB);
-    CodeGenFunction::ComplexPairTy CallCV = result.getComplexVal();
+    CodeGenSubprogram::ComplexPairTy CallCV = result.getComplexVal();
     llvm::Type *MemberType = CallCV.first->getType();
     llvm::Constant *ZeroCV = llvm::Constant::getNullValue(MemberType);
     // Create phi instruction for scalar complex value.
@@ -1729,7 +1729,7 @@ enum {
 /// a message send to self with special delivery semantics indicating
 /// which class's method should be called.
 CodeGen::RValue
-CGObjCMac::GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
+CGObjCMac::GenerateMessageSendSuper(CodeGen::CodeGenSubprogram &CGF,
                                     ReturnValueSlot Return,
                                     QualType ResultType,
                                     Selector Sel,
@@ -1789,7 +1789,7 @@ CGObjCMac::GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
 }
 
 /// Generate code for a message send expression.
-CodeGen::RValue CGObjCMac::GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
+CodeGen::RValue CGObjCMac::GenerateMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                                ReturnValueSlot Return,
                                                QualType ResultType,
                                                Selector Sel,
@@ -1804,7 +1804,7 @@ CodeGen::RValue CGObjCMac::GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
 }
 
 CodeGen::RValue
-CGObjCCommonMac::EmitMessageSend(CodeGen::CodeGenFunction &CGF,
+CGObjCCommonMac::EmitMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                  ReturnValueSlot Return,
                                  QualType ResultType,
                                  llvm::Value *Sel,
@@ -3424,11 +3424,11 @@ llvm::Constant *CGObjCMac::EnumerationMutationFunction() {
   return ObjCTypes.getEnumerationMutationFn();
 }
 
-void CGObjCMac::EmitTryStmt(CodeGenFunction &CGF, const ObjCAtTryStmt &S) {
+void CGObjCMac::EmitTryStmt(CodeGenSubprogram &CGF, const ObjCAtTryStmt &S) {
   return EmitTryOrSynchronizedStmt(CGF, S);
 }
 
-void CGObjCMac::EmitSynchronizedStmt(CodeGenFunction &CGF,
+void CGObjCMac::EmitSynchronizedStmt(CodeGenSubprogram &CGF,
                                      const ObjCAtSynchronizedStmt &S) {
   return EmitTryOrSynchronizedStmt(CGF, S);
 }
@@ -3448,7 +3448,7 @@ namespace {
       : S(*S), SyncArgSlot(SyncArgSlot), CallTryExitVar(CallTryExitVar),
         ExceptionData(ExceptionData), ObjCTypes(*ObjCTypes) {}
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       // Check whether we need to call objc_exception_try_exit.
       // In optimized code, this branch will always be folded.
       llvm::BasicBlock *FinallyCallExit =
@@ -3493,7 +3493,7 @@ namespace {
   };
 
   class FragileHazards {
-    CodeGenFunction &CGF;
+    CodeGenSubprogram &CGF;
     SmallVector<llvm::Value*, 20> Locals;
     llvm::DenseSet<llvm::BasicBlock*> BlocksBeforeTry;
 
@@ -3506,7 +3506,7 @@ namespace {
     void emitReadHazard(CGBuilderTy &Builder);
 
   public:
-    FragileHazards(CodeGenFunction &CGF);
+    FragileHazards(CodeGenSubprogram &CGF);
 
     void emitWriteHazard();
     void emitHazardsInNewBlocks();
@@ -3518,7 +3518,7 @@ namespace {
 /// to a @try block.  These hazards are used to maintain correct
 /// semantics in the face of optimization and the fragile ABI's
 /// cavalier use of setjmp/longjmp.
-FragileHazards::FragileHazards(CodeGenFunction &CGF) : CGF(CGF) {
+FragileHazards::FragileHazards(CodeGenSubprogram &CGF) : CGF(CGF) {
   collectLocals();
 
   if (Locals.empty()) return;
@@ -3750,18 +3750,18 @@ llvm::FunctionType *FragileHazards::GetAsmFnType() {
     @try { stmt; } @finally { objc_sync_exit(synch_value); }
 */
 
-void CGObjCMac::EmitTryOrSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitTryOrSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                           const Stmt &S) {
   bool isTry = isa<ObjCAtTryStmt>(S);
 
   // A destination for the fall-through edges of the catch handlers to
   // jump to.
-  CodeGenFunction::JumpDest FinallyEnd =
+  CodeGenSubprogram::JumpDest FinallyEnd =
     CGF.getJumpDestInCurrentScope("finally.end");
 
   // A destination for the rethrow edge of the catch handlers to jump
   // to.
-  CodeGenFunction::JumpDest FinallyRethrow =
+  CodeGenSubprogram::JumpDest FinallyRethrow =
     CGF.getJumpDestInCurrentScope("finally.rethrow");
 
   // For @synchronized, call objc_sync_enter(sync.expr). The
@@ -3934,7 +3934,7 @@ void CGObjCMac::EmitTryOrSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
 
       // If this is a catch-all, we don't need to test anything.
       if (AllMatched) {
-        CodeGenFunction::RunCleanupsScope CatchVarCleanups(CGF);
+        CodeGenSubprogram::RunCleanupsScope CatchVarCleanups(CGF);
 
         if (CatchParam) {
           CGF.EmitAutoVarDecl(*CatchParam);
@@ -3979,7 +3979,7 @@ void CGObjCMac::EmitTryOrSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
 
       // Collect any cleanups for the catch variable.  The scope lasts until
       // the end of the catch body.
-      CodeGenFunction::RunCleanupsScope CatchVarCleanups(CGF);
+      CodeGenSubprogram::RunCleanupsScope CatchVarCleanups(CGF);
 
       CGF.EmitAutoVarDecl(*CatchParam);
       assert(CGF.HaveInsertPoint() && "DeclStmt destroyed insert point?");
@@ -4070,7 +4070,7 @@ void CGObjCMac::EmitTryOrSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
   CGF.Builder.restoreIP(SavedIP);
 }
 
-void CGObjCMac::EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitThrowStmt(CodeGen::CodeGenSubprogram &CGF,
                               const ObjCAtThrowStmt &S) {
   llvm::Value *ExceptionAsObject;
 
@@ -4095,7 +4095,7 @@ void CGObjCMac::EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCWeakRead - Code gen for loading value of a __weak
 /// object: objc_read_weak (id *src)
 ///
-llvm::Value * CGObjCMac::EmitObjCWeakRead(CodeGen::CodeGenFunction &CGF,
+llvm::Value * CGObjCMac::EmitObjCWeakRead(CodeGen::CodeGenSubprogram &CGF,
                                           llvm::Value *AddrWeakObj) {
   llvm::Type* DestTy =
     cast<llvm::PointerType>(AddrWeakObj->getType())->getElementType();
@@ -4110,7 +4110,7 @@ llvm::Value * CGObjCMac::EmitObjCWeakRead(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCWeakAssign - Code gen for assigning to a __weak object.
 /// objc_assign_weak (id src, id *dst)
 ///
-void CGObjCMac::EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitObjCWeakAssign(CodeGen::CodeGenSubprogram &CGF,
                                    llvm::Value *src, llvm::Value *dst) {
   llvm::Type * SrcTy = src->getType();
   if (!isa<llvm::PointerType>(SrcTy)) {
@@ -4130,7 +4130,7 @@ void CGObjCMac::EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCGlobalAssign - Code gen for assigning to a __strong object.
 /// objc_assign_global (id src, id *dst)
 ///
-void CGObjCMac::EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitObjCGlobalAssign(CodeGen::CodeGenSubprogram &CGF,
                                      llvm::Value *src, llvm::Value *dst,
                                      bool threadlocal) {
   llvm::Type * SrcTy = src->getType();
@@ -4155,7 +4155,7 @@ void CGObjCMac::EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCIvarAssign - Code gen for assigning to a __strong object.
 /// objc_assign_ivar (id src, id *dst, ptrdiff_t ivaroffset)
 ///
-void CGObjCMac::EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitObjCIvarAssign(CodeGen::CodeGenSubprogram &CGF,
                                    llvm::Value *src, llvm::Value *dst,
                                    llvm::Value *ivarOffset) {
   assert(ivarOffset && "EmitObjCIvarAssign - ivarOffset is NULL");
@@ -4177,7 +4177,7 @@ void CGObjCMac::EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCStrongCastAssign - Code gen for assigning to a __strong cast object.
 /// objc_assign_strongCast (id src, id *dst)
 ///
-void CGObjCMac::EmitObjCStrongCastAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitObjCStrongCastAssign(CodeGen::CodeGenSubprogram &CGF,
                                          llvm::Value *src, llvm::Value *dst) {
   llvm::Type * SrcTy = src->getType();
   if (!isa<llvm::PointerType>(SrcTy)) {
@@ -4194,7 +4194,7 @@ void CGObjCMac::EmitObjCStrongCastAssign(CodeGen::CodeGenFunction &CGF,
   return;
 }
 
-void CGObjCMac::EmitGCMemmoveCollectable(CodeGen::CodeGenFunction &CGF,
+void CGObjCMac::EmitGCMemmoveCollectable(CodeGen::CodeGenSubprogram &CGF,
                                          llvm::Value *DestPtr,
                                          llvm::Value *SrcPtr,
                                          llvm::Value *size) {
@@ -4207,7 +4207,7 @@ void CGObjCMac::EmitGCMemmoveCollectable(CodeGen::CodeGenFunction &CGF,
 
 /// EmitObjCValueForIvar - Code Gen for ivar reference.
 ///
-LValue CGObjCMac::EmitObjCValueForIvar(CodeGen::CodeGenFunction &CGF,
+LValue CGObjCMac::EmitObjCValueForIvar(CodeGen::CodeGenSubprogram &CGF,
                                        QualType ObjectTy,
                                        llvm::Value *BaseValue,
                                        const ObjCIvarDecl *Ivar,
@@ -4218,7 +4218,7 @@ LValue CGObjCMac::EmitObjCValueForIvar(CodeGen::CodeGenFunction &CGF,
                                   EmitIvarOffset(CGF, ID, Ivar));
 }
 
-llvm::Value *CGObjCMac::EmitIvarOffset(CodeGen::CodeGenFunction &CGF,
+llvm::Value *CGObjCMac::EmitIvarOffset(CodeGen::CodeGenSubprogram &CGF,
                                        const ObjCInterfaceDecl *Interface,
                                        const ObjCIvarDecl *Ivar) {
   uint64_t Offset = ComputeIvarBaseOffset(CGM, Interface, Ivar);
@@ -6406,7 +6406,7 @@ CGObjCNonFragileABIMac::GetMethodDescriptionConstant(const ObjCMethodDecl *MD) {
 /// @encode
 ///
 LValue CGObjCNonFragileABIMac::EmitObjCValueForIvar(
-                                               CodeGen::CodeGenFunction &CGF,
+                                               CodeGen::CodeGenSubprogram &CGF,
                                                QualType ObjectTy,
                                                llvm::Value *BaseValue,
                                                const ObjCIvarDecl *Ivar,
@@ -6422,7 +6422,7 @@ LValue CGObjCNonFragileABIMac::EmitObjCValueForIvar(
 }
 
 llvm::Value *CGObjCNonFragileABIMac::EmitIvarOffset(
-  CodeGen::CodeGenFunction &CGF,
+  CodeGen::CodeGenSubprogram &CGF,
   const ObjCInterfaceDecl *Interface,
   const ObjCIvarDecl *Ivar) {
   return CGF.Builder.CreateLoad(ObjCIvarOffsetVariable(Interface, Ivar),"ivar");
@@ -6452,7 +6452,7 @@ static void appendSelectorForMessageRefTable(std::string &buffer,
 /// which tail-calls objc_msgSend.  Both stubs adjust the selector
 /// argument to correctly point to the selector.
 RValue
-CGObjCNonFragileABIMac::EmitVTableMessageSend(CodeGenFunction &CGF,
+CGObjCNonFragileABIMac::EmitVTableMessageSend(CodeGenSubprogram &CGF,
                                               ReturnValueSlot returnSlot,
                                               QualType resultType,
                                               Selector selector,
@@ -6565,7 +6565,7 @@ CGObjCNonFragileABIMac::EmitVTableMessageSend(CodeGenFunction &CGF,
 
 /// Generate code for a message send expression in the nonfragile abi.
 CodeGen::RValue
-CGObjCNonFragileABIMac::GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
+CGObjCNonFragileABIMac::GenerateMessageSend(CodeGen::CodeGenSubprogram &CGF,
                                             ReturnValueSlot Return,
                                             QualType ResultType,
                                             Selector Sel,
@@ -6695,7 +6695,7 @@ llvm::Value *CGObjCNonFragileABIMac::GetClass(CGBuilderTy &Builder,
 /// a message send to self with special delivery semantics indicating
 /// which class's method should be called.
 CodeGen::RValue
-CGObjCNonFragileABIMac::GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
+CGObjCNonFragileABIMac::GenerateMessageSendSuper(CodeGen::CodeGenSubprogram &CGF,
                                                  ReturnValueSlot Return,
                                                  QualType ResultType,
                                                  Selector Sel,
@@ -6769,7 +6769,7 @@ llvm::Value *CGObjCNonFragileABIMac::EmitSelector(CGBuilderTy &Builder,
 /// EmitObjCIvarAssign - Code gen for assigning to a __strong object.
 /// objc_assign_ivar (id src, id *dst, ptrdiff_t)
 ///
-void CGObjCNonFragileABIMac::EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCNonFragileABIMac::EmitObjCIvarAssign(CodeGen::CodeGenSubprogram &CGF,
                                                 llvm::Value *src,
                                                 llvm::Value *dst,
                                                 llvm::Value *ivarOffset) {
@@ -6792,7 +6792,7 @@ void CGObjCNonFragileABIMac::EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
 /// objc_assign_strongCast (id src, id *dst)
 ///
 void CGObjCNonFragileABIMac::EmitObjCStrongCastAssign(
-  CodeGen::CodeGenFunction &CGF,
+  CodeGen::CodeGenSubprogram &CGF,
   llvm::Value *src, llvm::Value *dst) {
   llvm::Type * SrcTy = src->getType();
   if (!isa<llvm::PointerType>(SrcTy)) {
@@ -6810,7 +6810,7 @@ void CGObjCNonFragileABIMac::EmitObjCStrongCastAssign(
 }
 
 void CGObjCNonFragileABIMac::EmitGCMemmoveCollectable(
-  CodeGen::CodeGenFunction &CGF,
+  CodeGen::CodeGenSubprogram &CGF,
   llvm::Value *DestPtr,
   llvm::Value *SrcPtr,
   llvm::Value *Size) {
@@ -6825,7 +6825,7 @@ void CGObjCNonFragileABIMac::EmitGCMemmoveCollectable(
 /// object: objc_read_weak (id *src)
 ///
 llvm::Value * CGObjCNonFragileABIMac::EmitObjCWeakRead(
-  CodeGen::CodeGenFunction &CGF,
+  CodeGen::CodeGenSubprogram &CGF,
   llvm::Value *AddrWeakObj) {
   llvm::Type* DestTy =
     cast<llvm::PointerType>(AddrWeakObj->getType())->getElementType();
@@ -6839,7 +6839,7 @@ llvm::Value * CGObjCNonFragileABIMac::EmitObjCWeakRead(
 /// EmitObjCWeakAssign - Code gen for assigning to a __weak object.
 /// objc_assign_weak (id src, id *dst)
 ///
-void CGObjCNonFragileABIMac::EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCNonFragileABIMac::EmitObjCWeakAssign(CodeGen::CodeGenSubprogram &CGF,
                                                 llvm::Value *src, llvm::Value *dst) {
   llvm::Type * SrcTy = src->getType();
   if (!isa<llvm::PointerType>(SrcTy)) {
@@ -6859,7 +6859,7 @@ void CGObjCNonFragileABIMac::EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
 /// EmitObjCGlobalAssign - Code gen for assigning to a __strong object.
 /// objc_assign_global (id src, id *dst)
 ///
-void CGObjCNonFragileABIMac::EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
+void CGObjCNonFragileABIMac::EmitObjCGlobalAssign(CodeGen::CodeGenSubprogram &CGF,
                                           llvm::Value *src, llvm::Value *dst,
                                           bool threadlocal) {
   llvm::Type * SrcTy = src->getType();
@@ -6882,7 +6882,7 @@ void CGObjCNonFragileABIMac::EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
 }
 
 void
-CGObjCNonFragileABIMac::EmitSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
+CGObjCNonFragileABIMac::EmitSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                              const ObjCAtSynchronizedStmt &S) {
   EmitAtSynchronizedStmt(CGF, S,
       cast<llvm::Function>(ObjCTypes.getSyncEnterFn()),
@@ -6914,7 +6914,7 @@ CGObjCNonFragileABIMac::GetEHType(QualType T) {
   return GetInterfaceEHType(IT->getDecl(), false);
 }                                                  
 
-void CGObjCNonFragileABIMac::EmitTryStmt(CodeGen::CodeGenFunction &CGF,
+void CGObjCNonFragileABIMac::EmitTryStmt(CodeGen::CodeGenSubprogram &CGF,
                                          const ObjCAtTryStmt &S) {
   EmitTryCatchStmt(CGF, S,
       cast<llvm::Function>(ObjCTypes.getObjCBeginCatchFn()),
@@ -6923,7 +6923,7 @@ void CGObjCNonFragileABIMac::EmitTryStmt(CodeGen::CodeGenFunction &CGF,
 }
 
 /// EmitThrowStmt - Generate code for a throw statement.
-void CGObjCNonFragileABIMac::EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
+void CGObjCNonFragileABIMac::EmitThrowStmt(CodeGen::CodeGenSubprogram &CGF,
                                            const ObjCAtThrowStmt &S) {
   if (const Expr *ThrowExpr = S.getThrowExpr()) {
     llvm::Value *Exception = CGF.EmitObjCThrowOperand(ThrowExpr);

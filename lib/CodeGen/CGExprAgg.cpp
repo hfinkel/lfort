@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
@@ -31,7 +31,7 @@ using namespace CodeGen;
 
 namespace  {
 class AggExprEmitter : public StmtVisitor<AggExprEmitter> {
-  CodeGenFunction &CGF;
+  CodeGenSubprogram &CGF;
   CGBuilderTy &Builder;
   AggValueSlot Dest;
 
@@ -61,7 +61,7 @@ class AggExprEmitter : public StmtVisitor<AggExprEmitter> {
   }
 
 public:
-  AggExprEmitter(CodeGenFunction &cgf, AggValueSlot Dest)
+  AggExprEmitter(CodeGenSubprogram &cgf, AggValueSlot Dest)
     : CGF(cgf), Builder(CGF.Builder), Dest(Dest) {
   }
 
@@ -120,7 +120,7 @@ public:
     // actively preventing us from listing variables in the captures
     // list of a block.
     if (E->getDecl()->getType()->isReferenceType()) {
-      if (CodeGenFunction::ConstantEmission result
+      if (CodeGenSubprogram::ConstantEmission result
             = CGF.tryEmitAsConstant(E)) {
         EmitFinalDestCopy(E->getType(), result.getReferenceLValue(CGF, E));
         return;
@@ -301,7 +301,7 @@ static QualType GetStdInitializerListElementType(QualType T) {
 }
 
 /// \brief Prepare cleanup for the temporary array.
-static void EmitStdInitializerListCleanup(CodeGenFunction &CGF,
+static void EmitStdInitializerListCleanup(CodeGenSubprogram &CGF,
                                           QualType arrayType,
                                           llvm::Value *addr,
                                           const InitListExpr *initList) {
@@ -313,7 +313,7 @@ static void EmitStdInitializerListCleanup(CodeGenFunction &CGF,
     return;
   }
 
-  CodeGenFunction::Destroyer *destroyer = CGF.getDestroyer(dtorKind);
+  CodeGenSubprogram::Destroyer *destroyer = CGF.getDestroyer(dtorKind);
   CGF.pushDestroy(NormalAndEHCleanup, addr, arrayType, destroyer,
                   /*EHCleanup=*/true);
 }
@@ -552,7 +552,7 @@ void AggExprEmitter::VisitCastExpr(CastExpr *E) {
     // FIXME: Can this actually happen? We have no test coverage for it.
     assert(isa<CXXDynamicCastExpr>(E) && "CK_Dynamic without a dynamic_cast?");
     LValue LV = CGF.EmitCheckedLValue(E->getSubExpr(),
-                                      CodeGenFunction::TCK_Load);
+                                      CodeGenSubprogram::TCK_Load);
     // FIXME: Do we also need to handle property references here?
     if (LV.isSimple())
       CGF.EmitDynamicCast(LV.getAddress(), cast<CXXDynamicCastExpr>(E));
@@ -673,7 +673,7 @@ void AggExprEmitter::VisitBinComma(const BinaryOperator *E) {
 }
 
 void AggExprEmitter::VisitStmtExpr(const StmtExpr *E) {
-  CodeGenFunction::StmtExprEvaluation eval(CGF);
+  CodeGenSubprogram::StmtExprEvaluation eval(CGF);
   CGF.EmitCompoundStmt(*E->getSubStmt(), true, Dest);
 }
 
@@ -774,7 +774,7 @@ void AggExprEmitter::VisitBinAssign(const BinaryOperator *E) {
     Visit(E->getRHS());
 
     // Now emit the LHS and copy into it.
-    LValue LHS = CGF.EmitCheckedLValue(E->getLHS(), CodeGenFunction::TCK_Store);
+    LValue LHS = CGF.EmitCheckedLValue(E->getLHS(), CodeGenSubprogram::TCK_Store);
 
     EmitCopy(E->getLHS()->getType(),
              AggValueSlot::forLValue(LHS, AggValueSlot::IsDestructed,
@@ -804,9 +804,9 @@ VisitAbstractConditionalOperator(const AbstractConditionalOperator *E) {
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("cond.end");
 
   // Bind the common expression if necessary.
-  CodeGenFunction::OpaqueValueMapping binding(CGF, E);
+  CodeGenSubprogram::OpaqueValueMapping binding(CGF, E);
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
   CGF.EmitBranchOnBoolExpr(E->getCond(), LHSBlock, RHSBlock);
 
   // Save whether the destination's lifetime is externally managed.
@@ -880,7 +880,7 @@ AggExprEmitter::VisitLambdaExpr(LambdaExpr *E) {
 
 void AggExprEmitter::VisitExprWithCleanups(ExprWithCleanups *E) {
   CGF.enterFullExpression(E);
-  CodeGenFunction::RunCleanupsScope cleanups(CGF);
+  CodeGenSubprogram::RunCleanupsScope cleanups(CGF);
   Visit(E->getSubExpr());
 }
 
@@ -899,7 +899,7 @@ void AggExprEmitter::VisitImplicitValueInitExpr(ImplicitValueInitExpr *E) {
 /// isSimpleZero - If emitting this value will obviously just cause a store of
 /// zero to memory, return true.  This can return false if uncertain, so it just
 /// handles simple cases.
-static bool isSimpleZero(const Expr *E, CodeGenFunction &CGF) {
+static bool isSimpleZero(const Expr *E, CodeGenSubprogram &CGF) {
   E = E->IgnoreParens();
 
   // 0
@@ -1146,7 +1146,7 @@ void AggExprEmitter::VisitInitListExpr(InitListExpr *E) {
 /// GetNumNonZeroBytesInInit - Get an approximate count of the number of
 /// non-zero bytes that will be stored when outputting the initializer for the
 /// specified initializer expression.
-static CharUnits GetNumNonZeroBytesInInit(const Expr *E, CodeGenFunction &CGF) {
+static CharUnits GetNumNonZeroBytesInInit(const Expr *E, CodeGenSubprogram &CGF) {
   E = E->IgnoreParens();
 
   // 0 and 0.0 won't require any non-zero stores!
@@ -1202,7 +1202,7 @@ static CharUnits GetNumNonZeroBytesInInit(const Expr *E, CodeGenFunction &CGF) {
 /// zeros in it, emit a memset and avoid storing the individual zeros.
 ///
 static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
-                                     CodeGenFunction &CGF) {
+                                     CodeGenSubprogram &CGF) {
   // If the slot is already known to be zeroed, nothing to do.  Don't mess with
   // volatile stores.
   if (Slot.isZeroed() || Slot.isVolatile() || Slot.getAddr() == 0) return;
@@ -1249,7 +1249,7 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
 /// type.  The result is computed into DestPtr.  Note that if DestPtr is null,
 /// the value of the aggregate expression is not needed.  If VolatileDest is
 /// true, DestPtr cannot be 0.
-void CodeGenFunction::EmitAggExpr(const Expr *E, AggValueSlot Slot) {
+void CodeGenSubprogram::EmitAggExpr(const Expr *E, AggValueSlot Slot) {
   assert(E && hasAggregateLLVMType(E->getType()) &&
          "Invalid aggregate expression to emit");
   assert((Slot.getAddr() != 0 || Slot.isIgnored()) &&
@@ -1261,7 +1261,7 @@ void CodeGenFunction::EmitAggExpr(const Expr *E, AggValueSlot Slot) {
   AggExprEmitter(*this, Slot).Visit(const_cast<Expr*>(E));
 }
 
-LValue CodeGenFunction::EmitAggExprToLValue(const Expr *E) {
+LValue CodeGenSubprogram::EmitAggExprToLValue(const Expr *E) {
   assert(hasAggregateLLVMType(E->getType()) && "Invalid argument!");
   llvm::Value *Temp = CreateMemTemp(E->getType());
   LValue LV = MakeAddrLValue(Temp, E->getType());
@@ -1271,7 +1271,7 @@ LValue CodeGenFunction::EmitAggExprToLValue(const Expr *E) {
   return LV;
 }
 
-void CodeGenFunction::EmitAggregateCopy(llvm::Value *DestPtr,
+void CodeGenSubprogram::EmitAggregateCopy(llvm::Value *DestPtr,
                                         llvm::Value *SrcPtr, QualType Ty,
                                         bool isVolatile,
                                         CharUnits alignment,
@@ -1380,7 +1380,7 @@ void CodeGenFunction::EmitAggregateCopy(llvm::Value *DestPtr,
                        /*TBAATag=*/0, TBAAStructTag);
 }
 
-void CodeGenFunction::MaybeEmitStdInitializerListCleanup(llvm::Value *loc,
+void CodeGenSubprogram::MaybeEmitStdInitializerListCleanup(llvm::Value *loc,
                                                          const Expr *init) {
   const ExprWithCleanups *cleanups = dyn_cast<ExprWithCleanups>(init);
   if (cleanups)
@@ -1394,7 +1394,7 @@ void CodeGenFunction::MaybeEmitStdInitializerListCleanup(llvm::Value *loc,
   }
 }
 
-static void EmitRecursiveStdInitializerListCleanup(CodeGenFunction &CGF,
+static void EmitRecursiveStdInitializerListCleanup(CodeGenSubprogram &CGF,
                                                    llvm::Value *arrayStart,
                                                    const InitListExpr *init) {
   // Check if there are any recursive cleanups to do, i.e. if we have
@@ -1413,7 +1413,7 @@ static void EmitRecursiveStdInitializerListCleanup(CodeGenFunction &CGF,
   }
 }
 
-void CodeGenFunction::EmitStdInitializerListCleanup(llvm::Value *loc,
+void CodeGenSubprogram::EmitStdInitializerListCleanup(llvm::Value *loc,
                                                     const InitListExpr *init) {
   ASTContext &ctx = getContext();
   QualType element = GetStdInitializerListElementType(init->getType());

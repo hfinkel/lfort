@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CGCUDARuntime.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/Decl.h"
 #include "llvm/IR/BasicBlock.h"
@@ -39,7 +39,7 @@ private:
 public:
   CGNVCUDARuntime(CodeGenModule &CGM);
 
-  void EmitDeviceStubBody(CodeGenFunction &CGF, FunctionArgList &Args);
+  void EmitDeviceStubBody(CodeGenSubprogram &CGF, FunctionArgList &Args);
 };
 
 }
@@ -75,7 +75,7 @@ llvm::Constant *CGNVCUDARuntime::getLaunchFn() const {
                                    "cudaLaunch");
 }
 
-void CGNVCUDARuntime::EmitDeviceStubBody(CodeGenFunction &CGF,
+void CGNVCUDARuntime::EmitDeviceStubBody(CodeGenSubprogram &CGF,
                                          FunctionArgList &Args) {
   // Build the argument value list and the argument stack struct type.
   llvm::SmallVector<llvm::Value *, 16> ArgValues;

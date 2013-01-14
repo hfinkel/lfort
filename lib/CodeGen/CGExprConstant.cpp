@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGFortranABI.h"
 #include "CGObjCRuntime.h"
 #include "CGRecordLayout.h"
@@ -35,20 +35,20 @@ using namespace CodeGen;
 namespace {
 class ConstStructBuilder {
   CodeGenModule &CGM;
-  CodeGenFunction *CGF;
+  CodeGenSubprogram *CGF;
 
   bool Packed;
   CharUnits NextFieldOffsetInChars;
   CharUnits LLVMStructAlignment;
   SmallVector<llvm::Constant *, 32> Elements;
 public:
-  static llvm::Constant *BuildStruct(CodeGenModule &CGM, CodeGenFunction *CGF,
+  static llvm::Constant *BuildStruct(CodeGenModule &CGM, CodeGenSubprogram *CGF,
                                      InitListExpr *ILE);
-  static llvm::Constant *BuildStruct(CodeGenModule &CGM, CodeGenFunction *CGF,
+  static llvm::Constant *BuildStruct(CodeGenModule &CGM, CodeGenSubprogram *CGF,
                                      const APValue &Value, QualType ValTy);
 
 private:
-  ConstStructBuilder(CodeGenModule &CGM, CodeGenFunction *CGF)
+  ConstStructBuilder(CodeGenModule &CGM, CodeGenSubprogram *CGF)
     : CGM(CGM), CGF(CGF), Packed(false), 
     NextFieldOffsetInChars(CharUnits::Zero()),
     LLVMStructAlignment(CharUnits::One()) { }
@@ -575,7 +575,7 @@ llvm::Constant *ConstStructBuilder::Finalize(QualType Ty) {
 }
 
 llvm::Constant *ConstStructBuilder::BuildStruct(CodeGenModule &CGM,
-                                                CodeGenFunction *CGF,
+                                                CodeGenSubprogram *CGF,
                                                 InitListExpr *ILE) {
   ConstStructBuilder Builder(CGM, CGF);
 
@@ -586,7 +586,7 @@ llvm::Constant *ConstStructBuilder::BuildStruct(CodeGenModule &CGM,
 }
 
 llvm::Constant *ConstStructBuilder::BuildStruct(CodeGenModule &CGM,
-                                                CodeGenFunction *CGF,
+                                                CodeGenSubprogram *CGF,
                                                 const APValue &Val,
                                                 QualType ValTy) {
   ConstStructBuilder Builder(CGM, CGF);
@@ -614,10 +614,10 @@ llvm::Constant *ConstStructBuilder::BuildStruct(CodeGenModule &CGM,
 class ConstExprEmitter :
   public StmtVisitor<ConstExprEmitter, llvm::Constant*> {
   CodeGenModule &CGM;
-  CodeGenFunction *CGF;
+  CodeGenSubprogram *CGF;
   llvm::LLVMContext &VMContext;
 public:
-  ConstExprEmitter(CodeGenModule &cgm, CodeGenFunction *cgf)
+  ConstExprEmitter(CodeGenModule &cgm, CodeGenSubprogram *cgf)
     : CGM(cgm), CGF(cgf), VMContext(cgm.getLLVMContext()) {
   }
 
@@ -1005,7 +1005,7 @@ public:
 }  // end anonymous namespace.
 
 llvm::Constant *CodeGenModule::EmitConstantInit(const VarDecl &D,
-                                                CodeGenFunction *CGF) {
+                                                CodeGenSubprogram *CGF) {
   if (const APValue *Value = D.evaluateValue())
     return EmitConstantValueForMemory(*Value, D.getType(), CGF);
 
@@ -1031,7 +1031,7 @@ llvm::Constant *CodeGenModule::EmitConstantInit(const VarDecl &D,
 
 llvm::Constant *CodeGenModule::EmitConstantExpr(const Expr *E,
                                                 QualType DestType,
-                                                CodeGenFunction *CGF) {
+                                                CodeGenSubprogram *CGF) {
   Expr::EvalResult Result;
 
   bool Success = false;
@@ -1056,7 +1056,7 @@ llvm::Constant *CodeGenModule::EmitConstantExpr(const Expr *E,
 
 llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
                                                  QualType DestType,
-                                                 CodeGenFunction *CGF) {
+                                                 CodeGenSubprogram *CGF) {
   switch (Value.getKind()) {
   case APValue::Uninitialized:
     llvm_unreachable("Constant expressions should be initialized.");
@@ -1225,7 +1225,7 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
 llvm::Constant *
 CodeGenModule::EmitConstantValueForMemory(const APValue &Value,
                                           QualType DestType,
-                                          CodeGenFunction *CGF) {
+                                          CodeGenSubprogram *CGF) {
   llvm::Constant *C = EmitConstantValue(Value, DestType, CGF);
   if (C->getType()->isIntegerTy(1)) {
     llvm::Type *BoolTy = getTypes().ConvertTypeForMem(DestType);

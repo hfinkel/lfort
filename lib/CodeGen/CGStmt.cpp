@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGDebugInfo.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
@@ -29,7 +29,7 @@ using namespace CodeGen;
 //                              Statement Emission
 //===----------------------------------------------------------------------===//
 
-void CodeGenFunction::EmitStopPoint(const Stmt *S) {
+void CodeGenSubprogram::EmitStopPoint(const Stmt *S) {
   if (CGDebugInfo *DI = getDebugInfo()) {
     SourceLocation Loc;
     if (isa<DeclStmt>(S))
@@ -40,7 +40,7 @@ void CodeGenFunction::EmitStopPoint(const Stmt *S) {
   }
 }
 
-void CodeGenFunction::EmitStmt(const Stmt *S) {
+void CodeGenSubprogram::EmitStmt(const Stmt *S) {
   assert(S && "Null statement?");
 
   // These statements have their own debug info handling.
@@ -168,7 +168,7 @@ void CodeGenFunction::EmitStmt(const Stmt *S) {
   }
 }
 
-bool CodeGenFunction::EmitSimpleStmt(const Stmt *S) {
+bool CodeGenSubprogram::EmitSimpleStmt(const Stmt *S) {
   switch (S->getStmtClass()) {
   default: return false;
   case Stmt::NullStmtClass: break;
@@ -190,7 +190,7 @@ bool CodeGenFunction::EmitSimpleStmt(const Stmt *S) {
 /// EmitCompoundStmt - Emit a compound statement {..} node.  If GetLast is true,
 /// this captures the expression result of the last sub-statement and returns it
 /// (for use by the statement expression extension).
-RValue CodeGenFunction::EmitCompoundStmt(const CompoundStmt &S, bool GetLast,
+RValue CodeGenSubprogram::EmitCompoundStmt(const CompoundStmt &S, bool GetLast,
                                          AggValueSlot AggSlot) {
   PrettyStackTraceLoc CrashInfo(getContext().getSourceManager(),S.getLBracLoc(),
                              "LLVM IR generation of compound statement ('{}')");
@@ -224,7 +224,7 @@ RValue CodeGenFunction::EmitCompoundStmt(const CompoundStmt &S, bool GetLast,
   return RV;
 }
 
-void CodeGenFunction::SimplifyForwardingBlocks(llvm::BasicBlock *BB) {
+void CodeGenSubprogram::SimplifyForwardingBlocks(llvm::BasicBlock *BB) {
   llvm::BranchInst *BI = dyn_cast<llvm::BranchInst>(BB->getTerminator());
 
   // If there is a cleanup stack, then we it isn't worth trying to
@@ -246,7 +246,7 @@ void CodeGenFunction::SimplifyForwardingBlocks(llvm::BasicBlock *BB) {
   BB->eraseFromParent();
 }
 
-void CodeGenFunction::EmitBlock(llvm::BasicBlock *BB, bool IsFinished) {
+void CodeGenSubprogram::EmitBlock(llvm::BasicBlock *BB, bool IsFinished) {
   llvm::BasicBlock *CurBB = Builder.GetInsertBlock();
 
   // Fall out of the current block (if necessary).
@@ -266,7 +266,7 @@ void CodeGenFunction::EmitBlock(llvm::BasicBlock *BB, bool IsFinished) {
   Builder.SetInsertPoint(BB);
 }
 
-void CodeGenFunction::EmitBranch(llvm::BasicBlock *Target) {
+void CodeGenSubprogram::EmitBranch(llvm::BasicBlock *Target) {
   // Emit a branch from the current block to the target one if this
   // was a real block.  If this was just a fall-through block after a
   // terminator, don't emit it.
@@ -283,7 +283,7 @@ void CodeGenFunction::EmitBranch(llvm::BasicBlock *Target) {
   Builder.ClearInsertionPoint();
 }
 
-void CodeGenFunction::EmitBlockAfterUses(llvm::BasicBlock *block) {
+void CodeGenSubprogram::EmitBlockAfterUses(llvm::BasicBlock *block) {
   bool inserted = false;
   for (llvm::BasicBlock::use_iterator
          i = block->use_begin(), e = block->use_end(); i != e; ++i) {
@@ -300,8 +300,8 @@ void CodeGenFunction::EmitBlockAfterUses(llvm::BasicBlock *block) {
   Builder.SetInsertPoint(block);
 }
 
-CodeGenFunction::JumpDest
-CodeGenFunction::getJumpDestForLabel(const LabelDecl *D) {
+CodeGenSubprogram::JumpDest
+CodeGenSubprogram::getJumpDestForLabel(const LabelDecl *D) {
   JumpDest &Dest = LabelMap[D];
   if (Dest.isValid()) return Dest;
 
@@ -312,7 +312,7 @@ CodeGenFunction::getJumpDestForLabel(const LabelDecl *D) {
   return Dest;
 }
 
-void CodeGenFunction::EmitLabel(const LabelDecl *D) {
+void CodeGenSubprogram::EmitLabel(const LabelDecl *D) {
   JumpDest &Dest = LabelMap[D];
 
   // If we didn't need a forward reference to this label, just go
@@ -335,16 +335,16 @@ void CodeGenFunction::EmitLabel(const LabelDecl *D) {
 }
 
 
-void CodeGenFunction::EmitLabelStmt(const LabelStmt &S) {
+void CodeGenSubprogram::EmitLabelStmt(const LabelStmt &S) {
   EmitLabel(S.getDecl());
   EmitStmt(S.getSubStmt());
 }
 
-void CodeGenFunction::EmitAttributedStmt(const AttributedStmt &S) {
+void CodeGenSubprogram::EmitAttributedStmt(const AttributedStmt &S) {
   EmitStmt(S.getSubStmt());
 }
 
-void CodeGenFunction::EmitGotoStmt(const GotoStmt &S) {
+void CodeGenSubprogram::EmitGotoStmt(const GotoStmt &S) {
   // If this code is reachable then emit a stop point (if generating
   // debug info). We have to do this ourselves because we are on the
   // "simple" statement path.
@@ -355,7 +355,7 @@ void CodeGenFunction::EmitGotoStmt(const GotoStmt &S) {
 }
 
 
-void CodeGenFunction::EmitIndirectGotoStmt(const IndirectGotoStmt &S) {
+void CodeGenSubprogram::EmitIndirectGotoStmt(const IndirectGotoStmt &S) {
   if (const LabelDecl *Target = S.getConstantTarget()) {
     EmitBranchThroughCleanup(getJumpDestForLabel(Target));
     return;
@@ -376,7 +376,7 @@ void CodeGenFunction::EmitIndirectGotoStmt(const IndirectGotoStmt &S) {
   EmitBranch(IndGotoBB);
 }
 
-void CodeGenFunction::EmitIfStmt(const IfStmt &S) {
+void CodeGenSubprogram::EmitIfStmt(const IfStmt &S) {
   // C99 6.8.4.1: The first substatement is executed if the expression compares
   // unequal to 0.  The condition must be a scalar type.
   RunCleanupsScope ConditionScope(*this);
@@ -442,7 +442,7 @@ void CodeGenFunction::EmitIfStmt(const IfStmt &S) {
   EmitBlock(ContBlock, true);
 }
 
-void CodeGenFunction::EmitWhileStmt(const WhileStmt &S) {
+void CodeGenSubprogram::EmitWhileStmt(const WhileStmt &S) {
   // Emit the header for the loop, which will also become
   // the continue target.
   JumpDest LoopHeader = getJumpDestInCurrentScope("while.cond");
@@ -519,7 +519,7 @@ void CodeGenFunction::EmitWhileStmt(const WhileStmt &S) {
     SimplifyForwardingBlocks(LoopHeader.getBlock());
 }
 
-void CodeGenFunction::EmitDoStmt(const DoStmt &S) {
+void CodeGenSubprogram::EmitDoStmt(const DoStmt &S) {
   JumpDest LoopExit = getJumpDestInCurrentScope("do.end");
   JumpDest LoopCond = getJumpDestInCurrentScope("do.cond");
 
@@ -566,7 +566,7 @@ void CodeGenFunction::EmitDoStmt(const DoStmt &S) {
     SimplifyForwardingBlocks(LoopCond.getBlock());
 }
 
-void CodeGenFunction::EmitForStmt(const ForStmt &S) {
+void CodeGenSubprogram::EmitForStmt(const ForStmt &S) {
   JumpDest LoopExit = getJumpDestInCurrentScope("for.end");
 
   RunCleanupsScope ForScope(*this);
@@ -659,7 +659,7 @@ void CodeGenFunction::EmitForStmt(const ForStmt &S) {
   EmitBlock(LoopExit.getBlock(), true);
 }
 
-void CodeGenFunction::EmitCXXForRangeStmt(const CXXForRangeStmt &S) {
+void CodeGenSubprogram::EmitCXXForRangeStmt(const CXXForRangeStmt &S) {
   JumpDest LoopExit = getJumpDestInCurrentScope("for.end");
 
   RunCleanupsScope ForScope(*this);
@@ -729,7 +729,7 @@ void CodeGenFunction::EmitCXXForRangeStmt(const CXXForRangeStmt &S) {
   EmitBlock(LoopExit.getBlock(), true);
 }
 
-void CodeGenFunction::EmitReturnOfRValue(RValue RV, QualType Ty) {
+void CodeGenSubprogram::EmitReturnOfRValue(RValue RV, QualType Ty) {
   if (RV.isScalar()) {
     Builder.CreateStore(RV.getScalarVal(), ReturnValue);
   } else if (RV.isAggregate()) {
@@ -743,7 +743,7 @@ void CodeGenFunction::EmitReturnOfRValue(RValue RV, QualType Ty) {
 /// EmitReturnStmt - Note that due to GCC extensions, this can have an operand
 /// if the function returns void, or may be missing one if the function returns
 /// non-void.  Fun stuff :).
-void CodeGenFunction::EmitReturnStmt(const ReturnStmt &S) {
+void CodeGenSubprogram::EmitReturnStmt(const ReturnStmt &S) {
   // Emit the result value, even if unused, to evalute the side effects.
   const Expr *RV = S.getRetValue();
 
@@ -798,7 +798,7 @@ void CodeGenFunction::EmitReturnStmt(const ReturnStmt &S) {
   EmitBranchThroughCleanup(ReturnBlock);
 }
 
-void CodeGenFunction::EmitDeclStmt(const DeclStmt &S) {
+void CodeGenSubprogram::EmitDeclStmt(const DeclStmt &S) {
   // As long as debug info is modeled with instructions, we have to ensure we
   // have a place to insert here and write the stop point here.
   if (HaveInsertPoint())
@@ -809,7 +809,7 @@ void CodeGenFunction::EmitDeclStmt(const DeclStmt &S) {
     EmitDecl(**I);
 }
 
-void CodeGenFunction::EmitBreakStmt(const BreakStmt &S) {
+void CodeGenSubprogram::EmitBreakStmt(const BreakStmt &S) {
   assert(!BreakContinueStack.empty() && "break stmt not in a loop or switch!");
 
   // If this code is reachable then emit a stop point (if generating
@@ -822,7 +822,7 @@ void CodeGenFunction::EmitBreakStmt(const BreakStmt &S) {
   EmitBranchThroughCleanup(Block);
 }
 
-void CodeGenFunction::EmitContinueStmt(const ContinueStmt &S) {
+void CodeGenSubprogram::EmitContinueStmt(const ContinueStmt &S) {
   assert(!BreakContinueStack.empty() && "continue stmt not in a loop!");
 
   // If this code is reachable then emit a stop point (if generating
@@ -838,7 +838,7 @@ void CodeGenFunction::EmitContinueStmt(const ContinueStmt &S) {
 /// EmitCaseStmtRange - If case statement range is not too big then
 /// add multiple cases to switch instruction, one for each value within
 /// the range. If range is too big then emit "if" condition check.
-void CodeGenFunction::EmitCaseStmtRange(const CaseStmt &S) {
+void CodeGenSubprogram::EmitCaseStmtRange(const CaseStmt &S) {
   assert(S.getRHS() && "Expected RHS value in CaseStmt");
 
   llvm::APSInt LHS = S.getLHS()->EvaluateKnownConstInt(getContext());
@@ -893,7 +893,7 @@ void CodeGenFunction::EmitCaseStmtRange(const CaseStmt &S) {
     Builder.ClearInsertionPoint();
 }
 
-void CodeGenFunction::EmitCaseStmt(const CaseStmt &S) {
+void CodeGenSubprogram::EmitCaseStmt(const CaseStmt &S) {
   // If there is no enclosing switch instance that we're aware of, then this
   // case statement and its block can be elided.  This situation only happens
   // when we've constant-folded the switch, are emitting the constant case,
@@ -962,7 +962,7 @@ void CodeGenFunction::EmitCaseStmt(const CaseStmt &S) {
   EmitStmt(CurCase->getSubStmt());
 }
 
-void CodeGenFunction::EmitDefaultStmt(const DefaultStmt &S) {
+void CodeGenSubprogram::EmitDefaultStmt(const DefaultStmt &S) {
   llvm::BasicBlock *DefaultBlock = SwitchInsn->getDefaultDest();
   assert(DefaultBlock->empty() &&
          "EmitDefaultStmt: Default block already defined?");
@@ -1052,7 +1052,7 @@ static CSFC_Result CollectStatementsForCase(const Stmt *S,
               return CSFC_Failure;
 
             for (++I; I != E; ++I)
-              if (CodeGenFunction::ContainsLabel(*I, true))
+              if (CodeGenSubprogram::ContainsLabel(*I, true))
                 return CSFC_Failure;
             return CSFC_Success;
           }
@@ -1088,7 +1088,7 @@ static CSFC_Result CollectStatementsForCase(const Stmt *S,
         // stopped statement inclusion.  We just ensure that any leftover stmts
         // are skippable and return success ourselves.
         for (++I; I != E; ++I)
-          if (CodeGenFunction::ContainsLabel(*I, true))
+          if (CodeGenSubprogram::ContainsLabel(*I, true))
             return CSFC_Failure;
         return CSFC_Success;
       }
@@ -1101,14 +1101,14 @@ static CSFC_Result CollectStatementsForCase(const Stmt *S,
   // for statement or increment etc.  If we are skipping over this statement,
   // just verify it doesn't have labels, which would make it invalid to elide.
   if (Case) {
-    if (CodeGenFunction::ContainsLabel(S, true))
+    if (CodeGenSubprogram::ContainsLabel(S, true))
       return CSFC_Failure;
     return CSFC_Success;
   }
 
   // Otherwise, we want to include this statement.  Everything is cool with that
   // so long as it doesn't contain a break out of the switch we're in.
-  if (CodeGenFunction::containsBreak(S)) return CSFC_Failure;
+  if (CodeGenSubprogram::containsBreak(S)) return CSFC_Failure;
 
   // Otherwise, everything is great.  Include the statement and tell the caller
   // that we fall through and include the next statement as well.
@@ -1153,7 +1153,7 @@ static bool FindCaseStatementsForValue(const SwitchStmt &S,
     // It is safe to elide the body of the switch if it doesn't contain labels
     // etc.  If it is safe, return successfully with an empty ResultStmts list.
     if (DefaultCase == 0)
-      return !CodeGenFunction::ContainsLabel(&S);
+      return !CodeGenSubprogram::ContainsLabel(&S);
     Case = DefaultCase;
   }
 
@@ -1171,7 +1171,7 @@ static bool FindCaseStatementsForValue(const SwitchStmt &S,
          FoundCase;
 }
 
-void CodeGenFunction::EmitSwitchStmt(const SwitchStmt &S) {
+void CodeGenSubprogram::EmitSwitchStmt(const SwitchStmt &S) {
   JumpDest SwitchExit = getJumpDestInCurrentScope("sw.epilog");
 
   RunCleanupsScope ConditionScope(*this);
@@ -1344,12 +1344,12 @@ AddVariableConstraints(const std::string &Constraint, const Expr &AsmExpr,
 }
 
 llvm::Value*
-CodeGenFunction::EmitAsmInputLValue(const TargetInfo::ConstraintInfo &Info,
+CodeGenSubprogram::EmitAsmInputLValue(const TargetInfo::ConstraintInfo &Info,
                                     LValue InputValue, QualType InputType,
                                     std::string &ConstraintStr) {
   llvm::Value *Arg;
   if (Info.allowsRegister() || !Info.allowsMemory()) {
-    if (!CodeGenFunction::hasAggregateLLVMType(InputType)) {
+    if (!CodeGenSubprogram::hasAggregateLLVMType(InputType)) {
       Arg = EmitLoadOfLValue(InputValue).getScalarVal();
     } else {
       llvm::Type *Ty = ConvertType(InputType);
@@ -1373,12 +1373,12 @@ CodeGenFunction::EmitAsmInputLValue(const TargetInfo::ConstraintInfo &Info,
   return Arg;
 }
 
-llvm::Value* CodeGenFunction::EmitAsmInput(
+llvm::Value* CodeGenSubprogram::EmitAsmInput(
                                          const TargetInfo::ConstraintInfo &Info,
                                            const Expr *InputExpr,
                                            std::string &ConstraintStr) {
   if (Info.allowsRegister() || !Info.allowsMemory())
-    if (!CodeGenFunction::hasAggregateLLVMType(InputExpr->getType()))
+    if (!CodeGenSubprogram::hasAggregateLLVMType(InputExpr->getType()))
       return EmitScalarExpr(InputExpr);
 
   InputExpr = InputExpr->IgnoreParenNoopCasts(getContext());
@@ -1391,7 +1391,7 @@ llvm::Value* CodeGenFunction::EmitAsmInput(
 /// integers which are the source locations of the start of each line in the
 /// asm.
 static llvm::MDNode *getAsmSrcLocInfo(const StringLiteral *Str,
-                                      CodeGenFunction &CGF) {
+                                      CodeGenSubprogram &CGF) {
   SmallVector<llvm::Value *, 8> Locs;
   // Add the location of the first line to the MDNode.
   Locs.push_back(llvm::ConstantInt::get(CGF.Int32Ty,
@@ -1415,7 +1415,7 @@ static llvm::MDNode *getAsmSrcLocInfo(const StringLiteral *Str,
   return llvm::MDNode::get(CGF.getLLVMContext(), Locs);
 }
 
-void CodeGenFunction::EmitAsmStmt(const AsmStmt &S) {
+void CodeGenSubprogram::EmitAsmStmt(const AsmStmt &S) {
   // Assemble the final asm string.
   std::string AsmString = S.generateAsmString(getContext());
 

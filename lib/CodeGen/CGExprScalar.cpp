@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGFortranABI.h"
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
@@ -58,13 +58,13 @@ static bool MustVisitNullValue(const Expr *E) {
 
 class ScalarExprEmitter
   : public StmtVisitor<ScalarExprEmitter, Value*> {
-  CodeGenFunction &CGF;
+  CodeGenSubprogram &CGF;
   CGBuilderTy &Builder;
   bool IgnoreResultAssign;
   llvm::LLVMContext &VMContext;
 public:
 
-  ScalarExprEmitter(CodeGenFunction &cgf, bool ira=false)
+  ScalarExprEmitter(CodeGenSubprogram &cgf, bool ira=false)
     : CGF(cgf), Builder(CGF.Builder), IgnoreResultAssign(ira),
       VMContext(cgf.getLLVMContext()) {
   }
@@ -81,7 +81,7 @@ public:
 
   llvm::Type *ConvertType(QualType T) { return CGF.ConvertType(T); }
   LValue EmitLValue(const Expr *E) { return CGF.EmitLValue(E); }
-  LValue EmitCheckedLValue(const Expr *E, CodeGenFunction::TypeCheckKind TCK) {
+  LValue EmitCheckedLValue(const Expr *E, CodeGenSubprogram::TypeCheckKind TCK) {
     return CGF.EmitCheckedLValue(E, TCK);
   }
 
@@ -95,7 +95,7 @@ public:
   /// value l-value, this method emits the address of the l-value, then loads
   /// and returns the result.
   Value *EmitLoadOfLValue(const Expr *E) {
-    return EmitLoadOfLValue(EmitCheckedLValue(E, CodeGenFunction::TCK_Load));
+    return EmitLoadOfLValue(EmitCheckedLValue(E, CodeGenSubprogram::TCK_Load));
   }
 
   /// EmitConversionToBool - Convert the specified expression value to a
@@ -115,7 +115,7 @@ public:
   /// EmitComplexToScalarConversion - Emit a conversion from the specified
   /// complex type to the specified destination type, where the destination type
   /// is an LLVM scalar type.
-  Value *EmitComplexToScalarConversion(CodeGenFunction::ComplexPairTy Src,
+  Value *EmitComplexToScalarConversion(CodeGenSubprogram::ComplexPairTy Src,
                                        QualType SrcTy, QualType DstTy);
 
   /// EmitNullValue - Emit a value that corresponds to null for the given type.
@@ -225,7 +225,7 @@ public:
 
   // l-values.
   Value *VisitDeclRefExpr(DeclRefExpr *E) {
-    if (CodeGenFunction::ConstantEmission result = CGF.tryEmitAsConstant(E)) {
+    if (CodeGenSubprogram::ConstantEmission result = CGF.tryEmitAsConstant(E)) {
       if (result.isReference())
         return EmitLoadOfLValue(result.getReferenceLValue(CGF, E));
       return result.getValue();
@@ -350,7 +350,7 @@ public:
 
   Value *VisitExprWithCleanups(ExprWithCleanups *E) {
     CGF.enterFullExpression(E);
-    CodeGenFunction::RunCleanupsScope Scope(CGF);
+    CodeGenSubprogram::RunCleanupsScope Scope(CGF);
     return Visit(E->getSubExpr());
   }
   Value *VisitCXXNewExpr(const CXXNewExpr *E) {
@@ -646,7 +646,7 @@ void ScalarExprEmitter::EmitFloatConversionCheck(Value *OrigSrc,
     CGF.EmitCheckTypeDescriptor(DstType)
   };
   CGF.EmitCheck(Check, "float_cast_overflow", StaticArgs, OrigSrc,
-                CodeGenFunction::CRK_Recoverable);
+                CodeGenSubprogram::CRK_Recoverable);
 }
 
 /// EmitScalarConversion - Emit a conversion from the specified type to the
@@ -771,7 +771,7 @@ Value *ScalarExprEmitter::EmitScalarConversion(Value *Src, QualType SrcType,
 /// type to the specified destination type, where the destination type is an
 /// LLVM scalar type.
 Value *ScalarExprEmitter::
-EmitComplexToScalarConversion(CodeGenFunction::ComplexPairTy Src,
+EmitComplexToScalarConversion(CodeGenSubprogram::ComplexPairTy Src,
                               QualType SrcTy, QualType DstTy) {
   // Get the source element type.
   SrcTy = SrcTy->getAs<ComplexType>()->getElementType();
@@ -841,7 +841,7 @@ void ScalarExprEmitter::EmitBinOpCheck(Value *Check, const BinOpInfo &Info) {
   }
 
   CGF.EmitCheck(Check, CheckName, StaticData, DynamicData,
-                CodeGenFunction::CRK_Recoverable);
+                CodeGenSubprogram::CRK_Recoverable);
 }
 
 //===----------------------------------------------------------------------===//
@@ -1375,7 +1375,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
 
   case CK_FloatingComplexToBoolean:
   case CK_IntegralComplexToBoolean: {
-    CodeGenFunction::ComplexPairTy V = CGF.EmitComplexExpr(E);
+    CodeGenSubprogram::ComplexPairTy V = CGF.EmitComplexExpr(E);
 
     // TODO: kill this function off, inline appropriate case here
     return EmitComplexToScalarConversion(V, E->getType(), DestTy);
@@ -1387,7 +1387,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
 }
 
 Value *ScalarExprEmitter::VisitStmtExpr(const StmtExpr *E) {
-  CodeGenFunction::StmtExprEvaluation eval(CGF);
+  CodeGenSubprogram::StmtExprEvaluation eval(CGF);
   return CGF.EmitCompoundStmt(*E->getSubStmt(), !E->getType()->isVoidType())
     .getScalarVal();
 }
@@ -1850,7 +1850,7 @@ LValue ScalarExprEmitter::EmitCompoundAssignLValue(
   OpInfo.FPContractable = false;
   OpInfo.E = E;
   // Load/convert the LHS.
-  LValue LHSLV = EmitCheckedLValue(E->getLHS(), CodeGenFunction::TCK_Store);
+  LValue LHSLV = EmitCheckedLValue(E->getLHS(), CodeGenSubprogram::TCK_Store);
   OpInfo.LHS = EmitLoadOfLValue(LHSLV);
 
   llvm::PHINode *atomicPHI = 0;
@@ -2087,7 +2087,7 @@ Value *ScalarExprEmitter::EmitOverflowCheckedBinOp(const BinOpInfo &Ops) {
 }
 
 /// Emit pointer + index arithmetic.
-static Value *emitPointerArithmetic(CodeGenFunction &CGF,
+static Value *emitPointerArithmetic(CodeGenSubprogram &CGF,
                                     const BinOpInfo &op,
                                     bool isSubtraction) {
   // Must have binary (not unary) expr here.  Unary pointer
@@ -2175,7 +2175,7 @@ static Value *emitPointerArithmetic(CodeGenFunction &CGF,
 // c-a*b. Patterns in LLVM should catch the negated forms and translate them to
 // efficient operations.
 static Value* buildFMulAdd(llvm::BinaryOperator *MulOp, Value *Addend,
-                           const CodeGenFunction &CGF, CGBuilderTy &Builder,
+                           const CodeGenSubprogram &CGF, CGBuilderTy &Builder,
                            bool negMul, bool negAdd) {
   assert(!(negMul && negAdd) && "Only one of negMul and negAdd should be set.");
  
@@ -2209,7 +2209,7 @@ static Value* buildFMulAdd(llvm::BinaryOperator *MulOp, Value *Addend,
 // Does NOT check the type of the operation - it's assumed that this function
 // will be called from contexts where it's known that the type is contractable.
 static Value* tryEmitFMulAdd(const BinOpInfo &op, 
-                         const CodeGenFunction &CGF, CGBuilderTy &Builder,
+                         const CodeGenSubprogram &CGF, CGBuilderTy &Builder,
                          bool isSub=false) {
 
   assert((op.Opcode == BO_Add || op.Opcode == BO_AddAssign ||
@@ -2558,8 +2558,8 @@ Value *ScalarExprEmitter::EmitCompare(const BinaryOperator *E,unsigned UICmpOpc,
 
   } else {
     // Complex Comparison: can only be an equality comparison.
-    CodeGenFunction::ComplexPairTy LHS = CGF.EmitComplexExpr(E->getLHS());
-    CodeGenFunction::ComplexPairTy RHS = CGF.EmitComplexExpr(E->getRHS());
+    CodeGenSubprogram::ComplexPairTy LHS = CGF.EmitComplexExpr(E->getLHS());
+    CodeGenSubprogram::ComplexPairTy RHS = CGF.EmitComplexExpr(E->getRHS());
 
     QualType CETy = LHSTy->getAs<ComplexType>()->getElementType();
 
@@ -2607,7 +2607,7 @@ Value *ScalarExprEmitter::VisitBinAssign(const BinaryOperator *E) {
 
   case Qualifiers::OCL_Weak:
     RHS = Visit(E->getRHS());
-    LHS = EmitCheckedLValue(E->getLHS(), CodeGenFunction::TCK_Store);
+    LHS = EmitCheckedLValue(E->getLHS(), CodeGenSubprogram::TCK_Store);
     RHS = CGF.EmitARCStoreWeak(LHS.getAddress(), RHS, Ignore);
     break;
 
@@ -2617,7 +2617,7 @@ Value *ScalarExprEmitter::VisitBinAssign(const BinaryOperator *E) {
     // __block variables need to have the rhs evaluated first, plus
     // this should improve codegen just a little.
     RHS = Visit(E->getRHS());
-    LHS = EmitCheckedLValue(E->getLHS(), CodeGenFunction::TCK_Store);
+    LHS = EmitCheckedLValue(E->getLHS(), CodeGenSubprogram::TCK_Store);
 
     // Store the value into the LHS.  Bit-fields are handled specially
     // because the result is altered by the store, i.e., [C99 6.5.16p1]
@@ -2678,7 +2678,7 @@ Value *ScalarExprEmitter::VisitBinLAnd(const BinaryOperator *E) {
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("land.end");
   llvm::BasicBlock *RHSBlock  = CGF.createBasicBlock("land.rhs");
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
 
   // Branch on the LHS first.  If it is false, go to the failure (cont) block.
   CGF.EmitBranchOnBoolExpr(E->getLHS(), RHSBlock, ContBlock);
@@ -2745,7 +2745,7 @@ Value *ScalarExprEmitter::VisitBinLOr(const BinaryOperator *E) {
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("lor.end");
   llvm::BasicBlock *RHSBlock = CGF.createBasicBlock("lor.rhs");
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
 
   // Branch on the LHS first.  If it is true, go to the success (cont) block.
   CGF.EmitBranchOnBoolExpr(E->getLHS(), ContBlock, RHSBlock);
@@ -2794,7 +2794,7 @@ Value *ScalarExprEmitter::VisitBinComma(const BinaryOperator *E) {
 /// unconditionally instead of conditionally.  This is used to convert control
 /// flow into selects in some cases.
 static bool isCheapEnoughToEvaluateUnconditionally(const Expr *E,
-                                                   CodeGenFunction &CGF) {
+                                                   CodeGenSubprogram &CGF) {
   E = E->IgnoreParens();
 
   // Anything that is an integer or floating point constant is fine.
@@ -2819,7 +2819,7 @@ VisitAbstractConditionalOperator(const AbstractConditionalOperator *E) {
   TestAndClearIgnoreResultAssign();
 
   // Bind the common expression if necessary.
-  CodeGenFunction::OpaqueValueMapping binding(CGF, E);
+  CodeGenSubprogram::OpaqueValueMapping binding(CGF, E);
 
   Expr *condExpr = E->getCond();
   Expr *lhsExpr = E->getTrueExpr();
@@ -2908,7 +2908,7 @@ VisitAbstractConditionalOperator(const AbstractConditionalOperator *E) {
   llvm::BasicBlock *RHSBlock = CGF.createBasicBlock("cond.false");
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("cond.end");
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
   CGF.EmitBranchOnBoolExpr(condExpr, LHSBlock, RHSBlock);
 
   CGF.EmitBlock(LHSBlock);
@@ -3019,7 +3019,7 @@ Value *ScalarExprEmitter::VisitAtomicExpr(AtomicExpr *E) {
 
 /// EmitScalarExpr - Emit the computation of the specified expression of scalar
 /// type, ignoring the result.
-Value *CodeGenFunction::EmitScalarExpr(const Expr *E, bool IgnoreResultAssign) {
+Value *CodeGenSubprogram::EmitScalarExpr(const Expr *E, bool IgnoreResultAssign) {
   assert(E && !hasAggregateLLVMType(E->getType()) &&
          "Invalid scalar expression to emit");
 
@@ -3034,7 +3034,7 @@ Value *CodeGenFunction::EmitScalarExpr(const Expr *E, bool IgnoreResultAssign) {
 
 /// EmitScalarConversion - Emit a conversion from the specified type to the
 /// specified destination type, both of which are LLVM scalar types.
-Value *CodeGenFunction::EmitScalarConversion(Value *Src, QualType SrcTy,
+Value *CodeGenSubprogram::EmitScalarConversion(Value *Src, QualType SrcTy,
                                              QualType DstTy) {
   assert(!hasAggregateLLVMType(SrcTy) && !hasAggregateLLVMType(DstTy) &&
          "Invalid scalar expression to emit");
@@ -3044,7 +3044,7 @@ Value *CodeGenFunction::EmitScalarConversion(Value *Src, QualType SrcTy,
 /// EmitComplexToScalarConversion - Emit a conversion from the specified complex
 /// type to the specified destination type, where the destination type is an
 /// LLVM scalar type.
-Value *CodeGenFunction::EmitComplexToScalarConversion(ComplexPairTy Src,
+Value *CodeGenSubprogram::EmitComplexToScalarConversion(ComplexPairTy Src,
                                                       QualType SrcTy,
                                                       QualType DstTy) {
   assert(SrcTy->isAnyComplexType() && !hasAggregateLLVMType(DstTy) &&
@@ -3054,13 +3054,13 @@ Value *CodeGenFunction::EmitComplexToScalarConversion(ComplexPairTy Src,
 }
 
 
-llvm::Value *CodeGenFunction::
+llvm::Value *CodeGenSubprogram::
 EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
                         bool isInc, bool isPre) {
   return ScalarExprEmitter(*this).EmitScalarPrePostIncDec(E, LV, isInc, isPre);
 }
 
-LValue CodeGenFunction::EmitObjCIsaExpr(const ObjCIsaExpr *E) {
+LValue CodeGenSubprogram::EmitObjCIsaExpr(const ObjCIsaExpr *E) {
   llvm::Value *V;
   // object->isa or (*object).isa
   // Generate code as for: *(Class*)object
@@ -3088,7 +3088,7 @@ LValue CodeGenFunction::EmitObjCIsaExpr(const ObjCIsaExpr *E) {
 }
 
 
-LValue CodeGenFunction::EmitCompoundAssignmentLValue(
+LValue CodeGenSubprogram::EmitCompoundAssignmentLValue(
                                             const CompoundAssignOperator *E) {
   ScalarExprEmitter Scalar(*this);
   Value *Result = 0;

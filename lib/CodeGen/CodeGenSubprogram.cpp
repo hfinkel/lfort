@@ -1,4 +1,4 @@
-//===--- CodeGenFunction.cpp - Emit LLVM Code from ASTs for a Function ----===//
+//===--- CodeGenSubprogram.cpp - Emit LLVM Code from ASTs for a Function ----===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGCUDARuntime.h"
 #include "CGFortranABI.h"
 #include "CGDebugInfo.h"
@@ -29,7 +29,7 @@
 using namespace lfort;
 using namespace CodeGen;
 
-CodeGenFunction::CodeGenFunction(CodeGenModule &cgm, bool suppressNewContext)
+CodeGenSubprogram::CodeGenSubprogram(CodeGenModule &cgm, bool suppressNewContext)
   : CodeGenTypeCache(cgm), CGM(cgm),
     Target(CGM.getContext().getTargetInfo()),
     Builder(cgm.getModule().getContext()),
@@ -58,7 +58,7 @@ CodeGenFunction::CodeGenFunction(CodeGenModule &cgm, bool suppressNewContext)
   Builder.SetFastMathFlags(FMF);
 }
 
-CodeGenFunction::~CodeGenFunction() {
+CodeGenSubprogram::~CodeGenSubprogram() {
   // If there are any unclaimed block infos, go ahead and destroy them
   // now.  This can happen if IR-gen gets clever and skips evaluating
   // something.
@@ -67,15 +67,15 @@ CodeGenFunction::~CodeGenFunction() {
 }
 
 
-llvm::Type *CodeGenFunction::ConvertTypeForMem(QualType T) {
+llvm::Type *CodeGenSubprogram::ConvertTypeForMem(QualType T) {
   return CGM.getTypes().ConvertTypeForMem(T);
 }
 
-llvm::Type *CodeGenFunction::ConvertType(QualType T) {
+llvm::Type *CodeGenSubprogram::ConvertType(QualType T) {
   return CGM.getTypes().ConvertType(T);
 }
 
-bool CodeGenFunction::hasAggregateLLVMType(QualType type) {
+bool CodeGenSubprogram::hasAggregateLLVMType(QualType type) {
   switch (type.getCanonicalType()->getTypeClass()) {
 #define TYPE(name, parent)
 #define ABSTRACT_TYPE(name, parent)
@@ -116,7 +116,7 @@ bool CodeGenFunction::hasAggregateLLVMType(QualType type) {
   llvm_unreachable("unknown type kind!");
 }
 
-void CodeGenFunction::EmitReturnBlock() {
+void CodeGenSubprogram::EmitReturnBlock() {
   // For cleanliness, we try to avoid emitting the return block for
   // simple cases.
   llvm::BasicBlock *CurBB = Builder.GetInsertBlock();
@@ -158,14 +158,14 @@ void CodeGenFunction::EmitReturnBlock() {
   EmitBlock(ReturnBlock.getBlock());
 }
 
-static void EmitIfUsed(CodeGenFunction &CGF, llvm::BasicBlock *BB) {
+static void EmitIfUsed(CodeGenSubprogram &CGF, llvm::BasicBlock *BB) {
   if (!BB) return;
   if (!BB->use_empty())
     return CGF.CurFn->getBasicBlockList().push_back(BB);
   delete BB;
 }
 
-void CodeGenFunction::FinishFunction(SourceLocation EndLoc) {
+void CodeGenSubprogram::FinishFunction(SourceLocation EndLoc) {
   assert(BreakContinueStack.empty() &&
          "mismatched push/pop in break/continue stack!");
 
@@ -227,7 +227,7 @@ void CodeGenFunction::FinishFunction(SourceLocation EndLoc) {
 
 /// ShouldInstrumentFunction - Return true if the current function should be
 /// instrumented with __cyg_profile_func_* calls
-bool CodeGenFunction::ShouldInstrumentFunction() {
+bool CodeGenSubprogram::ShouldInstrumentFunction() {
   if (!CGM.getCodeGenOpts().InstrumentFunctions)
     return false;
   if (!CurFuncDecl || CurFuncDecl->hasAttr<NoInstrumentFunctionAttr>())
@@ -238,7 +238,7 @@ bool CodeGenFunction::ShouldInstrumentFunction() {
 /// EmitFunctionInstrumentation - Emit LLVM code to call the specified
 /// instrumentation function with the current function and the call site, if
 /// function instrumentation is enabled.
-void CodeGenFunction::EmitFunctionInstrumentation(const char *Fn) {
+void CodeGenSubprogram::EmitFunctionInstrumentation(const char *Fn) {
   // void __cyg_profile_func_{enter,exit} (void *this_fn, void *call_site);
   llvm::PointerType *PointerTy = Int8PtrTy;
   llvm::Type *ProfileFuncArgs[] = { PointerTy, PointerTy };
@@ -256,7 +256,7 @@ void CodeGenFunction::EmitFunctionInstrumentation(const char *Fn) {
                       CallSite);
 }
 
-void CodeGenFunction::EmitMCountInstrumentation() {
+void CodeGenSubprogram::EmitMCountInstrumentation() {
   llvm::FunctionType *FTy = llvm::FunctionType::get(VoidTy, false);
 
   llvm::Constant *MCountFn = CGM.CreateRuntimeFunction(FTy,
@@ -291,7 +291,7 @@ static void GenOpenCLArgMetadata(const FunctionDecl *FD, llvm::Function *Fn,
   kernelMDArgs.push_back(llvm::MDNode::get(Context, argNames));
 }
 
-void CodeGenFunction::EmitOpenCLKernelMetadata(const FunctionDecl *FD,
+void CodeGenSubprogram::EmitOpenCLKernelMetadata(const FunctionDecl *FD,
                                                llvm::Function *Fn)
 {
   if (!FD->hasAttr<OpenCLKernelAttr>())
@@ -333,7 +333,7 @@ void CodeGenFunction::EmitOpenCLKernelMetadata(const FunctionDecl *FD,
   OpenCLKernelMetadata->addOperand(kernelMDNode);
 }
 
-void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
+void CodeGenSubprogram::StartFunction(GlobalDecl GD, QualType RetTy,
                                     llvm::Function *Fn,
                                     const CGFunctionInfo &FnInfo,
                                     const FunctionArgList &Args,
@@ -477,7 +477,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
     DI->EmitLocation(Builder, StartLoc);
 }
 
-void CodeGenFunction::EmitFunctionBody(FunctionArgList &Args) {
+void CodeGenSubprogram::EmitFunctionBody(FunctionArgList &Args) {
   const FunctionDecl *FD = cast<FunctionDecl>(CurGD.getDecl());
   assert(FD->getBody());
   EmitStmt(FD->getBody());
@@ -503,7 +503,7 @@ static void TryMarkNoThrow(llvm::Function *F) {
   F->setDoesNotThrow();
 }
 
-void CodeGenFunction::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
+void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
                                    const CGFunctionInfo &FnInfo) {
   const FunctionDecl *FD = cast<FunctionDecl>(GD.getDecl());
 
@@ -580,7 +580,7 @@ void CodeGenFunction::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
 /// ContainsLabel - Return true if the statement contains a label in it.  If
 /// this statement is not executed normally, it not containing a label means
 /// that we can just remove the code.
-bool CodeGenFunction::ContainsLabel(const Stmt *S, bool IgnoreCaseStmts) {
+bool CodeGenSubprogram::ContainsLabel(const Stmt *S, bool IgnoreCaseStmts) {
   // Null statement, not a label!
   if (S == 0) return false;
 
@@ -612,7 +612,7 @@ bool CodeGenFunction::ContainsLabel(const Stmt *S, bool IgnoreCaseStmts) {
 /// containsBreak - Return true if the statement contains a break out of it.
 /// If the statement (recursively) contains a switch or loop with a break
 /// inside of it, this is fine.
-bool CodeGenFunction::containsBreak(const Stmt *S) {
+bool CodeGenSubprogram::containsBreak(const Stmt *S) {
   // Null statement, not a label!
   if (S == 0) return false;
 
@@ -637,7 +637,7 @@ bool CodeGenFunction::containsBreak(const Stmt *S) {
 /// ConstantFoldsToSimpleInteger - If the specified expression does not fold
 /// to a constant, or if it does but contains a label, return false.  If it
 /// constant folds return true and set the boolean result in Result.
-bool CodeGenFunction::ConstantFoldsToSimpleInteger(const Expr *Cond,
+bool CodeGenSubprogram::ConstantFoldsToSimpleInteger(const Expr *Cond,
                                                    bool &ResultBool) {
   llvm::APSInt ResultInt;
   if (!ConstantFoldsToSimpleInteger(Cond, ResultInt))
@@ -650,7 +650,7 @@ bool CodeGenFunction::ConstantFoldsToSimpleInteger(const Expr *Cond,
 /// ConstantFoldsToSimpleInteger - If the specified expression does not fold
 /// to a constant, or if it does but contains a label, return false.  If it
 /// constant folds return true and set the folded value.
-bool CodeGenFunction::
+bool CodeGenSubprogram::
 ConstantFoldsToSimpleInteger(const Expr *Cond, llvm::APSInt &ResultInt) {
   // FIXME: Rename and handle conversion of other evaluatable things
   // to bool.
@@ -658,7 +658,7 @@ ConstantFoldsToSimpleInteger(const Expr *Cond, llvm::APSInt &ResultInt) {
   if (!Cond->EvaluateAsInt(Int, getContext()))
     return false;  // Not foldable, not integer or not fully evaluatable.
 
-  if (CodeGenFunction::ContainsLabel(Cond))
+  if (CodeGenSubprogram::ContainsLabel(Cond))
     return false;  // Contains a label.
 
   ResultInt = Int;
@@ -671,7 +671,7 @@ ConstantFoldsToSimpleInteger(const Expr *Cond, llvm::APSInt &ResultInt) {
 /// statement) to the specified blocks.  Based on the condition, this might try
 /// to simplify the codegen of the conditional based on the branch.
 ///
-void CodeGenFunction::EmitBranchOnBoolExpr(const Expr *Cond,
+void CodeGenSubprogram::EmitBranchOnBoolExpr(const Expr *Cond,
                                            llvm::BasicBlock *TrueBlock,
                                            llvm::BasicBlock *FalseBlock) {
   Cond = Cond->IgnoreParens();
@@ -781,7 +781,7 @@ void CodeGenFunction::EmitBranchOnBoolExpr(const Expr *Cond,
 
 /// ErrorUnsupported - Print out an error that codegen doesn't support the
 /// specified stmt yet.
-void CodeGenFunction::ErrorUnsupported(const Stmt *S, const char *Type,
+void CodeGenSubprogram::ErrorUnsupported(const Stmt *S, const char *Type,
                                        bool OmitOnError) {
   CGM.ErrorUnsupported(S, Type, OmitOnError);
 }
@@ -793,7 +793,7 @@ void CodeGenFunction::ErrorUnsupported(const Stmt *S, const char *Type,
 /// \param src - a char* pointing to the bit-pattern for a single
 /// base element of the array
 /// \param sizeInChars - the total size of the VLA, in chars
-static void emitNonZeroVLAInit(CodeGenFunction &CGF, QualType baseType,
+static void emitNonZeroVLAInit(CodeGenSubprogram &CGF, QualType baseType,
                                llvm::Value *dest, llvm::Value *src,
                                llvm::Value *sizeInChars) {
   std::pair<CharUnits,CharUnits> baseSizeAndAlign
@@ -837,7 +837,7 @@ static void emitNonZeroVLAInit(CodeGenFunction &CGF, QualType baseType,
 }
 
 void
-CodeGenFunction::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
+CodeGenSubprogram::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
   // Ignore empty classes in C++.
   if (getLangOpts().CPlusPlus) {
     if (const RecordType *RT = Ty->getAs<RecordType>()) {
@@ -917,7 +917,7 @@ CodeGenFunction::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
                        Align.getQuantity(), false);
 }
 
-llvm::BlockAddress *CodeGenFunction::GetAddrOfLabel(const LabelDecl *L) {
+llvm::BlockAddress *CodeGenSubprogram::GetAddrOfLabel(const LabelDecl *L) {
   // Make sure that there is a block for the indirect goto.
   if (IndirectBranch == 0)
     GetIndirectGotoBlock();
@@ -929,7 +929,7 @@ llvm::BlockAddress *CodeGenFunction::GetAddrOfLabel(const LabelDecl *L) {
   return llvm::BlockAddress::get(CurFn, BB);
 }
 
-llvm::BasicBlock *CodeGenFunction::GetIndirectGotoBlock() {
+llvm::BasicBlock *CodeGenSubprogram::GetIndirectGotoBlock() {
   // If we already made the indirect branch for indirect goto, return its block.
   if (IndirectBranch) return IndirectBranch->getParent();
 
@@ -946,7 +946,7 @@ llvm::BasicBlock *CodeGenFunction::GetIndirectGotoBlock() {
 
 /// Computes the length of an array in elements, as well as the base
 /// element type and a properly-typed first element pointer.
-llvm::Value *CodeGenFunction::emitArrayLength(const ArrayType *origArrayType,
+llvm::Value *CodeGenSubprogram::emitArrayLength(const ArrayType *origArrayType,
                                               QualType &baseType,
                                               llvm::Value *&addr) {
   const ArrayType *arrayType = origArrayType;
@@ -1037,14 +1037,14 @@ llvm::Value *CodeGenFunction::emitArrayLength(const ArrayType *origArrayType,
 }
 
 std::pair<llvm::Value*, QualType>
-CodeGenFunction::getVLASize(QualType type) {
+CodeGenSubprogram::getVLASize(QualType type) {
   const VariableArrayType *vla = getContext().getAsVariableArrayType(type);
   assert(vla && "type was not a variable array type!");
   return getVLASize(vla);
 }
 
 std::pair<llvm::Value*, QualType>
-CodeGenFunction::getVLASize(const VariableArrayType *type) {
+CodeGenSubprogram::getVLASize(const VariableArrayType *type) {
   // The number of elements so far; always size_t.
   llvm::Value *numElements = 0;
 
@@ -1067,7 +1067,7 @@ CodeGenFunction::getVLASize(const VariableArrayType *type) {
   return std::pair<llvm::Value*,QualType>(numElements, elementType);
 }
 
-void CodeGenFunction::EmitVariablyModifiedType(QualType type) {
+void CodeGenSubprogram::EmitVariablyModifiedType(QualType type) {
   assert(type->isVariablyModifiedType() &&
          "Must pass variably modified type to EmitVLASizes!");
 
@@ -1196,13 +1196,13 @@ void CodeGenFunction::EmitVariablyModifiedType(QualType type) {
   } while (type->isVariablyModifiedType());
 }
 
-llvm::Value* CodeGenFunction::EmitVAListRef(const Expr* E) {
+llvm::Value* CodeGenSubprogram::EmitVAListRef(const Expr* E) {
   if (getContext().getBuiltinVaListType()->isArrayType())
     return EmitScalarExpr(E);
   return EmitLValue(E).getAddress();
 }
 
-void CodeGenFunction::EmitDeclRefExprDbgValue(const DeclRefExpr *E,
+void CodeGenSubprogram::EmitDeclRefExprDbgValue(const DeclRefExpr *E,
                                               llvm::Constant *Init) {
   assert (Init && "Invalid DeclRefExpr initializer!");
   if (CGDebugInfo *Dbg = getDebugInfo())
@@ -1210,8 +1210,8 @@ void CodeGenFunction::EmitDeclRefExprDbgValue(const DeclRefExpr *E,
       Dbg->EmitGlobalVariable(E->getDecl(), Init);
 }
 
-CodeGenFunction::PeepholeProtection
-CodeGenFunction::protectFromPeepholes(RValue rvalue) {
+CodeGenSubprogram::PeepholeProtection
+CodeGenSubprogram::protectFromPeepholes(RValue rvalue) {
   // At the moment, the only aggressive peephole we do in IR gen
   // is trunc(zext) folding, but if we add more, we can easily
   // extend this protection.
@@ -1230,14 +1230,14 @@ CodeGenFunction::protectFromPeepholes(RValue rvalue) {
   return protection;
 }
 
-void CodeGenFunction::unprotectFromPeepholes(PeepholeProtection protection) {
+void CodeGenSubprogram::unprotectFromPeepholes(PeepholeProtection protection) {
   if (!protection.Inst) return;
 
   // In theory, we could try to duplicate the peepholes now, but whatever.
   protection.Inst->eraseFromParent();
 }
 
-llvm::Value *CodeGenFunction::EmitAnnotationCall(llvm::Value *AnnotationFn,
+llvm::Value *CodeGenSubprogram::EmitAnnotationCall(llvm::Value *AnnotationFn,
                                                  llvm::Value *AnnotatedVal,
                                                  llvm::StringRef AnnotationStr,
                                                  SourceLocation Location) {
@@ -1250,7 +1250,7 @@ llvm::Value *CodeGenFunction::EmitAnnotationCall(llvm::Value *AnnotationFn,
   return Builder.CreateCall(AnnotationFn, Args);
 }
 
-void CodeGenFunction::EmitVarAnnotations(const VarDecl *D, llvm::Value *V) {
+void CodeGenSubprogram::EmitVarAnnotations(const VarDecl *D, llvm::Value *V) {
   assert(D->hasAttr<AnnotateAttr>() && "no annotate attribute");
   // FIXME We create a new bitcast for every annotation because that's what
   // llvm-gcc was doing.
@@ -1262,7 +1262,7 @@ void CodeGenFunction::EmitVarAnnotations(const VarDecl *D, llvm::Value *V) {
                        (*ai)->getAnnotation(), D->getLocation());
 }
 
-llvm::Value *CodeGenFunction::EmitFieldAnnotations(const FieldDecl *D,
+llvm::Value *CodeGenSubprogram::EmitFieldAnnotations(const FieldDecl *D,
                                                    llvm::Value *V) {
   assert(D->hasAttr<AnnotateAttr>() && "no annotate attribute");
   llvm::Type *VTy = V->getType();

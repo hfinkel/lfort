@@ -40,7 +40,7 @@ add_lfort_library(lfortCodeGen
   CGVTables.cpp
   CGVTT.cpp
   CodeGenAction.cpp
-  CodeGenFunction.cpp
+  CodeGenSubprogram.cpp
   CodeGenModule.cpp
   CodeGenTBAA.cpp
   CodeGenTypes.cpp

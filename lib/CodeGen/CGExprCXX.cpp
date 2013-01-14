@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGCUDARuntime.h"
 #include "CGFortranABI.h"
 #include "CGDebugInfo.h"
@@ -23,7 +23,7 @@
 using namespace lfort;
 using namespace CodeGen;
 
-RValue CodeGenFunction::EmitCXXMemberCall(const CXXMethodDecl *MD,
+RValue CodeGenSubprogram::EmitCXXMemberCall(const CXXMethodDecl *MD,
                                           SourceLocation CallLoc,
                                           llvm::Value *Callee,
                                           ReturnValueSlot ReturnValue,
@@ -165,7 +165,7 @@ static CXXRecordDecl *getCXXRecord(const Expr *E) {
 
 // Note: This function also emit constructor calls to support a MSVC
 // extensions allowing explicit constructor function call.
-RValue CodeGenFunction::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
+RValue CodeGenSubprogram::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
                                               ReturnValueSlot ReturnValue) {
   const Expr *callee = CE->getCallee()->IgnoreParens();
 
@@ -320,7 +320,7 @@ RValue CodeGenFunction::EmitCXXMemberCallExpr(const CXXMemberCallExpr *CE,
 }
 
 RValue
-CodeGenFunction::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
+CodeGenSubprogram::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
                                               ReturnValueSlot ReturnValue) {
   const BinaryOperator *BO =
       cast<BinaryOperator>(E->getCallee()->IgnoreParens());
@@ -370,7 +370,7 @@ CodeGenFunction::EmitCXXMemberPointerCallExpr(const CXXMemberCallExpr *E,
 }
 
 RValue
-CodeGenFunction::EmitCXXOperatorMemberCallExpr(const CXXOperatorCallExpr *E,
+CodeGenSubprogram::EmitCXXOperatorMemberCallExpr(const CXXOperatorCallExpr *E,
                                                const CXXMethodDecl *MD,
                                                ReturnValueSlot ReturnValue) {
   assert(MD->isInstance() &&
@@ -391,12 +391,12 @@ CodeGenFunction::EmitCXXOperatorMemberCallExpr(const CXXOperatorCallExpr *E,
                            /*VTT=*/0, E->arg_begin() + 1, E->arg_end());
 }
 
-RValue CodeGenFunction::EmitCUDAKernelCallExpr(const CUDAKernelCallExpr *E,
+RValue CodeGenSubprogram::EmitCUDAKernelCallExpr(const CUDAKernelCallExpr *E,
                                                ReturnValueSlot ReturnValue) {
   return CGM.getCUDARuntime().EmitCUDAKernelCallExpr(*this, E, ReturnValue);
 }
 
-static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
+static void EmitNullBaseClassInitialization(CodeGenSubprogram &CGF,
                                             llvm::Value *DestPtr,
                                             const CXXRecordDecl *Base) {
   if (Base->isEmpty())
@@ -440,7 +440,7 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
 }
 
 void
-CodeGenFunction::EmitCXXConstructExpr(const CXXConstructExpr *E,
+CodeGenSubprogram::EmitCXXConstructExpr(const CXXConstructExpr *E,
                                       AggValueSlot Dest) {
   assert(!Dest.isIgnored() && "Must have a destination!");
   const CXXConstructorDecl *CD = E->getConstructor();
@@ -511,7 +511,7 @@ CodeGenFunction::EmitCXXConstructExpr(const CXXConstructExpr *E,
 }
 
 void
-CodeGenFunction::EmitSynthesizedCXXCopyCtor(llvm::Value *Dest, 
+CodeGenSubprogram::EmitSynthesizedCXXCopyCtor(llvm::Value *Dest, 
                                             llvm::Value *Src,
                                             const Expr *Exp) {
   if (const ExprWithCleanups *E = dyn_cast<ExprWithCleanups>(Exp))
@@ -535,7 +535,7 @@ CodeGenFunction::EmitSynthesizedCXXCopyCtor(llvm::Value *Dest,
                                  E->arg_begin(), E->arg_end());
 }
 
-static CharUnits CalculateCookiePadding(CodeGenFunction &CGF,
+static CharUnits CalculateCookiePadding(CodeGenSubprogram &CGF,
                                         const CXXNewExpr *E) {
   if (!E->isArray())
     return CharUnits::Zero();
@@ -548,7 +548,7 @@ static CharUnits CalculateCookiePadding(CodeGenFunction &CGF,
   return CGF.CGM.getFortranABI().GetArrayCookieSize(E);
 }
 
-static llvm::Value *EmitCXXNewAllocSize(CodeGenFunction &CGF,
+static llvm::Value *EmitCXXNewAllocSize(CodeGenSubprogram &CGF,
                                         const CXXNewExpr *e,
                                         unsigned minElements,
                                         llvm::Value *&numElements,
@@ -807,7 +807,7 @@ static llvm::Value *EmitCXXNewAllocSize(CodeGenFunction &CGF,
   return size;
 }
 
-static void StoreAnyExprIntoOneUnit(CodeGenFunction &CGF, const Expr *Init,
+static void StoreAnyExprIntoOneUnit(CodeGenSubprogram &CGF, const Expr *Init,
                                     QualType AllocType, llvm::Value *NewPtr) {
 
   CharUnits Alignment = CGF.getContext().getTypeAlignInChars(AllocType);
@@ -831,7 +831,7 @@ static void StoreAnyExprIntoOneUnit(CodeGenFunction &CGF, const Expr *Init,
 }
 
 void
-CodeGenFunction::EmitNewArrayInitializer(const CXXNewExpr *E, 
+CodeGenSubprogram::EmitNewArrayInitializer(const CXXNewExpr *E, 
                                          QualType elementType,
                                          llvm::Value *beginPtr,
                                          llvm::Value *numElements) {
@@ -944,7 +944,7 @@ CodeGenFunction::EmitNewArrayInitializer(const CXXNewExpr *E,
   EmitBlock(contBB);
 }
 
-static void EmitZeroMemSet(CodeGenFunction &CGF, QualType T,
+static void EmitZeroMemSet(CodeGenSubprogram &CGF, QualType T,
                            llvm::Value *NewPtr, llvm::Value *Size) {
   CGF.EmitCastToVoidPtr(NewPtr);
   CharUnits Alignment = CGF.getContext().getTypeAlignInChars(T);
@@ -952,7 +952,7 @@ static void EmitZeroMemSet(CodeGenFunction &CGF, QualType T,
                            Alignment.getQuantity(), false);
 }
                        
-static void EmitNewInitializer(CodeGenFunction &CGF, const CXXNewExpr *E,
+static void EmitNewInitializer(CodeGenSubprogram &CGF, const CXXNewExpr *E,
                                QualType ElementType,
                                llvm::Value *NewPtr,
                                llvm::Value *NumElements,
@@ -1024,7 +1024,7 @@ namespace {
       getPlacementArgs()[I] = Arg;
     }
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       const FunctionProtoType *FPT
         = OperatorDelete->getType()->getAs<FunctionProtoType>();
       assert(FPT->getNumArgs() == NumPlacementArgs + 1 ||
@@ -1081,7 +1081,7 @@ namespace {
       getPlacementArgs()[I] = Arg;
     }
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       const FunctionProtoType *FPT
         = OperatorDelete->getType()->getAs<FunctionProtoType>();
       assert(FPT->getNumArgs() == NumPlacementArgs + 1 ||
@@ -1115,7 +1115,7 @@ namespace {
 
 /// Enter a cleanup to call 'operator delete' if the initializer in a
 /// new-expression throws.
-static void EnterNewDeleteCleanup(CodeGenFunction &CGF,
+static void EnterNewDeleteCleanup(CodeGenSubprogram &CGF,
                                   const CXXNewExpr *E,
                                   llvm::Value *NewPtr,
                                   llvm::Value *AllocSize,
@@ -1153,7 +1153,7 @@ static void EnterNewDeleteCleanup(CodeGenFunction &CGF,
   CGF.initFullExprCleanup();
 }
 
-llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
+llvm::Value *CodeGenSubprogram::EmitCXXNewExpr(const CXXNewExpr *E) {
   // The element type being allocated.
   QualType allocType = getContext().getBaseElementType(E->getAllocatedType());
 
@@ -1316,7 +1316,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
   return result;
 }
 
-void CodeGenFunction::EmitDeleteCall(const FunctionDecl *DeleteFD,
+void CodeGenSubprogram::EmitDeleteCall(const FunctionDecl *DeleteFD,
                                      llvm::Value *Ptr,
                                      QualType DeleteTy) {
   assert(DeleteFD->getOverloadedOperator() == OO_Delete);
@@ -1361,14 +1361,14 @@ namespace {
                      QualType ElementType)
       : Ptr(Ptr), OperatorDelete(OperatorDelete), ElementType(ElementType) {}
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       CGF.EmitDeleteCall(OperatorDelete, Ptr, ElementType);
     }
   };
 }
 
 /// Emit the code for deleting a single object.
-static void EmitObjectDelete(CodeGenFunction &CGF,
+static void EmitObjectDelete(CodeGenSubprogram &CGF,
                              const FunctionDecl *OperatorDelete,
                              llvm::Value *Ptr,
                              QualType ElementType,
@@ -1469,7 +1469,7 @@ namespace {
       : Ptr(Ptr), OperatorDelete(OperatorDelete), NumElements(NumElements),
         ElementType(ElementType), CookieSize(CookieSize) {}
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       const FunctionProtoType *DeleteFTy =
         OperatorDelete->getType()->getAs<FunctionProtoType>();
       assert(DeleteFTy->getNumArgs() == 1 || DeleteFTy->getNumArgs() == 2);
@@ -1515,7 +1515,7 @@ namespace {
 }
 
 /// Emit the code for deleting an array of objects.
-static void EmitArrayDelete(CodeGenFunction &CGF,
+static void EmitArrayDelete(CodeGenSubprogram &CGF,
                             const CXXDeleteExpr *E,
                             llvm::Value *deletedPtr,
                             QualType elementType) {
@@ -1554,7 +1554,7 @@ static void EmitArrayDelete(CodeGenFunction &CGF,
   CGF.PopCleanupBlock();
 }
 
-void CodeGenFunction::EmitCXXDeleteExpr(const CXXDeleteExpr *E) {
+void CodeGenSubprogram::EmitCXXDeleteExpr(const CXXDeleteExpr *E) {
   const Expr *Arg = E->getArgument();
   llvm::Value *Ptr = EmitScalarExpr(Arg);
 
@@ -1603,20 +1603,20 @@ void CodeGenFunction::EmitCXXDeleteExpr(const CXXDeleteExpr *E) {
   EmitBlock(DeleteEnd);
 }
 
-static llvm::Constant *getBadTypeidFn(CodeGenFunction &CGF) {
+static llvm::Constant *getBadTypeidFn(CodeGenSubprogram &CGF) {
   // void __cxa_bad_typeid();
   llvm::FunctionType *FTy = llvm::FunctionType::get(CGF.VoidTy, false);
   
   return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_bad_typeid");
 }
 
-static void EmitBadTypeidCall(CodeGenFunction &CGF) {
+static void EmitBadTypeidCall(CodeGenSubprogram &CGF) {
   llvm::Value *Fn = getBadTypeidFn(CGF);
   CGF.EmitCallOrInvoke(Fn).setDoesNotReturn();
   CGF.Builder.CreateUnreachable();
 }
 
-static llvm::Value *EmitTypeidFromVTable(CodeGenFunction &CGF,
+static llvm::Value *EmitTypeidFromVTable(CodeGenSubprogram &CGF,
                                          const Expr *E, 
                                          llvm::Type *StdTypeInfoPtrTy) {
   // Get the vtable pointer.
@@ -1650,7 +1650,7 @@ static llvm::Value *EmitTypeidFromVTable(CodeGenFunction &CGF,
   return CGF.Builder.CreateLoad(Value);
 }
 
-llvm::Value *CodeGenFunction::EmitCXXTypeidExpr(const CXXTypeidExpr *E) {
+llvm::Value *CodeGenSubprogram::EmitCXXTypeidExpr(const CXXTypeidExpr *E) {
   llvm::Type *StdTypeInfoPtrTy = 
     ConvertType(E->getType())->getPointerTo();
   
@@ -1674,7 +1674,7 @@ llvm::Value *CodeGenFunction::EmitCXXTypeidExpr(const CXXTypeidExpr *E) {
                                StdTypeInfoPtrTy);
 }
 
-static llvm::Constant *getDynamicCastFn(CodeGenFunction &CGF) {
+static llvm::Constant *getDynamicCastFn(CodeGenSubprogram &CGF) {
   // void *__dynamic_cast(const void *sub,
   //                      const abi::__class_type_info *src,
   //                      const abi::__class_type_info *dst,
@@ -1692,20 +1692,20 @@ static llvm::Constant *getDynamicCastFn(CodeGenFunction &CGF) {
   return CGF.CGM.CreateRuntimeFunction(FTy, "__dynamic_cast");
 }
 
-static llvm::Constant *getBadCastFn(CodeGenFunction &CGF) {
+static llvm::Constant *getBadCastFn(CodeGenSubprogram &CGF) {
   // void __cxa_bad_cast();
   llvm::FunctionType *FTy = llvm::FunctionType::get(CGF.VoidTy, false);
   return CGF.CGM.CreateRuntimeFunction(FTy, "__cxa_bad_cast");
 }
 
-static void EmitBadCastCall(CodeGenFunction &CGF) {
+static void EmitBadCastCall(CodeGenSubprogram &CGF) {
   llvm::Value *Fn = getBadCastFn(CGF);
   CGF.EmitCallOrInvoke(Fn).setDoesNotReturn();
   CGF.Builder.CreateUnreachable();
 }
 
 static llvm::Value *
-EmitDynamicCastCall(CodeGenFunction &CGF, llvm::Value *Value,
+EmitDynamicCastCall(CodeGenSubprogram &CGF, llvm::Value *Value,
                     QualType SrcTy, QualType DestTy,
                     llvm::BasicBlock *CastEnd) {
   llvm::Type *PtrDiffLTy = 
@@ -1778,7 +1778,7 @@ EmitDynamicCastCall(CodeGenFunction &CGF, llvm::Value *Value,
   return Value;
 }
 
-static llvm::Value *EmitDynamicCastToNull(CodeGenFunction &CGF,
+static llvm::Value *EmitDynamicCastToNull(CodeGenSubprogram &CGF,
                                           QualType DestTy) {
   llvm::Type *DestLTy = CGF.ConvertType(DestTy);
   if (DestTy->isPointerType())
@@ -1792,7 +1792,7 @@ static llvm::Value *EmitDynamicCastToNull(CodeGenFunction &CGF,
   return llvm::UndefValue::get(DestLTy);
 }
 
-llvm::Value *CodeGenFunction::EmitDynamicCast(llvm::Value *Value,
+llvm::Value *CodeGenSubprogram::EmitDynamicCast(llvm::Value *Value,
                                               const CXXDynamicCastExpr *DCE) {
   QualType DestTy = DCE->getTypeAsWritten();
 
@@ -1841,7 +1841,7 @@ llvm::Value *CodeGenFunction::EmitDynamicCast(llvm::Value *Value,
   return Value;
 }
 
-void CodeGenFunction::EmitLambdaExpr(const LambdaExpr *E, AggValueSlot Slot) {
+void CodeGenSubprogram::EmitLambdaExpr(const LambdaExpr *E, AggValueSlot Slot) {
   RunCleanupsScope Scope(*this);
   LValue SlotLV = MakeAddrLValue(Slot.getAddr(), E->getType(),
                                  Slot.getAlignment());

@@ -32,7 +32,7 @@ namespace lfort {
   namespace CodeGen {
     class CallArgList;
     class CodeGenModule;
-    class CodeGenFunction;
+    class CodeGenSubprogram;
     class CGFunctionInfo;
   }
 
@@ -85,7 +85,7 @@ namespace lfort {
     /// Implements __builtin_init_dwarf_reg_size_table.
     ///
     /// Returns true if the operation is unsupported by this target.
-    virtual bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+    virtual bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                          llvm::Value *Address) const {
       return true;
     }
@@ -95,7 +95,7 @@ namespace lfort {
     /// next instruction that will be executed.
     ///
     /// Used by __builtin_extract_return_addr().
-    virtual llvm::Value *decodeReturnAddress(CodeGen::CodeGenFunction &CGF,
+    virtual llvm::Value *decodeReturnAddress(CodeGen::CodeGenSubprogram &CGF,
                                              llvm::Value *Address) const {
       return Address;
     }
@@ -105,12 +105,12 @@ namespace lfort {
     /// by the system in a return slot.
     ///
     /// Used by __builtin_frob_return_addr().
-    virtual llvm::Value *encodeReturnAddress(CodeGen::CodeGenFunction &CGF,
+    virtual llvm::Value *encodeReturnAddress(CodeGen::CodeGenSubprogram &CGF,
                                              llvm::Value *Address) const {
       return Address;
     }
 
-    virtual llvm::Type* adjustInlineAsmType(CodeGen::CodeGenFunction &CGF,
+    virtual llvm::Type* adjustInlineAsmType(CodeGen::CodeGenSubprogram &CGF,
                                             StringRef Constraint, 
                                             llvm::Type* Ty) const {
       return Ty;

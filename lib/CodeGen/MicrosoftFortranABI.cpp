@@ -33,7 +33,7 @@ public:
   // arbitrary.
   StringRef GetDeletedVirtualCallName() { return "_purecall"; }
 
-  llvm::Value *adjustToCompleteObject(CodeGenFunction &CGF,
+  llvm::Value *adjustToCompleteObject(CodeGenSubprogram &CGF,
                                       llvm::Value *ptr,
                                       QualType type);
 
@@ -50,13 +50,13 @@ public:
     // TODO: 'for base' flag
   }
 
-  void BuildInstanceFunctionParams(CodeGenFunction &CGF,
+  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
                                    FunctionArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenFunction &CGF);
+  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
 
-  void EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+  void EmitGuardedInit(CodeGenSubprogram &CGF, const VarDecl &D,
                        llvm::GlobalVariable *DeclPtr,
                        bool PerformInit);
 
@@ -89,12 +89,12 @@ public:
   bool requiresArrayCookie(const CXXDeleteExpr *expr, QualType elementType);
   bool requiresArrayCookie(const CXXNewExpr *expr);
   CharUnits getArrayCookieSizeImpl(QualType type);
-  llvm::Value *InitializeArrayCookie(CodeGenFunction &CGF,
+  llvm::Value *InitializeArrayCookie(CodeGenSubprogram &CGF,
                                      llvm::Value *NewPtr,
                                      llvm::Value *NumElements,
                                      const CXXNewExpr *expr,
                                      QualType ElementType);
-  llvm::Value *readArrayCookieImpl(CodeGenFunction &CGF,
+  llvm::Value *readArrayCookieImpl(CodeGenSubprogram &CGF,
                                    llvm::Value *allocPtr,
                                    CharUnits cookieSize);
   static bool needThisReturn(GlobalDecl GD);
@@ -102,7 +102,7 @@ public:
 
 }
 
-llvm::Value *MicrosoftFortranABI::adjustToCompleteObject(CodeGenFunction &CGF,
+llvm::Value *MicrosoftFortranABI::adjustToCompleteObject(CodeGenSubprogram &CGF,
                                                      llvm::Value *ptr,
                                                      QualType type) {
   // FIXME: implement
@@ -124,7 +124,7 @@ void MicrosoftFortranABI::BuildConstructorSignature(const CXXConstructorDecl *Ct
   ResTy = ArgTys[0];
 }
 
-void MicrosoftFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void MicrosoftFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                                   QualType &ResTy,
                                                   FunctionArgList &Params) {
   BuildThisParam(CGF, Params);
@@ -133,7 +133,7 @@ void MicrosoftFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
   }
 }
 
-void MicrosoftFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+void MicrosoftFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
   EmitThisParam(CGF);
   if (needThisReturn(CGF.CurGD)) {
     CGF.Builder.CreateStore(getThisValue(CGF), CGF.ReturnValue);
@@ -161,7 +161,7 @@ CharUnits MicrosoftFortranABI::getArrayCookieSizeImpl(QualType type) {
                   Ctx.getTypeAlignInChars(type));
 }
 
-llvm::Value *MicrosoftFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *MicrosoftFortranABI::readArrayCookieImpl(CodeGenSubprogram &CGF,
                                                   llvm::Value *allocPtr,
                                                   CharUnits cookieSize) {
   unsigned AS = allocPtr->getType()->getPointerAddressSpace();
@@ -170,7 +170,7 @@ llvm::Value *MicrosoftFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
   return CGF.Builder.CreateLoad(numElementsPtr);
 }
 
-llvm::Value* MicrosoftFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value* MicrosoftFortranABI::InitializeArrayCookie(CodeGenSubprogram &CGF,
                                                     llvm::Value *newPtr,
                                                     llvm::Value *numElements,
                                                     const CXXNewExpr *expr,
@@ -195,7 +195,7 @@ llvm::Value* MicrosoftFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 cookieSize.getQuantity());
 }
 
-void MicrosoftFortranABI::EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+void MicrosoftFortranABI::EmitGuardedInit(CodeGenSubprogram &CGF, const VarDecl &D,
                                       llvm::GlobalVariable *DeclPtr,
                                       bool PerformInit) {
   // FIXME: this code was only tested for global initialization.

@@ -33,7 +33,7 @@ namespace llvm {
 
 namespace lfort {
 namespace CodeGen {
-  class CodeGenFunction;
+  class CodeGenSubprogram;
 }
 
   class FieldDecl;
@@ -82,7 +82,7 @@ protected:
                                  const ObjCImplementationDecl *OID,
                                  const ObjCIvarDecl *Ivar);
 
-  LValue EmitValueForIvarAtOffset(CodeGen::CodeGenFunction &CGF,
+  LValue EmitValueForIvarAtOffset(CodeGen::CodeGenSubprogram &CGF,
                                   const ObjCInterfaceDecl *OID,
                                   llvm::Value *BaseValue,
                                   const ObjCIvarDecl *Ivar,
@@ -95,7 +95,7 @@ protected:
   /// used to rethrow exceptions.  If the begin and end catch functions are
   /// NULL, then the function assumes that the EH personality function provides
   /// the thrown object directly.
-  void EmitTryCatchStmt(CodeGenFunction &CGF,
+  void EmitTryCatchStmt(CodeGenSubprogram &CGF,
                         const ObjCAtTryStmt &S,
                         llvm::Constant *beginCatchFn,
                         llvm::Constant *endCatchFn,
@@ -104,7 +104,7 @@ protected:
   /// \p syncExitFn arguments as the functions called to lock and unlock
   /// the object.  This function can be called by subclasses that use
   /// zero-cost exception handling.
-  void EmitAtSynchronizedStmt(CodeGenFunction &CGF,
+  void EmitAtSynchronizedStmt(CodeGenSubprogram &CGF,
                             const ObjCAtSynchronizedStmt &S,
                             llvm::Function *syncEnterFn,
                             llvm::Function *syncExitFn);
@@ -150,7 +150,7 @@ public:
   /// \param Method - The method being called, this may be null if synthesizing
   /// a property setter or getter.
   virtual CodeGen::RValue
-  GenerateMessageSend(CodeGen::CodeGenFunction &CGF,
+  GenerateMessageSend(CodeGen::CodeGenSubprogram &CGF,
                       ReturnValueSlot ReturnSlot,
                       QualType ResultType,
                       Selector Sel,
@@ -166,7 +166,7 @@ public:
   /// \param Method - The method being called, this may be null if synthesizing
   /// a property setter or getter.
   virtual CodeGen::RValue
-  GenerateMessageSendSuper(CodeGen::CodeGenFunction &CGF,
+  GenerateMessageSendSuper(CodeGen::CodeGenSubprogram &CGF,
                            ReturnValueSlot ReturnSlot,
                            QualType ResultType,
                            Selector Sel,
@@ -230,34 +230,34 @@ public:
   /// compiler when a mutation is detected during foreach iteration.
   virtual llvm::Constant *EnumerationMutationFunction() = 0;
 
-  virtual void EmitSynchronizedStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitSynchronizedStmt(CodeGen::CodeGenSubprogram &CGF,
                                     const ObjCAtSynchronizedStmt &S) = 0;
-  virtual void EmitTryStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitTryStmt(CodeGen::CodeGenSubprogram &CGF,
                            const ObjCAtTryStmt &S) = 0;
-  virtual void EmitThrowStmt(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitThrowStmt(CodeGen::CodeGenSubprogram &CGF,
                              const ObjCAtThrowStmt &S) = 0;
-  virtual llvm::Value *EmitObjCWeakRead(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value *EmitObjCWeakRead(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *AddrWeakObj) = 0;
-  virtual void EmitObjCWeakAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCWeakAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dest) = 0;
-  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCGlobalAssign(CodeGen::CodeGenSubprogram &CGF,
                                     llvm::Value *src, llvm::Value *dest,
                                     bool threadlocal=false) = 0;
-  virtual void EmitObjCIvarAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCIvarAssign(CodeGen::CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dest,
                                   llvm::Value *ivarOffset) = 0;
-  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitObjCStrongCastAssign(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *src, llvm::Value *dest) = 0;
 
-  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenFunction &CGF,
+  virtual LValue EmitObjCValueForIvar(CodeGen::CodeGenSubprogram &CGF,
                                       QualType ObjectTy,
                                       llvm::Value *BaseValue,
                                       const ObjCIvarDecl *Ivar,
                                       unsigned CVRQualifiers) = 0;
-  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenFunction &CGF,
+  virtual llvm::Value *EmitIvarOffset(CodeGen::CodeGenSubprogram &CGF,
                                       const ObjCInterfaceDecl *Interface,
                                       const ObjCIvarDecl *Ivar) = 0;
-  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenFunction &CGF,
+  virtual void EmitGCMemmoveCollectable(CodeGen::CodeGenSubprogram &CGF,
                                         llvm::Value *DestPtr,
                                         llvm::Value *SrcPtr,
                                         llvm::Value *Size) = 0;

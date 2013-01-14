@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGObjCRuntime.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
@@ -52,7 +52,7 @@ llvm::Value *CodeGenModule::getBuiltinLibFunction(const FunctionDecl *FD,
 
 /// Emit the conversions required to turn the given value into an
 /// integer of the given size.
-static Value *EmitToInt(CodeGenFunction &CGF, llvm::Value *V,
+static Value *EmitToInt(CodeGenSubprogram &CGF, llvm::Value *V,
                         QualType T, llvm::IntegerType *IntType) {
   V = CGF.EmitToMemory(V, T);
 
@@ -63,7 +63,7 @@ static Value *EmitToInt(CodeGenFunction &CGF, llvm::Value *V,
   return V;
 }
 
-static Value *EmitFromInt(CodeGenFunction &CGF, llvm::Value *V,
+static Value *EmitFromInt(CodeGenSubprogram &CGF, llvm::Value *V,
                           QualType T, llvm::Type *ResultType) {
   V = CGF.EmitFromMemory(V, T);
 
@@ -76,7 +76,7 @@ static Value *EmitFromInt(CodeGenFunction &CGF, llvm::Value *V,
 
 /// Utility to insert an atomic instruction based on Instrinsic::ID
 /// and the expression node.
-static RValue EmitBinaryAtomic(CodeGenFunction &CGF,
+static RValue EmitBinaryAtomic(CodeGenSubprogram &CGF,
                                llvm::AtomicRMWInst::BinOp Kind,
                                const CallExpr *E) {
   QualType T = E->getType();
@@ -109,7 +109,7 @@ static RValue EmitBinaryAtomic(CodeGenFunction &CGF,
 /// Utility to insert an atomic instruction based Instrinsic::ID and
 /// the expression node, where the return value is the result of the
 /// operation.
-static RValue EmitBinaryAtomicPost(CodeGenFunction &CGF,
+static RValue EmitBinaryAtomicPost(CodeGenSubprogram &CGF,
                                    llvm::AtomicRMWInst::BinOp Kind,
                                    const CallExpr *E,
                                    Instruction::BinaryOps Op) {
@@ -143,7 +143,7 @@ static RValue EmitBinaryAtomicPost(CodeGenFunction &CGF,
 
 /// EmitFAbs - Emit a call to fabs/fabsf/fabsl, depending on the type of ValTy,
 /// which must be a scalar floating point type.
-static Value *EmitFAbs(CodeGenFunction &CGF, Value *V, QualType ValTy) {
+static Value *EmitFAbs(CodeGenSubprogram &CGF, Value *V, QualType ValTy) {
   const BuiltinType *ValTyP = ValTy->getAs<BuiltinType>();
   assert(ValTyP && "isn't scalar fp type!");
 
@@ -163,13 +163,13 @@ static Value *EmitFAbs(CodeGenFunction &CGF, Value *V, QualType ValTy) {
   return CGF.Builder.CreateCall(Fn, V, "abs");
 }
 
-static RValue emitLibraryCall(CodeGenFunction &CGF, const FunctionDecl *Fn,
+static RValue emitLibraryCall(CodeGenSubprogram &CGF, const FunctionDecl *Fn,
                               const CallExpr *E, llvm::Value *calleeValue) {
   return CGF.EmitCall(E->getCallee()->getType(), calleeValue,
                       ReturnValueSlot(), E->arg_begin(), E->arg_end(), Fn);
 }
 
-RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
+RValue CodeGenSubprogram::EmitBuiltinExpr(const FunctionDecl *FD,
                                         unsigned BuiltinID, const CallExpr *E) {
   // See if we can constant fold this builtin.  If so, don't emit it at all.
   Expr::EvalResult Result;
@@ -1412,7 +1412,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   return RValue::get(llvm::UndefValue::get(ConvertType(E->getType())));
 }
 
-Value *CodeGenFunction::EmitTargetBuiltinExpr(unsigned BuiltinID,
+Value *CodeGenSubprogram::EmitTargetBuiltinExpr(unsigned BuiltinID,
                                               const CallExpr *E) {
   switch (Target.getTriple().getArch()) {
   case llvm::Triple::arm:
@@ -1429,7 +1429,7 @@ Value *CodeGenFunction::EmitTargetBuiltinExpr(unsigned BuiltinID,
   }
 }
 
-static llvm::VectorType *GetNeonType(CodeGenFunction *CGF,
+static llvm::VectorType *GetNeonType(CodeGenSubprogram *CGF,
                                      NeonTypeFlags TypeFlags) {
   int IsQuad = TypeFlags.isQuad();
   switch (TypeFlags.getEltType()) {
@@ -1450,13 +1450,13 @@ static llvm::VectorType *GetNeonType(CodeGenFunction *CGF,
   llvm_unreachable("Invalid NeonTypeFlags element type!");
 }
 
-Value *CodeGenFunction::EmitNeonSplat(Value *V, Constant *C) {
+Value *CodeGenSubprogram::EmitNeonSplat(Value *V, Constant *C) {
   unsigned nElts = cast<llvm::VectorType>(V->getType())->getNumElements();
   Value* SV = llvm::ConstantVector::getSplat(nElts, C);
   return Builder.CreateShuffleVector(V, V, SV, "lane");
 }
 
-Value *CodeGenFunction::EmitNeonCall(Function *F, SmallVectorImpl<Value*> &Ops,
+Value *CodeGenSubprogram::EmitNeonCall(Function *F, SmallVectorImpl<Value*> &Ops,
                                      const char *name,
                                      unsigned shift, bool rightshift) {
   unsigned j = 0;
@@ -1470,7 +1470,7 @@ Value *CodeGenFunction::EmitNeonCall(Function *F, SmallVectorImpl<Value*> &Ops,
   return Builder.CreateCall(F, Ops, name);
 }
 
-Value *CodeGenFunction::EmitNeonShiftVector(Value *V, llvm::Type *Ty,
+Value *CodeGenSubprogram::EmitNeonShiftVector(Value *V, llvm::Type *Ty,
                                             bool neg) {
   int SV = cast<ConstantInt>(V)->getSExtValue();
 
@@ -1483,7 +1483,7 @@ Value *CodeGenFunction::EmitNeonShiftVector(Value *V, llvm::Type *Ty,
 /// alignment of the type referenced by the pointer.  Skip over implicit
 /// casts.
 std::pair<llvm::Value*, unsigned>
-CodeGenFunction::EmitPointerWithAlignment(const Expr *Addr) {
+CodeGenSubprogram::EmitPointerWithAlignment(const Expr *Addr) {
   assert(Addr->getType()->isPointerType());
   Addr = Addr->IgnoreParens();
   if (const ImplicitCastExpr *ICE = dyn_cast<ImplicitCastExpr>(Addr)) {
@@ -1534,7 +1534,7 @@ CodeGenFunction::EmitPointerWithAlignment(const Expr *Addr) {
   return std::make_pair(EmitScalarExpr(Addr), Align);
 }
 
-Value *CodeGenFunction::EmitARMBuiltinExpr(unsigned BuiltinID,
+Value *CodeGenSubprogram::EmitARMBuiltinExpr(unsigned BuiltinID,
                                            const CallExpr *E) {
   if (BuiltinID == ARM::BI__clear_cache) {
     const FunctionDecl *FD = E->getDirectCallee();
@@ -2388,7 +2388,7 @@ Value *CodeGenFunction::EmitARMBuiltinExpr(unsigned BuiltinID,
   }
 }
 
-llvm::Value *CodeGenFunction::
+llvm::Value *CodeGenSubprogram::
 BuildVector(ArrayRef<llvm::Value*> Ops) {
   assert((Ops.size() & (Ops.size() - 1)) == 0 &&
          "Not a power-of-two sized vector!");
@@ -2414,7 +2414,7 @@ BuildVector(ArrayRef<llvm::Value*> Ops) {
   return Result;
 }
 
-Value *CodeGenFunction::EmitX86BuiltinExpr(unsigned BuiltinID,
+Value *CodeGenSubprogram::EmitX86BuiltinExpr(unsigned BuiltinID,
                                            const CallExpr *E) {
   SmallVector<Value*, 4> Ops;
 
@@ -2643,7 +2643,7 @@ Value *CodeGenFunction::EmitX86BuiltinExpr(unsigned BuiltinID,
 }
 
 
-Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
+Value *CodeGenSubprogram::EmitPPCBuiltinExpr(unsigned BuiltinID,
                                            const CallExpr *E) {
   SmallVector<Value*, 4> Ops;
 

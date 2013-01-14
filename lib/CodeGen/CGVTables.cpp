@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CGFortranABI.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/CXXInheritance.h"
@@ -76,7 +76,7 @@ llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
   return GetOrCreateLLVMFunction(Name, Ty, GD, /*ForVTable=*/true);
 }
 
-static llvm::Value *PerformTypeAdjustment(CodeGenFunction &CGF,
+static llvm::Value *PerformTypeAdjustment(CodeGenSubprogram &CGF,
                                           llvm::Value *Ptr,
                                           int64_t NonVirtualAdjustment,
                                           int64_t VirtualAdjustment,
@@ -180,7 +180,7 @@ static bool similar(const ABIArgInfo &infoL, CanQualType typeL,
 }
 #endif
 
-static RValue PerformReturnAdjustment(CodeGenFunction &CGF,
+static RValue PerformReturnAdjustment(CodeGenSubprogram &CGF,
                                       QualType ResultType, RValue RV,
                                       const ThunkInfo &Thunk) {
   // Emit the return adjustment.
@@ -239,7 +239,7 @@ static RValue PerformReturnAdjustment(CodeGenFunction &CGF,
 //           no-op thunk for the regular definition) call va_start/va_end.
 //           There's a bit of per-call overhead for this solution, but it's
 //           better for codesize if the definition is long.
-void CodeGenFunction::GenerateVarArgsThunk(
+void CodeGenSubprogram::GenerateVarArgsThunk(
                                       llvm::Function *Fn,
                                       const CGFunctionInfo &FnInfo,
                                       GlobalDecl GD, const ThunkInfo &Thunk) {
@@ -309,7 +309,7 @@ void CodeGenFunction::GenerateVarArgsThunk(
   }
 }
 
-void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
+void CodeGenSubprogram::GenerateThunk(llvm::Function *Fn,
                                     const CGFunctionInfo &FnInfo,
                                     GlobalDecl GD, const ThunkInfo &Thunk) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
@@ -320,7 +320,7 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
   FunctionArgList FunctionArgs;
 
   // FIXME: It would be nice if more of this code could be shared with 
-  // CodeGenFunction::GenerateCode.
+  // CodeGenSubprogram::GenerateCode.
 
   // Create the implicit 'this' parameter declaration.
   CurGD = GD;
@@ -477,10 +477,10 @@ void CodeGenVTables::EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk,
     // we have to.
     // FIXME: Do something better here; GenerateVarArgsThunk is extremely ugly.
     if (!UseAvailableExternallyLinkage)
-      CodeGenFunction(CGM).GenerateVarArgsThunk(ThunkFn, FnInfo, GD, Thunk);
+      CodeGenSubprogram(CGM).GenerateVarArgsThunk(ThunkFn, FnInfo, GD, Thunk);
   } else {
     // Normal thunk body generation.
-    CodeGenFunction(CGM).GenerateThunk(ThunkFn, FnInfo, GD, Thunk);
+    CodeGenSubprogram(CGM).GenerateThunk(ThunkFn, FnInfo, GD, Thunk);
   }
 
   if (UseAvailableExternallyLinkage)

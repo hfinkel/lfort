@@ -19,7 +19,7 @@ using namespace CodeGen;
 
 CGFortranABI::~CGFortranABI() { }
 
-static void ErrorUnsupportedABI(CodeGenFunction &CGF,
+static void ErrorUnsupportedABI(CodeGenSubprogram &CGF,
                                 StringRef S) {
   DiagnosticsEngine &Diags = CGF.CGM.getDiags();
   unsigned DiagID = Diags.getCustomDiagID(DiagnosticsEngine::Error,
@@ -39,7 +39,7 @@ CGFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   return CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
 }
 
-llvm::Value *CGFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
                                                        llvm::Value *&This,
                                                        llvm::Value *MemPtr,
                                                  const MemberPointerType *MPT) {
@@ -54,7 +54,7 @@ llvm::Value *CGFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
   return llvm::Constant::getNullValue(FTy->getPointerTo());
 }
 
-llvm::Value *CGFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitMemberDataPointerAddress(CodeGenSubprogram &CGF,
                                                     llvm::Value *Base,
                                                     llvm::Value *MemPtr,
                                               const MemberPointerType *MPT) {
@@ -63,7 +63,7 @@ llvm::Value *CGFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
   return llvm::Constant::getNullValue(Ty);
 }
 
-llvm::Value *CGFortranABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::EmitMemberPointerConversion(CodeGenSubprogram &CGF,
                                                    const CastExpr *E,
                                                    llvm::Value *Src) {
   ErrorUnsupportedABI(CGF, "member function pointer conversions");
@@ -76,7 +76,7 @@ llvm::Constant *CGFortranABI::EmitMemberPointerConversion(const CastExpr *E,
 }
 
 llvm::Value *
-CGFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
+CGFortranABI::EmitMemberPointerComparison(CodeGenSubprogram &CGF,
                                       llvm::Value *L,
                                       llvm::Value *R,
                                       const MemberPointerType *MPT,
@@ -86,7 +86,7 @@ CGFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
 }
 
 llvm::Value *
-CGFortranABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+CGFortranABI::EmitMemberPointerIsNotNull(CodeGenSubprogram &CGF,
                                      llvm::Value *MemPtr,
                                      const MemberPointerType *MPT) {
   ErrorUnsupportedABI(CGF, "member function pointer null testing");
@@ -118,7 +118,7 @@ bool CGFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
   return true;
 }
 
-void CGFortranABI::BuildThisParam(CodeGenFunction &CGF, FunctionArgList &params) {
+void CGFortranABI::BuildThisParam(CodeGenSubprogram &CGF, FunctionArgList &params) {
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(CGF.CurGD.getDecl());
 
   // FIXME: I'm not entirely sure I like using a fake decl just for code
@@ -131,7 +131,7 @@ void CGFortranABI::BuildThisParam(CodeGenFunction &CGF, FunctionArgList &params)
   getThisDecl(CGF) = ThisDecl;
 }
 
-void CGFortranABI::EmitThisParam(CodeGenFunction &CGF) {
+void CGFortranABI::EmitThisParam(CodeGenSubprogram &CGF) {
   /// Initialize the 'this' slot.
   assert(getThisDecl(CGF) && "no 'this' variable for function");
   getThisValue(CGF)
@@ -139,7 +139,7 @@ void CGFortranABI::EmitThisParam(CodeGenFunction &CGF) {
                              "this");
 }
 
-void CGFortranABI::EmitReturnFromThunk(CodeGenFunction &CGF,
+void CGFortranABI::EmitReturnFromThunk(CodeGenSubprogram &CGF,
                                    RValue RV, QualType ResultType) {
   CGF.EmitReturnOfRValue(RV, ResultType);
 }
@@ -155,7 +155,7 @@ CharUnits CGFortranABI::getArrayCookieSizeImpl(QualType elementType) {
   return CharUnits::Zero();
 }
 
-llvm::Value *CGFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::InitializeArrayCookie(CodeGenSubprogram &CGF,
                                              llvm::Value *NewPtr,
                                              llvm::Value *NumElements,
                                              const CXXNewExpr *expr,
@@ -184,7 +184,7 @@ bool CGFortranABI::requiresArrayCookie(const CXXNewExpr *expr) {
   return expr->getAllocatedType().isDestructedType();
 }
 
-void CGFortranABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
+void CGFortranABI::ReadArrayCookie(CodeGenSubprogram &CGF, llvm::Value *ptr,
                                const CXXDeleteExpr *expr, QualType eltTy,
                                llvm::Value *&numElements,
                                llvm::Value *&allocPtr, CharUnits &cookieSize) {
@@ -207,21 +207,21 @@ void CGFortranABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
   numElements = readArrayCookieImpl(CGF, allocPtr, cookieSize);
 }
 
-llvm::Value *CGFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *CGFortranABI::readArrayCookieImpl(CodeGenSubprogram &CGF,
                                            llvm::Value *ptr,
                                            CharUnits cookieSize) {
   ErrorUnsupportedABI(CGF, "reading a new[] cookie");
   return llvm::ConstantInt::get(CGF.SizeTy, 0);
 }
 
-void CGFortranABI::EmitGuardedInit(CodeGenFunction &CGF,
+void CGFortranABI::EmitGuardedInit(CodeGenSubprogram &CGF,
                                const VarDecl &D,
                                llvm::GlobalVariable *GV,
                                bool PerformInit) {
   ErrorUnsupportedABI(CGF, "static local variable initialization");
 }
 
-void CGFortranABI::registerGlobalDtor(CodeGenFunction &CGF,
+void CGFortranABI::registerGlobalDtor(CodeGenSubprogram &CGF,
                                   llvm::Constant *dtor,
                                   llvm::Constant *addr) {
   // The default behavior is to use atexit.

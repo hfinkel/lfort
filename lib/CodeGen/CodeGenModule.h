@@ -70,7 +70,7 @@ namespace lfort {
 namespace CodeGen {
 
   class CallArgList;
-  class CodeGenFunction;
+  class CodeGenSubprogram;
   class CodeGenTBAA;
   class CGFortranABI;
   class CGDebugInfo;
@@ -593,11 +593,11 @@ public:
     virtual void profileImpl(llvm::FoldingSetNodeID &id) const = 0;
 
     virtual bool needsCopy() const { return true; }
-    virtual void emitCopy(CodeGenFunction &CGF,
+    virtual void emitCopy(CodeGenSubprogram &CGF,
                           llvm::Value *dest, llvm::Value *src) = 0;
 
     virtual bool needsDispose() const { return true; }
-    virtual void emitDispose(CodeGenFunction &CGF, llvm::Value *field) = 0;
+    virtual void emitDispose(CodeGenSubprogram &CGF, llvm::Value *field) = 0;
   };
 
   llvm::FoldingSet<ByrefHelpers> ByrefHelpersCache;
@@ -736,24 +736,24 @@ public:
   /// EmitConstantInit - Try to emit the initializer for the given declaration
   /// as a constant; returns 0 if the expression cannot be emitted as a
   /// constant.
-  llvm::Constant *EmitConstantInit(const VarDecl &D, CodeGenFunction *CGF = 0);
+  llvm::Constant *EmitConstantInit(const VarDecl &D, CodeGenSubprogram *CGF = 0);
 
   /// EmitConstantExpr - Try to emit the given expression as a
   /// constant; returns 0 if the expression cannot be emitted as a
   /// constant.
   llvm::Constant *EmitConstantExpr(const Expr *E, QualType DestType,
-                                   CodeGenFunction *CGF = 0);
+                                   CodeGenSubprogram *CGF = 0);
 
   /// EmitConstantValue - Emit the given constant value as a constant, in the
   /// type's scalar representation.
   llvm::Constant *EmitConstantValue(const APValue &Value, QualType DestType,
-                                    CodeGenFunction *CGF = 0);
+                                    CodeGenSubprogram *CGF = 0);
 
   /// EmitConstantValueForMemory - Emit the given constant value as a constant,
   /// in the type's memory representation.
   llvm::Constant *EmitConstantValueForMemory(const APValue &Value,
                                              QualType DestType,
-                                             CodeGenFunction *CGF = 0);
+                                             CodeGenSubprogram *CGF = 0);
 
   /// EmitNullConstant - Return the result of value-initializing the given
   /// type, i.e. a null expression of the given type.  This is usually,

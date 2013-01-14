@@ -15,7 +15,7 @@
 
 #include "CGCUDARuntime.h"
 #include "CGCall.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "lfort/AST/Decl.h"
 #include "lfort/AST/ExprCXX.h"
 
@@ -24,13 +24,13 @@ using namespace CodeGen;
 
 CGCUDARuntime::~CGCUDARuntime() {}
 
-RValue CGCUDARuntime::EmitCUDAKernelCallExpr(CodeGenFunction &CGF,
+RValue CGCUDARuntime::EmitCUDAKernelCallExpr(CodeGenSubprogram &CGF,
                                              const CUDAKernelCallExpr *E,
                                              ReturnValueSlot ReturnValue) {
   llvm::BasicBlock *ConfigOKBlock = CGF.createBasicBlock("kcall.configok");
   llvm::BasicBlock *ContBlock = CGF.createBasicBlock("kcall.end");
 
-  CodeGenFunction::ConditionalEvaluation eval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation eval(CGF);
   CGF.EmitBranchOnBoolExpr(E->getConfig(), ContBlock, ConfigOKBlock);
 
   eval.begin(CGF);

@@ -22,7 +22,7 @@ class CUDAKernelCallExpr;
 
 namespace CodeGen {
 
-class CodeGenFunction;
+class CodeGenSubprogram;
 class CodeGenModule;
 class FunctionArgList;
 class ReturnValueSlot;
@@ -36,11 +36,11 @@ public:
   CGCUDARuntime(CodeGenModule &CGM) : CGM(CGM) {}
   virtual ~CGCUDARuntime();
 
-  virtual RValue EmitCUDAKernelCallExpr(CodeGenFunction &CGF,
+  virtual RValue EmitCUDAKernelCallExpr(CodeGenSubprogram &CGF,
                                         const CUDAKernelCallExpr *E,
                                         ReturnValueSlot ReturnValue);
   
-  virtual void EmitDeviceStubBody(CodeGenFunction &CGF,
+  virtual void EmitDeviceStubBody(CodeGenSubprogram &CGF,
                                   FunctionArgList &Args) = 0;
 
 };

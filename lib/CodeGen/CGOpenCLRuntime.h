@@ -26,7 +26,7 @@ class VarDecl;
 
 namespace CodeGen {
 
-class CodeGenFunction;
+class CodeGenSubprogram;
 class CodeGenModule;
 
 class CGOpenCLRuntime {
@@ -39,8 +39,8 @@ public:
 
   /// Emit the IR required for a work-group-local variable declaration, and add
   /// an entry to CGF's LocalDeclMap for D.  The base class does this using
-  /// CodeGenFunction::EmitStaticVarDecl to emit an internal global for D.
-  virtual void EmitWorkGroupLocalVarDecl(CodeGenFunction &CGF,
+  /// CodeGenSubprogram::EmitStaticVarDecl to emit an internal global for D.
+  virtual void EmitWorkGroupLocalVarDecl(CodeGenSubprogram &CGF,
                                          const VarDecl &D);
 
   virtual llvm::Type *convertOpenCLSpecificType(const Type *T);

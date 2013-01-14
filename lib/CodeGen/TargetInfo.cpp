@@ -14,7 +14,7 @@
 
 #include "TargetInfo.h"
 #include "ABIInfo.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "lfort/AST/RecordLayout.h"
 #include "lfort/Frontend/CodeGenOptions.h"
 #include "llvm/ADT/Triple.h"
@@ -37,7 +37,7 @@ static void AssignToArrayRange(CodeGen::CGBuilderTy &Builder,
 }
 
 static bool isAggregateTypeForABI(QualType T) {
-  return CodeGenFunction::hasAggregateLLVMType(T) ||
+  return CodeGenSubprogram::hasAggregateLLVMType(T) ||
          T->isMemberFunctionPointerType();
 }
 
@@ -348,7 +348,7 @@ public:
   }
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class DefaultTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -358,7 +358,7 @@ public:
 };
 
 llvm::Value *DefaultABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                       CodeGenFunction &CGF) const {
+                                       CodeGenSubprogram &CGF) const {
   return 0;
 }
 
@@ -408,7 +408,7 @@ class PNaClABIInfo : public ABIInfo {
 
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class PNaClTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -428,7 +428,7 @@ void PNaClABIInfo::computeInfo(CGFunctionInfo &FI) const {
   }
 
 llvm::Value *PNaClABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                       CodeGenFunction &CGF) const {
+                                       CodeGenSubprogram &CGF) const {
   return 0;
 }
 
@@ -489,7 +489,7 @@ bool UseX86_MMXType(llvm::Type *IRType) {
     IRType->getScalarSizeInBits() != 64;
 }
 
-static llvm::Type* X86AdjustInlineAsmType(CodeGen::CodeGenFunction &CGF,
+static llvm::Type* X86AdjustInlineAsmType(CodeGen::CodeGenSubprogram &CGF,
                                           StringRef Constraint,
                                           llvm::Type* Ty) {
   if ((Constraint == "y" || Constraint == "&y") && Ty->isVectorTy())
@@ -543,7 +543,7 @@ public:
 
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 
   X86_32ABIInfo(CodeGen::CodeGenTypes &CGT, bool d, bool p, bool m, bool w,
                 unsigned r)
@@ -568,10 +568,10 @@ public:
     return 4;
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const;
 
-  llvm::Type* adjustInlineAsmType(CodeGen::CodeGenFunction &CGF,
+  llvm::Type* adjustInlineAsmType(CodeGen::CodeGenSubprogram &CGF,
                                   StringRef Constraint,
                                   llvm::Type* Ty) const {
     return X86AdjustInlineAsmType(CGF, Constraint, Ty);
@@ -969,7 +969,7 @@ void X86_32ABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value *X86_32ABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                      CodeGenFunction &CGF) const {
+                                      CodeGenSubprogram &CGF) const {
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
 
   CGBuilderTy &Builder = CGF.Builder;
@@ -1026,7 +1026,7 @@ void X86_32TargetCodeGenInfo::SetTargetAttributes(const Decl *D,
 }
 
 bool X86_32TargetCodeGenInfo::initDwarfEHRegSizeTable(
-                                               CodeGen::CodeGenFunction &CGF,
+                                               CodeGen::CodeGenSubprogram &CGF,
                                                llvm::Value *Address) const {
   CodeGen::CGBuilderTy &Builder = CGF.Builder;
 
@@ -1191,7 +1191,7 @@ public:
   virtual void computeInfo(CGFunctionInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 /// WinX86_64ABIInfo - The Windows X86_64 ABI information.
@@ -1205,7 +1205,7 @@ public:
   virtual void computeInfo(CGFunctionInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class X86_64TargetCodeGenInfo : public TargetCodeGenInfo {
@@ -1221,7 +1221,7 @@ public:
     return 7;
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const {
     llvm::Value *Eight8 = llvm::ConstantInt::get(CGF.Int8Ty, 8);
 
@@ -1231,7 +1231,7 @@ public:
     return false;
   }
 
-  llvm::Type* adjustInlineAsmType(CodeGen::CodeGenFunction &CGF,
+  llvm::Type* adjustInlineAsmType(CodeGen::CodeGenSubprogram &CGF,
                                   StringRef Constraint,
                                   llvm::Type* Ty) const {
     return X86AdjustInlineAsmType(CGF, Constraint, Ty);
@@ -1273,7 +1273,7 @@ public:
     return 7;
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const {
     llvm::Value *Eight8 = llvm::ConstantInt::get(CGF.Int8Ty, 8);
 
@@ -2312,7 +2312,7 @@ void X86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
 
 static llvm::Value *EmitVAArgFromMemory(llvm::Value *VAListAddr,
                                         QualType Ty,
-                                        CodeGenFunction &CGF) {
+                                        CodeGenSubprogram &CGF) {
   llvm::Value *overflow_arg_area_p =
     CGF.Builder.CreateStructGEP(VAListAddr, 2, "overflow_arg_area_p");
   llvm::Value *overflow_arg_area =
@@ -2360,7 +2360,7 @@ static llvm::Value *EmitVAArgFromMemory(llvm::Value *VAListAddr,
 }
 
 llvm::Value *X86_64ABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                      CodeGenFunction &CGF) const {
+                                      CodeGenSubprogram &CGF) const {
   // Assume that va_list type is correct; should be pointer to LLVM type:
   // struct {
   //   i32 gp_offset;
@@ -2564,7 +2564,7 @@ void WinX86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value *WinX86_64ABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                      CodeGenFunction &CGF) const {
+                                      CodeGenSubprogram &CGF) const {
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
 
   CGBuilderTy &Builder = CGF.Builder;
@@ -2593,7 +2593,7 @@ class NaClX86_64ABIInfo : public ABIInfo {
       : ABIInfo(CGT), PInfo(CGT), NInfo(CGT, HasAVX) {}
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
  private:
   PNaClABIInfo PInfo;  // Used for generating calls with pnaclcall callingconv.
   X86_64ABIInfo NInfo; // Used for everything else.
@@ -2615,7 +2615,7 @@ void NaClX86_64ABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value *NaClX86_64ABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                          CodeGenFunction &CGF) const {
+                                          CodeGenSubprogram &CGF) const {
   // Always use the native convention; calling pnacl-style varargs functions
   // is unuspported.
   return NInfo.EmitVAArg(VAListAddr, Ty, CGF);
@@ -2634,14 +2634,14 @@ public:
     return 1; // r1 is the dedicated stack pointer
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const;
 };
 
 }
 
 bool
-PPC32TargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+PPC32TargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                                 llvm::Value *Address) const {
   // This is calculated from the LLVM and GCC tables and verified
   // against gcc output.  AFAIK all ABIs use the same encoding.
@@ -2723,7 +2723,7 @@ public:
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, 
                                  QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class PPC64_SVR4_TargetCodeGenInfo : public TargetCodeGenInfo {
@@ -2736,7 +2736,7 @@ public:
     return 1; // r1 is the dedicated stack pointer
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const;
 };
 
@@ -2749,7 +2749,7 @@ public:
     return 1; // r1 is the dedicated stack pointer
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const;
 };
 
@@ -2817,7 +2817,7 @@ PPC64_SVR4_ABIInfo::classifyReturnType(QualType RetTy) const {
 // Based on ARMABIInfo::EmitVAArg, adjusted for 64-bit machine.
 llvm::Value *PPC64_SVR4_ABIInfo::EmitVAArg(llvm::Value *VAListAddr,
                                            QualType Ty,
-                                           CodeGenFunction &CGF) const {
+                                           CodeGenSubprogram &CGF) const {
   llvm::Type *BP = CGF.Int8PtrTy;
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
 
@@ -2847,7 +2847,7 @@ llvm::Value *PPC64_SVR4_ABIInfo::EmitVAArg(llvm::Value *VAListAddr,
 }
 
 static bool
-PPC64_initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+PPC64_initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                               llvm::Value *Address) {
   // This is calculated from the LLVM and GCC tables and verified
   // against gcc output.  AFAIK all ABIs use the same encoding.
@@ -2889,14 +2889,14 @@ PPC64_initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
 
 bool
 PPC64_SVR4_TargetCodeGenInfo::initDwarfEHRegSizeTable(
-  CodeGen::CodeGenFunction &CGF,
+  CodeGen::CodeGenSubprogram &CGF,
   llvm::Value *Address) const {
 
   return PPC64_initDwarfEHRegSizeTable(CGF, Address);
 }
 
 bool
-PPC64TargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+PPC64TargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                                 llvm::Value *Address) const {
 
   return PPC64_initDwarfEHRegSizeTable(CGF, Address);
@@ -2941,7 +2941,7 @@ private:
   virtual void computeInfo(CGFunctionInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class ARMTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -2961,7 +2961,7 @@ public:
     return "mov\tr7, r7\t\t@ marker for objc_retainAutoreleaseReturnValue";
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const {
     llvm::Value *Four8 = llvm::ConstantInt::get(CGF.Int8Ty, 4);
 
@@ -3445,7 +3445,7 @@ bool ARMABIInfo::isIllegalVectorType(QualType Ty) const {
 }
 
 llvm::Value *ARMABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                   CodeGenFunction &CGF) const {
+                                   CodeGenSubprogram &CGF) const {
   llvm::Type *BP = CGF.Int8PtrTy;
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
 
@@ -3522,7 +3522,7 @@ class NaClARMABIInfo : public ABIInfo {
       : ABIInfo(CGT), PInfo(CGT), NInfo(CGT, Kind) {}
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
  private:
   PNaClABIInfo PInfo; // Used for generating calls with pnaclcall callingconv.
   ARMABIInfo NInfo; // Used for everything else.
@@ -3544,7 +3544,7 @@ void NaClARMABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value *NaClARMABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                       CodeGenFunction &CGF) const {
+                                       CodeGenSubprogram &CGF) const {
   // Always use the native convention; calling pnacl-style varargs functions
   // is unsupported.
   return static_cast<const ABIInfo&>(NInfo).EmitVAArg(VAListAddr, Ty, CGF);
@@ -3565,7 +3565,7 @@ public:
 
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CFG) const;
+                                 CodeGenSubprogram &CFG) const;
 };
 
 class NVPTXTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -3624,7 +3624,7 @@ void NVPTXABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value *NVPTXABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                     CodeGenFunction &CFG) const {
+                                     CodeGenSubprogram &CFG) const {
   llvm_unreachable("NVPTX does not support varargs");
 }
 
@@ -3683,7 +3683,7 @@ public:
   }
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class MBlazeTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -3715,7 +3715,7 @@ bool MBlazeABIInfo::isPromotableIntegerType(QualType Ty) const {
 }
 
 llvm::Value *MBlazeABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                      CodeGenFunction &CGF) const {
+                                      CodeGenSubprogram &CGF) const {
   // FIXME: Implement
   return 0;
 }
@@ -3832,7 +3832,7 @@ public:
   ABIArgInfo classifyArgumentType(QualType RetTy, uint64_t &Offset) const;
   virtual void computeInfo(CGFunctionInfo &FI) const;
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class MIPSTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -3846,7 +3846,7 @@ public:
     return 29;
   }
 
-  bool initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+  bool initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                llvm::Value *Address) const;
 
   unsigned getSizeOfUnwindException() const {
@@ -4063,7 +4063,7 @@ void MipsABIInfo::computeInfo(CGFunctionInfo &FI) const {
 }
 
 llvm::Value* MipsABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                    CodeGenFunction &CGF) const {
+                                    CodeGenSubprogram &CGF) const {
   llvm::Type *BP = CGF.Int8PtrTy;
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
  
@@ -4100,7 +4100,7 @@ llvm::Value* MipsABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
 }
 
 bool
-MIPSTargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenFunction &CGF,
+MIPSTargetCodeGenInfo::initDwarfEHRegSizeTable(CodeGen::CodeGenSubprogram &CGF,
                                                llvm::Value *Address) const {
   // This information comes from gcc's implementation, which seems to
   // as canonical as it gets.
@@ -4209,7 +4209,7 @@ private:
   virtual void computeInfo(CGFunctionInfo &FI) const;
 
   virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                 CodeGenFunction &CGF) const;
+                                 CodeGenSubprogram &CGF) const;
 };
 
 class HexagonTargetCodeGenInfo : public TargetCodeGenInfo {
@@ -4307,7 +4307,7 @@ ABIArgInfo HexagonABIInfo::classifyReturnType(QualType RetTy) const {
 }
 
 llvm::Value *HexagonABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                       CodeGenFunction &CGF) const {
+                                       CodeGenSubprogram &CGF) const {
   // FIXME: Need to handle alignment
   llvm::Type *BPP = CGF.Int8PtrPtrTy;
 

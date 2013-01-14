@@ -24,7 +24,7 @@ namespace lfort {
 
   namespace CodeGen {
     class CGFunctionInfo;
-    class CodeGenFunction;
+    class CodeGenSubprogram;
     class CodeGenTypes;
   }
 
@@ -200,7 +200,7 @@ namespace lfort {
     // VAArg handling it has to be at this level; there is no way to
     // abstract this out.
     virtual llvm::Value *EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
-                                   CodeGen::CodeGenFunction &CGF) const = 0;
+                                   CodeGen::CodeGenSubprogram &CGF) const = 0;
   };
 }  // end namespace lfort
 

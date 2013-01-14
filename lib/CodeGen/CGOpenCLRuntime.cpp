@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CGOpenCLRuntime.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/GlobalValue.h"
 #include <assert.h>
@@ -24,7 +24,7 @@ using namespace CodeGen;
 
 CGOpenCLRuntime::~CGOpenCLRuntime() {}
 
-void CGOpenCLRuntime::EmitWorkGroupLocalVarDecl(CodeGenFunction &CGF,
+void CGOpenCLRuntime::EmitWorkGroupLocalVarDecl(CodeGenSubprogram &CGF,
                                                 const VarDecl &D) {
   return CGF.EmitStaticVarDecl(D, llvm::GlobalValue::InternalLinkage);
 }

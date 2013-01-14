@@ -37,7 +37,7 @@ namespace lfort {
 
 namespace CodeGen {
   class CodeGenModule;
-  class CodeGenFunction;
+  class CodeGenSubprogram;
   class CGBlockInfo;
 
 /// CGDebugInfo - This class gathers all debug information during compilation

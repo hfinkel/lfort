@@ -15,7 +15,7 @@
 #include "CGCall.h"
 #include "ABIInfo.h"
 #include "CGFortranABI.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "TargetInfo.h"
 #include "lfort/AST/Decl.h"
@@ -546,7 +546,7 @@ void CodeGenTypes::GetExpandedTypes(QualType type,
 }
 
 llvm::Function::arg_iterator
-CodeGenFunction::ExpandTypeFromArgs(QualType Ty, LValue LV,
+CodeGenSubprogram::ExpandTypeFromArgs(QualType Ty, LValue LV,
                                     llvm::Function::arg_iterator AI) {
   assert(LV.isSimple() &&
          "Unexpected non-simple lvalue during struct expansion.");
@@ -615,7 +615,7 @@ CodeGenFunction::ExpandTypeFromArgs(QualType Ty, LValue LV,
 static llvm::Value *
 EnterStructPointerForCoercedAccess(llvm::Value *SrcPtr,
                                    llvm::StructType *SrcSTy,
-                                   uint64_t DstSize, CodeGenFunction &CGF) {
+                                   uint64_t DstSize, CodeGenSubprogram &CGF) {
   // We can't dive into a zero-element struct.
   if (SrcSTy->getNumElements() == 0) return SrcPtr;
 
@@ -646,7 +646,7 @@ EnterStructPointerForCoercedAccess(llvm::Value *SrcPtr,
 /// is too large or a zero extension if it is too small.
 static llvm::Value *CoerceIntOrPtrToIntOrPtr(llvm::Value *Val,
                                              llvm::Type *Ty,
-                                             CodeGenFunction &CGF) {
+                                             CodeGenSubprogram &CGF) {
   if (Val->getType() == Ty)
     return Val;
 
@@ -681,7 +681,7 @@ static llvm::Value *CoerceIntOrPtrToIntOrPtr(llvm::Value *Val,
 /// present in the src are undefined.
 static llvm::Value *CreateCoercedLoad(llvm::Value *SrcPtr,
                                       llvm::Type *Ty,
-                                      CodeGenFunction &CGF) {
+                                      CodeGenSubprogram &CGF) {
   llvm::Type *SrcTy =
     cast<llvm::PointerType>(SrcPtr->getType())->getElementType();
 
@@ -739,7 +739,7 @@ static llvm::Value *CreateCoercedLoad(llvm::Value *SrcPtr,
 // store the elements rather than the aggregate to be more friendly to
 // fast-isel.
 // FIXME: Do we need to recurse here?
-static void BuildAggStore(CodeGenFunction &CGF, llvm::Value *Val,
+static void BuildAggStore(CodeGenSubprogram &CGF, llvm::Value *Val,
                           llvm::Value *DestPtr, bool DestIsVolatile,
                           bool LowAlignment) {
   // Prefer scalar stores to first-class aggregate stores.
@@ -768,7 +768,7 @@ static void BuildAggStore(CodeGenFunction &CGF, llvm::Value *Val,
 static void CreateCoercedStore(llvm::Value *Src,
                                llvm::Value *DstPtr,
                                bool DstIsVolatile,
-                               CodeGenFunction &CGF) {
+                               CodeGenSubprogram &CGF) {
   llvm::Type *SrcTy = Src->getType();
   llvm::Type *DstTy =
     cast<llvm::PointerType>(DstPtr->getType())->getElementType();
@@ -1147,7 +1147,7 @@ void CodeGenModule::ConstructAttributeList(const CGFunctionInfo &FI,
 
 /// An argument came in as a promoted argument; demote it back to its
 /// declared type.
-static llvm::Value *emitArgumentDemotion(CodeGenFunction &CGF,
+static llvm::Value *emitArgumentDemotion(CodeGenSubprogram &CGF,
                                          const VarDecl *var,
                                          llvm::Value *value) {
   llvm::Type *varType = CGF.ConvertType(var->getType());
@@ -1165,7 +1165,7 @@ static llvm::Value *emitArgumentDemotion(CodeGenFunction &CGF,
   return CGF.Builder.CreateFPCast(value, varType, "arg.unpromote");
 }
 
-void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
+void CodeGenSubprogram::EmitFunctionProlog(const CGFunctionInfo &FI,
                                          llvm::Function *Fn,
                                          const FunctionArgList &Args) {
   // If this is an implicit-return-zero function, go ahead and
@@ -1348,7 +1348,7 @@ void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
 
 
       // Match to what EmitParmDecl is expecting for this type.
-      if (!CodeGenFunction::hasAggregateLLVMType(Ty)) {
+      if (!CodeGenSubprogram::hasAggregateLLVMType(Ty)) {
         V = EmitLoadOfScalar(V, false, AlignmentToUse, Ty);
         if (isPromoted)
           V = emitArgumentDemotion(*this, Arg, V);
@@ -1404,7 +1404,7 @@ static void eraseUnusedBitCasts(llvm::Instruction *insn) {
 }
 
 /// Try to emit a fused autorelease of a return result.
-static llvm::Value *tryEmitFusedAutoreleaseOfResult(CodeGenFunction &CGF,
+static llvm::Value *tryEmitFusedAutoreleaseOfResult(CodeGenSubprogram &CGF,
                                                     llvm::Value *result) {
   // We must be immediately followed the cast.
   llvm::BasicBlock *BB = CGF.Builder.GetInsertBlock();
@@ -1493,7 +1493,7 @@ static llvm::Value *tryEmitFusedAutoreleaseOfResult(CodeGenFunction &CGF,
 }
 
 /// If this is a +1 of the value of an immutable 'self', remove it.
-static llvm::Value *tryRemoveRetainOfSelf(CodeGenFunction &CGF,
+static llvm::Value *tryRemoveRetainOfSelf(CodeGenSubprogram &CGF,
                                           llvm::Value *result) {
   // This is only applicable to a method with an immutable 'self'.
   const ObjCMethodDecl *method =
@@ -1532,7 +1532,7 @@ static llvm::Value *tryRemoveRetainOfSelf(CodeGenFunction &CGF,
 /// Emit an ARC autorelease of the result of a function.
 ///
 /// \return the value to actually return from the function
-static llvm::Value *emitAutoreleaseOfResult(CodeGenFunction &CGF,
+static llvm::Value *emitAutoreleaseOfResult(CodeGenSubprogram &CGF,
                                             llvm::Value *result) {
   // If we're returning 'self', kill the initial retain.  This is a
   // heuristic attempt to "encourage correctness" in the really unfortunate
@@ -1550,7 +1550,7 @@ static llvm::Value *emitAutoreleaseOfResult(CodeGenFunction &CGF,
 }
 
 /// Heuristically search for a dominating store to the return-value slot.
-static llvm::StoreInst *findDominatingStoreToReturnValue(CodeGenFunction &CGF) {
+static llvm::StoreInst *findDominatingStoreToReturnValue(CodeGenSubprogram &CGF) {
   // If there are multiple uses of the return-value slot, just check
   // for something immediately preceding the IP.  Sometimes this can
   // happen with how we generate implicit-returns; it can also happen
@@ -1587,7 +1587,7 @@ static llvm::StoreInst *findDominatingStoreToReturnValue(CodeGenFunction &CGF) {
   return store;
 }
 
-void CodeGenFunction::EmitFunctionEpilog(const CGFunctionInfo &FI) {
+void CodeGenSubprogram::EmitFunctionEpilog(const CGFunctionInfo &FI) {
   // Functions with no result always return void.
   if (ReturnValue == 0) {
     Builder.CreateRetVoid();
@@ -1605,7 +1605,7 @@ void CodeGenFunction::EmitFunctionEpilog(const CGFunctionInfo &FI) {
     if (RetTy->isAnyComplexType()) {
       ComplexPairTy RT = LoadComplexFromAddr(ReturnValue, false);
       StoreComplexToAddr(RT, CurFn->arg_begin(), false);
-    } else if (CodeGenFunction::hasAggregateLLVMType(RetTy)) {
+    } else if (CodeGenSubprogram::hasAggregateLLVMType(RetTy)) {
       // Do nothing; aggregrates get evaluated directly into the destination.
     } else {
       EmitStoreOfScalar(Builder.CreateLoad(ReturnValue), CurFn->arg_begin(),
@@ -1675,7 +1675,7 @@ void CodeGenFunction::EmitFunctionEpilog(const CGFunctionInfo &FI) {
     Ret->setDebugLoc(RetDbgLoc);
 }
 
-void CodeGenFunction::EmitDelegateCallArg(CallArgList &args,
+void CodeGenSubprogram::EmitDelegateCallArg(CallArgList &args,
                                           const VarDecl *param) {
   // StartFunction converted the ABI-lowered parameter(s) into a
   // local alloca.  We need to turn that into an r-value suitable
@@ -1719,7 +1719,7 @@ static bool isProvablyNonNull(llvm::Value *addr) {
 }
 
 /// Emit the actual writing-back of a writeback.
-static void emitWriteback(CodeGenFunction &CGF,
+static void emitWriteback(CodeGenSubprogram &CGF,
                           const CallArgList::Writeback &writeback) {
   llvm::Value *srcAddr = writeback.Address;
   assert(!isProvablyNull(srcAddr) &&
@@ -1757,7 +1757,7 @@ static void emitWriteback(CodeGenFunction &CGF,
     CGF.EmitBlock(contBB);
 }
 
-static void emitWritebacks(CodeGenFunction &CGF,
+static void emitWritebacks(CodeGenSubprogram &CGF,
                            const CallArgList &args) {
   for (CallArgList::writeback_iterator
          i = args.writeback_begin(), e = args.writeback_end(); i != e; ++i)
@@ -1766,7 +1766,7 @@ static void emitWritebacks(CodeGenFunction &CGF,
 
 /// Emit an argument that's being passed call-by-writeback.  That is,
 /// we are passing the address of 
-static void emitWritebackArg(CodeGenFunction &CGF, CallArgList &args,
+static void emitWritebackArg(CodeGenSubprogram &CGF, CallArgList &args,
                              const ObjCIndirectCopyRestoreExpr *CRE) {
   llvm::Value *srcAddr = CGF.EmitScalarExpr(CRE->getSubExpr());
 
@@ -1793,7 +1793,7 @@ static void emitWritebackArg(CodeGenFunction &CGF, CallArgList &args,
   // and that cleanup will be conditional if we can't prove that the l-value
   // isn't null, so we need to register a dominating point so that the cleanups
   // system will make valid IR.
-  CodeGenFunction::ConditionalEvaluation condEval(CGF);
+  CodeGenSubprogram::ConditionalEvaluation condEval(CGF);
   
   // Zero-initialize it if we're not doing a copy-initialization.
   bool shouldCopy = CRE->shouldCopy();
@@ -1854,7 +1854,7 @@ static void emitWritebackArg(CodeGenFunction &CGF, CallArgList &args,
   args.add(RValue::get(finalArgument), CRE->getType());
 }
 
-void CodeGenFunction::EmitCallArg(CallArgList &args, const Expr *E,
+void CodeGenSubprogram::EmitCallArg(CallArgList &args, const Expr *E,
                                   QualType type) {
   if (const ObjCIndirectCopyRestoreExpr *CRE
         = dyn_cast<ObjCIndirectCopyRestoreExpr>(E)) {
@@ -1887,7 +1887,7 @@ void CodeGenFunction::EmitCallArg(CallArgList &args, const Expr *E,
 // In ObjC ARC mode with no ObjC ARC exception safety, tell the ARC
 // optimizer it can aggressively ignore unwind edges.
 void
-CodeGenFunction::AddObjCARCExceptionMetadata(llvm::Instruction *Inst) {
+CodeGenSubprogram::AddObjCARCExceptionMetadata(llvm::Instruction *Inst) {
   if (CGM.getCodeGenOpts().OptimizationLevel != 0 &&
       !CGM.getCodeGenOpts().ObjCAutoRefCountExceptions)
     Inst->setMetadata("lfort.arc.no_objc_arc_exceptions",
@@ -1897,7 +1897,7 @@ CodeGenFunction::AddObjCARCExceptionMetadata(llvm::Instruction *Inst) {
 /// Emits a call or invoke instruction to the given function, depending
 /// on the current state of the EH stack.
 llvm::CallSite
-CodeGenFunction::EmitCallOrInvoke(llvm::Value *Callee,
+CodeGenSubprogram::EmitCallOrInvoke(llvm::Value *Callee,
                                   ArrayRef<llvm::Value *> Args,
                                   const Twine &Name) {
   llvm::BasicBlock *InvokeDest = getInvokeDest();
@@ -1920,7 +1920,7 @@ CodeGenFunction::EmitCallOrInvoke(llvm::Value *Callee,
 }
 
 llvm::CallSite
-CodeGenFunction::EmitCallOrInvoke(llvm::Value *Callee,
+CodeGenSubprogram::EmitCallOrInvoke(llvm::Value *Callee,
                                   const Twine &Name) {
   return EmitCallOrInvoke(Callee, ArrayRef<llvm::Value *>(), Name);
 }
@@ -1934,7 +1934,7 @@ static void checkArgMatches(llvm::Value *Elt, unsigned &ArgNo,
   ++ArgNo;
 }
 
-void CodeGenFunction::ExpandTypeToArgs(QualType Ty, RValue RV,
+void CodeGenSubprogram::ExpandTypeToArgs(QualType Ty, RValue RV,
                                        SmallVector<llvm::Value*,16> &Args,
                                        llvm::FunctionType *IRFuncTy) {
   if (const ConstantArrayType *AT = getContext().getAsConstantArrayType(Ty)) {
@@ -1948,7 +1948,7 @@ void CodeGenFunction::ExpandTypeToArgs(QualType Ty, RValue RV,
       if (EltTy->isAnyComplexType())
         // FIXME: Volatile?
         EltRV = RValue::getComplex(LoadComplexFromAddr(LV.getAddress(), false));
-      else if (CodeGenFunction::hasAggregateLLVMType(EltTy))
+      else if (CodeGenSubprogram::hasAggregateLLVMType(EltTy))
         EltRV = LV.asAggregateRValue();
       else
         EltRV = EmitLoadOfLValue(LV);
@@ -2006,7 +2006,7 @@ void CodeGenFunction::ExpandTypeToArgs(QualType Ty, RValue RV,
 }
 
 
-RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
+RValue CodeGenSubprogram::EmitCall(const CGFunctionInfo &CallInfo,
                                  llvm::Value *Callee,
                                  ReturnValueSlot ReturnValue,
                                  const CallArgList &CallArgs,
@@ -2291,7 +2291,7 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
     unsigned Alignment = getContext().getTypeAlignInChars(RetTy).getQuantity();
     if (RetTy->isAnyComplexType())
       return RValue::getComplex(LoadComplexFromAddr(Args[0], false));
-    if (CodeGenFunction::hasAggregateLLVMType(RetTy))
+    if (CodeGenSubprogram::hasAggregateLLVMType(RetTy))
       return RValue::getAggregate(Args[0]);
     return RValue::get(EmitLoadOfScalar(Args[0], false, Alignment, RetTy));
   }
@@ -2310,7 +2310,7 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
         llvm::Value *Imag = Builder.CreateExtractValue(CI, 1);
         return RValue::getComplex(std::make_pair(Real, Imag));
       }
-      if (CodeGenFunction::hasAggregateLLVMType(RetTy)) {
+      if (CodeGenSubprogram::hasAggregateLLVMType(RetTy)) {
         llvm::Value *DestPtr = ReturnValue.getValue();
         bool DestIsVolatile = ReturnValue.isVolatile();
 
@@ -2351,7 +2351,7 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
     unsigned Alignment = getContext().getTypeAlignInChars(RetTy).getQuantity();
     if (RetTy->isAnyComplexType())
       return RValue::getComplex(LoadComplexFromAddr(DestPtr, false));
-    if (CodeGenFunction::hasAggregateLLVMType(RetTy))
+    if (CodeGenSubprogram::hasAggregateLLVMType(RetTy))
       return RValue::getAggregate(DestPtr);
     return RValue::get(EmitLoadOfScalar(DestPtr, false, Alignment, RetTy));
   }
@@ -2365,6 +2365,6 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
 
 /* VarArg handling */
 
-llvm::Value *CodeGenFunction::EmitVAArg(llvm::Value *VAListAddr, QualType Ty) {
+llvm::Value *CodeGenSubprogram::EmitVAArg(llvm::Value *VAListAddr, QualType Ty) {
   return CGM.getTypes().getABIInfo().EmitVAArg(VAListAddr, Ty, *this);
 }

@@ -16,7 +16,7 @@
 
 #include "CGObjCRuntime.h"
 #include "CGCleanup.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Decl.h"
@@ -422,14 +422,14 @@ protected:
   /// Looks up the method for sending a message to the specified object.  This
   /// mechanism differs between the GCC and GNU runtimes, so this method must be
   /// overridden in subclasses.
-  virtual llvm::Value *LookupIMP(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                  llvm::Value *&Receiver,
                                  llvm::Value *cmd,
                                  llvm::MDNode *node) = 0;
   /// Looks up the method for sending a message to a superclass.  This
   /// mechanism differs between the GCC and GNU runtimes, so this method must
   /// be overridden in subclasses.
-  virtual llvm::Value *LookupIMPSuper(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMPSuper(CodeGenSubprogram &CGF,
                                       llvm::Value *ObjCSuper,
                                       llvm::Value *cmd) = 0;
   /// Libobjc2 uses a bitfield representation where small(ish) bitfields are
@@ -451,7 +451,7 @@ public:
   virtual llvm::Constant *GenerateConstantString(const StringLiteral *);
 
   virtual RValue
-  GenerateMessageSend(CodeGenFunction &CGF,
+  GenerateMessageSend(CodeGenSubprogram &CGF,
                       ReturnValueSlot Return,
                       QualType ResultType,
                       Selector Sel,
@@ -460,7 +460,7 @@ public:
                       const ObjCInterfaceDecl *Class,
                       const ObjCMethodDecl *Method);
   virtual RValue
-  GenerateMessageSendSuper(CodeGenFunction &CGF,
+  GenerateMessageSendSuper(CodeGenSubprogram &CGF,
                            ReturnValueSlot Return,
                            QualType ResultType,
                            Selector Sel,
@@ -497,34 +497,34 @@ public:
   virtual llvm::Constant *GetCppAtomicObjectSetFunction();
   virtual llvm::Constant *EnumerationMutationFunction();
 
-  virtual void EmitTryStmt(CodeGenFunction &CGF,
+  virtual void EmitTryStmt(CodeGenSubprogram &CGF,
                            const ObjCAtTryStmt &S);
-  virtual void EmitSynchronizedStmt(CodeGenFunction &CGF,
+  virtual void EmitSynchronizedStmt(CodeGenSubprogram &CGF,
                                     const ObjCAtSynchronizedStmt &S);
-  virtual void EmitThrowStmt(CodeGenFunction &CGF,
+  virtual void EmitThrowStmt(CodeGenSubprogram &CGF,
                              const ObjCAtThrowStmt &S);
-  virtual llvm::Value * EmitObjCWeakRead(CodeGenFunction &CGF,
+  virtual llvm::Value * EmitObjCWeakRead(CodeGenSubprogram &CGF,
                                          llvm::Value *AddrWeakObj);
-  virtual void EmitObjCWeakAssign(CodeGenFunction &CGF,
+  virtual void EmitObjCWeakAssign(CodeGenSubprogram &CGF,
                                   llvm::Value *src, llvm::Value *dst);
-  virtual void EmitObjCGlobalAssign(CodeGenFunction &CGF,
+  virtual void EmitObjCGlobalAssign(CodeGenSubprogram &CGF,
                                     llvm::Value *src, llvm::Value *dest,
                                     bool threadlocal=false);
-  virtual void EmitObjCIvarAssign(CodeGenFunction &CGF,
+  virtual void EmitObjCIvarAssign(CodeGenSubprogram &CGF,
                                     llvm::Value *src, llvm::Value *dest,
                                     llvm::Value *ivarOffset);
-  virtual void EmitObjCStrongCastAssign(CodeGenFunction &CGF,
+  virtual void EmitObjCStrongCastAssign(CodeGenSubprogram &CGF,
                                         llvm::Value *src, llvm::Value *dest);
-  virtual void EmitGCMemmoveCollectable(CodeGenFunction &CGF,
+  virtual void EmitGCMemmoveCollectable(CodeGenSubprogram &CGF,
                                         llvm::Value *DestPtr,
                                         llvm::Value *SrcPtr,
                                         llvm::Value *Size);
-  virtual LValue EmitObjCValueForIvar(CodeGenFunction &CGF,
+  virtual LValue EmitObjCValueForIvar(CodeGenSubprogram &CGF,
                                       QualType ObjectTy,
                                       llvm::Value *BaseValue,
                                       const ObjCIvarDecl *Ivar,
                                       unsigned CVRQualifiers);
-  virtual llvm::Value *EmitIvarOffset(CodeGenFunction &CGF,
+  virtual llvm::Value *EmitIvarOffset(CodeGenSubprogram &CGF,
                                       const ObjCInterfaceDecl *Interface,
                                       const ObjCIvarDecl *Ivar);
   virtual llvm::Value *EmitNSAutoreleasePoolClassRef(CGBuilderTy &Builder);
@@ -563,7 +563,7 @@ class CGObjCGCC : public CGObjCGNU {
   /// arguments.  Returns the IMP for the corresponding method.
   LazyRuntimeFunction MsgLookupSuperFn;
 protected:
-  virtual llvm::Value *LookupIMP(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                  llvm::Value *&Receiver,
                                  llvm::Value *cmd,
                                  llvm::MDNode *node) {
@@ -575,7 +575,7 @@ protected:
     imp->setMetadata(msgSendMDKind, node);
     return imp.getInstruction();
   }
-  virtual llvm::Value *LookupIMPSuper(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMPSuper(CodeGenSubprogram &CGF,
                                       llvm::Value *ObjCSuper,
                                       llvm::Value *cmd) {
       CGBuilderTy &Builder = CGF.Builder;
@@ -622,7 +622,7 @@ class CGObjCGNUstep : public CGObjCGNU {
   public:
     virtual llvm::Constant *GetEHType(QualType T);
   protected:
-    virtual llvm::Value *LookupIMP(CodeGenFunction &CGF,
+    virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                    llvm::Value *&Receiver,
                                    llvm::Value *cmd,
                                    llvm::MDNode *node) {
@@ -661,7 +661,7 @@ class CGObjCGNUstep : public CGObjCGNU {
       Receiver = Builder.CreateLoad(ReceiverPtr, true);
       return imp;
     }
-    virtual llvm::Value *LookupIMPSuper(CodeGenFunction &CGF,
+    virtual llvm::Value *LookupIMPSuper(CodeGenSubprogram &CGF,
                                         llvm::Value *ObjCSuper,
                                         llvm::Value *cmd) {
       CGBuilderTy &Builder = CGF.Builder;
@@ -760,7 +760,7 @@ protected:
   /// arguments.  Returns the IMP for the corresponding method.
   LazyRuntimeFunction MsgLookupSuperFn;
 
-  virtual llvm::Value *LookupIMP(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMP(CodeGenSubprogram &CGF,
                                  llvm::Value *&Receiver,
                                  llvm::Value *cmd,
                                  llvm::MDNode *node) {
@@ -773,7 +773,7 @@ protected:
     return imp.getInstruction();
   }
 
-  virtual llvm::Value *LookupIMPSuper(CodeGenFunction &CGF,
+  virtual llvm::Value *LookupIMPSuper(CodeGenSubprogram &CGF,
                                       llvm::Value *ObjCSuper,
                                       llvm::Value *cmd) {
       CGBuilderTy &Builder = CGF.Builder;
@@ -1164,7 +1164,7 @@ llvm::Constant *CGObjCGNU::GenerateConstantString(const StringLiteral *SL) {
 ///send to self with special delivery semantics indicating which class's method
 ///should be called.
 RValue
-CGObjCGNU::GenerateMessageSendSuper(CodeGenFunction &CGF,
+CGObjCGNU::GenerateMessageSendSuper(CodeGenSubprogram &CGF,
                                     ReturnValueSlot Return,
                                     QualType ResultType,
                                     Selector Sel,
@@ -1267,7 +1267,7 @@ CGObjCGNU::GenerateMessageSendSuper(CodeGenFunction &CGF,
 
 /// Generate code for a message send expression.
 RValue
-CGObjCGNU::GenerateMessageSend(CodeGenFunction &CGF,
+CGObjCGNU::GenerateMessageSend(CodeGenSubprogram &CGF,
                                ReturnValueSlot Return,
                                QualType ResultType,
                                Selector Sel,
@@ -2613,13 +2613,13 @@ llvm::Constant *CGObjCGNU::EnumerationMutationFunction() {
   return EnumerationMutationFn;
 }
 
-void CGObjCGNU::EmitSynchronizedStmt(CodeGenFunction &CGF,
+void CGObjCGNU::EmitSynchronizedStmt(CodeGenSubprogram &CGF,
                                      const ObjCAtSynchronizedStmt &S) {
   EmitAtSynchronizedStmt(CGF, S, SyncEnterFn, SyncExitFn);
 }
 
 
-void CGObjCGNU::EmitTryStmt(CodeGenFunction &CGF,
+void CGObjCGNU::EmitTryStmt(CodeGenSubprogram &CGF,
                             const ObjCAtTryStmt &S) {
   // Unlike the Apple non-fragile runtimes, which also uses
   // unwind-based zero cost exceptions, the GNU Objective C runtime's
@@ -2636,7 +2636,7 @@ void CGObjCGNU::EmitTryStmt(CodeGenFunction &CGF,
   return ;
 }
 
-void CGObjCGNU::EmitThrowStmt(CodeGenFunction &CGF,
+void CGObjCGNU::EmitThrowStmt(CodeGenSubprogram &CGF,
                               const ObjCAtThrowStmt &S) {
   llvm::Value *ExceptionAsObject;
 
@@ -2656,14 +2656,14 @@ void CGObjCGNU::EmitThrowStmt(CodeGenFunction &CGF,
   CGF.Builder.ClearInsertionPoint();
 }
 
-llvm::Value * CGObjCGNU::EmitObjCWeakRead(CodeGenFunction &CGF,
+llvm::Value * CGObjCGNU::EmitObjCWeakRead(CodeGenSubprogram &CGF,
                                           llvm::Value *AddrWeakObj) {
   CGBuilderTy B = CGF.Builder;
   AddrWeakObj = EnforceType(B, AddrWeakObj, PtrToIdTy);
   return B.CreateCall(WeakReadFn, AddrWeakObj);
 }
 
-void CGObjCGNU::EmitObjCWeakAssign(CodeGenFunction &CGF,
+void CGObjCGNU::EmitObjCWeakAssign(CodeGenSubprogram &CGF,
                                    llvm::Value *src, llvm::Value *dst) {
   CGBuilderTy B = CGF.Builder;
   src = EnforceType(B, src, IdTy);
@@ -2671,7 +2671,7 @@ void CGObjCGNU::EmitObjCWeakAssign(CodeGenFunction &CGF,
   B.CreateCall2(WeakAssignFn, src, dst);
 }
 
-void CGObjCGNU::EmitObjCGlobalAssign(CodeGenFunction &CGF,
+void CGObjCGNU::EmitObjCGlobalAssign(CodeGenSubprogram &CGF,
                                      llvm::Value *src, llvm::Value *dst,
                                      bool threadlocal) {
   CGBuilderTy B = CGF.Builder;
@@ -2684,7 +2684,7 @@ void CGObjCGNU::EmitObjCGlobalAssign(CodeGenFunction &CGF,
     llvm_unreachable("EmitObjCGlobalAssign - Threal Local API NYI");
 }
 
-void CGObjCGNU::EmitObjCIvarAssign(CodeGenFunction &CGF,
+void CGObjCGNU::EmitObjCIvarAssign(CodeGenSubprogram &CGF,
                                    llvm::Value *src, llvm::Value *dst,
                                    llvm::Value *ivarOffset) {
   CGBuilderTy B = CGF.Builder;
@@ -2693,7 +2693,7 @@ void CGObjCGNU::EmitObjCIvarAssign(CodeGenFunction &CGF,
   B.CreateCall3(IvarAssignFn, src, dst, ivarOffset);
 }
 
-void CGObjCGNU::EmitObjCStrongCastAssign(CodeGenFunction &CGF,
+void CGObjCGNU::EmitObjCStrongCastAssign(CodeGenSubprogram &CGF,
                                          llvm::Value *src, llvm::Value *dst) {
   CGBuilderTy B = CGF.Builder;
   src = EnforceType(B, src, IdTy);
@@ -2701,7 +2701,7 @@ void CGObjCGNU::EmitObjCStrongCastAssign(CodeGenFunction &CGF,
   B.CreateCall2(StrongCastAssignFn, src, dst);
 }
 
-void CGObjCGNU::EmitGCMemmoveCollectable(CodeGenFunction &CGF,
+void CGObjCGNU::EmitGCMemmoveCollectable(CodeGenSubprogram &CGF,
                                          llvm::Value *DestPtr,
                                          llvm::Value *SrcPtr,
                                          llvm::Value *Size) {
@@ -2758,7 +2758,7 @@ llvm::GlobalVariable *CGObjCGNU::ObjCIvarOffsetVariable(
   return IvarOffsetPointer;
 }
 
-LValue CGObjCGNU::EmitObjCValueForIvar(CodeGenFunction &CGF,
+LValue CGObjCGNU::EmitObjCValueForIvar(CodeGenSubprogram &CGF,
                                        QualType ObjectTy,
                                        llvm::Value *BaseValue,
                                        const ObjCIvarDecl *Ivar,
@@ -2785,7 +2785,7 @@ static const ObjCInterfaceDecl *FindIvarInterface(ASTContext &Context,
   return 0;
 }
 
-llvm::Value *CGObjCGNU::EmitIvarOffset(CodeGenFunction &CGF,
+llvm::Value *CGObjCGNU::EmitIvarOffset(CodeGenSubprogram &CGF,
                          const ObjCInterfaceDecl *Interface,
                          const ObjCIvarDecl *Ivar) {
   if (CGM.getLangOpts().ObjCRuntime.isNonFragile()) {

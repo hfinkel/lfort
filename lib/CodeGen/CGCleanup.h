@@ -14,9 +14,9 @@
 #ifndef LFORT_CODEGEN_CGCLEANUP_H
 #define LFORT_CODEGEN_CGCLEANUP_H
 
-/// EHScopeStack is defined in CodeGenFunction.h, but its
+/// EHScopeStack is defined in CodeGenSubprogram.h, but its
 /// implementation is in this file and in CGCleanup.cpp.
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 
 namespace llvm {
   class Value;

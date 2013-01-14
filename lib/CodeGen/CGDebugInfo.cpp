@@ -14,7 +14,7 @@
 #include "CGDebugInfo.h"
 #include "CGBlocks.h"
 #include "CGObjCRuntime.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/DeclFriend.h"

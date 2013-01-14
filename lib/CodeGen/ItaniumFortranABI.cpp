@@ -21,7 +21,7 @@
 #include "CGFortranABI.h"
 #include "CGRecordLayout.h"
 #include "CGVTables.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenModule.h"
 #include "lfort/AST/Mangle.h"
 #include "lfort/AST/Type.h"
@@ -57,17 +57,17 @@ public:
 
   llvm::Type *ConvertMemberPointerType(const MemberPointerType *MPT);
 
-  llvm::Value *EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+  llvm::Value *EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
                                                llvm::Value *&This,
                                                llvm::Value *MemFnPtr,
                                                const MemberPointerType *MPT);
 
-  llvm::Value *EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+  llvm::Value *EmitMemberDataPointerAddress(CodeGenSubprogram &CGF,
                                             llvm::Value *Base,
                                             llvm::Value *MemPtr,
                                             const MemberPointerType *MPT);
 
-  llvm::Value *EmitMemberPointerConversion(CodeGenFunction &CGF,
+  llvm::Value *EmitMemberPointerConversion(CodeGenSubprogram &CGF,
                                            const CastExpr *E,
                                            llvm::Value *Src);
   llvm::Constant *EmitMemberPointerConversion(const CastExpr *E,
@@ -82,17 +82,17 @@ public:
   llvm::Constant *BuildMemberPointer(const CXXMethodDecl *MD,
                                      CharUnits ThisAdjustment);
 
-  llvm::Value *EmitMemberPointerComparison(CodeGenFunction &CGF,
+  llvm::Value *EmitMemberPointerComparison(CodeGenSubprogram &CGF,
                                            llvm::Value *L,
                                            llvm::Value *R,
                                            const MemberPointerType *MPT,
                                            bool Inequality);
 
-  llvm::Value *EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+  llvm::Value *EmitMemberPointerIsNotNull(CodeGenSubprogram &CGF,
                                           llvm::Value *Addr,
                                           const MemberPointerType *MPT);
 
-  llvm::Value *adjustToCompleteObject(CodeGenFunction &CGF,
+  llvm::Value *adjustToCompleteObject(CodeGenSubprogram &CGF,
                                       llvm::Value *ptr,
                                       QualType type);
 
@@ -106,28 +106,28 @@ public:
                                 CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys);
 
-  void BuildInstanceFunctionParams(CodeGenFunction &CGF,
+  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
                                    FunctionArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenFunction &CGF);
+  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
 
   StringRef GetPureVirtualCallName() { return "__cxa_pure_virtual"; }
   StringRef GetDeletedVirtualCallName() { return "__cxa_deleted_virtual"; }
 
   CharUnits getArrayCookieSizeImpl(QualType elementType);
-  llvm::Value *InitializeArrayCookie(CodeGenFunction &CGF,
+  llvm::Value *InitializeArrayCookie(CodeGenSubprogram &CGF,
                                      llvm::Value *NewPtr,
                                      llvm::Value *NumElements,
                                      const CXXNewExpr *expr,
                                      QualType ElementType);
-  llvm::Value *readArrayCookieImpl(CodeGenFunction &CGF,
+  llvm::Value *readArrayCookieImpl(CodeGenSubprogram &CGF,
                                    llvm::Value *allocPtr,
                                    CharUnits cookieSize);
 
-  void EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+  void EmitGuardedInit(CodeGenSubprogram &CGF, const VarDecl &D,
                        llvm::GlobalVariable *DeclPtr, bool PerformInit);
-  void registerGlobalDtor(CodeGenFunction &CGF, llvm::Constant *dtor,
+  void registerGlobalDtor(CodeGenSubprogram &CGF, llvm::Constant *dtor,
                           llvm::Constant *addr);
 
   void EmitVTables(const CXXRecordDecl *Class);
@@ -147,21 +147,21 @@ public:
                                 CanQualType &ResTy,
                                 SmallVectorImpl<CanQualType> &ArgTys);
 
-  void BuildInstanceFunctionParams(CodeGenFunction &CGF,
+  void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                    QualType &ResTy,
                                    FunctionArgList &Params);
 
-  void EmitInstanceFunctionProlog(CodeGenFunction &CGF);
+  void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF);
 
-  void EmitReturnFromThunk(CodeGenFunction &CGF, RValue RV, QualType ResTy);
+  void EmitReturnFromThunk(CodeGenSubprogram &CGF, RValue RV, QualType ResTy);
 
   CharUnits getArrayCookieSizeImpl(QualType elementType);
-  llvm::Value *InitializeArrayCookie(CodeGenFunction &CGF,
+  llvm::Value *InitializeArrayCookie(CodeGenSubprogram &CGF,
                                      llvm::Value *NewPtr,
                                      llvm::Value *NumElements,
                                      const CXXNewExpr *expr,
                                      QualType ElementType);
-  llvm::Value *readArrayCookieImpl(CodeGenFunction &CGF, llvm::Value *allocPtr,
+  llvm::Value *readArrayCookieImpl(CodeGenSubprogram &CGF, llvm::Value *allocPtr,
                                    CharUnits cookieSize);
 
 private:
@@ -211,7 +211,7 @@ ItaniumFortranABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
 /// If the member is non-virtual, memptr.ptr is the address of
 /// the function to call.
 llvm::Value *
-ItaniumFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
                                                llvm::Value *&This,
                                                llvm::Value *MemFnPtr,
                                                const MemberPointerType *MPT) {
@@ -296,7 +296,7 @@ ItaniumFortranABI::EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
 
 /// Compute an l-value by applying the given pointer-to-member to a
 /// base object.
-llvm::Value *ItaniumFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::EmitMemberDataPointerAddress(CodeGenSubprogram &CGF,
                                                          llvm::Value *Base,
                                                          llvm::Value *MemPtr,
                                            const MemberPointerType *MPT) {
@@ -343,7 +343,7 @@ llvm::Value *ItaniumFortranABI::EmitMemberDataPointerAddress(CodeGenFunction &CG
 /// This is why -1 is a reasonable choice for null data member
 /// pointers.
 llvm::Value *
-ItaniumFortranABI::EmitMemberPointerConversion(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerConversion(CodeGenSubprogram &CGF,
                                            const CastExpr *E,
                                            llvm::Value *src) {
   assert(E->getCastKind() == CK_DerivedToBaseMemberPointer ||
@@ -569,7 +569,7 @@ llvm::Constant *ItaniumFortranABI::EmitMemberPointer(const APValue &MP,
 ///
 /// ARM is different here only because null-ness is more complicated.
 llvm::Value *
-ItaniumFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerComparison(CodeGenSubprogram &CGF,
                                            llvm::Value *L,
                                            llvm::Value *R,
                                            const MemberPointerType *MPT,
@@ -643,7 +643,7 @@ ItaniumFortranABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
 }
 
 llvm::Value *
-ItaniumFortranABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+ItaniumFortranABI::EmitMemberPointerIsNotNull(CodeGenSubprogram &CGF,
                                           llvm::Value *MemPtr,
                                           const MemberPointerType *MPT) {
   CGBuilderTy &Builder = CGF.Builder;
@@ -684,7 +684,7 @@ bool ItaniumFortranABI::isZeroInitializable(const MemberPointerType *MPT) {
 
 /// The Itanium ABI always places an offset to the complete object
 /// at entry -2 in the vtable.
-llvm::Value *ItaniumFortranABI::adjustToCompleteObject(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::adjustToCompleteObject(CodeGenSubprogram &CGF,
                                                    llvm::Value *ptr,
                                                    QualType type) {
   // Grab the vtable pointer as an intptr_t*.
@@ -752,7 +752,7 @@ void ARMFortranABI::BuildDestructorSignature(const CXXDestructorDecl *Dtor,
     ResTy = ArgTys[0];
 }
 
-void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                                 QualType &ResTy,
                                                 FunctionArgList &Params) {
   /// Create the 'this' variable.
@@ -775,7 +775,7 @@ void ItaniumFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
   }
 }
 
-void ARMFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
+void ARMFortranABI::BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                             QualType &ResTy,
                                             FunctionArgList &Params) {
   ItaniumFortranABI::BuildInstanceFunctionParams(CGF, ResTy, Params);
@@ -785,7 +785,7 @@ void ARMFortranABI::BuildInstanceFunctionParams(CodeGenFunction &CGF,
     ResTy = Params[0]->getType();
 }
 
-void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
   /// Initialize the 'this' slot.
   EmitThisParam(CGF);
 
@@ -797,7 +797,7 @@ void ItaniumFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
   }
 }
 
-void ARMFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
+void ARMFortranABI::EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) {
   ItaniumFortranABI::EmitInstanceFunctionProlog(CGF);
 
   /// Initialize the return slot to 'this' at the start of the
@@ -806,7 +806,7 @@ void ARMFortranABI::EmitInstanceFunctionProlog(CodeGenFunction &CGF) {
     CGF.Builder.CreateStore(getThisValue(CGF), CGF.ReturnValue);
 }
 
-void ARMFortranABI::EmitReturnFromThunk(CodeGenFunction &CGF,
+void ARMFortranABI::EmitReturnFromThunk(CodeGenSubprogram &CGF,
                                     RValue RV, QualType ResultType) {
   if (!isa<CXXDestructorDecl>(CGF.CurGD.getDecl()))
     return ItaniumFortranABI::EmitReturnFromThunk(CGF, RV, ResultType);
@@ -827,7 +827,7 @@ CharUnits ItaniumFortranABI::getArrayCookieSizeImpl(QualType elementType) {
                   CGM.getContext().getTypeAlignInChars(elementType));
 }
 
-llvm::Value *ItaniumFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::InitializeArrayCookie(CodeGenSubprogram &CGF,
                                                   llvm::Value *NewPtr,
                                                   llvm::Value *NumElements,
                                                   const CXXNewExpr *expr,
@@ -864,7 +864,7 @@ llvm::Value *ItaniumFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 CookieSize.getQuantity());  
 }
 
-llvm::Value *ItaniumFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *ItaniumFortranABI::readArrayCookieImpl(CodeGenSubprogram &CGF,
                                                 llvm::Value *allocPtr,
                                                 CharUnits cookieSize) {
   // The element size is right-justified in the cookie.
@@ -893,7 +893,7 @@ CharUnits ARMFortranABI::getArrayCookieSizeImpl(QualType elementType) {
   return CharUnits::fromQuantity(2 * CGM.SizeSizeInBytes);
 }
 
-llvm::Value *ARMFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
+llvm::Value *ARMFortranABI::InitializeArrayCookie(CodeGenSubprogram &CGF,
                                               llvm::Value *NewPtr,
                                               llvm::Value *NumElements,
                                               const CXXNewExpr *expr,
@@ -929,7 +929,7 @@ llvm::Value *ARMFortranABI::InitializeArrayCookie(CodeGenFunction &CGF,
                                                 CookieSize.getQuantity());
 }
 
-llvm::Value *ARMFortranABI::readArrayCookieImpl(CodeGenFunction &CGF,
+llvm::Value *ARMFortranABI::readArrayCookieImpl(CodeGenSubprogram &CGF,
                                             llvm::Value *allocPtr,
                                             CharUnits cookieSize) {
   // The number of elements is at offset sizeof(size_t) relative to
@@ -981,7 +981,7 @@ namespace {
     llvm::GlobalVariable *Guard;
     CallGuardAbort(llvm::GlobalVariable *Guard) : Guard(Guard) {}
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       CGF.Builder.CreateCall(getGuardAbortFn(CGF.CGM, Guard->getType()), Guard)
         ->setDoesNotThrow();
     }
@@ -990,7 +990,7 @@ namespace {
 
 /// The ARM code here follows the Itanium code closely enough that we
 /// just special-case it at particular places.
-void ItaniumFortranABI::EmitGuardedInit(CodeGenFunction &CGF,
+void ItaniumFortranABI::EmitGuardedInit(CodeGenSubprogram &CGF,
                                     const VarDecl &D,
                                     llvm::GlobalVariable *var,
                                     bool shouldPerformInit) {
@@ -1130,7 +1130,7 @@ void ItaniumFortranABI::EmitGuardedInit(CodeGenFunction &CGF,
 }
 
 /// Register a global destructor using __cxa_atexit.
-static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
+static void emitGlobalDtorWithCXAAtExit(CodeGenSubprogram &CGF,
                                         llvm::Constant *dtor,
                                         llvm::Constant *addr) {
   // We're assuming that the destructor function is something we can
@@ -1163,7 +1163,7 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
 }
 
 /// Register a global destructor as best as we know how.
-void ItaniumFortranABI::registerGlobalDtor(CodeGenFunction &CGF,
+void ItaniumFortranABI::registerGlobalDtor(CodeGenSubprogram &CGF,
                                        llvm::Constant *dtor,
                                        llvm::Constant *addr) {
   // Use __cxa_atexit if available.

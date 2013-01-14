@@ -18,7 +18,7 @@
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
 #include "CGOpenCLRuntime.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenTBAA.h"
 #include "TargetInfo.h"
 #include "lfort/AST/ASTContext.h"
@@ -1989,7 +1989,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
   // FIXME: this is redundant with part of SetFunctionDefinitionAttributes
   setGlobalVisibility(Fn, D);
 
-  CodeGenFunction(*this).GenerateCode(D, Fn, FI);
+  CodeGenSubprogram(*this).GenerateCode(D, Fn, FI);
 
   SetFunctionDefinitionAttributes(D, Fn);
   SetLLVMFunctionAttributesForDefinition(D, Fn);
@@ -2544,11 +2544,11 @@ void CodeGenModule::EmitObjCPropertyImplementations(const
       // property. What we want to know is if the method is defined in
       // this implementation.
       if (!D->getInstanceMethod(PD->getGetterName()))
-        CodeGenFunction(*this).GenerateObjCGetter(
+        CodeGenSubprogram(*this).GenerateObjCGetter(
                                  const_cast<ObjCImplementationDecl *>(D), PID);
       if (!PD->isReadOnly() &&
           !D->getInstanceMethod(PD->getSetterName()))
-        CodeGenFunction(*this).GenerateObjCSetter(
+        CodeGenSubprogram(*this).GenerateObjCSetter(
                                  const_cast<ObjCImplementationDecl *>(D), PID);
     }
   }
@@ -2578,7 +2578,7 @@ void CodeGenModule::EmitObjCIvarInitializations(ObjCImplementationDecl *D) {
                           /*isPropertyAccessor=*/true, /*isImplicitlyDeclared=*/true,
                              /*isDefined=*/false, ObjCMethodDecl::Required);
     D->addInstanceMethod(DTORMethod);
-    CodeGenFunction(*this).GenerateObjCCtorDtorMethod(D, DTORMethod, false);
+    CodeGenSubprogram(*this).GenerateObjCCtorDtorMethod(D, DTORMethod, false);
     D->setHasDestructors(true);
   }
 
@@ -2602,7 +2602,7 @@ void CodeGenModule::EmitObjCIvarInitializations(ObjCImplementationDecl *D) {
                                                 /*isDefined=*/false,
                                                 ObjCMethodDecl::Required);
   D->addInstanceMethod(CTORMethod);
-  CodeGenFunction(*this).GenerateObjCCtorDtorMethod(D, CTORMethod, true);
+  CodeGenSubprogram(*this).GenerateObjCCtorDtorMethod(D, CTORMethod, true);
   D->setHasNonZeroConstructors(true);
 }
 
@@ -2741,7 +2741,7 @@ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
     ObjCMethodDecl *OMD = cast<ObjCMethodDecl>(D);
     // If this is not a prototype, emit the body.
     if (OMD->getBody())
-      CodeGenFunction(*this).GenerateObjCMethod(OMD);
+      CodeGenSubprogram(*this).GenerateObjCMethod(OMD);
     break;
   }
   case Decl::ObjCCompatibleAlias:
@@ -2819,7 +2819,7 @@ void CodeGenModule::EmitDeclMetadata() {
 
 /// Emits metadata nodes for all the local variables in the current
 /// function.
-void CodeGenFunction::EmitDeclMetadata() {
+void CodeGenSubprogram::EmitDeclMetadata() {
   if (LocalDeclMap.empty()) return;
 
   llvm::LLVMContext &Context = getLLVMContext();

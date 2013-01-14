@@ -1,4 +1,4 @@
-//===-- CodeGenFunction.h - Per-Function state for LLVM CodeGen -*- C++ -*-===//
+//===-- CodeGenSubprogram.h - Per-Function state for LLVM CodeGen -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -107,8 +107,8 @@ template <class T> struct InvariantValue {
   typedef T type;
   typedef T saved_type;
   static bool needsSaving(type value) { return false; }
-  static saved_type save(CodeGenFunction &CGF, type value) { return value; }
-  static type restore(CodeGenFunction &CGF, saved_type value) { return value; }
+  static saved_type save(CodeGenSubprogram &CGF, type value) { return value; }
+  static type restore(CodeGenSubprogram &CGF, saved_type value) { return value; }
 };
 
 /// A metaprogramming class for ensuring that a value will dominate an
@@ -223,7 +223,7 @@ public:
     /// EH cleanups, this is run in a terminate context.
     ///
     // \param flags cleanup kind.
-    virtual void Emit(CodeGenFunction &CGF, Flags flags) = 0;
+    virtual void Emit(CodeGenSubprogram &CGF, Flags flags) = 0;
   };
 
   /// ConditionalCleanupN stores the saved form of its N parameters,
@@ -233,7 +233,7 @@ public:
     typedef typename DominatingValue<A0>::saved_type A0_saved;
     A0_saved a0_saved;
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       A0 a0 = DominatingValue<A0>::restore(CGF, a0_saved);
       T(a0).Emit(CGF, flags);
     }
@@ -250,7 +250,7 @@ public:
     A0_saved a0_saved;
     A1_saved a1_saved;
 
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       A0 a0 = DominatingValue<A0>::restore(CGF, a0_saved);
       A1 a1 = DominatingValue<A1>::restore(CGF, a1_saved);
       T(a0, a1).Emit(CGF, flags);
@@ -270,7 +270,7 @@ public:
     A1_saved a1_saved;
     A2_saved a2_saved;
     
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       A0 a0 = DominatingValue<A0>::restore(CGF, a0_saved);
       A1 a1 = DominatingValue<A1>::restore(CGF, a1_saved);
       A2 a2 = DominatingValue<A2>::restore(CGF, a2_saved);
@@ -293,7 +293,7 @@ public:
     A2_saved a2_saved;
     A3_saved a3_saved;
     
-    void Emit(CodeGenFunction &CGF, Flags flags) {
+    void Emit(CodeGenSubprogram &CGF, Flags flags) {
       A0 a0 = DominatingValue<A0>::restore(CGF, a0_saved);
       A1 a1 = DominatingValue<A1>::restore(CGF, a1_saved);
       A2 a2 = DominatingValue<A2>::restore(CGF, a2_saved);
@@ -309,7 +309,7 @@ public:
 private:
   // The implementation for this class is in CGException.h and
   // CGException.cpp; the definition is here because it's used as a
-  // member of CodeGenFunction.
+  // member of CodeGenSubprogram.
 
   /// The start of the scope-stack buffer, i.e. the allocated pointer
   /// for the buffer.  All of these pointers are either simultaneously
@@ -529,11 +529,11 @@ public:
   void clearFixups() { BranchFixups.clear(); }
 };
 
-/// CodeGenFunction - This class organizes the per-function state that is used
+/// CodeGenSubprogram - This class organizes the per-function state that is used
 /// while generating LLVM code.
-class CodeGenFunction : public CodeGenTypeCache {
-  CodeGenFunction(const CodeGenFunction &) LLVM_DELETED_FUNCTION;
-  void operator=(const CodeGenFunction &) LLVM_DELETED_FUNCTION;
+class CodeGenSubprogram : public CodeGenTypeCache {
+  CodeGenSubprogram(const CodeGenSubprogram &) LLVM_DELETED_FUNCTION;
+  void operator=(const CodeGenSubprogram &) LLVM_DELETED_FUNCTION;
 
   friend class CGFortranABI;
 public:
@@ -664,10 +664,10 @@ public:
     llvm::AllocaInst *SavedExnVar;
 
   public:
-    void enter(CodeGenFunction &CGF, const Stmt *Finally,
+    void enter(CodeGenSubprogram &CGF, const Stmt *Finally,
                llvm::Constant *beginCatchFn, llvm::Constant *endCatchFn,
                llvm::Constant *rethrowFn);
-    void exit(CodeGenFunction &CGF);
+    void exit(CodeGenSubprogram &CGF);
   };
 
   /// pushFullExprCleanup - Push a cleanup to be run at the end of the
@@ -799,11 +799,11 @@ public:
     void operator=(const RunCleanupsScope &) LLVM_DELETED_FUNCTION;
 
   protected:
-    CodeGenFunction& CGF;
+    CodeGenSubprogram& CGF;
     
   public:
     /// \brief Enter a new cleanup scope.
-    explicit RunCleanupsScope(CodeGenFunction &CGF)
+    explicit RunCleanupsScope(CodeGenSubprogram &CGF)
       : PerformCleanup(true), CGF(CGF)
     {
       CleanupStackDepth = CGF.EHStack.stable_begin();
@@ -844,7 +844,7 @@ public:
 
   public:
     /// \brief Enter a new cleanup scope.
-    explicit LexicalScope(CodeGenFunction &CGF, SourceRange Range)
+    explicit LexicalScope(CodeGenSubprogram &CGF, SourceRange Range)
       : RunCleanupsScope(CGF), Range(Range), PopDebugStack(true) {
       if (CGDebugInfo *DI = CGF.getDebugInfo())
         DI->EmitLexicalBlockStart(CGF.Builder, Range.getBegin());
@@ -916,16 +916,16 @@ public:
     llvm::BasicBlock *StartBB;
 
   public:
-    ConditionalEvaluation(CodeGenFunction &CGF)
+    ConditionalEvaluation(CodeGenSubprogram &CGF)
       : StartBB(CGF.Builder.GetInsertBlock()) {}
 
-    void begin(CodeGenFunction &CGF) {
+    void begin(CodeGenSubprogram &CGF) {
       assert(CGF.OutermostConditional != this);
       if (!CGF.OutermostConditional)
         CGF.OutermostConditional = this;
     }
 
-    void end(CodeGenFunction &CGF) {
+    void end(CodeGenSubprogram &CGF) {
       assert(CGF.OutermostConditional != 0);
       if (CGF.OutermostConditional == this)
         CGF.OutermostConditional = 0;
@@ -951,7 +951,7 @@ public:
   /// An RAII object to record that we're evaluating a statement
   /// expression.
   class StmtExprEvaluation {
-    CodeGenFunction &CGF;
+    CodeGenSubprogram &CGF;
 
     /// We have to save the outermost conditional: cleanups in a
     /// statement expression aren't conditional just because the
@@ -959,7 +959,7 @@ public:
     ConditionalEvaluation *SavedOutermostConditional;
 
   public:
-    StmtExprEvaluation(CodeGenFunction &CGF)
+    StmtExprEvaluation(CodeGenSubprogram &CGF)
       : CGF(CGF), SavedOutermostConditional(CGF.OutermostConditional) {
       CGF.OutermostConditional = 0;
     }
@@ -975,7 +975,7 @@ public:
   /// all uses of a value have been realized in the IR.
   class PeepholeProtection {
     llvm::Instruction *Inst;
-    friend class CodeGenFunction;
+    friend class CodeGenSubprogram;
 
   public:
     PeepholeProtection() : Inst(0) {}
@@ -990,7 +990,7 @@ public:
   class OpaqueValueMappingData {
     const OpaqueValueExpr *OpaqueValue;
     bool BoundLValue;
-    CodeGenFunction::PeepholeProtection Protection;
+    CodeGenSubprogram::PeepholeProtection Protection;
 
     OpaqueValueMappingData(const OpaqueValueExpr *ov,
                            bool boundLValue)
@@ -1009,7 +1009,7 @@ public:
              expr->getType()->isFunctionType();
     }
 
-    static OpaqueValueMappingData bind(CodeGenFunction &CGF,
+    static OpaqueValueMappingData bind(CodeGenSubprogram &CGF,
                                        const OpaqueValueExpr *ov,
                                        const Expr *e) {
       if (shouldBindAsLValue(ov))
@@ -1017,7 +1017,7 @@ public:
       return bind(CGF, ov, CGF.EmitAnyExpr(e));
     }
 
-    static OpaqueValueMappingData bind(CodeGenFunction &CGF,
+    static OpaqueValueMappingData bind(CodeGenSubprogram &CGF,
                                        const OpaqueValueExpr *ov,
                                        const LValue &lv) {
       assert(shouldBindAsLValue(ov));
@@ -1025,7 +1025,7 @@ public:
       return OpaqueValueMappingData(ov, true);
     }
 
-    static OpaqueValueMappingData bind(CodeGenFunction &CGF,
+    static OpaqueValueMappingData bind(CodeGenSubprogram &CGF,
                                        const OpaqueValueExpr *ov,
                                        const RValue &rv) {
       assert(!shouldBindAsLValue(ov));
@@ -1044,7 +1044,7 @@ public:
     bool isValid() const { return OpaqueValue != 0; }
     void clear() { OpaqueValue = 0; }
 
-    void unbind(CodeGenFunction &CGF) {
+    void unbind(CodeGenSubprogram &CGF) {
       assert(OpaqueValue && "no data to unbind!");
 
       if (BoundLValue) {
@@ -1058,7 +1058,7 @@ public:
 
   /// An RAII object to set (and then clear) a mapping for an OpaqueValueExpr.
   class OpaqueValueMapping {
-    CodeGenFunction &CGF;
+    CodeGenSubprogram &CGF;
     OpaqueValueMappingData Data;
 
   public:
@@ -1071,7 +1071,7 @@ public:
     /// enough pattern that the convenience operator is really
     /// helpful.
     ///
-    OpaqueValueMapping(CodeGenFunction &CGF,
+    OpaqueValueMapping(CodeGenSubprogram &CGF,
                        const AbstractConditionalOperator *op) : CGF(CGF) {
       if (isa<ConditionalOperator>(op))
         // Leave Data empty.
@@ -1082,13 +1082,13 @@ public:
                                           e->getCommon());
     }
 
-    OpaqueValueMapping(CodeGenFunction &CGF,
+    OpaqueValueMapping(CodeGenSubprogram &CGF,
                        const OpaqueValueExpr *opaqueValue,
                        LValue lvalue)
       : CGF(CGF), Data(OpaqueValueMappingData::bind(CGF, opaqueValue, lvalue)) {
     }
 
-    OpaqueValueMapping(CodeGenFunction &CGF,
+    OpaqueValueMapping(CodeGenSubprogram &CGF,
                        const OpaqueValueExpr *opaqueValue,
                        RValue rvalue)
       : CGF(CGF), Data(OpaqueValueMappingData::bind(CGF, opaqueValue, rvalue)) {
@@ -1208,8 +1208,8 @@ private:
                                 llvm::Function *Fn);
 
 public:
-  CodeGenFunction(CodeGenModule &cgm, bool suppressNewContext=false);
-  ~CodeGenFunction();
+  CodeGenSubprogram(CodeGenModule &cgm, bool suppressNewContext=false);
+  ~CodeGenSubprogram();
 
   CodeGenTypes &getTypes() const { return CGM.getTypes(); }
   ASTContext &getContext() const { return CGM.getContext(); }
@@ -1266,7 +1266,7 @@ public:
   //                                  Cleanups
   //===--------------------------------------------------------------------===//
 
-  typedef void Destroyer(CodeGenFunction &CGF, llvm::Value *addr, QualType ty);
+  typedef void Destroyer(CodeGenSubprogram &CGF, llvm::Value *addr, QualType ty);
 
   void pushIrregularPartialArrayCleanup(llvm::Value *arrayBegin,
                                         llvm::Value *arrayEndPointer,
@@ -1899,7 +1899,7 @@ public:
                       LValue lvalue, bool capturedByInit);
   void EmitScalarInit(llvm::Value *init, LValue lvalue);
 
-  typedef void SpecialInitFn(CodeGenFunction &Init, const VarDecl &D,
+  typedef void SpecialInitFn(CodeGenSubprogram &Init, const VarDecl &D,
                              llvm::Value *Address);
 
   /// EmitAutoVarDecl - Emit an auto variable declaration.
@@ -1908,7 +1908,7 @@ public:
   void EmitAutoVarDecl(const VarDecl &D);
 
   class AutoVarEmission {
-    friend class CodeGenFunction;
+    friend class CodeGenSubprogram;
 
     const VarDecl *Variable;
 
@@ -1943,7 +1943,7 @@ public:
     /// Returns the address of the object within this declaration.
     /// Note that this does not chase the forwarding pointer for
     /// __block decls.
-    llvm::Value *getObjectAddress(CodeGenFunction &CGF) const {
+    llvm::Value *getObjectAddress(CodeGenSubprogram &CGF) const {
       if (!IsByRef) return Address;
 
       return CGF.Builder.CreateStructGEP(Address,
@@ -2181,7 +2181,7 @@ public:
     operator bool() const { return ValueAndIsReference.getOpaqueValue() != 0; }
 
     bool isReference() const { return ValueAndIsReference.getInt(); }
-    LValue getReferenceLValue(CodeGenFunction &CGF, Expr *refExpr) const {
+    LValue getReferenceLValue(CodeGenSubprogram &CGF, Expr *refExpr) const {
       assert(isReference());
       return CGF.MakeNaturalAlignAddrLValue(ValueAndIsReference.getPointer(),
                                             refExpr->getType());
@@ -2715,7 +2715,7 @@ struct DominatingLLVMValue {
   }
 
   /// Try to save the given value.
-  static saved_type save(CodeGenFunction &CGF, llvm::Value *value) {
+  static saved_type save(CodeGenSubprogram &CGF, llvm::Value *value) {
     if (!needsSaving(value)) return saved_type(value, false);
 
     // Otherwise we need an alloca.
@@ -2726,7 +2726,7 @@ struct DominatingLLVMValue {
     return saved_type(alloca, true);
   }
 
-  static llvm::Value *restore(CodeGenFunction &CGF, saved_type value) {
+  static llvm::Value *restore(CodeGenSubprogram &CGF, saved_type value) {
     if (!value.getInt()) return value.getPointer();
     return CGF.Builder.CreateLoad(value.getPointer());
   }
@@ -2736,7 +2736,7 @@ struct DominatingLLVMValue {
 /// might be llvm::Instructions.
 template <class T> struct DominatingPointer<T,true> : DominatingLLVMValue {
   typedef T *type;
-  static type restore(CodeGenFunction &CGF, saved_type value) {
+  static type restore(CodeGenSubprogram &CGF, saved_type value) {
     return static_cast<T*>(DominatingLLVMValue::restore(CGF, value));
   }
 };
@@ -2754,8 +2754,8 @@ template <> struct DominatingValue<RValue> {
 
   public:
     static bool needsSaving(RValue value);
-    static saved_type save(CodeGenFunction &CGF, RValue value);
-    RValue restore(CodeGenFunction &CGF);
+    static saved_type save(CodeGenSubprogram &CGF, RValue value);
+    RValue restore(CodeGenSubprogram &CGF);
 
     // implementations in CGExprCXX.cpp
   };
@@ -2763,10 +2763,10 @@ template <> struct DominatingValue<RValue> {
   static bool needsSaving(type value) {
     return saved_type::needsSaving(value);
   }
-  static saved_type save(CodeGenFunction &CGF, type value) {
+  static saved_type save(CodeGenSubprogram &CGF, type value) {
     return saved_type::save(CGF, value);
   }
-  static type restore(CodeGenFunction &CGF, saved_type value) {
+  static type restore(CodeGenSubprogram &CGF, saved_type value) {
     return value.restore(CGF);
   }
 };

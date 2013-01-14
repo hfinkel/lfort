@@ -15,7 +15,7 @@
 
 #include "CodeGenModule.h"
 #include "CGFortranABI.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Decl.h"
 #include "lfort/AST/DeclCXX.h"
@@ -203,7 +203,7 @@ void CodeGenModule::EmitCXXConstructor(const CXXConstructorDecl *ctor,
     cast<llvm::Function>(GetAddrOfCXXConstructor(ctor, ctorType, &fnInfo));
   setFunctionLinkage(ctor, fn);
 
-  CodeGenFunction(*this).GenerateCode(GlobalDecl(ctor, ctorType), fn, fnInfo);
+  CodeGenSubprogram(*this).GenerateCode(GlobalDecl(ctor, ctorType), fn, fnInfo);
 
   SetFunctionDefinitionAttributes(ctor, fn);
   SetLLVMFunctionAttributesForDefinition(ctor, fn);
@@ -267,7 +267,7 @@ void CodeGenModule::EmitCXXDestructor(const CXXDestructorDecl *dtor,
     cast<llvm::Function>(GetAddrOfCXXDestructor(dtor, dtorType, &fnInfo));
   setFunctionLinkage(dtor, fn);
 
-  CodeGenFunction(*this).GenerateCode(GlobalDecl(dtor, dtorType), fn, fnInfo);
+  CodeGenSubprogram(*this).GenerateCode(GlobalDecl(dtor, dtorType), fn, fnInfo);
 
   SetFunctionDefinitionAttributes(dtor, fn);
   SetLLVMFunctionAttributesForDefinition(dtor, fn);
@@ -290,7 +290,7 @@ CodeGenModule::GetAddrOfCXXDestructor(const CXXDestructorDecl *dtor,
                                                       /*ForVTable=*/false));
 }
 
-static llvm::Value *BuildVirtualCall(CodeGenFunction &CGF, uint64_t VTableIndex, 
+static llvm::Value *BuildVirtualCall(CodeGenSubprogram &CGF, uint64_t VTableIndex, 
                                      llvm::Value *This, llvm::Type *Ty) {
   Ty = Ty->getPointerTo()->getPointerTo();
   
@@ -301,7 +301,7 @@ static llvm::Value *BuildVirtualCall(CodeGenFunction &CGF, uint64_t VTableIndex,
 }
 
 llvm::Value *
-CodeGenFunction::BuildVirtualCall(const CXXMethodDecl *MD, llvm::Value *This,
+CodeGenSubprogram::BuildVirtualCall(const CXXMethodDecl *MD, llvm::Value *This,
                                   llvm::Type *Ty) {
   MD = MD->getCanonicalDecl();
   uint64_t VTableIndex = CGM.getVTableContext().getMethodVTableIndex(MD);
@@ -313,7 +313,7 @@ CodeGenFunction::BuildVirtualCall(const CXXMethodDecl *MD, llvm::Value *This,
 /// indirect call to virtual functions. It makes the call through indexing
 /// into the vtable.
 llvm::Value *
-CodeGenFunction::BuildAppleKextVirtualCall(const CXXMethodDecl *MD, 
+CodeGenSubprogram::BuildAppleKextVirtualCall(const CXXMethodDecl *MD, 
                                   NestedNameSpecifier *Qual,
                                   llvm::Type *Ty) {
   llvm::Value *VTable = 0;
@@ -347,7 +347,7 @@ CodeGenFunction::BuildAppleKextVirtualCall(const CXXMethodDecl *MD,
 /// BuildVirtualCall - This routine makes indirect vtable call for
 /// call to virtual destructors. It returns 0 if it could not do it.
 llvm::Value *
-CodeGenFunction::BuildAppleKextVirtualDestructorCall(
+CodeGenSubprogram::BuildAppleKextVirtualDestructorCall(
                                             const CXXDestructorDecl *DD,
                                             CXXDtorType Type,
                                             const CXXRecordDecl *RD) {
@@ -381,7 +381,7 @@ CodeGenFunction::BuildAppleKextVirtualDestructorCall(
 }
 
 llvm::Value *
-CodeGenFunction::BuildVirtualCall(const CXXDestructorDecl *DD, CXXDtorType Type, 
+CodeGenSubprogram::BuildVirtualCall(const CXXDestructorDecl *DD, CXXDtorType Type, 
                                   llvm::Value *This, llvm::Type *Ty) {
   DD = cast<CXXDestructorDecl>(DD->getCanonicalDecl());
   uint64_t VTableIndex = 

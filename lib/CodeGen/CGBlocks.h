@@ -17,7 +17,7 @@
 #include "CGBuilder.h"
 #include "CGCall.h"
 #include "CGValue.h"
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "CodeGenTypes.h"
 #include "lfort/AST/CharUnits.h"
 #include "lfort/AST/Expr.h"

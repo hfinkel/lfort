@@ -15,7 +15,7 @@
 #ifndef LFORT_CODEGEN_FortranABI_H
 #define LFORT_CODEGEN_FortranABI_H
 
-#include "CodeGenFunction.h"
+#include "CodeGenSubprogram.h"
 #include "lfort/Basic/LLVM.h"
 
 namespace llvm {
@@ -34,7 +34,7 @@ namespace lfort {
   class MangleContext;
 
 namespace CodeGen {
-  class CodeGenFunction;
+  class CodeGenSubprogram;
   class CodeGenModule;
 
 /// \brief Implements C++ ABI-specific code generation functions.
@@ -47,26 +47,26 @@ protected:
     : CGM(CGM), MangleCtx(CGM.getContext().createMangleContext()) {}
 
 protected:
-  ImplicitParamDecl *&getThisDecl(CodeGenFunction &CGF) {
+  ImplicitParamDecl *&getThisDecl(CodeGenSubprogram &CGF) {
     return CGF.FortranABIThisDecl;
   }
-  llvm::Value *&getThisValue(CodeGenFunction &CGF) {
+  llvm::Value *&getThisValue(CodeGenSubprogram &CGF) {
     return CGF.FortranABIThisValue;
   }
 
-  ImplicitParamDecl *&getVTTDecl(CodeGenFunction &CGF) {
+  ImplicitParamDecl *&getVTTDecl(CodeGenSubprogram &CGF) {
     return CGF.CXXVTTDecl;
   }
-  llvm::Value *&getVTTValue(CodeGenFunction &CGF) {
+  llvm::Value *&getVTTValue(CodeGenSubprogram &CGF) {
     return CGF.CXXVTTValue;
   }
 
   /// Build a parameter variable suitable for 'this'.
-  void BuildThisParam(CodeGenFunction &CGF, FunctionArgList &Params);
+  void BuildThisParam(CodeGenSubprogram &CGF, FunctionArgList &Params);
 
   /// Perform prolog initialization of the parameter variable suitable
   /// for 'this' emitted by BuildThisParam.
-  void EmitThisParam(CodeGenFunction &CGF);
+  void EmitThisParam(CodeGenSubprogram &CGF);
 
   ASTContext &getContext() const { return CGM.getContext(); }
 
@@ -91,20 +91,20 @@ public:
   /// pointer.  Apply the this-adjustment and set 'This' to the
   /// adjusted value.
   virtual llvm::Value *
-  EmitLoadOfMemberFunctionPointer(CodeGenFunction &CGF,
+  EmitLoadOfMemberFunctionPointer(CodeGenSubprogram &CGF,
                                   llvm::Value *&This,
                                   llvm::Value *MemPtr,
                                   const MemberPointerType *MPT);
 
   /// Calculate an l-value from an object and a data member pointer.
-  virtual llvm::Value *EmitMemberDataPointerAddress(CodeGenFunction &CGF,
+  virtual llvm::Value *EmitMemberDataPointerAddress(CodeGenSubprogram &CGF,
                                                     llvm::Value *Base,
                                                     llvm::Value *MemPtr,
                                             const MemberPointerType *MPT);
 
   /// Perform a derived-to-base, base-to-derived, or bitcast member
   /// pointer conversion.
-  virtual llvm::Value *EmitMemberPointerConversion(CodeGenFunction &CGF,
+  virtual llvm::Value *EmitMemberPointerConversion(CodeGenSubprogram &CGF,
                                                    const CastExpr *E,
                                                    llvm::Value *Src);
 
@@ -132,7 +132,7 @@ public:
 
   /// Emit a comparison between two member pointers.  Returns an i1.
   virtual llvm::Value *
-  EmitMemberPointerComparison(CodeGenFunction &CGF,
+  EmitMemberPointerComparison(CodeGenSubprogram &CGF,
                               llvm::Value *L,
                               llvm::Value *R,
                               const MemberPointerType *MPT,
@@ -140,7 +140,7 @@ public:
 
   /// Determine if a member pointer is non-null.  Returns an i1.
   virtual llvm::Value *
-  EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
+  EmitMemberPointerIsNotNull(CodeGenSubprogram &CGF,
                              llvm::Value *MemPtr,
                              const MemberPointerType *MPT);
 
@@ -158,7 +158,7 @@ public:
   ///
   /// The IR type of the result should be a pointer but is otherwise
   /// irrelevant.
-  virtual llvm::Value *adjustToCompleteObject(CodeGenFunction &CGF,
+  virtual llvm::Value *adjustToCompleteObject(CodeGenSubprogram &CGF,
                                               llvm::Value *ptr,
                                               QualType type) = 0;
 
@@ -191,14 +191,14 @@ public:
   ///
   /// ABIs may also choose to override the return type, which has been
   /// initialized with the formal return type of the function.
-  virtual void BuildInstanceFunctionParams(CodeGenFunction &CGF,
+  virtual void BuildInstanceFunctionParams(CodeGenSubprogram &CGF,
                                            QualType &ResTy,
                                            FunctionArgList &Params) = 0;
 
   /// Emit the ABI-specific prolog for the function.
-  virtual void EmitInstanceFunctionProlog(CodeGenFunction &CGF) = 0;
+  virtual void EmitInstanceFunctionProlog(CodeGenSubprogram &CGF) = 0;
 
-  virtual void EmitReturnFromThunk(CodeGenFunction &CGF,
+  virtual void EmitReturnFromThunk(CodeGenSubprogram &CGF,
                                    RValue RV, QualType ResultType);
 
   /// Gets the pure virtual member call function.
@@ -229,7 +229,7 @@ public:
   ///   always a size_t
   /// \param ElementType - the base element allocated type,
   ///   i.e. the allocated type after stripping all array types
-  virtual llvm::Value *InitializeArrayCookie(CodeGenFunction &CGF,
+  virtual llvm::Value *InitializeArrayCookie(CodeGenSubprogram &CGF,
                                              llvm::Value *NewPtr,
                                              llvm::Value *NumElements,
                                              const CXXNewExpr *expr,
@@ -248,7 +248,7 @@ public:
   ///   function
   /// \param CookieSize - an out parameter which will be initialized
   ///   with the size of the cookie, or zero if there is no cookie
-  virtual void ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *Ptr,
+  virtual void ReadArrayCookie(CodeGenSubprogram &CGF, llvm::Value *Ptr,
                                const CXXDeleteExpr *expr,
                                QualType ElementType, llvm::Value *&NumElements,
                                llvm::Value *&AllocPtr, CharUnits &CookieSize);
@@ -268,7 +268,7 @@ protected:
   /// Other parameters are as above.
   ///
   /// \return a size_t
-  virtual llvm::Value *readArrayCookieImpl(CodeGenFunction &IGF,
+  virtual llvm::Value *readArrayCookieImpl(CodeGenSubprogram &IGF,
                                            llvm::Value *ptr,
                                            CharUnits cookieSize);
 
@@ -284,7 +284,7 @@ public:
   /// The variable may be:
   ///   - a static local variable
   ///   - a static data member of a class template instantiation
-  virtual void EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+  virtual void EmitGuardedInit(CodeGenSubprogram &CGF, const VarDecl &D,
                                llvm::GlobalVariable *DeclPtr, bool PerformInit);
 
   /// Emit code to force the execution of a destructor during global
@@ -292,7 +292,7 @@ public:
   ///
   /// \param dtor - a function taking a single pointer argument
   /// \param addr - a pointer to pass to the destructor function.
-  virtual void registerGlobalDtor(CodeGenFunction &CGF, llvm::Constant *dtor,
+  virtual void registerGlobalDtor(CodeGenSubprogram &CGF, llvm::Constant *dtor,
                                   llvm::Constant *addr);
 
   /***************************** Virtual Tables *******************************/
