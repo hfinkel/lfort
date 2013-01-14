@@ -2654,7 +2654,7 @@ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
   case Decl::CXXConversion:
   case Decl::CXXMethod:
   case Decl::Function:
-  case Decl::Program:
+  case Decl::MainProgram:
     // Skip function templates
     if (cast<FunctionDecl>(D)->getDescribedFunctionTemplate() ||
         cast<FunctionDecl>(D)->isLateTemplateParsed())

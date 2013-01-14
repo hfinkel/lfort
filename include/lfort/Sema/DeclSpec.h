@@ -1119,8 +1119,8 @@ struct DeclaratorChunk {
     /// specified.
     unsigned HasTrailingReturnType : 1;
 
-    /// Is this a Fortran program.
-    unsigned IsProgram : 1;
+    /// Is this the main Fortran program.
+    unsigned IsMainProgram : 1;
 
     /// The location of the left parenthesis in the source.
     unsigned LParenLoc;
@@ -1263,7 +1263,7 @@ struct DeclaratorChunk {
     ParsedType getTrailingReturnType() const { return TrailingReturnType; }
 
     /// \brief Is this a Fortran program.
-    bool isProgram() const  { return IsProgram; }
+    bool isMainProgram() const  { return IsMainProgram; }
   };
 
   struct BlockPointerTypeInfo : TypeInfoCommon {
@@ -1396,7 +1396,7 @@ struct DeclaratorChunk {
                                      Declarator &TheDeclarator,
                                      TypeResult TrailingReturnType =
                                                     TypeResult(),
-                                     bool IsProgram = false);
+                                     bool IsMainProgram = false);
 
   /// \brief Return a DeclaratorChunk for a block.
   static DeclaratorChunk getBlockPointer(unsigned TypeQuals,

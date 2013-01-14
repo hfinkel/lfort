@@ -39,7 +39,7 @@ def Named : Decl<1>;
           def CXXConstructor : DDecl<CXXMethod>;
           def CXXDestructor : DDecl<CXXMethod>;
           def CXXConversion : DDecl<CXXMethod>;
-        def Program : DDecl<Function>;
+        def MainProgram : DDecl<Function>;
       def Field : DDecl<Declarator>;
         def ObjCIvar : DDecl<Field>;
         def ObjCAtDefsField : DDecl<Field>;

@@ -2479,8 +2479,8 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
       break;
     }
  
-    case Decl::Program:
-      llvm_unreachable("forming a reference to the program?");
+    case Decl::MainProgram:
+      llvm_unreachable("forming a reference to the main program?");
        
     case Decl::Function: {
       if (unsigned BID = cast<FunctionDecl>(VD)->getBuiltinID()) {

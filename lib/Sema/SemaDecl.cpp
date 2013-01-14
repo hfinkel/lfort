@@ -5141,7 +5141,7 @@ static FunctionDecl::StorageClass getFunctionStorageClass(Sema &SemaRef,
   return SC_None;
 }
 
-static ProgramDecl* CreateNewProgramDecl(Sema &SemaRef, Declarator &D,
+static MainProgramDecl* CreateNewMainProgramDecl(Sema &SemaRef, Declarator &D,
                                          DeclContext *DC, QualType &R,
                                          TypeSourceInfo *TInfo,
                                          FunctionDecl::StorageClass SC) {
@@ -5150,7 +5150,7 @@ static ProgramDecl* CreateNewProgramDecl(Sema &SemaRef, Declarator &D,
   FunctionDecl::StorageClass SCAsWritten
     = StorageClassSpecToFunctionDeclStorageClass(SCSpec);
 
-  ProgramDecl *NewPD = ProgramDecl::Create(SemaRef.Context, DC, 
+  MainProgramDecl *NewPD = MainProgramDecl::Create(SemaRef.Context, DC, 
                          D.getLocStart(), NameInfo, R, 
                          TInfo, SC, SCAsWritten, false /* isInline */,
                          false /* HasPrototype */);
@@ -5386,8 +5386,8 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   bool isVirtualOkay = false;
 
   FunctionDecl *NewFD;
-  if (D.isFunctionDeclarator() && D.getFunctionTypeInfo().isProgram())
-    NewFD = CreateNewProgramDecl(*this, D, DC, R, TInfo, SC);
+  if (D.isFunctionDeclarator() && D.getFunctionTypeInfo().isMainProgram())
+    NewFD = CreateNewMainProgramDecl(*this, D, DC, R, TInfo, SC);
   else
     NewFD = CreateNewFunctionDecl(*this, D, DC, R, TInfo, SC,
                                   isVirtualOkay);

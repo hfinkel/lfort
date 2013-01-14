@@ -4413,7 +4413,7 @@ CXCursor lfort_getCursorDefinition(CXCursor C) {
   case Decl::CXXConstructor:
   case Decl::CXXDestructor:
   case Decl::CXXConversion:
-  case Decl::Program: {
+  case Decl::MainProgram: {
     const FunctionDecl *Def = 0;
     if (cast<FunctionDecl>(D)->getBody(Def))
       return MakeCXCursor(const_cast<FunctionDecl *>(Def), TU);

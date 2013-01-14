@@ -169,7 +169,7 @@ DeclaratorChunk DeclaratorChunk::getFunction(bool hasProto,
                                              SourceLocation LocalRangeEnd,
                                              Declarator &TheDeclarator,
                                              TypeResult TrailingReturnType,
-                                             bool IsProgram) {
+                                             bool IsMainProgram) {
   DeclaratorChunk I;
   I.Kind                        = Function;
   I.Loc                         = LocalRangeBegin;
@@ -198,7 +198,7 @@ DeclaratorChunk DeclaratorChunk::getFunction(bool hasProto,
   I.Fun.HasTrailingReturnType   = TrailingReturnType.isUsable() ||
                                   TrailingReturnType.isInvalid();
   I.Fun.TrailingReturnType      = TrailingReturnType.get();
-  I.Fun.IsProgram               = IsProgram;
+  I.Fun.IsMainProgram           = IsMainProgram;
 
   // new[] an argument array if needed.
   if (NumArgs) {

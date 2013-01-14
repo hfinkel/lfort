@@ -2109,10 +2109,10 @@ public:
 };
 
 /// A Fortran program.
-class ProgramDecl : public FunctionDecl {
+class MainProgramDecl : public FunctionDecl {
 protected:
   // FIXME: Minimize this argument list.
-  ProgramDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
+  MainProgramDecl(Kind DK, DeclContext *DC, SourceLocation StartLoc,
                const DeclarationNameInfo &NameInfo,
                QualType T, TypeSourceInfo *TInfo,
                StorageClass S, StorageClass SCAsWritten, bool isInlineSpecified,
@@ -2121,7 +2121,7 @@ protected:
                  isInlineSpecified, isConstexprSpecified) {}
 
 public:
-  static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
+  static MainProgramDecl *Create(ASTContext &C, DeclContext *DC,
                               SourceLocation StartLoc, SourceLocation NLoc,
                               DeclarationName N, QualType T,
                               TypeSourceInfo *TInfo,
@@ -2131,13 +2131,13 @@ public:
                               bool hasWrittenPrototype = true,
                               bool isConstexprSpecified = false) {
     DeclarationNameInfo NameInfo(N, NLoc);
-    return ProgramDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
+    return MainProgramDecl::Create(C, DC, StartLoc, NameInfo, T, TInfo,
                                 SC, SCAsWritten,
                                 isInlineSpecified, hasWrittenPrototype,
                                 isConstexprSpecified);
   }
 
-  static ProgramDecl *Create(ASTContext &C, DeclContext *DC,
+  static MainProgramDecl *Create(ASTContext &C, DeclContext *DC,
                               SourceLocation StartLoc,
                               const DeclarationNameInfo &NameInfo,
                               QualType T, TypeSourceInfo *TInfo,
@@ -2147,7 +2147,7 @@ public:
                               bool hasWrittenPrototype = true,
                               bool isConstexprSpecified = false);
 
-  static ProgramDecl *CreateDeserialized(ASTContext &C, unsigned ID);
+  static MainProgramDecl *CreateDeserialized(ASTContext &C, unsigned ID);
 
   friend class ASTDeclReader;
   friend class ASTDeclWriter;

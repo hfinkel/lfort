@@ -2951,7 +2951,7 @@ FunctionDecl *FunctionDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
                                 SC_None, SC_None, false, false);
 }
 
-ProgramDecl *ProgramDecl::Create(ASTContext &C, DeclContext *DC,
+MainProgramDecl *MainProgramDecl::Create(ASTContext &C, DeclContext *DC,
                                    SourceLocation StartLoc,
                                    const DeclarationNameInfo &NameInfo,
                                    QualType T, TypeSourceInfo *TInfo,
@@ -2959,7 +2959,7 @@ ProgramDecl *ProgramDecl::Create(ASTContext &C, DeclContext *DC,
                                    bool isInlineSpecified, 
                                    bool hasWrittenPrototype,
                                    bool isConstexprSpecified) {
-  ProgramDecl *New = new (C) ProgramDecl(Program, DC, StartLoc, NameInfo,
+  MainProgramDecl *New = new (C) MainProgramDecl(MainProgram, DC, StartLoc, NameInfo,
                                            T, TInfo, SC, SCAsWritten,
                                            isInlineSpecified,
                                            isConstexprSpecified);
@@ -2968,9 +2968,9 @@ ProgramDecl *ProgramDecl::Create(ASTContext &C, DeclContext *DC,
   return New;
 }
 
-ProgramDecl *ProgramDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
-  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(ProgramDecl));
-  return new (Mem) ProgramDecl(Program, 0, SourceLocation(), 
+MainProgramDecl *MainProgramDecl::CreateDeserialized(ASTContext &C, unsigned ID) {
+  void *Mem = AllocateDeserializedDecl(C, ID, sizeof(MainProgramDecl));
+  return new (Mem) MainProgramDecl(MainProgram, 0, SourceLocation(), 
                                 DeclarationNameInfo(), QualType(), 0,
                                 SC_None, SC_None, false, false);
 }

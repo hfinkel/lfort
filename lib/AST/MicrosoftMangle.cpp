@@ -201,7 +201,7 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D,
     return;
   }
 
-  if (isa<ProgramDecl>(D)) {
+  if (isa<MainProgramDecl>(D)) {
     Out << "MAIN__";
     return;
   }

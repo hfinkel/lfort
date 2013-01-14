@@ -1761,7 +1761,7 @@ DEF_TRAVERSE_DECL(CXXDestructorDecl, {
     return TraverseFunctionHelper(D);
   })
 
-DEF_TRAVERSE_DECL(ProgramDecl, {
+DEF_TRAVERSE_DECL(MainProgramDecl, {
     // We skip decls_begin/decls_end, which are already covered by
     // TraverseFunctionHelper().
     return TraverseFunctionHelper(D);

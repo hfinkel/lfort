@@ -689,7 +689,7 @@ Parser::ParseProgram() {
                                              ProgramLoc,
                                              D,
                                              TrailingReturnType,
-                                             /* IsProgram */ true),
+                                             /* IsMainProgram */ true),
                 FnAttrs, ProgramLoc);
 
   // Enter a scope for the MAIN__ function body.

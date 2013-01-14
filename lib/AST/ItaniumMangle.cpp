@@ -433,7 +433,7 @@ void CXXNameMangler::mangle(const NamedDecl *D, StringRef Prefix) {
     return;
   }
 
-  if (isa<ProgramDecl>(D)) {
+  if (isa<MainProgramDecl>(D)) {
     Out << "MAIN__";
     return;
   }
