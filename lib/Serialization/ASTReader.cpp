@@ -4903,7 +4903,7 @@ QualType ASTReader::GetType(TypeID ID) {
       T = Context.getVaListTagType();
       break;
 
-    case PREDEF_TYPE_BUILTIN_FN:
+    case PREDEF_TYPE_BUILTIN_SUBPGM:
       T = Context.BuiltinSubPgmTy;
       break;
     }

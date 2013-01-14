@@ -701,7 +701,7 @@ namespace lfort {
       /// \brief The __va_list_tag placeholder type.
       PREDEF_TYPE_VA_LIST_TAG = 36,
       /// \brief The placeholder type for builtin functions.
-      PREDEF_TYPE_BUILTIN_FN = 37,
+      PREDEF_TYPE_BUILTIN_SUBPGM = 37,
       /// \brief OpenCL 1d image type.
       PREDEF_TYPE_IMAGE1D_ID    = 38,
       /// \brief OpenCL 1d image array type.
