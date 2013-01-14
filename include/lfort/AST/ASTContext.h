@@ -714,7 +714,7 @@ public:
   CanQualType FloatComplexTy, DoubleComplexTy, LongDoubleComplexTy;
   CanQualType VoidPtrTy, NullPtrTy;
   CanQualType DependentTy, OverloadTy, BoundMemberTy, UnknownAnyTy;
-  CanQualType BuiltinFnTy;
+  CanQualType BuiltinSubPgmTy;
   CanQualType PseudoObjectTy, ARCUnbridgedCastTy;
   CanQualType ObjCBuiltinIdTy, ObjCBuiltinClassTy, ObjCBuiltinSelTy;
   CanQualType ObjCBuiltinBoolTy;
@@ -825,7 +825,7 @@ public:
   QualType getConstType(QualType T) const { return T.withConst(); }
 
   /// \brief Change the ExtInfo on a function type.
-  const SubprogramType *adjustSubprogramType(const SubprogramType *Fn,
+  const SubprogramType *adjustSubprogramType(const SubprogramType *SubPgm,
                                          SubprogramType::ExtInfo EInfo);
 
   /// \brief Return the uniqued reference to the type for a complex

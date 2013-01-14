@@ -268,7 +268,7 @@ TypeSpecifierType BuiltinTypeLoc::getWrittenTypeSpec() const {
   case BuiltinType::OCLImage2d:
   case BuiltinType::OCLImage2dArray:
   case BuiltinType::OCLImage3d:
-  case BuiltinType::BuiltinFn:
+  case BuiltinType::BuiltinSubPgm:
     return TST_unspecified;
   }
 

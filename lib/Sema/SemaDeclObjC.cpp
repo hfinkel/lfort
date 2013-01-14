@@ -303,7 +303,7 @@ HasExplicitOwnershipAttr(Sema &S, ParmVarDecl *Param) {
 
 /// ActOnStartOfObjCMethodDef - This routine sets up parameters; invisible
 /// and user declared, in the method definition's AST.
-void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
+void Sema::ActOnStartOfObjCMethodDef(Scope *SubPgmBodyScope, Decl *D) {
   assert((getCurMethodDecl() == 0) && "Methodparsing confused");
   ObjCMethodDecl *MDecl = dyn_cast_or_null<ObjCMethodDecl>(D);
   
@@ -312,7 +312,7 @@ void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
     return;
 
   // Allow all of Sema to see that we are entering a method definition.
-  PushDeclContext(FnBodyScope, MDecl);
+  PushDeclContext(SubPgmBodyScope, MDecl);
   PushSubprogramScope();
   
   // Create Decl objects for each parameter, entrring them in the scope for
@@ -321,8 +321,8 @@ void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
   // Insert the invisible arguments, self and _cmd!
   MDecl->createImplicitParams(Context, MDecl->getClassInterface());
 
-  PushOnScopeChains(MDecl->getSelfDecl(), FnBodyScope);
-  PushOnScopeChains(MDecl->getCmdDecl(), FnBodyScope);
+  PushOnScopeChains(MDecl->getSelfDecl(), SubPgmBodyScope);
+  PushOnScopeChains(MDecl->getCmdDecl(), SubPgmBodyScope);
 
   // Introduce all of the other parameters into this scope.
   for (ObjCMethodDecl::param_iterator PI = MDecl->param_begin(),
@@ -339,7 +339,7 @@ void Sema::ActOnStartOfObjCMethodDef(Scope *FnBodyScope, Decl *D) {
             Param->getType();
     
     if ((*PI)->getIdentifier())
-      PushOnScopeChains(*PI, FnBodyScope);
+      PushOnScopeChains(*PI, SubPgmBodyScope);
   }
 
   // In ARC, disallow definition of retain/release/autorelease/retainCount

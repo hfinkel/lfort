@@ -2885,8 +2885,8 @@ void Parser::ParseLexedObjCMethodDefs(LexedMethod &LM, bool parseMethod) {
   // Enter a scope for the method or c-fucntion body.
   ParseScope BodyScope(this,
                        parseMethod
-                       ? Scope::ObjCMethodScope|Scope::FnScope|Scope::DeclScope
-                       : Scope::FnScope|Scope::DeclScope);
+                       ? Scope::ObjCMethodScope|Scope::SubPgmScope|Scope::DeclScope
+                       : Scope::SubPgmScope|Scope::DeclScope);
     
   // Tell the actions module that we have entered a method or c-function definition 
   // with the specified Declarator for the method/function.

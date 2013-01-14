@@ -292,7 +292,7 @@ enum CastKind {
 
   // Convert a builtin function to a function pointer; only allowed in the
   // callee of a call expression.
-  CK_BuiltinFnToFnPtr
+  CK_BuiltinSubPgmToSubPgmPtr
 };
 
 static const CastKind CK_Invalid = static_cast<CastKind>(-1);

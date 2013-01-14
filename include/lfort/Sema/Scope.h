@@ -32,9 +32,9 @@ public:
   /// ScopeFlags - These are bitfields that are or'd together when creating a
   /// scope, which defines the sorts of things the scope contains.
   enum ScopeFlags {
-    /// FnScope - This indicates that the scope corresponds to a function, which
+    /// SubPgmScope - This indicates that the scope corresponds to a function, which
     /// means that labels are set here.
-    FnScope       = 0x01,
+    SubPgmScope       = 0x01,
 
     /// BreakScope - This is a while,do,switch,for, etc that can have break
     /// stmts embedded into it.
@@ -57,7 +57,7 @@ public:
     /// BlockScope - This is a scope that corresponds to a block/closure object.
     /// Blocks serve as top-level scopes for some objects like labels, they
     /// also prevent things like break and continue.  BlockScopes always have
-    /// the FnScope and DeclScope flags set as well.
+    /// the SubPgmScope and DeclScope flags set as well.
     BlockScope = 0x40,
 
     /// TemplateParamScope - This is a scope that corresponds to the
@@ -75,7 +75,7 @@ public:
     AtCatchScope = 0x200,
     
     /// ObjCMethodScope - This scope corresponds to an Objective-C method body.
-    /// It always has FnScope and DeclScope set as well.
+    /// It always has SubPgmScope and DeclScope set as well.
     ObjCMethodScope = 0x400,
 
     /// SwitchScope - This is a scope that corresponds to a switch statement.
@@ -84,9 +84,9 @@ public:
     /// TryScope - This is the scope of a C++ try statement.
     TryScope = 0x1000,
 
-    /// FnTryCatchScope - This is the scope for a function-level C++ try or
+    /// SubPgmTryCatchScope - This is the scope for a function-level C++ try or
     /// catch scope.
-    FnTryCatchScope = 0x2000
+    SubPgmTryCatchScope = 0x2000
   };
 private:
   /// The parent scope for this scope.  This is null for the translation-unit
@@ -109,9 +109,9 @@ private:
   /// declared in this scope.
   unsigned short PrototypeIndex;
 
-  /// FnParent - If this scope has a parent scope that is a function body, this
+  /// SubPgmParent - If this scope has a parent scope that is a function body, this
   /// pointer is non-null and points to it.  This is used for label processing.
-  Scope *FnParent;
+  Scope *SubPgmParent;
 
   /// BreakParent/ContinueParent - This is a direct link to the innermost
   /// BreakScope/ContinueScope which contains the contents of this scope
@@ -169,10 +169,10 @@ public:
   const Scope *getParent() const { return AnyParent; }
   Scope *getParent() { return AnyParent; }
 
-  /// getFnParent - Return the closest scope that is a function body.
+  /// getSubPgmParent - Return the closest scope that is a function body.
   ///
-  const Scope *getFnParent() const { return FnParent; }
-  Scope *getFnParent() { return FnParent; }
+  const Scope *getSubPgmParent() const { return SubPgmParent; }
+  Scope *getSubPgmParent() { return SubPgmParent; }
 
   /// getContinueParent - Return the closest scope that a continue statement
   /// would be affected by.
@@ -244,9 +244,9 @@ public:
   /// isInCXXInlineMethodScope - Return true if this scope is a C++ inline
   /// method scope or is inside one.
   bool isInCXXInlineMethodScope() const {
-    if (const Scope *FnS = getFnParent()) {
-      assert(FnS->getParent() && "TUScope not created?");
-      return FnS->getParent()->isClassScope();
+    if (const Scope *SubPgmS = getSubPgmParent()) {
+      assert(SubPgmS->getParent() && "TUScope not created?");
+      return SubPgmS->getParent()->isClassScope();
     }
     return false;
   }
@@ -284,7 +284,7 @@ public:
     for (const Scope *S = this; S; S = S->getParent()) {
       if (S->getFlags() & Scope::SwitchScope)
         return true;
-      else if (S->getFlags() & (Scope::FnScope | Scope::ClassScope |
+      else if (S->getFlags() & (Scope::SubPgmScope | Scope::ClassScope |
                                 Scope::BlockScope | Scope::TemplateParamScope |
                                 Scope::SubprogramPrototypeScope |
                                 Scope::AtCatchScope | Scope::ObjCMethodScope))

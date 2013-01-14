@@ -2517,7 +2517,7 @@ LValue CodeGenSubprogram::EmitCastLValue(const CastExpr *E) {
   case CK_Dependent:
     llvm_unreachable("dependent cast kind in IR gen!");
 
-  case CK_BuiltinFnToFnPtr:
+  case CK_BuiltinSubPgmToSubPgmPtr:
     llvm_unreachable("builtin functions are handled elsewhere");
 
   // These two casts are currently treated as no-ops, although they could

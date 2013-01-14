@@ -517,7 +517,7 @@ Sema::ActOnCXXThrow(Scope *S, SourceLocation OpLoc, Expr *Ex) {
             }
             
             if (S->getFlags() &
-                (Scope::FnScope | Scope::ClassScope | Scope::BlockScope |
+                (Scope::SubPgmScope | Scope::ClassScope | Scope::BlockScope |
                  Scope::SubprogramPrototypeScope | Scope::ObjCMethodScope |
                  Scope::TryScope))
               break;
@@ -1597,19 +1597,19 @@ bool Sema::FindAllocationSubprograms(SourceLocation StartLoc, SourceRange Range,
     for (LookupResult::iterator D = FoundDelete.begin(),
                              DEnd = FoundDelete.end();
          D != DEnd; ++D) {
-      SubprogramDecl *Fn = 0;
-      if (SubprogramTemplateDecl *FnTmpl
+      SubprogramDecl *SubPgm = 0;
+      if (SubprogramTemplateDecl *SubPgmTmpl
             = dyn_cast<SubprogramTemplateDecl>((*D)->getUnderlyingDecl())) {
         // Perform template argument deduction to try to match the
         // expected function type.
         TemplateDeductionInfo Info(StartLoc);
-        if (DeduceTemplateArguments(FnTmpl, 0, ExpectedSubprogramType, Fn, Info))
+        if (DeduceTemplateArguments(SubPgmTmpl, 0, ExpectedSubprogramType, SubPgm, Info))
           continue;
       } else
-        Fn = cast<SubprogramDecl>((*D)->getUnderlyingDecl());
+        SubPgm = cast<SubprogramDecl>((*D)->getUnderlyingDecl());
 
-      if (Context.hasSameType(Fn->getType(), ExpectedSubprogramType))
-        Matches.push_back(std::make_pair(D.getPair(), Fn));
+      if (Context.hasSameType(SubPgm->getType(), ExpectedSubprogramType))
+        Matches.push_back(std::make_pair(D.getPair(), SubPgm));
     }
   } else {
     // C++ [expr.new]p20:
@@ -1618,9 +1618,9 @@ bool Sema::FindAllocationSubprograms(SourceLocation StartLoc, SourceRange Range,
     for (LookupResult::iterator D = FoundDelete.begin(),
                              DEnd = FoundDelete.end();
          D != DEnd; ++D) {
-      if (SubprogramDecl *Fn = dyn_cast<SubprogramDecl>((*D)->getUnderlyingDecl()))
-        if (isNonPlacementDeallocationSubprogram(Fn))
-          Matches.push_back(std::make_pair(D.getPair(), Fn));
+      if (SubprogramDecl *SubPgm = dyn_cast<SubprogramDecl>((*D)->getUnderlyingDecl()))
+        if (isNonPlacementDeallocationSubprogram(SubPgm))
+          Matches.push_back(std::make_pair(D.getPair(), SubPgm));
     }
   }
 
@@ -1681,8 +1681,8 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
     // static, so don't use AddMemberCandidate.
     NamedDecl *D = (*Alloc)->getUnderlyingDecl();
 
-    if (SubprogramTemplateDecl *FnTemplate = dyn_cast<SubprogramTemplateDecl>(D)) {
-      AddTemplateOverloadCandidate(FnTemplate, Alloc.getPair(),
+    if (SubprogramTemplateDecl *SubPgmTemplate = dyn_cast<SubprogramTemplateDecl>(D)) {
+      AddTemplateOverloadCandidate(SubPgmTemplate, Alloc.getPair(),
                                    /*ExplicitTemplateArgs=*/0,
                                    llvm::makeArrayRef(Args, NumArgs),
                                    Candidates,
@@ -1690,8 +1690,8 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
       continue;
     }
 
-    SubprogramDecl *Fn = cast<SubprogramDecl>(D);
-    AddOverloadCandidate(Fn, Alloc.getPair(),
+    SubprogramDecl *SubPgm = cast<SubprogramDecl>(D);
+    AddOverloadCandidate(SubPgm, Alloc.getPair(),
                          llvm::makeArrayRef(Args, NumArgs), Candidates,
                          /*SuppressUserConversions=*/false);
   }
@@ -1701,16 +1701,16 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
   switch (Candidates.BestViableSubprogram(*this, StartLoc, Best)) {
   case OR_Success: {
     // Got one!
-    SubprogramDecl *FnDecl = Best->Subprogram;
-    MarkSubprogramReferenced(StartLoc, FnDecl);
+    SubprogramDecl *SubPgmDecl = Best->Subprogram;
+    MarkSubprogramReferenced(StartLoc, SubPgmDecl);
     // The first argument is size_t, and the first parameter must be size_t,
     // too. This is checked on declaration and can be assumed. (It can't be
     // asserted on, though, since invalid decls are left in there.)
     // Watch out for variadic allocator function.
-    unsigned NumArgsInFnDecl = FnDecl->getNumParams();
-    for (unsigned i = 0; (i < NumArgs && i < NumArgsInFnDecl); ++i) {
+    unsigned NumArgsInSubPgmDecl = SubPgmDecl->getNumParams();
+    for (unsigned i = 0; (i < NumArgs && i < NumArgsInSubPgmDecl); ++i) {
       InitializedEntity Entity = InitializedEntity::InitializeParameter(Context,
-                                                       FnDecl->getParamDecl(i));
+                                                       SubPgmDecl->getParamDecl(i));
 
       if (!Diagnose && !CanPerformCopyInitialization(Entity, Owned(Args[i])))
         return true;
@@ -1723,7 +1723,7 @@ bool Sema::FindAllocationOverload(SourceLocation StartLoc, SourceRange Range,
       Args[i] = Result.takeAs<Expr>();
     }
 
-    Operator = FnDecl;
+    Operator = SubPgmDecl;
 
     if (CheckAllocationAccess(StartLoc, Range, R.getNamingClass(),
                               Best->FoundDecl, Diagnose) == AR_inaccessible)
@@ -1893,11 +1893,11 @@ void Sema::DeclareGlobalAllocationSubprogram(DeclarationName Name,
                                 EST_BasicNoexcept : EST_DynamicNone;
   }
 
-  QualType FnType = Context.getSubprogramType(Return, &Argument, 1, EPI);
+  QualType SubPgmType = Context.getSubprogramType(Return, &Argument, 1, EPI);
   SubprogramDecl *Alloc =
     SubprogramDecl::Create(Context, GlobalCtx, SourceLocation(),
                          SourceLocation(), Name,
-                         FnType, /*TInfo=*/0, SC_None,
+                         SubPgmType, /*TInfo=*/0, SC_None,
                          SC_None, false, true);
   Alloc->setImplicit();
 
@@ -2494,15 +2494,15 @@ Sema::PerformImplicitConversion(Expr *From, QualType ToType,
   // Resolve overloaded function references.
   if (Context.hasSameType(FromType, Context.OverloadTy)) {
     DeclAccessPair Found;
-    SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(From, ToType,
+    SubprogramDecl *SubPgm = ResolveAddressOfOverloadedSubprogram(From, ToType,
                                                           true, Found);
-    if (!Fn)
+    if (!SubPgm)
       return ExprError();
 
-    if (DiagnoseUseOfDecl(Fn, From->getLocStart()))
+    if (DiagnoseUseOfDecl(SubPgm, From->getLocStart()))
       return ExprError();
 
-    From = FixOverloadedSubprogramReference(From, Found, Fn);
+    From = FixOverloadedSubprogramReference(From, Found, SubPgm);
     FromType = From->getType();
   }
 

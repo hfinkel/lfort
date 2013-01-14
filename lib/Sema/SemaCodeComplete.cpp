@@ -3193,7 +3193,7 @@ void Sema::CodeCompleteOrdinaryName(Scope *S,
   case PCC_Expression:
   case PCC_Statement:
   case PCC_RecoveryInSubprogram:
-    if (S->getFnParent())
+    if (S->getSubPgmParent())
       AddPrettySubprogramResults(PP.getLangOpts(), Results);        
     break;
     
@@ -3337,7 +3337,7 @@ void Sema::CodeCompleteExpression(Scope *S,
       || Data.PreferredType->isMemberPointerType() 
       || Data.PreferredType->isBlockPointerType();
   
-  if (S->getFnParent() && 
+  if (S->getSubPgmParent() && 
       !Data.ObjCCollection && 
       !Data.IntegralConstantExpression)
     AddPrettySubprogramResults(PP.getLangOpts(), Results);        
@@ -3771,7 +3771,7 @@ static bool anyNullArguments(llvm::ArrayRef<Expr*> Args) {
   return false;
 }
 
-void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
+void Sema::CodeCompleteCall(Scope *S, Expr *SubPgmIn,
                             llvm::ArrayRef<Expr *> Args) {
   if (!CodeCompleter)
     return;
@@ -3781,17 +3781,17 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
   // results. We may want to revisit this strategy in the future,
   // e.g., by merging the two kinds of results.
 
-  Expr *Fn = (Expr *)FnIn;
+  Expr *SubPgm = (Expr *)SubPgmIn;
 
   // Ignore type-dependent call expressions entirely.
-  if (!Fn || Fn->isTypeDependent() || anyNullArguments(Args) ||
+  if (!SubPgm || SubPgm->isTypeDependent() || anyNullArguments(Args) ||
       Expr::hasAnyTypeDependentArguments(Args)) {
     CodeCompleteOrdinaryName(S, PCC_Expression);
     return;
   }
 
   // Build an overload candidate set based on the functions we find.
-  SourceLocation Loc = Fn->getExprLoc();
+  SourceLocation Loc = SubPgm->getExprLoc();
   OverloadCandidateSet CandidateSet(Loc);
 
   // FIXME: What if we're calling something that isn't a function declaration?
@@ -3801,11 +3801,11 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
   typedef CodeCompleteConsumer::OverloadCandidate ResultCandidate;
   SmallVector<ResultCandidate, 8> Results;
 
-  Expr *NakedFn = Fn->IgnoreParenCasts();
-  if (UnresolvedLookupExpr *ULE = dyn_cast<UnresolvedLookupExpr>(NakedFn))
+  Expr *NakedSubPgm = SubPgm->IgnoreParenCasts();
+  if (UnresolvedLookupExpr *ULE = dyn_cast<UnresolvedLookupExpr>(NakedSubPgm))
     AddOverloadedCallCandidates(ULE, Args, CandidateSet,
                                 /*PartialOverloading=*/ true);
-  else if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(NakedFn)) {
+  else if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(NakedSubPgm)) {
     SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(DRE->getDecl());
     if (FDecl) {
       if (!getLangOpts().CPlusPlus || 
@@ -3851,7 +3851,7 @@ void Sema::CodeCompleteCall(Scope *S, Expr *FnIn,
   } else {
     // Try to determine the parameter type from the type of the expression
     // being called.
-    QualType SubprogramType = Fn->getType();
+    QualType SubprogramType = SubPgm->getType();
     if (const PointerType *Ptr = SubprogramType->getAs<PointerType>())
       SubprogramType = Ptr->getPointeeType();
     else if (const BlockPointerType *BlockPtr
@@ -3954,7 +3954,7 @@ void Sema::CodeCompleteAfterIf(Scope *S) {
 
   Results.ExitScope();
   
-  if (S->getFnParent())
+  if (S->getSubPgmParent())
     AddPrettySubprogramResults(PP.getLangOpts(), Results);        
   
   if (CodeCompleter->includeMacros())
@@ -7151,7 +7151,7 @@ void Sema::CodeCompletePreprocessorDirective(bool InConditional) {
 
 void Sema::CodeCompleteInPreprocessorConditionalExclusion(Scope *S) {
   CodeCompleteOrdinaryName(S,
-                           S->getFnParent()? Sema::PCC_RecoveryInSubprogram 
+                           S->getSubPgmParent()? Sema::PCC_RecoveryInSubprogram 
                                            : Sema::PCC_Namespace);
 }
 

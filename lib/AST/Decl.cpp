@@ -2407,9 +2407,9 @@ SourceRange SubprogramDecl::getSourceRange() const {
 }
 
 unsigned SubprogramDecl::getMemorySubprogramKind() const {
-  IdentifierInfo *FnInfo = getIdentifier();
+  IdentifierInfo *SubPgmInfo = getIdentifier();
 
-  if (!FnInfo)
+  if (!SubPgmInfo)
     return 0;
     
   // Builtin handling.
@@ -2466,25 +2466,25 @@ unsigned SubprogramDecl::getMemorySubprogramKind() const {
 
   default:
     if (hasCLanguageLinkage()) {
-      if (FnInfo->isStr("memset"))
+      if (SubPgmInfo->isStr("memset"))
         return Builtin::BImemset;
-      else if (FnInfo->isStr("memcpy"))
+      else if (SubPgmInfo->isStr("memcpy"))
         return Builtin::BImemcpy;
-      else if (FnInfo->isStr("memmove"))
+      else if (SubPgmInfo->isStr("memmove"))
         return Builtin::BImemmove;
-      else if (FnInfo->isStr("memcmp"))
+      else if (SubPgmInfo->isStr("memcmp"))
         return Builtin::BImemcmp;
-      else if (FnInfo->isStr("strncpy"))
+      else if (SubPgmInfo->isStr("strncpy"))
         return Builtin::BIstrncpy;
-      else if (FnInfo->isStr("strncmp"))
+      else if (SubPgmInfo->isStr("strncmp"))
         return Builtin::BIstrncmp;
-      else if (FnInfo->isStr("strncasecmp"))
+      else if (SubPgmInfo->isStr("strncasecmp"))
         return Builtin::BIstrncasecmp;
-      else if (FnInfo->isStr("strncat"))
+      else if (SubPgmInfo->isStr("strncat"))
         return Builtin::BIstrncat;
-      else if (FnInfo->isStr("strndup"))
+      else if (SubPgmInfo->isStr("strndup"))
         return Builtin::BIstrndup;
-      else if (FnInfo->isStr("strlen"))
+      else if (SubPgmInfo->isStr("strlen"))
         return Builtin::BIstrlen;
     }
     break;

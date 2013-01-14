@@ -353,10 +353,10 @@ class UserDefinedLiteral : public CallExpr {
   SourceLocation UDSuffixLoc;
 
 public:
-  UserDefinedLiteral(ASTContext &C, Expr *Fn, ArrayRef<Expr*> Args,
+  UserDefinedLiteral(ASTContext &C, Expr *SubPgm, ArrayRef<Expr*> Args,
                      QualType T, ExprValueKind VK, SourceLocation LitEndLoc,
                      SourceLocation SuffixLoc)
-    : CallExpr(C, UserDefinedLiteralClass, Fn, 0, Args, T, VK, LitEndLoc),
+    : CallExpr(C, UserDefinedLiteralClass, SubPgm, 0, Args, T, VK, LitEndLoc),
       UDSuffixLoc(SuffixLoc) {}
   explicit UserDefinedLiteral(ASTContext &C, EmptyShell Empty)
     : CallExpr(C, UserDefinedLiteralClass, Empty) {}

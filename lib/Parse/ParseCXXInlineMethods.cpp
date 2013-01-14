@@ -38,36 +38,36 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
           TemplateInfo.TemplateParams ? TemplateInfo.TemplateParams->data() : 0,
           TemplateInfo.TemplateParams ? TemplateInfo.TemplateParams->size() : 0);
 
-  Decl *FnD;
+  Decl *SubPgmD;
   D.setSubprogramDefinitionKind(DefinitionKind);
   if (D.getDeclSpec().isFriendSpecified())
-    FnD = Actions.ActOnFriendSubprogramDecl(getCurScope(), D,
+    SubPgmD = Actions.ActOnFriendSubprogramDecl(getCurScope(), D,
                                           TemplateParams);
   else {
-    FnD = Actions.ActOnCXXMemberDeclarator(getCurScope(), AS, D,
+    SubPgmD = Actions.ActOnCXXMemberDeclarator(getCurScope(), AS, D,
                                            TemplateParams, 0,
                                            VS, ICIS_NoInit);
-    if (FnD) {
-      Actions.ProcessDeclAttributeList(getCurScope(), FnD, AccessAttrs,
+    if (SubPgmD) {
+      Actions.ProcessDeclAttributeList(getCurScope(), SubPgmD, AccessAttrs,
                                        false, true);
       bool TypeSpecContainsAuto
         = D.getDeclSpec().getTypeSpecType() == DeclSpec::TST_auto;
       if (Init.isUsable())
-        Actions.AddInitializerToDecl(FnD, Init.get(), false, 
+        Actions.AddInitializerToDecl(SubPgmD, Init.get(), false, 
                                      TypeSpecContainsAuto);
       else
-        Actions.ActOnUninitializedDecl(FnD, TypeSpecContainsAuto);
+        Actions.ActOnUninitializedDecl(SubPgmD, TypeSpecContainsAuto);
     }
   }
 
-  HandleMemberSubprogramDeclDelays(D, FnD);
+  HandleMemberSubprogramDeclDelays(D, SubPgmD);
 
-  D.complete(FnD);
+  D.complete(SubPgmD);
 
   if (Tok.is(tok::equal)) {
     ConsumeToken();
 
-    if (!FnD) {
+    if (!SubPgmD) {
       SkipUntil(tok::semi);
       return 0;
     }
@@ -80,7 +80,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
            diag::ext_deleted_function);
 
       KWLoc = ConsumeToken();
-      Actions.SetDeclDeleted(FnD, KWLoc);
+      Actions.SetDeclDeleted(SubPgmD, KWLoc);
       Delete = true;
     } else if (Tok.is(tok::kw_default)) {
       Diag(Tok, getLangOpts().CPlusPlus11 ?
@@ -88,7 +88,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
            diag::ext_defaulted_function);
 
       KWLoc = ConsumeToken();
-      Actions.SetDeclDefaulted(FnD, KWLoc);
+      Actions.SetDeclDefaulted(SubPgmD, KWLoc);
     } else {
       llvm_unreachable("function definition after = not 'delete' or 'default'");
     }
@@ -102,7 +102,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
                        Delete ? "delete" : "default", tok::semi);
     }
 
-    return FnD;
+    return SubPgmD;
   }
 
   // In delayed template parsing mode, if we are within a class template
@@ -114,14 +114,14 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
         TemplateInfo.Kind != ParsedTemplateInfo::NonTemplate) && 
         !Actions.IsInsideALocalClassWithinATemplateSubprogram())) {
 
-    if (FnD) {
-      LateParsedTemplatedSubprogram *LPT = new LateParsedTemplatedSubprogram(FnD);
+    if (SubPgmD) {
+      LateParsedTemplatedSubprogram *LPT = new LateParsedTemplatedSubprogram(SubPgmD);
 
       SubprogramDecl *FD = 0;
-      if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(FnD))
+      if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(SubPgmD))
         FD = FunTmpl->getTemplatedDecl();
       else
-        FD = cast<SubprogramDecl>(FnD);
+        FD = cast<SubprogramDecl>(SubPgmD);
       Actions.CheckForSubprogramRedefinition(FD);
 
       LateParsedTemplateMap[FD] = LPT;
@@ -132,12 +132,12 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
       LexTemplateSubprogramForLateParsing(Toks);
     }
 
-    return FnD;
+    return SubPgmD;
   }
 
   // Consume the tokens and store them for later parsing.
 
-  LexedMethod* LM = new LexedMethod(this, FnD);
+  LexedMethod* LM = new LexedMethod(this, SubPgmD);
   getCurrentClass().LateParsedDeclarations.push_back(LM);
   LM->TemplateScope = getCurScope()->isTemplateParamScope();
   CachedTokens &Toks = LM->Toks;
@@ -154,7 +154,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
       ConsumeToken();
     delete getCurrentClass().LateParsedDeclarations.back();
     getCurrentClass().LateParsedDeclarations.pop_back();
-    return FnD;
+    return SubPgmD;
   } else {
     // Consume everything up to (and including) the matching right brace.
     ConsumeAndStoreUntil(tok::r_brace, Toks, /*StopAtSemi=*/false);
@@ -169,14 +169,14 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
   }
 
 
-  if (!FnD) {
+  if (!SubPgmD) {
     // If semantic analysis could not build a function declaration,
     // just throw away the late-parsed declaration.
     delete getCurrentClass().LateParsedDeclarations.back();
     getCurrentClass().LateParsedDeclarations.pop_back();
   }
 
-  return FnD;
+  return SubPgmD;
 }
 
 /// ParseCXXNonStaticMemberInitializer - We parsed and verified that the
@@ -397,11 +397,11 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
 
   // Parse the method body. Subprogram body parsing code is similar enough
   // to be re-used for method bodies as well.
-  ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope);
+  ParseScope SubPgmScope(this, Scope::SubPgmScope|Scope::DeclScope);
   Actions.ActOnStartOfSubprogramDef(getCurScope(), LM.D);
 
   if (Tok.is(tok::kw_try)) {
-    ParseSubprogramTryBlock(LM.D, FnScope);
+    ParseSubprogramTryBlock(LM.D, SubPgmScope);
     assert(!PP.getSourceManager().isBeforeInTranslationUnit(origLoc,
                                                          Tok.getLocation()) &&
            "ParseSubprogramTryBlock went over the cached tokens!");
@@ -416,7 +416,7 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
 
     // Error recovery.
     if (!Tok.is(tok::l_brace)) {
-      FnScope.Exit();
+      SubPgmScope.Exit();
       Actions.ActOnFinishSubprogramBody(LM.D, 0);
       while (Tok.getLocation() != origLoc && Tok.isNot(tok::eof))
         ConsumeAnyToken();
@@ -425,7 +425,7 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
   } else
     Actions.ActOnDefaultCtorInitializers(LM.D);
 
-  ParseSubprogramStatementBody(LM.D, FnScope);
+  ParseSubprogramStatementBody(LM.D, SubPgmScope);
 
   if (Tok.getLocation() != origLoc) {
     // Due to parsing error, we either went over the cached tokens or

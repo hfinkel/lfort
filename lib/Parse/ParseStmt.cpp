@@ -2010,17 +2010,17 @@ Decl *Parser::ParseSubprogramStatementBody(Decl *Decl, ParseScope &BodyScope) {
   // Do not enter a scope for the brace, as the arguments are in the same scope
   // (the function body) as the body itself.  Instead, just read the statement
   // list and put it into a CompoundStmt for safe keeping.
-  StmtResult FnBody(ParseCompoundStatementBody());
+  StmtResult SubPgmBody(ParseCompoundStatementBody());
 
   // If the function body could not be parsed, make a bogus compoundstmt.
-  if (FnBody.isInvalid()) {
+  if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    FnBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
+    SubPgmBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
                                        MultiStmtArg(), false);
   }
 
   BodyScope.Exit();
-  return Actions.ActOnFinishSubprogramBody(Decl, FnBody.take());
+  return Actions.ActOnFinishSubprogramBody(Decl, SubPgmBody.take());
 }
 
 /// ParseSubprogramTryBlock - Parse a C++ function-try-block.
@@ -2048,17 +2048,17 @@ Decl *Parser::ParseSubprogramTryBlock(Decl *Decl, ParseScope &BodyScope) {
   }
 
   SourceLocation LBraceLoc = Tok.getLocation();
-  StmtResult FnBody(ParseCXXTryBlockCommon(TryLoc, /*FnTry*/true));
+  StmtResult SubPgmBody(ParseCXXTryBlockCommon(TryLoc, /*SubPgmTry*/true));
   // If we failed to parse the try-catch, we just give the function an empty
   // compound statement as the body.
-  if (FnBody.isInvalid()) {
+  if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    FnBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
+    SubPgmBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
                                        MultiStmtArg(), false);
   }
 
   BodyScope.Exit();
-  return Actions.ActOnFinishSubprogramBody(Decl, FnBody.take());
+  return Actions.ActOnFinishSubprogramBody(Decl, SubPgmBody.take());
 }
 
 bool Parser::trySkippingSubprogramBody() {
@@ -2114,14 +2114,14 @@ StmtResult Parser::ParseCXXTryBlock() {
 ///         'try' compound-statement seh-except-block
 ///         'try' compound-statment  seh-finally-block
 ///
-StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
+StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool SubPgmTry) {
   if (Tok.isNot(tok::l_brace))
     return StmtError(Diag(Tok, diag::err_expected_lbrace));
   // FIXME: Possible draft standard bug: attribute-specifier should be allowed?
 
   StmtResult TryBlock(ParseCompoundStatement(/*isStmtExpr=*/false,
                       Scope::DeclScope | Scope::TryScope |
-                        (FnTry ? Scope::FnTryCatchScope : 0)));
+                        (SubPgmTry ? Scope::SubPgmTryCatchScope : 0)));
   if (TryBlock.isInvalid())
     return TryBlock;
 
@@ -2157,7 +2157,7 @@ StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
     if (Tok.isNot(tok::kw_catch))
       return StmtError(Diag(Tok, diag::err_expected_catch));
     while (Tok.is(tok::kw_catch)) {
-      StmtResult Handler(ParseCXXCatchBlock(FnTry));
+      StmtResult Handler(ParseCXXCatchBlock(SubPgmTry));
       if (!Handler.isInvalid())
         Handlers.push_back(Handler.release());
     }
@@ -2181,7 +2181,7 @@ StmtResult Parser::ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry) {
 ///         type-specifier-seq
 ///         '...'
 ///
-StmtResult Parser::ParseCXXCatchBlock(bool FnCatch) {
+StmtResult Parser::ParseCXXCatchBlock(bool SubPgmCatch) {
   assert(Tok.is(tok::kw_catch) && "Expected 'catch'");
 
   SourceLocation CatchLoc = ConsumeToken();
@@ -2194,7 +2194,7 @@ StmtResult Parser::ParseCXXCatchBlock(bool FnCatch) {
   // The name in a catch exception-declaration is local to the handler and
   // shall not be redeclared in the outermost block of the handler.
   ParseScope CatchScope(this, Scope::DeclScope | Scope::ControlScope |
-                          (FnCatch ? Scope::FnTryCatchScope : 0));
+                          (SubPgmCatch ? Scope::SubPgmTryCatchScope : 0));
 
   // exception-declaration is equivalent to '...' or a parameter-declaration
   // without default arguments.

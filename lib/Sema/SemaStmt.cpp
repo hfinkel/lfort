@@ -2277,7 +2277,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // [expr.prim.lambda]p4 in C++11; block literals follow a superset of those
   // rules which allows multiple return statements.
   CapturingScopeInfo *CurCap = cast<CapturingScopeInfo>(getCurSubprogram());
-  QualType FnRetType = CurCap->ReturnType;
+  QualType SubPgmRetType = CurCap->ReturnType;
 
   // For blocks/lambdas with implicit return types, we check each return
   // statement individually, and deduce the common return type when the block
@@ -2290,9 +2290,9 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
       RetValExp = Result.take();
 
       if (!RetValExp->isTypeDependent())
-        FnRetType = RetValExp->getType();
+        SubPgmRetType = RetValExp->getType();
       else
-        FnRetType = CurCap->ReturnType = Context.DependentTy;
+        SubPgmRetType = CurCap->ReturnType = Context.DependentTy;
     } else {
       if (RetValExp) {
         // C++11 [expr.lambda.prim]p4 bans inferring the result from an
@@ -2302,15 +2302,15 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
           << RetValExp->getSourceRange();
       }
 
-      FnRetType = Context.VoidTy;
+      SubPgmRetType = Context.VoidTy;
     }
 
     // Although we'll properly infer the type of the block once it's completed,
     // make sure we provide a return type now for better error recovery.
     if (CurCap->ReturnType.isNull())
-      CurCap->ReturnType = FnRetType;
+      CurCap->ReturnType = SubPgmRetType;
   }
-  assert(!FnRetType.isNull());
+  assert(!SubPgmRetType.isNull());
 
   if (BlockScopeInfo *CurBlock = dyn_cast<BlockScopeInfo>(CurCap)) {
     if (CurBlock->SubprogramType->getAs<SubprogramType>()->getNoReturnAttr()) {
@@ -2329,10 +2329,10 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // pickier with blocks than for normal functions because we don't have GCC
   // compatibility to worry about here.
   const VarDecl *NRVOCandidate = 0;
-  if (FnRetType->isDependentType()) {
+  if (SubPgmRetType->isDependentType()) {
     // Delay processing for now.  TODO: there are lots of dependent
     // types we can conclusively prove aren't void.
-  } else if (FnRetType->isVoidType()) {
+  } else if (SubPgmRetType->isVoidType()) {
     if (RetValExp && !isa<InitListExpr>(RetValExp) &&
         !(getLangOpts().CPlusPlus &&
           (RetValExp->isTypeDependent() ||
@@ -2356,18 +2356,18 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
     // In C++ the return statement is handled via a copy initialization.
     // the C version of which boils down to CheckSingleAssignmentConstraints.
-    NRVOCandidate = getCopyElisionCandidate(FnRetType, RetValExp, false);
+    NRVOCandidate = getCopyElisionCandidate(SubPgmRetType, RetValExp, false);
     InitializedEntity Entity = InitializedEntity::InitializeResult(ReturnLoc,
-                                                                   FnRetType,
+                                                                   SubPgmRetType,
                                                           NRVOCandidate != 0);
     ExprResult Res = PerformMoveOrCopyInitialization(Entity, NRVOCandidate,
-                                                     FnRetType, RetValExp);
+                                                     SubPgmRetType, RetValExp);
     if (Res.isInvalid()) {
       // FIXME: Cleanup temporaries here, anyway?
       return StmtError();
     }
     RetValExp = Res.take();
-    CheckReturnStackAddr(RetValExp, FnRetType, ReturnLoc);
+    CheckReturnStackAddr(RetValExp, SubPgmRetType, ReturnLoc);
   }
 
   if (RetValExp) {
@@ -2381,7 +2381,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // or if we need to infer the return type,
   // save the return statement in our scope for later processing.
   if (CurCap->HasImplicitReturnType ||
-      (getLangOpts().CPlusPlus && FnRetType->isRecordType() &&
+      (getLangOpts().CPlusPlus && SubPgmRetType->isRecordType() &&
        !CurContext->isDependentContext()))
     SubprogramScopes.back()->Returns.push_back(Result);
 
@@ -2397,16 +2397,16 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   if (isa<CapturingScopeInfo>(getCurSubprogram()))
     return ActOnCapScopeReturnStmt(ReturnLoc, RetValExp);
 
-  QualType FnRetType;
+  QualType SubPgmRetType;
   QualType RelatedRetType;
   if (const SubprogramDecl *FD = getCurSubprogramDecl()) {
-    FnRetType = FD->getResultType();
+    SubPgmRetType = FD->getResultType();
     if (FD->hasAttr<NoReturnAttr>() ||
         FD->getType()->getAs<SubprogramType>()->getNoReturnAttr())
       Diag(ReturnLoc, diag::warn_noreturn_function_has_return_expr)
         << FD->getDeclName();
   } else if (ObjCMethodDecl *MD = getCurMethodDecl()) {
-    FnRetType = MD->getResultType();
+    SubPgmRetType = MD->getResultType();
     if (MD->hasRelatedResultType() && MD->getClassInterface()) {
       // In the implementation of a method with a related return type, the
       // type used to type-check the validity of return statements within the
@@ -2418,7 +2418,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
     return StmtError();
 
   ReturnStmt *Result = 0;
-  if (FnRetType->isVoidType()) {
+  if (SubPgmRetType->isVoidType()) {
     if (RetValExp) {
       if (isa<InitListExpr>(RetValExp)) {
         // We simply never allow init lists as the return value of void
@@ -2480,7 +2480,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
     }
 
     Result = new (Context) ReturnStmt(ReturnLoc, RetValExp, 0);
-  } else if (!RetValExp && !FnRetType->isDependentType()) {
+  } else if (!RetValExp && !SubPgmRetType->isDependentType()) {
     unsigned DiagID = diag::warn_return_missing_expr;  // C90 6.6.6.4p4
     // C99 6.8.6.4p1 (ext_ since GCC warns)
     if (getLangOpts().C99) DiagID = diag::ext_return_missing_expr;
@@ -2492,7 +2492,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
     Result = new (Context) ReturnStmt(ReturnLoc);
   } else {
     const VarDecl *NRVOCandidate = 0;
-    if (!FnRetType->isDependentType() && !RetValExp->isTypeDependent()) {
+    if (!SubPgmRetType->isDependentType() && !RetValExp->isTypeDependent()) {
       // we have a non-void function with an expression, continue checking
 
       if (!RelatedRetType.isNull()) {
@@ -2516,12 +2516,12 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
       // In C++ the return statement is handled via a copy initialization,
       // the C version of which boils down to CheckSingleAssignmentConstraints.
-      NRVOCandidate = getCopyElisionCandidate(FnRetType, RetValExp, false);
+      NRVOCandidate = getCopyElisionCandidate(SubPgmRetType, RetValExp, false);
       InitializedEntity Entity = InitializedEntity::InitializeResult(ReturnLoc,
-                                                                     FnRetType,
+                                                                     SubPgmRetType,
                                                             NRVOCandidate != 0);
       ExprResult Res = PerformMoveOrCopyInitialization(Entity, NRVOCandidate,
-                                                       FnRetType, RetValExp);
+                                                       SubPgmRetType, RetValExp);
       if (Res.isInvalid()) {
         // FIXME: Cleanup temporaries here, anyway?
         return StmtError();
@@ -2529,7 +2529,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
       RetValExp = Res.takeAs<Expr>();
       if (RetValExp)
-        CheckReturnStackAddr(RetValExp, FnRetType, ReturnLoc);
+        CheckReturnStackAddr(RetValExp, SubPgmRetType, ReturnLoc);
     }
 
     if (RetValExp) {
@@ -2541,7 +2541,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
   // If we need to check for the named return value optimization, save the
   // return statement in our scope for later processing.
-  if (getLangOpts().CPlusPlus && FnRetType->isRecordType() &&
+  if (getLangOpts().CPlusPlus && SubPgmRetType->isRecordType() &&
       !CurContext->isDependentContext())
     SubprogramScopes.back()->Returns.push_back(Result);
 

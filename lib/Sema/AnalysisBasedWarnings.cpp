@@ -944,7 +944,7 @@ static bool isInLoop(const ASTContext &Ctx, const ParentMap &PM,
 
 
 static void diagnoseRepeatedUseOfWeak(Sema &S,
-                                      const sema::SubprogramScopeInfo *CurFn,
+                                      const sema::SubprogramScopeInfo *CurSubPgm,
                                       const Decl *D,
                                       const ParentMap &PM) {
   typedef sema::SubprogramScopeInfo::WeakObjectProfileTy WeakObjectProfileTy;
@@ -953,7 +953,7 @@ static void diagnoseRepeatedUseOfWeak(Sema &S,
 
   ASTContext &Ctx = S.getASTContext();
 
-  const WeakObjectUseMap &WeakMap = CurFn->getWeakObjectUses();
+  const WeakObjectUseMap &WeakMap = CurSubPgm->getWeakObjectUses();
 
   // Extract all weak objects that are referenced more than once.
   SmallVector<StmtUsesPair, 8> UsesByStmt;
@@ -1023,9 +1023,9 @@ static void diagnoseRepeatedUseOfWeak(Sema &S,
     Lambda
   } SubprogramKind;
 
-  if (isa<sema::BlockScopeInfo>(CurFn))
+  if (isa<sema::BlockScopeInfo>(CurSubPgm))
     SubprogramKind = Block;
-  else if (isa<sema::LambdaScopeInfo>(CurFn))
+  else if (isa<sema::LambdaScopeInfo>(CurSubPgm))
     SubprogramKind = Lambda;
   else if (isa<ObjCMethodDecl>(D))
     SubprogramKind = Method;

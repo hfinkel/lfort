@@ -350,7 +350,7 @@ NSAPI::getNSNumberFactoryMethodKind(QualType T) const {
   case BuiltinType::ARCUnbridgedCast:
   case BuiltinType::Half:
   case BuiltinType::PseudoObject:
-  case BuiltinType::BuiltinFn:
+  case BuiltinType::BuiltinSubPgm:
     break;
   }
   

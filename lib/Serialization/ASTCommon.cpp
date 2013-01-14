@@ -66,7 +66,7 @@ serialization::TypeIdxFromBuiltin(const BuiltinType *BT) {
   case BuiltinType::OCLImage2d:       ID = PREDEF_TYPE_IMAGE2D_ID;      break;
   case BuiltinType::OCLImage2dArray:  ID = PREDEF_TYPE_IMAGE2D_ARR_ID;  break;
   case BuiltinType::OCLImage3d:       ID = PREDEF_TYPE_IMAGE3D_ID;      break;
-  case BuiltinType::BuiltinFn:
+  case BuiltinType::BuiltinSubPgm:
                                 ID = PREDEF_TYPE_BUILTIN_FN; break;
 
   }

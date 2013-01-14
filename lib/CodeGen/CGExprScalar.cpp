@@ -1191,7 +1191,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   // are in the same order as in the CastKind enum.
   switch (Kind) {
   case CK_Dependent: llvm_unreachable("dependent cast kind in IR gen!");
-  case CK_BuiltinFnToFnPtr:
+  case CK_BuiltinSubPgmToSubPgmPtr:
     llvm_unreachable("builtin functions are handled elsewhere");
 
   case CK_LValueBitCast: 

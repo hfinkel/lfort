@@ -138,7 +138,7 @@ bool IdentifierResolver::isDeclInScope(Decl *D, DeclContext *Ctx, Scope *S,
         if (S->isDeclScope(D))
           return true;
       }
-      if (S->getFlags() & Scope::FnTryCatchScope)
+      if (S->getFlags() & Scope::SubPgmTryCatchScope)
         return S->getParent()->isDeclScope(D);
     }
     return false;

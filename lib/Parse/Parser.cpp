@@ -663,7 +663,7 @@ Parser::ParseProgram() {
   SmallVector<ParsedType, 2> DynamicExceptions;
   SmallVector<SourceRange, 2> DynamicExceptionRanges;
   ParsedType TrailingReturnType;
-  ParsedAttributes FnAttrs(AttrFactory);
+  ParsedAttributes SubPgmAttrs(AttrFactory);
 
   // Remember that we parsed a function type, and remember the attributes.
   D.AddTypeInfo(DeclaratorChunk::getSubprogram(true,
@@ -690,10 +690,10 @@ Parser::ParseProgram() {
                                              D,
                                              TrailingReturnType,
                                              /* IsMainProgram */ true),
-                FnAttrs, ProgramLoc);
+                SubPgmAttrs, ProgramLoc);
 
   // Enter a scope for the MAIN__ function body.
-  ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
+  ParseScope BodyScope(this, Scope::SubPgmScope|Scope::DeclScope);
 
   Decl *Res = Actions.ActOnStartOfSubprogramDef(getCurScope(), D);
 
@@ -707,12 +707,12 @@ Parser::ParseProgram() {
   PrettyDeclStackTraceEntry CrashInfo(Actions, Res, ProgramLoc,
                                       "parsing program body");
 
-  StmtResult FnBody(ParseExecutionPart());
+  StmtResult SubPgmBody(ParseExecutionPart());
 
   // If the function body could not be parsed, make a bogus compoundstmt.
-  if (FnBody.isInvalid()) {
+  if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    FnBody = Actions.ActOnCompoundStmt(ProgramLoc, ProgramLoc,
+    SubPgmBody = Actions.ActOnCompoundStmt(ProgramLoc, ProgramLoc,
                                        MultiStmtArg(), false);
   }
 
@@ -737,7 +737,7 @@ Parser::ParseProgram() {
 
   BodyScope.Exit();
 
-  Decl *TheDecl = Actions.ActOnFinishSubprogramBody(Res, FnBody.take());
+  Decl *TheDecl = Actions.ActOnFinishSubprogramBody(Res, SubPgmBody.take());
   return Actions.ConvertDeclToDeclGroup(TheDecl);
 }
 
@@ -1222,7 +1222,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
       TemplateInfo.Kind == ParsedTemplateInfo::Template) {
     MultiTemplateParamsArg TemplateParameterLists(*TemplateInfo.TemplateParams);
     
-    ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
+    ParseScope BodyScope(this, Scope::SubPgmScope|Scope::DeclScope);
     Scope *ParentScope = getCurScope()->getParent();
 
     D.setSubprogramDefinitionKind(FDK_Definition);
@@ -1234,15 +1234,15 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
     if (DP) {
       LateParsedTemplatedSubprogram *LPT = new LateParsedTemplatedSubprogram(DP);
 
-      SubprogramDecl *FnD = 0;
+      SubprogramDecl *SubPgmD = 0;
       if (SubprogramTemplateDecl *FunTmpl = dyn_cast<SubprogramTemplateDecl>(DP))
-        FnD = FunTmpl->getTemplatedDecl();
+        SubPgmD = FunTmpl->getTemplatedDecl();
       else
-        FnD = cast<SubprogramDecl>(DP);
-      Actions.CheckForSubprogramRedefinition(FnD);
+        SubPgmD = cast<SubprogramDecl>(DP);
+      Actions.CheckForSubprogramRedefinition(SubPgmD);
 
-      LateParsedTemplateMap[FnD] = LPT;
-      Actions.MarkAsLateParsedTemplate(FnD);
+      LateParsedTemplateMap[SubPgmD] = LPT;
+      Actions.MarkAsLateParsedTemplate(SubPgmD);
       LexTemplateSubprogramForLateParsing(LPT->Toks);
     } else {
       CachedTokens Toks;
@@ -1255,7 +1255,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
            (Tok.is(tok::l_brace) || Tok.is(tok::kw_try) ||
             Tok.is(tok::colon)) && 
       Actions.CurContext->isTranslationUnit()) {
-    ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
+    ParseScope BodyScope(this, Scope::SubPgmScope|Scope::DeclScope);
     Scope *ParentScope = getCurScope()->getParent();
     
     D.setSubprogramDefinitionKind(FDK_Definition);
@@ -1272,7 +1272,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
   }
       
   // Enter a scope for the function body.
-  ParseScope BodyScope(this, Scope::FnScope|Scope::DeclScope);
+  ParseScope BodyScope(this, Scope::SubPgmScope|Scope::DeclScope);
 
   // Tell the actions module that we have entered a function definition with the
   // specified Declarator for the function.
@@ -1941,7 +1941,7 @@ SourceLocation Parser::handleUnexpectedCodeCompletionToken() {
   PrevTokLocation = Tok.getLocation();
 
   for (Scope *S = getCurScope(); S; S = S->getParent()) {
-    if (S->getFlags() & Scope::FnScope) {
+    if (S->getFlags() & Scope::SubPgmScope) {
       Actions.CodeCompleteOrdinaryName(getCurScope(), Sema::PCC_RecoveryInSubprogram);
       cutOffParsing();
       return PrevTokLocation;

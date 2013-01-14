@@ -948,19 +948,19 @@ Sema::BuildMemberReferenceExpr(Expr *BaseExpr, QualType BaseExprType,
                                  VK_LValue, OK_Ordinary));
   }
 
-  if (CXXMethodDecl *MemberFn = dyn_cast<CXXMethodDecl>(MemberDecl)) {
+  if (CXXMethodDecl *MemberSubPgm = dyn_cast<CXXMethodDecl>(MemberDecl)) {
     ExprValueKind valueKind;
     QualType type;
-    if (MemberFn->isInstance()) {
+    if (MemberSubPgm->isInstance()) {
       valueKind = VK_RValue;
       type = Context.BoundMemberTy;
     } else {
       valueKind = VK_LValue;
-      type = MemberFn->getType();
+      type = MemberSubPgm->getType();
     }
 
     return Owned(BuildMemberExpr(*this, Context, BaseExpr, IsArrow, SS, 
-                                 TemplateKWLoc, MemberFn, FoundDecl, 
+                                 TemplateKWLoc, MemberSubPgm, FoundDecl, 
                                  MemberNameInfo, type, valueKind,
                                  OK_Ordinary));
   }

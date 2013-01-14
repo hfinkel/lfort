@@ -1197,11 +1197,11 @@ TryStaticMemberPointerUpcast(Sema &Self, ExprResult &SrcExpr, QualType SrcType,
   bool WasOverloadedSubprogram = false;
   DeclAccessPair FoundOverload;
   if (SrcExpr.get()->getType() == Self.Context.OverloadTy) {
-    if (SubprogramDecl *Fn
+    if (SubprogramDecl *SubPgm
           = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(), DestType, false,
                                                     FoundOverload)) {
-      CXXMethodDecl *M = cast<CXXMethodDecl>(Fn);
-      SrcType = Self.Context.getMemberPointerType(Fn->getType(),
+      CXXMethodDecl *M = cast<CXXMethodDecl>(SubPgm);
+      SrcType = Self.Context.getMemberPointerType(SubPgm->getType(),
                       Self.Context.getTypeDeclType(M->getParent()).getTypePtr());
       WasOverloadedSubprogram = true;
     }
@@ -1269,16 +1269,16 @@ TryStaticMemberPointerUpcast(Sema &Self, ExprResult &SrcExpr, QualType SrcType,
   if (WasOverloadedSubprogram) {
     // Resolve the address of the overloaded function again, this time
     // allowing complaints if something goes wrong.
-    SubprogramDecl *Fn = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(), 
+    SubprogramDecl *SubPgm = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(), 
                                                                DestType, 
                                                                true,
                                                                FoundOverload);
-    if (!Fn) {
+    if (!SubPgm) {
       msg = 0;
       return TC_Failed;
     }
 
-    SrcExpr = Self.FixOverloadedSubprogramReference(SrcExpr, FoundOverload, Fn);
+    SrcExpr = Self.FixOverloadedSubprogramReference(SrcExpr, FoundOverload, SubPgm);
     if (!SrcExpr.isUsable()) {
       msg = 0;
       return TC_Failed;
@@ -1901,13 +1901,13 @@ void CastOperation::CheckCXXCStyleCast(bool SubprogramalStyle,
   if (tcr != TC_Success && msg != 0) {
     if (SrcExpr.get()->getType() == Self.Context.OverloadTy) {
       DeclAccessPair Found;
-      SubprogramDecl *Fn = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(),
+      SubprogramDecl *SubPgm = Self.ResolveAddressOfOverloadedSubprogram(SrcExpr.get(),
                                 DestType,
                                 /*Complain*/ true,
                                 Found);
       
-      assert(!Fn && "cast failed but able to resolve overload expression!!");
-      (void)Fn;
+      assert(!SubPgm && "cast failed but able to resolve overload expression!!");
+      (void)SubPgm;
 
     } else {
       diagnoseBadCast(Self, msg, (SubprogramalStyle ? CT_Subprogramal : CT_CStyle),

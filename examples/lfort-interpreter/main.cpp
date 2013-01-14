@@ -52,8 +52,8 @@ static int Execute(llvm::Module *Mod, char * const *envp) {
     return 255;
   }
 
-  llvm::Function *EntryFn = Mod->getSubprogram("main");
-  if (!EntryFn) {
+  llvm::Function *EntrySubPgm = Mod->getSubprogram("main");
+  if (!EntrySubPgm) {
     llvm::errs() << "'main' function not found in module.\n";
     return 255;
   }
@@ -62,7 +62,7 @@ static int Execute(llvm::Module *Mod, char * const *envp) {
   std::vector<std::string> Args;
   Args.push_back(Mod->getModuleIdentifier());
 
-  return EE->runSubprogramAsMain(EntryFn, Args, envp);
+  return EE->runSubprogramAsMain(EntrySubPgm, Args, envp);
 }
 
 int main(int argc, const char **argv, char * const *envp) {

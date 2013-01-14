@@ -103,11 +103,11 @@ bool Sema::CheckDistantExceptionSpec(QualType T) {
   else
     return false;
 
-  const SubprogramProtoType *FnT = T->getAs<SubprogramProtoType>();
-  if (!FnT)
+  const SubprogramProtoType *SubPgmT = T->getAs<SubprogramProtoType>();
+  if (!SubPgmT)
     return false;
 
-  return FnT->hasExceptionSpec();
+  return SubPgmT->hasExceptionSpec();
 }
 
 const SubprogramProtoType *

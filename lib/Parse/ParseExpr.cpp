@@ -946,7 +946,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     if (Tok.isNot(tok::identifier))
       return ExprError(Diag(Tok, diag::err_expected_ident));
 
-    if (getCurScope()->getFnParent() == 0)
+    if (getCurScope()->getSubPgmParent() == 0)
       return ExprError(Diag(Tok, diag::err_address_of_label_outside_fn));
     
     Diag(AmpAmpLoc, diag::ext_gnu_address_of_label);
@@ -2391,7 +2391,7 @@ ExprResult Parser::ParseBlockLiteralExpression() {
   // argument decls, decls within the compound expression, etc.  This also
   // allows determining whether a variable reference inside the block is
   // within or outside of the block.
-  ParseScope BlockScope(this, Scope::BlockScope | Scope::FnScope |
+  ParseScope BlockScope(this, Scope::BlockScope | Scope::SubPgmScope |
                               Scope::DeclScope);
 
   // Inform sema that we are starting a block.

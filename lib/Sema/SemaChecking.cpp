@@ -563,10 +563,10 @@ bool Sema::CheckSubprogramCall(SubprogramDecl *FDecl, CallExpr *TheCall,
             IsMemberSubprogram, TheCall->getRParenLoc(),
             TheCall->getCallee()->getSourceRange(), CallType);
 
-  IdentifierInfo *FnInfo = FDecl->getIdentifier();
+  IdentifierInfo *SubPgmInfo = FDecl->getIdentifier();
   // None of the checks below are needed for functions that don't have
   // simple names (e.g., C++ conversion functions).
-  if (!FnInfo)
+  if (!SubPgmInfo)
     return false;
 
   unsigned CMId = FDecl->getMemorySubprogramKind();
@@ -575,11 +575,11 @@ bool Sema::CheckSubprogramCall(SubprogramDecl *FDecl, CallExpr *TheCall,
 
   // Handle memory setting and copying functions.
   if (CMId == Builtin::BIstrlcpy || CMId == Builtin::BIstrlcat)
-    CheckStrlcpycatArguments(TheCall, FnInfo);
+    CheckStrlcpycatArguments(TheCall, SubPgmInfo);
   else if (CMId == Builtin::BIstrncat)
-    CheckStrncatArguments(TheCall, FnInfo);
+    CheckStrncatArguments(TheCall, SubPgmInfo);
   else
-    CheckMemaccessArguments(TheCall, CMId, FnInfo);
+    CheckMemaccessArguments(TheCall, CMId, SubPgmInfo);
 
   return false;
 }
@@ -920,10 +920,10 @@ ExprResult Sema::SemaAtomicOpsOverloaded(ExprResult TheCallResult,
 ///
 /// Returns true on error.
 static bool checkBuiltinArgument(Sema &S, CallExpr *E, unsigned ArgIndex) {
-  SubprogramDecl *Fn = E->getDirectCallee();
-  assert(Fn && "builtin call without direct callee!");
+  SubprogramDecl *SubPgm = E->getDirectCallee();
+  assert(SubPgm && "builtin call without direct callee!");
 
-  ParmVarDecl *Param = Fn->getParamDecl(ArgIndex);
+  ParmVarDecl *Param = SubPgm->getParamDecl(ArgIndex);
   InitializedEntity Entity =
     InitializedEntity::InitializeParameter(S.Context, Param);
 
@@ -1258,14 +1258,14 @@ Sema::SemaBuiltinAtomicOverloaded(ExprResult TheCallResult) {
       NewBuiltinDecl,
       /*enclosing*/ false,
       DRE->getLocation(),
-      Context.BuiltinFnTy,
+      Context.BuiltinSubPgmTy,
       DRE->getValueKind());
 
   // Set the callee in the CallExpr.
   // FIXME: This loses syntactic information.
   QualType CalleePtrTy = Context.getPointerType(NewBuiltinDecl->getType());
   ExprResult PromotedCall = ImpCastExprToType(NewDRE, CalleePtrTy,
-                                              CK_BuiltinFnToFnPtr);
+                                              CK_BuiltinSubPgmToSubPgmPtr);
   TheCall->setCallee(PromotedCall.take());
 
   // Change the result type of the call to match the original value type. This
@@ -1311,12 +1311,12 @@ bool Sema::CheckObjCString(Expr *Arg) {
 /// SemaBuiltinVAStart - Check the arguments to __builtin_va_start for validity.
 /// Emit an error and return true on failure, return false on success.
 bool Sema::SemaBuiltinVAStart(CallExpr *TheCall) {
-  Expr *Fn = TheCall->getCallee();
+  Expr *SubPgm = TheCall->getCallee();
   if (TheCall->getNumArgs() > 2) {
     Diag(TheCall->getArg(2)->getLocStart(),
          diag::err_typecheck_call_too_many_args)
       << 0 /*function call*/ << 2 << TheCall->getNumArgs()
-      << Fn->getSourceRange()
+      << SubPgm->getSourceRange()
       << SourceRange(TheCall->getArg(2)->getLocStart(),
                      (*(TheCall->arg_end()-1))->getLocEnd());
     return true;
@@ -1343,7 +1343,7 @@ bool Sema::SemaBuiltinVAStart(CallExpr *TheCall) {
     isVariadic = getCurMethodDecl()->isVariadic();
 
   if (!isVariadic) {
-    Diag(Fn->getLocStart(), diag::err_va_start_used_in_non_variadic_function);
+    Diag(SubPgm->getLocStart(), diag::err_va_start_used_in_non_variadic_function);
     return true;
   }
 
@@ -3184,7 +3184,7 @@ static QualType getSizeOfArgType(const Expr* E) {
 /// \param Call The call expression to diagnose.
 void Sema::CheckMemaccessArguments(const CallExpr *Call,
                                    unsigned BId,
-                                   IdentifierInfo *FnName) {
+                                   IdentifierInfo *SubPgmName) {
   assert(BId != 0);
 
   // It is possible to have a non-standard definition of memset.  Validate
@@ -3233,7 +3233,7 @@ void Sema::CheckMemaccessArguments(const CallExpr *Call,
           // TODO: For strncpy() and friends, this could suggest sizeof(dst)
           //       over sizeof(src) as well.
           unsigned ActionIdx = 0; // Default is to suggest dereferencing.
-          StringRef ReadableName = FnName->getName();
+          StringRef ReadableName = SubPgmName->getName();
 
           if (const UnaryOperator *UnaryOp = dyn_cast<UnaryOperator>(Dest))
             if (UnaryOp->getOpcode() == UO_AddrOf)
@@ -3282,7 +3282,7 @@ void Sema::CheckMemaccessArguments(const CallExpr *Call,
             Context.typesAreCompatible(SizeOfArgTy, DestTy)) {
           DiagRuntimeBehavior(LenExpr->getExprLoc(), Dest,
                               PDiag(diag::warn_sizeof_pointer_type_memaccess)
-                                << FnName << SizeOfArgTy << ArgIdx
+                                << SubPgmName << SizeOfArgTy << ArgIdx
                                 << PointeeTy << Dest->getSourceRange()
                                 << LenExpr->getSourceRange());
           break;
@@ -3308,7 +3308,7 @@ void Sema::CheckMemaccessArguments(const CallExpr *Call,
           Dest->getExprLoc(), Dest,
           PDiag(diag::warn_dyn_class_memaccess)
             << (BId == Builtin::BImemcmp ? ArgIdx + 2 : ArgIdx)
-            << FnName << PointeeTy
+            << SubPgmName << PointeeTy
             << OperationType
             << Call->getCallee()->getSourceRange());
       } else if (PointeeTy.hasNonTrivialObjCLifetime() &&
@@ -3316,7 +3316,7 @@ void Sema::CheckMemaccessArguments(const CallExpr *Call,
         DiagRuntimeBehavior(
           Dest->getExprLoc(), Dest,
           PDiag(diag::warn_arc_object_memaccess)
-            << ArgIdx << FnName << PointeeTy
+            << ArgIdx << SubPgmName << PointeeTy
             << Call->getCallee()->getSourceRange());
       else
         continue;
@@ -3371,7 +3371,7 @@ static bool isConstantSizeArrayWithMoreThanOneElement(QualType Ty,
 // Warn if the user has made the 'size' argument to strlcpy or strlcat
 // be the size of the source, instead of the destination.
 void Sema::CheckStrlcpycatArguments(const CallExpr *Call,
-                                    IdentifierInfo *FnName) {
+                                    IdentifierInfo *SubPgmName) {
 
   // Don't crash if the user has the wrong number of arguments
   if (Call->getNumArgs() != 3)
@@ -3411,7 +3411,7 @@ void Sema::CheckStrlcpycatArguments(const CallExpr *Call,
   
   const Expr *OriginalSizeArg = Call->getArg(2);
   Diag(CompareWithSrcDRE->getLocStart(), diag::warn_strlcpycat_wrong_size)
-    << OriginalSizeArg->getSourceRange() << FnName;
+    << OriginalSizeArg->getSourceRange() << SubPgmName;
   
   // Output a FIXIT hint if the destination is an array (rather than a
   // pointer to an array).  This could be enhanced to handle some
@@ -3454,7 +3454,7 @@ static const Expr *getStrlenExprArg(const Expr *E) {
 // The correct size argument should look like following:
 //   strncat(dst, src, sizeof(dst) - strlen(dest) - 1);
 void Sema::CheckStrncatArguments(const CallExpr *CE,
-                                 IdentifierInfo *FnName) {
+                                 IdentifierInfo *SubPgmName) {
   // Don't crash if the user has the wrong number of arguments.
   if (CE->getNumArgs() < 3)
     return;
@@ -5647,10 +5647,10 @@ static Expr *findCapturingExpr(Sema &S, Expr *e, RetainCycleOwner &owner) {
     }
   } else if (CallExpr *CE = dyn_cast<CallExpr>(e)) {
     if (CE->getNumArgs() == 1) {
-      SubprogramDecl *Fn = dyn_cast_or_null<SubprogramDecl>(CE->getCalleeDecl());
-      if (Fn) {
-        const IdentifierInfo *FnI = Fn->getIdentifier();
-        if (FnI && FnI->isStr("_Block_copy")) {
+      SubprogramDecl *SubPgm = dyn_cast_or_null<SubprogramDecl>(CE->getCalleeDecl());
+      if (SubPgm) {
+        const IdentifierInfo *SubPgmI = SubPgm->getIdentifier();
+        if (SubPgmI && SubPgmI->isStr("_Block_copy")) {
           e = CE->getArg(0)->IgnoreParenCasts();
         }
       }

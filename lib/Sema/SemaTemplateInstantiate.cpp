@@ -505,11 +505,11 @@ void Sema::PrintInstantiationStack() {
     }
 
     case ActiveTemplateInstantiation::ExplicitTemplateArgumentSubstitution: {
-      SubprogramTemplateDecl *FnTmpl = cast<SubprogramTemplateDecl>(Active->Entity);
+      SubprogramTemplateDecl *SubPgmTmpl = cast<SubprogramTemplateDecl>(Active->Entity);
       Diags.Report(Active->PointOfInstantiation,
                    diag::note_explicit_template_arg_substitution_here)
-        << FnTmpl 
-        << getTemplateArgumentBindingsText(FnTmpl->getTemplateParameters(), 
+        << SubPgmTmpl 
+        << getTemplateArgumentBindingsText(SubPgmTmpl->getTemplateParameters(), 
                                            Active->TemplateArgs, 
                                            Active->NumTemplateArgs)
         << Active->InstantiationRange;
@@ -528,12 +528,12 @@ void Sema::PrintInstantiationStack() {
                                              Active->NumTemplateArgs)
           << Active->InstantiationRange;
       } else {
-        SubprogramTemplateDecl *FnTmpl
+        SubprogramTemplateDecl *SubPgmTmpl
           = cast<SubprogramTemplateDecl>(Active->Entity);
         Diags.Report(Active->PointOfInstantiation,
                      diag::note_function_template_deduction_instantiation_here)
-          << FnTmpl
-          << getTemplateArgumentBindingsText(FnTmpl->getTemplateParameters(), 
+          << SubPgmTmpl
+          << getTemplateArgumentBindingsText(SubPgmTmpl->getTemplateParameters(), 
                                              Active->TemplateArgs, 
                                              Active->NumTemplateArgs)
           << Active->InstantiationRange;

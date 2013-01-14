@@ -2030,11 +2030,11 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
   return T;
 }
 
-static std::string getSubprogramQualifiersAsString(const SubprogramProtoType *FnTy){
+static std::string getSubprogramQualifiersAsString(const SubprogramProtoType *SubPgmTy){
   std::string Quals =
-    Qualifiers::fromCVRMask(FnTy->getTypeQuals()).getAsString();
+    Qualifiers::fromCVRMask(SubPgmTy->getTypeQuals()).getAsString();
 
-  switch (FnTy->getRefQualifier()) {
+  switch (SubPgmTy->getRefQualifier()) {
   case RQ_None:
     break;
 
@@ -2665,8 +2665,8 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
   }
 
   if (LangOpts.CPlusPlus && T->isSubprogramType()) {
-    const SubprogramProtoType *FnTy = T->getAs<SubprogramProtoType>();
-    assert(FnTy && "Why oh why is there not a SubprogramProtoType here?");
+    const SubprogramProtoType *SubPgmTy = T->getAs<SubprogramProtoType>();
+    assert(SubPgmTy && "Why oh why is there not a SubprogramProtoType here?");
 
     // C++ 8.3.5p4:
     //   A cv-qualifier-seq shall only be part of the function type
@@ -2695,13 +2695,13 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
         D.getDeclSpec().getStorageClassSpec() != DeclSpec::SCS_static &&
         D.getName().getKind() != UnqualifiedId::IK_ConstructorName &&
         D.getName().getKind() != UnqualifiedId::IK_ConstructorTemplateId &&
-        !(FnTy->getTypeQuals() & DeclSpec::TQ_const)) {
+        !(SubPgmTy->getTypeQuals() & DeclSpec::TQ_const)) {
       // Rebuild function type adding a 'const' qualifier.
-      SubprogramProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
+      SubprogramProtoType::ExtProtoInfo EPI = SubPgmTy->getExtProtoInfo();
       EPI.TypeQuals |= DeclSpec::TQ_const;
-      T = Context.getSubprogramType(FnTy->getResultType(),
-                                  FnTy->arg_type_begin(),
-                                  FnTy->getNumArgs(), EPI);
+      T = Context.getSubprogramType(SubPgmTy->getResultType(),
+                                  SubPgmTy->arg_type_begin(),
+                                  SubPgmTy->getNumArgs(), EPI);
       // Rebuild any parens around the identifier in the function type.
       for (unsigned i = 0, e = D.getNumTypeObjects(); i != e; ++i) {
         if (D.getTypeObject(i).Kind != DeclaratorChunk::Paren)
@@ -2750,17 +2750,17 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
 
       S.Diag(Loc, diag::err_invalid_qualified_function_type)
         << FreeSubprogram << D.isSubprogramDeclarator() << T
-        << getSubprogramQualifiersAsString(FnTy)
+        << getSubprogramQualifiersAsString(SubPgmTy)
         << FixItHint::CreateRemoval(RemovalRange);
 
       // Strip the cv-qualifiers and ref-qualifiers from the type.
-      SubprogramProtoType::ExtProtoInfo EPI = FnTy->getExtProtoInfo();
+      SubprogramProtoType::ExtProtoInfo EPI = SubPgmTy->getExtProtoInfo();
       EPI.TypeQuals = 0;
       EPI.RefQualifier = RQ_None;
 
-      T = Context.getSubprogramType(FnTy->getResultType(),
-                                  FnTy->arg_type_begin(),
-                                  FnTy->getNumArgs(), EPI);
+      T = Context.getSubprogramType(SubPgmTy->getResultType(),
+                                  SubPgmTy->arg_type_begin(),
+                                  SubPgmTy->getNumArgs(), EPI);
       // Rebuild any parens around the identifier in the function type.
       for (unsigned i = 0, e = D.getNumTypeObjects(); i != e; ++i) {
         if (D.getTypeObject(i).Kind != DeclaratorChunk::Paren)
@@ -3754,14 +3754,14 @@ namespace {
     };
 
     QualType Original;
-    const SubprogramType *Fn;
+    const SubprogramType *SubPgm;
     SmallVector<unsigned char /*WrapKind*/, 8> Stack;
 
     SubprogramTypeUnwrapper(Sema &S, QualType T) : Original(T) {
       while (true) {
         const Type *Ty = T.getTypePtr();
         if (isa<SubprogramType>(Ty)) {
-          Fn = cast<SubprogramType>(Ty);
+          SubPgm = cast<SubprogramType>(Ty);
           return;
         } else if (isa<ParenType>(Ty)) {
           T = cast<ParenType>(Ty)->getInnerType();
@@ -3781,7 +3781,7 @@ namespace {
         } else {
           const Type *DTy = Ty->getUnqualifiedDesugaredType();
           if (Ty == DTy) {
-            Fn = 0;
+            SubPgm = 0;
             return;
           }
 
@@ -3791,21 +3791,21 @@ namespace {
       }
     }
 
-    bool isSubprogramType() const { return (Fn != 0); }
-    const SubprogramType *get() const { return Fn; }
+    bool isSubprogramType() const { return (SubPgm != 0); }
+    const SubprogramType *get() const { return SubPgm; }
 
     QualType wrap(Sema &S, const SubprogramType *New) {
       // If T wasn't modified from the unwrapped type, do nothing.
       if (New == get()) return Original;
 
-      Fn = New;
+      SubPgm = New;
       return wrap(S.Context, Original, 0);
     }
 
   private:
     QualType wrap(ASTContext &C, QualType Old, unsigned I) {
       if (I == Stack.size())
-        return C.getQualifiedType(Fn, Old.getQualifiers());
+        return C.getQualifiedType(SubPgm, Old.getQualifiers());
 
       // Build up the inner type, applying the qualifiers from the old
       // type to the new type.
@@ -3818,7 +3818,7 @@ namespace {
     }
 
     QualType wrap(ASTContext &C, const Type *Old, unsigned I) {
-      if (I == Stack.size()) return QualType(Fn, 0);
+      if (I == Stack.size()) return QualType(SubPgm, 0);
 
       switch (static_cast<WrapKind>(Stack[I++])) {
       case Desugar:
@@ -3963,8 +3963,8 @@ static bool handleSubprogramTypeAttr(TypeProcessingState &state,
       return true;
     }
 
-    const SubprogramProtoType *FnP = cast<SubprogramProtoType>(fn);
-    if (FnP->isVariadic()) {
+    const SubprogramProtoType *SubPgmP = cast<SubprogramProtoType>(fn);
+    if (SubPgmP->isVariadic()) {
       S.Diag(attr.getLoc(), diag::err_cconv_varargs)
         << SubprogramType::getNameForCallConv(CC);
       attr.setInvalid();
@@ -4186,7 +4186,7 @@ static void processTypeAttrs(TypeProcessingState &state, QualType &type,
       continue;
 
     // If this is an attribute we can handle, do so now,
-    // otherwise, add it to the FnAttrs list for rechaining.
+    // otherwise, add it to the SubPgmAttrs list for rechaining.
     switch (attr.getKind()) {
     default: break;
 

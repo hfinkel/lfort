@@ -115,8 +115,8 @@ static bool hasDeclarator(const Decl *D) {
 /// information. This decl should have already passed
 /// isSubprogramOrMethod or isSubprogramOrMethodOrBlock.
 static bool hasSubprogramProto(const Decl *D) {
-  if (const SubprogramType *FnTy = getSubprogramType(D))
-    return isa<SubprogramProtoType>(FnTy);
+  if (const SubprogramType *SubPgmTy = getSubprogramType(D))
+    return isa<SubprogramProtoType>(SubPgmTy);
   else {
     assert(isa<ObjCMethodDecl>(D) || isa<BlockDecl>(D));
     return true;
@@ -127,16 +127,16 @@ static bool hasSubprogramProto(const Decl *D) {
 /// arguments. It is an error to call this on a K&R function (use
 /// hasSubprogramProto first).
 static unsigned getSubprogramOrMethodNumArgs(const Decl *D) {
-  if (const SubprogramType *FnTy = getSubprogramType(D))
-    return cast<SubprogramProtoType>(FnTy)->getNumArgs();
+  if (const SubprogramType *SubPgmTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(SubPgmTy)->getNumArgs();
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->getNumParams();
   return cast<ObjCMethodDecl>(D)->param_size();
 }
 
 static QualType getSubprogramOrMethodArgType(const Decl *D, unsigned Idx) {
-  if (const SubprogramType *FnTy = getSubprogramType(D))
-    return cast<SubprogramProtoType>(FnTy)->getArgType(Idx);
+  if (const SubprogramType *SubPgmTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(SubPgmTy)->getArgType(Idx);
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->getParamDecl(Idx)->getType();
 
@@ -144,14 +144,14 @@ static QualType getSubprogramOrMethodArgType(const Decl *D, unsigned Idx) {
 }
 
 static QualType getSubprogramOrMethodResultType(const Decl *D) {
-  if (const SubprogramType *FnTy = getSubprogramType(D))
-    return cast<SubprogramProtoType>(FnTy)->getResultType();
+  if (const SubprogramType *SubPgmTy = getSubprogramType(D))
+    return cast<SubprogramProtoType>(SubPgmTy)->getResultType();
   return cast<ObjCMethodDecl>(D)->getResultType();
 }
 
 static bool isSubprogramOrMethodVariadic(const Decl *D) {
-  if (const SubprogramType *FnTy = getSubprogramType(D)) {
-    const SubprogramProtoType *proto = cast<SubprogramProtoType>(FnTy);
+  if (const SubprogramType *SubPgmTy = getSubprogramType(D)) {
+    const SubprogramProtoType *proto = cast<SubprogramProtoType>(SubPgmTy);
     return proto->isVariadic();
   } else if (const BlockDecl *BD = dyn_cast<BlockDecl>(D))
     return BD->isVariadic();
@@ -3547,14 +3547,14 @@ static void handleGNUInlineAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   if (!checkAttributeNumArgs(S, Attr, 0))
     return;
 
-  SubprogramDecl *Fn = dyn_cast<SubprogramDecl>(D);
-  if (Fn == 0) {
+  SubprogramDecl *SubPgm = dyn_cast<SubprogramDecl>(D);
+  if (SubPgm == 0) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_wrong_decl_type)
       << Attr.getName() << ExpectedSubprogram;
     return;
   }
 
-  if (!Fn->isInlineSpecified()) {
+  if (!SubPgm->isInlineSpecified()) {
     S.Diag(Attr.getLoc(), diag::warn_gnu_inline_attribute_requires_inline);
     return;
   }

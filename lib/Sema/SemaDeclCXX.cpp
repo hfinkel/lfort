@@ -7956,7 +7956,7 @@ buildMemcpyForAssignmentOp(Sema &S, SourceLocation Loc, QualType T,
     // about it.
     return StmtError();
 
-  ExprResult MemCpyRef = S.BuildDeclRefExpr(MemCpy, S.Context.BuiltinFnTy,
+  ExprResult MemCpyRef = S.BuildDeclRefExpr(MemCpy, S.Context.BuiltinSubPgmTy,
                                             VK_RValue, Loc, 0);
   assert(MemCpyRef.isUsable() && "Builtin reference cannot fail");
 
@@ -9622,79 +9622,79 @@ Sema::CompleteConstructorCall(CXXConstructorDecl *Constructor,
 
 static inline bool
 CheckOperatorNewDeleteDeclarationScope(Sema &SemaRef, 
-                                       const SubprogramDecl *FnDecl) {
-  const DeclContext *DC = FnDecl->getDeclContext()->getRedeclContext();
+                                       const SubprogramDecl *SubPgmDecl) {
+  const DeclContext *DC = SubPgmDecl->getDeclContext()->getRedeclContext();
   if (isa<NamespaceDecl>(DC)) {
-    return SemaRef.Diag(FnDecl->getLocation(), 
+    return SemaRef.Diag(SubPgmDecl->getLocation(), 
                         diag::err_operator_new_delete_declared_in_namespace)
-      << FnDecl->getDeclName();
+      << SubPgmDecl->getDeclName();
   }
   
   if (isa<TranslationUnitDecl>(DC) && 
-      FnDecl->getStorageClass() == SC_Static) {
-    return SemaRef.Diag(FnDecl->getLocation(),
+      SubPgmDecl->getStorageClass() == SC_Static) {
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_delete_declared_static)
-      << FnDecl->getDeclName();
+      << SubPgmDecl->getDeclName();
   }
   
   return false;
 }
 
 static inline bool
-CheckOperatorNewDeleteTypes(Sema &SemaRef, const SubprogramDecl *FnDecl,
+CheckOperatorNewDeleteTypes(Sema &SemaRef, const SubprogramDecl *SubPgmDecl,
                             CanQualType ExpectedResultType,
                             CanQualType ExpectedFirstParamType,
                             unsigned DependentParamTypeDiag,
                             unsigned InvalidParamTypeDiag) {
   QualType ResultType = 
-    FnDecl->getType()->getAs<SubprogramType>()->getResultType();
+    SubPgmDecl->getType()->getAs<SubprogramType>()->getResultType();
 
   // Check that the result type is not dependent.
   if (ResultType->isDependentType())
-    return SemaRef.Diag(FnDecl->getLocation(),
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_delete_dependent_result_type)
-    << FnDecl->getDeclName() << ExpectedResultType;
+    << SubPgmDecl->getDeclName() << ExpectedResultType;
 
   // Check that the result type is what we expect.
   if (SemaRef.Context.getCanonicalType(ResultType) != ExpectedResultType)
-    return SemaRef.Diag(FnDecl->getLocation(),
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_delete_invalid_result_type) 
-    << FnDecl->getDeclName() << ExpectedResultType;
+    << SubPgmDecl->getDeclName() << ExpectedResultType;
   
   // A function template must have at least 2 parameters.
-  if (FnDecl->getDescribedSubprogramTemplate() && FnDecl->getNumParams() < 2)
-    return SemaRef.Diag(FnDecl->getLocation(),
+  if (SubPgmDecl->getDescribedSubprogramTemplate() && SubPgmDecl->getNumParams() < 2)
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                       diag::err_operator_new_delete_template_too_few_parameters)
-        << FnDecl->getDeclName();
+        << SubPgmDecl->getDeclName();
   
   // The function decl must have at least 1 parameter.
-  if (FnDecl->getNumParams() == 0)
-    return SemaRef.Diag(FnDecl->getLocation(),
+  if (SubPgmDecl->getNumParams() == 0)
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_delete_too_few_parameters)
-      << FnDecl->getDeclName();
+      << SubPgmDecl->getDeclName();
  
   // Check the first parameter type is not dependent.
-  QualType FirstParamType = FnDecl->getParamDecl(0)->getType();
+  QualType FirstParamType = SubPgmDecl->getParamDecl(0)->getType();
   if (FirstParamType->isDependentType())
-    return SemaRef.Diag(FnDecl->getLocation(), DependentParamTypeDiag)
-      << FnDecl->getDeclName() << ExpectedFirstParamType;
+    return SemaRef.Diag(SubPgmDecl->getLocation(), DependentParamTypeDiag)
+      << SubPgmDecl->getDeclName() << ExpectedFirstParamType;
 
   // Check that the first parameter type is what we expect.
   if (SemaRef.Context.getCanonicalType(FirstParamType).getUnqualifiedType() != 
       ExpectedFirstParamType)
-    return SemaRef.Diag(FnDecl->getLocation(), InvalidParamTypeDiag)
-    << FnDecl->getDeclName() << ExpectedFirstParamType;
+    return SemaRef.Diag(SubPgmDecl->getLocation(), InvalidParamTypeDiag)
+    << SubPgmDecl->getDeclName() << ExpectedFirstParamType;
   
   return false;
 }
 
 static bool
-CheckOperatorNewDeclaration(Sema &SemaRef, const SubprogramDecl *FnDecl) {
+CheckOperatorNewDeclaration(Sema &SemaRef, const SubprogramDecl *SubPgmDecl) {
   // C++ [basic.stc.dynamic.allocation]p1:
   //   A program is ill-formed if an allocation function is declared in a
   //   namespace scope other than global scope or declared static in global 
   //   scope.
-  if (CheckOperatorNewDeleteDeclarationScope(SemaRef, FnDecl))
+  if (CheckOperatorNewDeleteDeclarationScope(SemaRef, SubPgmDecl))
     return true;
 
   CanQualType SizeTy = 
@@ -9703,7 +9703,7 @@ CheckOperatorNewDeclaration(Sema &SemaRef, const SubprogramDecl *FnDecl) {
   // C++ [basic.stc.dynamic.allocation]p1:
   //  The return type shall be void*. The first parameter shall have type 
   //  std::size_t.
-  if (CheckOperatorNewDeleteTypes(SemaRef, FnDecl, SemaRef.Context.VoidPtrTy, 
+  if (CheckOperatorNewDeleteTypes(SemaRef, SubPgmDecl, SemaRef.Context.VoidPtrTy, 
                                   SizeTy,
                                   diag::err_operator_new_dependent_param_type,
                                   diag::err_operator_new_param_type))
@@ -9711,27 +9711,27 @@ CheckOperatorNewDeclaration(Sema &SemaRef, const SubprogramDecl *FnDecl) {
 
   // C++ [basic.stc.dynamic.allocation]p1:
   //  The first parameter shall not have an associated default argument.
-  if (FnDecl->getParamDecl(0)->hasDefaultArg())
-    return SemaRef.Diag(FnDecl->getLocation(),
+  if (SubPgmDecl->getParamDecl(0)->hasDefaultArg())
+    return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_default_arg)
-      << FnDecl->getDeclName() << FnDecl->getParamDecl(0)->getDefaultArgRange();
+      << SubPgmDecl->getDeclName() << SubPgmDecl->getParamDecl(0)->getDefaultArgRange();
 
   return false;
 }
 
 static bool
-CheckOperatorDeleteDeclaration(Sema &SemaRef, SubprogramDecl *FnDecl) {
+CheckOperatorDeleteDeclaration(Sema &SemaRef, SubprogramDecl *SubPgmDecl) {
   // C++ [basic.stc.dynamic.deallocation]p1:
   //   A program is ill-formed if deallocation functions are declared in a
   //   namespace scope other than global scope or declared static in global 
   //   scope.
-  if (CheckOperatorNewDeleteDeclarationScope(SemaRef, FnDecl))
+  if (CheckOperatorNewDeleteDeclarationScope(SemaRef, SubPgmDecl))
     return true;
 
   // C++ [basic.stc.dynamic.deallocation]p2:
   //   Each deallocation function shall return void and its first parameter 
   //   shall be void*.
-  if (CheckOperatorNewDeleteTypes(SemaRef, FnDecl, SemaRef.Context.VoidTy, 
+  if (CheckOperatorNewDeleteTypes(SemaRef, SubPgmDecl, SemaRef.Context.VoidTy, 
                                   SemaRef.Context.VoidPtrTy,
                                  diag::err_operator_delete_dependent_param_type,
                                  diag::err_operator_delete_param_type))
@@ -9743,11 +9743,11 @@ CheckOperatorDeleteDeclaration(Sema &SemaRef, SubprogramDecl *FnDecl) {
 /// CheckOverloadedOperatorDeclaration - Check whether the declaration
 /// of this overloaded operator is well-formed. If so, returns false;
 /// otherwise, emits appropriate diagnostics and returns true.
-bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
-  assert(FnDecl && FnDecl->isOverloadedOperator() &&
+bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *SubPgmDecl) {
+  assert(SubPgmDecl && SubPgmDecl->isOverloadedOperator() &&
          "Expected an overloaded operator declaration");
 
-  OverloadedOperatorKind Op = FnDecl->getOverloadedOperator();
+  OverloadedOperatorKind Op = SubPgmDecl->getOverloadedOperator();
 
   // C++ [over.oper]p5:
   //   The allocation and deallocation functions, operator new,
@@ -9756,24 +9756,24 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
   //   found in the rest of this subclause do not apply to them unless
   //   explicitly stated in 3.7.3.
   if (Op == OO_Delete || Op == OO_Array_Delete)
-    return CheckOperatorDeleteDeclaration(*this, FnDecl);
+    return CheckOperatorDeleteDeclaration(*this, SubPgmDecl);
   
   if (Op == OO_New || Op == OO_Array_New)
-    return CheckOperatorNewDeclaration(*this, FnDecl);
+    return CheckOperatorNewDeclaration(*this, SubPgmDecl);
 
   // C++ [over.oper]p6:
   //   An operator function shall either be a non-static member
   //   function or be a non-member function and have at least one
   //   parameter whose type is a class, a reference to a class, an
   //   enumeration, or a reference to an enumeration.
-  if (CXXMethodDecl *MethodDecl = dyn_cast<CXXMethodDecl>(FnDecl)) {
+  if (CXXMethodDecl *MethodDecl = dyn_cast<CXXMethodDecl>(SubPgmDecl)) {
     if (MethodDecl->isStatic())
-      return Diag(FnDecl->getLocation(),
-                  diag::err_operator_overload_static) << FnDecl->getDeclName();
+      return Diag(SubPgmDecl->getLocation(),
+                  diag::err_operator_overload_static) << SubPgmDecl->getDeclName();
   } else {
     bool ClassOrEnumParam = false;
-    for (SubprogramDecl::param_iterator Param = FnDecl->param_begin(),
-                                   ParamEnd = FnDecl->param_end();
+    for (SubprogramDecl::param_iterator Param = SubPgmDecl->param_begin(),
+                                   ParamEnd = SubPgmDecl->param_end();
          Param != ParamEnd; ++Param) {
       QualType ParamType = (*Param)->getType().getNonReferenceType();
       if (ParamType->isDependentType() || ParamType->isRecordType() ||
@@ -9784,9 +9784,9 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
     }
 
     if (!ClassOrEnumParam)
-      return Diag(FnDecl->getLocation(),
+      return Diag(SubPgmDecl->getLocation(),
                   diag::err_operator_overload_needs_class_or_enum)
-        << FnDecl->getDeclName();
+        << SubPgmDecl->getDeclName();
   }
 
   // C++ [over.oper]p8:
@@ -9796,12 +9796,12 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
   // Only the function-call operator allows default arguments
   // (C++ [over.call]p1).
   if (Op != OO_Call) {
-    for (SubprogramDecl::param_iterator Param = FnDecl->param_begin();
-         Param != FnDecl->param_end(); ++Param) {
+    for (SubprogramDecl::param_iterator Param = SubPgmDecl->param_begin();
+         Param != SubPgmDecl->param_end(); ++Param) {
       if ((*Param)->hasDefaultArg())
         return Diag((*Param)->getLocation(),
                     diag::err_operator_overload_default_arg)
-          << FnDecl->getDeclName() << (*Param)->getDefaultArgRange();
+          << SubPgmDecl->getDeclName() << (*Param)->getDefaultArgRange();
     }
   }
 
@@ -9820,8 +9820,8 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
   //   [...] Operator functions cannot have more or fewer parameters
   //   than the number required for the corresponding operator, as
   //   described in the rest of this subclause.
-  unsigned NumParams = FnDecl->getNumParams()
-                     + (isa<CXXMethodDecl>(FnDecl)? 1 : 0);
+  unsigned NumParams = SubPgmDecl->getNumParams()
+                     + (isa<CXXMethodDecl>(SubPgmDecl)? 1 : 0);
   if (Op != OO_Call &&
       ((NumParams == 1 && !CanBeUnaryOperator) ||
        (NumParams == 2 && !CanBeBinaryOperator) ||
@@ -9838,22 +9838,22 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
       ErrorKind = 1;  // 1 -> binary
     }
 
-    return Diag(FnDecl->getLocation(), diag::err_operator_overload_must_be)
-      << FnDecl->getDeclName() << NumParams << ErrorKind;
+    return Diag(SubPgmDecl->getLocation(), diag::err_operator_overload_must_be)
+      << SubPgmDecl->getDeclName() << NumParams << ErrorKind;
   }
 
   // Overloaded operators other than operator() cannot be variadic.
   if (Op != OO_Call &&
-      FnDecl->getType()->getAs<SubprogramProtoType>()->isVariadic()) {
-    return Diag(FnDecl->getLocation(), diag::err_operator_overload_variadic)
-      << FnDecl->getDeclName();
+      SubPgmDecl->getType()->getAs<SubprogramProtoType>()->isVariadic()) {
+    return Diag(SubPgmDecl->getLocation(), diag::err_operator_overload_variadic)
+      << SubPgmDecl->getDeclName();
   }
 
   // Some operators must be non-static member functions.
-  if (MustBeMemberOperator && !isa<CXXMethodDecl>(FnDecl)) {
-    return Diag(FnDecl->getLocation(),
+  if (MustBeMemberOperator && !isa<CXXMethodDecl>(SubPgmDecl)) {
+    return Diag(SubPgmDecl->getLocation(),
                 diag::err_operator_overload_must_be_member)
-      << FnDecl->getDeclName();
+      << SubPgmDecl->getDeclName();
   }
 
   // C++ [over.inc]p1:
@@ -9867,7 +9867,7 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
   //   of which shall be of type int), it defines the postfix
   //   increment operator ++ for objects of that type.
   if ((Op == OO_PlusPlus || Op == OO_MinusMinus) && NumParams == 2) {
-    ParmVarDecl *LastParam = FnDecl->getParamDecl(FnDecl->getNumParams() - 1);
+    ParmVarDecl *LastParam = SubPgmDecl->getParamDecl(SubPgmDecl->getNumParams() - 1);
     bool ParamIsInt = false;
     if (const BuiltinType *BT = LastParam->getType()->getAs<BuiltinType>())
       ParamIsInt = BT->getKind() == BuiltinType::Int;
@@ -9884,30 +9884,30 @@ bool Sema::CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl) {
 /// CheckLiteralOperatorDeclaration - Check whether the declaration
 /// of this literal operator function is well-formed. If so, returns
 /// false; otherwise, emits appropriate diagnostics and returns true.
-bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl) {
-  if (isa<CXXMethodDecl>(FnDecl)) {
-    Diag(FnDecl->getLocation(), diag::err_literal_operator_outside_namespace)
-      << FnDecl->getDeclName();
+bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *SubPgmDecl) {
+  if (isa<CXXMethodDecl>(SubPgmDecl)) {
+    Diag(SubPgmDecl->getLocation(), diag::err_literal_operator_outside_namespace)
+      << SubPgmDecl->getDeclName();
     return true;
   }
 
-  if (FnDecl->isExternC()) {
-    Diag(FnDecl->getLocation(), diag::err_literal_operator_extern_c);
+  if (SubPgmDecl->isExternC()) {
+    Diag(SubPgmDecl->getLocation(), diag::err_literal_operator_extern_c);
     return true;
   }
 
   bool Valid = false;
 
   // This might be the definition of a literal operator template.
-  SubprogramTemplateDecl *TpDecl = FnDecl->getDescribedSubprogramTemplate();
+  SubprogramTemplateDecl *TpDecl = SubPgmDecl->getDescribedSubprogramTemplate();
   // This might be a specialization of a literal operator template.
   if (!TpDecl)
-    TpDecl = FnDecl->getPrimaryTemplate();
+    TpDecl = SubPgmDecl->getPrimaryTemplate();
 
   // template <char...> type operator "" name() is the only valid template
   // signature, and the only valid signature with no parameters.
   if (TpDecl) {
-    if (FnDecl->param_size() == 0) {
+    if (SubPgmDecl->param_size() == 0) {
       // Must have only one template parameter
       TemplateParameterList *Params = TpDecl->getTemplateParameters();
       if (Params->size() == 1) {
@@ -9920,9 +9920,9 @@ bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl) {
           Valid = true;
       }
     }
-  } else if (FnDecl->param_size()) {
+  } else if (SubPgmDecl->param_size()) {
     // Check the first parameter
-    SubprogramDecl::param_iterator Param = FnDecl->param_begin();
+    SubprogramDecl::param_iterator Param = SubPgmDecl->param_begin();
 
     QualType T = (*Param)->getType().getUnqualifiedType();
 
@@ -9934,7 +9934,7 @@ bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl) {
         Context.hasSameType(T, Context.WCharTy) ||
         Context.hasSameType(T, Context.Char16Ty) ||
         Context.hasSameType(T, Context.Char32Ty)) {
-      if (++Param == FnDecl->param_end())
+      if (++Param == SubPgmDecl->param_end())
         Valid = true;
       goto FinishedParams;
     }
@@ -9952,7 +9952,7 @@ bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl) {
     ++Param;
 
     // If there is no second parameter, the first must be a const char *
-    if (Param == FnDecl->param_end()) {
+    if (Param == SubPgmDecl->param_end()) {
       if (Context.hasSameType(T, Context.CharTy))
         Valid = true;
       goto FinishedParams;
@@ -9969,22 +9969,22 @@ bool Sema::CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl) {
     // The second and final parameter must be an std::size_t
     T = (*Param)->getType().getUnqualifiedType();
     if (Context.hasSameType(T, Context.getSizeType()) &&
-        ++Param == FnDecl->param_end())
+        ++Param == SubPgmDecl->param_end())
       Valid = true;
   }
 
   // FIXME: This diagnostic is absolutely terrible.
 FinishedParams:
   if (!Valid) {
-    Diag(FnDecl->getLocation(), diag::err_literal_operator_params)
-      << FnDecl->getDeclName();
+    Diag(SubPgmDecl->getLocation(), diag::err_literal_operator_params)
+      << SubPgmDecl->getDeclName();
     return true;
   }
 
   // A parameter-declaration-clause containing a default argument is not
   // equivalent to any of the permitted forms.
-  for (SubprogramDecl::param_iterator Param = FnDecl->param_begin(),
-                                    ParamEnd = FnDecl->param_end();
+  for (SubprogramDecl::param_iterator Param = SubPgmDecl->param_begin(),
+                                    ParamEnd = SubPgmDecl->param_end();
        Param != ParamEnd; ++Param) {
     if ((*Param)->hasDefaultArg()) {
       Diag((*Param)->getDefaultArgRange().getBegin(),
@@ -9995,12 +9995,12 @@ FinishedParams:
   }
 
   StringRef LiteralName
-    = FnDecl->getDeclName().getCXXLiteralIdentifier()->getName();
+    = SubPgmDecl->getDeclName().getCXXLiteralIdentifier()->getName();
   if (LiteralName[0] != '_') {
     // C++11 [usrlit.suffix]p1:
     //   Literal suffix identifiers that do not start with an underscore
     //   are reserved for future standardization.
-    Diag(FnDecl->getLocation(), diag::warn_user_literal_reserved);
+    Diag(SubPgmDecl->getLocation(), diag::warn_user_literal_reserved);
   }
 
   return false;
@@ -10827,12 +10827,12 @@ Decl *Sema::ActOnFriendSubprogramDecl(Scope *S, Declarator &D,
 void Sema::SetDeclDeleted(Decl *Dcl, SourceLocation DelLoc) {
   AdjustDeclIfTemplate(Dcl);
 
-  SubprogramDecl *Fn = dyn_cast<SubprogramDecl>(Dcl);
-  if (!Fn) {
+  SubprogramDecl *SubPgm = dyn_cast<SubprogramDecl>(Dcl);
+  if (!SubPgm) {
     Diag(DelLoc, diag::err_deleted_non_function);
     return;
   }
-  if (const SubprogramDecl *Prev = Fn->getPreviousDecl()) {
+  if (const SubprogramDecl *Prev = SubPgm->getPreviousDecl()) {
     // Don't consider the implicit declaration we generate for explicit
     // specializations. FIXME: Do not generate these implicit declarations.
     if ((Prev->getTemplateSpecializationKind() != TSK_ExplicitSpecialization
@@ -10843,7 +10843,7 @@ void Sema::SetDeclDeleted(Decl *Dcl, SourceLocation DelLoc) {
     // If the declaration wasn't the first, we delete the function anyway for
     // recovery.
   }
-  Fn->setDeletedAsWritten();
+  SubPgm->setDeletedAsWritten();
 }
 
 void Sema::SetDeclDefaulted(Decl *Dcl, SourceLocation DefaultLoc) {

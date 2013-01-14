@@ -20,7 +20,7 @@ void Scope::Init(Scope *parent, unsigned flags) {
   AnyParent = parent;
   Flags = flags;
 
-  if (parent && !(flags & FnScope)) {
+  if (parent && !(flags & SubPgmScope)) {
     BreakParent    = parent->BreakParent;
     ContinueParent = parent->ContinueParent;
   } else {
@@ -33,19 +33,19 @@ void Scope::Init(Scope *parent, unsigned flags) {
     Depth = parent->Depth + 1;
     PrototypeDepth = parent->PrototypeDepth;
     PrototypeIndex = 0;
-    FnParent       = parent->FnParent;
+    SubPgmParent       = parent->SubPgmParent;
     BlockParent    = parent->BlockParent;
     TemplateParamParent = parent->TemplateParamParent;
   } else {
     Depth = 0;
     PrototypeDepth = 0;
     PrototypeIndex = 0;
-    FnParent = BlockParent = 0;
+    SubPgmParent = BlockParent = 0;
     TemplateParamParent = 0;
   }
 
   // If this scope is a function or contains breaks/continues, remember it.
-  if (flags & FnScope)            FnParent = this;
+  if (flags & SubPgmScope)            SubPgmParent = this;
   if (flags & BreakScope)         BreakParent = this;
   if (flags & ContinueScope)      ContinueParent = this;
   if (flags & BlockScope)         BlockParent = this;

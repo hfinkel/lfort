@@ -205,14 +205,14 @@ static void diagnoseUseOfInternalDeclInInlineSubprogram(Sema &S,
   //  (3) the thing we're referencing is another inline function.
   // This last can give us false negatives, but it's better than warning on
   // wrappers for simple C library functions.
-  const SubprogramDecl *UsedFn = dyn_cast<SubprogramDecl>(D);
+  const SubprogramDecl *UsedSubPgm = dyn_cast<SubprogramDecl>(D);
   bool DowngradeWarning = S.getSourceManager().isFromMainFile(Loc);
-  if (!DowngradeWarning && UsedFn)
-    DowngradeWarning = UsedFn->isInlined() || UsedFn->hasAttr<ConstAttr>();
+  if (!DowngradeWarning && UsedSubPgm)
+    DowngradeWarning = UsedSubPgm->isInlined() || UsedSubPgm->hasAttr<ConstAttr>();
 
   S.Diag(Loc, DowngradeWarning ? diag::ext_internal_in_extern_inline
                                : diag::warn_internal_in_extern_inline)
-    << /*IsVar=*/!UsedFn << D;
+    << /*IsVar=*/!UsedSubPgm << D;
 
   // Suggest "static" on the inline function, if possible.
   if (!hasAnyExplicitStorageClass(Current)) {
@@ -713,12 +713,12 @@ ExprResult Sema::DefaultVariadicArgumentPromotion(Expr *E, VariadicCallType CT,
     UnqualifiedId Name;
     Name.setIdentifier(PP.getIdentifierInfo("__builtin_trap"),
                        E->getLocStart());
-    ExprResult TrapFn = ActOnIdExpression(TUScope, SS, TemplateKWLoc,
+    ExprResult TrapSubPgm = ActOnIdExpression(TUScope, SS, TemplateKWLoc,
                                           Name, true, false);
-    if (TrapFn.isInvalid())
+    if (TrapSubPgm.isInvalid())
       return ExprError();
 
-    ExprResult Call = ActOnCallExpr(TUScope, TrapFn.get(),
+    ExprResult Call = ActOnCallExpr(TUScope, TrapSubPgm.get(),
                                     E->getLocStart(), MultiExprArg(),
                                     E->getLocEnd());
     if (Call.isInvalid())
@@ -2485,7 +2485,7 @@ Sema::BuildDeclarationNameExpr(const CXXScopeSpec &SS,
     case Decl::Subprogram: {
       if (unsigned BID = cast<SubprogramDecl>(VD)->getBuiltinID()) {
         if (!Context.BuiltinInfo.isPredefinedLibSubprogram(BID)) {
-          type = Context.BuiltinFnTy;
+          type = Context.BuiltinSubPgmTy;
           valueKind = VK_RValue;
           break;
         }
@@ -3572,11 +3572,11 @@ ExprResult Sema::BuildCXXDefaultArgExpr(SourceLocation CallLoc,
 
 Sema::VariadicCallType
 Sema::getVariadicCallType(SubprogramDecl *FDecl, const SubprogramProtoType *Proto,
-                          Expr *Fn) {
+                          Expr *SubPgm) {
   if (Proto && Proto->isVariadic()) {
     if (dyn_cast_or_null<CXXConstructorDecl>(FDecl))
       return VariadicConstructor;
-    else if (Fn && Fn->getType()->isBlockPointerType())
+    else if (SubPgm && SubPgm->getType()->isBlockPointerType())
       return VariadicBlock;
     else if (FDecl) {
       if (CXXMethodDecl *Method = dyn_cast_or_null<CXXMethodDecl>(FDecl))
@@ -3591,11 +3591,11 @@ Sema::getVariadicCallType(SubprogramDecl *FDecl, const SubprogramProtoType *Prot
 /// ConvertArgumentsForCall - Converts the arguments specified in
 /// Args/NumArgs to the parameter types of the function FDecl with
 /// function prototype Proto. Call is the call expression itself, and
-/// Fn is the function expression. For a C++ member function, this
+/// SubPgm is the function expression. For a C++ member function, this
 /// routine does not attempt to convert the object argument. Returns
 /// true if the call is ill-formed.
 bool
-Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
+Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *SubPgm,
                               SubprogramDecl *FDecl,
                               const SubprogramProtoType *Proto,
                               Expr **Args, unsigned NumArgs,
@@ -3613,7 +3613,7 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
   unsigned NumArgsInProto = Proto->getNumArgs();
   bool Invalid = false;
   unsigned MinArgs = FDecl ? FDecl->getMinRequiredArguments() : NumArgsInProto;
-  unsigned FnKind = Fn->getType()->isBlockPointerType()
+  unsigned SubPgmKind = SubPgm->getType()->isBlockPointerType()
                        ? 1 /* block */
                        : (IsExecConfig ? 3 /* kernel function (exec config) */
                                        : 0 /* function */);
@@ -3626,14 +3626,14 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
         Diag(RParenLoc, MinArgs == NumArgsInProto && !Proto->isVariadic()
                           ? diag::err_typecheck_call_too_few_args_one
                           : diag::err_typecheck_call_too_few_args_at_least_one)
-          << FnKind
-          << FDecl->getParamDecl(0) << Fn->getSourceRange();
+          << SubPgmKind
+          << FDecl->getParamDecl(0) << SubPgm->getSourceRange();
       else
         Diag(RParenLoc, MinArgs == NumArgsInProto && !Proto->isVariadic()
                           ? diag::err_typecheck_call_too_few_args
                           : diag::err_typecheck_call_too_few_args_at_least)
-          << FnKind
-          << MinArgs << NumArgs << Fn->getSourceRange();
+          << SubPgmKind
+          << MinArgs << NumArgs << SubPgm->getSourceRange();
 
       // Emit the location of the prototype.
       if (FDecl && !FDecl->getBuiltinID() && !IsExecConfig)
@@ -3654,8 +3654,8 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
              MinArgs == NumArgsInProto
                ? diag::err_typecheck_call_too_many_args_one
                : diag::err_typecheck_call_too_many_args_at_most_one)
-          << FnKind
-          << FDecl->getParamDecl(0) << NumArgs << Fn->getSourceRange()
+          << SubPgmKind
+          << FDecl->getParamDecl(0) << NumArgs << SubPgm->getSourceRange()
           << SourceRange(Args[NumArgsInProto]->getLocStart(),
                          Args[NumArgs-1]->getLocEnd());
       else
@@ -3663,8 +3663,8 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
              MinArgs == NumArgsInProto
                ? diag::err_typecheck_call_too_many_args
                : diag::err_typecheck_call_too_many_args_at_most)
-          << FnKind
-          << NumArgsInProto << NumArgs << Fn->getSourceRange()
+          << SubPgmKind
+          << NumArgsInProto << NumArgs << SubPgm->getSourceRange()
           << SourceRange(Args[NumArgsInProto]->getLocStart(),
                          Args[NumArgs-1]->getLocEnd());
 
@@ -3679,7 +3679,7 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
     }
   }
   SmallVector<Expr *, 8> AllArgs;
-  VariadicCallType CallType = getVariadicCallType(FDecl, Proto, Fn);
+  VariadicCallType CallType = getVariadicCallType(FDecl, Proto, SubPgm);
   
   Invalid = GatherArgumentsForCall(Call->getLocStart(), FDecl,
                                    Proto, 0, Args, NumArgs, AllArgs, CallType);
@@ -3858,30 +3858,30 @@ Sema::CheckStaticArrayArgument(SourceLocation CallLoc,
 /// to have a function type.
 static ExprResult rebuildUnknownAnySubprogram(Sema &S, Expr *fn);
 
-/// ActOnCallExpr - Handle a call to Fn with the specified array of arguments.
+/// ActOnCallExpr - Handle a call to SubPgm with the specified array of arguments.
 /// This provides the location of the left/right parens and a list of comma
 /// locations.
 ExprResult
-Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
+Sema::ActOnCallExpr(Scope *S, Expr *SubPgm, SourceLocation LParenLoc,
                     MultiExprArg ArgExprs, SourceLocation RParenLoc,
                     Expr *ExecConfig, bool IsExecConfig) {
   // Since this might be a postfix expression, get rid of ParenListExprs.
-  ExprResult Result = MaybeConvertParenListExprToParenExpr(S, Fn);
+  ExprResult Result = MaybeConvertParenListExprToParenExpr(S, SubPgm);
   if (Result.isInvalid()) return ExprError();
-  Fn = Result.take();
+  SubPgm = Result.take();
 
   if (getLangOpts().CPlusPlus) {
     // If this is a pseudo-destructor expression, build the call immediately.
-    if (isa<CXXPseudoDestructorExpr>(Fn)) {
+    if (isa<CXXPseudoDestructorExpr>(SubPgm)) {
       if (!ArgExprs.empty()) {
         // Pseudo-destructor calls should not have any arguments.
-        Diag(Fn->getLocStart(), diag::err_pseudo_dtor_call_with_args)
+        Diag(SubPgm->getLocStart(), diag::err_pseudo_dtor_call_with_args)
           << FixItHint::CreateRemoval(
                                     SourceRange(ArgExprs[0]->getLocStart(),
                                                 ArgExprs.back()->getLocEnd()));
       }
 
-      return Owned(new (Context) CallExpr(Context, Fn, MultiExprArg(),
+      return Owned(new (Context) CallExpr(Context, SubPgm, MultiExprArg(),
                                           Context.VoidTy, VK_RValue,
                                           RParenLoc));
     }
@@ -3889,9 +3889,9 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
     // Determine whether this is a dependent call inside a C++ template,
     // in which case we won't do any semantic analysis now.
     // FIXME: Will need to cache the results of name lookup (including ADL) in
-    // Fn.
+    // SubPgm.
     bool Dependent = false;
-    if (Fn->isTypeDependent())
+    if (SubPgm->isTypeDependent())
       Dependent = true;
     else if (Expr::hasAnyTypeDependentArguments(ArgExprs))
       Dependent = true;
@@ -3899,71 +3899,71 @@ Sema::ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
     if (Dependent) {
       if (ExecConfig) {
         return Owned(new (Context) CUDAKernelCallExpr(
-            Context, Fn, cast<CallExpr>(ExecConfig), ArgExprs,
+            Context, SubPgm, cast<CallExpr>(ExecConfig), ArgExprs,
             Context.DependentTy, VK_RValue, RParenLoc));
       } else {
-        return Owned(new (Context) CallExpr(Context, Fn, ArgExprs,
+        return Owned(new (Context) CallExpr(Context, SubPgm, ArgExprs,
                                             Context.DependentTy, VK_RValue,
                                             RParenLoc));
       }
     }
 
     // Determine whether this is a call to an object (C++ [over.call.object]).
-    if (Fn->getType()->isRecordType())
-      return Owned(BuildCallToObjectOfClassType(S, Fn, LParenLoc,
+    if (SubPgm->getType()->isRecordType())
+      return Owned(BuildCallToObjectOfClassType(S, SubPgm, LParenLoc,
                                                 ArgExprs.data(),
                                                 ArgExprs.size(), RParenLoc));
 
-    if (Fn->getType() == Context.UnknownAnyTy) {
-      ExprResult result = rebuildUnknownAnySubprogram(*this, Fn);
+    if (SubPgm->getType() == Context.UnknownAnyTy) {
+      ExprResult result = rebuildUnknownAnySubprogram(*this, SubPgm);
       if (result.isInvalid()) return ExprError();
-      Fn = result.take();
+      SubPgm = result.take();
     }
 
-    if (Fn->getType() == Context.BoundMemberTy) {
-      return BuildCallToMemberSubprogram(S, Fn, LParenLoc, ArgExprs.data(),
+    if (SubPgm->getType() == Context.BoundMemberTy) {
+      return BuildCallToMemberSubprogram(S, SubPgm, LParenLoc, ArgExprs.data(),
                                        ArgExprs.size(), RParenLoc);
     }
   }
 
   // Check for overloaded calls.  This can happen even in C due to extensions.
-  if (Fn->getType() == Context.OverloadTy) {
-    OverloadExpr::FindResult find = OverloadExpr::find(Fn);
+  if (SubPgm->getType() == Context.OverloadTy) {
+    OverloadExpr::FindResult find = OverloadExpr::find(SubPgm);
 
     // We aren't supposed to apply this logic for if there's an '&' involved.
     if (!find.HasFormOfMemberPointer) {
       OverloadExpr *ovl = find.Expression;
       if (isa<UnresolvedLookupExpr>(ovl)) {
         UnresolvedLookupExpr *ULE = cast<UnresolvedLookupExpr>(ovl);
-        return BuildOverloadedCallExpr(S, Fn, ULE, LParenLoc, ArgExprs.data(),
+        return BuildOverloadedCallExpr(S, SubPgm, ULE, LParenLoc, ArgExprs.data(),
                                        ArgExprs.size(), RParenLoc, ExecConfig);
       } else {
-        return BuildCallToMemberSubprogram(S, Fn, LParenLoc, ArgExprs.data(),
+        return BuildCallToMemberSubprogram(S, SubPgm, LParenLoc, ArgExprs.data(),
                                          ArgExprs.size(), RParenLoc);
       }
     }
   }
 
   // If we're directly calling a function, get the appropriate declaration.
-  if (Fn->getType() == Context.UnknownAnyTy) {
-    ExprResult result = rebuildUnknownAnySubprogram(*this, Fn);
+  if (SubPgm->getType() == Context.UnknownAnyTy) {
+    ExprResult result = rebuildUnknownAnySubprogram(*this, SubPgm);
     if (result.isInvalid()) return ExprError();
-    Fn = result.take();
+    SubPgm = result.take();
   }
 
-  Expr *NakedFn = Fn->IgnoreParens();
+  Expr *NakedSubPgm = SubPgm->IgnoreParens();
 
   NamedDecl *NDecl = 0;
-  if (UnaryOperator *UnOp = dyn_cast<UnaryOperator>(NakedFn))
+  if (UnaryOperator *UnOp = dyn_cast<UnaryOperator>(NakedSubPgm))
     if (UnOp->getOpcode() == UO_AddrOf)
-      NakedFn = UnOp->getSubExpr()->IgnoreParens();
+      NakedSubPgm = UnOp->getSubExpr()->IgnoreParens();
   
-  if (isa<DeclRefExpr>(NakedFn))
-    NDecl = cast<DeclRefExpr>(NakedFn)->getDecl();
-  else if (isa<MemberExpr>(NakedFn))
-    NDecl = cast<MemberExpr>(NakedFn)->getMemberDecl();
+  if (isa<DeclRefExpr>(NakedSubPgm))
+    NDecl = cast<DeclRefExpr>(NakedSubPgm)->getDecl();
+  else if (isa<MemberExpr>(NakedSubPgm))
+    NDecl = cast<MemberExpr>(NakedSubPgm)->getMemberDecl();
 
-  return BuildResolvedCallExpr(Fn, NDecl, LParenLoc, ArgExprs.data(),
+  return BuildResolvedCallExpr(SubPgm, NDecl, LParenLoc, ArgExprs.data(),
                                ArgExprs.size(), RParenLoc, ExecConfig,
                                IsExecConfig);
 }
@@ -4013,7 +4013,7 @@ ExprResult Sema::ActOnAsTypeExpr(Expr *E, ParsedType ParsedDestTy,
 ///
 /// \param NDecl the declaration being called, if available
 ExprResult
-Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
+Sema::BuildResolvedCallExpr(Expr *SubPgm, NamedDecl *NDecl,
                             SourceLocation LParenLoc,
                             Expr **Args, unsigned NumArgs,
                             SourceLocation RParenLoc,
@@ -4026,28 +4026,28 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
   // builtin functions to function pointers in the callee of a call.
   ExprResult Result;
   if (BuiltinID &&
-      Fn->getType()->isSpecificBuiltinType(BuiltinType::BuiltinFn)) {
-    Result = ImpCastExprToType(Fn, Context.getPointerType(FDecl->getType()),
-                               CK_BuiltinFnToFnPtr).take();
+      SubPgm->getType()->isSpecificBuiltinType(BuiltinType::BuiltinSubPgm)) {
+    Result = ImpCastExprToType(SubPgm, Context.getPointerType(FDecl->getType()),
+                               CK_BuiltinSubPgmToSubPgmPtr).take();
   } else {
-    Result = UsualUnaryConversions(Fn);
+    Result = UsualUnaryConversions(SubPgm);
   }
   if (Result.isInvalid())
     return ExprError();
-  Fn = Result.take();
+  SubPgm = Result.take();
 
   // Make the call expr early, before semantic checks.  This guarantees cleanup
   // of arguments and function on error.
   CallExpr *TheCall;
   if (Config)
-    TheCall = new (Context) CUDAKernelCallExpr(Context, Fn,
+    TheCall = new (Context) CUDAKernelCallExpr(Context, SubPgm,
                                                cast<CallExpr>(Config),
                                                llvm::makeArrayRef(Args,NumArgs),
                                                Context.BoolTy,
                                                VK_RValue,
                                                RParenLoc);
   else
-    TheCall = new (Context) CallExpr(Context, Fn,
+    TheCall = new (Context) CallExpr(Context, SubPgm,
                                      llvm::makeArrayRef(Args, NumArgs),
                                      Context.BoolTy,
                                      VK_RValue,
@@ -4059,28 +4059,28 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
 
  retry:
   const SubprogramType *FuncT;
-  if (const PointerType *PT = Fn->getType()->getAs<PointerType>()) {
+  if (const PointerType *PT = SubPgm->getType()->getAs<PointerType>()) {
     // C99 6.5.2.2p1 - "The expression that denotes the called function shall
     // have type pointer to function".
     FuncT = PT->getPointeeType()->getAs<SubprogramType>();
     if (FuncT == 0)
       return ExprError(Diag(LParenLoc, diag::err_typecheck_call_not_function)
-                         << Fn->getType() << Fn->getSourceRange());
+                         << SubPgm->getType() << SubPgm->getSourceRange());
   } else if (const BlockPointerType *BPT =
-               Fn->getType()->getAs<BlockPointerType>()) {
+               SubPgm->getType()->getAs<BlockPointerType>()) {
     FuncT = BPT->getPointeeType()->castAs<SubprogramType>();
   } else {
     // Handle calls to expressions of unknown-any type.
-    if (Fn->getType() == Context.UnknownAnyTy) {
-      ExprResult rewrite = rebuildUnknownAnySubprogram(*this, Fn);
+    if (SubPgm->getType() == Context.UnknownAnyTy) {
+      ExprResult rewrite = rebuildUnknownAnySubprogram(*this, SubPgm);
       if (rewrite.isInvalid()) return ExprError();
-      Fn = rewrite.take();
-      TheCall->setCallee(Fn);
+      SubPgm = rewrite.take();
+      TheCall->setCallee(SubPgm);
       goto retry;
     }
 
     return ExprError(Diag(LParenLoc, diag::err_typecheck_call_not_function)
-      << Fn->getType() << Fn->getSourceRange());
+      << SubPgm->getType() << SubPgm->getSourceRange());
   }
 
   if (getLangOpts().CUDA) {
@@ -4088,23 +4088,23 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
       // CUDA: Kernel calls must be to global functions
       if (FDecl && !FDecl->hasAttr<CUDAGlobalAttr>())
         return ExprError(Diag(LParenLoc,diag::err_kern_call_not_global_function)
-            << FDecl->getName() << Fn->getSourceRange());
+            << FDecl->getName() << SubPgm->getSourceRange());
 
       // CUDA: Kernel function must have 'void' return type
       if (!FuncT->getResultType()->isVoidType())
         return ExprError(Diag(LParenLoc, diag::err_kern_type_not_void_return)
-            << Fn->getType() << Fn->getSourceRange());
+            << SubPgm->getType() << SubPgm->getSourceRange());
     } else {
       // CUDA: Calls to global functions must be configured
       if (FDecl && FDecl->hasAttr<CUDAGlobalAttr>())
         return ExprError(Diag(LParenLoc, diag::err_global_call_not_config)
-            << FDecl->getName() << Fn->getSourceRange());
+            << FDecl->getName() << SubPgm->getSourceRange());
     }
   }
 
   // Check for a valid return type
   if (CheckCallReturnType(FuncT->getResultType(),
-                          Fn->getLocStart(), TheCall,
+                          SubPgm->getLocStart(), TheCall,
                           FDecl))
     return ExprError();
 
@@ -4114,7 +4114,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
 
   const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FuncT);
   if (Proto) {
-    if (ConvertArgumentsForCall(TheCall, Fn, FDecl, Proto, Args, NumArgs,
+    if (ConvertArgumentsForCall(TheCall, SubPgm, FDecl, Proto, Args, NumArgs,
                                 RParenLoc, IsExecConfig))
       return ExprError();
   } else {
@@ -4128,7 +4128,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
         Proto = Def->getType()->getAs<SubprogramProtoType>();
         if (!Proto || !(Proto->isVariadic() && NumArgs >= Def->param_size()))
           Diag(RParenLoc, diag::warn_call_wrong_number_of_arguments)
-            << (NumArgs > Def->param_size()) << FDecl << Fn->getSourceRange();
+            << (NumArgs > Def->param_size()) << FDecl << SubPgm->getSourceRange();
       }
       
       // If the function we're calling isn't a function prototype, but we have
@@ -4175,7 +4175,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
   if (CXXMethodDecl *Method = dyn_cast_or_null<CXXMethodDecl>(FDecl))
     if (!Method->isStatic())
       return ExprError(Diag(LParenLoc, diag::err_member_call_without_object)
-        << Fn->getSourceRange());
+        << SubPgm->getSourceRange());
 
   // Check for sentinels
   if (NDecl)
@@ -9415,10 +9415,10 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
   CurBlock->TheDecl->setSignatureAsWritten(Sig);
   CurBlock->SubprogramType = T;
 
-  const SubprogramType *Fn = T->getAs<SubprogramType>();
-  QualType RetTy = Fn->getResultType();
+  const SubprogramType *SubPgm = T->getAs<SubprogramType>();
+  QualType RetTy = SubPgm->getResultType();
   bool isVariadic =
-    (isa<SubprogramProtoType>(Fn) && cast<SubprogramProtoType>(Fn)->isVariadic());
+    (isa<SubprogramProtoType>(SubPgm) && cast<SubprogramProtoType>(SubPgm)->isVariadic());
 
   CurBlock->TheDecl->setIsVariadic(isVariadic);
 
@@ -9454,9 +9454,9 @@ void Sema::ActOnBlockArguments(SourceLocation CaretLoc, Declarator &ParamInfo,
 
   // Fake up parameter variables if we have a typedef, like
   //   ^ fntype { ... }
-  } else if (const SubprogramProtoType *Fn = T->getAs<SubprogramProtoType>()) {
+  } else if (const SubprogramProtoType *SubPgm = T->getAs<SubprogramProtoType>()) {
     for (SubprogramProtoType::arg_type_iterator
-           I = Fn->arg_type_begin(), E = Fn->arg_type_end(); I != E; ++I) {
+           I = SubPgm->arg_type_begin(), E = SubPgm->arg_type_end(); I != E; ++I) {
       ParmVarDecl *Param =
         BuildParmVarDeclForTypedef(CurBlock->TheDecl,
                                    ParamInfo.getLocStart(),
@@ -11646,13 +11646,13 @@ namespace {
 ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
   Expr *CalleeExpr = E->getCallee();
 
-  enum FnKind {
+  enum SubPgmKind {
     FK_MemberSubprogram,
     FK_SubprogramPointer,
     FK_BlockPointer
   };
 
-  FnKind Kind;
+  SubPgmKind Kind;
   QualType CalleeType = CalleeExpr->getType();
   if (CalleeType == S.Context.BoundMemberTy) {
     assert(isa<CXXMemberCallExpr>(E) || isa<CXXOperatorCallExpr>(E));
@@ -11665,7 +11665,7 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
     CalleeType = CalleeType->castAs<BlockPointerType>()->getPointeeType();
     Kind = FK_BlockPointer;
   }
-  const SubprogramType *FnType = CalleeType->castAs<SubprogramType>();
+  const SubprogramType *SubPgmType = CalleeType->castAs<SubprogramType>();
 
   // Verify that this is a legal result type of a function.
   if (DestType->isArrayType() || DestType->isSubprogramType()) {
@@ -11684,14 +11684,14 @@ ExprResult RebuildUnknownAnyExpr::VisitCallExpr(CallExpr *E) {
   assert(E->getObjectKind() == OK_Ordinary);
 
   // Rebuild the function type, replacing the result type with DestType.
-  if (const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(FnType))
+  if (const SubprogramProtoType *Proto = dyn_cast<SubprogramProtoType>(SubPgmType))
     DestType = S.Context.getSubprogramType(DestType,
                                          Proto->arg_type_begin(),
                                          Proto->getNumArgs(),
                                          Proto->getExtProtoInfo());
   else
     DestType = S.Context.getSubprogramNoProtoType(DestType,
-                                                FnType->getExtInfo());
+                                                SubPgmType->getExtInfo());
 
   // Rebuild the appropriate pointer-to-function type.
   switch (Kind) { 
@@ -11956,7 +11956,7 @@ ExprResult Sema::CheckPlaceholderExpr(Expr *E) {
   case BuiltinType::PseudoObject:
     return checkPseudoObjectRValue(E);
 
-  case BuiltinType::BuiltinFn:
+  case BuiltinType::BuiltinSubPgm:
     Diag(E->getLocStart(), diag::err_builtin_fn_use);
     return ExprError();
 

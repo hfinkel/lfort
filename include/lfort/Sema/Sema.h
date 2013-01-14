@@ -1972,7 +1972,7 @@ public:
                                             bool PartialOverloading = false);
 
   // Emit as a 'note' the specific overload candidate
-  void NoteOverloadCandidate(SubprogramDecl *Fn, QualType DestType = QualType());
+  void NoteOverloadCandidate(SubprogramDecl *SubPgm, QualType DestType = QualType());
 
   // Emit as a series of 'note's all template and non-templates
   // identified by the expression Expr
@@ -2008,10 +2008,10 @@ public:
 
   Expr *FixOverloadedSubprogramReference(Expr *E,
                                        DeclAccessPair FoundDecl,
-                                       SubprogramDecl *Fn);
+                                       SubprogramDecl *SubPgm);
   ExprResult FixOverloadedSubprogramReference(ExprResult,
                                             DeclAccessPair FoundDecl,
-                                            SubprogramDecl *Fn);
+                                            SubprogramDecl *SubPgm);
 
   void AddOverloadedCallCandidates(UnresolvedLookupExpr *ULE,
                                    llvm::ArrayRef<Expr *> Args,
@@ -2042,7 +2042,7 @@ public:
                                            OverloadCandidateSet *CandidateSet,
                                            Expr *Range, ExprResult *CallExpr);
 
-  ExprResult BuildOverloadedCallExpr(Scope *S, Expr *Fn,
+  ExprResult BuildOverloadedCallExpr(Scope *S, Expr *SubPgm,
                                      UnresolvedLookupExpr *ULE,
                                      SourceLocation LParenLoc,
                                      Expr **Args, unsigned NumArgs,
@@ -2050,7 +2050,7 @@ public:
                                      Expr *ExecConfig,
                                      bool AllowTypoCorrection=true);
 
-  bool buildOverloadedCallSet(Scope *S, Expr *Fn, UnresolvedLookupExpr *ULE,
+  bool buildOverloadedCallSet(Scope *S, Expr *SubPgm, UnresolvedLookupExpr *ULE,
                               Expr **Args, unsigned NumArgs,
                               SourceLocation RParenLoc,
                               OverloadCandidateSet *CandidateSet,
@@ -2058,12 +2058,12 @@ public:
 
   ExprResult CreateOverloadedUnaryOp(SourceLocation OpLoc,
                                      unsigned Opc,
-                                     const UnresolvedSetImpl &Fns,
+                                     const UnresolvedSetImpl &SubPgms,
                                      Expr *input);
 
   ExprResult CreateOverloadedBinOp(SourceLocation OpLoc,
                                    unsigned Opc,
-                                   const UnresolvedSetImpl &Fns,
+                                   const UnresolvedSetImpl &SubPgms,
                                    Expr *LHS, Expr *RHS);
 
   ExprResult CreateOverloadedArraySubscriptExpr(SourceLocation LLoc,
@@ -3104,7 +3104,7 @@ public:
                                    bool HasTrailingLParen);
 
   void ActOnDefaultCtorInitializers(Decl *CDtorDecl);
-  bool ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
+  bool ConvertArgumentsForCall(CallExpr *Call, Expr *SubPgm,
                                SubprogramDecl *FDecl,
                                const SubprogramProtoType *Proto,
                                Expr **Args, unsigned NumArgs,
@@ -3114,13 +3114,13 @@ public:
                                 ParmVarDecl *Param,
                                 const Expr *ArgExpr);
 
-  /// ActOnCallExpr - Handle a call to Fn with the specified array of arguments.
+  /// ActOnCallExpr - Handle a call to SubPgm with the specified array of arguments.
   /// This provides the location of the left/right parens and a list of comma
   /// locations.
-  ExprResult ActOnCallExpr(Scope *S, Expr *Fn, SourceLocation LParenLoc,
+  ExprResult ActOnCallExpr(Scope *S, Expr *SubPgm, SourceLocation LParenLoc,
                            MultiExprArg ArgExprs, SourceLocation RParenLoc,
                            Expr *ExecConfig = 0, bool IsExecConfig = false);
-  ExprResult BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
+  ExprResult BuildResolvedCallExpr(Expr *SubPgm, NamedDecl *NDecl,
                                    SourceLocation LParenLoc,
                                    Expr **Args, unsigned NumArgs,
                                    SourceLocation RParenLoc,
@@ -4645,9 +4645,9 @@ public:
   // C++ Overloaded Operators [C++ 13.5]
   //
 
-  bool CheckOverloadedOperatorDeclaration(SubprogramDecl *FnDecl);
+  bool CheckOverloadedOperatorDeclaration(SubprogramDecl *SubPgmDecl);
 
-  bool CheckLiteralOperatorDeclaration(SubprogramDecl *FnDecl);
+  bool CheckLiteralOperatorDeclaration(SubprogramDecl *SubPgmDecl);
 
   //===--------------------------------------------------------------------===//
   // C++ Templates [C++ 14]
@@ -4815,7 +4815,7 @@ public:
                                 MultiTemplateParamsArg TemplateParameterLists,
                                 Declarator &D);
 
-  Decl *ActOnStartOfSubprogramTemplateDef(Scope *FnBodyScope,
+  Decl *ActOnStartOfSubprogramTemplateDef(Scope *SubPgmBodyScope,
                                   MultiTemplateParamsArg TemplateParameterLists,
                                         Declarator &D);
 
@@ -6562,7 +6562,7 @@ public:
 
   VariadicCallType getVariadicCallType(SubprogramDecl *FDecl,
                                        const SubprogramProtoType *Proto,
-                                       Expr *Fn);
+                                       Expr *SubPgm);
 
   // Used for determining in which context a type is allowed to be passed to a
   // vararg function.
@@ -7083,7 +7083,7 @@ public:
   void CodeCompleteTag(Scope *S, unsigned TagSpec);
   void CodeCompleteTypeQualifiers(DeclSpec &DS);
   void CodeCompleteCase(Scope *S);
-  void CodeCompleteCall(Scope *S, Expr *Fn, llvm::ArrayRef<Expr *> Args);
+  void CodeCompleteCall(Scope *S, Expr *SubPgm, llvm::ArrayRef<Expr *> Args);
   void CodeCompleteInitializer(Scope *S, Decl *D);
   void CodeCompleteReturn(Scope *S);
   void CodeCompleteAfterIf(Scope *S);
@@ -7283,13 +7283,13 @@ private:
 
   void CheckMemaccessArguments(const CallExpr *Call,
                                unsigned BId,
-                               IdentifierInfo *FnName);
+                               IdentifierInfo *SubPgmName);
 
   void CheckStrlcpycatArguments(const CallExpr *Call,
-                                IdentifierInfo *FnName);
+                                IdentifierInfo *SubPgmName);
 
   void CheckStrncatArguments(const CallExpr *Call,
-                             IdentifierInfo *FnName);
+                             IdentifierInfo *SubPgmName);
 
   void CheckReturnStackAddr(Expr *RetValExp, QualType lhsType,
                             SourceLocation ReturnLoc);

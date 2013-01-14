@@ -4332,13 +4332,13 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
          ->isSubprogramType())) {
 
     if (Arg->getType() == Context.OverloadTy) {
-      if (SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(Arg, ParamType,
+      if (SubprogramDecl *SubPgm = ResolveAddressOfOverloadedSubprogram(Arg, ParamType,
                                                                 true,
                                                                 FoundResult)) {
-        if (DiagnoseUseOfDecl(Fn, Arg->getLocStart()))
+        if (DiagnoseUseOfDecl(SubPgm, Arg->getLocStart()))
           return ExprError();
 
-        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, Fn);
+        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, SubPgm);
         ArgType = Arg->getType();
       } else
         return ExprError();
@@ -4384,14 +4384,14 @@ ExprResult Sema::CheckTemplateArgument(NonTypeTemplateParmDecl *Param,
            "Only object references allowed here");
 
     if (Arg->getType() == Context.OverloadTy) {
-      if (SubprogramDecl *Fn = ResolveAddressOfOverloadedSubprogram(Arg,
+      if (SubprogramDecl *SubPgm = ResolveAddressOfOverloadedSubprogram(Arg,
                                                  ParamRefType->getPointeeType(),
                                                                 true,
                                                                 FoundResult)) {
-        if (DiagnoseUseOfDecl(Fn, Arg->getLocStart()))
+        if (DiagnoseUseOfDecl(SubPgm, Arg->getLocStart()))
           return ExprError();
 
-        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, Fn);
+        Arg = FixOverloadedSubprogramReference(Arg, FoundResult, SubPgm);
         ArgType = Arg->getType();
       } else
         return ExprError();
@@ -5613,7 +5613,7 @@ Decl *Sema::ActOnTemplateDeclarator(Scope *S,
   return NewDecl;
 }
 
-Decl *Sema::ActOnStartOfSubprogramTemplateDef(Scope *FnBodyScope,
+Decl *Sema::ActOnStartOfSubprogramTemplateDef(Scope *SubPgmBodyScope,
                                MultiTemplateParamsArg TemplateParameterLists,
                                             Declarator &D) {
   assert(getCurSubprogramDecl() == 0 && "Subprogram parsing confused");
@@ -5623,12 +5623,12 @@ Decl *Sema::ActOnStartOfSubprogramTemplateDef(Scope *FnBodyScope,
     // FIXME: Diagnose arguments without names in C.
   }
 
-  Scope *ParentScope = FnBodyScope->getParent();
+  Scope *ParentScope = SubPgmBodyScope->getParent();
 
   D.setSubprogramDefinitionKind(FDK_Definition);
   Decl *DP = HandleDeclarator(ParentScope, D,
                               TemplateParameterLists);
-  return ActOnStartOfSubprogramDef(FnBodyScope, DP);
+  return ActOnStartOfSubprogramDef(SubPgmBodyScope, DP);
 }
 
 /// \brief Strips various properties off an implicit instantiation

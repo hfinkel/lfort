@@ -863,7 +863,7 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target) {
   InitBuiltinType(ARCUnbridgedCastTy,  BuiltinType::ARCUnbridgedCast);
 
   // Placeholder type for builtin functions.
-  InitBuiltinType(BuiltinFnTy,  BuiltinType::BuiltinFn);
+  InitBuiltinType(BuiltinSubPgmTy,  BuiltinType::BuiltinSubPgm);
 
   // C99 6.2.5p11.
   FloatComplexTy      = getComplexType(FloatTy);

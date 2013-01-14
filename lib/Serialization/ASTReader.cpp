@@ -4904,7 +4904,7 @@ QualType ASTReader::GetType(TypeID ID) {
       break;
 
     case PREDEF_TYPE_BUILTIN_FN:
-      T = Context.BuiltinFnTy;
+      T = Context.BuiltinSubPgmTy;
       break;
     }
 

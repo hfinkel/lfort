@@ -2432,11 +2432,11 @@ public:
     // Build a reference to the __builtin_shufflevector builtin
     SubprogramDecl *Builtin = cast<SubprogramDecl>(Lookup.front());
     Expr *Callee = new (SemaRef.Context) DeclRefExpr(Builtin, false,
-                                                  SemaRef.Context.BuiltinFnTy,
+                                                  SemaRef.Context.BuiltinSubPgmTy,
                                                   VK_RValue, BuiltinLoc);
     QualType CalleePtrTy = SemaRef.Context.getPointerType(Builtin->getType());
     Callee = SemaRef.ImpCastExprToType(Callee, CalleePtrTy,
-                                       CK_BuiltinFnToFnPtr).take();
+                                       CK_BuiltinSubPgmToSubPgmPtr).take();
 
     // Build the CallExpr
     ExprResult TheCall = SemaRef.Owned(

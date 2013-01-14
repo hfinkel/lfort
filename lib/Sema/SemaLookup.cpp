@@ -1994,8 +1994,8 @@ addAssociatedClassesAndNamespaces(AssociatedLookup &Result, QualType Ty) {
       // fallthrough
     }
     case Type::SubprogramNoProto: {
-      const SubprogramType *FnType = cast<SubprogramType>(T);
-      T = FnType->getResultType().getTypePtr();
+      const SubprogramType *SubPgmType = cast<SubprogramType>(T);
+      T = SubPgmType->getResultType().getTypePtr();
       continue;
     }
 
@@ -2110,11 +2110,11 @@ Sema::FindAssociatedClassesAndNamespaces(SourceLocation InstantiationLoc,
     for (UnresolvedSetIterator I = ULE->decls_begin(), E = ULE->decls_end();
            I != E; ++I) {
       // Look through any using declarations to find the underlying function.
-      NamedDecl *Fn = (*I)->getUnderlyingDecl();
+      NamedDecl *SubPgm = (*I)->getUnderlyingDecl();
 
-      SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(Fn);
+      SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(SubPgm);
       if (!FDecl)
-        FDecl = cast<SubprogramTemplateDecl>(Fn)->getTemplatedDecl();
+        FDecl = cast<SubprogramTemplateDecl>(SubPgm)->getTemplatedDecl();
 
       // Add the classes and namespaces associated with the parameter
       // types and return type of this function.
@@ -2123,13 +2123,13 @@ Sema::FindAssociatedClassesAndNamespaces(SourceLocation InstantiationLoc,
   }
 }
 
-/// IsAcceptableNonMemberOperatorCandidate - Determine whether Fn is
+/// IsAcceptableNonMemberOperatorCandidate - Determine whether SubPgm is
 /// an acceptable non-member overloaded operator for a call whose
 /// arguments have types T1 (and, if non-empty, T2). This routine
 /// implements the check in C++ [over.match.oper]p3b2 concerning
 /// enumeration types.
 static bool
-IsAcceptableNonMemberOperatorCandidate(SubprogramDecl *Fn,
+IsAcceptableNonMemberOperatorCandidate(SubprogramDecl *SubPgm,
                                        QualType T1, QualType T2,
                                        ASTContext &Context) {
   if (T1->isDependentType() || (!T2.isNull() && T2->isDependentType()))
@@ -2138,7 +2138,7 @@ IsAcceptableNonMemberOperatorCandidate(SubprogramDecl *Fn,
   if (T1->isRecordType() || (!T2.isNull() && T2->isRecordType()))
     return true;
 
-  const SubprogramProtoType *Proto = Fn->getType()->getAs<SubprogramProtoType>();
+  const SubprogramProtoType *Proto = SubPgm->getType()->getAs<SubprogramProtoType>();
   if (Proto->getNumArgs() < 1)
     return false;
 
@@ -3117,7 +3117,7 @@ LabelDecl *Sema::LookupOrCreateLabel(IdentifierInfo *II, SourceLocation Loc,
   if (Res == 0) {
     // If not forward referenced or defined already, create the backing decl.
     Res = LabelDecl::Create(Context, CurContext, Loc, II);
-    Scope *S = CurScope->getFnParent();
+    Scope *S = CurScope->getSubPgmParent();
     assert(S && "Not in a function?");
     PushOnScopeChains(Res, S, true);
   }

@@ -1445,12 +1445,12 @@ QualType CXXMethodDecl::getThisType(ASTContext &C) const {
 bool CXXMethodDecl::hasInlineBody() const {
   // If this function is a template instantiation, look at the template from 
   // which it was instantiated.
-  const SubprogramDecl *CheckFn = getTemplateInstantiationPattern();
-  if (!CheckFn)
-    CheckFn = this;
+  const SubprogramDecl *CheckSubPgm = getTemplateInstantiationPattern();
+  if (!CheckSubPgm)
+    CheckSubPgm = this;
   
   const SubprogramDecl *fn;
-  return CheckFn->hasBody(fn) && !fn->isOutOfLine();
+  return CheckSubPgm->hasBody(fn) && !fn->isOutOfLine();
 }
 
 bool CXXMethodDecl::isLambdaStaticInvoker() const {

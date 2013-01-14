@@ -4102,7 +4102,7 @@ Sema::CheckTypedefForVariablyModifiedType(Scope *S, TypedefNameDecl *NewTD) {
   if (T->isVariablyModifiedType()) {
     getCurSubprogram()->setHasBranchProtectedScope();
 
-    if (S->getFnParent() == 0) {
+    if (S->getSubPgmParent() == 0) {
       bool SizeIsNegative;
       llvm::APSInt Oversized;
       TypeSourceInfo *FixedTInfo =
@@ -4304,7 +4304,7 @@ Sema::ActOnVariableDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   DiagnoseSubprogramSpecifiers(D);
 
-  if (!DC->isRecord() && S->getFnParent() == 0) {
+  if (!DC->isRecord() && S->getSubPgmParent() == 0) {
     // C99 6.9p2: The storage-class specifiers auto and register shall not
     // appear in the declaration specifiers in an external declaration.
     if (SC == SC_Auto || SC == SC_Register) {
@@ -4459,7 +4459,7 @@ Sema::ActOnVariableDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   if (getLangOpts().CUDA) {
     // CUDA B.2.5: "__shared__ and __constant__ variables have implied static
     // storage [duration]."
-    if (SC == SC_None && S->getFnParent() != 0 &&
+    if (SC == SC_None && S->getSubPgmParent() != 0 &&
         (NewVD->hasAttr<CUDASharedAttr>() ||
          NewVD->hasAttr<CUDAConstantAttr>())) {
       NewVD->setStorageClass(SC_Static);
@@ -4477,7 +4477,7 @@ Sema::ActOnVariableDeclarator(Scope *S, Declarator &D, DeclContext *DC,
     // The parser guarantees this is a string.
     StringLiteral *SE = cast<StringLiteral>(E);
     StringRef Label = SE->getString();
-    if (S->getFnParent() != 0) {
+    if (S->getSubPgmParent() != 0) {
       switch (SC) {
       case SC_None:
       case SC_Auto:
@@ -7826,14 +7826,14 @@ void Sema::ActOnFinishKNRParamDeclarations(Scope *S, Declarator &D,
   }
 }
 
-Decl *Sema::ActOnStartOfSubprogramDef(Scope *FnBodyScope, Declarator &D) {
+Decl *Sema::ActOnStartOfSubprogramDef(Scope *SubPgmBodyScope, Declarator &D) {
   assert(getCurSubprogramDecl() == 0 && "Subprogram parsing confused");
   assert(D.isSubprogramDeclarator() && "Not a function declarator!");
-  Scope *ParentScope = FnBodyScope->getParent();
+  Scope *ParentScope = SubPgmBodyScope->getParent();
 
   D.setSubprogramDefinitionKind(FDK_Definition);
   Decl *DP = HandleDeclarator(ParentScope, D, MultiTemplateParamsArg());
-  return ActOnStartOfSubprogramDef(FnBodyScope, DP);
+  return ActOnStartOfSubprogramDef(SubPgmBodyScope, DP);
 }
 
 static bool ShouldWarnAboutMissingPrototype(const SubprogramDecl *FD, 
@@ -7904,7 +7904,7 @@ void Sema::CheckForSubprogramRedefinition(SubprogramDecl *FD) {
   }
 }
 
-Decl *Sema::ActOnStartOfSubprogramDef(Scope *FnBodyScope, Decl *D) {
+Decl *Sema::ActOnStartOfSubprogramDef(Scope *SubPgmBodyScope, Decl *D) {
   // Clear the last template instantiation error context.
   LastTemplateInstantiationErrorContext = ActiveTemplateInstantiation();
   
@@ -7963,8 +7963,8 @@ Decl *Sema::ActOnStartOfSubprogramDef(Scope *FnBodyScope, Decl *D) {
     }
   }
 
-  if (FnBodyScope)
-    PushDeclContext(FnBodyScope, FD);
+  if (SubPgmBodyScope)
+    PushDeclContext(SubPgmBodyScope, FD);
 
   // Check the validity of our function parameters
   CheckParmsForSubprogramDef(FD->param_begin(), FD->param_end(),
@@ -7976,16 +7976,16 @@ Decl *Sema::ActOnStartOfSubprogramDef(Scope *FnBodyScope, Decl *D) {
     Param->setOwningSubprogram(FD);
 
     // If this has an identifier, add it to the scope stack.
-    if (Param->getIdentifier() && FnBodyScope) {
-      CheckShadow(FnBodyScope, Param);
+    if (Param->getIdentifier() && SubPgmBodyScope) {
+      CheckShadow(SubPgmBodyScope, Param);
 
-      PushOnScopeChains(Param, FnBodyScope);
+      PushOnScopeChains(Param, SubPgmBodyScope);
     }
   }
 
   // If we had any tags defined in the function prototype,
   // introduce them into the function scope.
-  if (FnBodyScope) {
+  if (SubPgmBodyScope) {
     for (llvm::ArrayRef<NamedDecl*>::iterator I = FD->getDeclsInPrototypeScope().begin(),
            E = FD->getDeclsInPrototypeScope().end(); I != E; ++I) {
       NamedDecl *D = *I;
@@ -8008,14 +8008,14 @@ Decl *Sema::ActOnStartOfSubprogramDef(Scope *FnBodyScope, Decl *D) {
 
       // If the decl has a non-null name, make accessible in the current scope.
       if (!D->getName().empty())
-        PushOnScopeChains(D, FnBodyScope, /*AddToContext=*/false);
+        PushOnScopeChains(D, SubPgmBodyScope, /*AddToContext=*/false);
 
       // Similarly, dive into enums and fish their constants out, making them
       // accessible in this scope.
       if (EnumDecl *ED = dyn_cast<EnumDecl>(D)) {
         for (EnumDecl::enumerator_iterator EI = ED->enumerator_begin(),
                EE = ED->enumerator_end(); EI != EE; ++EI)
-          PushOnScopeChains(*EI, FnBodyScope, /*AddToContext=*/false);
+          PushOnScopeChains(*EI, SubPgmBodyScope, /*AddToContext=*/false);
       }
     }
   }

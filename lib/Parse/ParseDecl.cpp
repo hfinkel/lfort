@@ -928,7 +928,7 @@ void Parser::ParseLexedAttribute(LateParsedAttribute &LA,
 
       // If the Decl is on a function, add function parameters to the scope.
       bool HasFunScope = EnterScope && D->isSubprogramOrSubprogramTemplate();
-      ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope, HasFunScope);
+      ParseScope SubPgmScope(this, Scope::SubPgmScope|Scope::DeclScope, HasFunScope);
       if (HasFunScope)
         Actions.ActOnReenterSubprogramContext(Actions.CurScope, D);
 
@@ -937,7 +937,7 @@ void Parser::ParseLexedAttribute(LateParsedAttribute &LA,
 
       if (HasFunScope) {
         Actions.ActOnExitSubprogramContext();
-        FnScope.Exit();  // Pop scope, and remove Decls from IdResolver
+        SubPgmScope.Exit();  // Pop scope, and remove Decls from IdResolver
       }
       if (HasTemplateScope) {
         TempScope.Exit();
@@ -2211,7 +2211,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
         return cutOffParsing();
       }
 
-      if (getCurScope()->getFnParent() || getCurScope()->getBlockParent())
+      if (getCurScope()->getSubPgmParent() || getCurScope()->getBlockParent())
         CCC = Sema::PCC_LocalDeclarationSpecifiers;
       else if (TemplateInfo.Kind != ParsedTemplateInfo::NonTemplate)
         CCC = DSContext == DSC_class? Sema::PCC_MemberTemplate
@@ -4682,7 +4682,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
   SmallVector<ParsedType, 2> DynamicExceptions;
   SmallVector<SourceRange, 2> DynamicExceptionRanges;
   ExprResult NoexceptExpr;
-  ParsedAttributes FnAttrs(AttrFactory);
+  ParsedAttributes SubPgmAttrs(AttrFactory);
   TypeResult TrailingReturnType;
 
   Actions.ActOnStartSubprogramDeclarator();
@@ -4770,7 +4770,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
 
       // Parse attribute-specifier-seq[opt]. Per DR 979 and DR 1297, this goes
       // after the exception-specification.
-      MaybeParseCXX11Attributes(FnAttrs);
+      MaybeParseCXX11Attributes(SubPgmAttrs);
 
       // Parse trailing-return-type[opt].
       LocalEndLoc = EndLoc;
@@ -4805,7 +4805,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
                                                NoexceptExpr.get() : 0,
                                              StartLoc, LocalEndLoc, D,
                                              TrailingReturnType),
-                FnAttrs, EndLoc);
+                SubPgmAttrs, EndLoc);
 
   Actions.ActOnEndSubprogramDeclarator();
 }

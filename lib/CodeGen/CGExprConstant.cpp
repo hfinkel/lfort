@@ -691,7 +691,7 @@ public:
 
     case CK_Dependent: llvm_unreachable("saw dependent cast!");
 
-    case CK_BuiltinFnToFnPtr:
+    case CK_BuiltinSubPgmToSubPgmPtr:
       llvm_unreachable("builtin functions are handled elsewhere");
 
     case CK_ReinterpretMemberPointer:

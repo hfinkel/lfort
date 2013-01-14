@@ -2758,19 +2758,19 @@ Sema::FinishTemplateArgumentDeduction(SubprogramTemplateDecl *SubprogramTemplate
 /// purposes when it's considered as part of an overload set.
 static QualType GetTypeOfSubprogram(ASTContext &Context,
                                   const OverloadExpr::FindResult &R,
-                                  SubprogramDecl *Fn) {
-  if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(Fn))
+                                  SubprogramDecl *SubPgm) {
+  if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(SubPgm))
     if (Method->isInstance()) {
       // An instance method that's referenced in a form that doesn't
       // look like a member pointer is just invalid.
       if (!R.HasFormOfMemberPointer) return QualType();
 
-      return Context.getMemberPointerType(Fn->getType(),
+      return Context.getMemberPointerType(SubPgm->getType(),
                Context.getTypeDeclType(Method->getParent()).getTypePtr());
     }
 
-  if (!R.IsAddressOfOperand) return Fn->getType();
-  return Context.getPointerType(Fn->getType());
+  if (!R.IsAddressOfOperand) return SubPgm->getType();
+  return Context.getPointerType(SubPgm->getType());
 }
 
 /// Apply the deduction rules for overload sets.
@@ -2836,8 +2836,8 @@ ResolveOverloadForDeduction(Sema &S, TemplateParameterList *TemplateParams,
       D = Specialization;
     }
 
-    SubprogramDecl *Fn = cast<SubprogramDecl>(D);
-    QualType ArgType = GetTypeOfSubprogram(S.Context, R, Fn);
+    SubprogramDecl *SubPgm = cast<SubprogramDecl>(D);
+    QualType ArgType = GetTypeOfSubprogram(S.Context, R, SubPgm);
     if (ArgType.isNull()) continue;
 
     // Subprogram-to-pointer conversion.

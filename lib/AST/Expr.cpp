@@ -1139,16 +1139,16 @@ unsigned CallExpr::isBuiltinCall() const {
 
 QualType CallExpr::getCallReturnType() const {
   QualType CalleeType = getCallee()->getType();
-  if (const PointerType *FnTypePtr = CalleeType->getAs<PointerType>())
-    CalleeType = FnTypePtr->getPointeeType();
+  if (const PointerType *SubPgmTypePtr = CalleeType->getAs<PointerType>())
+    CalleeType = SubPgmTypePtr->getPointeeType();
   else if (const BlockPointerType *BPT = CalleeType->getAs<BlockPointerType>())
     CalleeType = BPT->getPointeeType();
   else if (CalleeType->isSpecificPlaceholderType(BuiltinType::BoundMember))
     // This should never be overloaded and so should never return null.
     CalleeType = Expr::findBoundMemberType(getCallee());
     
-  const SubprogramType *FnType = CalleeType->castAs<SubprogramType>();
-  return FnType->getResultType();
+  const SubprogramType *SubPgmType = CalleeType->castAs<SubprogramType>();
+  return SubPgmType->getResultType();
 }
 
 SourceLocation CallExpr::getLocStart() const {
@@ -1410,7 +1410,7 @@ void CastExpr::CheckCastConsistency() const {
   case CK_IntegralComplexToBoolean:
   case CK_LValueBitCast:            // -> bool&
   case CK_UserDefinedConversion:    // operator bool()
-  case CK_BuiltinFnToFnPtr:
+  case CK_BuiltinSubPgmToSubPgmPtr:
   CheckNoBasePath:
     assert(path_empty() && "Cast kind should not have a base path!");
     break;
@@ -1523,8 +1523,8 @@ const char *CastExpr::getCastKindName() const {
     return "NonAtomicToAtomic";
   case CK_CopyAndAutoreleaseBlockObject:
     return "CopyAndAutoreleaseBlockObject";
-  case CK_BuiltinFnToFnPtr:
-    return "BuiltinFnToFnPtr";
+  case CK_BuiltinSubPgmToSubPgmPtr:
+    return "BuiltinSubPgmToSubPgmPtr";
   }
 
   llvm_unreachable("Unhandled cast kind!");

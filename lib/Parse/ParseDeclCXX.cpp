@@ -116,7 +116,7 @@ Decl *Parser::ParseNamespace(unsigned Context,
 
   if (getCurScope()->isClassScope() || getCurScope()->isTemplateParamScope() || 
       getCurScope()->isInObjcMethodScope() || getCurScope()->getBlockParent() || 
-      getCurScope()->getFnParent()) {
+      getCurScope()->getSubPgmParent()) {
     if (!ExtraIdent.empty()) {
       Diag(ExtraNamespaceLoc[0], diag::err_nested_namespaces_with_double_colon)
           << SourceRange(ExtraNamespaceLoc.front(), ExtraIdentLoc.back());
@@ -1916,13 +1916,13 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
   ColonProtectionRAIIObject X(*this);
 
   ParsedAttributesWithRange attrs(AttrFactory);
-  ParsedAttributesWithRange FnAttrs(AttrFactory);
+  ParsedAttributesWithRange SubPgmAttrs(AttrFactory);
   // Optional C++11 attribute-specifier
   MaybeParseCXX11Attributes(attrs);
   // We need to keep these attributes for future diagnostic
   // before they are taken over by declaration specifier.
-  FnAttrs.addAll(attrs.getList());
-  FnAttrs.Range = attrs.Range;
+  SubPgmAttrs.addAll(attrs.getList());
+  SubPgmAttrs.Range = attrs.Range;
 
   MaybeParseMicrosoftAttributes(attrs);
 
@@ -1964,7 +1964,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
     ConsumeToken();
 
     if (DS.isFriendSpecified())
-      ProhibitAttributes(FnAttrs);
+      ProhibitAttributes(SubPgmAttrs);
 
     Decl *TheDecl =
       Actions.ParsedFreeStandingDeclSpec(getCurScope(), AS, DS, TemplateParams);
@@ -2040,7 +2040,7 @@ void Parser::ParseCXXClassMemberDeclaration(AccessSpecifier AS,
         DefinitionKind != FDK_Definition && DS.isFriendSpecified()) {
       // Diagnose attributes that appear before decl specifier:
       // [[]] friend int foo();
-      ProhibitAttributes(FnAttrs);
+      ProhibitAttributes(SubPgmAttrs);
     }
 
     if (DefinitionKind) {
@@ -2375,7 +2375,7 @@ void Parser::ParseCXXMemberSpecification(SourceLocation RecordLoc,
         break;
       }
 
-      if ((S->getFlags() & Scope::FnScope)) {
+      if ((S->getFlags() & Scope::SubPgmScope)) {
         // If we're in a function or function template declared in the
         // body of a class, then this is a local class rather than a
         // nested class.

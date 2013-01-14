@@ -1541,8 +1541,8 @@ private:
   // C++ 6: Statements and Blocks
 
   StmtResult ParseCXXTryBlock();
-  StmtResult ParseCXXTryBlockCommon(SourceLocation TryLoc, bool FnTry = false);
-  StmtResult ParseCXXCatchBlock(bool FnCatch = false);
+  StmtResult ParseCXXTryBlockCommon(SourceLocation TryLoc, bool SubPgmTry = false);
+  StmtResult ParseCXXCatchBlock(bool SubPgmCatch = false);
 
   //===--------------------------------------------------------------------===//
   // MS: SEH Statements and Blocks

@@ -2937,14 +2937,14 @@ ResolveOverloadedSubprogramForReferenceBinding(Sema &S,
         S.Context.OverloadTy) {
     DeclAccessPair Found;
     bool HadMultipleCandidates = false;
-    if (SubprogramDecl *Fn
+    if (SubprogramDecl *SubPgm
         = S.ResolveAddressOfOverloadedSubprogram(Initializer,
                                                UnqualifiedTargetType,
                                                false, Found,
                                                &HadMultipleCandidates)) {
-      Sequence.AddAddressOverloadResolutionStep(Fn, Found,
+      Sequence.AddAddressOverloadResolutionStep(SubPgm, Found,
                                                 HadMultipleCandidates);
-      SourceType = Fn->getType();
+      SourceType = SubPgm->getType();
       UnqualifiedSourceType = SourceType.getUnqualifiedType();
     } else if (!UnqualifiedTargetType->isRecordType()) {
       Sequence.SetFailed(InitializationSequence::FK_AddressOfOverloadFailed);
@@ -5065,11 +5065,11 @@ InitializationSequence::Perform(Sema &S,
       // or a conversion function.
       CastKind CastKind;
       bool IsCopy = false;
-      SubprogramDecl *Fn = Step->Subprogram.Subprogram;
-      DeclAccessPair FoundFn = Step->Subprogram.FoundDecl;
+      SubprogramDecl *SubPgm = Step->Subprogram.Subprogram;
+      DeclAccessPair FoundSubPgm = Step->Subprogram.FoundDecl;
       bool HadMultipleCandidates = Step->Subprogram.HadMultipleCandidates;
       bool CreatedObject = false;
-      if (CXXConstructorDecl *Constructor = dyn_cast<CXXConstructorDecl>(Fn)) {
+      if (CXXConstructorDecl *Constructor = dyn_cast<CXXConstructorDecl>(SubPgm)) {
         // Build a call to the selected constructor.
         SmallVector<Expr*, 8> ConstructorArgs;
         SourceLocation Loc = CurInit.get()->getLocStart();
@@ -5095,8 +5095,8 @@ InitializationSequence::Perform(Sema &S,
           return ExprError();
 
         S.CheckConstructorAccess(Kind.getLocation(), Constructor, Entity,
-                                 FoundFn.getAccess());
-        S.DiagnoseUseOfDecl(FoundFn, Kind.getLocation());
+                                 FoundSubPgm.getAccess());
+        S.DiagnoseUseOfDecl(FoundSubPgm, Kind.getLocation());
 
         CastKind = CK_ConstructorConversion;
         QualType Class = S.Context.getTypeDeclType(Constructor->getParent());
@@ -5107,23 +5107,23 @@ InitializationSequence::Perform(Sema &S,
         CreatedObject = true;
       } else {
         // Build a call to the conversion function.
-        CXXConversionDecl *Conversion = cast<CXXConversionDecl>(Fn);
+        CXXConversionDecl *Conversion = cast<CXXConversionDecl>(SubPgm);
         S.CheckMemberOperatorAccess(Kind.getLocation(), CurInit.get(), 0,
-                                    FoundFn);
-        S.DiagnoseUseOfDecl(FoundFn, Kind.getLocation());
+                                    FoundSubPgm);
+        S.DiagnoseUseOfDecl(FoundSubPgm, Kind.getLocation());
 
         // FIXME: Should we move this initialization into a separate
         // derived-to-base conversion? I believe the answer is "no", because
         // we don't want to turn off access control here for c-style casts.
         ExprResult CurInitExprRes =
           S.PerformObjectArgumentInitialization(CurInit.take(), /*Qualifier=*/0,
-                                                FoundFn, Conversion);
+                                                FoundSubPgm, Conversion);
         if(CurInitExprRes.isInvalid())
           return ExprError();
         CurInit = CurInitExprRes;
 
         // Build the actual call to the conversion function.
-        CurInit = S.BuildCXXMemberCallExpr(CurInit.get(), FoundFn, Conversion,
+        CurInit = S.BuildCXXMemberCallExpr(CurInit.get(), FoundSubPgm, Conversion,
                                            HadMultipleCandidates);
         if (CurInit.isInvalid() || !CurInit.get())
           return ExprError();

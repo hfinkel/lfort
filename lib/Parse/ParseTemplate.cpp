@@ -1316,7 +1316,7 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT) {
 
   // Parse the method body. Subprogram body parsing code is similar enough
   // to be re-used for method bodies as well.
-  ParseScope FnScope(this, Scope::FnScope|Scope::DeclScope);
+  ParseScope SubPgmScope(this, Scope::SubPgmScope|Scope::DeclScope);
 
   // Recreate the containing function DeclContext.
   Sema::ContextRAII SubprogramSavedContext(Actions, Actions.getContainingDC(FD));
@@ -1330,7 +1330,7 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT) {
 
 
   if (Tok.is(tok::kw_try)) {
-    ParseSubprogramTryBlock(LMT.D, FnScope);
+    ParseSubprogramTryBlock(LMT.D, SubPgmScope);
   } else {
     if (Tok.is(tok::colon))
       ParseConstructorInitializer(LMT.D);
@@ -1338,14 +1338,14 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT) {
       Actions.ActOnDefaultCtorInitializers(LMT.D);
 
     if (Tok.is(tok::l_brace)) {
-      ParseSubprogramStatementBody(LMT.D, FnScope);
+      ParseSubprogramStatementBody(LMT.D, SubPgmScope);
       Actions.MarkAsLateParsedTemplate(FD, false);
     } else
       Actions.ActOnFinishSubprogramBody(LMT.D, 0);
   }
 
   // Exit scopes.
-  FnScope.Exit();
+  SubPgmScope.Exit();
   SmallVector<ParseScope*, 4>::reverse_iterator I =
    TemplateParamScopeStack.rbegin();
   for (; I != TemplateParamScopeStack.rend(); ++I)
