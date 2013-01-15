@@ -130,7 +130,7 @@ void VerifyDiagnosticConsumer::HandleDiagnostic(
         // If the file is a modules header file it shall not be parsed
         // for expected-* directives.
         HeaderSearch &HS = CurrentPreprocessor->getHeaderSearchInfo();
-        if (HS.findModuleForHeader(FE))
+        if (HS.findPCModuleForHeader(FE))
           PS = IsUnparsedNoDirectives;
       }
 

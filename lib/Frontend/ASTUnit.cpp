@@ -553,7 +553,7 @@ public:
     HSI.setHeaderFileInfoForUID(HFI, NumHeaderInfos++);
   }
 
-  virtual void ReadCounter(const serialization::ModuleFile &M, unsigned Value) {
+  virtual void ReadCounter(const serialization::PCModuleFile &M, unsigned Value) {
     Counter = Value;
   }
 
@@ -1163,7 +1163,7 @@ bool ASTUnit::Parse(llvm::MemoryBuffer *OverrideMainBuffer) {
 
   if (OverrideMainBuffer) {
     std::string ModName = getPreambleFile(this);
-    TranslateStoredDiagnostics(LFort->getModuleManager(), ModName,
+    TranslateStoredDiagnostics(LFort->getPCModuleManager(), ModName,
                                getSourceManager(), PreambleDiagnostics,
                                StoredDiagnostics);
   }
@@ -1685,7 +1685,7 @@ void ASTUnit::transferASTDataFromCompilerInstance(CompilerInstance &CI) {
   CI.setSourceManager(0);
   CI.setFileManager(0);
   Target = &CI.getTarget();
-  Reader = CI.getModuleManager();
+  Reader = CI.getPCModuleManager();
 }
 
 StringRef ASTUnit::getMainFileName() const {
@@ -2450,7 +2450,7 @@ void ASTUnit::CodeComplete(StringRef File, unsigned Line, unsigned Column,
   }
 
   // Disable the preprocessing record if modules are not enabled.
-  if (!LFort->getLangOpts().Modules)
+  if (!LFort->getLangOpts().PCModules)
     PreprocessorOpts.DetailedRecord = false;
   
   OwningPtr<SyntaxOnlyAction> Act;
@@ -2543,7 +2543,7 @@ void ASTUnit::TranslateStoredDiagnostics(
   SmallVector<StoredDiagnostic, 4> Result;
   Result.reserve(Diags.size());
   assert(MMan && "Don't have a module manager");
-  serialization::ModuleFile *Mod = MMan->ModuleMgr.lookup(ModName);
+  serialization::PCModuleFile *Mod = MMan->PCModuleMgr.lookup(ModName);
   assert(Mod && "Don't have preamble module");
   SLocRemap &Remap = Mod->SLocRemap;
   for (unsigned I = 0, N = Diags.size(); I != N; ++I) {
@@ -2779,9 +2779,9 @@ SourceLocation ASTUnit::getStartOfMainFileID() {
 std::pair<PreprocessingRecord::iterator, PreprocessingRecord::iterator>
 ASTUnit::getLocalPreprocessingEntities() const {
   if (isMainFileAST()) {
-    serialization::ModuleFile &
-      Mod = Reader->getModuleManager().getPrimaryModule();
-    return Reader->getModulePreprocessedEntities(Mod);
+    serialization::PCModuleFile &
+      Mod = Reader->getPCModuleManager().getPrimaryPCModule();
+    return Reader->getPCModulePreprocessedEntities(Mod);
   }
 
   if (PreprocessingRecord *PPRec = PP->getPreprocessingRecord())
@@ -2793,10 +2793,10 @@ ASTUnit::getLocalPreprocessingEntities() const {
 
 bool ASTUnit::visitLocalTopLevelDecls(void *context, DeclVisitorFn Fn) {
   if (isMainFileAST()) {
-    serialization::ModuleFile &
-      Mod = Reader->getModuleManager().getPrimaryModule();
-    ASTReader::ModuleDeclIterator MDI, MDE;
-    llvm::tie(MDI, MDE) = Reader->getModuleFileLevelDecls(Mod);
+    serialization::PCModuleFile &
+      Mod = Reader->getPCModuleManager().getPrimaryPCModule();
+    ASTReader::PCModuleDeclIterator MDI, MDE;
+    llvm::tie(MDI, MDE) = Reader->getPCModuleFileLevelDecls(Mod);
     for (; MDI != MDE; ++MDI) {
       if (!Fn(context, *MDI))
         return false;
@@ -2817,15 +2817,15 @@ bool ASTUnit::visitLocalTopLevelDecls(void *context, DeclVisitorFn Fn) {
 
 namespace {
 struct PCHLocatorInfo {
-  serialization::ModuleFile *Mod;
+  serialization::PCModuleFile *Mod;
   PCHLocatorInfo() : Mod(0) {}
 };
 }
 
-static bool PCHLocator(serialization::ModuleFile &M, void *UserData) {
+static bool PCHLocator(serialization::PCModuleFile &M, void *UserData) {
   PCHLocatorInfo &Info = *static_cast<PCHLocatorInfo*>(UserData);
   switch (M.Kind) {
-  case serialization::MK_Module:
+  case serialization::MK_PCModule:
     return true; // skip dependencies.
   case serialization::MK_PCH:
     Info.Mod = &M;
@@ -2844,15 +2844,15 @@ const FileEntry *ASTUnit::getPCHFile() {
     return 0;
 
   PCHLocatorInfo Info;
-  Reader->getModuleManager().visit(PCHLocator, &Info);
+  Reader->getPCModuleManager().visit(PCHLocator, &Info);
   if (Info.Mod)
     return Info.Mod->File;
 
   return 0;
 }
 
-bool ASTUnit::isModuleFile() {
-  return isMainFileAST() && !ASTFileLangOpts.CurrentModule.empty();
+bool ASTUnit::isPCModuleFile() {
+  return isMainFileAST() && !ASTFileLangOpts.CurrentPCModule.empty();
 }
 
 void ASTUnit::PreambleData::countLines() const {

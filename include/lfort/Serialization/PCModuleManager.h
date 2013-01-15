@@ -1,4 +1,4 @@
-//===--- ModuleManager.cpp - Module Manager ---------------------*- C++ -*-===//
+//===--- PCModuleManager.cpp - PCModule Manager ---------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the ModuleManager class, which manages a set of loaded
+//  This file defines the PCModuleManager class, which manages a set of loaded
 //  modules for the ASTReader.
 //
 //===----------------------------------------------------------------------===//
@@ -16,7 +16,7 @@
 #define LLVM_LFORT_SERIALIZATION_MODULE_MANAGER_H
 
 #include "lfort/Basic/FileManager.h"
-#include "lfort/Serialization/Module.h"
+#include "lfort/Serialization/PCModule.h"
 #include "llvm/ADT/DenseMap.h"
 
 namespace lfort { 
@@ -24,13 +24,13 @@ namespace lfort {
 namespace serialization {
   
 /// \brief Manages the set of modules loaded by an AST reader.
-class ModuleManager {
+class PCModuleManager {
   /// \brief The chain of AST files. The first entry is the one named by the
   /// user, the last one is the one that doesn't depend on anything further.
-  llvm::SmallVector<ModuleFile*, 2> Chain;
+  llvm::SmallVector<PCModuleFile*, 2> Chain;
   
   /// \brief All loaded modules, indexed by name.
-  llvm::DenseMap<const FileEntry *, ModuleFile *> Modules;
+  llvm::DenseMap<const FileEntry *, PCModuleFile *> PCModules;
   
   /// \brief FileManager that handles translating between filenames and
   /// FileEntry *.
@@ -40,45 +40,45 @@ class ModuleManager {
   llvm::DenseMap<const FileEntry *, llvm::MemoryBuffer *> InMemoryBuffers;
   
 public:
-  typedef SmallVector<ModuleFile*, 2>::iterator ModuleIterator;
-  typedef SmallVector<ModuleFile*, 2>::const_iterator ModuleConstIterator;
-  typedef SmallVector<ModuleFile*, 2>::reverse_iterator ModuleReverseIterator;
-  typedef std::pair<uint32_t, StringRef> ModuleOffset;
+  typedef SmallVector<PCModuleFile*, 2>::iterator PCModuleIterator;
+  typedef SmallVector<PCModuleFile*, 2>::const_iterator PCModuleConstIterator;
+  typedef SmallVector<PCModuleFile*, 2>::reverse_iterator PCModuleReverseIterator;
+  typedef std::pair<uint32_t, StringRef> PCModuleOffset;
   
-  explicit ModuleManager(FileManager &FileMgr);
-  ~ModuleManager();
+  explicit PCModuleManager(FileManager &FileMgr);
+  ~PCModuleManager();
   
   /// \brief Forward iterator to traverse all loaded modules.  This is reverse
   /// source-order.
-  ModuleIterator begin() { return Chain.begin(); }
+  PCModuleIterator begin() { return Chain.begin(); }
   /// \brief Forward iterator end-point to traverse all loaded modules
-  ModuleIterator end() { return Chain.end(); }
+  PCModuleIterator end() { return Chain.end(); }
   
   /// \brief Const forward iterator to traverse all loaded modules.  This is 
   /// in reverse source-order.
-  ModuleConstIterator begin() const { return Chain.begin(); }
+  PCModuleConstIterator begin() const { return Chain.begin(); }
   /// \brief Const forward iterator end-point to traverse all loaded modules
-  ModuleConstIterator end() const { return Chain.end(); }
+  PCModuleConstIterator end() const { return Chain.end(); }
   
   /// \brief Reverse iterator to traverse all loaded modules.  This is in 
   /// source order.
-  ModuleReverseIterator rbegin() { return Chain.rbegin(); }
+  PCModuleReverseIterator rbegin() { return Chain.rbegin(); }
   /// \brief Reverse iterator end-point to traverse all loaded modules.
-  ModuleReverseIterator rend() { return Chain.rend(); }
+  PCModuleReverseIterator rend() { return Chain.rend(); }
   
   /// \brief Returns the primary module associated with the manager, that is,
   /// the first module loaded
-  ModuleFile &getPrimaryModule() { return *Chain[0]; }
+  PCModuleFile &getPrimaryPCModule() { return *Chain[0]; }
   
   /// \brief Returns the primary module associated with the manager, that is,
   /// the first module loaded.
-  ModuleFile &getPrimaryModule() const { return *Chain[0]; }
+  PCModuleFile &getPrimaryPCModule() const { return *Chain[0]; }
   
   /// \brief Returns the module associated with the given index
-  ModuleFile &operator[](unsigned Index) const { return *Chain[Index]; }
+  PCModuleFile &operator[](unsigned Index) const { return *Chain[Index]; }
   
   /// \brief Returns the module associated with the given name
-  ModuleFile *lookup(StringRef Name);
+  PCModuleFile *lookup(StringRef Name);
   
   /// \brief Returns the in-memory (virtual file) buffer with the given name
   llvm::MemoryBuffer *lookupBuffer(StringRef Name);
@@ -104,13 +104,13 @@ public:
   ///
   /// \return A pointer to the module that corresponds to this file name,
   /// and a boolean indicating whether the module was newly added.
-  std::pair<ModuleFile *, bool> 
-  addModule(StringRef FileName, ModuleKind Type, SourceLocation ImportLoc,
-            ModuleFile *ImportedBy, unsigned Generation,
+  std::pair<PCModuleFile *, bool> 
+  addPCModule(StringRef FileName, PCModuleKind Type, SourceLocation ImportLoc,
+            PCModuleFile *ImportedBy, unsigned Generation,
             std::string &ErrorStr);
 
   /// \brief Remove the given set of modules.
-  void removeModules(ModuleIterator first, ModuleIterator last);
+  void removePCModules(PCModuleIterator first, PCModuleIterator last);
 
   /// \brief Add an in-memory buffer the list of known buffers
   void addInMemoryBuffer(StringRef FileName, llvm::MemoryBuffer *Buffer);
@@ -133,7 +133,7 @@ public:
   ///
   /// \param UserData User data associated with the visitor object, which
   /// will be passed along to the visitor.
-  void visit(bool (*Visitor)(ModuleFile &M, void *UserData), void *UserData);
+  void visit(bool (*Visitor)(PCModuleFile &M, void *UserData), void *UserData);
   
   /// \brief Visit each of the modules with a depth-first traversal.
   ///
@@ -151,7 +151,7 @@ public:
   ///
   /// \param UserData User data ssociated with the visitor object,
   /// which will be passed along to the user.
-  void visitDepthFirst(bool (*Visitor)(ModuleFile &M, bool Preorder, 
+  void visitDepthFirst(bool (*Visitor)(PCModuleFile &M, bool Preorder, 
                                        void *UserData), 
                        void *UserData);
   

@@ -20,7 +20,7 @@
 #include "lfort/AST/Expr.h"
 #include "lfort/AST/ExprCXX.h"
 #include "lfort/AST/PrettyPrinter.h"
-#include "lfort/Basic/Module.h"
+#include "lfort/Basic/PCModule.h"
 #include "llvm/Support/raw_ostream.h"
 using namespace lfort;
 
@@ -330,7 +330,7 @@ void DeclPrinter::VisitTypedefDecl(TypedefDecl *D) {
   if (!Policy.SuppressSpecifiers) {
     Out << "typedef ";
     
-    if (D->isModulePrivate())
+    if (D->isPCModulePrivate())
       Out << "__module_private__ ";
   }
   D->getUnderlyingType().print(Out, Policy, D->getName());
@@ -342,7 +342,7 @@ void DeclPrinter::VisitTypeAliasDecl(TypeAliasDecl *D) {
 }
 
 void DeclPrinter::VisitEnumDecl(EnumDecl *D) {
-  if (!Policy.SuppressSpecifiers && D->isModulePrivate())
+  if (!Policy.SuppressSpecifiers && D->isPCModulePrivate())
     Out << "__module_private__ ";
   Out << "enum ";
   if (D->isScoped()) {
@@ -365,7 +365,7 @@ void DeclPrinter::VisitEnumDecl(EnumDecl *D) {
 }
 
 void DeclPrinter::VisitRecordDecl(RecordDecl *D) {
-  if (!Policy.SuppressSpecifiers && D->isModulePrivate())
+  if (!Policy.SuppressSpecifiers && D->isPCModulePrivate())
     Out << "__module_private__ ";
   Out << D->getKindName();
   if (D->getIdentifier())
@@ -400,7 +400,7 @@ void DeclPrinter::VisitSubprogramDecl(SubprogramDecl *D) {
 
     if (D->isInlineSpecified())  Out << "inline ";
     if (D->isVirtualAsWritten()) Out << "virtual ";
-    if (D->isModulePrivate())    Out << "__module_private__ ";
+    if (D->isPCModulePrivate())    Out << "__module_private__ ";
     if (CDecl && CDecl->isExplicitSpecified())
       Out << "explicit ";
   }
@@ -603,7 +603,7 @@ void DeclPrinter::VisitFriendDecl(FriendDecl *D) {
 void DeclPrinter::VisitFieldDecl(FieldDecl *D) {
   if (!Policy.SuppressSpecifiers && D->isMutable())
     Out << "mutable ";
-  if (!Policy.SuppressSpecifiers && D->isModulePrivate())
+  if (!Policy.SuppressSpecifiers && D->isPCModulePrivate())
     Out << "__module_private__ ";
 
   Out << D->getType().stream(Policy, D->getName());
@@ -636,7 +636,7 @@ void DeclPrinter::VisitVarDecl(VarDecl *D) {
 
   if (!Policy.SuppressSpecifiers && D->isThreadSpecified())
     Out << "__thread ";
-  if (!Policy.SuppressSpecifiers && D->isModulePrivate())
+  if (!Policy.SuppressSpecifiers && D->isPCModulePrivate())
     Out << "__module_private__ ";
 
   QualType T = D->getType();
@@ -674,7 +674,7 @@ void DeclPrinter::VisitFileScopeAsmDecl(FileScopeAsmDecl *D) {
 }
 
 void DeclPrinter::VisitImportDecl(ImportDecl *D) {
-  Out << "@import " << D->getImportedModule()->getFullModuleName()
+  Out << "@import " << D->getImportedPCModule()->getFullPCModuleName()
       << ";\n";
 }
 
@@ -712,7 +712,7 @@ void DeclPrinter::VisitNamespaceAliasDecl(NamespaceAliasDecl *D) {
 }
 
 void DeclPrinter::VisitCXXRecordDecl(CXXRecordDecl *D) {
-  if (!Policy.SuppressSpecifiers && D->isModulePrivate())
+  if (!Policy.SuppressSpecifiers && D->isPCModulePrivate())
     Out << "__module_private__ ";
   Out << D->getKindName();
   if (D->getIdentifier())

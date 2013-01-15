@@ -2088,7 +2088,7 @@ void Parser::ParseMicrosoftIfExistsExternalDeclaration() {
   Braces.consumeClose();
 }
 
-Parser::DeclGroupPtrTy Parser::ParseModuleImport(SourceLocation AtLoc) {
+Parser::DeclGroupPtrTy Parser::ParsePCModuleImport(SourceLocation AtLoc) {
   assert(Tok.isObjCAtKeyword(tok::objc_import) && 
          "Improper start to module import");
   SourceLocation ImportLoc = ConsumeToken();
@@ -2099,7 +2099,7 @@ Parser::DeclGroupPtrTy Parser::ParseModuleImport(SourceLocation AtLoc) {
   do {
     if (!Tok.is(tok::identifier)) {
       if (Tok.is(tok::code_completion)) {
-        Actions.CodeCompleteModuleImport(ImportLoc, Path);
+        Actions.CodeCompletePCModuleImport(ImportLoc, Path);
         ConsumeCodeCompletionToken();
         SkipUntil(tok::semi);
         return DeclGroupPtrTy();
@@ -2122,7 +2122,7 @@ Parser::DeclGroupPtrTy Parser::ParseModuleImport(SourceLocation AtLoc) {
     break;
   } while (true);
   
-  DeclResult Import = Actions.ActOnModuleImport(AtLoc, ImportLoc, Path);
+  DeclResult Import = Actions.ActOnPCModuleImport(AtLoc, ImportLoc, Path);
   ExpectAndConsumeSemi(diag::err_module_expected_semi);
   if (Import.isInvalid())
     return DeclGroupPtrTy();

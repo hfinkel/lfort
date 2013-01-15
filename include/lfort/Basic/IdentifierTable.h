@@ -68,7 +68,7 @@ class IdentifierInfo {
   bool OutOfDate              : 1; // True if there may be additional
                                    // information about this identifier
                                    // stored externally.
-  bool IsModulesImport        : 1; // True if this is the 'import' contextual
+  bool IsPCModulesImport        : 1; // True if this is the 'import' contextual
                                    // keyword.
   // 32-bit word is filled.
 
@@ -298,12 +298,12 @@ public:
   
   /// \brief Determine whether this is the contextual keyword
   /// 'import'.
-  bool isModulesImport() const { return IsModulesImport; }
+  bool isPCModulesImport() const { return IsPCModulesImport; }
   
   /// \brief Set whether this identifier is the contextual keyword 
   /// 'import'.
-  void setModulesImport(bool I) {
-    IsModulesImport = I;
+  void setPCModulesImport(bool I) {
+    IsPCModulesImport = I;
     if (I)
       NeedsHandleIdentifier = true;
     else
@@ -322,7 +322,7 @@ private:
     NeedsHandleIdentifier =
       (isPoisoned() | hasMacroDefinition() | isCPlusPlusOperatorKeyword() |
        isExtensionToken() | isCXX11CompatKeyword() || isOutOfDate() ||
-       isModulesImport());
+       isPCModulesImport());
   }
 };
 
@@ -508,7 +508,7 @@ public:
       
       // If this is the 'import' contextual keyword, mark it as such.
       if (Name.equals("import"))
-        II->setModulesImport(true);
+        II->setPCModulesImport(true);
     }
 
     return *II;

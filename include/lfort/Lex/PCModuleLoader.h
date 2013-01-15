@@ -1,4 +1,4 @@
-//===--- ModuleLoader.h - Module Loader Interface ---------------*- C++ -*-===//
+//===--- PCModuleLoader.h - PCModule Loader Interface ---------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,14 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the ModuleLoader interface, which is responsible for 
+//  This file defines the PCModuleLoader interface, which is responsible for 
 //  loading named modules.
 //
 //===----------------------------------------------------------------------===//
 #ifndef LLVM_LFORT_LEX_MODULE_LOADER_H
 #define LLVM_LFORT_LEX_MODULE_LOADER_H
 
-#include "lfort/Basic/Module.h"
+#include "lfort/Basic/PCModule.h"
 #include "lfort/Basic/SourceLocation.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerIntPair.h"
@@ -22,24 +22,24 @@
 namespace lfort {
 
 class IdentifierInfo;
-class Module;
+class PCModule;
 
 /// \brief A sequence of identifier/location pairs used to describe a particular
 /// module or submodule, e.g., std.vector.
 typedef llvm::ArrayRef<std::pair<IdentifierInfo*, SourceLocation> > 
-  ModuleIdPath;
+  PCModuleIdPath;
 
 /// \brief Describes the result of attempting to load a module.
-class ModuleLoadResult {
-  llvm::PointerIntPair<Module *, 1, bool> Storage;
+class PCModuleLoadResult {
+  llvm::PointerIntPair<PCModule *, 1, bool> Storage;
 
 public:
-  ModuleLoadResult() : Storage() { }
+  PCModuleLoadResult() : Storage() { }
 
-  ModuleLoadResult(Module *module, bool missingExpected)
+  PCModuleLoadResult(PCModule *module, bool missingExpected)
     : Storage(module, missingExpected) { }
 
-  operator Module *() const { return Storage.getPointer(); }
+  operator PCModule *() const { return Storage.getPointer(); }
 
   /// \brief Determines whether the module, which failed to load, was
   /// actually a submodule that we expected to see (based on implying the
@@ -53,9 +53,9 @@ public:
 /// This abstract interface describes a module loader, which is responsible
 /// for resolving a module name (e.g., "std") to an actual module file, and
 /// then loading that module.
-class ModuleLoader {
+class PCModuleLoader {
 public:
-  virtual ~ModuleLoader();
+  virtual ~PCModuleLoader();
   
   /// \brief Attempt to load the given module.
   ///
@@ -76,9 +76,9 @@ public:
   ///
   /// \returns If successful, returns the loaded module. Otherwise, returns 
   /// NULL to indicate that the module could not be loaded.
-  virtual ModuleLoadResult loadModule(SourceLocation ImportLoc,
-                                      ModuleIdPath Path,
-                                      Module::NameVisibilityKind Visibility,
+  virtual PCModuleLoadResult loadPCModule(SourceLocation ImportLoc,
+                                      PCModuleIdPath Path,
+                                      PCModule::NameVisibilityKind Visibility,
                                       bool IsInclusionDirective) = 0;
 };
   

@@ -6062,7 +6062,7 @@ def note_related_result_type_inferred : Note<
 
 }
 
-let CategoryName = "Modules Issue" in {
+let CategoryName = "PCModules Issue" in {
 def err_module_private_specialization : Error<
   "%select{template|partial|member}0 specialization cannot be "
   "declared __module_private__">;

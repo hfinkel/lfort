@@ -1301,11 +1301,11 @@ static void handleOwnershipAttr(Sema &S, Decl *D, const AttributeList &AL) {
   bool HasImplicitThisParam = isInstanceMethod(D);
   unsigned NumArgs  = getSubprogramOrMethodNumArgs(D) + HasImplicitThisParam;
 
-  StringRef Module = AL.getParameterName()->getName();
+  StringRef PCModule = AL.getParameterName()->getName();
 
   // Normalize the argument, __foo__ becomes foo.
-  if (Module.startswith("__") && Module.endswith("__"))
-    Module = Module.substr(2, Module.size() - 4);
+  if (PCModule.startswith("__") && PCModule.endswith("__"))
+    PCModule = PCModule.substr(2, PCModule.size() - 4);
 
   SmallVector<unsigned, 10> OwnershipArgs;
 
@@ -1397,7 +1397,7 @@ static void handleOwnershipAttr(Sema &S, Decl *D, const AttributeList &AL) {
     return;
   }
 
-  D->addAttr(::new (S.Context) OwnershipAttr(AL.getLoc(), S.Context, K, Module,
+  D->addAttr(::new (S.Context) OwnershipAttr(AL.getLoc(), S.Context, K, PCModule,
                                              start, size));
 }
 

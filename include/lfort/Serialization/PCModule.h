@@ -1,4 +1,4 @@
-//===--- Module.h - Module description --------------------------*- C++ -*-===//
+//===--- PCModule.h - PCModule description --------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file defines the Module class, which describes a module that has
+//  This file defines the PCModule class, which describes a module that has
 //  been loaded from an AST file.
 //
 //===----------------------------------------------------------------------===//
@@ -27,7 +27,7 @@ namespace lfort {
 
 class FileEntry;
 class DeclContext;
-class Module;
+class PCModule;
 template<typename Info> class OnDiskChainedHashTable;
 
 namespace serialization {
@@ -37,8 +37,8 @@ namespace reader {
 }
 
 /// \brief Specifies the kind of module that has been loaded.
-enum ModuleKind {
-  MK_Module,   ///< File is a module proper.
+enum PCModuleKind {
+  MK_PCModule,   ///< File is a module proper.
   MK_PCH,      ///< File is a PCH file treated as such.
   MK_Preamble, ///< File is a PCH file treated as the preamble.
   MK_MainFile  ///< File is a PCH file treated as the actual main file.
@@ -57,20 +57,20 @@ struct DeclContextInfo {
 
 /// \brief Information about a module that has been loaded by the ASTReader.
 ///
-/// Each instance of the Module class corresponds to a single AST file, which
+/// Each instance of the PCModule class corresponds to a single AST file, which
 /// may be a precompiled header, precompiled preamble, a module, or an AST file
 /// of some sort loaded as the main file, all of which are specific formulations
 /// of the general notion of a "module". A module may depend on any number of
 /// other modules.
-class ModuleFile {
+class PCModuleFile {
 public:
-  ModuleFile(ModuleKind Kind, unsigned Generation);
-  ~ModuleFile();
+  PCModuleFile(PCModuleKind Kind, unsigned Generation);
+  ~PCModuleFile();
 
   // === General information ===
 
   /// \brief The type of this module.
-  ModuleKind Kind;
+  PCModuleKind Kind;
 
   /// \brief The file name of the module file.
   std::string FileName;
@@ -321,7 +321,7 @@ public:
   /// This is effectively a reverse global-to-local mapping for declaration
   /// IDs, so that we can interpret a true global ID (for this translation unit)
   /// as a local ID (for this module file).
-  llvm::DenseMap<ModuleFile *, serialization::DeclID> GlobalToLocalDeclIDs;
+  llvm::DenseMap<PCModuleFile *, serialization::DeclID> GlobalToLocalDeclIDs;
 
   /// \brief The number of C++ base specifier sets in this AST file.
   unsigned LocalNumCXXBaseSpecifiers;
@@ -385,10 +385,10 @@ public:
   SmallVector<uint64_t, 8> PragmaDiagMappings;
 
   /// \brief List of modules which depend on this module
-  llvm::SetVector<ModuleFile *> ImportedBy;
+  llvm::SetVector<PCModuleFile *> ImportedBy;
 
   /// \brief List of modules which this module depends on
-  llvm::SetVector<ModuleFile *> Imports;
+  llvm::SetVector<PCModuleFile *> Imports;
 
   /// \brief Determine whether this module was directly imported at
   /// any point during translation.

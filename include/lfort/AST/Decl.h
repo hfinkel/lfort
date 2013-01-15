@@ -35,7 +35,7 @@ class SubprogramTemplateDecl;
 class SubprogramTemplateSpecializationInfo;
 class LabelStmt;
 class MemberSpecializationInfo;
-class Module;
+class PCModule;
 class NestedNameSpecifier;
 class Stmt;
 class StringLiteral;
@@ -189,8 +189,8 @@ public:
   /// \brief Determine whether this declaration has linkage.
   bool hasLinkage() const;
 
-  using Decl::isModulePrivate;
-  using Decl::setModulePrivate;
+  using Decl::isPCModulePrivate;
+  using Decl::setPCModulePrivate;
   
   /// \brief Determine whether this declaration is hidden from name lookup.
   bool isHidden() const { return Hidden; }
@@ -3296,7 +3296,7 @@ class ImportDecl : public Decl {
   ///
   /// When the bit is false, we only have a single source location for the
   /// end of the import declaration.
-  llvm::PointerIntPair<Module *, 1, bool> ImportedAndComplete;
+  llvm::PointerIntPair<PCModule *, 1, bool> ImportedAndComplete;
   
   /// \brief The next import in the list of imports local to the translation
   /// unit being parsed (not loaded from an AST file).
@@ -3306,10 +3306,10 @@ class ImportDecl : public Decl {
   friend class ASTDeclReader;
   friend class ASTContext;
   
-  ImportDecl(DeclContext *DC, SourceLocation StartLoc, Module *Imported,
+  ImportDecl(DeclContext *DC, SourceLocation StartLoc, PCModule *Imported,
              ArrayRef<SourceLocation> IdentifierLocs);
 
-  ImportDecl(DeclContext *DC, SourceLocation StartLoc, Module *Imported,
+  ImportDecl(DeclContext *DC, SourceLocation StartLoc, PCModule *Imported,
              SourceLocation EndLoc);
 
   ImportDecl(EmptyShell Empty) : Decl(Import, Empty), NextLocalImport() { }
@@ -3317,13 +3317,13 @@ class ImportDecl : public Decl {
 public:
   /// \brief Create a new module import declaration.
   static ImportDecl *Create(ASTContext &C, DeclContext *DC, 
-                            SourceLocation StartLoc, Module *Imported,
+                            SourceLocation StartLoc, PCModule *Imported,
                             ArrayRef<SourceLocation> IdentifierLocs);
   
   /// \brief Create a new module import declaration for an implicitly-generated
   /// import.
   static ImportDecl *CreateImplicit(ASTContext &C, DeclContext *DC, 
-                                    SourceLocation StartLoc, Module *Imported, 
+                                    SourceLocation StartLoc, PCModule *Imported, 
                                     SourceLocation EndLoc);
   
   /// \brief Create a new, deserialized module import declaration.
@@ -3331,7 +3331,7 @@ public:
                                         unsigned NumLocations);
   
   /// \brief Retrieve the module that was imported by the import declaration.
-  Module *getImportedModule() const { return ImportedAndComplete.getPointer(); }
+  PCModule *getImportedPCModule() const { return ImportedAndComplete.getPointer(); }
   
   /// \brief Retrieves the locations of each of the identifiers that make up
   /// the complete module name in the import declaration.

@@ -10,7 +10,7 @@ add_lfort_library(lfortBasic
   FileSystemStatCache.cpp
   IdentifierTable.cpp
   LangOptions.cpp
-  Module.cpp
+  PCModule.cpp
   ObjCRuntime.cpp
   OperatorPrecedence.cpp
   SourceLocation.cpp

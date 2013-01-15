@@ -18,7 +18,7 @@
 #include "lfort/Basic/DiagnosticIDs.h"
 #include "lfort/Basic/SourceLocation.h"
 #include "lfort/Lex/DirectoryLookup.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "llvm/ADT/StringRef.h"
 #include <string>
 
@@ -123,7 +123,7 @@ public:
                                   const FileEntry *File,
                                   StringRef SearchPath,
                                   StringRef RelativePath,
-                                  const Module *Imported) {
+                                  const PCModule *Imported) {
   }
 
   /// \brief Callback invoked whenever there was an explicit module-import
@@ -137,8 +137,8 @@ public:
   /// \param Imported The imported module; can be null if importing failed.
   ///
   virtual void moduleImport(SourceLocation ImportLoc,
-                            ModuleIdPath Path,
-                            const Module *Imported) {
+                            PCModuleIdPath Path,
+                            const PCModule *Imported) {
   }
 
   /// \brief Callback invoked when the end of the main file is reached.
@@ -296,7 +296,7 @@ public:
                                   const FileEntry *File,
                                   StringRef SearchPath,
                                   StringRef RelativePath,
-                                  const Module *Imported) {
+                                  const PCModule *Imported) {
     First->InclusionDirective(HashLoc, IncludeTok, FileName, IsAngled,
                               FilenameRange, File, SearchPath, RelativePath,
                               Imported);
@@ -306,8 +306,8 @@ public:
   }
 
   virtual void moduleImport(SourceLocation ImportLoc,
-                            ModuleIdPath Path,
-                            const Module *Imported) {
+                            PCModuleIdPath Path,
+                            const PCModule *Imported) {
     First->moduleImport(ImportLoc, Path, Imported);
     Second->moduleImport(ImportLoc, Path, Imported);
   }

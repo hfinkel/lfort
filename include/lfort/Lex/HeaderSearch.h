@@ -15,7 +15,7 @@
 #define LLVM_LFORT_LEX_HEADERSEARCH_H
 
 #include "lfort/Lex/DirectoryLookup.h"
-#include "lfort/Lex/ModuleMap.h"
+#include "lfort/Lex/PCModuleMap.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
@@ -157,7 +157,7 @@ class HeaderSearch {
   std::vector<std::pair<std::string, bool> > SystemHeaderPrefixes;
 
   /// \brief The path to the module cache.
-  std::string ModuleCachePath;
+  std::string PCModuleCachePath;
   
   /// \brief All of the preprocessor-specific data about files that are
   /// included, indexed by the FileEntry's UID.
@@ -189,10 +189,10 @@ class HeaderSearch {
   std::vector<std::pair<const FileEntry*, const HeaderMap*> > HeaderMaps;
 
   /// \brief The mapping between modules and headers.
-  ModuleMap ModMap;
+  PCModuleMap ModMap;
   
   /// \brief Describes whether a given directory has a module map in it.
-  llvm::DenseMap<const DirectoryEntry *, bool> DirectoryHasModuleMap;
+  llvm::DenseMap<const DirectoryEntry *, bool> DirectoryHasPCModuleMap;
   
   /// \brief Uniqued set of framework names, which is used to track which 
   /// headers were included as framework headers.
@@ -285,16 +285,16 @@ public:
   }
 
   /// \brief Set the path to the module cache.
-  void setModuleCachePath(StringRef CachePath) {
-    ModuleCachePath = CachePath;
+  void setPCModuleCachePath(StringRef CachePath) {
+    PCModuleCachePath = CachePath;
   }
   
   /// \brief Retrieve the path to the module cache.
-  StringRef getModuleCachePath() const { return ModuleCachePath; }
+  StringRef getPCModuleCachePath() const { return PCModuleCachePath; }
 
   /// \brief Consider modules when including files from this directory.
-  void setDirectoryHasModuleMap(const DirectoryEntry* Dir) {
-    DirectoryHasModuleMap[Dir] = true;
+  void setDirectoryHasPCModuleMap(const DirectoryEntry* Dir) {
+    DirectoryHasPCModuleMap[Dir] = true;
   }
   
   /// \brief Forget everything we know about headers so far.
@@ -341,7 +341,7 @@ public:
   /// SearchPath at which the file was found. This only differs from the
   /// Filename for framework includes.
   ///
-  /// \param SuggestedModule If non-null, and the file found is semantically
+  /// \param SuggestedPCModule If non-null, and the file found is semantically
   /// part of a known module, this will be set to the module that should
   /// be imported instead of preprocessing/parsing the file found.
   const FileEntry *LookupFile(StringRef Filename, bool isAngled,
@@ -350,7 +350,7 @@ public:
                               const FileEntry *CurFileEnt,
                               SmallVectorImpl<char> *SearchPath,
                               SmallVectorImpl<char> *RelativePath,
-                              Module **SuggestedModule,
+                              PCModule **SuggestedPCModule,
                               bool SkipCache = false);
 
   /// \brief Look up a subframework for the specified \#include file.
@@ -428,31 +428,31 @@ public:
   /// \brief Retrieve the name of the module file that should be used to 
   /// load the given module.
   ///
-  /// \param Module The module whose module file name will be returned.
+  /// \param PCModule The module whose module file name will be returned.
   ///
   /// \returns The name of the module file that corresponds to this module,
   /// or an empty string if this module does not correspond to any module file.
-  std::string getModuleFileName(Module *Module);
+  std::string getPCModuleFileName(PCModule *PCModule);
 
   /// \brief Retrieve the name of the module file that should be used to 
   /// load a module with the given name.
   ///
-  /// \param ModuleName The module whose module file name will be returned.
+  /// \param PCModuleName The module whose module file name will be returned.
   ///
   /// \returns The name of the module file that corresponds to this module,
   /// or an empty string if this module does not correspond to any module file.
-  std::string getModuleFileName(StringRef ModuleName);
+  std::string getPCModuleFileName(StringRef PCModuleName);
 
   /// \brief Lookup a module Search for a module with the given name.
   ///
-  /// \param ModuleName The name of the module we're looking for.
+  /// \param PCModuleName The name of the module we're looking for.
   ///
   /// \param AllowSearch Whether we are allowed to search in the various
   /// search directories to produce a module definition. If not, this lookup
   /// will only return an already-known module.
   ///
   /// \returns The module with the given name.
-  Module *lookupModule(StringRef ModuleName, bool AllowSearch = true);
+  PCModule *lookupPCModule(StringRef PCModuleName, bool AllowSearch = true);
   
   void IncrementFrameworkLookupCount() { ++NumFrameworkLookups; }
 
@@ -463,24 +463,24 @@ public:
   ///
   /// \param Root The "root" directory, at which we should stop looking for
   /// module maps.
-  bool hasModuleMap(StringRef Filename, const DirectoryEntry *Root);
+  bool hasPCModuleMap(StringRef Filename, const DirectoryEntry *Root);
   
   /// \brief Retrieve the module that corresponds to the given file, if any.
   ///
   /// \param File The header that we wish to map to a module.
-  Module *findModuleForHeader(const FileEntry *File);
+  PCModule *findPCModuleForHeader(const FileEntry *File);
   
   /// \brief Read the contents of the given module map file.
   ///
   /// \param File The module map file.
   ///
   /// \returns true if an error occurred, false otherwise.
-  bool loadModuleMapFile(const FileEntry *File);
+  bool loadPCModuleMapFile(const FileEntry *File);
 
   /// \brief Collect the set of all known, top-level modules.
   ///
-  /// \param Modules Will be filled with the set of known, top-level modules.
-  void collectAllModules(llvm::SmallVectorImpl<Module *> &Modules);
+  /// \param PCModules Will be filled with the set of known, top-level modules.
+  void collectAllPCModules(llvm::SmallVectorImpl<PCModule *> &PCModules);
                          
 private:
   /// \brief Retrieve a module with the given name, which may be part of the
@@ -488,19 +488,19 @@ private:
   ///
   /// \param Name The name of the module to retrieve.
   ///
-  /// \param Dir The framework directory (e.g., ModuleName.framework).
+  /// \param Dir The framework directory (e.g., PCModuleName.framework).
   ///
   /// \param IsSystem Whether the framework directory is part of the system
   /// frameworks.
   ///
   /// \returns The module, if found; otherwise, null.
-  Module *loadFrameworkModule(StringRef Name, 
+  PCModule *loadFrameworkPCModule(StringRef Name, 
                               const DirectoryEntry *Dir,
                               bool IsSystem);
   
 public:
   /// \brief Retrieve the module map.
-  ModuleMap &getModuleMap() { return ModMap; }
+  PCModuleMap &getPCModuleMap() { return ModMap; }
   
   unsigned header_file_size() const { return FileInfo.size(); }
 
@@ -549,7 +549,7 @@ public:
 
 private:
   /// \brief Describes what happened when we tried to load a module map file.
-  enum LoadModuleMapResult {
+  enum LoadPCModuleMapResult {
     /// \brief The module map file had already been loaded.
     LMM_AlreadyLoaded,
     /// \brief The module map file was loaded by this invocation.
@@ -558,7 +558,7 @@ private:
     LMM_NoDirectory,
     /// \brief There was either no module map file or the module map file was
     /// invalid.
-    LMM_InvalidModuleMap
+    LMM_InvalidPCModuleMap
   };
   
   /// \brief Try to load the module map file in the given directory.
@@ -568,7 +568,7 @@ private:
   ///
   /// \returns The result of attempting to load the module map file from the
   /// named directory.
-  LoadModuleMapResult loadModuleMapFile(StringRef DirName);
+  LoadPCModuleMapResult loadPCModuleMapFile(StringRef DirName);
 
   /// \brief Try to load the module map file in the given directory.
   ///
@@ -576,7 +576,7 @@ private:
   ///
   /// \returns The result of attempting to load the module map file from the
   /// named directory.
-  LoadModuleMapResult loadModuleMapFile(const DirectoryEntry *Dir);
+  LoadPCModuleMapResult loadPCModuleMapFile(const DirectoryEntry *Dir);
 
   /// \brief Return the HeaderFileInfo structure for the specified FileEntry.
   HeaderFileInfo &getFileInfo(const FileEntry *FE);

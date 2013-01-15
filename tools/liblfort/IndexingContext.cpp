@@ -240,7 +240,7 @@ void IndexingContext::ppIncludedFile(SourceLocation hashLoc,
                                      StringRef filename,
                                      const FileEntry *File,
                                      bool isImport, bool isAngled,
-                                     bool isModuleImport) {
+                                     bool isPCModuleImport) {
   if (!CB.ppIncludedFile)
     return;
 
@@ -248,19 +248,19 @@ void IndexingContext::ppIncludedFile(SourceLocation hashLoc,
   CXIdxIncludedFileInfo Info = { getIndexLoc(hashLoc),
                                  SA.toCStr(filename),
                                  (CXFile)File,
-                                 isImport, isAngled, isModuleImport };
+                                 isImport, isAngled, isPCModuleImport };
   CXIdxClientFile idxFile = CB.ppIncludedFile(ClientData, &Info);
   FileMap[File] = idxFile;
 }
 
-void IndexingContext::importedModule(const ImportDecl *ImportD) {
+void IndexingContext::importedPCModule(const ImportDecl *ImportD) {
   if (!CB.importedASTFile)
     return;
 
-  Module *Mod = ImportD->getImportedModule();
+  PCModule *Mod = ImportD->getImportedPCModule();
   if (!Mod)
     return;
-  std::string ModuleName = Mod->getFullModuleName();
+  std::string PCModuleName = Mod->getFullPCModuleName();
 
   CXIdxImportedASTFileInfo Info = {
                                     (CXFile)Mod->getASTFile(),

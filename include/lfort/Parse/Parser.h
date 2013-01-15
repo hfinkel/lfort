@@ -2180,8 +2180,8 @@ private:
                                    AccessSpecifier AS = AS_none);
 
   //===--------------------------------------------------------------------===//
-  // Modules
-  DeclGroupPtrTy ParseModuleImport(SourceLocation AtLoc);
+  // PCModules
+  DeclGroupPtrTy ParsePCModuleImport(SourceLocation AtLoc);
 
   //===--------------------------------------------------------------------===//
   // GNU G++: Type Traits [Type-Traits.html in the GCC manual]

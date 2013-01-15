@@ -770,7 +770,7 @@ def err_seh___finally_block : Error<
   
 } // end of Parse Issue category.
 
-let CategoryName = "Modules Issue" in {
+let CategoryName = "PCModules Issue" in {
 def err_module_expected_ident : Error<
   "expected a module name after module import">;
 def err_module_expected_semi : Error<

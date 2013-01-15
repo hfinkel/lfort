@@ -20,7 +20,7 @@
 #include "lfort/Lex/LexDiagnostic.h"
 #include "lfort/Lex/LiteralSupport.h"
 #include "lfort/Lex/MacroInfo.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Lex/Pragma.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -505,7 +505,7 @@ const FileEntry *Preprocessor::LookupFile(
     const DirectoryLookup *&CurDir,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    Module **SuggestedModule,
+    PCModule **SuggestedPCModule,
     bool SkipCache) {
   // If the header lookup mechanism may be relative to the current file, pass in
   // info about where the current file is.
@@ -530,13 +530,13 @@ const FileEntry *Preprocessor::LookupFile(
   CurDir = CurDirLookup;
   const FileEntry *FE = HeaderInfo.LookupFile(
       Filename, isAngled, FromDir, CurDir, CurFileEnt,
-      SearchPath, RelativePath, SuggestedModule, SkipCache);
+      SearchPath, RelativePath, SuggestedPCModule, SkipCache);
   if (FE) return FE;
 
   // Otherwise, see if this is a subframework header.  If so, this is relative
   // to one of the headers on the #include stack.  Walk the list of the current
   // headers on the #include stack and pass them to HeaderInfo.
-  // FIXME: SuggestedModule!
+  // FIXME: SuggestedPCModule!
   if (IsFileLexer()) {
     if ((CurFileEnt = SourceMgr.getFileEntryForID(CurPPLexer->getFileID())))
       if ((FE = HeaderInfo.LookupSubframeworkHeader(Filename, CurFileEnt,
@@ -727,12 +727,12 @@ TryAgain:
       break;
         
     case tok::pp___public_macro:
-      if (getLangOpts().Modules)
+      if (getLangOpts().PCModules)
         return HandleMacroPublicDirective(Result);
       break;
         
     case tok::pp___private_macro:
-      if (getLangOpts().Modules)
+      if (getLangOpts().PCModules)
         return HandleMacroPrivateDirective(Result);
       break;
     }
@@ -1379,11 +1379,11 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
   SmallString<1024> RelativePath;
   // We get the raw path only if we have 'Callbacks' to which we later pass
   // the path.
-  Module *SuggestedModule = 0;
+  PCModule *SuggestedPCModule = 0;
   const FileEntry *File = LookupFile(
       Filename, isAngled, LookupFrom, CurDir,
       Callbacks ? &SearchPath : NULL, Callbacks ? &RelativePath : NULL,
-      getLangOpts().Modules? &SuggestedModule : 0);
+      getLangOpts().PCModules? &SuggestedPCModule : 0);
 
   if (Callbacks) {
     if (!File) {
@@ -1397,18 +1397,18 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
           
           // Try the lookup again, skipping the cache.
           File = LookupFile(Filename, isAngled, LookupFrom, CurDir, 0, 0,
-                            getLangOpts().Modules? &SuggestedModule : 0,
+                            getLangOpts().PCModules? &SuggestedPCModule : 0,
                             /*SkipCache*/true);
         }
       }
     }
     
-    if (!SuggestedModule) {
+    if (!SuggestedPCModule) {
       // Notify the callback object that we've seen an inclusion directive.
       Callbacks->InclusionDirective(HashLoc, IncludeTok, Filename, isAngled,
                                     FilenameRange, File,
                                     SearchPath, RelativePath,
-                                    /*ImportedModule=*/0);
+                                    /*ImportedPCModule=*/0);
     }
   }
   
@@ -1421,7 +1421,7 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
         File = LookupFile(Filename, false, LookupFrom, CurDir, 
                           Callbacks ? &SearchPath : 0, 
                           Callbacks ? &RelativePath : 0, 
-                          getLangOpts().Modules ? &SuggestedModule : 0);
+                          getLangOpts().PCModules ? &SuggestedPCModule : 0);
         if (File) {
           SourceRange Range(FilenameTok.getLocation(), CharEnd);
           Diag(FilenameTok, diag::err_pp_file_not_found_not_fatal) << 
@@ -1439,12 +1439,12 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
 
   // If we are supposed to import a module rather than including the header,
   // do so now.
-  if (SuggestedModule) {
+  if (SuggestedPCModule) {
     // Compute the module access path corresponding to this module.
-    // FIXME: Should we have a second loadModule() overload to avoid this
+    // FIXME: Should we have a second loadPCModule() overload to avoid this
     // extra lookup step?
     llvm::SmallVector<std::pair<IdentifierInfo *, SourceLocation>, 2> Path;
-    for (Module *Mod = SuggestedModule; Mod; Mod = Mod->Parent)
+    for (PCModule *Mod = SuggestedPCModule; Mod; Mod = Mod->Parent)
       Path.push_back(std::make_pair(getIdentifierInfo(Mod->Name),
                                     FilenameTok.getLocation()));
     std::reverse(Path.begin(), Path.end());
@@ -1481,10 +1481,10 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
 
     // Determine whether we are actually building the module that this
     // include directive maps to.
-    bool BuildingImportedModule
-      = Path[0].first->getName() == getLangOpts().CurrentModule;
+    bool BuildingImportedPCModule
+      = Path[0].first->getName() == getLangOpts().CurrentPCModule;
     
-    if (!BuildingImportedModule && getLangOpts().ObjC2) {
+    if (!BuildingImportedPCModule && getLangOpts().ObjC2) {
       // If we're not building the imported module, warn that we're going
       // to automatically turn this inclusion directive into a module import.
       // We only do this in Objective-C, where we have a module-import syntax.
@@ -1498,16 +1498,16 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     
     // Load the module.
     // If this was an #__include_macros directive, only make macros visible.
-    Module::NameVisibilityKind Visibility 
-      = (IncludeKind == 3)? Module::MacrosVisible : Module::AllVisible;
-    ModuleLoadResult Imported
-      = TheModuleLoader.loadModule(IncludeTok.getLocation(), Path, Visibility,
+    PCModule::NameVisibilityKind Visibility 
+      = (IncludeKind == 3)? PCModule::MacrosVisible : PCModule::AllVisible;
+    PCModuleLoadResult Imported
+      = ThePCModuleLoader.loadPCModule(IncludeTok.getLocation(), Path, Visibility,
                                    /*IsIncludeDirective=*/true);
-    assert((Imported == 0 || Imported == SuggestedModule) &&
+    assert((Imported == 0 || Imported == SuggestedPCModule) &&
            "the imported module is different than the suggested one");
     
     // If this header isn't part of the module we're building, we're done.
-    if (!BuildingImportedModule && Imported) {
+    if (!BuildingImportedPCModule && Imported) {
       if (Callbacks) {
         Callbacks->InclusionDirective(HashLoc, IncludeTok, Filename, isAngled,
                                       FilenameRange, File,
@@ -1519,19 +1519,19 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     // If we failed to find a submodule that we expected to find, we can
     // continue. Otherwise, there's an error in the included file, so we
     // don't want to include it.
-    if (!BuildingImportedModule && !Imported.isMissingExpected()) {
+    if (!BuildingImportedPCModule && !Imported.isMissingExpected()) {
       return;
     }
   }
 
-  if (Callbacks && SuggestedModule) {
+  if (Callbacks && SuggestedPCModule) {
     // We didn't notify the callback object that we've seen an inclusion
     // directive before. Now that we are parsing the include normally and not
     // turning it to a module import, notify the callback object.
     Callbacks->InclusionDirective(HashLoc, IncludeTok, Filename, isAngled,
                                   FilenameRange, File,
                                   SearchPath, RelativePath,
-                                  /*ImportedModule=*/0);
+                                  /*ImportedPCModule=*/0);
   }
   
   // The #included file will be considered to be a system header if either it is

@@ -625,7 +625,7 @@ static InputKind ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
     case OPT_fixit:
       Opts.ProgramAction = frontend::FixIt; break;
     case OPT_emit_module:
-      Opts.ProgramAction = frontend::GenerateModule; break;
+      Opts.ProgramAction = frontend::GeneratePCModule; break;
     case OPT_emit_pch:
       Opts.ProgramAction = frontend::GeneratePCH; break;
     case OPT_emit_pth:
@@ -814,8 +814,8 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args) {
   if (const Arg *A = Args.getLastArg(OPT_stdlib_EQ))
     Opts.UseLibcxx = (strcmp(A->getValue(), "libc++") == 0);
   Opts.ResourceDir = Args.getLastArgValue(OPT_resource_dir);
-  Opts.ModuleCachePath = Args.getLastArgValue(OPT_fmodule_cache_path);
-  Opts.DisableModuleHash = Args.hasArg(OPT_fdisable_module_hash);
+  Opts.PCModuleCachePath = Args.getLastArgValue(OPT_fmodule_cache_path);
+  Opts.DisablePCModuleHash = Args.hasArg(OPT_fdisable_module_hash);
   
   // Add -I..., -F..., and -index-header-map options in order.
   bool IsIndexHeaderMap = false;
@@ -1127,7 +1127,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   Opts.RTTI = !Args.hasArg(OPT_fno_rtti);
   Opts.Blocks = Args.hasArg(OPT_fblocks);
   Opts.BlocksRuntimeOptional = Args.hasArg(OPT_fblocks_runtime_optional);
-  Opts.Modules = Args.hasArg(OPT_fmodules);
+  Opts.PCModules = Args.hasArg(OPT_fmodules);
   Opts.CharIsSigned = !Args.hasArg(OPT_fno_signed_char);
   Opts.WChar = Opts.CPlusPlus && !Args.hasArg(OPT_fno_wchar);
   Opts.ShortWChar = Args.hasArg(OPT_fshort_wchar);
@@ -1174,7 +1174,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   Opts.DebuggerCastResultToId = Args.hasArg(OPT_fdebugger_cast_result_to_id);
   Opts.DebuggerObjCLiteral = Args.hasArg(OPT_fdebugger_objc_literal);
   Opts.ApplePragmaPack = Args.hasArg(OPT_fapple_pragma_pack);
-  Opts.CurrentModule = Args.getLastArgValue(OPT_fmodule_name);
+  Opts.CurrentPCModule = Args.getLastArgValue(OPT_fmodule_name);
 
   // Record whether the __DEPRECATED define was requested.
   Opts.Deprecated = Args.hasFlag(OPT_fdeprecated_macro,
@@ -1429,13 +1429,13 @@ bool CompilerInvocation::CreateFromArgs(CompilerInvocation &Res,
 
 namespace {
 
-  class ModuleSignature {
+  class PCModuleSignature {
     llvm::SmallVector<uint64_t, 16> Data;
     unsigned CurBit;
     uint64_t CurValue;
     
   public:
-    ModuleSignature() : CurBit(0), CurValue(0) { }
+    PCModuleSignature() : CurBit(0), CurValue(0) { }
     
     void add(uint64_t Value, unsigned Bits);
     void add(StringRef Value);
@@ -1445,7 +1445,7 @@ namespace {
   };
 }
 
-void ModuleSignature::add(uint64_t Value, unsigned int NumBits) {
+void PCModuleSignature::add(uint64_t Value, unsigned int NumBits) {
   CurValue |= Value << CurBit;
   if (CurBit + NumBits < 64) {
     CurBit += NumBits;
@@ -1462,7 +1462,7 @@ void ModuleSignature::add(uint64_t Value, unsigned int NumBits) {
   CurBit = (CurBit+NumBits) & 63;
 }
 
-void ModuleSignature::flush() {
+void PCModuleSignature::flush() {
   if (CurBit == 0)
     return;
   
@@ -1471,16 +1471,16 @@ void ModuleSignature::flush() {
   CurValue = 0;
 }
 
-void ModuleSignature::add(StringRef Value) {
+void PCModuleSignature::add(StringRef Value) {
   for (StringRef::iterator I = Value.begin(), IEnd = Value.end(); I != IEnd;++I)
     add(*I, 8);
 }
 
-llvm::APInt ModuleSignature::getAsInteger() const {
+llvm::APInt PCModuleSignature::getAsInteger() const {
   return llvm::APInt(Data.size() * 64, Data);
 }
 
-std::string CompilerInvocation::getModuleHash() const {
+std::string CompilerInvocation::getPCModuleHash() const {
   using llvm::hash_code;
   using llvm::hash_value;
   using llvm::hash_combine;

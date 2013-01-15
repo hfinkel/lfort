@@ -554,7 +554,7 @@ def Ownership : InheritableAttr {
   let Args = [EnumArgument<"OwnKind", "OwnershipKind",
                     ["ownership_holds", "ownership_returns", "ownership_takes"],
                     ["Holds", "Returns", "Takes"]>,
-              StringArgument<"Module">, VariadicUnsignedArgument<"Args">];
+              StringArgument<"PCModule">, VariadicUnsignedArgument<"Args">];
 }
 
 def Packed : InheritableAttr {

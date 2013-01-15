@@ -1061,7 +1061,7 @@ Parser::isCXXDeclarationSpecifier(Parser::TPResult BracedCastResult,
   case tok::kw_virtual:
   case tok::kw_explicit:
 
-    // Modules
+    // PCModules
   case tok::kw___module_private__:
 
     // Debugger support

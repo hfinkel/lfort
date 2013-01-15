@@ -9,7 +9,7 @@ add_lfort_library(lfortLex
   LiteralSupport.cpp
   MacroArgs.cpp
   MacroInfo.cpp
-  ModuleMap.cpp
+  PCModuleMap.cpp
   PPCaching.cpp
   PPCallbacks.cpp
   PPConditionalDirectiveRecord.cpp

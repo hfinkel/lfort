@@ -683,7 +683,7 @@ void lfort::ApplyHeaderSearchOptions(HeaderSearch &HS,
     llvm::sys::Path P(HSOpts.ResourceDir);
     P.appendComponent("include");
     if (const DirectoryEntry *Dir = HS.getFileMgr().getDirectory(P.str()))
-      HS.getModuleMap().setBuiltinIncludeDir(Dir);
+      HS.getPCModuleMap().setBuiltinIncludeDir(Dir);
   }
 
   Init.Realize(Lang);

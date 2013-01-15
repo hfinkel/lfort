@@ -3057,8 +3057,8 @@ static CXString getDeclSpelling(Decl *D) {
         return createCXString(Property->getIdentifier()->getName());
     
     if (ImportDecl *ImportD = dyn_cast<ImportDecl>(D))
-      if (Module *Mod = ImportD->getImportedModule())
-        return createCXString(Mod->getFullModuleName());
+      if (PCModule *Mod = ImportD->getImportedPCModule())
+        return createCXString(Mod->getFullPCModuleName());
 
     return createCXString("");
   }
@@ -3261,7 +3261,7 @@ CXSourceRange lfort_Cursor_getSpellingNameRange(CXCursor C,
       return cxloc::translateSourceRange(Ctx, CID->getCategoryNameLoc());
   }
 
-  if (C.kind == CXCursor_ModuleImportDecl) {
+  if (C.kind == CXCursor_PCModuleImportDecl) {
     if (pieceIndex > 0)
       return lfort_getNullRange();
     if (ImportDecl *ImportD = dyn_cast_or_null<ImportDecl>(getCursorDecl(C))) {
@@ -3668,8 +3668,8 @@ CXString lfort_getCursorKindSpelling(enum CXCursorKind Kind) {
     return createCXString("ObjCDynamicDecl");
   case CXCursor_CXXAccessSpecifier:
     return createCXString("CXXAccessSpecifier");
-  case CXCursor_ModuleImportDecl:
-    return createCXString("ModuleImport");
+  case CXCursor_PCModuleImportDecl:
+    return createCXString("PCModuleImport");
   }
 
   llvm_unreachable("Unhandled CXCursorKind");
@@ -5839,47 +5839,47 @@ CXComment lfort_Cursor_getParsedComment(CXCursor C) {
   return cxcomment::createCXComment(FC, getCursorPgm(C));
 }
 
-CXModule lfort_Cursor_getModule(CXCursor C) {
-  if (C.kind == CXCursor_ModuleImportDecl) {
+CXPCModule lfort_Cursor_getPCModule(CXCursor C) {
+  if (C.kind == CXCursor_PCModuleImportDecl) {
     if (ImportDecl *ImportD = dyn_cast_or_null<ImportDecl>(getCursorDecl(C)))
-      return ImportD->getImportedModule();
+      return ImportD->getImportedPCModule();
   }
 
   return 0;
 }
 
-CXModule lfort_Module_getParent(CXModule CXMod) {
+CXPCModule lfort_PCModule_getParent(CXPCModule CXMod) {
   if (!CXMod)
     return 0;
-  Module *Mod = static_cast<Module*>(CXMod);
+  PCModule *Mod = static_cast<PCModule*>(CXMod);
   return Mod->Parent;
 }
 
-CXString lfort_Module_getName(CXModule CXMod) {
+CXString lfort_PCModule_getName(CXPCModule CXMod) {
   if (!CXMod)
     return createCXString("");
-  Module *Mod = static_cast<Module*>(CXMod);
+  PCModule *Mod = static_cast<PCModule*>(CXMod);
   return createCXString(Mod->Name);
 }
 
-CXString lfort_Module_getFullName(CXModule CXMod) {
+CXString lfort_PCModule_getFullName(CXPCModule CXMod) {
   if (!CXMod)
     return createCXString("");
-  Module *Mod = static_cast<Module*>(CXMod);
-  return createCXString(Mod->getFullModuleName());
+  PCModule *Mod = static_cast<PCModule*>(CXMod);
+  return createCXString(Mod->getFullPCModuleName());
 }
 
-unsigned lfort_Module_getNumTopLevelHeaders(CXModule CXMod) {
+unsigned lfort_PCModule_getNumTopLevelHeaders(CXPCModule CXMod) {
   if (!CXMod)
     return 0;
-  Module *Mod = static_cast<Module*>(CXMod);
+  PCModule *Mod = static_cast<PCModule*>(CXMod);
   return Mod->TopHeaders.size();
 }
 
-CXFile lfort_Module_getTopLevelHeader(CXModule CXMod, unsigned Index) {
+CXFile lfort_PCModule_getTopLevelHeader(CXPCModule CXMod, unsigned Index) {
   if (!CXMod)
     return 0;
-  Module *Mod = static_cast<Module*>(CXMod);
+  PCModule *Mod = static_cast<PCModule*>(CXMod);
 
   if (Index < Mod->TopHeaders.size())
     return const_cast<FileEntry *>(Mod->TopHeaders[Index]);

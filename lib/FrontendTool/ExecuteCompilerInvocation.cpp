@@ -56,7 +56,7 @@ static FrontendAction *CreateFrontendBaseAction(CompilerInstance &CI) {
 #else
   case FixIt:                  Action = "FixIt"; break;
 #endif
-  case GenerateModule:         return new GenerateModuleAction;
+  case GeneratePCModule:         return new GeneratePCModuleAction;
   case GeneratePCH:            return new GeneratePCHAction;
   case GeneratePTH:            return new GeneratePTHAction();
   case InitOnly:               return new InitOnlyAction();

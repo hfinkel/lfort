@@ -223,7 +223,7 @@ namespace lfort {
 
     /// \brief Whether the inclusion directive was automatically turned into
     /// a module import.
-    unsigned ImportedModule : 1;
+    unsigned ImportedPCModule : 1;
 
     /// \brief The file that was included.
     const FileEntry *File;
@@ -231,7 +231,7 @@ namespace lfort {
   public:
     InclusionDirective(PreprocessingRecord &PPRec,
                        InclusionKind Kind, StringRef FileName, 
-                       bool InQuotes, bool ImportedModule,
+                       bool InQuotes, bool ImportedPCModule,
                        const FileEntry *File, SourceRange Range);
     
     /// \brief Determine what kind of inclusion directive this is.
@@ -246,7 +246,7 @@ namespace lfort {
 
     /// \brief Determine whether the inclusion directive was automatically
     /// turned into a module import.
-    bool importedModule() const { return ImportedModule; }
+    bool importedPCModule() const { return ImportedPCModule; }
     
     /// \brief Retrieve the file entry for the actual file that was included
     /// by this directive.
@@ -569,7 +569,7 @@ namespace lfort {
                                     const FileEntry *File,
                                     StringRef SearchPath,
                                     StringRef RelativePath,
-                                    const Module *Imported);
+                                    const PCModule *Imported);
     virtual void Ifdef(SourceLocation Loc, const Token &MacroNameTok,
                        const MacroInfo *MI);
     virtual void Ifndef(SourceLocation Loc, const Token &MacroNameTok,

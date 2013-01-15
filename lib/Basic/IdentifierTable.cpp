@@ -42,7 +42,7 @@ IdentifierInfo::IdentifierInfo(bool IsDots) {
   ChangedAfterLoad = false;
   RevertedTokenID = false;
   OutOfDate = false;
-  IsModulesImport = false;
+  IsPCModulesImport = false;
   FETokenInfo = 0;
   Entry = 0;
 }
@@ -82,7 +82,7 @@ IdentifierTable::IdentifierTable(const LangOptions &LangOpts,
       
 
   // Add the '_experimental_modules_import' contextual keyword.
-  get("import").setModulesImport(true);
+  get("import").setPCModulesImport(true);
 }
 
 //===----------------------------------------------------------------------===//

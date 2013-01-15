@@ -60,7 +60,7 @@ static int Execute(llvm::Module *Mod, char * const *envp) {
 
   // FIXME: Support passing arguments.
   std::vector<std::string> Args;
-  Args.push_back(Mod->getModuleIdentifier());
+  Args.push_back(Mod->getPCModuleIdentifier());
 
   return EE->runSubprogramAsMain(EntrySubPgm, Args, envp);
 }
@@ -145,8 +145,8 @@ int main(int argc, const char **argv, char * const *envp) {
     return 1;
 
   int Res = 255;
-  if (llvm::Module *Module = Act->takeModule())
-    Res = Execute(Module, envp);
+  if (llvm::Module *PCModule = Act->takePCModule())
+    Res = Execute(PCModule, envp);
 
   // Shutdown.
 

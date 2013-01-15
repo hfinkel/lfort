@@ -22,7 +22,7 @@ class HeaderMap;
 class DirectoryEntry;
 class FileEntry;
 class HeaderSearch;
-class Module;
+class PCModule;
   
 /// DirectoryLookup - This class represents one entry in the search list that
 /// specifies the search order for directories in \#include directives.  It
@@ -142,7 +142,7 @@ public:
   /// SearchPath at which the file was found. This only differs from the
   /// Filename for framework includes.
   ///
-  /// \param SuggestedModule If non-null, and the file found is semantically
+  /// \param SuggestedPCModule If non-null, and the file found is semantically
   /// part of a known module, this will be set to the module that should
   /// be imported instead of preprocessing/parsing the file found.
   ///
@@ -152,7 +152,7 @@ public:
   const FileEntry *LookupFile(StringRef Filename, HeaderSearch &HS,
                               SmallVectorImpl<char> *SearchPath,
                               SmallVectorImpl<char> *RelativePath,
-                              Module **SuggestedModule,
+                              PCModule **SuggestedPCModule,
                               bool &InUserSpecifiedSystemFramework) const;
 
 private:
@@ -160,7 +160,7 @@ private:
       StringRef Filename, HeaderSearch &HS,
       SmallVectorImpl<char> *SearchPath,
       SmallVectorImpl<char> *RelativePath,
-      Module **SuggestedModule,
+      PCModule **SuggestedPCModule,
       bool &InUserSpecifiedSystemHeader) const;
 
 };

@@ -25,11 +25,11 @@ ExternalPreprocessingRecordSource::~ExternalPreprocessingRecordSource() { }
 InclusionDirective::InclusionDirective(PreprocessingRecord &PPRec,
                                        InclusionKind Kind, 
                                        StringRef FileName, 
-                                       bool InQuotes, bool ImportedModule,
+                                       bool InQuotes, bool ImportedPCModule,
                                        const FileEntry *File,
                                        SourceRange Range)
   : PreprocessingDirective(InclusionDirectiveKind, Range), 
-    InQuotes(InQuotes), Kind(Kind), ImportedModule(ImportedModule), File(File)
+    InQuotes(InQuotes), Kind(Kind), ImportedPCModule(ImportedPCModule), File(File)
 { 
   char *Memory 
     = (char*)PPRec.Allocate(FileName.size() + 1, llvm::alignOf<char>());
@@ -420,7 +420,7 @@ void PreprocessingRecord::InclusionDirective(
     const FileEntry *File,
     StringRef SearchPath,
     StringRef RelativePath,
-    const Module *Imported) {
+    const PCModule *Imported) {
   InclusionDirective::InclusionKind Kind = InclusionDirective::Include;
   
   switch (IncludeTok.getIdentifierInfo()->getPPKeywordID()) {

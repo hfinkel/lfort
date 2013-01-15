@@ -16,7 +16,7 @@
 #include "lfort/Basic/TargetOptions.h"
 #include "lfort/Lex/HeaderSearch.h"
 #include "lfort/Lex/HeaderSearchOptions.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Lex/PreprocessorOptions.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/PathV2.h"
@@ -29,12 +29,12 @@ using namespace lfort;
 namespace {
 
 // Stub out module loading.
-class VoidModuleLoader : public ModuleLoader {
-  virtual ModuleLoadResult loadModule(SourceLocation ImportLoc, 
-                                      ModuleIdPath Path,
-                                      Module::NameVisibilityKind Visibility,
+class VoidPCModuleLoader : public PCModuleLoader {
+  virtual PCModuleLoadResult loadPCModule(SourceLocation ImportLoc, 
+                                      PCModuleIdPath Path,
+                                      PCModule::NameVisibilityKind Visibility,
                                       bool IsInclusionDirective) {
-    return ModuleLoadResult();
+    return PCModuleLoadResult();
   }
 };
 
@@ -49,7 +49,7 @@ public:
     const FileEntry *File, 
     StringRef SearchPath, 
     StringRef RelativePath, 
-    const Module *Imported) {
+    const PCModule *Imported) {
       this->HashLoc = HashLoc;
       this->IncludeTok = IncludeTok;
       this->FileName = FileName.str();
@@ -69,7 +69,7 @@ public:
   const FileEntry* File;
   SmallString<16> SearchPath;
   SmallString<16> RelativePath;
-  const Module* Imported;
+  const PCModule* Imported;
 };
 
 // PPCallbacks test fixture.
@@ -125,7 +125,7 @@ protected:
     MemoryBuffer *Buf = MemoryBuffer::getMemBuffer(SourceText);
     (void)SourceMgr.createMainFileIDForMemBuffer(Buf);
 
-    VoidModuleLoader ModLoader;
+    VoidPCModuleLoader ModLoader;
 
     IntrusiveRefCntPtr<HeaderSearchOptions> HSOpts = new HeaderSearchOptions();
     HeaderSearch HeaderInfo(HSOpts, FileMgr, Diags, LangOpts, Target.getPtr());

@@ -2075,9 +2075,9 @@ enum CXCursorKind {
   /**
    * \brief A module import declaration.
    */
-  CXCursor_ModuleImportDecl              = 600,
-  CXCursor_FirstExtraDecl                = CXCursor_ModuleImportDecl,
-  CXCursor_LastExtraDecl                 = CXCursor_ModuleImportDecl
+  CXCursor_PCModuleImportDecl              = 600,
+  CXCursor_FirstExtraDecl                = CXCursor_PCModuleImportDecl,
+  CXCursor_LastExtraDecl                 = CXCursor_PCModuleImportDecl
 };
 
 /**
@@ -3279,59 +3279,59 @@ CINDEX_LINKAGE CXComment lfort_Cursor_getParsedComment(CXCursor C);
  */
 
 /**
- * \defgroup CINDEX_MODULE Module introspection
+ * \defgroup CINDEX_MODULE PCModule introspection
  *
  * The functions in this group provide access to information about modules.
  *
  * @{
  */
 
-typedef void *CXModule;
+typedef void *CXPCModule;
 
 /**
- * \brief Given a CXCursor_ModuleImportDecl cursor, return the associated module.
+ * \brief Given a CXCursor_PCModuleImportDecl cursor, return the associated module.
  */
-CINDEX_LINKAGE CXModule lfort_Cursor_getModule(CXCursor C);
+CINDEX_LINKAGE CXPCModule lfort_Cursor_getPCModule(CXCursor C);
 
 /**
- * \param Module a module object.
+ * \param PCModule a module object.
  *
  * \returns the parent of a sub-module or NULL if the given module is top-level,
  * e.g. for 'std.vector' it will return the 'std' module.
  */
-CINDEX_LINKAGE CXModule lfort_Module_getParent(CXModule Module);
+CINDEX_LINKAGE CXPCModule lfort_PCModule_getParent(CXPCModule PCModule);
 
 /**
- * \param Module a module object.
+ * \param PCModule a module object.
  *
  * \returns the name of the module, e.g. for the 'std.vector' sub-module it
  * will return "vector".
  */
-CINDEX_LINKAGE CXString lfort_Module_getName(CXModule Module);
+CINDEX_LINKAGE CXString lfort_PCModule_getName(CXPCModule PCModule);
 
 /**
- * \param Module a module object.
+ * \param PCModule a module object.
  *
  * \returns the full name of the module, e.g. "std.vector".
  */
-CINDEX_LINKAGE CXString lfort_Module_getFullName(CXModule Module);
+CINDEX_LINKAGE CXString lfort_PCModule_getFullName(CXPCModule PCModule);
 
 /**
- * \param Module a module object.
+ * \param PCModule a module object.
  *
  * \returns the number of top level headers associated with this module.
  */
-CINDEX_LINKAGE unsigned lfort_Module_getNumTopLevelHeaders(CXModule Module);
+CINDEX_LINKAGE unsigned lfort_PCModule_getNumTopLevelHeaders(CXPCModule PCModule);
 
 /**
- * \param Module a module object.
+ * \param PCModule a module object.
  *
  * \param Index top level header index (zero-based).
  *
  * \returns the specified top level header associated with the module.
  */
 CINDEX_LINKAGE
-CXFile lfort_Module_getTopLevelHeader(CXModule Module, unsigned Index);
+CXFile lfort_PCModule_getTopLevelHeader(CXPCModule PCModule, unsigned Index);
 
 /**
  * @}
@@ -5060,7 +5060,7 @@ typedef struct {
    * \brief Non-zero if the directive was automatically turned into a module
    * import.
    */
-  int isModuleImport;
+  int isPCModuleImport;
 } CXIdxIncludedFileInfo;
 
 /**
@@ -5074,7 +5074,7 @@ typedef struct {
   /**
    * \brief The imported module or NULL if the AST file is a PCH.
    */
-  CXModule module;
+  CXPCModule module;
   /**
    * \brief Location where the file is imported. Applicable only for modules.
    */

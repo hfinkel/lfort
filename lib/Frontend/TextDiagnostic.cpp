@@ -885,24 +885,24 @@ void TextDiagnostic::emitIncludeLocation(SourceLocation Loc,
 }
 
 void TextDiagnostic::emitImportLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                        StringRef ModuleName,
+                                        StringRef PCModuleName,
                                         const SourceManager &SM) {
   if (DiagOpts->ShowLocation)
-    OS << "In module '" << ModuleName << "' imported from "
+    OS << "In module '" << PCModuleName << "' imported from "
        << PLoc.getFilename() << ':' << PLoc.getLine() << ":\n";
   else
-    OS << "In module " << ModuleName << "':\n";
+    OS << "In module " << PCModuleName << "':\n";
 }
 
-void TextDiagnostic::emitBuildingModuleLocation(SourceLocation Loc,
+void TextDiagnostic::emitBuildingPCModuleLocation(SourceLocation Loc,
                                                 PresumedLoc PLoc,
-                                                StringRef ModuleName,
+                                                StringRef PCModuleName,
                                                 const SourceManager &SM) {
   if (DiagOpts->ShowLocation && PLoc.getFilename())
-    OS << "While building module '" << ModuleName << "' imported from "
+    OS << "While building module '" << PCModuleName << "' imported from "
       << PLoc.getFilename() << ':' << PLoc.getLine() << ":\n";
   else
-    OS << "While building module '" << ModuleName << "':\n";
+    OS << "While building module '" << PCModuleName << "':\n";
 }
 
 /// \brief Highlight a SourceRange (with ~'s) for any characters on LineNo.

@@ -29,7 +29,7 @@
 #include "lfort/Basic/Specifiers.h"
 #include "lfort/Basic/TemplateKinds.h"
 #include "lfort/Basic/TypeTraits.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Sema/AnalysisBasedWarnings.h"
 #include "lfort/Sema/DeclSpec.h"
 #include "lfort/Sema/ExternalSemaSource.h"
@@ -716,7 +716,7 @@ public:
   /// When we're processing a complete translation unit, Sema will perform
   /// end-of-translation-unit semantic tasks (such as creating
   /// initializers for tentative definitions in C) once parsing has
-  /// completed. Modules and precompiled headers perform different kinds of
+  /// completed. PCModules and precompiled headers perform different kinds of
   /// checks.
   ProgramKind PgmKind;
 
@@ -1453,8 +1453,8 @@ public:
   /// \param ImportLoc The location of the 'import' keyword.
   ///
   /// \param Path The module access path.
-  DeclResult ActOnModuleImport(SourceLocation AtLoc, SourceLocation ImportLoc,
-                               ModuleIdPath Path);
+  DeclResult ActOnPCModuleImport(SourceLocation AtLoc, SourceLocation ImportLoc,
+                               PCModuleIdPath Path);
 
   /// \brief Retrieve a suitable printing policy.
   PrintingPolicy getPrintingPolicy() const {
@@ -1498,7 +1498,7 @@ public:
                  SourceLocation KWLoc, CXXScopeSpec &SS,
                  IdentifierInfo *Name, SourceLocation NameLoc,
                  AttributeList *Attr, AccessSpecifier AS,
-                 SourceLocation ModulePrivateLoc,
+                 SourceLocation PCModulePrivateLoc,
                  MultiTemplateParamsArg TemplateParameterLists,
                  bool &OwnedDecl, bool &IsDependent,
                  SourceLocation ScopedEnumKWLoc,
@@ -4744,7 +4744,7 @@ public:
                                 AttributeList *Attr,
                                 TemplateParameterList *TemplateParams,
                                 AccessSpecifier AS,
-                                SourceLocation ModulePrivateLoc,
+                                SourceLocation PCModulePrivateLoc,
                                 unsigned NumOuterTemplateParamLists,
                             TemplateParameterList **OuterTemplateParamLists);
 
@@ -4801,7 +4801,7 @@ public:
   DeclResult
   ActOnClassTemplateSpecialization(Scope *S, unsigned TagSpec, TagUseKind TUK,
                                    SourceLocation KWLoc,
-                                   SourceLocation ModulePrivateLoc,
+                                   SourceLocation PCModulePrivateLoc,
                                    CXXScopeSpec &SS,
                                    TemplateTy Template,
                                    SourceLocation TemplateNameLoc,
@@ -7066,7 +7066,7 @@ public:
     PCC_LocalDeclarationSpecifiers
   };
 
-  void CodeCompleteModuleImport(SourceLocation ImportLoc, ModuleIdPath Path);
+  void CodeCompletePCModuleImport(SourceLocation ImportLoc, PCModuleIdPath Path);
   void CodeCompleteOrdinaryName(Scope *S,
                                 ParserCompletionContext CompletionContext);
   void CodeCompleteDeclSpec(Scope *S, DeclSpec &DS,

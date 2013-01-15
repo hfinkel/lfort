@@ -419,12 +419,12 @@ void LFort::AddPreprocessingOptions(Compilation &C,
     A->claim();
     A->render(Args, CmdArgs);
   } else {
-    SmallString<128> DefaultModuleCache;
+    SmallString<128> DefaultPCModuleCache;
     llvm::sys::path::system_temp_directory(/*erasedOnReboot=*/false, 
-                                           DefaultModuleCache);
-    llvm::sys::path::append(DefaultModuleCache, "lfort-module-cache");
+                                           DefaultPCModuleCache);
+    llvm::sys::path::append(DefaultPCModuleCache, "lfort-module-cache");
     CmdArgs.push_back("-fmodule-cache-path");
-    CmdArgs.push_back(Args.MakeArgString(DefaultModuleCache));
+    CmdArgs.push_back(Args.MakeArgString(DefaultPCModuleCache));
   }
   
   // Parse additional include paths from environment variables.

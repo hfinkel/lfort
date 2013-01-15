@@ -17,7 +17,7 @@
 #include "lfort/AST/DeclObjC.h"
 #include "lfort/AST/DeclVisitor.h"
 #include "lfort/AST/StmtVisitor.h"
-#include "lfort/Basic/Module.h"
+#include "lfort/Basic/PCModule.h"
 #include "lfort/Basic/SourceManager.h"
 #include "llvm/Support/raw_ostream.h"
 using namespace lfort;
@@ -437,7 +437,7 @@ void ASTDumper::VisitLabelDecl(LabelDecl *D) {
 void ASTDumper::VisitTypedefDecl(TypedefDecl *D) {
   dumpName(D);
   dumpType(D->getUnderlyingType());
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
 }
 
@@ -449,7 +449,7 @@ void ASTDumper::VisitEnumDecl(EnumDecl *D) {
       OS << " struct";
   }
   dumpName(D);
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
   if (D->isFixed())
     dumpType(D->getIntegerType());
@@ -458,7 +458,7 @@ void ASTDumper::VisitEnumDecl(EnumDecl *D) {
 void ASTDumper::VisitRecordDecl(RecordDecl *D) {
   OS << ' ' << D->getKindName();
   dumpName(D);
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
 }
 
@@ -488,7 +488,7 @@ void ASTDumper::VisitSubprogramDecl(SubprogramDecl *D) {
     OS << " inline";
   if (D->isVirtualAsWritten())
     OS << " virtual";
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
 
   if (D->isPure())
@@ -523,7 +523,7 @@ void ASTDumper::VisitFieldDecl(FieldDecl *D) {
   dumpType(D->getType());
   if (D->isMutable())
     OS << " mutable";
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
   if (D->isBitField())
     dumpStmt(D->getBitWidth());
@@ -539,7 +539,7 @@ void ASTDumper::VisitVarDecl(VarDecl *D) {
     OS << ' ' << VarDecl::getStorageClassSpecifierString(SC);
   if (D->isThreadSpecified())
     OS << " __thread";
-  if (D->isModulePrivate())
+  if (D->isPCModulePrivate())
     OS << " __module_private__";
   if (D->isNRVOVariable())
     OS << " nrvo";
@@ -552,7 +552,7 @@ void ASTDumper::VisitFileScopeAsmDecl(FileScopeAsmDecl *D) {
 }
 
 void ASTDumper::VisitImportDecl(ImportDecl *D) {
-  OS << ' ' << D->getImportedModule()->getFullModuleName();
+  OS << ' ' << D->getImportedPCModule()->getFullPCModuleName();
 }
 
 //===----------------------------------------------------------------------===//

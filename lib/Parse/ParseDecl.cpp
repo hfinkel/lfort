@@ -2636,9 +2636,9 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
       }
       break;
 
-    // Modules
+    // PCModules
     case tok::kw___module_private__:
-      isInvalid = DS.setModulePrivateSpec(Loc, PrevSpec, DiagID);
+      isInvalid = DS.setPCModulePrivateSpec(Loc, PrevSpec, DiagID);
       break;
 
     // constexpr
@@ -3401,7 +3401,7 @@ void Parser::ParseEnumSpecifier(SourceLocation StartLoc, DeclSpec &DS,
   unsigned DiagID;
   Decl *TagDecl = Actions.ActOnTag(getCurScope(), DeclSpec::TST_enum, TUK,
                                    StartLoc, SS, Name, NameLoc, attrs.getList(),
-                                   AS, DS.getModulePrivateSpecLoc(), TParams,
+                                   AS, DS.getPCModulePrivateSpecLoc(), TParams,
                                    Owned, IsDependent, ScopedEnumKWLoc,
                                    IsScopedUsingClassTag, BaseType);
 
@@ -3819,7 +3819,7 @@ bool Parser::isDeclarationSpecifier(bool DisambiguatingWithExpression) {
   case tok::kw_register:
   case tok::kw___thread:
 
-    // Modules
+    // PCModules
   case tok::kw___module_private__:
 
     // Debugger support

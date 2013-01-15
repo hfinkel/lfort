@@ -106,33 +106,33 @@ const HeaderMap *HeaderSearch::CreateHeaderMap(const FileEntry *FE) {
   return 0;
 }
 
-std::string HeaderSearch::getModuleFileName(Module *Module) {
+std::string HeaderSearch::getPCModuleFileName(PCModule *PCModule) {
   // If we don't have a module cache path, we can't do anything.
-  if (ModuleCachePath.empty()) 
+  if (PCModuleCachePath.empty()) 
     return std::string();
 
 
-  SmallString<256> Result(ModuleCachePath);
-  llvm::sys::path::append(Result, Module->getTopLevelModule()->Name + ".pcm");
+  SmallString<256> Result(PCModuleCachePath);
+  llvm::sys::path::append(Result, PCModule->getTopLevelPCModule()->Name + ".pcm");
   return Result.str().str();
 }
 
-std::string HeaderSearch::getModuleFileName(StringRef ModuleName) {
+std::string HeaderSearch::getPCModuleFileName(StringRef PCModuleName) {
   // If we don't have a module cache path, we can't do anything.
-  if (ModuleCachePath.empty()) 
+  if (PCModuleCachePath.empty()) 
     return std::string();
   
   
-  SmallString<256> Result(ModuleCachePath);
-  llvm::sys::path::append(Result, ModuleName + ".pcm");
+  SmallString<256> Result(PCModuleCachePath);
+  llvm::sys::path::append(Result, PCModuleName + ".pcm");
   return Result.str().str();
 }
 
-Module *HeaderSearch::lookupModule(StringRef ModuleName, bool AllowSearch) {
+PCModule *HeaderSearch::lookupPCModule(StringRef PCModuleName, bool AllowSearch) {
   // Look in the module map to determine if there is a module by this name.
-  Module *Module = ModMap.findModule(ModuleName);
-  if (Module || !AllowSearch)
-    return Module;
+  PCModule *PCModule = ModMap.findPCModule(PCModuleName);
+  if (PCModule || !AllowSearch)
+    return PCModule;
   
   // Look through the various header search paths to load any avai;able module 
   // maps, searching for a module map that describes this module.
@@ -141,13 +141,13 @@ Module *HeaderSearch::lookupModule(StringRef ModuleName, bool AllowSearch) {
       // Search for or infer a module map for a framework.
       SmallString<128> FrameworkDirName;
       FrameworkDirName += SearchDirs[Idx].getFrameworkDir()->getName();
-      llvm::sys::path::append(FrameworkDirName, ModuleName + ".framework");
+      llvm::sys::path::append(FrameworkDirName, PCModuleName + ".framework");
       if (const DirectoryEntry *FrameworkDir 
             = FileMgr.getDirectory(FrameworkDirName)) {
         bool IsSystem
           = SearchDirs[Idx].getDirCharacteristic() != SrcMgr::C_User;
-        Module = loadFrameworkModule(ModuleName, FrameworkDir, IsSystem);
-        if (Module)
+        PCModule = loadFrameworkPCModule(PCModuleName, FrameworkDir, IsSystem);
+        if (PCModule)
           break;
       }
     }
@@ -159,28 +159,28 @@ Module *HeaderSearch::lookupModule(StringRef ModuleName, bool AllowSearch) {
       continue;
     
     // Search for a module map file in this directory.
-    if (loadModuleMapFile(SearchDirs[Idx].getDir()) == LMM_NewlyLoaded) {
+    if (loadPCModuleMapFile(SearchDirs[Idx].getDir()) == LMM_NewlyLoaded) {
       // We just loaded a module map file; check whether the module is
       // available now.
-      Module = ModMap.findModule(ModuleName);
-      if (Module)
+      PCModule = ModMap.findPCModule(PCModuleName);
+      if (PCModule)
         break;
     }
               
     // Search for a module map in a subdirectory with the same name as the
     // module.
-    SmallString<128> NestedModuleMapDirName;
-    NestedModuleMapDirName = SearchDirs[Idx].getDir()->getName();
-    llvm::sys::path::append(NestedModuleMapDirName, ModuleName);
-    if (loadModuleMapFile(NestedModuleMapDirName) == LMM_NewlyLoaded) {
+    SmallString<128> NestedPCModuleMapDirName;
+    NestedPCModuleMapDirName = SearchDirs[Idx].getDir()->getName();
+    llvm::sys::path::append(NestedPCModuleMapDirName, PCModuleName);
+    if (loadPCModuleMapFile(NestedPCModuleMapDirName) == LMM_NewlyLoaded) {
       // If we just loaded a module map file, look for the module again.
-      Module = ModMap.findModule(ModuleName);
-      if (Module)
+      PCModule = ModMap.findPCModule(PCModuleName);
+      if (PCModule)
         break;
     }
   }
   
-  return Module;
+  return PCModule;
 }
 
 //===----------------------------------------------------------------------===//
@@ -206,7 +206,7 @@ const FileEntry *DirectoryLookup::LookupFile(
     HeaderSearch &HS,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    Module **SuggestedModule,
+    PCModule **SuggestedPCModule,
     bool &InUserSpecifiedSystemFramework) const {
   InUserSpecifiedSystemFramework = false;
 
@@ -227,7 +227,7 @@ const FileEntry *DirectoryLookup::LookupFile(
     
     // If we have a module map that might map this header, load it and
     // check whether we'll have a suggestion for a module.
-    if (SuggestedModule && HS.hasModuleMap(TmpDir, getDir())) {
+    if (SuggestedPCModule && HS.hasPCModuleMap(TmpDir, getDir())) {
       const FileEntry *File = HS.getFileMgr().getFile(TmpDir.str(), 
                                                       /*openFile=*/false);
       if (!File)
@@ -235,7 +235,7 @@ const FileEntry *DirectoryLookup::LookupFile(
       
       // If there is a module that corresponds to this header, 
       // suggest it.
-      *SuggestedModule = HS.findModuleForHeader(File);
+      *SuggestedPCModule = HS.findPCModuleForHeader(File);
       return File;
     }
     
@@ -244,7 +244,7 @@ const FileEntry *DirectoryLookup::LookupFile(
 
   if (isFramework())
     return DoFrameworkLookup(Filename, HS, SearchPath, RelativePath,
-                             SuggestedModule, InUserSpecifiedSystemFramework);
+                             SuggestedPCModule, InUserSpecifiedSystemFramework);
 
   assert(isHeaderMap() && "Unknown directory lookup");
   const FileEntry * const Result = getHeaderMap()->LookupFile(
@@ -271,7 +271,7 @@ const FileEntry *DirectoryLookup::DoFrameworkLookup(
     HeaderSearch &HS,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    Module **SuggestedModule,
+    PCModule **SuggestedPCModule,
     bool &InUserSpecifiedSystemFramework) const
 {
   FileManager &FileMgr = HS.getFileMgr();
@@ -298,8 +298,8 @@ const FileEntry *DirectoryLookup::DoFrameworkLookup(
     FrameworkName.push_back('/');
 
   // FrameworkName = "/System/Library/Frameworks/Cocoa"
-  StringRef ModuleName(Filename.begin(), SlashPos);
-  FrameworkName += ModuleName;
+  StringRef PCModuleName(Filename.begin(), SlashPos);
+  FrameworkName += PCModuleName;
 
   // FrameworkName = "/System/Library/Frameworks/Cocoa.framework/"
   FrameworkName += ".framework/";
@@ -337,12 +337,12 @@ const FileEntry *DirectoryLookup::DoFrameworkLookup(
 
   // If we're allowed to look for modules, try to load or create the module
   // corresponding to this framework.
-  Module *Module = 0;
-  if (SuggestedModule) {
+  PCModule *PCModule = 0;
+  if (SuggestedPCModule) {
     if (const DirectoryEntry *FrameworkDir
                                         = FileMgr.getDirectory(FrameworkName)) {
       bool IsSystem = getDirCharacteristic() != SrcMgr::C_User;
-      Module = HS.loadFrameworkModule(ModuleName, FrameworkDir, IsSystem);
+      PCModule = HS.loadFrameworkPCModule(PCModuleName, FrameworkDir, IsSystem);
     }
   }
   
@@ -358,12 +358,12 @@ const FileEntry *DirectoryLookup::DoFrameworkLookup(
   }
 
   // Determine whether this is the module we're building or not.
-  bool AutomaticImport = Module;  
+  bool AutomaticImport = PCModule;  
   FrameworkName.append(Filename.begin()+SlashPos+1, Filename.end());
   if (const FileEntry *FE = FileMgr.getFile(FrameworkName.str(),
                                             /*openFile=*/!AutomaticImport)) {
     if (AutomaticImport)
-      *SuggestedModule = HS.findModuleForHeader(FE);
+      *SuggestedPCModule = HS.findPCModuleForHeader(FE);
     return FE;
   }
 
@@ -378,7 +378,7 @@ const FileEntry *DirectoryLookup::DoFrameworkLookup(
   const FileEntry *FE = FileMgr.getFile(FrameworkName.str(), 
                                         /*openFile=*/!AutomaticImport);
   if (FE && AutomaticImport)
-    *SuggestedModule = HS.findModuleForHeader(FE);
+    *SuggestedPCModule = HS.findPCModuleForHeader(FE);
   return FE;
 }
 
@@ -405,11 +405,11 @@ const FileEntry *HeaderSearch::LookupFile(
     const FileEntry *CurFileEnt,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    Module **SuggestedModule,
+    PCModule **SuggestedPCModule,
     bool SkipCache)
 {
-  if (SuggestedModule)
-    *SuggestedModule = 0;
+  if (SuggestedPCModule)
+    *SuggestedPCModule = 0;
     
   // If 'Filename' is absolute, check to see if it exists and no searching.
   if (llvm::sys::path::is_absolute(Filename)) {
@@ -505,7 +505,7 @@ const FileEntry *HeaderSearch::LookupFile(
     bool InUserSpecifiedSystemFramework = false;
     const FileEntry *FE =
       SearchDirs[i].LookupFile(Filename, *this, SearchPath, RelativePath,
-                               SuggestedModule, InUserSpecifiedSystemFramework);
+                               SuggestedPCModule, InUserSpecifiedSystemFramework);
     if (!FE) continue;
 
     CurDir = &SearchDirs[i];
@@ -561,7 +561,7 @@ const FileEntry *HeaderSearch::LookupFile(
       const FileEntry *Result = LookupFile(ScratchFilename, /*isAngled=*/true,
                                            FromDir, CurDir, CurFileEnt, 
                                            SearchPath, RelativePath,
-                                           SuggestedModule);
+                                           SuggestedPCModule);
       std::pair<unsigned, unsigned> &CacheLookup 
         = LookupFileCache.GetOrCreateValue(Filename).getValue();
       CacheLookup.second
@@ -808,7 +808,7 @@ StringRef HeaderSearch::getUniqueFrameworkName(StringRef Framework) {
   return FrameworkNames.GetOrCreateValue(Framework).getKey();
 }
 
-bool HeaderSearch::hasModuleMap(StringRef FileName, 
+bool HeaderSearch::hasPCModuleMap(StringRef FileName, 
                                 const DirectoryEntry *Root) {
   llvm::SmallVector<const DirectoryEntry *, 2> FixUpDirectories;
   
@@ -825,18 +825,18 @@ bool HeaderSearch::hasModuleMap(StringRef FileName,
       return false;
     
     // Try to load the module map file in this directory.
-    switch (loadModuleMapFile(Dir)) {
+    switch (loadPCModuleMapFile(Dir)) {
     case LMM_NewlyLoaded:
     case LMM_AlreadyLoaded:
       // Success. All of the directories we stepped through inherit this module
       // map file.
       for (unsigned I = 0, N = FixUpDirectories.size(); I != N; ++I)
-        DirectoryHasModuleMap[FixUpDirectories[I]] = true;
+        DirectoryHasPCModuleMap[FixUpDirectories[I]] = true;
       
       return true;
 
     case LMM_NoDirectory:
-    case LMM_InvalidModuleMap:
+    case LMM_InvalidPCModuleMap:
       break;
     }
 
@@ -850,44 +850,44 @@ bool HeaderSearch::hasModuleMap(StringRef FileName,
   } while (true);
 }
 
-Module *HeaderSearch::findModuleForHeader(const FileEntry *File) {
-  if (Module *Mod = ModMap.findModuleForHeader(File))
+PCModule *HeaderSearch::findPCModuleForHeader(const FileEntry *File) {
+  if (PCModule *Mod = ModMap.findPCModuleForHeader(File))
     return Mod;
   
   return 0;
 }
 
-bool HeaderSearch::loadModuleMapFile(const FileEntry *File) {
+bool HeaderSearch::loadPCModuleMapFile(const FileEntry *File) {
   const DirectoryEntry *Dir = File->getDir();
   
   llvm::DenseMap<const DirectoryEntry *, bool>::iterator KnownDir
-    = DirectoryHasModuleMap.find(Dir);
-  if (KnownDir != DirectoryHasModuleMap.end())
+    = DirectoryHasPCModuleMap.find(Dir);
+  if (KnownDir != DirectoryHasPCModuleMap.end())
     return !KnownDir->second;
   
-  bool Result = ModMap.parseModuleMapFile(File);
+  bool Result = ModMap.parsePCModuleMapFile(File);
   if (!Result && llvm::sys::path::filename(File->getName()) == "module.map") {
     // If the file we loaded was a module.map, look for the corresponding
     // module_private.map.
     SmallString<128> PrivateFilename(Dir->getName());
     llvm::sys::path::append(PrivateFilename, "module_private.map");
     if (const FileEntry *PrivateFile = FileMgr.getFile(PrivateFilename))
-      Result = ModMap.parseModuleMapFile(PrivateFile);
+      Result = ModMap.parsePCModuleMapFile(PrivateFile);
   }
   
-  DirectoryHasModuleMap[Dir] = !Result;  
+  DirectoryHasPCModuleMap[Dir] = !Result;  
   return Result;
 }
 
-Module *HeaderSearch::loadFrameworkModule(StringRef Name, 
+PCModule *HeaderSearch::loadFrameworkPCModule(StringRef Name, 
                                           const DirectoryEntry *Dir,
                                           bool IsSystem) {
-  if (Module *Module = ModMap.findModule(Name))
-    return Module;
+  if (PCModule *PCModule = ModMap.findPCModule(Name))
+    return PCModule;
   
   // Try to load a module map file.
-  switch (loadModuleMapFile(Dir)) {
-  case LMM_InvalidModuleMap:
+  switch (loadPCModuleMapFile(Dir)) {
+  case LMM_InvalidPCModuleMap:
     break;
     
   case LMM_AlreadyLoaded:
@@ -895,7 +895,7 @@ Module *HeaderSearch::loadFrameworkModule(StringRef Name,
     return 0;
     
   case LMM_NewlyLoaded:
-    return ModMap.findModule(Name);
+    return ModMap.findPCModule(Name);
   }
 
   // The top-level framework directory, from which we'll infer a framework
@@ -949,14 +949,14 @@ Module *HeaderSearch::loadFrameworkModule(StringRef Name,
     if (const DirectoryEntry *ParentDir = FileMgr.getDirectory(Parent)) {
       // If there's a module map file in the parent directory, it can
       // explicitly allow us to infer framework modules.
-      switch (loadModuleMapFile(ParentDir)) {
+      switch (loadPCModuleMapFile(ParentDir)) {
         case LMM_AlreadyLoaded:
         case LMM_NewlyLoaded: {
           StringRef Name = llvm::sys::path::stem(TopFrameworkDir->getName());
-          canInfer = ModMap.canInferFrameworkModule(ParentDir, Name, IsSystem);
+          canInfer = ModMap.canInferFrameworkPCModule(ParentDir, Name, IsSystem);
           break;
         }
-        case LMM_InvalidModuleMap:
+        case LMM_InvalidPCModuleMap:
         case LMM_NoDirectory:
           break;
       }
@@ -968,7 +968,7 @@ Module *HeaderSearch::loadFrameworkModule(StringRef Name,
     return 0;
 
   // Try to infer a module map from the top-level framework directory.
-  Module *Result = ModMap.inferFrameworkModule(SubmodulePath.back(), 
+  PCModule *Result = ModMap.inferFrameworkPCModule(SubmodulePath.back(), 
                                                TopFrameworkDir,
                                                IsSystem,
                                                /*Parent=*/0);
@@ -977,53 +977,53 @@ Module *HeaderSearch::loadFrameworkModule(StringRef Name,
   // within the top-level framework module.
   SubmodulePath.pop_back();
   while (!SubmodulePath.empty() && Result) {
-    Result = ModMap.lookupModuleQualified(SubmodulePath.back(), Result);
+    Result = ModMap.lookupPCModuleQualified(SubmodulePath.back(), Result);
     SubmodulePath.pop_back();
   }
   return Result;
 }
 
 
-HeaderSearch::LoadModuleMapResult 
-HeaderSearch::loadModuleMapFile(StringRef DirName) {
+HeaderSearch::LoadPCModuleMapResult 
+HeaderSearch::loadPCModuleMapFile(StringRef DirName) {
   if (const DirectoryEntry *Dir = FileMgr.getDirectory(DirName))
-    return loadModuleMapFile(Dir);
+    return loadPCModuleMapFile(Dir);
   
   return LMM_NoDirectory;
 }
 
-HeaderSearch::LoadModuleMapResult 
-HeaderSearch::loadModuleMapFile(const DirectoryEntry *Dir) {
+HeaderSearch::LoadPCModuleMapResult 
+HeaderSearch::loadPCModuleMapFile(const DirectoryEntry *Dir) {
   llvm::DenseMap<const DirectoryEntry *, bool>::iterator KnownDir
-    = DirectoryHasModuleMap.find(Dir);
-  if (KnownDir != DirectoryHasModuleMap.end())
-    return KnownDir->second? LMM_AlreadyLoaded : LMM_InvalidModuleMap;
+    = DirectoryHasPCModuleMap.find(Dir);
+  if (KnownDir != DirectoryHasPCModuleMap.end())
+    return KnownDir->second? LMM_AlreadyLoaded : LMM_InvalidPCModuleMap;
   
-  SmallString<128> ModuleMapFileName;
-  ModuleMapFileName += Dir->getName();
-  unsigned ModuleMapDirNameLen = ModuleMapFileName.size();
-  llvm::sys::path::append(ModuleMapFileName, "module.map");
-  if (const FileEntry *ModuleMapFile = FileMgr.getFile(ModuleMapFileName)) {
+  SmallString<128> PCModuleMapFileName;
+  PCModuleMapFileName += Dir->getName();
+  unsigned PCModuleMapDirNameLen = PCModuleMapFileName.size();
+  llvm::sys::path::append(PCModuleMapFileName, "module.map");
+  if (const FileEntry *PCModuleMapFile = FileMgr.getFile(PCModuleMapFileName)) {
     // We have found a module map file. Try to parse it.
-    if (ModMap.parseModuleMapFile(ModuleMapFile)) {
+    if (ModMap.parsePCModuleMapFile(PCModuleMapFile)) {
       // No suitable module map.
-      DirectoryHasModuleMap[Dir] = false;
-      return LMM_InvalidModuleMap;
+      DirectoryHasPCModuleMap[Dir] = false;
+      return LMM_InvalidPCModuleMap;
     }
 
     // This directory has a module map.
-    DirectoryHasModuleMap[Dir] = true;
+    DirectoryHasPCModuleMap[Dir] = true;
     
     // Check whether there is a private module map that we need to load as well.
-    ModuleMapFileName.erase(ModuleMapFileName.begin() + ModuleMapDirNameLen,
-                            ModuleMapFileName.end());
-    llvm::sys::path::append(ModuleMapFileName, "module_private.map");
-    if (const FileEntry *PrivateModuleMapFile
-                                        = FileMgr.getFile(ModuleMapFileName)) {
-      if (ModMap.parseModuleMapFile(PrivateModuleMapFile)) {
+    PCModuleMapFileName.erase(PCModuleMapFileName.begin() + PCModuleMapDirNameLen,
+                            PCModuleMapFileName.end());
+    llvm::sys::path::append(PCModuleMapFileName, "module_private.map");
+    if (const FileEntry *PrivatePCModuleMapFile
+                                        = FileMgr.getFile(PCModuleMapFileName)) {
+      if (ModMap.parsePCModuleMapFile(PrivatePCModuleMapFile)) {
         // No suitable module map.
-        DirectoryHasModuleMap[Dir] = false;
-        return LMM_InvalidModuleMap;
+        DirectoryHasPCModuleMap[Dir] = false;
+        return LMM_InvalidPCModuleMap;
       }      
     }
     
@@ -1031,12 +1031,12 @@ HeaderSearch::loadModuleMapFile(const DirectoryEntry *Dir) {
   }
   
   // No suitable module map.
-  DirectoryHasModuleMap[Dir] = false;
-  return LMM_InvalidModuleMap;
+  DirectoryHasPCModuleMap[Dir] = false;
+  return LMM_InvalidPCModuleMap;
 }
 
-void HeaderSearch::collectAllModules(llvm::SmallVectorImpl<Module *> &Modules) {
-  Modules.clear();
+void HeaderSearch::collectAllPCModules(llvm::SmallVectorImpl<PCModule *> &PCModules) {
+  PCModules.clear();
   
   // Load module maps for each of the header search directories.
   for (unsigned Idx = 0, N = SearchDirs.size(); Idx != N; ++Idx) {
@@ -1058,7 +1058,7 @@ void HeaderSearch::collectAllModules(llvm::SmallVectorImpl<Module *> &Modules) {
           continue;
         
         // Load this framework module.
-        loadFrameworkModule(llvm::sys::path::stem(Dir->path()), FrameworkDir,
+        loadFrameworkPCModule(llvm::sys::path::stem(Dir->path()), FrameworkDir,
                             IsSystem);
       }
       continue;
@@ -1069,7 +1069,7 @@ void HeaderSearch::collectAllModules(llvm::SmallVectorImpl<Module *> &Modules) {
       continue;
     
     // Try to load a module map file for the search directory.
-    loadModuleMapFile(SearchDirs[Idx].getDir());
+    loadPCModuleMapFile(SearchDirs[Idx].getDir());
     
     // Try to load module map files for immediate subdirectories of this search
     // directory.
@@ -1078,14 +1078,14 @@ void HeaderSearch::collectAllModules(llvm::SmallVectorImpl<Module *> &Modules) {
     llvm::sys::path::native(SearchDirs[Idx].getDir()->getName(), DirNative);
     for (llvm::sys::fs::directory_iterator Dir(DirNative.str(), EC), DirEnd;
          Dir != DirEnd && !EC; Dir.increment(EC)) {
-      loadModuleMapFile(Dir->path());
+      loadPCModuleMapFile(Dir->path());
     }
   }
   
   // Populate the list of modules.
-  for (ModuleMap::module_iterator M = ModMap.module_begin(), 
+  for (PCModuleMap::module_iterator M = ModMap.module_begin(), 
                                MEnd = ModMap.module_end();
        M != MEnd; ++M) {
-    Modules.push_back(M->getValue());
+    PCModules.push_back(M->getValue());
   }
 }

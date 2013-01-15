@@ -26,10 +26,10 @@ using namespace lfort;
 
 PCHGenerator::PCHGenerator(const Preprocessor &PP,
                            StringRef OutputFile,
-                           lfort::Module *Module,
+                           lfort::PCModule *PCModule,
                            StringRef isysroot,
                            raw_ostream *OS)
-  : PP(PP), OutputFile(OutputFile), Module(Module), 
+  : PP(PP), OutputFile(OutputFile), PCModule(PCModule), 
     isysroot(isysroot.str()), Out(OS), 
     SemaPtr(0), Stream(Buffer), Writer(Stream) {
 }
@@ -43,7 +43,7 @@ void PCHGenerator::HandleProgram(ASTContext &Ctx) {
   
   // Emit the PCH file
   assert(SemaPtr && "No Sema?");
-  Writer.WriteAST(*SemaPtr, OutputFile, Module, isysroot);
+  Writer.WriteAST(*SemaPtr, OutputFile, PCModule, isysroot);
 
   // Write the generated bitstream to "Out".
   Out->write((char *)&Buffer.front(), Buffer.size());

@@ -63,7 +63,7 @@ public:
                                   const FileEntry *File,
                                   StringRef SearchPath,
                                   StringRef RelativePath,
-                                  const Module *Imported);
+                                  const PCModule *Imported);
 
   virtual void EndOfMainFile() {
     OutputDependencyFile();
@@ -137,7 +137,7 @@ void DependencyFileCallback::InclusionDirective(SourceLocation HashLoc,
                                                 const FileEntry *File,
                                                 StringRef SearchPath,
                                                 StringRef RelativePath,
-                                                const Module *Imported) {
+                                                const PCModule *Imported) {
   if (!File) {
     if (AddMissingHeaderDeps)
       AddFilename(FileName);

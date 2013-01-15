@@ -1,4 +1,4 @@
-//===--- Module.h - Describe a module ---------------------------*- C++ -*-===//
+//===--- PCModule.h - Describe a module ---------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the lfort::Module class, which describes a module in the
+/// \brief Defines the lfort::PCModule class, which describes a module in the
 /// source code.
 ///
 //===----------------------------------------------------------------------===//
@@ -39,10 +39,10 @@ class TargetInfo;
   
 /// \brief Describes the name of a module.
 typedef llvm::SmallVector<std::pair<std::string, SourceLocation>, 2>
-  ModuleId;
+  PCModuleId;
   
 /// \brief Describes a module or submodule.
-class Module {
+class PCModule {
 public:
   /// \brief The name of this module.
   std::string Name;
@@ -52,18 +52,18 @@ public:
   
   /// \brief The parent of this module. This will be NULL for the top-level
   /// module.
-  Module *Parent;
+  PCModule *Parent;
   
   /// \brief The umbrella header or directory.
   llvm::PointerUnion<const DirectoryEntry *, const FileEntry *> Umbrella;
   
 private:
   /// \brief The submodules of this module, indexed by name.
-  std::vector<Module *> SubModules;
+  std::vector<PCModule *> SubPCModules;
   
   /// \brief A mapping from the submodule name to the index into the 
-  /// \c SubModules vector at which that submodule resides.
-  llvm::StringMap<unsigned> SubModuleIndex;
+  /// \c SubPCModules vector at which that submodule resides.
+  llvm::StringMap<unsigned> SubPCModuleIndex;
 
   /// \brief The AST file if this is a top-level module which has a
   /// corresponding serialized AST file, or null otherwise.
@@ -91,7 +91,7 @@ public:
   unsigned IsAvailable : 1;
 
   /// \brief Whether this module was loaded from a module file.
-  unsigned IsFromModuleFile : 1;
+  unsigned IsFromPCModuleFile : 1;
   
   /// \brief Whether this is a framework module.
   unsigned IsFramework : 1;
@@ -137,13 +137,13 @@ public:
 
   /// \brief The set of modules imported by this module, and on which this
   /// module depends.
-  llvm::SmallVector<Module *, 2> Imports;
+  llvm::SmallVector<PCModule *, 2> Imports;
   
   /// \brief Describes an exported module.
   ///
   /// The pointer is the module being re-exported, while the bit will be true
   /// to indicate that this is a wildcard export.
-  typedef llvm::PointerIntPair<Module *, 1, bool> ExportDecl;
+  typedef llvm::PointerIntPair<PCModule *, 1, bool> ExportDecl;
   
   /// \brief The set of export declarations.
   llvm::SmallVector<ExportDecl, 2> Exports;
@@ -155,7 +155,7 @@ public:
     SourceLocation ExportLoc;
     
     /// \brief The name of the module.
-    ModuleId Id;
+    PCModuleId Id;
     
     /// \brief Whether this export declaration ends in a wildcard, indicating
     /// that all of its submodules should be exported (rather than the named
@@ -167,19 +167,19 @@ public:
   llvm::SmallVector<UnresolvedExportDecl, 2> UnresolvedExports;
   
   /// \brief Construct a top-level module.
-  explicit Module(StringRef Name, SourceLocation DefinitionLoc,
+  explicit PCModule(StringRef Name, SourceLocation DefinitionLoc,
                   bool IsFramework)
     : Name(Name), DefinitionLoc(DefinitionLoc), Parent(0),Umbrella(),ASTFile(0),
-      IsAvailable(true), IsFromModuleFile(false), IsFramework(IsFramework), 
+      IsAvailable(true), IsFromPCModuleFile(false), IsFramework(IsFramework), 
       IsExplicit(false), IsSystem(false),
       InferSubmodules(false), InferExplicitSubmodules(false),
       InferExportWildcard(false), NameVisibility(Hidden) { }
   
   /// \brief Construct a new module or submodule.
-  Module(StringRef Name, SourceLocation DefinitionLoc, Module *Parent, 
+  PCModule(StringRef Name, SourceLocation DefinitionLoc, PCModule *Parent, 
          bool IsFramework, bool IsExplicit);
   
-  ~Module();
+  ~PCModule();
   
   /// \brief Determine whether this module is available for use within the
   /// current translation unit.
@@ -201,17 +201,17 @@ public:
                    StringRef &Feature) const;
 
   /// \brief Determine whether this module is a submodule.
-  bool isSubModule() const { return Parent != 0; }
+  bool isSubPCModule() const { return Parent != 0; }
   
   /// \brief Determine whether this module is a submodule of the given other
   /// module.
-  bool isSubModuleOf(Module *Other) const;
+  bool isSubPCModuleOf(PCModule *Other) const;
   
   /// \brief Determine whether this module is a part of a framework,
   /// either because it is a framework module or because it is a submodule
   /// of a framework module.
   bool isPartOfFramework() const {
-    for (const Module *Mod = this; Mod; Mod = Mod->Parent) 
+    for (const PCModule *Mod = this; Mod; Mod = Mod->Parent) 
       if (Mod->IsFramework)
         return true;
     
@@ -220,34 +220,34 @@ public:
   
   /// \brief Retrieve the full name of this module, including the path from
   /// its top-level module.
-  std::string getFullModuleName() const;
+  std::string getFullPCModuleName() const;
 
   /// \brief Retrieve the top-level module for this (sub)module, which may
   /// be this module.
-  Module *getTopLevelModule() {
-    return const_cast<Module *>(
-             const_cast<const Module *>(this)->getTopLevelModule());
+  PCModule *getTopLevelPCModule() {
+    return const_cast<PCModule *>(
+             const_cast<const PCModule *>(this)->getTopLevelPCModule());
   }
 
   /// \brief Retrieve the top-level module for this (sub)module, which may
   /// be this module.
-  const Module *getTopLevelModule() const;
+  const PCModule *getTopLevelPCModule() const;
   
   /// \brief Retrieve the name of the top-level module.
   ///
-  StringRef getTopLevelModuleName() const {
-    return getTopLevelModule()->Name;
+  StringRef getTopLevelPCModuleName() const {
+    return getTopLevelPCModule()->Name;
   }
 
   /// \brief The serialized AST file for this module, if one was created.
   const FileEntry *getASTFile() const {
-    return getTopLevelModule()->ASTFile;
+    return getTopLevelPCModule()->ASTFile;
   }
 
   /// \brief Set the serialized AST file for the top-level module of this module.
   void setASTFile(const FileEntry *File) {
     assert((getASTFile() == 0 || getASTFile() == File) && "file path changed");
-    getTopLevelModule()->ASTFile = File;
+    getTopLevelPCModule()->ASTFile = File;
   }
 
   /// \brief Retrieve the directory for which this module serves as the
@@ -283,17 +283,17 @@ public:
   /// \brief Find the submodule with the given name.
   ///
   /// \returns The submodule if found, or NULL otherwise.
-  Module *findSubmodule(StringRef Name) const;
+  PCModule *findSubmodule(StringRef Name) const;
   
-  typedef std::vector<Module *>::iterator submodule_iterator;
-  typedef std::vector<Module *>::const_iterator submodule_const_iterator;
+  typedef std::vector<PCModule *>::iterator submodule_iterator;
+  typedef std::vector<PCModule *>::const_iterator submodule_const_iterator;
   
-  submodule_iterator submodule_begin() { return SubModules.begin(); }
-  submodule_const_iterator submodule_begin() const {return SubModules.begin();}
-  submodule_iterator submodule_end()   { return SubModules.end(); }
-  submodule_const_iterator submodule_end() const { return SubModules.end(); }
+  submodule_iterator submodule_begin() { return SubPCModules.begin(); }
+  submodule_const_iterator submodule_begin() const {return SubPCModules.begin();}
+  submodule_iterator submodule_end()   { return SubPCModules.end(); }
+  submodule_const_iterator submodule_end() const { return SubPCModules.end(); }
   
-  static StringRef getModuleInputBufferName() {
+  static StringRef getPCModuleInputBufferName() {
     return "<module-includes>";
   }
 

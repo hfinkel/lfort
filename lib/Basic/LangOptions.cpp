@@ -27,6 +27,6 @@ void LangOptions::resetNonModularOptions() {
   Name = Default;
 #include "lfort/Basic/LangOptions.def"
   
-  CurrentModule.clear();
+  CurrentPCModule.clear();
 }
 

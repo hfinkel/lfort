@@ -1,4 +1,4 @@
-//===--- Module.cpp - Describe a module -----------------------------------===//
+//===--- PCModule.cpp - Describe a module -----------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines the Module class, which describes a module in the source
+// This file defines the PCModule class, which describes a module in the source
 // code.
 //
 //===----------------------------------------------------------------------===//
-#include "lfort/Basic/Module.h"
+#include "lfort/Basic/PCModule.h"
 #include "lfort/Basic/FileManager.h"
 #include "lfort/Basic/LangOptions.h"
 #include "lfort/Basic/TargetInfo.h"
@@ -21,10 +21,10 @@
 #include "llvm/Support/raw_ostream.h"
 using namespace lfort;
 
-Module::Module(StringRef Name, SourceLocation DefinitionLoc, Module *Parent, 
+PCModule::PCModule(StringRef Name, SourceLocation DefinitionLoc, PCModule *Parent, 
                bool IsFramework, bool IsExplicit)
   : Name(Name), DefinitionLoc(DefinitionLoc), Parent(Parent),
-    Umbrella(), ASTFile(0), IsAvailable(true), IsFromModuleFile(false),
+    Umbrella(), ASTFile(0), IsAvailable(true), IsFromPCModuleFile(false),
     IsFramework(IsFramework), IsExplicit(IsExplicit), IsSystem(false),
     InferSubmodules(false), InferExplicitSubmodules(false), 
     InferExportWildcard(false), NameVisibility(Hidden) 
@@ -35,12 +35,12 @@ Module::Module(StringRef Name, SourceLocation DefinitionLoc, Module *Parent,
     if (Parent->IsSystem)
       IsSystem = true;
     
-    Parent->SubModuleIndex[Name] = Parent->SubModules.size();
-    Parent->SubModules.push_back(this);
+    Parent->SubPCModuleIndex[Name] = Parent->SubPCModules.size();
+    Parent->SubPCModules.push_back(this);
   }
 }
 
-Module::~Module() {
+PCModule::~PCModule() {
   for (submodule_iterator I = submodule_begin(), IEnd = submodule_end();
        I != IEnd; ++I) {
     delete *I;
@@ -65,12 +65,12 @@ static bool hasFeature(StringRef Feature, const LangOptions &LangOpts,
 }
 
 bool 
-Module::isAvailable(const LangOptions &LangOpts, const TargetInfo &Target,
+PCModule::isAvailable(const LangOptions &LangOpts, const TargetInfo &Target,
                     StringRef &Feature) const {
   if (IsAvailable)
     return true;
 
-  for (const Module *Current = this; Current; Current = Current->Parent) {
+  for (const PCModule *Current = this; Current; Current = Current->Parent) {
     for (unsigned I = 0, N = Current->Requires.size(); I != N; ++I) {
       if (!hasFeature(Current->Requires[I], LangOpts, Target)) {
         Feature = Current->Requires[I];
@@ -82,8 +82,8 @@ Module::isAvailable(const LangOptions &LangOpts, const TargetInfo &Target,
   llvm_unreachable("could not find a reason why module is unavailable");
 }
 
-bool Module::isSubModuleOf(Module *Other) const {
-  const Module *This = this;
+bool PCModule::isSubPCModuleOf(PCModule *Other) const {
+  const PCModule *This = this;
   do {
     if (This == Other)
       return true;
@@ -94,19 +94,19 @@ bool Module::isSubModuleOf(Module *Other) const {
   return false;
 }
 
-const Module *Module::getTopLevelModule() const {
-  const Module *Result = this;
+const PCModule *PCModule::getTopLevelPCModule() const {
+  const PCModule *Result = this;
   while (Result->Parent)
     Result = Result->Parent;
   
   return Result;
 }
 
-std::string Module::getFullModuleName() const {
+std::string PCModule::getFullPCModuleName() const {
   llvm::SmallVector<StringRef, 2> Names;
   
   // Build up the set of module names (from innermost to outermost).
-  for (const Module *M = this; M; M = M->Parent)
+  for (const PCModule *M = this; M; M = M->Parent)
     Names.push_back(M->Name);
   
   std::string Result;
@@ -122,14 +122,14 @@ std::string Module::getFullModuleName() const {
   return Result;
 }
 
-const DirectoryEntry *Module::getUmbrellaDir() const {
+const DirectoryEntry *PCModule::getUmbrellaDir() const {
   if (const FileEntry *Header = getUmbrellaHeader())
     return Header->getDir();
   
   return Umbrella.dyn_cast<const DirectoryEntry *>();
 }
 
-void Module::addRequirement(StringRef Feature, const LangOptions &LangOpts,
+void PCModule::addRequirement(StringRef Feature, const LangOptions &LangOpts,
                             const TargetInfo &Target) {
   Requires.push_back(Feature);
 
@@ -140,10 +140,10 @@ void Module::addRequirement(StringRef Feature, const LangOptions &LangOpts,
   if (!IsAvailable)
     return;
 
-  llvm::SmallVector<Module *, 2> Stack;
+  llvm::SmallVector<PCModule *, 2> Stack;
   Stack.push_back(this);
   while (!Stack.empty()) {
-    Module *Current = Stack.back();
+    PCModule *Current = Stack.back();
     Stack.pop_back();
 
     if (!Current->IsAvailable)
@@ -159,15 +159,15 @@ void Module::addRequirement(StringRef Feature, const LangOptions &LangOpts,
   }
 }
 
-Module *Module::findSubmodule(StringRef Name) const {
-  llvm::StringMap<unsigned>::const_iterator Pos = SubModuleIndex.find(Name);
-  if (Pos == SubModuleIndex.end())
+PCModule *PCModule::findSubmodule(StringRef Name) const {
+  llvm::StringMap<unsigned>::const_iterator Pos = SubPCModuleIndex.find(Name);
+  if (Pos == SubPCModuleIndex.end())
     return 0;
   
-  return SubModules[Pos->getValue()];
+  return SubPCModules[Pos->getValue()];
 }
 
-static void printModuleId(llvm::raw_ostream &OS, const ModuleId &Id) {
+static void printPCModuleId(llvm::raw_ostream &OS, const PCModuleId &Id) {
   for (unsigned I = 0, N = Id.size(); I != N; ++I) {
     if (I)
       OS << ".";
@@ -175,7 +175,7 @@ static void printModuleId(llvm::raw_ostream &OS, const ModuleId &Id) {
   }
 }
 
-void Module::print(llvm::raw_ostream &OS, unsigned Indent) const {
+void PCModule::print(llvm::raw_ostream &OS, unsigned Indent) const {
   OS.indent(Indent);
   if (IsFramework)
     OS << "framework ";
@@ -234,8 +234,8 @@ void Module::print(llvm::raw_ostream &OS, unsigned Indent) const {
   for (unsigned I = 0, N = Exports.size(); I != N; ++I) {
     OS.indent(Indent + 2);
     OS << "export ";
-    if (Module *Restriction = Exports[I].getPointer()) {
-      OS << Restriction->getFullModuleName();
+    if (PCModule *Restriction = Exports[I].getPointer()) {
+      OS << Restriction->getFullPCModuleName();
       if (Exports[I].getInt())
         OS << ".*";
     } else {
@@ -247,7 +247,7 @@ void Module::print(llvm::raw_ostream &OS, unsigned Indent) const {
   for (unsigned I = 0, N = UnresolvedExports.size(); I != N; ++I) {
     OS.indent(Indent + 2);
     OS << "export ";
-    printModuleId(OS, UnresolvedExports[I].Id);
+    printPCModuleId(OS, UnresolvedExports[I].Id);
     if (UnresolvedExports[I].Wildcard) {
       if (UnresolvedExports[I].Id.empty())
         OS << "*";
@@ -274,7 +274,7 @@ void Module::print(llvm::raw_ostream &OS, unsigned Indent) const {
   OS << "}\n";
 }
 
-void Module::dump() const {
+void PCModule::dump() const {
   print(llvm::errs());
 }
 

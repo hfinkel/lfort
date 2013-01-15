@@ -54,7 +54,7 @@ class OpaqueValueExpr;
 class OpenCLOptions;
 class ASTReader;
 class MacroInfo;
-class Module;
+class PCModule;
 class PreprocessedEntity;
 class PreprocessingRecord;
 class Preprocessor;
@@ -109,7 +109,7 @@ private:
   ASTReader *Chain;
 
   /// \brief The module we're currently writing, if any.
-  Module *WritingModule;
+  PCModule *WritingPCModule;
                     
   /// \brief Indicates when the AST writing is actively performing
   /// serialization, rather than just queueing updates.
@@ -403,10 +403,10 @@ private:
 
   /// \brief A mapping from each known submodule to its ID number, which will
   /// be a positive integer.
-  llvm::DenseMap<Module *, unsigned> SubmoduleIDs;
+  llvm::DenseMap<PCModule *, unsigned> SubmoduleIDs;
                     
   /// \brief Retrieve or create a submodule ID for this module.
-  unsigned getSubmoduleID(Module *Mod);
+  unsigned getSubmoduleID(PCModule *Mod);
                     
   /// \brief Write the given subexpression to the bitstream.
   void WriteSubStmt(Stmt *S,
@@ -420,10 +420,10 @@ private:
   void WriteSourceManagerBlock(SourceManager &SourceMgr,
                                const Preprocessor &PP,
                                StringRef isysroot);
-  void WritePreprocessor(const Preprocessor &PP, bool IsModule);
+  void WritePreprocessor(const Preprocessor &PP, bool IsPCModule);
   void WriteHeaderSearch(const HeaderSearch &HS, StringRef isysroot);
   void WritePreprocessorDetail(PreprocessingRecord &PPRec);
-  void WriteSubmodules(Module *WritingModule);
+  void WriteSubmodules(PCModule *WritingPCModule);
                                         
   void WritePragmaDiagnosticMappings(const DiagnosticsEngine &Diag);
   void WriteCXXBaseSpecifiersOffsets();
@@ -436,7 +436,7 @@ private:
   void WriteSelectors(Sema &SemaRef);
   void WriteReferencedSelectorsPool(Sema &SemaRef);
   void WriteIdentifierTable(Preprocessor &PP, IdentifierResolver &IdResolver,
-                            bool IsModule);
+                            bool IsPCModule);
   void WriteAttributes(ArrayRef<const Attr*> Attrs, RecordDataImpl &Record);
   void WriteMacroUpdates();
   void ResolveDeclUpdatesBlocks();
@@ -468,7 +468,7 @@ private:
 
   void WriteASTCore(Sema &SemaRef,
                     StringRef isysroot, const std::string &OutputFile,
-                    Module *WritingModule);
+                    PCModule *WritingPCModule);
 
 public:
   /// \brief Create a new precompiled header writer that outputs to
@@ -481,14 +481,14 @@ public:
   /// \param SemaRef a reference to the semantic analysis object that processed
   /// the AST to be written into the precompiled header.
   ///
-  /// \param WritingModule The module that we are writing. If null, we are
+  /// \param WritingPCModule The module that we are writing. If null, we are
   /// writing a precompiled header.
   ///
   /// \param isysroot if non-empty, write a relocatable file whose headers
   /// are relative to the given system root.
   void WriteAST(Sema &SemaRef,
                 const std::string &OutputFile,
-                Module *WritingModule, StringRef isysroot,
+                PCModule *WritingPCModule, StringRef isysroot,
                 bool hasErrors = false);
 
   /// \brief Emit a source location.
@@ -698,7 +698,7 @@ public:
   void SelectorRead(serialization::SelectorID ID, Selector Sel);
   void MacroDefinitionRead(serialization::PreprocessedEntityID ID,
                            MacroDefinition *MD);
-  void ModuleRead(serialization::SubmoduleID ID, Module *Mod);
+  void PCModuleRead(serialization::SubmoduleID ID, PCModule *Mod);
 
   // PPMutationListener implementation.
   virtual void UndefinedMacro(MacroInfo *MI);
@@ -725,7 +725,7 @@ public:
 class PCHGenerator : public SemaConsumer {
   const Preprocessor &PP;
   std::string OutputFile;
-  lfort::Module *Module;
+  lfort::PCModule *PCModule;
   std::string isysroot;
   raw_ostream *Out;
   Sema *SemaPtr;
@@ -739,7 +739,7 @@ protected:
 
 public:
   PCHGenerator(const Preprocessor &PP, StringRef OutputFile,
-               lfort::Module *Module,
+               lfort::PCModule *PCModule,
                StringRef isysroot, raw_ostream *Out);
   ~PCHGenerator();
   virtual void InitializeSema(Sema &S) { SemaPtr = &S; }

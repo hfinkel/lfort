@@ -24,7 +24,7 @@ class ASTReader;
 class QualType;
 class MacroDefinition;
 class MacroInfo;
-class Module;
+class PCModule;
   
 class ASTDeserializationListener {
 protected:
@@ -52,7 +52,7 @@ public:
   virtual void MacroDefinitionRead(serialization::PreprocessedEntityID, 
                                    MacroDefinition *MD) { }
   /// \brief A module definition was read from the AST file.
-  virtual void ModuleRead(serialization::SubmoduleID ID, Module *Mod) { }
+  virtual void PCModuleRead(serialization::SubmoduleID ID, PCModule *Mod) { }
 };
 
 }

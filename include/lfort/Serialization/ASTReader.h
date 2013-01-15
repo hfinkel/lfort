@@ -29,8 +29,8 @@
 #include "lfort/Sema/ExternalSemaSource.h"
 #include "lfort/Serialization/ASTBitCodes.h"
 #include "lfort/Serialization/ContinuousRangeMap.h"
-#include "lfort/Serialization/Module.h"
-#include "lfort/Serialization/ModuleManager.h"
+#include "lfort/Serialization/PCModule.h"
+#include "lfort/Serialization/PCModuleManager.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
@@ -159,7 +159,7 @@ public:
   virtual void ReadHeaderFileInfo(const HeaderFileInfo &HFI, unsigned ID) {}
 
   /// \brief Receives __COUNTER__ value.
-  virtual void ReadCounter(const serialization::ModuleFile &M,
+  virtual void ReadCounter(const serialization::PCModuleFile &M,
                            unsigned Value) {}
 };
 
@@ -183,7 +183,7 @@ public:
                                        bool Complain,
                                        std::string &SuggestedPredefines);
   virtual void ReadHeaderFileInfo(const HeaderFileInfo &HFI, unsigned ID);
-  virtual void ReadCounter(const serialization::ModuleFile &M, unsigned Value);
+  virtual void ReadCounter(const serialization::PCModuleFile &M, unsigned Value);
 
 private:
   void Error(const char *Msg);
@@ -257,13 +257,13 @@ public:
   friend class ASTUnit; // ASTUnit needs to remap source locations.
   friend class serialization::ReadMethodPoolVisitor;
 
-  typedef serialization::ModuleFile ModuleFile;
-  typedef serialization::ModuleKind ModuleKind;
-  typedef serialization::ModuleManager ModuleManager;
+  typedef serialization::PCModuleFile PCModuleFile;
+  typedef serialization::PCModuleKind PCModuleKind;
+  typedef serialization::PCModuleManager PCModuleManager;
 
-  typedef ModuleManager::ModuleIterator ModuleIterator;
-  typedef ModuleManager::ModuleConstIterator ModuleConstIterator;
-  typedef ModuleManager::ModuleReverseIterator ModuleReverseIterator;
+  typedef PCModuleManager::PCModuleIterator PCModuleIterator;
+  typedef PCModuleManager::PCModuleConstIterator PCModuleConstIterator;
+  typedef PCModuleManager::PCModuleReverseIterator PCModuleReverseIterator;
 
 private:
   /// \brief The receiver of some callbacks invoked by ASTReader.
@@ -290,16 +290,16 @@ private:
   ASTConsumer *Consumer;
 
   /// \brief The module manager which manages modules and their dependencies
-  ModuleManager ModuleMgr;
+  PCModuleManager PCModuleMgr;
 
   /// \brief A map of global bit offsets to the module that stores entities
   /// at those bit offsets.
-  ContinuousRangeMap<uint64_t, ModuleFile*, 4> GlobalBitOffsetsMap;
+  ContinuousRangeMap<uint64_t, PCModuleFile*, 4> GlobalBitOffsetsMap;
 
   /// \brief A map of negated SLocEntryIDs to the modules containing them.
-  ContinuousRangeMap<unsigned, ModuleFile*, 64> GlobalSLocEntryMap;
+  ContinuousRangeMap<unsigned, PCModuleFile*, 64> GlobalSLocEntryMap;
 
-  typedef ContinuousRangeMap<unsigned, ModuleFile*, 64> GlobalSLocOffsetMapType;
+  typedef ContinuousRangeMap<unsigned, PCModuleFile*, 64> GlobalSLocOffsetMapType;
 
   /// \brief A map of reversed (SourceManager::MaxLoadedOffset - SLocOffset)
   /// SourceLocation offsets to the modules containing them.
@@ -311,7 +311,7 @@ private:
   /// ID = (I + 1) << FastQual::Width has already been loaded
   std::vector<QualType> TypesLoaded;
 
-  typedef ContinuousRangeMap<serialization::TypeID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::TypeID, PCModuleFile *, 4>
     GlobalTypeMapType;
 
   /// \brief Mapping from global type IDs to the module in which the
@@ -325,14 +325,14 @@ private:
   /// = I + 1 has already been loaded.
   std::vector<Decl *> DeclsLoaded;
 
-  typedef ContinuousRangeMap<serialization::DeclID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::DeclID, PCModuleFile *, 4>
     GlobalDeclMapType;
 
   /// \brief Mapping from global declaration IDs to the module in which the
   /// declaration resides.
   GlobalDeclMapType GlobalDeclMap;
 
-  typedef std::pair<ModuleFile *, uint64_t> FileOffset;
+  typedef std::pair<PCModuleFile *, uint64_t> FileOffset;
   typedef SmallVector<FileOffset, 2> FileOffsetsTy;
   typedef llvm::DenseMap<serialization::DeclID, FileOffsetsTy>
       DeclUpdateOffsetsMap;
@@ -342,12 +342,12 @@ private:
   DeclUpdateOffsetsMap DeclUpdateOffsets;
 
   struct ReplacedDeclInfo {
-    ModuleFile *Mod;
+    PCModuleFile *Mod;
     uint64_t Offset;
     unsigned RawLoc;
 
     ReplacedDeclInfo() : Mod(0), Offset(0), RawLoc(0) {}
-    ReplacedDeclInfo(ModuleFile *Mod, uint64_t Offset, unsigned RawLoc)
+    ReplacedDeclInfo(PCModuleFile *Mod, uint64_t Offset, unsigned RawLoc)
       : Mod(Mod), Offset(Offset), RawLoc(RawLoc) {}
   };
 
@@ -357,11 +357,11 @@ private:
   DeclReplacementMap ReplacedDecls;
 
   struct FileDeclsInfo {
-    ModuleFile *Mod;
+    PCModuleFile *Mod;
     ArrayRef<serialization::LocalDeclID> Decls;
 
     FileDeclsInfo() : Mod(0) {}
-    FileDeclsInfo(ModuleFile *Mod, ArrayRef<serialization::LocalDeclID> Decls)
+    FileDeclsInfo(PCModuleFile *Mod, ArrayRef<serialization::LocalDeclID> Decls)
       : Mod(Mod), Decls(Decls) {}
   };
 
@@ -374,7 +374,7 @@ private:
   // ID as a key. It will be realized when the context is actually loaded.
   typedef
     SmallVector<std::pair<serialization::reader::ASTDeclContextNameLookupTable *,
-                          ModuleFile*>, 1> DeclContextVisibleUpdates;
+                          PCModuleFile*>, 1> DeclContextVisibleUpdates;
   typedef llvm::DenseMap<serialization::DeclID, DeclContextVisibleUpdates>
       DeclContextVisibleUpdatesPending;
 
@@ -395,7 +395,7 @@ private:
   PendingBodiesMap PendingBodies;
 
   /// \brief Read the records that describe the contents of declcontexts.
-  bool ReadDeclContextStorage(ModuleFile &M,
+  bool ReadDeclContextStorage(PCModuleFile &M,
                               llvm::BitstreamCursor &Cursor,
                               const std::pair<uint64_t, uint64_t> &Offsets,
                               serialization::DeclContextInfo &Info);
@@ -408,7 +408,7 @@ private:
   /// been loaded.
   std::vector<IdentifierInfo *> IdentifiersLoaded;
 
-  typedef ContinuousRangeMap<serialization::IdentID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::IdentID, PCModuleFile *, 4>
     GlobalIdentifierMapType;
 
   /// \brief Mapping from global identifier IDs to the module in which the
@@ -424,7 +424,7 @@ private:
   /// been loaded.
   std::vector<MacroInfo *> MacrosLoaded;
 
-  typedef ContinuousRangeMap<serialization::MacroID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::MacroID, PCModuleFile *, 4>
     GlobalMacroMapType;
 
   /// \brief Mapping from global macro IDs to the module in which the
@@ -445,9 +445,9 @@ private:
   ///
   /// This vector is indexed by the Submodule ID (-1). NULL submodule entries
   /// indicate that the particular submodule ID has not yet been loaded.
-  SmallVector<Module *, 2> SubmodulesLoaded;
+  SmallVector<PCModule *, 2> SubmodulesLoaded;
   
-  typedef ContinuousRangeMap<serialization::SubmoduleID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::SubmoduleID, PCModuleFile *, 4>
     GlobalSubmoduleMapType;
   
   /// \brief Mapping from global submodule IDs to the module file in which the
@@ -506,7 +506,7 @@ private:
   typedef llvm::SmallVector<HiddenName, 2>
     HiddenNames;
   
-  typedef llvm::DenseMap<Module *, HiddenNames> HiddenNamesMapType;
+  typedef llvm::DenseMap<PCModule *, HiddenNames> HiddenNamesMapType;
 
   /// \brief A mapping from each of the hidden submodules to the deserialized
   /// declarations in that submodule that could be made visible.
@@ -514,12 +514,12 @@ private:
   
   
   /// \brief A module import or export that hasn't yet been resolved.
-  struct UnresolvedModuleImportExport {
+  struct UnresolvedPCModuleImportExport {
     /// \brief The file in which this module resides.
-    ModuleFile *File;
+    PCModuleFile *File;
     
     /// \brief The module that is importing or exporting.
-    Module *Mod;
+    PCModule *Mod;
     
     /// \brief The local ID of the module that is being exported.
     unsigned ID;
@@ -533,8 +533,8 @@ private:
   
   /// \brief The set of module imports and exports that still need to be 
   /// resolved.
-  llvm::SmallVector<UnresolvedModuleImportExport, 2> 
-    UnresolvedModuleImportExports;
+  llvm::SmallVector<UnresolvedPCModuleImportExport, 2> 
+    UnresolvedPCModuleImportExports;
   
   /// \brief A vector containing selectors that have already been loaded.
   ///
@@ -543,7 +543,7 @@ private:
   /// been loaded.
   SmallVector<Selector, 16> SelectorsLoaded;
 
-  typedef ContinuousRangeMap<serialization::SelectorID, ModuleFile *, 4>
+  typedef ContinuousRangeMap<serialization::SelectorID, PCModuleFile *, 4>
     GlobalSelectorMapType;
 
   /// \brief Mapping from global selector IDs to the module in which the
@@ -563,7 +563,7 @@ private:
   /// IDs have not yet been deserialized to the global IDs of those macros.
   PendingMacroIDsMap PendingMacroIDs;
 
-  typedef ContinuousRangeMap<unsigned, ModuleFile *, 4>
+  typedef ContinuousRangeMap<unsigned, PCModuleFile *, 4>
     GlobalPreprocessedEntityMapType;
 
   /// \brief Mapping from global preprocessing entity IDs to the module in
@@ -677,7 +677,7 @@ private:
 
   /// \brief A list of modules that were imported by precompiled headers or
   /// any other non-module AST file.
-  SmallVector<serialization::SubmoduleID, 2> ImportedModules;
+  SmallVector<serialization::SubmoduleID, 2> ImportedPCModules;
   //@}
 
   /// \brief The directory that the PCH we are reading is stored in.
@@ -748,7 +748,7 @@ private:
   unsigned NumVisibleDeclContextsRead, TotalVisibleDeclContexts;
 
   /// Total size of modules, in bits, currently loaded
-  uint64_t TotalModulesSizeInBits;
+  uint64_t TotalPCModulesSizeInBits;
 
   /// \brief Number of Decl/types that are currently deserializing.
   unsigned NumCurrentElementsDeserializing;
@@ -882,44 +882,44 @@ private:
   std::string SuggestedPredefines;
 
   /// \brief Reads a statement from the specified cursor.
-  Stmt *ReadStmtFromStream(ModuleFile &F);
+  Stmt *ReadStmtFromStream(PCModuleFile &F);
 
   typedef llvm::PointerIntPair<const FileEntry *, 1, bool> InputFile;
 
   /// \brief Retrieve the file entry and 'overridden' bit for an input
   /// file in the given module file.
-  InputFile getInputFile(ModuleFile &F, unsigned ID, bool Complain = true);
+  InputFile getInputFile(PCModuleFile &F, unsigned ID, bool Complain = true);
 
   /// \brief Get a FileEntry out of stored-in-PCH filename, making sure we take
   /// into account all the necessary relocations.
   const FileEntry *getFileEntry(StringRef filename);
 
-  void MaybeAddSystemRootToFilename(ModuleFile &M, std::string &Filename);
+  void MaybeAddSystemRootToFilename(PCModuleFile &M, std::string &Filename);
 
-  struct ImportedModule {
-    ModuleFile *Mod;
-    ModuleFile *ImportedBy;
+  struct ImportedPCModule {
+    PCModuleFile *Mod;
+    PCModuleFile *ImportedBy;
     SourceLocation ImportLoc;
 
-    ImportedModule(ModuleFile *Mod,
-                   ModuleFile *ImportedBy,
+    ImportedPCModule(PCModuleFile *Mod,
+                   PCModuleFile *ImportedBy,
                    SourceLocation ImportLoc)
       : Mod(Mod), ImportedBy(ImportedBy), ImportLoc(ImportLoc) { }
   };
 
-  ASTReadResult ReadASTCore(StringRef FileName, ModuleKind Type,
-                            SourceLocation ImportLoc, ModuleFile *ImportedBy,
-                            llvm::SmallVectorImpl<ImportedModule> &Loaded,
+  ASTReadResult ReadASTCore(StringRef FileName, PCModuleKind Type,
+                            SourceLocation ImportLoc, PCModuleFile *ImportedBy,
+                            llvm::SmallVectorImpl<ImportedPCModule> &Loaded,
                             unsigned ClientLoadCapabilities);
-  ASTReadResult ReadControlBlock(ModuleFile &F,
-                                 llvm::SmallVectorImpl<ImportedModule> &Loaded,
+  ASTReadResult ReadControlBlock(PCModuleFile &F,
+                                 llvm::SmallVectorImpl<ImportedPCModule> &Loaded,
                                  unsigned ClientLoadCapabilities);
-  bool ReadASTBlock(ModuleFile &F);
-  bool ParseLineTable(ModuleFile &F, SmallVectorImpl<uint64_t> &Record);
-  bool ReadSourceManagerBlock(ModuleFile &F);
+  bool ReadASTBlock(PCModuleFile &F);
+  bool ParseLineTable(PCModuleFile &F, SmallVectorImpl<uint64_t> &Record);
+  bool ReadSourceManagerBlock(PCModuleFile &F);
   llvm::BitstreamCursor &SLocCursorForID(int ID);
-  SourceLocation getImportLocation(ModuleFile *F);
-  bool ReadSubmoduleBlock(ModuleFile &F);
+  SourceLocation getImportLocation(PCModuleFile *F);
+  bool ReadSubmoduleBlock(PCModuleFile &F);
   static bool ParseLanguageOptions(const RecordData &Record, bool Complain,
                                    ASTReaderListener &Listener);
   static bool ParseTargetOptions(const RecordData &Record, bool Complain,
@@ -935,9 +935,9 @@ private:
                                        std::string &SuggestedPredefines);
 
   struct RecordLocation {
-    RecordLocation(ModuleFile *M, uint64_t O)
+    RecordLocation(PCModuleFile *M, uint64_t O)
       : F(M), Offset(O) {}
-    ModuleFile *F;
+    PCModuleFile *F;
     uint64_t Offset;
   };
 
@@ -953,7 +953,7 @@ private:
                           unsigned PreviousGeneration = 0);
 
   RecordLocation getLocalBitOffset(uint64_t GlobalOffset);
-  uint64_t getGlobalBitOffset(ModuleFile &M, uint32_t LocalOffset);
+  uint64_t getGlobalBitOffset(PCModuleFile &M, uint32_t LocalOffset);
 
   /// \brief Returns the first preprocessed entity ID that ends after BLoc.
   serialization::PreprocessedEntityID
@@ -973,19 +973,19 @@ private:
     findNextPreprocessedEntity(
                         GlobalSLocOffsetMapType::const_iterator SLocMapI) const;
 
-  /// \brief Returns (ModuleFile, Local index) pair for \p GlobalIndex of a
+  /// \brief Returns (PCModuleFile, Local index) pair for \p GlobalIndex of a
   /// preprocessed entity.
-  std::pair<ModuleFile *, unsigned>
-    getModulePreprocessedEntity(unsigned GlobalIndex);
+  std::pair<PCModuleFile *, unsigned>
+    getPCModulePreprocessedEntity(unsigned GlobalIndex);
 
   /// \brief Returns (begin, end) pair for the preprocessed entities of a
   /// particular module.
   std::pair<PreprocessingRecord::iterator, PreprocessingRecord::iterator>
-    getModulePreprocessedEntities(ModuleFile &Mod) const;
+    getPCModulePreprocessedEntities(PCModuleFile &Mod) const;
 
-  class ModuleDeclIterator {
+  class PCModuleDeclIterator {
     ASTReader *Reader;
-    ModuleFile *Mod;
+    PCModuleFile *Mod;
     const serialization::LocalDeclID *Pos;
 
   public:
@@ -993,9 +993,9 @@ private:
     typedef value_type&         reference;
     typedef value_type*         pointer;
 
-    ModuleDeclIterator() : Reader(0), Mod(0), Pos(0) { }
+    PCModuleDeclIterator() : Reader(0), Mod(0), Pos(0) { }
 
-    ModuleDeclIterator(ASTReader *Reader, ModuleFile *Mod,
+    PCModuleDeclIterator(ASTReader *Reader, PCModuleFile *Mod,
                        const serialization::LocalDeclID *Pos)
       : Reader(Reader), Mod(Mod), Pos(Pos) { }
 
@@ -1003,43 +1003,43 @@ private:
       return Reader->GetDecl(Reader->getGlobalDeclID(*Mod, *Pos));
     }
 
-    ModuleDeclIterator &operator++() {
+    PCModuleDeclIterator &operator++() {
       ++Pos;
       return *this;
     }
 
-    ModuleDeclIterator operator++(int) {
-      ModuleDeclIterator Prev(*this);
+    PCModuleDeclIterator operator++(int) {
+      PCModuleDeclIterator Prev(*this);
       ++Pos;
       return Prev;
     }
 
-    ModuleDeclIterator &operator--() {
+    PCModuleDeclIterator &operator--() {
       --Pos;
       return *this;
     }
 
-    ModuleDeclIterator operator--(int) {
-      ModuleDeclIterator Prev(*this);
+    PCModuleDeclIterator operator--(int) {
+      PCModuleDeclIterator Prev(*this);
       --Pos;
       return Prev;
     }
 
-    friend bool operator==(const ModuleDeclIterator &LHS,
-                           const ModuleDeclIterator &RHS) {
+    friend bool operator==(const PCModuleDeclIterator &LHS,
+                           const PCModuleDeclIterator &RHS) {
       assert(LHS.Reader == RHS.Reader && LHS.Mod == RHS.Mod);
       return LHS.Pos == RHS.Pos;
     }
 
-    friend bool operator!=(const ModuleDeclIterator &LHS,
-                           const ModuleDeclIterator &RHS) {
+    friend bool operator!=(const PCModuleDeclIterator &LHS,
+                           const PCModuleDeclIterator &RHS) {
       assert(LHS.Reader == RHS.Reader && LHS.Mod == RHS.Mod);
       return LHS.Pos != RHS.Pos;
     }
   };
 
-  std::pair<ModuleDeclIterator, ModuleDeclIterator>
-    getModuleFileLevelDecls(ModuleFile &Mod);
+  std::pair<PCModuleDeclIterator, PCModuleDeclIterator>
+    getPCModuleFileLevelDecls(PCModuleFile &Mod);
 
   void PassInterestingDeclsToConsumer();
   void PassInterestingDeclToConsumer(Decl *D);
@@ -1118,7 +1118,7 @@ public:
   /// \param ClientLoadCapabilities The set of client load-failure
   /// capabilities, represented as a bitset of the enumerators of
   /// LoadFailureCapabilities.
-  ASTReadResult ReadAST(const std::string &FileName, ModuleKind Type,
+  ASTReadResult ReadAST(const std::string &FileName, PCModuleKind Type,
                         SourceLocation ImportLoc,
                         unsigned ClientLoadCapabilities);
 
@@ -1129,8 +1129,8 @@ public:
   ///
   /// \param NameVisibility The level of visibility to give the names in the
   /// module.  Visibility can only be increased over time.
-  void makeModuleVisible(Module *Mod, 
-                         Module::NameVisibilityKind NameVisibility);
+  void makePCModuleVisible(PCModule *Mod, 
+                         PCModule::NameVisibilityKind NameVisibility);
   
   /// \brief Make the names within this set of hidden names visible.
   void makeNamesVisible(const HiddenNames &Names);
@@ -1148,7 +1148,7 @@ public:
 
   /// \brief Add in-memory (virtual file) buffer.
   void addInMemoryBuffer(StringRef &FileName, llvm::MemoryBuffer *Buffer) {
-    ModuleMgr.addInMemoryBuffer(FileName, Buffer);
+    PCModuleMgr.addInMemoryBuffer(FileName, Buffer);
   }
 
   /// \brief Finalizes the AST reader's state before writing an AST file to
@@ -1159,7 +1159,7 @@ public:
   void finalizeForWriting();
 
   /// \brief Retrieve the module manager.
-  ModuleManager &getModuleManager() { return ModuleMgr; }
+  PCModuleManager &getPCModuleManager() { return PCModuleMgr; }
 
   /// \brief Retrieve the preprocessor.
   Preprocessor &getPreprocessor() const { return PP; }
@@ -1167,7 +1167,7 @@ public:
   /// \brief Retrieve the name of the original source file name for the primary
   /// module file.
   StringRef getOriginalSourceFile() {
-    return ModuleMgr.getPrimaryModule().OriginalSourceFileName; 
+    return PCModuleMgr.getPrimaryPCModule().OriginalSourceFileName; 
   }
 
   /// \brief Retrieve the name of the original source file name directly from
@@ -1256,8 +1256,8 @@ public:
   /// reader.
   unsigned getTotalNumPreprocessedEntities() const {
     unsigned Result = 0;
-    for (ModuleConstIterator I = ModuleMgr.begin(),
-        E = ModuleMgr.end(); I != E; ++I) {
+    for (PCModuleConstIterator I = PCModuleMgr.begin(),
+        E = PCModuleMgr.end(); I != E; ++I) {
       Result += (*I)->NumPreprocessedEntities;
     }
 
@@ -1272,16 +1272,16 @@ public:
   /// \brief Reads a TemplateArgumentLocInfo appropriate for the
   /// given TemplateArgument kind.
   TemplateArgumentLocInfo
-  GetTemplateArgumentLocInfo(ModuleFile &F, TemplateArgument::ArgKind Kind,
+  GetTemplateArgumentLocInfo(PCModuleFile &F, TemplateArgument::ArgKind Kind,
                              const RecordData &Record, unsigned &Idx);
 
   /// \brief Reads a TemplateArgumentLoc.
   TemplateArgumentLoc
-  ReadTemplateArgumentLoc(ModuleFile &F,
+  ReadTemplateArgumentLoc(PCModuleFile &F,
                           const RecordData &Record, unsigned &Idx);
 
   /// \brief Reads a declarator info from the given record.
-  TypeSourceInfo *GetTypeSourceInfo(ModuleFile &F,
+  TypeSourceInfo *GetTypeSourceInfo(PCModuleFile &F,
                                     const RecordData &Record, unsigned &Idx);
 
   /// \brief Resolve a type ID into a type, potentially building a new
@@ -1289,14 +1289,14 @@ public:
   QualType GetType(serialization::TypeID ID);
 
   /// \brief Resolve a local type ID within a given AST file into a type.
-  QualType getLocalType(ModuleFile &F, unsigned LocalID);
+  QualType getLocalType(PCModuleFile &F, unsigned LocalID);
 
   /// \brief Map a local type ID within a given AST file into a global type ID.
-  serialization::TypeID getGlobalTypeID(ModuleFile &F, unsigned LocalID) const;
+  serialization::TypeID getGlobalTypeID(PCModuleFile &F, unsigned LocalID) const;
 
   /// \brief Read a type from the current position in the given record, which
   /// was read from the given AST file.
-  QualType readType(ModuleFile &F, const RecordData &Record, unsigned &Idx) {
+  QualType readType(PCModuleFile &F, const RecordData &Record, unsigned &Idx) {
     if (Idx >= Record.size())
       return QualType();
 
@@ -1305,15 +1305,15 @@ public:
 
   /// \brief Map from a local declaration ID within a given module to a
   /// global declaration ID.
-  serialization::DeclID getGlobalDeclID(ModuleFile &F,
+  serialization::DeclID getGlobalDeclID(PCModuleFile &F,
                                       serialization::LocalDeclID LocalID) const;
 
   /// \brief Returns true if global DeclID \p ID originated from module \p M.
-  bool isDeclIDFromModule(serialization::GlobalDeclID ID, ModuleFile &M) const;
+  bool isDeclIDFromPCModule(serialization::GlobalDeclID ID, PCModuleFile &M) const;
 
   /// \brief Retrieve the module file that owns the given declaration, or NULL
   /// if the declaration is not from a module file.
-  ModuleFile *getOwningModuleFile(Decl *D);
+  PCModuleFile *getOwningPCModuleFile(Decl *D);
   
   /// \brief Returns the source location for the decl \p ID.
   SourceLocation getSourceLocationForDeclID(serialization::GlobalDeclID ID);
@@ -1324,7 +1324,7 @@ public:
   virtual Decl *GetExternalDecl(uint32_t ID);
 
   /// \brief Reads a declaration with the given local ID in the given module.
-  Decl *GetLocalDecl(ModuleFile &F, uint32_t LocalID) {
+  Decl *GetLocalDecl(PCModuleFile &F, uint32_t LocalID) {
     return GetDecl(getGlobalDeclID(F, LocalID));
   }
 
@@ -1332,7 +1332,7 @@ public:
   ///
   /// \returns The requested declaration, casted to the given return type.
   template<typename T>
-  T *GetLocalDeclAs(ModuleFile &F, uint32_t LocalID) {
+  T *GetLocalDeclAs(PCModuleFile &F, uint32_t LocalID) {
     return cast_or_null<T>(GetLocalDecl(F, LocalID));
   }
 
@@ -1342,19 +1342,19 @@ public:
   /// \returns the global ID of the given declaration as known in the given
   /// module file.
   serialization::DeclID 
-  mapGlobalIDToModuleFileGlobalID(ModuleFile &M,
+  mapGlobalIDToPCModuleFileGlobalID(PCModuleFile &M,
                                   serialization::DeclID GlobalID);
   
   /// \brief Reads a declaration ID from the given position in a record in the
   /// given module.
   ///
   /// \returns The declaration ID read from the record, adjusted to a global ID.
-  serialization::DeclID ReadDeclID(ModuleFile &F, const RecordData &Record,
+  serialization::DeclID ReadDeclID(PCModuleFile &F, const RecordData &Record,
                                    unsigned &Idx);
 
   /// \brief Reads a declaration from the given position in a record in the
   /// given module.
-  Decl *ReadDecl(ModuleFile &F, const RecordData &R, unsigned &I) {
+  Decl *ReadDecl(PCModuleFile &F, const RecordData &R, unsigned &I) {
     return GetDecl(ReadDeclID(F, R, I));
   }
 
@@ -1364,13 +1364,13 @@ public:
   /// \returns The declaration read from this location, casted to the given
   /// result type.
   template<typename T>
-  T *ReadDeclAs(ModuleFile &F, const RecordData &R, unsigned &I) {
+  T *ReadDeclAs(PCModuleFile &F, const RecordData &R, unsigned &I) {
     return cast_or_null<T>(GetDecl(ReadDeclID(F, R, I)));
   }
 
   /// \brief Read a CXXBaseSpecifiers ID form the given record and
   /// return its global bit offset.
-  uint64_t readCXXBaseSpecifiers(ModuleFile &M, const RecordData &Record,
+  uint64_t readCXXBaseSpecifiers(PCModuleFile &M, const RecordData &Record,
                                  unsigned &Idx);
 
   virtual CXXBaseSpecifier *GetExternalCXXBaseSpecifiers(uint64_t Offset);
@@ -1519,7 +1519,7 @@ public:
 
   IdentifierInfo *DecodeIdentifierInfo(serialization::IdentifierID ID);
 
-  IdentifierInfo *GetIdentifierInfo(ModuleFile &M, const RecordData &Record,
+  IdentifierInfo *GetIdentifierInfo(PCModuleFile &M, const RecordData &Record,
                                     unsigned &Idx) {
     return DecodeIdentifierInfo(getGlobalIdentifierID(M, Record[Idx++]));
   }
@@ -1531,9 +1531,9 @@ public:
     return DecodeIdentifierInfo(ID);
   }
 
-  IdentifierInfo *getLocalIdentifier(ModuleFile &M, unsigned LocalID);
+  IdentifierInfo *getLocalIdentifier(PCModuleFile &M, unsigned LocalID);
 
-  serialization::IdentifierID getGlobalIdentifierID(ModuleFile &M,
+  serialization::IdentifierID getGlobalIdentifierID(PCModuleFile &M,
                                                     unsigned LocalID);
 
   /// \brief Retrieve the macro with the given ID.
@@ -1541,111 +1541,111 @@ public:
 
   /// \brief Retrieve the global macro ID corresponding to the given local
   /// ID within the given module file.
-  serialization::MacroID getGlobalMacroID(ModuleFile &M, unsigned LocalID);
+  serialization::MacroID getGlobalMacroID(PCModuleFile &M, unsigned LocalID);
 
   /// \brief Read the source location entry with index ID.
   virtual bool ReadSLocEntry(int ID);
 
   /// \brief Retrieve the module import location and module name for the
   /// given source manager entry ID.
-  virtual std::pair<SourceLocation, StringRef> getModuleImportLoc(int ID);
+  virtual std::pair<SourceLocation, StringRef> getPCModuleImportLoc(int ID);
 
   /// \brief Retrieve the global submodule ID given a module and its local ID
   /// number.
   serialization::SubmoduleID 
-  getGlobalSubmoduleID(ModuleFile &M, unsigned LocalID);
+  getGlobalSubmoduleID(PCModuleFile &M, unsigned LocalID);
   
   /// \brief Retrieve the submodule that corresponds to a global submodule ID.
   ///
-  Module *getSubmodule(serialization::SubmoduleID GlobalID);
+  PCModule *getSubmodule(serialization::SubmoduleID GlobalID);
   
   /// \brief Retrieve a selector from the given module with its local ID
   /// number.
-  Selector getLocalSelector(ModuleFile &M, unsigned LocalID);
+  Selector getLocalSelector(PCModuleFile &M, unsigned LocalID);
 
   Selector DecodeSelector(serialization::SelectorID Idx);
 
   virtual Selector GetExternalSelector(serialization::SelectorID ID);
   uint32_t GetNumExternalSelectors();
 
-  Selector ReadSelector(ModuleFile &M, const RecordData &Record, unsigned &Idx) {
+  Selector ReadSelector(PCModuleFile &M, const RecordData &Record, unsigned &Idx) {
     return getLocalSelector(M, Record[Idx++]);
   }
 
   /// \brief Retrieve the global selector ID that corresponds to this
   /// the local selector ID in a given module.
-  serialization::SelectorID getGlobalSelectorID(ModuleFile &F,
+  serialization::SelectorID getGlobalSelectorID(PCModuleFile &F,
                                                 unsigned LocalID) const;
 
   /// \brief Read a declaration name.
-  DeclarationName ReadDeclarationName(ModuleFile &F,
+  DeclarationName ReadDeclarationName(PCModuleFile &F,
                                       const RecordData &Record, unsigned &Idx);
-  void ReadDeclarationNameLoc(ModuleFile &F,
+  void ReadDeclarationNameLoc(PCModuleFile &F,
                               DeclarationNameLoc &DNLoc, DeclarationName Name,
                               const RecordData &Record, unsigned &Idx);
-  void ReadDeclarationNameInfo(ModuleFile &F, DeclarationNameInfo &NameInfo,
+  void ReadDeclarationNameInfo(PCModuleFile &F, DeclarationNameInfo &NameInfo,
                                const RecordData &Record, unsigned &Idx);
 
-  void ReadQualifierInfo(ModuleFile &F, QualifierInfo &Info,
+  void ReadQualifierInfo(PCModuleFile &F, QualifierInfo &Info,
                          const RecordData &Record, unsigned &Idx);
 
-  NestedNameSpecifier *ReadNestedNameSpecifier(ModuleFile &F,
+  NestedNameSpecifier *ReadNestedNameSpecifier(PCModuleFile &F,
                                                const RecordData &Record,
                                                unsigned &Idx);
 
-  NestedNameSpecifierLoc ReadNestedNameSpecifierLoc(ModuleFile &F,
+  NestedNameSpecifierLoc ReadNestedNameSpecifierLoc(PCModuleFile &F,
                                                     const RecordData &Record,
                                                     unsigned &Idx);
 
   /// \brief Read a template name.
-  TemplateName ReadTemplateName(ModuleFile &F, const RecordData &Record,
+  TemplateName ReadTemplateName(PCModuleFile &F, const RecordData &Record,
                                 unsigned &Idx);
 
   /// \brief Read a template argument.
-  TemplateArgument ReadTemplateArgument(ModuleFile &F,
+  TemplateArgument ReadTemplateArgument(PCModuleFile &F,
                                         const RecordData &Record,unsigned &Idx);
 
   /// \brief Read a template parameter list.
-  TemplateParameterList *ReadTemplateParameterList(ModuleFile &F,
+  TemplateParameterList *ReadTemplateParameterList(PCModuleFile &F,
                                                    const RecordData &Record,
                                                    unsigned &Idx);
 
   /// \brief Read a template argument array.
   void
   ReadTemplateArgumentList(SmallVector<TemplateArgument, 8> &TemplArgs,
-                           ModuleFile &F, const RecordData &Record,
+                           PCModuleFile &F, const RecordData &Record,
                            unsigned &Idx);
 
   /// \brief Read a UnresolvedSet structure.
-  void ReadUnresolvedSet(ModuleFile &F, ASTUnresolvedSet &Set,
+  void ReadUnresolvedSet(PCModuleFile &F, ASTUnresolvedSet &Set,
                          const RecordData &Record, unsigned &Idx);
 
   /// \brief Read a C++ base specifier.
-  CXXBaseSpecifier ReadCXXBaseSpecifier(ModuleFile &F,
+  CXXBaseSpecifier ReadCXXBaseSpecifier(PCModuleFile &F,
                                         const RecordData &Record,unsigned &Idx);
 
   /// \brief Read a CXXCtorInitializer array.
   std::pair<CXXCtorInitializer **, unsigned>
-  ReadCXXCtorInitializers(ModuleFile &F, const RecordData &Record,
+  ReadCXXCtorInitializers(PCModuleFile &F, const RecordData &Record,
                           unsigned &Idx);
 
   /// \brief Read a source location from raw form.
-  SourceLocation ReadSourceLocation(ModuleFile &ModuleFile, unsigned Raw) const {
+  SourceLocation ReadSourceLocation(PCModuleFile &PCModuleFile, unsigned Raw) const {
     SourceLocation Loc = SourceLocation::getFromRawEncoding(Raw);
-    assert(ModuleFile.SLocRemap.find(Loc.getOffset()) != ModuleFile.SLocRemap.end() &&
+    assert(PCModuleFile.SLocRemap.find(Loc.getOffset()) != PCModuleFile.SLocRemap.end() &&
            "Cannot find offset to remap.");
-    int Remap = ModuleFile.SLocRemap.find(Loc.getOffset())->second;
+    int Remap = PCModuleFile.SLocRemap.find(Loc.getOffset())->second;
     return Loc.getLocWithOffset(Remap);
   }
 
   /// \brief Read a source location.
-  SourceLocation ReadSourceLocation(ModuleFile &ModuleFile,
+  SourceLocation ReadSourceLocation(PCModuleFile &PCModuleFile,
                                     const RecordData &Record, unsigned& Idx) {
-    return ReadSourceLocation(ModuleFile, Record[Idx++]);
+    return ReadSourceLocation(PCModuleFile, Record[Idx++]);
   }
 
   /// \brief Read a source range.
-  SourceRange ReadSourceRange(ModuleFile &F,
+  SourceRange ReadSourceRange(PCModuleFile &F,
                               const RecordData &Record, unsigned& Idx);
 
   /// \brief Read an integral value
@@ -1663,18 +1663,18 @@ public:
   /// \brief Read a version tuple.
   static VersionTuple ReadVersionTuple(const RecordData &Record, unsigned &Idx);
 
-  CXXTemporary *ReadCXXTemporary(ModuleFile &F, const RecordData &Record,
+  CXXTemporary *ReadCXXTemporary(PCModuleFile &F, const RecordData &Record,
                                  unsigned &Idx);
 
   /// \brief Reads attributes from the current stream position.
-  void ReadAttributes(ModuleFile &F, AttrVec &Attrs,
+  void ReadAttributes(PCModuleFile &F, AttrVec &Attrs,
                       const RecordData &Record, unsigned &Idx);
 
   /// \brief Reads a statement.
-  Stmt *ReadStmt(ModuleFile &F);
+  Stmt *ReadStmt(PCModuleFile &F);
 
   /// \brief Reads an expression.
-  Expr *ReadExpr(ModuleFile &F);
+  Expr *ReadExpr(PCModuleFile &F);
 
   /// \brief Reads a sub-statement operand during statement reading.
   Stmt *ReadSubStmt() {
@@ -1690,12 +1690,12 @@ public:
   Expr *ReadSubExpr();
 
   /// \brief Reads the macro record located at the given offset.
-  void ReadMacroRecord(ModuleFile &F, uint64_t Offset, MacroInfo *Hint = 0);
+  void ReadMacroRecord(PCModuleFile &F, uint64_t Offset, MacroInfo *Hint = 0);
 
   /// \brief Determine the global preprocessed entity ID that corresponds to
   /// the given local ID within the given module.
   serialization::PreprocessedEntityID
-  getGlobalPreprocessedEntityID(ModuleFile &M, unsigned LocalID) const;
+  getGlobalPreprocessedEntityID(PCModuleFile &M, unsigned LocalID) const;
 
   /// \brief Note that the identifier has a macro history.
   ///
@@ -1744,7 +1744,7 @@ public:
 
   /// \brief Cursors for comments blocks.
   SmallVector<std::pair<llvm::BitstreamCursor,
-                        serialization::ModuleFile *>, 8> CommentsCursors;
+                        serialization::PCModuleFile *>, 8> CommentsCursors;
 
   /// \brief Loads comments ranges.
   void ReadComments();

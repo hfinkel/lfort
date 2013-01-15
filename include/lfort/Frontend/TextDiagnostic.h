@@ -102,11 +102,11 @@ protected:
                                    const SourceManager &SM);
 
   virtual void emitImportLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                  StringRef ModuleName,
+                                  StringRef PCModuleName,
                                   const SourceManager &SM);
 
-  virtual void emitBuildingModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                          StringRef ModuleName,
+  virtual void emitBuildingPCModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
+                                          StringRef PCModuleName,
                                           const SourceManager &SM);
 
 private:

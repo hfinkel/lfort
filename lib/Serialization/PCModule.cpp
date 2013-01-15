@@ -1,4 +1,4 @@
-//===--- Module.cpp - Module description ------------------------*- C++ -*-===//
+//===--- PCModule.cpp - PCModule description ------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file implements the Module class, which describes a module that has
+//  This file implements the PCModule class, which describes a module that has
 //  been loaded from an AST file.
 //
 //===----------------------------------------------------------------------===//
-#include "lfort/Serialization/Module.h"
+#include "lfort/Serialization/PCModule.h"
 #include "ASTReaderInternals.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
@@ -20,7 +20,7 @@ using namespace lfort;
 using namespace serialization;
 using namespace reader;
 
-ModuleFile::ModuleFile(ModuleKind Kind, unsigned Generation)
+PCModuleFile::PCModuleFile(PCModuleKind Kind, unsigned Generation)
   : Kind(Kind), File(0), DirectlyImported(false),
     Generation(Generation), SizeInBits(0),
     LocalNumSLocEntries(0), SLocEntryBaseID(0),
@@ -44,7 +44,7 @@ ModuleFile::ModuleFile(ModuleKind Kind, unsigned Generation)
     LocalNumTypes(0), TypeOffsets(0), BaseTypeIndex(0)
 {}
 
-ModuleFile::~ModuleFile() {
+PCModuleFile::~PCModuleFile() {
   for (DeclContextInfosMap::iterator I = DeclContextInfos.begin(),
        E = DeclContextInfos.end();
        I != E; ++I) {
@@ -72,8 +72,8 @@ dumpLocalRemap(StringRef Name,
   }
 }
 
-void ModuleFile::dump() {
-  llvm::errs() << "\nModule: " << FileName << "\n";
+void PCModuleFile::dump() {
+  llvm::errs() << "\nPCModule: " << FileName << "\n";
   if (!Imports.empty()) {
     llvm::errs() << "  Imports: ";
     for (unsigned I = 0, N = Imports.size(); I != N; ++I) {

@@ -119,7 +119,7 @@ bool GeneratePCHAction::ComputeASTConsumerArguments(CompilerInstance &CI,
   return false;
 }
 
-ASTConsumer *GenerateModuleAction::CreateASTConsumer(CompilerInstance &CI,
+ASTConsumer *GeneratePCModuleAction::CreateASTConsumer(CompilerInstance &CI,
                                                      StringRef InFile) {
   std::string Sysroot;
   std::string OutputFile;
@@ -127,7 +127,7 @@ ASTConsumer *GenerateModuleAction::CreateASTConsumer(CompilerInstance &CI,
   if (ComputeASTConsumerArguments(CI, InFile, Sysroot, OutputFile, OS))
     return 0;
   
-  return new PCHGenerator(CI.getPreprocessor(), OutputFile, Module, 
+  return new PCHGenerator(CI.getPreprocessor(), OutputFile, PCModule, 
                           Sysroot, OS);
 }
 
@@ -157,33 +157,33 @@ static void addHeaderInclude(const FileEntry *Header,
 /// \brief Collect the set of header includes needed to construct the given 
 /// module and update the TopHeaders file set of the module.
 ///
-/// \param Module The module we're collecting includes from.
+/// \param PCModule The module we're collecting includes from.
 ///
 /// \param Includes Will be augmented with the set of \#includes or \#imports
 /// needed to load all of the named headers.
-static void collectModuleHeaderIncludes(const LangOptions &LangOpts,
+static void collectPCModuleHeaderIncludes(const LangOptions &LangOpts,
                                         FileManager &FileMgr,
-                                        ModuleMap &ModMap,
-                                        lfort::Module *Module,
+                                        PCModuleMap &ModMap,
+                                        lfort::PCModule *PCModule,
                                         SmallVectorImpl<char> &Includes) {
   // Don't collect any headers for unavailable modules.
-  if (!Module->isAvailable())
+  if (!PCModule->isAvailable())
     return;
 
   // Add includes for each of these headers.
-  for (unsigned I = 0, N = Module->Headers.size(); I != N; ++I) {
-    const FileEntry *Header = Module->Headers[I];
-    Module->TopHeaders.insert(Header);
+  for (unsigned I = 0, N = PCModule->Headers.size(); I != N; ++I) {
+    const FileEntry *Header = PCModule->Headers[I];
+    PCModule->TopHeaders.insert(Header);
     addHeaderInclude(Header, Includes, LangOpts);
   }
 
-  if (const FileEntry *UmbrellaHeader = Module->getUmbrellaHeader()) {
-    Module->TopHeaders.insert(UmbrellaHeader);
-    if (Module->Parent) {
+  if (const FileEntry *UmbrellaHeader = PCModule->getUmbrellaHeader()) {
+    PCModule->TopHeaders.insert(UmbrellaHeader);
+    if (PCModule->Parent) {
       // Include the umbrella header for submodules.
       addHeaderInclude(UmbrellaHeader, Includes, LangOpts);
     }
-  } else if (const DirectoryEntry *UmbrellaDir = Module->getUmbrellaDir()) {
+  } else if (const DirectoryEntry *UmbrellaDir = PCModule->getUmbrellaDir()) {
     // Add all of the headers we find in this subdirectory.
     llvm::error_code EC;
     SmallString<128> DirNative;
@@ -201,9 +201,9 @@ static void collectModuleHeaderIncludes(const LangOptions &LangOpts,
       // If this header is marked 'unavailable' in this module, don't include 
       // it.
       if (const FileEntry *Header = FileMgr.getFile(Dir->path())) {
-        if (ModMap.isHeaderInUnavailableModule(Header))
+        if (ModMap.isHeaderInUnavailablePCModule(Header))
           continue;
-        Module->TopHeaders.insert(Header);
+        PCModule->TopHeaders.insert(Header);
       }
       
       // Include this header umbrella header for submodules.
@@ -212,17 +212,17 @@ static void collectModuleHeaderIncludes(const LangOptions &LangOpts,
   }
   
   // Recurse into submodules.
-  for (lfort::Module::submodule_iterator Sub = Module->submodule_begin(),
-                                      SubEnd = Module->submodule_end();
+  for (lfort::PCModule::submodule_iterator Sub = PCModule->submodule_begin(),
+                                      SubEnd = PCModule->submodule_end();
        Sub != SubEnd; ++Sub)
-    collectModuleHeaderIncludes(LangOpts, FileMgr, ModMap, *Sub, Includes);
+    collectPCModuleHeaderIncludes(LangOpts, FileMgr, ModMap, *Sub, Includes);
 }
 
-bool GenerateModuleAction::BeginSourceFileAction(CompilerInstance &CI, 
+bool GeneratePCModuleAction::BeginSourceFileAction(CompilerInstance &CI, 
                                                  StringRef Filename) {
   // Find the module map file.  
-  const FileEntry *ModuleMap = CI.getFileManager().getFile(Filename);
-  if (!ModuleMap)  {
+  const FileEntry *PCModuleMap = CI.getFileManager().getFile(Filename);
+  if (!PCModuleMap)  {
     CI.getDiagnostics().Report(diag::err_module_map_not_found)
       << Filename;
     return false;
@@ -230,10 +230,10 @@ bool GenerateModuleAction::BeginSourceFileAction(CompilerInstance &CI,
   
   // Parse the module map file.
   HeaderSearch &HS = CI.getPreprocessor().getHeaderSearchInfo();
-  if (HS.loadModuleMapFile(ModuleMap))
+  if (HS.loadPCModuleMapFile(PCModuleMap))
     return false;
   
-  if (CI.getLangOpts().CurrentModule.empty()) {
+  if (CI.getLangOpts().CurrentPCModule.empty()) {
     CI.getDiagnostics().Report(diag::err_missing_module_name);
     
     // FIXME: Eventually, we could consider asking whether there was just
@@ -244,20 +244,20 @@ bool GenerateModuleAction::BeginSourceFileAction(CompilerInstance &CI,
   }
   
   // Dig out the module definition.
-  Module = HS.lookupModule(CI.getLangOpts().CurrentModule, 
+  PCModule = HS.lookupPCModule(CI.getLangOpts().CurrentPCModule, 
                            /*AllowSearch=*/false);
-  if (!Module) {
+  if (!PCModule) {
     CI.getDiagnostics().Report(diag::err_missing_module)
-      << CI.getLangOpts().CurrentModule << Filename;
+      << CI.getLangOpts().CurrentPCModule << Filename;
     
     return false;
   }
 
   // Check whether we can build this module at all.
   StringRef Feature;
-  if (!Module->isAvailable(CI.getLangOpts(), CI.getTarget(), Feature)) {
+  if (!PCModule->isAvailable(CI.getLangOpts(), CI.getTarget(), Feature)) {
     CI.getDiagnostics().Report(diag::err_module_unavailable)
-      << Module->getFullModuleName()
+      << PCModule->getFullPCModuleName()
       << Feature;
 
     return false;
@@ -267,22 +267,22 @@ bool GenerateModuleAction::BeginSourceFileAction(CompilerInstance &CI,
 
   // Collect the set of #includes we need to build the module.
   SmallString<256> HeaderContents;
-  if (const FileEntry *UmbrellaHeader = Module->getUmbrellaHeader())
+  if (const FileEntry *UmbrellaHeader = PCModule->getUmbrellaHeader())
     addHeaderInclude(UmbrellaHeader, HeaderContents, CI.getLangOpts());
-  collectModuleHeaderIncludes(CI.getLangOpts(), FileMgr,
-    CI.getPreprocessor().getHeaderSearchInfo().getModuleMap(),
-    Module, HeaderContents);
+  collectPCModuleHeaderIncludes(CI.getLangOpts(), FileMgr,
+    CI.getPreprocessor().getHeaderSearchInfo().getPCModuleMap(),
+    PCModule, HeaderContents);
 
   llvm::MemoryBuffer *InputBuffer =
       llvm::MemoryBuffer::getMemBufferCopy(HeaderContents,
-                                           Module::getModuleInputBufferName());
+                                           PCModule::getPCModuleInputBufferName());
   // Ownership of InputBuffer will be transfered to the SourceManager.
   setCurrentInput(FrontendInputFile(InputBuffer, getCurrentFileKind(),
-                                    Module->IsSystem));
+                                    PCModule->IsSystem));
   return true;
 }
 
-bool GenerateModuleAction::ComputeASTConsumerArguments(CompilerInstance &CI,
+bool GeneratePCModuleAction::ComputeASTConsumerArguments(CompilerInstance &CI,
                                                        StringRef InFile,
                                                        std::string &Sysroot,
                                                        std::string &OutputFile,
@@ -291,10 +291,10 @@ bool GenerateModuleAction::ComputeASTConsumerArguments(CompilerInstance &CI,
   // in the module cache.
   if (CI.getFrontendOpts().OutputFile.empty()) {
     HeaderSearch &HS = CI.getPreprocessor().getHeaderSearchInfo();
-    SmallString<256> ModuleFileName(HS.getModuleCachePath());
-    llvm::sys::path::append(ModuleFileName, 
-                            CI.getLangOpts().CurrentModule + ".pcm");
-    CI.getFrontendOpts().OutputFile = ModuleFileName.str();
+    SmallString<256> PCModuleFileName(HS.getPCModuleCachePath());
+    llvm::sys::path::append(PCModuleFileName, 
+                            CI.getLangOpts().CurrentPCModule + ".pcm");
+    CI.getFrontendOpts().OutputFile = PCModuleFileName.str();
   }
   
   // We use createOutputFile here because this is exposed via liblfort, and we

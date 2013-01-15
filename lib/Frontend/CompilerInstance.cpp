@@ -48,7 +48,7 @@
 using namespace lfort;
 
 CompilerInstance::CompilerInstance()
-  : Invocation(new CompilerInvocation()), ModuleManager(0) {
+  : Invocation(new CompilerInvocation()), PCModuleManager(0) {
 }
 
 CompilerInstance::~CompilerInstance() {
@@ -266,12 +266,12 @@ void CompilerInstance::createPreprocessor() {
 
   // Set up the module path, including the hash for the
   // module-creation options.
-  SmallString<256> SpecificModuleCache(
-                           getHeaderSearchOpts().ModuleCachePath);
-  if (!getHeaderSearchOpts().DisableModuleHash)
-    llvm::sys::path::append(SpecificModuleCache,
-                            getInvocation().getModuleHash());
-  PP->getHeaderSearchInfo().setModuleCachePath(SpecificModuleCache);
+  SmallString<256> SpecificPCModuleCache(
+                           getHeaderSearchOpts().PCModuleCachePath);
+  if (!getHeaderSearchOpts().DisablePCModuleHash)
+    llvm::sys::path::append(SpecificPCModuleCache,
+                            getInvocation().getPCModuleHash());
+  PP->getHeaderSearchInfo().setPCModuleCachePath(SpecificPCModuleCache);
 
   // Handle generating dependencies, if requested.
   const DependencyOutputOptions &DepOpts = getDependencyOutputOpts();
@@ -318,7 +318,7 @@ void CompilerInstance::createPCHExternalASTSource(StringRef Path,
                                           getPreprocessor(), getASTContext(),
                                           DeserializationListener,
                                           Preamble));
-  ModuleManager = static_cast<ASTReader*>(Source.get());
+  PCModuleManager = static_cast<ASTReader*>(Source.get());
   getASTContext().setExternalSource(Source);
 }
 
@@ -751,27 +751,27 @@ static InputKind getSourceInputKindFromOptions(const LangOptions &LangOpts) {
 }
 
 namespace {
-  struct CompileModuleMapData {
+  struct CompilePCModuleMapData {
     CompilerInstance &Instance;
-    GenerateModuleAction &CreateModuleAction;
+    GeneratePCModuleAction &CreatePCModuleAction;
   };
 }
 
 /// \brief Helper function that executes the module-generating action under
 /// a crash recovery context.
-static void doCompileMapModule(void *UserData) {
-  CompileModuleMapData &Data
-    = *reinterpret_cast<CompileModuleMapData *>(UserData);
-  Data.Instance.ExecuteAction(Data.CreateModuleAction);
+static void doCompileMapPCModule(void *UserData) {
+  CompilePCModuleMapData &Data
+    = *reinterpret_cast<CompilePCModuleMapData *>(UserData);
+  Data.Instance.ExecuteAction(Data.CreatePCModuleAction);
 }
 
 /// \brief Compile a module file for the given module, using the options 
 /// provided by the importing compiler instance.
-static void compileModule(CompilerInstance &ImportingInstance,
+static void compilePCModule(CompilerInstance &ImportingInstance,
                           SourceLocation ImportLoc,
-                          Module *Module,
-                          StringRef ModuleFileName) {
-  llvm::LockFileManager Locked(ModuleFileName);
+                          PCModule *PCModule,
+                          StringRef PCModuleFileName) {
+  llvm::LockFileManager Locked(PCModuleFileName);
   switch (Locked) {
   case llvm::LockFileManager::LFS_Error:
     return;
@@ -787,8 +787,8 @@ static void compileModule(CompilerInstance &ImportingInstance,
     return;
   }
 
-  ModuleMap &ModMap 
-    = ImportingInstance.getPreprocessor().getHeaderSearchInfo().getModuleMap();
+  PCModuleMap &ModMap 
+    = ImportingInstance.getPreprocessor().getHeaderSearchInfo().getPCModuleMap();
     
   // Construct a compiler invocation for creating this module.
   IntrusiveRefCntPtr<CompilerInvocation> Invocation
@@ -802,59 +802,59 @@ static void compileModule(CompilerInstance &ImportingInstance,
   PPOpts.resetNonModularOptions();
 
   // Note the name of the module we're building.
-  Invocation->getLangOpts()->CurrentModule = Module->getTopLevelModuleName();
+  Invocation->getLangOpts()->CurrentPCModule = PCModule->getTopLevelPCModuleName();
 
   // Make sure that the failed-module structure has been allocated in
   // the importing instance, and propagate the pointer to the newly-created
   // instance.
   PreprocessorOptions &ImportingPPOpts
     = ImportingInstance.getInvocation().getPreprocessorOpts();
-  if (!ImportingPPOpts.FailedModules)
-    ImportingPPOpts.FailedModules = new PreprocessorOptions::FailedModulesSet;
-  PPOpts.FailedModules = ImportingPPOpts.FailedModules;
+  if (!ImportingPPOpts.FailedPCModules)
+    ImportingPPOpts.FailedPCModules = new PreprocessorOptions::FailedPCModulesSet;
+  PPOpts.FailedPCModules = ImportingPPOpts.FailedPCModules;
 
   // If there is a module map file, build the module using the module map.
   // Set up the inputs/outputs so that we build the module from its umbrella
   // header.
   FrontendOptions &FrontendOpts = Invocation->getFrontendOpts();
-  FrontendOpts.OutputFile = ModuleFileName.str();
+  FrontendOpts.OutputFile = PCModuleFileName.str();
   FrontendOpts.DisableFree = false;
   FrontendOpts.Inputs.clear();
   InputKind IK = getSourceInputKindFromOptions(*Invocation->getLangOpts());
 
   // Get or create the module map that we'll use to build this module.
-  SmallString<128> TempModuleMapFileName;
-  if (const FileEntry *ModuleMapFile
-                                  = ModMap.getContainingModuleMapFile(Module)) {
+  SmallString<128> TempPCModuleMapFileName;
+  if (const FileEntry *PCModuleMapFile
+                                  = ModMap.getContainingPCModuleMapFile(PCModule)) {
     // Use the module map where this module resides.
-    FrontendOpts.Inputs.push_back(FrontendInputFile(ModuleMapFile->getName(), 
+    FrontendOpts.Inputs.push_back(FrontendInputFile(PCModuleMapFile->getName(), 
                                                     IK));
   } else {
     // Create a temporary module map file.
-    TempModuleMapFileName = Module->Name;
-    TempModuleMapFileName += "-%%%%%%%%.map";
+    TempPCModuleMapFileName = PCModule->Name;
+    TempPCModuleMapFileName += "-%%%%%%%%.map";
     int FD;
-    if (llvm::sys::fs::unique_file(TempModuleMapFileName.str(), FD, 
-                                   TempModuleMapFileName,
+    if (llvm::sys::fs::unique_file(TempPCModuleMapFileName.str(), FD, 
+                                   TempPCModuleMapFileName,
                                    /*makeAbsolute=*/true)
           != llvm::errc::success) {
       ImportingInstance.getDiagnostics().Report(diag::err_module_map_temp_file)
-        << TempModuleMapFileName;
+        << TempPCModuleMapFileName;
       return;
     }
     // Print the module map to this file.
     llvm::raw_fd_ostream OS(FD, /*shouldClose=*/true);
-    Module->print(OS);
+    PCModule->print(OS);
     FrontendOpts.Inputs.push_back(
-      FrontendInputFile(TempModuleMapFileName.str().str(), IK));
+      FrontendInputFile(TempPCModuleMapFileName.str().str(), IK));
   }
 
   // Don't free the remapped file buffers; they are owned by our caller.
   PPOpts.RetainRemappedFileBuffers = true;
     
   Invocation->getDiagnosticOpts().VerifyDiagnostics = 0;
-  assert(ImportingInstance.getInvocation().getModuleHash() ==
-         Invocation->getModuleHash() && "Module hash mismatch!");
+  assert(ImportingInstance.getInvocation().getPCModuleHash() ==
+         Invocation->getPCModuleHash() && "PCModule hash mismatch!");
   
   // Construct a compiler instance that will be used to actually create the
   // module.
@@ -870,93 +870,93 @@ static void compileModule(CompilerInstance &ImportingInstance,
   Instance.createFileManager(); // FIXME: Adopt file manager from importer?
   Instance.createSourceManager(Instance.getFileManager());
   SourceManager &SourceMgr = Instance.getSourceManager();
-  SourceMgr.setModuleBuildStack(
-    ImportingInstance.getSourceManager().getModuleBuildStack());
-  SourceMgr.pushModuleBuildStack(Module->getTopLevelModuleName(),
+  SourceMgr.setPCModuleBuildStack(
+    ImportingInstance.getSourceManager().getPCModuleBuildStack());
+  SourceMgr.pushPCModuleBuildStack(PCModule->getTopLevelPCModuleName(),
     FullSourceLoc(ImportLoc, ImportingInstance.getSourceManager()));
 
 
   // Construct a module-generating action.
-  GenerateModuleAction CreateModuleAction;
+  GeneratePCModuleAction CreatePCModuleAction;
   
   // Execute the action to actually build the module in-place. Use a separate
   // thread so that we get a stack large enough.
   const unsigned ThreadStackSize = 8 << 20;
   llvm::CrashRecoveryContext CRC;
-  CompileModuleMapData Data = { Instance, CreateModuleAction };
-  CRC.RunSafelyOnThread(&doCompileMapModule, &Data, ThreadStackSize);
+  CompilePCModuleMapData Data = { Instance, CreatePCModuleAction };
+  CRC.RunSafelyOnThread(&doCompileMapPCModule, &Data, ThreadStackSize);
   
   // Delete the temporary module map file.
   // FIXME: Even though we're executing under crash protection, it would still
   // be nice to do this with RemoveFileOnSignal when we can. However, that
   // doesn't make sense for all clients, so clean this up manually.
   Instance.clearOutputFiles(/*EraseFiles=*/true);
-  if (!TempModuleMapFileName.empty())
-    llvm::sys::Path(TempModuleMapFileName).eraseFromDisk();
+  if (!TempPCModuleMapFileName.empty())
+    llvm::sys::Path(TempPCModuleMapFileName).eraseFromDisk();
 }
 
-ModuleLoadResult
-CompilerInstance::loadModule(SourceLocation ImportLoc,
-                             ModuleIdPath Path,
-                             Module::NameVisibilityKind Visibility,
+PCModuleLoadResult
+CompilerInstance::loadPCModule(SourceLocation ImportLoc,
+                             PCModuleIdPath Path,
+                             PCModule::NameVisibilityKind Visibility,
                              bool IsInclusionDirective) {
   // If we've already handled this import, just return the cached result.
   // This one-element cache is important to eliminate redundant diagnostics
   // when both the preprocessor and parser see the same import declaration.
-  if (!ImportLoc.isInvalid() && LastModuleImportLoc == ImportLoc) {
+  if (!ImportLoc.isInvalid() && LastPCModuleImportLoc == ImportLoc) {
     // Make the named module visible.
-    if (LastModuleImportResult)
-      ModuleManager->makeModuleVisible(LastModuleImportResult, Visibility);
-    return LastModuleImportResult;
+    if (LastPCModuleImportResult)
+      PCModuleManager->makePCModuleVisible(LastPCModuleImportResult, Visibility);
+    return LastPCModuleImportResult;
   }
   
   // Determine what file we're searching from.
-  StringRef ModuleName = Path[0].first->getName();
-  SourceLocation ModuleNameLoc = Path[0].second;
+  StringRef PCModuleName = Path[0].first->getName();
+  SourceLocation PCModuleNameLoc = Path[0].second;
 
-  lfort::Module *Module = 0;
+  lfort::PCModule *PCModule = 0;
   
   // If we don't already have information on this module, load the module now.
-  llvm::DenseMap<const IdentifierInfo *, lfort::Module *>::iterator Known
-    = KnownModules.find(Path[0].first);
-  if (Known != KnownModules.end()) {
+  llvm::DenseMap<const IdentifierInfo *, lfort::PCModule *>::iterator Known
+    = KnownPCModules.find(Path[0].first);
+  if (Known != KnownPCModules.end()) {
     // Retrieve the cached top-level module.
-    Module = Known->second;    
-  } else if (ModuleName == getLangOpts().CurrentModule) {
+    PCModule = Known->second;    
+  } else if (PCModuleName == getLangOpts().CurrentPCModule) {
     // This is the module we're building. 
-    Module = PP->getHeaderSearchInfo().getModuleMap().findModule(ModuleName);
-    Known = KnownModules.insert(std::make_pair(Path[0].first, Module)).first;
+    PCModule = PP->getHeaderSearchInfo().getPCModuleMap().findPCModule(PCModuleName);
+    Known = KnownPCModules.insert(std::make_pair(Path[0].first, PCModule)).first;
   } else {
     // Search for a module with the given name.
-    Module = PP->getHeaderSearchInfo().lookupModule(ModuleName);
-    std::string ModuleFileName;
-    if (Module)
-      ModuleFileName = PP->getHeaderSearchInfo().getModuleFileName(Module);
+    PCModule = PP->getHeaderSearchInfo().lookupPCModule(PCModuleName);
+    std::string PCModuleFileName;
+    if (PCModule)
+      PCModuleFileName = PP->getHeaderSearchInfo().getPCModuleFileName(PCModule);
     else
-      ModuleFileName = PP->getHeaderSearchInfo().getModuleFileName(ModuleName);
+      PCModuleFileName = PP->getHeaderSearchInfo().getPCModuleFileName(PCModuleName);
 
-    if (ModuleFileName.empty()) {
-      getDiagnostics().Report(ModuleNameLoc, diag::err_module_not_found)
-        << ModuleName
-        << SourceRange(ImportLoc, ModuleNameLoc);
-      LastModuleImportLoc = ImportLoc;
-      LastModuleImportResult = ModuleLoadResult();
-      return LastModuleImportResult;
+    if (PCModuleFileName.empty()) {
+      getDiagnostics().Report(PCModuleNameLoc, diag::err_module_not_found)
+        << PCModuleName
+        << SourceRange(ImportLoc, PCModuleNameLoc);
+      LastPCModuleImportLoc = ImportLoc;
+      LastPCModuleImportResult = PCModuleLoadResult();
+      return LastPCModuleImportResult;
     }
     
-    const FileEntry *ModuleFile
-      = getFileManager().getFile(ModuleFileName, /*OpenFile=*/false,
+    const FileEntry *PCModuleFile
+      = getFileManager().getFile(PCModuleFileName, /*OpenFile=*/false,
                                  /*CacheFailure=*/false);
-    bool BuildingModule = false;
-    if (!ModuleFile && Module) {
+    bool BuildingPCModule = false;
+    if (!PCModuleFile && PCModule) {
       // The module is not cached, but we have a module map from which we can
       // build the module.
 
       // Check whether there is a cycle in the module graph.
-      ModuleBuildStack Path = getSourceManager().getModuleBuildStack();
-      ModuleBuildStack::iterator Pos = Path.begin(), PosEnd = Path.end();
+      PCModuleBuildStack Path = getSourceManager().getPCModuleBuildStack();
+      PCModuleBuildStack::iterator Pos = Path.begin(), PosEnd = Path.end();
       for (; Pos != PosEnd; ++Pos) {
-        if (Pos->first == ModuleName)
+        if (Pos->first == PCModuleName)
           break;
       }
 
@@ -966,53 +966,53 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
           CyclePath += Pos->first;
           CyclePath += " -> ";
         }
-        CyclePath += ModuleName;
+        CyclePath += PCModuleName;
 
-        getDiagnostics().Report(ModuleNameLoc, diag::err_module_cycle)
-          << ModuleName << CyclePath;
-        return ModuleLoadResult();
+        getDiagnostics().Report(PCModuleNameLoc, diag::err_module_cycle)
+          << PCModuleName << CyclePath;
+        return PCModuleLoadResult();
       }
 
       // Check whether we have already attempted to build this module (but
       // failed).
-      if (getPreprocessorOpts().FailedModules &&
-          getPreprocessorOpts().FailedModules->hasAlreadyFailed(ModuleName)) {
-        getDiagnostics().Report(ModuleNameLoc, diag::err_module_not_built)
-          << ModuleName
-          << SourceRange(ImportLoc, ModuleNameLoc);
+      if (getPreprocessorOpts().FailedPCModules &&
+          getPreprocessorOpts().FailedPCModules->hasAlreadyFailed(PCModuleName)) {
+        getDiagnostics().Report(PCModuleNameLoc, diag::err_module_not_built)
+          << PCModuleName
+          << SourceRange(ImportLoc, PCModuleNameLoc);
 
-        return ModuleLoadResult();
+        return PCModuleLoadResult();
       }
 
-      BuildingModule = true;
-      compileModule(*this, ModuleNameLoc, Module, ModuleFileName);
-      ModuleFile = FileMgr->getFile(ModuleFileName);
+      BuildingPCModule = true;
+      compilePCModule(*this, PCModuleNameLoc, PCModule, PCModuleFileName);
+      PCModuleFile = FileMgr->getFile(PCModuleFileName);
 
-      if (!ModuleFile)
-        getPreprocessorOpts().FailedModules->addFailed(ModuleName);
+      if (!PCModuleFile)
+        getPreprocessorOpts().FailedPCModules->addFailed(PCModuleName);
     }
 
-    if (!ModuleFile) {
-      getDiagnostics().Report(ModuleNameLoc,
-                              BuildingModule? diag::err_module_not_built
+    if (!PCModuleFile) {
+      getDiagnostics().Report(PCModuleNameLoc,
+                              BuildingPCModule? diag::err_module_not_built
                                             : diag::err_module_not_found)
-        << ModuleName
-        << SourceRange(ImportLoc, ModuleNameLoc);
-      return ModuleLoadResult();
+        << PCModuleName
+        << SourceRange(ImportLoc, PCModuleNameLoc);
+      return PCModuleLoadResult();
     }
 
     // If we don't already have an ASTReader, create one now.
-    if (!ModuleManager) {
+    if (!PCModuleManager) {
       if (!hasASTContext())
         createASTContext();
 
       std::string Sysroot = getHeaderSearchOpts().Sysroot;
       const PreprocessorOptions &PPOpts = getPreprocessorOpts();
-      ModuleManager = new ASTReader(getPreprocessor(), *Context,
+      PCModuleManager = new ASTReader(getPreprocessor(), *Context,
                                     Sysroot.empty() ? "" : Sysroot.c_str(),
                                     PPOpts.DisablePCHValidation);
       if (hasASTConsumer()) {
-        ModuleManager->setDeserializationListener(
+        PCModuleManager->setDeserializationListener(
           getASTConsumer().GetASTDeserializationListener());
         getASTContext().setASTMutationListener(
           getASTConsumer().GetASTMutationListener());
@@ -1020,52 +1020,52 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
           getASTConsumer().GetPPMutationListener());
       }
       OwningPtr<ExternalASTSource> Source;
-      Source.reset(ModuleManager);
+      Source.reset(PCModuleManager);
       getASTContext().setExternalSource(Source);
       if (hasSema())
-        ModuleManager->InitializeSema(getSema());
+        PCModuleManager->InitializeSema(getSema());
       if (hasASTConsumer())
-        ModuleManager->StartProgram(&getASTConsumer());
+        PCModuleManager->StartProgram(&getASTConsumer());
     }
 
     // Try to load the module we found.
     unsigned ARRFlags = ASTReader::ARR_None;
-    if (Module)
+    if (PCModule)
       ARRFlags |= ASTReader::ARR_OutOfDate;
-    switch (ModuleManager->ReadAST(ModuleFile->getName(),
-                                   serialization::MK_Module, ImportLoc,
+    switch (PCModuleManager->ReadAST(PCModuleFile->getName(),
+                                   serialization::MK_PCModule, ImportLoc,
                                    ARRFlags)) {
     case ASTReader::Success:
       break;
 
     case ASTReader::OutOfDate: {
       // The module file is out-of-date. Rebuild it.
-      getFileManager().invalidateCache(ModuleFile);
+      getFileManager().invalidateCache(PCModuleFile);
       bool Existed;
-      llvm::sys::fs::remove(ModuleFileName, Existed);
+      llvm::sys::fs::remove(PCModuleFileName, Existed);
 
       // Check whether we have already attempted to build this module (but
       // failed).
-      if (getPreprocessorOpts().FailedModules &&
-          getPreprocessorOpts().FailedModules->hasAlreadyFailed(ModuleName)) {
-        getDiagnostics().Report(ModuleNameLoc, diag::err_module_not_built)
-          << ModuleName
-          << SourceRange(ImportLoc, ModuleNameLoc);
+      if (getPreprocessorOpts().FailedPCModules &&
+          getPreprocessorOpts().FailedPCModules->hasAlreadyFailed(PCModuleName)) {
+        getDiagnostics().Report(PCModuleNameLoc, diag::err_module_not_built)
+          << PCModuleName
+          << SourceRange(ImportLoc, PCModuleNameLoc);
 
-        return ModuleLoadResult();
+        return PCModuleLoadResult();
       }
 
-      compileModule(*this, ModuleNameLoc, Module, ModuleFileName);
+      compilePCModule(*this, PCModuleNameLoc, PCModule, PCModuleFileName);
 
       // Try loading the module again.
-      ModuleFile = FileMgr->getFile(ModuleFileName);
-      if (!ModuleFile ||
-          ModuleManager->ReadAST(ModuleFileName,
-                                 serialization::MK_Module, ImportLoc,
+      PCModuleFile = FileMgr->getFile(PCModuleFileName);
+      if (!PCModuleFile ||
+          PCModuleManager->ReadAST(PCModuleFileName,
+                                 serialization::MK_PCModule, ImportLoc,
                                  ASTReader::ARR_None) != ASTReader::Success) {
-        getPreprocessorOpts().FailedModules->addFailed(ModuleName);
-        KnownModules[Path[0].first] = 0;
-        return ModuleLoadResult();
+        getPreprocessorOpts().FailedPCModules->addFailed(PCModuleName);
+        KnownPCModules[Path[0].first] = 0;
+        return PCModuleLoadResult();
       }
 
       // Okay, we've rebuilt and now loaded the module.
@@ -1077,47 +1077,47 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
     case ASTReader::HadErrors:
       // FIXME: The ASTReader will already have complained, but can we showhorn
       // that diagnostic information into a more useful form?
-      KnownModules[Path[0].first] = 0;
-      return ModuleLoadResult();
+      KnownPCModules[Path[0].first] = 0;
+      return PCModuleLoadResult();
 
     case ASTReader::Failure:
       // Already complained, but note now that we failed.
-      KnownModules[Path[0].first] = 0;
-      return ModuleLoadResult();
+      KnownPCModules[Path[0].first] = 0;
+      return PCModuleLoadResult();
     }
     
-    if (!Module) {
+    if (!PCModule) {
       // If we loaded the module directly, without finding a module map first,
       // we'll have loaded the module's information from the module itself.
-      Module = PP->getHeaderSearchInfo().getModuleMap()
-                 .findModule((Path[0].first->getName()));
+      PCModule = PP->getHeaderSearchInfo().getPCModuleMap()
+                 .findPCModule((Path[0].first->getName()));
     }
 
-    if (Module)
-      Module->setASTFile(ModuleFile);
+    if (PCModule)
+      PCModule->setASTFile(PCModuleFile);
     
     // Cache the result of this top-level module lookup for later.
-    Known = KnownModules.insert(std::make_pair(Path[0].first, Module)).first;
+    Known = KnownPCModules.insert(std::make_pair(Path[0].first, PCModule)).first;
   }
   
   // If we never found the module, fail.
-  if (!Module)
-    return ModuleLoadResult();
+  if (!PCModule)
+    return PCModuleLoadResult();
   
   // Verify that the rest of the module path actually corresponds to
   // a submodule.
   if (Path.size() > 1) {
     for (unsigned I = 1, N = Path.size(); I != N; ++I) {
       StringRef Name = Path[I].first->getName();
-      lfort::Module *Sub = Module->findSubmodule(Name);
+      lfort::PCModule *Sub = PCModule->findSubmodule(Name);
       
       if (!Sub) {
         // Attempt to perform typo correction to find a module name that works.
         llvm::SmallVector<StringRef, 2> Best;
         unsigned BestEditDistance = (std::numeric_limits<unsigned>::max)();
         
-        for (lfort::Module::submodule_iterator J = Module->submodule_begin(), 
-                                            JEnd = Module->submodule_end();
+        for (lfort::PCModule::submodule_iterator J = PCModule->submodule_begin(), 
+                                            JEnd = PCModule->submodule_end();
              J != JEnd; ++J) {
           unsigned ED = Name.edit_distance((*J)->Name,
                                            /*AllowReplacements=*/true,
@@ -1136,12 +1136,12 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
         if (Best.size() == 1) {
           getDiagnostics().Report(Path[I].second, 
                                   diag::err_no_submodule_suggest)
-            << Path[I].first << Module->getFullModuleName() << Best[0]
+            << Path[I].first << PCModule->getFullPCModuleName() << Best[0]
             << SourceRange(Path[0].second, Path[I-1].second)
             << FixItHint::CreateReplacement(SourceRange(Path[I].second),
                                             Best[0]);
           
-          Sub = Module->findSubmodule(Best[0]);
+          Sub = PCModule->findSubmodule(Best[0]);
         }
       }
       
@@ -1149,19 +1149,19 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
         // No submodule by this name. Complain, and don't look for further
         // submodules.
         getDiagnostics().Report(Path[I].second, diag::err_no_submodule)
-          << Path[I].first << Module->getFullModuleName()
+          << Path[I].first << PCModule->getFullPCModuleName()
           << SourceRange(Path[0].second, Path[I-1].second);
         break;
       }
       
-      Module = Sub;
+      PCModule = Sub;
     }
   }
   
   // Make the named module visible, if it's not already part of the module
   // we are parsing.
-  if (ModuleName != getLangOpts().CurrentModule) {
-    if (!Module->IsFromModuleFile) {
+  if (PCModuleName != getLangOpts().CurrentPCModule) {
+    if (!PCModule->IsFromPCModuleFile) {
       // We have an umbrella header or directory that doesn't actually include
       // all of the headers within the directory it covers. Complain about
       // this missing submodule and recover by forgetting that we ever saw
@@ -1169,25 +1169,25 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
       // FIXME: Should we detect this at module load time? It seems fairly
       // expensive (and rare).
       getDiagnostics().Report(ImportLoc, diag::warn_missing_submodule)
-        << Module->getFullModuleName()
+        << PCModule->getFullPCModuleName()
         << SourceRange(Path.front().second, Path.back().second);
       
-      return ModuleLoadResult(0, true);
+      return PCModuleLoadResult(0, true);
     }
 
     // Check whether this module is available.
     StringRef Feature;
-    if (!Module->isAvailable(getLangOpts(), getTarget(), Feature)) {
+    if (!PCModule->isAvailable(getLangOpts(), getTarget(), Feature)) {
       getDiagnostics().Report(ImportLoc, diag::err_module_unavailable)
-        << Module->getFullModuleName()
+        << PCModule->getFullPCModuleName()
         << Feature
         << SourceRange(Path.front().second, Path.back().second);
-      LastModuleImportLoc = ImportLoc;
-      LastModuleImportResult = ModuleLoadResult();
-      return ModuleLoadResult();
+      LastPCModuleImportLoc = ImportLoc;
+      LastPCModuleImportResult = PCModuleLoadResult();
+      return PCModuleLoadResult();
     }
 
-    ModuleManager->makeModuleVisible(Module, Visibility);
+    PCModuleManager->makePCModuleVisible(PCModule, Visibility);
   }
   
   // If this module import was due to an inclusion directive, create an 
@@ -1195,14 +1195,14 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
   if (IsInclusionDirective && hasASTContext()) {
     ProgramDecl *Pgm = getASTContext().getProgramDecl();
     ImportDecl *ImportD = ImportDecl::CreateImplicit(getASTContext(), Pgm,
-                                                     ImportLoc, Module,
+                                                     ImportLoc, PCModule,
                                                      Path.back().second);
     Pgm->addDecl(ImportD);
     if (Consumer)
       Consumer->HandleImplicitImportDecl(ImportD);
   }
   
-  LastModuleImportLoc = ImportLoc;
-  LastModuleImportResult = ModuleLoadResult(Module, false);
-  return LastModuleImportResult;
+  LastPCModuleImportLoc = ImportLoc;
+  LastPCModuleImportResult = PCModuleLoadResult(PCModule, false);
+  return LastPCModuleImportResult;
 }

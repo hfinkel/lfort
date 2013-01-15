@@ -368,7 +368,7 @@ private:
   SourceRange TypeofParensRange;
   SourceLocation TQ_constLoc, TQ_restrictLoc, TQ_volatileLoc;
   SourceLocation FS_inlineLoc, FS_virtualLoc, FS_explicitLoc;
-  SourceLocation FriendLoc, ModulePrivateLoc, ConstexprLoc;
+  SourceLocation FriendLoc, PCModulePrivateLoc, ConstexprLoc;
 
   WrittenBuiltinSpecs writtenBS;
   void SaveWrittenBuiltinSpecs();
@@ -614,7 +614,7 @@ public:
 
   bool SetFriendSpec(SourceLocation Loc, const char *&PrevSpec,
                      unsigned &DiagID);
-  bool setModulePrivateSpec(SourceLocation Loc, const char *&PrevSpec,
+  bool setPCModulePrivateSpec(SourceLocation Loc, const char *&PrevSpec,
                             unsigned &DiagID);
   bool SetConstexprSpec(SourceLocation Loc, const char *&PrevSpec,
                         unsigned &DiagID);
@@ -622,8 +622,8 @@ public:
   bool isFriendSpecified() const { return Friend_specified; }
   SourceLocation getFriendSpecLoc() const { return FriendLoc; }
 
-  bool isModulePrivateSpecified() const { return ModulePrivateLoc.isValid(); }
-  SourceLocation getModulePrivateSpecLoc() const { return ModulePrivateLoc; }
+  bool isPCModulePrivateSpecified() const { return PCModulePrivateLoc.isValid(); }
+  SourceLocation getPCModulePrivateSpecLoc() const { return PCModulePrivateLoc; }
   
   bool isConstexprSpecified() const { return Constexpr_specified; }
   SourceLocation getConstexprSpecLoc() const { return ConstexprLoc; }

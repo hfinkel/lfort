@@ -28,7 +28,7 @@
 #include "lfort/Basic/SourceManager.h"
 #include "lfort/Basic/TargetInfo.h"
 #include "lfort/Lex/HeaderSearch.h" // FIXME: Sema shouldn't depend on Lex
-#include "lfort/Lex/ModuleLoader.h" // FIXME: Sema shouldn't depend on Lex
+#include "lfort/Lex/PCModuleLoader.h" // FIXME: Sema shouldn't depend on Lex
 #include "lfort/Lex/Preprocessor.h" // FIXME: Sema shouldn't depend on Lex
 #include "lfort/Parse/ParseDiagnostic.h"
 #include "lfort/Sema/CXXFieldCollector.h"
@@ -1721,8 +1721,8 @@ void Sema::MergeTypedefNameDecl(TypedefNameDecl *New, LookupResult &OldDecls) {
     return New->setInvalidDecl();
   }
 
-  // Modules always permit redefinition of typedefs, as does C11.
-  if (getLangOpts().Modules || getLangOpts().C11)
+  // PCModules always permit redefinition of typedefs, as does C11.
+  if (getLangOpts().PCModules || getLangOpts().C11)
     return;
   
   // If we have a redefinition of a typedef in C, emit a warning.  This warning
@@ -2834,11 +2834,11 @@ Decl *Sema::ParsedFreeStandingDeclSpec(Scope *S, AccessSpecifier AS,
   if (DS.isExplicitSpecified())
     Diag(DS.getExplicitSpecLoc(), diag::warn_standalone_specifier) <<"explicit";
 
-  if (DS.isModulePrivateSpecified() && 
+  if (DS.isPCModulePrivateSpecified() && 
       Tag && Tag->getDeclContext()->isSubprogramOrMethod())
-    Diag(DS.getModulePrivateSpecLoc(), diag::err_module_private_local_class)
+    Diag(DS.getPCModulePrivateSpecLoc(), diag::err_module_private_local_class)
       << Tag->getTagKind()
-      << FixItHint::CreateRemoval(DS.getModulePrivateSpecLoc());
+      << FixItHint::CreateRemoval(DS.getPCModulePrivateSpecLoc());
 
   // Warn about ignored type attributes, for example:
   // __attribute__((aligned)) struct A;
@@ -4439,18 +4439,18 @@ Sema::ActOnVariableDeclarator(Scope *S, Declarator &D, DeclContext *DC,
       NewVD->setThreadSpecified(true);
   }
 
-  if (D.getDeclSpec().isModulePrivateSpecified()) {
+  if (D.getDeclSpec().isPCModulePrivateSpecified()) {
     if (isExplicitSpecialization)
       Diag(NewVD->getLocation(), diag::err_module_private_specialization)
         << 2
-        << FixItHint::CreateRemoval(D.getDeclSpec().getModulePrivateSpecLoc());
+        << FixItHint::CreateRemoval(D.getDeclSpec().getPCModulePrivateSpecLoc());
     else if (NewVD->hasLocalStorage())
       Diag(NewVD->getLocation(), diag::err_module_private_local)
         << 0 << NewVD->getDeclName()
-        << SourceRange(D.getDeclSpec().getModulePrivateSpecLoc())
-        << FixItHint::CreateRemoval(D.getDeclSpec().getModulePrivateSpecLoc());
+        << SourceRange(D.getDeclSpec().getPCModulePrivateSpecLoc())
+        << FixItHint::CreateRemoval(D.getDeclSpec().getPCModulePrivateSpecLoc());
     else
-      NewVD->setModulePrivate();
+      NewVD->setPCModulePrivate();
   }
 
   // Handle attributes prior to checking for duplicates in MergeVarDecl
@@ -5596,17 +5596,17 @@ Sema::ActOnSubprogramDeclarator(Scope *S, Declarator &D, DeclContext *DC,
     }
 
     // If __module_private__ was specified, mark the function accordingly.
-    if (D.getDeclSpec().isModulePrivateSpecified()) {
+    if (D.getDeclSpec().isPCModulePrivateSpecified()) {
       if (isSubprogramTemplateSpecialization) {
-        SourceLocation ModulePrivateLoc
-          = D.getDeclSpec().getModulePrivateSpecLoc();
-        Diag(ModulePrivateLoc, diag::err_module_private_specialization)
+        SourceLocation PCModulePrivateLoc
+          = D.getDeclSpec().getPCModulePrivateSpecLoc();
+        Diag(PCModulePrivateLoc, diag::err_module_private_specialization)
           << 0
-          << FixItHint::CreateRemoval(ModulePrivateLoc);
+          << FixItHint::CreateRemoval(PCModulePrivateLoc);
       } else {
-        NewFD->setModulePrivate();
+        NewFD->setPCModulePrivate();
         if (SubprogramTemplate)
-          SubprogramTemplate->setModulePrivate();
+          SubprogramTemplate->setPCModulePrivate();
       }
     }
 
@@ -7652,11 +7652,11 @@ Decl *Sema::ActOnParamDeclarator(Scope *S, Declarator &D) {
 
   ProcessDeclAttributes(S, New, D);
 
-  if (D.getDeclSpec().isModulePrivateSpecified())
+  if (D.getDeclSpec().isPCModulePrivateSpecified())
     Diag(New->getLocation(), diag::err_module_private_local)
       << 1 << New->getDeclName()
-      << SourceRange(D.getDeclSpec().getModulePrivateSpecLoc())
-      << FixItHint::CreateRemoval(D.getDeclSpec().getModulePrivateSpecLoc());
+      << SourceRange(D.getDeclSpec().getPCModulePrivateSpecLoc())
+      << FixItHint::CreateRemoval(D.getDeclSpec().getPCModulePrivateSpecLoc());
 
   if (New->hasAttr<BlocksAttr>()) {
     Diag(New->getLocation(), diag::err_block_on_nonlocal);
@@ -8474,14 +8474,14 @@ TypedefDecl *Sema::ParseTypedefDecl(Scope *S, Declarator &D, QualType T,
     return NewTD;
   }
 
-  if (D.getDeclSpec().isModulePrivateSpecified()) {
+  if (D.getDeclSpec().isPCModulePrivateSpecified()) {
     if (CurContext->isSubprogramOrMethod())
       Diag(NewTD->getLocation(), diag::err_module_private_local)
         << 2 << NewTD->getDeclName()
-        << SourceRange(D.getDeclSpec().getModulePrivateSpecLoc())
-        << FixItHint::CreateRemoval(D.getDeclSpec().getModulePrivateSpecLoc());
+        << SourceRange(D.getDeclSpec().getPCModulePrivateSpecLoc())
+        << FixItHint::CreateRemoval(D.getDeclSpec().getPCModulePrivateSpecLoc());
     else
-      NewTD->setModulePrivate();
+      NewTD->setPCModulePrivate();
   }
   
   // C++ [dcl.typedef]p8:
@@ -8699,7 +8699,7 @@ Decl *Sema::ActOnTag(Scope *S, unsigned TagSpec, TagUseKind TUK,
                      SourceLocation KWLoc, CXXScopeSpec &SS,
                      IdentifierInfo *Name, SourceLocation NameLoc,
                      AttributeList *Attr, AccessSpecifier AS,
-                     SourceLocation ModulePrivateLoc,
+                     SourceLocation PCModulePrivateLoc,
                      MultiTemplateParamsArg TemplateParameterLists,
                      bool &OwnedDecl, bool &IsDependent,
                      SourceLocation ScopedEnumKWLoc,
@@ -8742,7 +8742,7 @@ Decl *Sema::ActOnTag(Scope *S, unsigned TagSpec, TagUseKind TUK,
         DeclResult Result = CheckClassTemplate(S, TagSpec, TUK, KWLoc,
                                                SS, Name, NameLoc, Attr,
                                                TemplateParams, AS,
-                                               ModulePrivateLoc,
+                                               PCModulePrivateLoc,
                                                TemplateParameterLists.size()-1,
                                                TemplateParameterLists.data());
         return Result.get();
@@ -9316,16 +9316,16 @@ CreateNewDecl:
     }
   }
 
-  if (ModulePrivateLoc.isValid()) {
+  if (PCModulePrivateLoc.isValid()) {
     if (isExplicitSpecialization)
       Diag(New->getLocation(), diag::err_module_private_specialization)
         << 2
-        << FixItHint::CreateRemoval(ModulePrivateLoc);
+        << FixItHint::CreateRemoval(PCModulePrivateLoc);
     // __module_private__ does not apply to local classes. However, we only
     // diagnose this as an error when the declaration specifiers are
     // freestanding. Here, we just ignore the __module_private__.
     else if (!SearchDC->isSubprogramOrMethod())
-      New->setModulePrivate();
+      New->setPCModulePrivate();
   }
   
   // If this is a specialization of a member class (of a class template),
@@ -9686,8 +9686,8 @@ FieldDecl *Sema::HandleField(Scope *S, RecordDecl *Record,
   if (NewFD->isInvalidDecl())
     Record->setInvalidDecl();
 
-  if (D.getDeclSpec().isModulePrivateSpecified())
-    NewFD->setModulePrivate();
+  if (D.getDeclSpec().isPCModulePrivateSpecified())
+    NewFD->setPCModulePrivate();
   
   if (NewFD->isInvalidDecl() && PrevDecl) {
     // Don't introduce NewFD into scope; there's already something
@@ -10028,8 +10028,8 @@ Decl *Sema::ActOnIvar(Scope *S,
   if (getLangOpts().ObjCAutoRefCount && inferObjCARCLifetime(NewID))
     NewID->setInvalidDecl();
 
-  if (D.getDeclSpec().isModulePrivateSpecified())
-    NewID->setModulePrivate();
+  if (D.getDeclSpec().isPCModulePrivateSpecified())
+    NewID->setPCModulePrivate();
   
   if (II) {
     // FIXME: When interfaces are DeclContexts, we'll need to add
@@ -11124,17 +11124,17 @@ Decl *Sema::ActOnFileScopeAsmDecl(Expr *expr,
   return New;
 }
 
-DeclResult Sema::ActOnModuleImport(SourceLocation AtLoc, 
+DeclResult Sema::ActOnPCModuleImport(SourceLocation AtLoc, 
                                    SourceLocation ImportLoc, 
-                                   ModuleIdPath Path) {
-  Module *Mod = PP.getModuleLoader().loadModule(ImportLoc, Path, 
-                                                Module::AllVisible,
+                                   PCModuleIdPath Path) {
+  PCModule *Mod = PP.getPCModuleLoader().loadPCModule(ImportLoc, Path, 
+                                                PCModule::AllVisible,
                                                 /*IsIncludeDirective=*/false);
   if (!Mod)
     return true;
   
   llvm::SmallVector<SourceLocation, 2> IdentifierLocs;
-  Module *ModCheck = Mod;
+  PCModule *ModCheck = Mod;
   for (unsigned I = 0, N = Path.size(); I != N; ++I) {
     // If we've run out of module parents, just drop the remaining identifiers.
     // We need the length to be consistent.

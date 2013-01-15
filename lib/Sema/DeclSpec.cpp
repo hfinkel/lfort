@@ -749,15 +749,15 @@ bool DeclSpec::SetFriendSpec(SourceLocation Loc, const char *&PrevSpec,
   return false;
 }
 
-bool DeclSpec::setModulePrivateSpec(SourceLocation Loc, const char *&PrevSpec,
+bool DeclSpec::setPCModulePrivateSpec(SourceLocation Loc, const char *&PrevSpec,
                                     unsigned &DiagID) {
-  if (isModulePrivateSpecified()) {
+  if (isPCModulePrivateSpecified()) {
     PrevSpec = "__module_private__";
     DiagID = diag::ext_duplicate_declspec;
     return true;
   }
   
-  ModulePrivateLoc = Loc;
+  PCModulePrivateLoc = Loc;
   return false;
 }
 

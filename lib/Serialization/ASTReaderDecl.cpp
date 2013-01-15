@@ -36,7 +36,7 @@ using namespace lfort::serialization;
 namespace lfort {
   class ASTDeclReader : public DeclVisitor<ASTDeclReader, void> {
     ASTReader &Reader;
-    ModuleFile &F;
+    PCModuleFile &F;
     const DeclID ThisDeclID;
     const unsigned RawLocation;
     typedef ASTReader::RecordData RecordData;
@@ -99,7 +99,7 @@ namespace lfort {
       return Reader.getGlobalSubmoduleID(F, R[I++]);
     }
     
-    Module *readModule(const RecordData &R, unsigned &I) {
+    PCModule *readPCModule(const RecordData &R, unsigned &I) {
       return Reader.getSubmodule(readSubmoduleID(R, I));
     }
     
@@ -194,7 +194,7 @@ namespace lfort {
     FindExistingResult findExisting(NamedDecl *D);
     
   public:
-    ASTDeclReader(ASTReader &Reader, ModuleFile &F,
+    ASTDeclReader(ASTReader &Reader, PCModuleFile &F,
                   DeclID thisDeclID,
                   unsigned RawLocation,
                   const RecordData &Record, unsigned &Idx)
@@ -210,7 +210,7 @@ namespace lfort {
 
     void Visit(Decl *D);
 
-    void UpdateDecl(Decl *D, ModuleFile &ModuleFile,
+    void UpdateDecl(Decl *D, PCModuleFile &PCModuleFile,
                     const RecordData &Record);
 
     static void setNextObjCCategory(ObjCCategoryDecl *Cat,
@@ -375,19 +375,19 @@ void ASTDeclReader::VisitDecl(Decl *D) {
   D->setTopLevelDeclInObjCContainer(Record[Idx++]);
   D->setAccess((AccessSpecifier)Record[Idx++]);
   D->FromASTFile = true;
-  D->setModulePrivate(Record[Idx++]);
-  D->Hidden = D->isModulePrivate();
+  D->setPCModulePrivate(Record[Idx++]);
+  D->Hidden = D->isPCModulePrivate();
   
   // Determine whether this declaration is part of a (sub)module. If so, it
   // may not yet be visible.
   if (unsigned SubmoduleID = readSubmoduleID(Record, Idx)) {
     // Store the owning submodule ID in the declaration.
-    D->setOwningModuleID(SubmoduleID);
+    D->setOwningPCModuleID(SubmoduleID);
     
-    // Module-private declarations are never visible, so there is no work to do.
-    if (!D->isModulePrivate()) {
-      if (Module *Owner = Reader.getSubmodule(SubmoduleID)) {
-        if (Owner->NameVisibility != Module::AllVisible) {
+    // PCModule-private declarations are never visible, so there is no work to do.
+    if (!D->isPCModulePrivate()) {
+      if (PCModule *Owner = Reader.getSubmodule(SubmoduleID)) {
+        if (Owner->NameVisibility != PCModule::AllVisible) {
           // The owning module is not visible. Mark this declaration as hidden.
           D->Hidden = true;
           
@@ -1020,7 +1020,7 @@ void ASTDeclReader::VisitNamespaceDecl(NamespaceDecl *D) {
     // any other module's anonymous namespaces, so don't attach the anonymous
     // namespace at all.
     NamespaceDecl *Anon = ReadDeclAs<NamespaceDecl>(Record, Idx);
-    if (F.Kind != MK_Module)
+    if (F.Kind != MK_PCModule)
       D->setAnonymousNamespace(Anon);
   } else {
     // Link this namespace back to the first declaration, which has already
@@ -1250,7 +1250,7 @@ void ASTDeclReader::VisitCXXConversionDecl(CXXConversionDecl *D) {
 
 void ASTDeclReader::VisitImportDecl(ImportDecl *D) {
   VisitDecl(D);
-  D->ImportedAndComplete.setPointer(readModule(Record, Idx));
+  D->ImportedAndComplete.setPointer(readPCModule(Record, Idx));
   D->ImportedAndComplete.setInt(Record[Idx++]);
   SourceLocation *StoredLocs = reinterpret_cast<SourceLocation *>(D + 1);
   for (unsigned I = 0, N = Record.back(); I != N; ++I)
@@ -1571,7 +1571,7 @@ template<typename T>
 void ASTDeclReader::mergeRedeclarable(Redeclarable<T> *D, 
                                       RedeclarableResult &Redecl) {
   // If modules are not available, there is no reason to perform this merge.
-  if (!Reader.getContext().getLangOpts().Modules)
+  if (!Reader.getContext().getLangOpts().PCModules)
     return;
   
   if (FindExistingResult ExistingRes = findExisting(static_cast<T*>(D))) {
@@ -1630,7 +1630,7 @@ void ASTDeclReader::mergeRedeclarable(Redeclarable<T> *D,
 //===----------------------------------------------------------------------===//
 
 /// \brief Reads attributes from the current stream position.
-void ASTReader::ReadAttributes(ModuleFile &F, AttrVec &Attrs,
+void ASTReader::ReadAttributes(PCModuleFile &F, AttrVec &Attrs,
                                const RecordData &Record, unsigned &Idx) {
   for (unsigned i = 0, e = Record[Idx++]; i != e; ++i) {
     Attr *New = 0;
@@ -1695,7 +1695,7 @@ ASTReader::DeclCursorForID(DeclID ID, unsigned &RawLocation) {
 
   GlobalDeclMapType::iterator I = GlobalDeclMap.find(ID);
   assert(I != GlobalDeclMap.end() && "Corrupted global declaration map");
-  ModuleFile *M = I->second;
+  PCModuleFile *M = I->second;
   const DeclOffset &
     DOffs =  M->DeclOffsets[ID - M->BaseDeclID - NUM_PREDEF_DECL_IDS];
   RawLocation = DOffs.Loc;
@@ -1703,14 +1703,14 @@ ASTReader::DeclCursorForID(DeclID ID, unsigned &RawLocation) {
 }
 
 ASTReader::RecordLocation ASTReader::getLocalBitOffset(uint64_t GlobalOffset) {
-  ContinuousRangeMap<uint64_t, ModuleFile*, 4>::iterator I
+  ContinuousRangeMap<uint64_t, PCModuleFile*, 4>::iterator I
     = GlobalBitOffsetsMap.find(GlobalOffset);
 
   assert(I != GlobalBitOffsetsMap.end() && "Corrupted global bit offsets map");
   return RecordLocation(I->second, GlobalOffset - I->second->GlobalBitOffset);
 }
 
-uint64_t ASTReader::getGlobalBitOffset(ModuleFile &M, uint32_t LocalOffset) {
+uint64_t ASTReader::getGlobalBitOffset(PCModuleFile &M, uint32_t LocalOffset) {
   return LocalOffset + M.GlobalBitOffset;
 }
 
@@ -2182,7 +2182,7 @@ void ASTReader::loadDeclUpdateRecords(serialization::DeclID ID, Decl *D) {
     FileOffsetsTy &UpdateOffsets = UpdI->second;
     for (FileOffsetsTy::iterator
          I = UpdateOffsets.begin(), E = UpdateOffsets.end(); I != E; ++I) {
-      ModuleFile *F = I->first;
+      PCModuleFile *F = I->first;
       uint64_t Offset = I->second;
       llvm::BitstreamCursor &Cursor = F->DeclsCursor;
       SavedStreamPosition SavedPosition(Cursor);
@@ -2219,7 +2219,7 @@ namespace {
     }
   };
   
-  /// \brief Module visitor class that finds all of the redeclarations of a 
+  /// \brief PCModule visitor class that finds all of the redeclarations of a 
   /// 
   class RedeclChainVisitor {
     ASTReader &Reader;
@@ -2238,7 +2238,7 @@ namespace {
         addToChain(Reader.GetDecl(SearchDecls[I]));
     }
     
-    static bool visit(ModuleFile &M, bool Preorder, void *UserData) {
+    static bool visit(PCModuleFile &M, bool Preorder, void *UserData) {
       if (Preorder)
         return false;
       
@@ -2253,10 +2253,10 @@ namespace {
         Chain.push_back(D);
     }
     
-    void searchForID(ModuleFile &M, GlobalDeclID GlobalID) {
+    void searchForID(PCModuleFile &M, GlobalDeclID GlobalID) {
       // Map global ID of the first declaration down to the local ID
       // used in this module file.
-      DeclID ID = Reader.mapGlobalIDToModuleFileGlobalID(M, GlobalID);
+      DeclID ID = Reader.mapGlobalIDToPCModuleFileGlobalID(M, GlobalID);
       if (!ID)
         return;
       
@@ -2289,7 +2289,7 @@ namespace {
         addToChain(Reader.GetLocalDecl(M, M.RedeclarationChains[Offset++]));
     }
     
-    bool visit(ModuleFile &M) {
+    bool visit(PCModuleFile &M) {
       // Visit each of the declarations.
       for (unsigned I = 0, N = SearchDecls.size(); I != N; ++I)
         searchForID(M, SearchDecls[I]);
@@ -2319,7 +2319,7 @@ void ASTReader::loadPendingDeclChain(serialization::GlobalDeclID ID) {
   
   // Build up the list of redeclarations.
   RedeclChainVisitor Visitor(*this, SearchDecls, RedeclsDeserialized, CanonID);
-  ModuleMgr.visitDepthFirst(&RedeclChainVisitor::visit, &Visitor);
+  PCModuleMgr.visitDepthFirst(&RedeclChainVisitor::visit, &Visitor);
   
   // Retrieve the chains.
   ArrayRef<Decl *> Chain = Visitor.getChain();
@@ -2378,8 +2378,8 @@ namespace {
       if (Cat->getDeclName()) {
         ObjCCategoryDecl *&Existing = NameCategoryMap[Cat->getDeclName()];
         if (Existing && 
-            Reader.getOwningModuleFile(Existing) 
-                                          != Reader.getOwningModuleFile(Cat)) {
+            Reader.getOwningPCModuleFile(Existing) 
+                                          != Reader.getOwningPCModuleFile(Cat)) {
           // FIXME: We should not warn for duplicates in diamond:
           //
           //   MT     //
@@ -2429,11 +2429,11 @@ namespace {
       }
     }
 
-    static bool visit(ModuleFile &M, void *UserData) {
+    static bool visit(PCModuleFile &M, void *UserData) {
       return static_cast<ObjCCategoriesVisitor *>(UserData)->visit(M);
     }
 
-    bool visit(ModuleFile &M) {
+    bool visit(PCModuleFile &M) {
       // If we've loaded all of the category information we care about from
       // this module file, we're done.
       if (M.Generation <= PreviousGeneration)
@@ -2442,7 +2442,7 @@ namespace {
       // Map global ID of the definition down to the local ID used in this 
       // module file. If there is no such mapping, we'll find nothing here
       // (or in any module it imports).
-      DeclID LocalID = Reader.mapGlobalIDToModuleFileGlobalID(M, InterfaceID);
+      DeclID LocalID = Reader.mapGlobalIDToPCModuleFileGlobalID(M, InterfaceID);
       if (!LocalID)
         return true;
 
@@ -2457,7 +2457,7 @@ namespace {
         // We didn't find anything. If the class definition is in this module
         // file, then the module files it depends on cannot have any categories,
         // so suppress further lookup.
-        return Reader.isDeclIDFromModule(InterfaceID, M);
+        return Reader.isDeclIDFromPCModule(InterfaceID, M);
       }
       
       // We found something. Dig out all of the categories.
@@ -2477,31 +2477,31 @@ void ASTReader::loadObjCCategories(serialization::GlobalDeclID ID,
                                    unsigned PreviousGeneration) {
   ObjCCategoriesVisitor Visitor(*this, ID, D, CategoriesDeserialized,
                                 PreviousGeneration);
-  ModuleMgr.visit(ObjCCategoriesVisitor::visit, &Visitor);
+  PCModuleMgr.visit(ObjCCategoriesVisitor::visit, &Visitor);
 }
 
-void ASTDeclReader::UpdateDecl(Decl *D, ModuleFile &ModuleFile,
+void ASTDeclReader::UpdateDecl(Decl *D, PCModuleFile &PCModuleFile,
                                const RecordData &Record) {
   unsigned Idx = 0;
   while (Idx < Record.size()) {
     switch ((DeclUpdateKind)Record[Idx++]) {
     case UPD_CXX_ADDED_IMPLICIT_MEMBER:
-      cast<CXXRecordDecl>(D)->addedMember(Reader.ReadDecl(ModuleFile, Record, Idx));
+      cast<CXXRecordDecl>(D)->addedMember(Reader.ReadDecl(PCModuleFile, Record, Idx));
       break;
 
     case UPD_CXX_ADDED_TEMPLATE_SPECIALIZATION:
       // It will be added to the template's specializations set when loaded.
-      (void)Reader.ReadDecl(ModuleFile, Record, Idx);
+      (void)Reader.ReadDecl(PCModuleFile, Record, Idx);
       break;
 
     case UPD_CXX_ADDED_ANONYMOUS_NAMESPACE: {
       NamespaceDecl *Anon
-        = Reader.ReadDeclAs<NamespaceDecl>(ModuleFile, Record, Idx);
+        = Reader.ReadDeclAs<NamespaceDecl>(PCModuleFile, Record, Idx);
       
       // Each module has its own anonymous namespace, which is disjoint from
       // any other module's anonymous namespaces, so don't attach the anonymous
       // namespace at all.
-      if (ModuleFile.Kind != MK_Module) {
+      if (PCModuleFile.Kind != MK_PCModule) {
         if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(D))
           Pgm->setAnonymousNamespace(Anon);
         else
@@ -2512,7 +2512,7 @@ void ASTDeclReader::UpdateDecl(Decl *D, ModuleFile &ModuleFile,
 
     case UPD_CXX_INSTANTIATED_STATIC_DATA_MEMBER:
       cast<VarDecl>(D)->getMemberSpecializationInfo()->setPointOfInstantiation(
-          Reader.ReadSourceLocation(ModuleFile, Record, Idx));
+          Reader.ReadSourceLocation(PCModuleFile, Record, Idx));
       break;
     }
   }

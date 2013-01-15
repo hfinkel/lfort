@@ -193,7 +193,7 @@ protected:
     
     /// \brief Whether this declaration is private to the module in which it was
     /// defined.
-    ModulePrivateFlag = 0x02
+    PCModulePrivateFlag = 0x02
   };
   
   /// \brief The next declaration within the same lexical
@@ -201,7 +201,7 @@ protected:
   /// traversed via DeclContext's decls_begin()/decls_end().
   ///
   /// The extra two bits are used for the TopLevelDeclInObjCContainer and
-  /// ModulePrivate bits.
+  /// PCModulePrivate bits.
   llvm::PointerIntPair<Decl *, 2, unsigned> NextInContextAndBits;
 
 private:
@@ -504,23 +504,23 @@ public:
 protected:
   /// \brief Whether this declaration was marked as being private to the
   /// module in which it was defined.
-  bool isModulePrivate() const { 
-    return NextInContextAndBits.getInt() & ModulePrivateFlag;
+  bool isPCModulePrivate() const { 
+    return NextInContextAndBits.getInt() & PCModulePrivateFlag;
   }
   
   /// \brief Specify whether this declaration was marked as being private
   /// to the module in which it was defined.
-  void setModulePrivate(bool MP = true) {
+  void setPCModulePrivate(bool MP = true) {
     unsigned Bits = NextInContextAndBits.getInt();
     if (MP)
-      Bits |= ModulePrivateFlag;
+      Bits |= PCModulePrivateFlag;
     else
-      Bits &= ~ModulePrivateFlag;
+      Bits &= ~PCModulePrivateFlag;
     NextInContextAndBits.setInt(Bits);
   }
 
   /// \brief Set the owning module ID.
-  void setOwningModuleID(unsigned ID) {
+  void setOwningPCModuleID(unsigned ID) {
     assert(isFromASTFile() && "Only works on a deserialized declaration");
     *((unsigned*)this - 2) = ID;
   }
@@ -587,7 +587,7 @@ public:
   
   /// \brief Retrieve the global ID of the module that owns this particular
   /// declaration.
-  unsigned getOwningModuleID() const {
+  unsigned getOwningPCModuleID() const {
     if (isFromASTFile())
       return *((const unsigned*)this - 2);
     

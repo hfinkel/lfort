@@ -68,7 +68,7 @@ public:
   std::string OverflowHandler;
 
   /// \brief The name of the current module.
-  std::string CurrentModule;
+  std::string CurrentPCModule;
   
   LangOptions();
 
@@ -119,7 +119,7 @@ enum ProgramKind {
   /// not complete.
   PGM_Prefix,
   /// \brief The program is a module.
-  PGM_Module
+  PGM_PCModule
 };
   
 }  // end namespace lfort

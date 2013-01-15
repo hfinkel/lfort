@@ -599,16 +599,16 @@ void Sema::ActOnEndOfProgram() {
       << I->first;
   }
 
-  if (PgmKind == PGM_Module) {
+  if (PgmKind == PGM_PCModule) {
     // If we are building a module, resolve all of the exported declarations
     // now.
-    if (Module *CurrentModule = PP.getCurrentModule()) {
-      ModuleMap &ModMap = PP.getHeaderSearchInfo().getModuleMap();
+    if (PCModule *CurrentPCModule = PP.getCurrentPCModule()) {
+      PCModuleMap &ModMap = PP.getHeaderSearchInfo().getPCModuleMap();
       
-      llvm::SmallVector<Module *, 2> Stack;
-      Stack.push_back(CurrentModule);
+      llvm::SmallVector<PCModule *, 2> Stack;
+      Stack.push_back(CurrentPCModule);
       while (!Stack.empty()) {
-        Module *Mod = Stack.back();
+        PCModule *Mod = Stack.back();
         Stack.pop_back();
         
         // Resolve the exported declarations.
@@ -618,7 +618,7 @@ void Sema::ActOnEndOfProgram() {
         ModMap.resolveExports(Mod, /*Complain=*/false);
         
         // Queue the submodules, so their exports will also be resolved.
-        for (Module::submodule_iterator Sub = Mod->submodule_begin(),
+        for (PCModule::submodule_iterator Sub = Mod->submodule_begin(),
                                      SubEnd = Mod->submodule_end();
              Sub != SubEnd; ++Sub) {
           Stack.push_back(*Sub);
@@ -626,7 +626,7 @@ void Sema::ActOnEndOfProgram() {
       }
     }
     
-    // Modules don't need any of the checking below.
+    // PCModules don't need any of the checking below.
     PgmScope = 0;
     return;
   }

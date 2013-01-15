@@ -118,7 +118,7 @@ public:
   ObjCXXARCStandardLibraryKind ObjCXXARCStandardLibrary;
     
   /// \brief Records the set of modules
-  class FailedModulesSet : public llvm::RefCountedBase<FailedModulesSet> {
+  class FailedPCModulesSet : public llvm::RefCountedBase<FailedPCModulesSet> {
     llvm::StringSet<> Failed;
 
   public:
@@ -137,7 +137,7 @@ public:
   /// to (re)build modules, so that once a module fails to build anywhere,
   /// other instances will see that the module has failed and won't try to
   /// build it again.
-  llvm::IntrusiveRefCntPtr<FailedModulesSet> FailedModules;
+  llvm::IntrusiveRefCntPtr<FailedPCModulesSet> FailedPCModules;
 
   typedef std::vector<std::pair<std::string, std::string> >::iterator
     remapped_file_iterator;

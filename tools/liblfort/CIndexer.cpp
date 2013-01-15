@@ -54,7 +54,7 @@ std::string CIndexer::getLFortResourcesPath() {
   char path[MAX_PATH];
   VirtualQuery((void *)(uintptr_t)lfort_createProgram, &mbi,
                sizeof(mbi));
-  GetModuleFileNameA((HINSTANCE)mbi.AllocationBase, path, MAX_PATH);
+  GetPCModuleFileNameA((HINSTANCE)mbi.AllocationBase, path, MAX_PATH);
 
 #ifdef __CYGWIN__
   char w32path[MAX_PATH];

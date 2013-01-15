@@ -117,7 +117,7 @@ void Preprocessor::EnterSourceFileWithLexer(Lexer *TheLexer,
   CurLexer.reset(TheLexer);
   CurPPLexer = TheLexer;
   CurDirLookup = CurDir;
-  if (CurLexerKind != CLK_LexAfterModuleImport)
+  if (CurLexerKind != CLK_LexAfterPCModuleImport)
     CurLexerKind = CLK_Lexer;
   
   // Notify the client, if desired, that we are in a new source file.
@@ -141,7 +141,7 @@ void Preprocessor::EnterSourceFileWithPTH(PTHLexer *PL,
   CurDirLookup = CurDir;
   CurPTHLexer.reset(PL);
   CurPPLexer = CurPTHLexer.get();
-  if (CurLexerKind != CLK_LexAfterModuleImport)
+  if (CurLexerKind != CLK_LexAfterPCModuleImport)
     CurLexerKind = CLK_PTHLexer;
   
   // Notify the client, if desired, that we are in a new source file.
@@ -169,7 +169,7 @@ void Preprocessor::EnterMacro(Token &Tok, SourceLocation ILEnd,
   PushIncludeMacroStack();
   CurDirLookup = 0;
   CurTokenLexer.reset(TokLexer);
-  if (CurLexerKind != CLK_LexAfterModuleImport)
+  if (CurLexerKind != CLK_LexAfterPCModuleImport)
     CurLexerKind = CLK_TokenLexer;
 }
 
@@ -202,7 +202,7 @@ void Preprocessor::EnterTokenStream(const Token *Toks, unsigned NumToks,
   PushIncludeMacroStack();
   CurDirLookup = 0;
   CurTokenLexer.reset(TokLexer);
-  if (CurLexerKind != CLK_LexAfterModuleImport)
+  if (CurLexerKind != CLK_LexAfterPCModuleImport)
     CurLexerKind = CLK_TokenLexer;
 }
 
@@ -364,7 +364,7 @@ bool Preprocessor::HandleEndOfFile(Token &Result, bool isEndOfMacro) {
   // If we are building a module that has an umbrella header, make sure that
   // each of the headers within the directory covered by the umbrella header
   // was actually included by the umbrella header.
-  if (Module *Mod = getCurrentModule()) {
+  if (PCModule *Mod = getCurrentPCModule()) {
     if (Mod->getUmbrellaHeader()) {
       SourceLocation StartLoc
         = SourceMgr.getLocForStartOfFile(SourceMgr.getMainFileID());
@@ -372,7 +372,7 @@ bool Preprocessor::HandleEndOfFile(Token &Result, bool isEndOfMacro) {
       if (getDiagnostics().getDiagnosticLevel(
             diag::warn_uncovered_module_header, 
             StartLoc) != DiagnosticsEngine::Ignored) {
-        ModuleMap &ModMap = getHeaderSearchInfo().getModuleMap();
+        PCModuleMap &ModMap = getHeaderSearchInfo().getPCModuleMap();
         typedef llvm::sys::fs::recursive_directory_iterator
           recursive_directory_iterator;
         const DirectoryEntry *Dir = Mod->getUmbrellaDir();
@@ -390,12 +390,12 @@ bool Preprocessor::HandleEndOfFile(Token &Result, bool isEndOfMacro) {
 
           if (const FileEntry *Header = getFileManager().getFile(Entry->path()))
             if (!getSourceManager().hasFileInfo(Header)) {
-              if (!ModMap.isHeaderInUnavailableModule(Header)) {
+              if (!ModMap.isHeaderInUnavailablePCModule(Header)) {
                 // Find the relative path that would access this header.
                 SmallString<128> RelativePath;
                 computeRelativePath(FileMgr, Dir, Header, RelativePath);              
                 Diag(StartLoc, diag::warn_uncovered_module_header)
-                  << Mod->getFullModuleName() << RelativePath;
+                  << Mod->getFullPCModuleName() << RelativePath;
               }
             }
         }

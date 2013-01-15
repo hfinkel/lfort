@@ -1020,11 +1020,11 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
 
   // Imports
   if (Chain) {
-    serialization::ModuleManager &Mgr = Chain->getModuleManager();
-    llvm::SmallVector<char, 128> ModulePaths;
+    serialization::PCModuleManager &Mgr = Chain->getPCModuleManager();
+    llvm::SmallVector<char, 128> PCModulePaths;
     Record.clear();
 
-    for (ModuleManager::ModuleIterator M = Mgr.begin(), MEnd = Mgr.end();
+    for (PCModuleManager::PCModuleIterator M = Mgr.begin(), MEnd = Mgr.end();
          M != MEnd; ++M) {
       // Skip modules that weren't directly imported.
       if (!(*M)->isDirectlyImported())
@@ -1052,8 +1052,8 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
   Record.push_back((unsigned) LangOpts.ObjCRuntime.getKind());
   AddVersionTuple(LangOpts.ObjCRuntime.getVersion(), Record);
   
-  Record.push_back(LangOpts.CurrentModule.size());
-  Record.append(LangOpts.CurrentModule.begin(), LangOpts.CurrentModule.end());
+  Record.push_back(LangOpts.CurrentPCModule.size());
+  Record.append(LangOpts.CurrentPCModule.begin(), LangOpts.CurrentPCModule.end());
   Stream.EmitRecord(LANGUAGE_OPTIONS, Record);
 
   // Target options.
@@ -1124,8 +1124,8 @@ void ASTWriter::WriteControlBlock(Preprocessor &PP, ASTContext &Context,
   }
 
   AddString(HSOpts.ResourceDir, Record);
-  AddString(HSOpts.ModuleCachePath, Record);
-  Record.push_back(HSOpts.DisableModuleHash);
+  AddString(HSOpts.PCModuleCachePath, Record);
+  Record.push_back(HSOpts.DisablePCModuleHash);
   Record.push_back(HSOpts.UseBuiltinIncludes);
   Record.push_back(HSOpts.UseStandardSystemIncludes);
   Record.push_back(HSOpts.UseStandardCXXIncludes);
@@ -1767,7 +1767,7 @@ static int compareMacroDefinitions(const void *XPtr, const void *YPtr) {
 /// \brief Writes the block containing the serialized form of the
 /// preprocessor.
 ///
-void ASTWriter::WritePreprocessor(const Preprocessor &PP, bool IsModule) {
+void ASTWriter::WritePreprocessor(const Preprocessor &PP, bool IsPCModule) {
   PreprocessingRecord *PPRec = PP.getPreprocessingRecord();
   if (PPRec)
     WritePreprocessorDetail(*PPRec);
@@ -1800,7 +1800,7 @@ void ASTWriter::WritePreprocessor(const Preprocessor &PP, bool IsModule) {
   for (Preprocessor::macro_iterator I = PP.macro_begin(Chain == 0),
                                     E = PP.macro_end(Chain == 0);
        I != E; ++I) {
-    if (!IsModule || I->second->isPublic()) {
+    if (!IsPCModule || I->second->isPublic()) {
       MacroDefinitionsSeen.insert(I->first);
       MacrosToEmit.push_back(std::make_pair(I->first, I->second));
     }
@@ -1987,7 +1987,7 @@ void ASTWriter::WritePreprocessorDetail(PreprocessingRecord &PPRec) {
       Record.push_back(ID->getFileName().size());
       Record.push_back(ID->wasInQuotes());
       Record.push_back(static_cast<unsigned>(ID->getKind()));
-      Record.push_back(ID->importedModule());
+      Record.push_back(ID->importedPCModule());
       SmallString<64> Buffer;
       Buffer += ID->getFileName();
       // Check that the FileEntry is not null because it was not resolved and
@@ -2022,8 +2022,8 @@ void ASTWriter::WritePreprocessorDetail(PreprocessingRecord &PPRec) {
   }
 }
 
-unsigned ASTWriter::getSubmoduleID(Module *Mod) {
-  llvm::DenseMap<Module *, unsigned>::iterator Known = SubmoduleIDs.find(Mod);
+unsigned ASTWriter::getSubmoduleID(PCModule *Mod) {
+  llvm::DenseMap<PCModule *, unsigned>::iterator Known = SubmoduleIDs.find(Mod);
   if (Known != SubmoduleIDs.end())
     return Known->second;
   
@@ -2032,29 +2032,29 @@ unsigned ASTWriter::getSubmoduleID(Module *Mod) {
 
 /// \brief Compute the number of modules within the given tree (including the
 /// given module).
-static unsigned getNumberOfModules(Module *Mod) {
-  unsigned ChildModules = 0;
-  for (Module::submodule_iterator Sub = Mod->submodule_begin(),
+static unsigned getNumberOfPCModules(PCModule *Mod) {
+  unsigned ChildPCModules = 0;
+  for (PCModule::submodule_iterator Sub = Mod->submodule_begin(),
                                SubEnd = Mod->submodule_end();
        Sub != SubEnd; ++Sub)
-    ChildModules += getNumberOfModules(*Sub);
+    ChildPCModules += getNumberOfPCModules(*Sub);
   
-  return ChildModules + 1;
+  return ChildPCModules + 1;
 }
 
-void ASTWriter::WriteSubmodules(Module *WritingModule) {
+void ASTWriter::WriteSubmodules(PCModule *WritingPCModule) {
   // Determine the dependencies of our module and each of it's submodules.
   // FIXME: This feels like it belongs somewhere else, but there are no
   // other consumers of this information.
   SourceManager &SrcMgr = PP->getSourceManager();
-  ModuleMap &ModMap = PP->getHeaderSearchInfo().getModuleMap();
+  PCModuleMap &ModMap = PP->getHeaderSearchInfo().getPCModuleMap();
   for (ASTContext::import_iterator I = Context->local_import_begin(),
                                 IEnd = Context->local_import_end();
        I != IEnd; ++I) {
-    if (Module *ImportedFrom
-          = ModMap.inferModuleFromLocation(FullSourceLoc(I->getLocation(), 
+    if (PCModule *ImportedFrom
+          = ModMap.inferPCModuleFromLocation(FullSourceLoc(I->getLocation(), 
                                                          SrcMgr))) {
-      ImportedFrom->Imports.push_back(I->getImportedModule());
+      ImportedFrom->Imports.push_back(I->getImportedPCModule());
     }
   }
   
@@ -2108,15 +2108,15 @@ void ASTWriter::WriteSubmodules(Module *WritingModule) {
 
   // Write the submodule metadata block.
   RecordData Record;
-  Record.push_back(getNumberOfModules(WritingModule));
+  Record.push_back(getNumberOfPCModules(WritingPCModule));
   Record.push_back(FirstSubmoduleID - NUM_PREDEF_SUBMODULE_IDS);
   Stream.EmitRecord(SUBMODULE_METADATA, Record);
   
   // Write all of the submodules.
-  std::queue<Module *> Q;
-  Q.push(WritingModule);
+  std::queue<PCModule *> Q;
+  Q.push(WritingPCModule);
   while (!Q.empty()) {
-    Module *Mod = Q.front();
+    PCModule *Mod = Q.front();
     Q.pop();
     unsigned ID = getSubmoduleID(Mod);
     
@@ -2196,7 +2196,7 @@ void ASTWriter::WriteSubmodules(Module *WritingModule) {
     if (!Mod->Exports.empty()) {
       Record.clear();
       for (unsigned I = 0, N = Mod->Exports.size(); I != N; ++I) {
-        if (Module *Exported = Mod->Exports[I].getPointer()) {
+        if (PCModule *Exported = Mod->Exports[I].getPointer()) {
           unsigned ExportedID = SubmoduleIDs[Exported];
           assert(ExportedID > 0 && "Unknown submodule ID?");
           Record.push_back(ExportedID);
@@ -2210,7 +2210,7 @@ void ASTWriter::WriteSubmodules(Module *WritingModule) {
     }
     
     // Queue up the submodules of this module.
-    for (Module::submodule_iterator Sub = Mod->submodule_begin(),
+    for (PCModule::submodule_iterator Sub = Mod->submodule_begin(),
                                  SubEnd = Mod->submodule_end();
          Sub != SubEnd; ++Sub)
       Q.push(*Sub);
@@ -2219,23 +2219,23 @@ void ASTWriter::WriteSubmodules(Module *WritingModule) {
   Stream.ExitBlock();
   
   assert((NextSubmoduleID - FirstSubmoduleID
-            == getNumberOfModules(WritingModule)) && "Wrong # of submodules");
+            == getNumberOfPCModules(WritingPCModule)) && "Wrong # of submodules");
 }
 
 serialization::SubmoduleID 
 ASTWriter::inferSubmoduleIDFromLocation(SourceLocation Loc) {
-  if (Loc.isInvalid() || !WritingModule)
+  if (Loc.isInvalid() || !WritingPCModule)
     return 0; // No submodule
     
   // Find the module that owns this location.
-  ModuleMap &ModMap = PP->getHeaderSearchInfo().getModuleMap();
-  Module *OwningMod 
-    = ModMap.inferModuleFromLocation(FullSourceLoc(Loc,PP->getSourceManager()));
+  PCModuleMap &ModMap = PP->getHeaderSearchInfo().getPCModuleMap();
+  PCModule *OwningMod 
+    = ModMap.inferPCModuleFromLocation(FullSourceLoc(Loc,PP->getSourceManager()));
   if (!OwningMod)
     return 0;
   
   // Check whether this submodule is part of our own module.
-  if (WritingModule != OwningMod && !OwningMod->isSubModuleOf(WritingModule))
+  if (WritingPCModule != OwningMod && !OwningMod->isSubPCModuleOf(WritingPCModule))
     return 0;
   
   return getSubmoduleID(OwningMod);
@@ -2670,7 +2670,7 @@ class ASTIdentifierTableTrait {
   ASTWriter &Writer;
   Preprocessor &PP;
   IdentifierResolver &IdResolver;
-  bool IsModule;
+  bool IsPCModule;
   
   /// \brief Determines whether this is an "interesting" identifier
   /// that needs a full IdentifierInfo structure written into the hash
@@ -2691,7 +2691,7 @@ class ASTIdentifierTableTrait {
       return false;
 
     if (Macro || (Macro = PP.getMacroInfoHistory(II)))
-      return !Macro->isBuiltinMacro() && (!IsModule || Macro->isPublic());
+      return !Macro->isBuiltinMacro() && (!IsPCModule || Macro->isPublic());
 
     return false;
   }
@@ -2704,8 +2704,8 @@ public:
   typedef data_type data_type_ref;
 
   ASTIdentifierTableTrait(ASTWriter &Writer, Preprocessor &PP, 
-                          IdentifierResolver &IdResolver, bool IsModule)
-    : Writer(Writer), PP(PP), IdResolver(IdResolver), IsModule(IsModule) { }
+                          IdentifierResolver &IdResolver, bool IsPCModule)
+    : Writer(Writer), PP(PP), IdResolver(IdResolver), IsPCModule(IsPCModule) { }
 
   static unsigned ComputeHash(const IdentifierInfo* II) {
     return llvm::HashString(II->getName());
@@ -2803,14 +2803,14 @@ public:
 /// that maps identifier IDs to locations within the blob.
 void ASTWriter::WriteIdentifierTable(Preprocessor &PP, 
                                      IdentifierResolver &IdResolver,
-                                     bool IsModule) {
+                                     bool IsPCModule) {
   using namespace llvm;
 
   // Create and write out the blob that contains the identifier
   // strings.
   {
     OnDiskChainedHashTableGenerator<ASTIdentifierTableTrait> Generator;
-    ASTIdentifierTableTrait Trait(*this, PP, IdResolver, IsModule);
+    ASTIdentifierTableTrait Trait(*this, PP, IdResolver, IsPCModule);
 
     // Look for any identifiers that were named while processing the
     // headers, but are otherwise not needed. We add these to the hash
@@ -2839,7 +2839,7 @@ void ASTWriter::WriteIdentifierTable(Preprocessor &PP,
     SmallString<4096> IdentifierTable;
     uint32_t BucketOffset;
     {
-      ASTIdentifierTableTrait Trait(*this, PP, IdResolver, IsModule);
+      ASTIdentifierTableTrait Trait(*this, PP, IdResolver, IsPCModule);
       llvm::raw_svector_ostream Out(IdentifierTable);
       // Make sure that no bucket is at offset 0
       lfort::io::Emit32(Out, 0);
@@ -3345,7 +3345,7 @@ void ASTWriter::SetSelectorOffset(Selector Sel, uint32_t Offset) {
 }
 
 ASTWriter::ASTWriter(llvm::BitstreamWriter &Stream)
-  : Stream(Stream), Context(0), PP(0), Chain(0), WritingModule(0),
+  : Stream(Stream), Context(0), PP(0), Chain(0), WritingPCModule(0),
     WritingAST(false), DoneWritingDeclsAndTypes(false),
     ASTHasCompilerErrors(false),
     FirstDeclID(NUM_PREDEF_DECL_IDS), NextDeclID(FirstDeclID),
@@ -3377,7 +3377,7 @@ ASTWriter::~ASTWriter() {
 
 void ASTWriter::WriteAST(Sema &SemaRef,
                          const std::string &OutputFile,
-                         Module *WritingModule, StringRef isysroot,
+                         PCModule *WritingPCModule, StringRef isysroot,
                          bool hasErrors) {
   WritingAST = true;
   
@@ -3393,11 +3393,11 @@ void ASTWriter::WriteAST(Sema &SemaRef,
 
   Context = &SemaRef.Context;
   PP = &SemaRef.PP;
-  this->WritingModule = WritingModule;
-  WriteASTCore(SemaRef, isysroot, OutputFile, WritingModule);
+  this->WritingPCModule = WritingPCModule;
+  WriteASTCore(SemaRef, isysroot, OutputFile, WritingPCModule);
   Context = 0;
   PP = 0;
-  this->WritingModule = 0;
+  this->WritingPCModule = 0;
   
   WritingAST = false;
 }
@@ -3414,7 +3414,7 @@ static void AddLazyVectorDecls(ASTWriter &Writer, Vector &Vec,
 void ASTWriter::WriteASTCore(Sema &SemaRef,
                              StringRef isysroot,
                              const std::string &OutputFile, 
-                             Module *WritingModule) {
+                             PCModule *WritingPCModule) {
   using namespace llvm;
 
   // Make sure that the AST reader knows to finalize itself.
@@ -3448,7 +3448,7 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
     // declarations) for builtins. We don't need to do this when we're
     // emitting chained PCH files, because all of the builtins will be
     // in the original PCH file.
-    // FIXME: Modules won't like this at all.
+    // FIXME: PCModules won't like this at all.
     IdentifierTable &Table = PP.getIdentifierTable();
     SmallVector<const char *, 32> BuiltinNames;
     Context.BuiltinInfo.GetBuiltinNames(BuiltinNames,
@@ -3679,12 +3679,12 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
     llvm::BitCodeAbbrev *Abbrev = new BitCodeAbbrev();
     Abbrev->Add(BitCodeAbbrevOp(MODULE_OFFSET_MAP));
     Abbrev->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Blob));
-    unsigned ModuleOffsetMapAbbrev = Stream.EmitAbbrev(Abbrev);
+    unsigned PCModuleOffsetMapAbbrev = Stream.EmitAbbrev(Abbrev);
     SmallString<2048> Buffer;
     {
       llvm::raw_svector_ostream Out(Buffer);
-      for (ModuleManager::ModuleConstIterator M = Chain->ModuleMgr.begin(),
-                                           MEnd = Chain->ModuleMgr.end();
+      for (PCModuleManager::PCModuleConstIterator M = Chain->PCModuleMgr.begin(),
+                                           MEnd = Chain->PCModuleMgr.end();
            M != MEnd; ++M) {
         StringRef FileName = (*M)->FileName;
         io::Emit16(Out, FileName.size());
@@ -3701,14 +3701,14 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
     }
     Record.clear();
     Record.push_back(MODULE_OFFSET_MAP);
-    Stream.EmitRecordWithBlob(ModuleOffsetMapAbbrev, Record,
+    Stream.EmitRecordWithBlob(PCModuleOffsetMapAbbrev, Record,
                               Buffer.data(), Buffer.size());
   }
-  WritePreprocessor(PP, WritingModule != 0);
+  WritePreprocessor(PP, WritingPCModule != 0);
   WriteHeaderSearch(PP.getHeaderSearchInfo(), isysroot);
   WriteSelectors(SemaRef);
   WriteReferencedSelectorsPool(SemaRef);
-  WriteIdentifierTable(PP, SemaRef.IdResolver, WritingModule != 0);
+  WriteIdentifierTable(PP, SemaRef.IdResolver, WritingPCModule != 0);
   WriteFPPragmaOptions(SemaRef.getFPOptions());
   WriteOpenCLExtensions(SemaRef);
 
@@ -3718,8 +3718,8 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
   WriteCXXBaseSpecifiersOffsets();
   
   // If we're emitting a module, write out the submodule information.  
-  if (WritingModule)
-    WriteSubmodules(WritingModule);
+  if (WritingPCModule)
+    WriteSubmodules(WritingPCModule);
 
   Stream.EmitRecord(SPECIAL_TYPES, SpecialTypes);
 
@@ -3784,25 +3784,25 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
        I != E; ++I)
     WriteDeclContextVisibleUpdate(*I);
 
-  if (!WritingModule) {
+  if (!WritingPCModule) {
     // Write the submodules that were imported, if any.
-    RecordData ImportedModules;
+    RecordData ImportedPCModules;
     for (ASTContext::import_iterator I = Context.local_import_begin(),
                                   IEnd = Context.local_import_end();
          I != IEnd; ++I) {
-      assert(SubmoduleIDs.find(I->getImportedModule()) != SubmoduleIDs.end());
-      ImportedModules.push_back(SubmoduleIDs[I->getImportedModule()]);
+      assert(SubmoduleIDs.find(I->getImportedPCModule()) != SubmoduleIDs.end());
+      ImportedPCModules.push_back(SubmoduleIDs[I->getImportedPCModule()]);
     }
-    if (!ImportedModules.empty()) {
+    if (!ImportedPCModules.empty()) {
       // Sort module IDs.
-      llvm::array_pod_sort(ImportedModules.begin(), ImportedModules.end());
+      llvm::array_pod_sort(ImportedPCModules.begin(), ImportedPCModules.end());
       
       // Unique module IDs.
-      ImportedModules.erase(std::unique(ImportedModules.begin(), 
-                                        ImportedModules.end()),
-                            ImportedModules.end());
+      ImportedPCModules.erase(std::unique(ImportedPCModules.begin(), 
+                                        ImportedPCModules.end()),
+                            ImportedPCModules.end());
       
-      Stream.EmitRecord(IMPORTED_MODULES, ImportedModules);
+      Stream.EmitRecord(IMPORTED_MODULES, ImportedPCModules);
     }
   }
 
@@ -4719,7 +4719,7 @@ void ASTWriter::MacroDefinitionRead(serialization::PreprocessedEntityID ID,
   MacroDefinitions[MD] = ID;
 }
 
-void ASTWriter::ModuleRead(serialization::SubmoduleID ID, Module *Mod) {
+void ASTWriter::PCModuleRead(serialization::SubmoduleID ID, PCModule *Mod) {
   assert(SubmoduleIDs.find(Mod) == SubmoduleIDs.end());
   SubmoduleIDs[Mod] = ID;
 }

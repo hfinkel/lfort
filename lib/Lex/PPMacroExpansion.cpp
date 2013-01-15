@@ -199,12 +199,12 @@ void Preprocessor::RegisterBuiltinMacros() {
   Ident__has_include_next = RegisterBuiltinMacro(*this, "__has_include_next");
   Ident__has_warning      = RegisterBuiltinMacro(*this, "__has_warning");
 
-  // Modules.
-  if (LangOpts.Modules) {
+  // PCModules.
+  if (LangOpts.PCModules) {
     Ident__building_module  = RegisterBuiltinMacro(*this, "__building_module");
 
     // __MODULE__
-    if (!LangOpts.CurrentModule.empty())
+    if (!LangOpts.CurrentPCModule.empty())
       Ident__MODULE__ = RegisterBuiltinMacro(*this, "__MODULE__");
     else
       Ident__MODULE__ = 0;
@@ -816,7 +816,7 @@ static bool HasFeature(const Preprocessor &PP, const IdentifierInfo *II) {
            .Case("objc_default_synthesize_properties", LangOpts.ObjC2)
            .Case("objc_fixed_enum", LangOpts.ObjC2)
            .Case("objc_instancetype", LangOpts.ObjC2)
-           .Case("objc_modules", LangOpts.ObjC2 && LangOpts.Modules)
+           .Case("objc_modules", LangOpts.ObjC2 && LangOpts.PCModules)
            .Case("objc_nonfragile_abi", LangOpts.ObjCRuntime.isNonFragile())
            .Case("objc_property_explicit_atomic", true) // Does lfort support explicit "atomic" keyword?
            .Case("objc_weak_class", LangOpts.ObjCRuntime.hasWeakClassImport())
@@ -895,7 +895,7 @@ static bool HasFeature(const Preprocessor &PP, const IdentifierInfo *II) {
            .Case("is_trivially_constructible", LangOpts.CPlusPlus)
            .Case("is_trivially_copyable", LangOpts.CPlusPlus)
            .Case("is_union", LangOpts.CPlusPlus)
-           .Case("modules", LangOpts.Modules)
+           .Case("modules", LangOpts.PCModules)
            .Case("tls", PP.getTargetInfo().isTLSSupported())
            .Case("underlying_type", LangOpts.CPlusPlus)
            .Default(false);
@@ -1082,7 +1082,7 @@ static bool EvaluateHasIncludeNext(Token &Tok,
 
 /// \brief Process __building_module(identifier) expression.
 /// \returns true if we are building the named module, false otherwise.
-static bool EvaluateBuildingModule(Token &Tok,
+static bool EvaluateBuildingPCModule(Token &Tok,
                                    IdentifierInfo *II, Preprocessor &PP) {
   // Get '('.
   PP.LexNonComment(Tok);
@@ -1106,7 +1106,7 @@ static bool EvaluateBuildingModule(Token &Tok,
   }
 
   bool Result
-    = Tok.getIdentifierInfo()->getName() == PP.getLangOpts().CurrentModule;
+    = Tok.getIdentifierInfo()->getName() == PP.getLangOpts().CurrentPCModule;
 
   // Get ')'.
   PP.LexNonComment(Tok);
@@ -1361,14 +1361,14 @@ void Preprocessor::ExpandBuiltinMacro(Token &Tok) {
     // The argument to this builtin should be an identifier. The
     // builtin evaluates to 1 when that identifier names the module we are
     // currently building.
-    OS << (int)EvaluateBuildingModule(Tok, II, *this);
+    OS << (int)EvaluateBuildingPCModule(Tok, II, *this);
     Tok.setKind(tok::numeric_constant);
   } else if (II == Ident__MODULE__) {
     // The current module as an identifier.
-    OS << getLangOpts().CurrentModule;
-    IdentifierInfo *ModuleII = getIdentifierInfo(getLangOpts().CurrentModule);
-    Tok.setIdentifierInfo(ModuleII);
-    Tok.setKind(ModuleII->getTokenID());
+    OS << getLangOpts().CurrentPCModule;
+    IdentifierInfo *PCModuleII = getIdentifierInfo(getLangOpts().CurrentPCModule);
+    Tok.setIdentifierInfo(PCModuleII);
+    Tok.setKind(PCModuleII->getTokenID());
   } else {
     llvm_unreachable("Unknown identifier!");
   }

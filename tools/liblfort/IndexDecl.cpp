@@ -306,7 +306,7 @@ public:
   }
 
   bool VisitImportDecl(ImportDecl *D) {
-    IndexCtx.importedModule(D);
+    IndexCtx.importedPCModule(D);
     return true;
   }
 };

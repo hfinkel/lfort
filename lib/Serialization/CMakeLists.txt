@@ -9,8 +9,8 @@ add_lfort_library(lfortSerialization
   ASTWriterDecl.cpp
   ASTWriterStmt.cpp
   GeneratePCH.cpp
-  Module.cpp
-  ModuleManager.cpp
+  PCModule.cpp
+  PCModuleManager.cpp
   )
 
 add_dependencies(lfortSerialization

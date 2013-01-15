@@ -531,7 +531,7 @@ void MallocChecker::checkPostObjCMessage(const ObjCMethodCall &Call,
 ProgramStateRef MallocChecker::MallocMemReturnsAttr(CheckerContext &C,
                                                     const CallExpr *CE,
                                                     const OwnershipAttr* Att) {
-  if (Att->getModule() != "malloc")
+  if (Att->getPCModule() != "malloc")
     return 0;
 
   OwnershipAttr::args_iterator I = Att->args_begin(), E = Att->args_end();
@@ -603,7 +603,7 @@ ProgramStateRef MallocChecker::MallocUpdateRefState(CheckerContext &C,
 ProgramStateRef MallocChecker::FreeMemAttr(CheckerContext &C,
                                            const CallExpr *CE,
                                            const OwnershipAttr* Att) const {
-  if (Att->getModule() != "malloc")
+  if (Att->getPCModule() != "malloc")
     return 0;
 
   ProgramStateRef State = C.getState();

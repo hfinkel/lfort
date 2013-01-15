@@ -94,10 +94,10 @@ protected:
   virtual void emitIncludeLocation(SourceLocation Loc, PresumedLoc PLoc,
                                    const SourceManager &SM) = 0;
   virtual void emitImportLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                  StringRef ModuleName,
+                                  StringRef PCModuleName,
                                   const SourceManager &SM) = 0;
-  virtual void emitBuildingModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                          StringRef ModuleName,
+  virtual void emitBuildingPCModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
+                                          StringRef PCModuleName,
                                           const SourceManager &SM) = 0;
 
   virtual void beginDiagnostic(DiagOrStoredDiag D,
@@ -111,9 +111,9 @@ private:
                         DiagnosticsEngine::Level Level, const SourceManager &SM);
   void emitIncludeStackRecursively(SourceLocation Loc, const SourceManager &SM);
   void emitImportStack(SourceLocation Loc, const SourceManager &SM);
-  void emitImportStackRecursively(SourceLocation Loc, StringRef ModuleName,
+  void emitImportStackRecursively(SourceLocation Loc, StringRef PCModuleName,
                                   const SourceManager &SM);
-  void emitModuleBuildStack(const SourceManager &SM);
+  void emitPCModuleBuildStack(const SourceManager &SM);
   void emitCaret(SourceLocation Loc, DiagnosticsEngine::Level Level,
                  ArrayRef<CharSourceRange> Ranges, ArrayRef<FixItHint> Hints,
                  const SourceManager &SM);
@@ -165,11 +165,11 @@ public:
                                    const SourceManager &SM);
 
   virtual void emitImportLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                  StringRef ModuleName,
+                                  StringRef PCModuleName,
                                   const SourceManager &SM);
 
-  virtual void emitBuildingModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
-                                          StringRef ModuleName,
+  virtual void emitBuildingPCModuleLocation(SourceLocation Loc, PresumedLoc PLoc,
+                                          StringRef PCModuleName,
                                           const SourceManager &SM);
 
   virtual void emitNote(SourceLocation Loc, StringRef Message,

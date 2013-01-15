@@ -10376,7 +10376,7 @@ Decl *Sema::ActOnTemplatedFriendTag(Scope *S, SourceLocation FriendLoc,
       return CheckClassTemplate(S, TagSpec, TUK_Friend, TagLoc,
                                 SS, Name, NameLoc, Attr,
                                 TemplateParams, AS_public,
-                                /*ModulePrivateLoc=*/SourceLocation(),
+                                /*PCModulePrivateLoc=*/SourceLocation(),
                                 TempParamLists.size() - 1,
                                 TempParamLists.data()).take();
     } else {
@@ -10408,7 +10408,7 @@ Decl *Sema::ActOnTemplatedFriendTag(Scope *S, SourceLocation FriendLoc,
       bool IsDependent = false;
       return ActOnTag(S, TagSpec, TUK_Friend, TagLoc, SS, Name, NameLoc,
                       Attr, AS_public, 
-                      /*ModulePrivateLoc=*/SourceLocation(),
+                      /*PCModulePrivateLoc=*/SourceLocation(),
                       MultiTemplateParamsArg(), Owned, IsDependent, 
                       /*ScopedEnumKWLoc=*/SourceLocation(),
                       /*ScopedEnumUsesClassTag=*/false,

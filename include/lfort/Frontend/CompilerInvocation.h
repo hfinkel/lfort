@@ -156,7 +156,7 @@ public:
   
   /// \brief Retrieve a module hash string that is suitable for uniquely 
   /// identifying the conditions under which the module was built.
-  std::string getModuleHash() const;
+  std::string getPCModuleHash() const;
   
   /// @}
   /// @name Option Subgroups

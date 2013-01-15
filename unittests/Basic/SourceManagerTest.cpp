@@ -16,7 +16,7 @@
 #include "lfort/Basic/TargetOptions.h"
 #include "lfort/Lex/HeaderSearch.h"
 #include "lfort/Lex/HeaderSearchOptions.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Lex/Preprocessor.h"
 #include "lfort/Lex/PreprocessorOptions.h"
 #include "llvm/ADT/SmallString.h"
@@ -51,12 +51,12 @@ protected:
   IntrusiveRefCntPtr<TargetInfo> Target;
 };
 
-class VoidModuleLoader : public ModuleLoader {
-  virtual ModuleLoadResult loadModule(SourceLocation ImportLoc, 
-                                      ModuleIdPath Path,
-                                      Module::NameVisibilityKind Visibility,
+class VoidPCModuleLoader : public PCModuleLoader {
+  virtual PCModuleLoadResult loadPCModule(SourceLocation ImportLoc, 
+                                      PCModuleIdPath Path,
+                                      PCModule::NameVisibilityKind Visibility,
                                       bool IsInclusionDirective) {
-    return ModuleLoadResult();
+    return PCModuleLoadResult();
   }
 };
 
@@ -67,7 +67,7 @@ TEST_F(SourceManagerTest, isBeforeInProgram) {
   MemoryBuffer *buf = MemoryBuffer::getMemBuffer(source);
   FileID mainFileID = SourceMgr.createMainFileIDForMemBuffer(buf);
 
-  VoidModuleLoader ModLoader;
+  VoidPCModuleLoader ModLoader;
   HeaderSearch HeaderInfo(new HeaderSearchOptions, FileMgr, Diags, LangOpts, 
                           &*Target);
   Preprocessor PP(new PreprocessorOptions(), Diags, LangOpts, Target.getPtr(),
@@ -182,7 +182,7 @@ TEST_F(SourceManagerTest, getMacroArgExpandedLocation) {
                                                  headerBuf->getBufferSize(), 0);
   SourceMgr.overrideFileContents(headerFile, headerBuf);
 
-  VoidModuleLoader ModLoader;
+  VoidPCModuleLoader ModLoader;
   HeaderSearch HeaderInfo(new HeaderSearchOptions, FileMgr, Diags, LangOpts, 
                           &*Target);
   Preprocessor PP(new PreprocessorOptions(), Diags, LangOpts, Target.getPtr(),
@@ -279,7 +279,7 @@ TEST_F(SourceManagerTest, isBeforeInProgramWithMacroInInclude) {
                                                  headerBuf->getBufferSize(), 0);
   SourceMgr.overrideFileContents(headerFile, headerBuf);
 
-  VoidModuleLoader ModLoader;
+  VoidPCModuleLoader ModLoader;
   HeaderSearch HeaderInfo(new HeaderSearchOptions, FileMgr, Diags, LangOpts, 
                           &*Target);
   Preprocessor PP(new PreprocessorOptions(), Diags, LangOpts, Target.getPtr(),

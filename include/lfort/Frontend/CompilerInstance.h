@@ -13,7 +13,7 @@
 #include "lfort/Basic/Diagnostic.h"
 #include "lfort/Basic/SourceManager.h"
 #include "lfort/Frontend/CompilerInvocation.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -40,7 +40,7 @@ class ExternalASTSource;
 class FileEntry;
 class FileManager;
 class FrontendAction;
-class Module;
+class PCModule;
 class Preprocessor;
 class Sema;
 class SourceManager;
@@ -64,7 +64,7 @@ class TargetInfo;
 /// in to the compiler instance for everything. When possible, utility functions
 /// come in two forms; a short form that reuses the CompilerInstance objects,
 /// and a long form that takes explicit instances of any required objects.
-class CompilerInstance : public ModuleLoader {
+class CompilerInstance : public PCModuleLoader {
   /// The options used in this compiler instance.
   IntrusiveRefCntPtr<CompilerInvocation> Invocation;
 
@@ -99,19 +99,19 @@ class CompilerInstance : public ModuleLoader {
   OwningPtr<llvm::Timer> FrontendTimer;
 
   /// \brief Non-owning reference to the ASTReader, if one exists.
-  ASTReader *ModuleManager;
+  ASTReader *PCModuleManager;
 
   /// \brief The set of top-level modules that has already been loaded,
   /// along with the module map
-  llvm::DenseMap<const IdentifierInfo *, Module *> KnownModules;
+  llvm::DenseMap<const IdentifierInfo *, PCModule *> KnownPCModules;
   
   /// \brief The location of the module-import keyword for the last module
   /// import. 
-  SourceLocation LastModuleImportLoc;
+  SourceLocation LastPCModuleImportLoc;
   
   /// \brief The result of the last module import.
   ///
-  ModuleLoadResult LastModuleImportResult;
+  PCModuleLoadResult LastPCModuleImportResult;
   
   /// \brief Holds information about the output file.
   ///
@@ -407,10 +407,10 @@ public:
   Sema *takeSema() { return TheSema.take(); }
   
   /// }
-  /// @name Module Management
+  /// @name PCModule Management
   /// {
 
-  ASTReader *getModuleManager() const { return ModuleManager; }
+  ASTReader *getPCModuleManager() const { return PCModuleManager; }
 
   /// }
   /// @name Code Completion
@@ -645,9 +645,9 @@ public:
 
   /// }
   
-  virtual ModuleLoadResult loadModule(SourceLocation ImportLoc,
-                                      ModuleIdPath Path,
-                                      Module::NameVisibilityKind Visibility,
+  virtual PCModuleLoadResult loadPCModule(SourceLocation ImportLoc,
+                                      PCModuleIdPath Path,
+                                      PCModule::NameVisibilityKind Visibility,
                                       bool IsInclusionDirective);
 };
 

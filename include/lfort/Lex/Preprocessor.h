@@ -54,7 +54,7 @@ class PPCallbacks;
 class CodeCompletionHandler;
 class DirectoryLookup;
 class PreprocessingRecord;
-class ModuleLoader;
+class PCModuleLoader;
 class PreprocessorOptions;
 
 /// \brief Stores token information for comparing actual tokens with
@@ -92,7 +92,7 @@ class Preprocessor : public RefCountedBase<Preprocessor> {
   SourceManager     &SourceMgr;
   ScratchBuffer     *ScratchBuf;
   HeaderSearch      &HeaderInfo;
-  ModuleLoader      &TheModuleLoader;
+  PCModuleLoader      &ThePCModuleLoader;
 
   /// \brief External source of macros.
   ExternalPreprocessorSource *ExternalSource;
@@ -212,15 +212,15 @@ class Preprocessor : public RefCountedBase<Preprocessor> {
 
   /// \brief The source location of the 'import' contextual keyword we just 
   /// lexed, if any.
-  SourceLocation ModuleImportLoc;
+  SourceLocation PCModuleImportLoc;
 
   /// \brief The module import path that we're currently processing.
   llvm::SmallVector<std::pair<IdentifierInfo *, SourceLocation>, 2> 
-    ModuleImportPath;
+    PCModuleImportPath;
   
   /// \brief Whether the module import expectes an identifier next. Otherwise,
   /// it expects a '.' or ';'.
-  bool ModuleImportExpectsIdentifier;
+  bool PCModuleImportExpectsIdentifier;
   
   /// \brief The source location of the currently-active
   /// #pragma lfort arc_cf_code_audited begin.
@@ -265,7 +265,7 @@ class Preprocessor : public RefCountedBase<Preprocessor> {
     CLK_PTHLexer,
     CLK_TokenLexer,
     CLK_CachingLexer,
-    CLK_LexAfterModuleImport
+    CLK_LexAfterPCModuleImport
   } CurLexerKind;
 
   /// IncludeMacroStack - This keeps track of the stack of files currently
@@ -400,7 +400,7 @@ public:
                DiagnosticsEngine &diags, LangOptions &opts,
                const TargetInfo *target,
                SourceManager &SM, HeaderSearch &Headers,
-               ModuleLoader &TheModuleLoader,
+               PCModuleLoader &ThePCModuleLoader,
                IdentifierInfoLookup *IILookup = 0,
                bool OwnsHeaderSearch = false,
                bool DelayInitialization = false,
@@ -445,7 +445,7 @@ public:
   }
 
   /// \brief Retrieve the module loader associated with this preprocessor.
-  ModuleLoader &getModuleLoader() const { return TheModuleLoader; }
+  PCModuleLoader &getPCModuleLoader() const { return ThePCModuleLoader; }
 
   /// SetCommentRetentionState - Control whether or not the preprocessor retains
   /// comments in output.
@@ -690,11 +690,11 @@ public:
     case CLK_PTHLexer: CurPTHLexer->Lex(Result); break;
     case CLK_TokenLexer: CurTokenLexer->Lex(Result); break;
     case CLK_CachingLexer: CachingLex(Result); break;
-    case CLK_LexAfterModuleImport: LexAfterModuleImport(Result); break;
+    case CLK_LexAfterPCModuleImport: LexAfterPCModuleImport(Result); break;
     }
   }
 
-  void LexAfterModuleImport(Token &Result);
+  void LexAfterPCModuleImport(Token &Result);
 
   /// \brief Lex a string literal, which may be the concatenation of multiple
   /// string literals and may even come from macro expansion.
@@ -1157,7 +1157,7 @@ public:
   void setCounterValue(unsigned V) { CounterValue = V; }
 
   /// \brief Retrieves the module that we're currently building, if any.
-  Module *getCurrentModule();
+  PCModule *getCurrentPCModule();
   
   /// \brief Allocate a new MacroInfo object with the provided SourceLocation.
   MacroInfo *AllocateMacroInfo(SourceLocation L);
@@ -1186,7 +1186,7 @@ public:
                               const DirectoryLookup *&CurDir,
                               SmallVectorImpl<char> *SearchPath,
                               SmallVectorImpl<char> *RelativePath,
-                              Module **SuggestedModule,
+                              PCModule **SuggestedPCModule,
                               bool SkipCache = false);
 
   /// GetCurLookup - The DirectoryLookup structure used to find the current

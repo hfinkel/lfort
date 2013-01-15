@@ -1987,17 +1987,17 @@ static int inspect_cursor_at(int argc, const char **argv) {
         }
 
         {
-          CXModule mod = lfort_Cursor_getModule(Cursor);
+          CXPCModule mod = lfort_Cursor_getPCModule(Cursor);
           CXString name;
           unsigned i, numHeaders;
           if (mod) {
-            name = lfort_Module_getFullName(mod);
-            numHeaders = lfort_Module_getNumTopLevelHeaders(mod);
-            printf(" ModuleName=%s Headers(%d):",
+            name = lfort_PCModule_getFullName(mod);
+            numHeaders = lfort_PCModule_getNumTopLevelHeaders(mod);
+            printf(" PCModuleName=%s Headers(%d):",
                    lfort_getCString(name), numHeaders);
             lfort_disposeString(name);
             for (i = 0; i < numHeaders; ++i) {
-              CXFile file = lfort_Module_getTopLevelHeader(mod, i);
+              CXFile file = lfort_PCModule_getTopLevelHeader(mod, i);
               CXString filename = lfort_getFileName(file);
               printf("\n%s", lfort_getCString(filename));
               lfort_disposeString(filename);
@@ -2430,8 +2430,8 @@ static CXIdxClientFile index_ppIncludedFile(CXClientData client_data,
   printf(" | name: \"%s\"", info->filename);
   printf(" | hash loc: ");
   printCXIndexLoc(info->hashLoc, client_data);
-  printf(" | isImport: %d | isAngled: %d | isModule: %d\n",
-         info->isImport, info->isAngled, info->isModuleImport);
+  printf(" | isImport: %d | isAngled: %d | isPCModule: %d\n",
+         info->isImport, info->isAngled, info->isPCModuleImport);
 
   return (CXIdxClientFile)info->file;
 }
@@ -2451,7 +2451,7 @@ static CXIdxClientFile index_importedASTFile(CXClientData client_data,
   printf("[importedASTFile]: ");
   printCXIndexFile((CXIdxClientFile)info->file);
   if (info->module) {
-    CXString name = lfort_Module_getFullName(info->module);
+    CXString name = lfort_PCModule_getFullName(info->module);
     printf(" | loc: ");
     printCXIndexLoc(info->loc, client_data);
     printf(" | name: \"%s\"", lfort_getCString(name));

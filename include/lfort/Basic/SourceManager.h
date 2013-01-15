@@ -434,7 +434,7 @@ public:
   /// \brief Retrieve the module import location and name for the given ID, if
   /// in fact it was loaded from a module (rather than, say, a precompiled
   /// header).
-  virtual std::pair<SourceLocation, StringRef> getModuleImportLoc(int ID) = 0;
+  virtual std::pair<SourceLocation, StringRef> getPCModuleImportLoc(int ID) = 0;
 };
 
 
@@ -517,7 +517,7 @@ public:
 /// \brief The stack used when building modules on demand, which is used
 /// to provide a link between the source managers of the different compiler
 /// instances.
-typedef llvm::ArrayRef<std::pair<std::string, FullSourceLoc> > ModuleBuildStack;
+typedef llvm::ArrayRef<std::pair<std::string, FullSourceLoc> > PCModuleBuildStack;
 
 /// \brief This class handles loading and caching of source files into memory.
 ///
@@ -663,7 +663,7 @@ class SourceManager : public RefCountedBase<SourceManager> {
   /// There is no way to set this value from the command line. If we ever need
   /// to do so (e.g., if on-demand module construction moves out-of-process),
   /// we can add a cc1-level option to do so.
-  SmallVector<std::pair<std::string, FullSourceLoc>, 2> StoredModuleBuildStack;
+  SmallVector<std::pair<std::string, FullSourceLoc>, 2> StoredPCModuleBuildStack;
 
   // SourceManager doesn't support copy construction.
   explicit SourceManager(const SourceManager&) LLVM_DELETED_FUNCTION;
@@ -690,19 +690,19 @@ public:
   bool userFilesAreVolatile() const { return UserFilesAreVolatile; }
 
   /// \brief Retrieve the module build stack.
-  ModuleBuildStack getModuleBuildStack() const {
-    return StoredModuleBuildStack;
+  PCModuleBuildStack getPCModuleBuildStack() const {
+    return StoredPCModuleBuildStack;
   }
 
   /// \brief Set the module build stack.
-  void setModuleBuildStack(ModuleBuildStack stack) {
-    StoredModuleBuildStack.clear();
-    StoredModuleBuildStack.append(stack.begin(), stack.end());
+  void setPCModuleBuildStack(PCModuleBuildStack stack) {
+    StoredPCModuleBuildStack.clear();
+    StoredPCModuleBuildStack.append(stack.begin(), stack.end());
   }
 
   /// \brief Push an entry to the module build stack.
-  void pushModuleBuildStack(StringRef moduleName, FullSourceLoc importLoc) {
-    StoredModuleBuildStack.push_back(std::make_pair(moduleName.str(),importLoc));
+  void pushPCModuleBuildStack(StringRef moduleName, FullSourceLoc importLoc) {
+    StoredPCModuleBuildStack.push_back(std::make_pair(moduleName.str(),importLoc));
   }
 
   /// \brief Create the FileID for a memory buffer that will represent the
@@ -999,7 +999,7 @@ public:
   // located within a module, or an invalid location if the source location
   // is within the current translation unit.
   std::pair<SourceLocation, StringRef>
-  getModuleImportLoc(SourceLocation Loc) const {
+  getPCModuleImportLoc(SourceLocation Loc) const {
     FileID FID = getFileID(Loc);
 
     // Positive file IDs are in the current translation unit, and -1 is a
@@ -1007,7 +1007,7 @@ public:
     if (FID.ID >= -1)
       return std::make_pair(SourceLocation(), "");
 
-    return ExternalSLocEntries->getModuleImportLoc(FID.ID);
+    return ExternalSLocEntries->getPCModuleImportLoc(FID.ID);
   }
 
   /// \brief Given a SourceLocation object \p Loc, return the expansion
@@ -1452,23 +1452,23 @@ public:
   std::pair<int, unsigned>
   AllocateLoadedSLocEntries(unsigned NumSLocEntries, unsigned TotalSize);
 
-  /// \brief Returns true if \p Loc came from a PCH/Module.
+  /// \brief Returns true if \p Loc came from a PCH/PCModule.
   bool isLoadedSourceLocation(SourceLocation Loc) const {
     return Loc.getOffset() >= CurrentLoadedOffset;
   }
 
-  /// \brief Returns true if \p Loc did not come from a PCH/Module.
+  /// \brief Returns true if \p Loc did not come from a PCH/PCModule.
   bool isLocalSourceLocation(SourceLocation Loc) const {
     return Loc.getOffset() < NextLocalOffset;
   }
 
-  /// \brief Returns true if \p FID came from a PCH/Module.
+  /// \brief Returns true if \p FID came from a PCH/PCModule.
   bool isLoadedFileID(FileID FID) const {
     assert(FID.ID != -1 && "Using FileID sentinel value");
     return FID.ID < 0;
   }
 
-  /// \brief Returns true if \p FID did not come from a PCH/Module.
+  /// \brief Returns true if \p FID did not come from a PCH/PCModule.
   bool isLocalFileID(FileID FID) const {
     return !isLoadedFileID(FID);
   }

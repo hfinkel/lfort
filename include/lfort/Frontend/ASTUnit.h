@@ -22,7 +22,7 @@
 #include "lfort/Basic/SourceManager.h"
 #include "lfort/Basic/TargetOptions.h"
 #include "lfort/Lex/HeaderSearchOptions.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Lex/PreprocessingRecord.h"
 #include "lfort/Sema/CodeCompleteConsumer.h"
 #include "lfort/Sema/Sema.h"
@@ -62,7 +62,7 @@ class ASTDeserializationListener;
 
 /// \brief Utility class for loading a ASTContext from an AST file.
 ///
-class ASTUnit : public ModuleLoader {
+class ASTUnit : public PCModuleLoader {
 private:
   IntrusiveRefCntPtr<LangOptions>         LangOpts;
   IntrusiveRefCntPtr<DiagnosticsEngine>   Diagnostics;
@@ -633,7 +633,7 @@ public:
 
   /// \brief Returns true if the ASTUnit was constructed from a serialized
   /// module file.
-  bool isModuleFile();
+  bool isPCModuleFile();
 
   llvm::MemoryBuffer *getBufferForFile(StringRef Filename,
                                        std::string *ErrorStr = 0);
@@ -830,12 +830,12 @@ public:
   /// \returns True if an error occurred, false otherwise.
   bool serialize(raw_ostream &OS);
   
-  virtual ModuleLoadResult loadModule(SourceLocation ImportLoc,
-                                      ModuleIdPath Path,
-                                      Module::NameVisibilityKind Visibility,
+  virtual PCModuleLoadResult loadPCModule(SourceLocation ImportLoc,
+                                      PCModuleIdPath Path,
+                                      PCModule::NameVisibilityKind Visibility,
                                       bool IsInclusionDirective) {
     // ASTUnit doesn't know how to load modules (not that this matters).
-    return ModuleLoadResult();
+    return PCModuleLoadResult();
   }
 };
 

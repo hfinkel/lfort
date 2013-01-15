@@ -36,7 +36,7 @@
 #include "lfort/Lex/LexDiagnostic.h"
 #include "lfort/Lex/LiteralSupport.h"
 #include "lfort/Lex/MacroInfo.h"
-#include "lfort/Lex/ModuleLoader.h"
+#include "lfort/Lex/PCModuleLoader.h"
 #include "lfort/Lex/Pragma.h"
 #include "lfort/Lex/PreprocessingRecord.h"
 #include "lfort/Lex/PreprocessorOptions.h"
@@ -56,14 +56,14 @@ PPMutationListener::~PPMutationListener() { }
 Preprocessor::Preprocessor(llvm::IntrusiveRefCntPtr<PreprocessorOptions> PPOpts,
                            DiagnosticsEngine &diags, LangOptions &opts,
                            const TargetInfo *target, SourceManager &SM,
-                           HeaderSearch &Headers, ModuleLoader &TheModuleLoader,
+                           HeaderSearch &Headers, PCModuleLoader &ThePCModuleLoader,
                            IdentifierInfoLookup* IILookup,
                            bool OwnsHeaders,
                            bool DelayInitialization,
                            bool IncrProcessing)
   : PPOpts(PPOpts), Diags(&diags), LangOpts(opts), Target(target),
     FileMgr(Headers.getFileMgr()),
-    SourceMgr(SM), HeaderInfo(Headers), TheModuleLoader(TheModuleLoader),
+    SourceMgr(SM), HeaderInfo(Headers), ThePCModuleLoader(ThePCModuleLoader),
     ExternalSource(0), Identifiers(opts, IILookup), 
     IncrementalProcessing(IncrProcessing), CodeComplete(0), 
     CodeCompletionFile(0), CodeCompletionOffset(0), CodeCompletionReached(0),
@@ -441,11 +441,11 @@ void Preprocessor::CreateString(StringRef Str, Token &Tok,
     Tok.setLiteralData(DestPtr);
 }
 
-Module *Preprocessor::getCurrentModule() {
-  if (getLangOpts().CurrentModule.empty())
+PCModule *Preprocessor::getCurrentPCModule() {
+  if (getLangOpts().CurrentPCModule.empty())
     return 0;
   
-  return getHeaderSearchInfo().lookupModule(getLangOpts().CurrentModule);
+  return getHeaderSearchInfo().lookupPCModule(getLangOpts().CurrentPCModule);
 }
 
 //===----------------------------------------------------------------------===//
@@ -640,18 +640,18 @@ void Preprocessor::HandleIdentifier(Token &Identifier) {
   // Note that we do not treat 'import' as a contextual
   // keyword when we're in a caching lexer, because caching lexers only get
   // used in contexts where import declarations are disallowed.
-  if (II.isModulesImport() && !InMacroArgs && !DisableMacroExpansion &&
-      getLangOpts().Modules && CurLexerKind != CLK_CachingLexer) {
-    ModuleImportLoc = Identifier.getLocation();
-    ModuleImportPath.clear();
-    ModuleImportExpectsIdentifier = true;
-    CurLexerKind = CLK_LexAfterModuleImport;
+  if (II.isPCModulesImport() && !InMacroArgs && !DisableMacroExpansion &&
+      getLangOpts().PCModules && CurLexerKind != CLK_CachingLexer) {
+    PCModuleImportLoc = Identifier.getLocation();
+    PCModuleImportPath.clear();
+    PCModuleImportExpectsIdentifier = true;
+    CurLexerKind = CLK_LexAfterPCModuleImport;
   }
 }
 
 /// \brief Lex a token following the 'import' contextual keyword.
 ///
-void Preprocessor::LexAfterModuleImport(Token &Result) {
+void Preprocessor::LexAfterPCModuleImport(Token &Result) {
   // Figure out what kind of lexer we actually have.
   recomputeCurLexerKind();
   
@@ -664,32 +664,32 @@ void Preprocessor::LexAfterModuleImport(Token &Result) {
   //
   // indicates a module import directive. We already saw the 'import' 
   // contextual keyword, so now we're looking for the identifiers.
-  if (ModuleImportExpectsIdentifier && Result.getKind() == tok::identifier) {
+  if (PCModuleImportExpectsIdentifier && Result.getKind() == tok::identifier) {
     // We expected to see an identifier here, and we did; continue handling
     // identifiers.
-    ModuleImportPath.push_back(std::make_pair(Result.getIdentifierInfo(),
+    PCModuleImportPath.push_back(std::make_pair(Result.getIdentifierInfo(),
                                               Result.getLocation()));
-    ModuleImportExpectsIdentifier = false;
-    CurLexerKind = CLK_LexAfterModuleImport;
+    PCModuleImportExpectsIdentifier = false;
+    CurLexerKind = CLK_LexAfterPCModuleImport;
     return;
   }
   
   // If we're expecting a '.' or a ';', and we got a '.', then wait until we
   // see the next identifier.
-  if (!ModuleImportExpectsIdentifier && Result.getKind() == tok::period) {
-    ModuleImportExpectsIdentifier = true;
-    CurLexerKind = CLK_LexAfterModuleImport;
+  if (!PCModuleImportExpectsIdentifier && Result.getKind() == tok::period) {
+    PCModuleImportExpectsIdentifier = true;
+    CurLexerKind = CLK_LexAfterPCModuleImport;
     return;
   }
 
   // If we have a non-empty module path, load the named module.
-  if (!ModuleImportPath.empty()) {
-    Module *Imported = TheModuleLoader.loadModule(ModuleImportLoc,
-                                                  ModuleImportPath,
-                                                  Module::MacrosVisible,
+  if (!PCModuleImportPath.empty()) {
+    PCModule *Imported = ThePCModuleLoader.loadPCModule(PCModuleImportLoc,
+                                                  PCModuleImportPath,
+                                                  PCModule::MacrosVisible,
                                                   /*IsIncludeDirective=*/false);
     if (Callbacks)
-      Callbacks->moduleImport(ModuleImportLoc, ModuleImportPath, Imported);
+      Callbacks->moduleImport(PCModuleImportLoc, PCModuleImportPath, Imported);
   }
 }
 
@@ -762,7 +762,7 @@ bool Preprocessor::HandleComment(Token &result, SourceRange Comment) {
   return true;
 }
 
-ModuleLoader::~ModuleLoader() { }
+PCModuleLoader::~PCModuleLoader() { }
 
 CommentHandler::~CommentHandler() { }
 

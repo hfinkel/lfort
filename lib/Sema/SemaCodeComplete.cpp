@@ -2885,7 +2885,7 @@ CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
       }
 
       case Decl::Import:
-        return CXCursor_ModuleImportDecl;
+        return CXCursor_PCModuleImportDecl;
       
     default:
       if (TagDecl *TD = dyn_cast<TagDecl>(D)) {
@@ -3080,8 +3080,8 @@ static void MaybeAddOverrideCalls(Sema &S, DeclContext *InContext,
   }
 }
 
-void Sema::CodeCompleteModuleImport(SourceLocation ImportLoc, 
-                                    ModuleIdPath Path) {
+void Sema::CodeCompletePCModuleImport(SourceLocation ImportLoc, 
+                                    PCModuleIdPath Path) {
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
                         CodeCompleter->getCodeCompletionPgmInfo(),
@@ -3093,26 +3093,26 @@ void Sema::CodeCompleteModuleImport(SourceLocation ImportLoc,
   typedef CodeCompletionResult Result;
   if (Path.empty()) {
     // Enumerate all top-level modules.
-    llvm::SmallVector<Module *, 8> Modules;
-    PP.getHeaderSearchInfo().collectAllModules(Modules);
-    for (unsigned I = 0, N = Modules.size(); I != N; ++I) {
+    llvm::SmallVector<PCModule *, 8> PCModules;
+    PP.getHeaderSearchInfo().collectAllPCModules(PCModules);
+    for (unsigned I = 0, N = PCModules.size(); I != N; ++I) {
       Builder.AddTypedTextChunk(
-        Builder.getAllocator().CopyString(Modules[I]->Name));
+        Builder.getAllocator().CopyString(PCModules[I]->Name));
       Results.AddResult(Result(Builder.TakeString(),
                                CCP_Declaration, 
                                CXCursor_NotImplemented,
-                               Modules[I]->isAvailable()
+                               PCModules[I]->isAvailable()
                                  ? CXAvailability_Available
                                   : CXAvailability_NotAvailable));
     }
   } else {
     // Load the named module.
-    Module *Mod = PP.getModuleLoader().loadModule(ImportLoc, Path,
-                                                  Module::AllVisible,
+    PCModule *Mod = PP.getPCModuleLoader().loadPCModule(ImportLoc, Path,
+                                                  PCModule::AllVisible,
                                                 /*IsInclusionDirective=*/false);
     // Enumerate submodules.
     if (Mod) {
-      for (Module::submodule_iterator Sub = Mod->submodule_begin(), 
+      for (PCModule::submodule_iterator Sub = Mod->submodule_begin(), 
                                    SubEnd = Mod->submodule_end();
            Sub != SubEnd; ++Sub) {
         

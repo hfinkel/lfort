@@ -219,7 +219,7 @@ void DiagnosticRenderer::emitIncludeStack(SourceLocation Loc,
   if (IncludeLoc.isValid())
     emitIncludeStackRecursively(IncludeLoc, SM);
   else {
-    emitModuleBuildStack(SM);
+    emitPCModuleBuildStack(SM);
     emitImportStack(Loc, SM);
   }
 }
@@ -229,7 +229,7 @@ void DiagnosticRenderer::emitIncludeStack(SourceLocation Loc,
 void DiagnosticRenderer::emitIncludeStackRecursively(SourceLocation Loc,
                                                      const SourceManager &SM) {
   if (Loc.isInvalid()) {
-    emitModuleBuildStack(SM);
+    emitPCModuleBuildStack(SM);
     return;
   }
   
@@ -240,7 +240,7 @@ void DiagnosticRenderer::emitIncludeStackRecursively(SourceLocation Loc,
   // If this source location was imported from a module, print the module
   // import stack rather than the 
   // FIXME: We want submodule granularity here.
-  std::pair<SourceLocation, StringRef> Imported = SM.getModuleImportLoc(Loc);
+  std::pair<SourceLocation, StringRef> Imported = SM.getPCModuleImportLoc(Loc);
   if (Imported.first.isValid()) {
     // This location was imported by a module. Emit the module import stack.
     emitImportStackRecursively(Imported.first, Imported.second, SM);
@@ -258,19 +258,19 @@ void DiagnosticRenderer::emitIncludeStackRecursively(SourceLocation Loc,
 void DiagnosticRenderer::emitImportStack(SourceLocation Loc,
                                          const SourceManager &SM) {
   if (Loc.isInvalid()) {
-    emitModuleBuildStack(SM);
+    emitPCModuleBuildStack(SM);
     return;
   }
 
   std::pair<SourceLocation, StringRef> NextImportLoc
-    = SM.getModuleImportLoc(Loc);
+    = SM.getPCModuleImportLoc(Loc);
   emitImportStackRecursively(NextImportLoc.first, NextImportLoc.second, SM);
 }
 
 /// \brief Helper to recursivly walk up the import stack and print each layer
 /// on the way back down.
 void DiagnosticRenderer::emitImportStackRecursively(SourceLocation Loc,
-                                                    StringRef ModuleName,
+                                                    StringRef PCModuleName,
                                                     const SourceManager &SM) {
   if (Loc.isInvalid()) {
     return;
@@ -282,21 +282,21 @@ void DiagnosticRenderer::emitImportStackRecursively(SourceLocation Loc,
 
   // Emit the other import frames first.
   std::pair<SourceLocation, StringRef> NextImportLoc
-    = SM.getModuleImportLoc(Loc);
+    = SM.getPCModuleImportLoc(Loc);
   emitImportStackRecursively(NextImportLoc.first, NextImportLoc.second, SM);
 
   // Emit the inclusion text/note.
-  emitImportLocation(Loc, PLoc, ModuleName, SM);
+  emitImportLocation(Loc, PLoc, PCModuleName, SM);
 }
 
 /// \brief Emit the module build stack, for cases where a module is (re-)built
 /// on demand.
-void DiagnosticRenderer::emitModuleBuildStack(const SourceManager &SM) {
-  ModuleBuildStack Stack = SM.getModuleBuildStack();
+void DiagnosticRenderer::emitPCModuleBuildStack(const SourceManager &SM) {
+  PCModuleBuildStack Stack = SM.getPCModuleBuildStack();
   for (unsigned I = 0, N = Stack.size(); I != N; ++I) {
     const SourceManager &CurSM = Stack[I].second.getManager();
     SourceLocation CurLoc = Stack[I].second;
-    emitBuildingModuleLocation(CurLoc,
+    emitBuildingPCModuleLocation(CurLoc,
                                CurSM.getPresumedLoc(CurLoc,
                                                     DiagOpts->ShowPresumedLoc),
                                Stack[I].first,
@@ -482,25 +482,25 @@ void DiagnosticNoteRenderer::emitIncludeLocation(SourceLocation Loc,
 
 void DiagnosticNoteRenderer::emitImportLocation(SourceLocation Loc,
                                                 PresumedLoc PLoc,
-                                                StringRef ModuleName,
+                                                StringRef PCModuleName,
                                                 const SourceManager &SM) {
   // Generate a note indicating the include location.
   SmallString<200> MessageStorage;
   llvm::raw_svector_ostream Message(MessageStorage);
-  Message << "in module '" << ModuleName << "' imported from "
+  Message << "in module '" << PCModuleName << "' imported from "
           << PLoc.getFilename() << ':' << PLoc.getLine() << ":";
   emitNote(Loc, Message.str(), &SM);
 }
 
 void
-DiagnosticNoteRenderer::emitBuildingModuleLocation(SourceLocation Loc,
+DiagnosticNoteRenderer::emitBuildingPCModuleLocation(SourceLocation Loc,
                                                    PresumedLoc PLoc,
-                                                   StringRef ModuleName,
+                                                   StringRef PCModuleName,
                                                    const SourceManager &SM) {
   // Generate a note indicating the include location.
   SmallString<200> MessageStorage;
   llvm::raw_svector_ostream Message(MessageStorage);
-  Message << "while building module '" << ModuleName << "' imported from "
+  Message << "while building module '" << PCModuleName << "' imported from "
           << PLoc.getFilename() << ':' << PLoc.getLine() << ":";
   emitNote(Loc, Message.str(), &SM);
 }

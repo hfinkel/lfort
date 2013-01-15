@@ -16,7 +16,7 @@
 
 namespace lfort {
 
-class Module;
+class PCModule;
   
 //===----------------------------------------------------------------------===//
 // Custom Consumer Actions
@@ -97,15 +97,15 @@ public:
                                           raw_ostream *&OS);
 };
 
-class GenerateModuleAction : public ASTFrontendAction {
-  lfort::Module *Module;
+class GeneratePCModuleAction : public ASTFrontendAction {
+  lfort::PCModule *PCModule;
   
 protected:
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
                                          StringRef InFile);
   
   virtual ProgramKind getProgramKind() { 
-    return PGM_Module;
+    return PGM_PCModule;
   }
   
   virtual bool hasASTFileSupport() const { return false; }

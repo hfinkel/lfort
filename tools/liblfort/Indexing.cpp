@@ -272,7 +272,7 @@ public:
                                   const FileEntry *File,
                                   StringRef SearchPath,
                                   StringRef RelativePath,
-                                  const Module *Imported) {
+                                  const PCModule *Imported) {
     bool isImport = (IncludeTok.is(tok::identifier) &&
             IncludeTok.getIdentifierInfo()->getPPKeywordID() == tok::pp_import);
     IndexCtx.ppIncludedFile(HashLoc, FileName, File, isImport, IsAngled,
@@ -652,7 +652,7 @@ static void lfort_indexSourceFile_Impl(void *UserData) {
     PPOpts.DetailedRecord = true;
   }
 
-  if (!requestedToGetPgm && !CInvok->getLangOpts()->Modules)
+  if (!requestedToGetPgm && !CInvok->getLangOpts()->PCModules)
     PPOpts.DetailedRecord = false;
 
   DiagnosticErrorTrap DiagTrap(*Diags);
@@ -707,20 +707,20 @@ static void indexPreprocessingRecord(ASTUnit &Unit, IndexingContext &IdxCtx) {
   PreprocessingRecord::iterator I, E;
   llvm::tie(I, E) = Unit.getLocalPreprocessingEntities();
 
-  bool isModuleFile = Unit.isModuleFile();
+  bool isPCModuleFile = Unit.isPCModuleFile();
   for (; I != E; ++I) {
     PreprocessedEntity *PPE = *I;
 
     if (InclusionDirective *ID = dyn_cast<InclusionDirective>(PPE)) {
       SourceLocation Loc = ID->getSourceRange().getBegin();
-      // Modules have synthetic main files as input, give an invalid location
+      // PCModules have synthetic main files as input, give an invalid location
       // if the location points to such a file.
-      if (isModuleFile && Unit.isInMainFileID(Loc))
+      if (isPCModuleFile && Unit.isInMainFileID(Loc))
         Loc = SourceLocation();
       IdxCtx.ppIncludedFile(Loc, ID->getFileName(),
                             ID->getFile(),
                             ID->getKind() == InclusionDirective::Import,
-                            !ID->wasInQuotes(), ID->importedModule());
+                            !ID->wasInQuotes(), ID->importedPCModule());
     }
   }
 }

@@ -1,5 +1,5 @@
 ========================================
-Precompiled Header and Modules Internals
+Precompiled Header and PCModules Internals
 ========================================
 
 .. contents::
@@ -56,7 +56,7 @@ A precompiled header implementation improves performance when:
   important on multi-core systems, because PCH file generation serializes the
   build when all compilations require the PCH file to be up-to-date.
 
-Modules, as implemented in LFort, use the same mechanisms as precompiled
+PCModules, as implemented in LFort, use the same mechanisms as precompiled
 headers to save a serialized AST file (one per module) and use those AST
 modules.  From an implementation standpoint, modules are a generalization of
 precompiled headers, lifting a number of restrictions placed on precompiled
@@ -518,10 +518,10 @@ Update records
 
 .. _pchinternals-modules:
 
-Modules
+PCModules
 -------
 
-Modules generalize the chained precompiled header model yet further, from a
+PCModules generalize the chained precompiled header model yet further, from a
 linear chain of precompiled headers to an arbitrary directed acyclic graph
 (DAG) of AST files.  All of the same techniques used to make chained
 precompiled headers work --- ID number, name lookup, update records --- are
@@ -556,7 +556,7 @@ Declaration merging
   is as if one of the headers had been included before the other.
 
 Name Visibility
-  Modules allow certain names that occur during module creation to be "hidden",
+  PCModules allow certain names that occur during module creation to be "hidden",
   so that they are not part of the public interface of the module and are not
   visible to its clients.  The AST reader maintains a "visible" bit on various
   AST nodes (declarations, macros, etc.) to indicate whether that particular

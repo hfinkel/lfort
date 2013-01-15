@@ -25,7 +25,7 @@
 #include "lfort/AST/TypeLoc.h"
 #include "lfort/Basic/Builtins.h"
 #include "lfort/Basic/IdentifierTable.h"
-#include "lfort/Basic/Module.h"
+#include "lfort/Basic/PCModule.h"
 #include "lfort/Basic/Specifiers.h"
 #include "lfort/Basic/TargetInfo.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -3085,7 +3085,7 @@ FileScopeAsmDecl *FileScopeAsmDecl::CreateDeserialized(ASTContext &C,
 
 /// \brief Retrieve the number of module identifiers needed to name the given
 /// module.
-static unsigned getNumModuleIdentifiers(Module *Mod) {
+static unsigned getNumPCModuleIdentifiers(PCModule *Mod) {
   unsigned Result = 1;
   while (Mod->Parent) {
     Mod = Mod->Parent;
@@ -3095,19 +3095,19 @@ static unsigned getNumModuleIdentifiers(Module *Mod) {
 }
 
 ImportDecl::ImportDecl(DeclContext *DC, SourceLocation StartLoc, 
-                       Module *Imported,
+                       PCModule *Imported,
                        ArrayRef<SourceLocation> IdentifierLocs)
   : Decl(Import, DC, StartLoc), ImportedAndComplete(Imported, true),
     NextLocalImport()
 {
-  assert(getNumModuleIdentifiers(Imported) == IdentifierLocs.size());
+  assert(getNumPCModuleIdentifiers(Imported) == IdentifierLocs.size());
   SourceLocation *StoredLocs = reinterpret_cast<SourceLocation *>(this + 1);
   memcpy(StoredLocs, IdentifierLocs.data(), 
          IdentifierLocs.size() * sizeof(SourceLocation));
 }
 
 ImportDecl::ImportDecl(DeclContext *DC, SourceLocation StartLoc, 
-                       Module *Imported, SourceLocation EndLoc)
+                       PCModule *Imported, SourceLocation EndLoc)
   : Decl(Import, DC, StartLoc), ImportedAndComplete(Imported, false),
     NextLocalImport()
 {
@@ -3115,7 +3115,7 @@ ImportDecl::ImportDecl(DeclContext *DC, SourceLocation StartLoc,
 }
 
 ImportDecl *ImportDecl::Create(ASTContext &C, DeclContext *DC, 
-                               SourceLocation StartLoc, Module *Imported,
+                               SourceLocation StartLoc, PCModule *Imported,
                                ArrayRef<SourceLocation> IdentifierLocs) {
   void *Mem = C.Allocate(sizeof(ImportDecl) + 
                          IdentifierLocs.size() * sizeof(SourceLocation));
@@ -3124,7 +3124,7 @@ ImportDecl *ImportDecl::Create(ASTContext &C, DeclContext *DC,
 
 ImportDecl *ImportDecl::CreateImplicit(ASTContext &C, DeclContext *DC, 
                                        SourceLocation StartLoc,
-                                       Module *Imported, 
+                                       PCModule *Imported, 
                                        SourceLocation EndLoc) {
   void *Mem = C.Allocate(sizeof(ImportDecl) + sizeof(SourceLocation));
   ImportDecl *Import = new (Mem) ImportDecl(DC, StartLoc, Imported, EndLoc);
@@ -3147,7 +3147,7 @@ ArrayRef<SourceLocation> ImportDecl::getIdentifierLocs() const {
   const SourceLocation *StoredLocs
     = reinterpret_cast<const SourceLocation *>(this + 1);
   return ArrayRef<SourceLocation>(StoredLocs, 
-                                  getNumModuleIdentifiers(getImportedModule()));
+                                  getNumPCModuleIdentifiers(getImportedPCModule()));
 }
 
 SourceRange ImportDecl::getSourceRange() const {
