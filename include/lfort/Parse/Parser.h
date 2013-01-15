@@ -2212,7 +2212,7 @@ public:
 
   DeclGroupPtrTy ParseProgramUnit(ParsedAttributesWithRange &attrs,
                                           ParsingDeclSpec *DS = 0);
-  DeclGroupPtrTy ParseProgram();
+  DeclGroupPtrTy ParseMainProgram();
   DeclGroupPtrTy ParseSpecificationPart();
   DeclGroupPtrTy ParseUseStmt();
 

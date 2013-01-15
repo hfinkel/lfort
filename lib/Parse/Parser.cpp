@@ -591,7 +591,7 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
 
   switch (Tok.getKind()) {
   case tok::kw_program:
-    return ParseProgram();
+    return ParseMainProgram();
   case tok::kw_subroutine:
     return ParseSubroutine();
   case tok::kw_function:
@@ -612,7 +612,7 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
     ; // empty
   }
 
-  return ParseProgram();
+  return ParseMainProgram();
 }
 
 /* R1101-F08 main-program
@@ -623,7 +623,7 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
  *          end-program-stmt
  */
 Parser::DeclGroupPtrTy
-Parser::ParseProgram() {
+Parser::ParseMainProgram() {
 
   IdentifierInfo *ProgramName = 0;
   SourceLocation ProgramLoc, ProgramNameLoc;
