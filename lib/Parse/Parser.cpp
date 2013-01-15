@@ -649,7 +649,7 @@ Parser::ParseMainProgram() {
   if (ProgramName)
     D.SetIdentifier(ProgramName, ProgramNameLoc);
   else
-    D.SetIdentifier(PP.getIdentifierInfo("program"), ProgramLoc);
+    D.SetIdentifier(PP.getIdentifierInfo("<main-program>"), ProgramLoc);
 
   const char *PrevSpec;
   unsigned DiagID;
