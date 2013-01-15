@@ -556,9 +556,6 @@ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result) {
   }
 
   ParsedAttributesWithRange attrs(AttrFactory);
-  MaybeParseCXX11Attributes(attrs);
-  MaybeParseMicrosoftAttributes(attrs);
-
   Result = ParseProgramUnit(attrs);
   return false;
 }
@@ -604,7 +601,7 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
     if (NextToken().is(tok::kw_data))
       return ParseBlockData();
   case tok::kw_module:
-    if (NextToken().isNot(tok::kw_procedure))
+    if (NextToken().isNotOrAtStartOfNonContinuationLine(tok::kw_procedure))
       return ParseModule();
   case tok::annot_pragma_parser_crash:
     LLVM_BUILTIN_TRAP;
@@ -633,7 +630,7 @@ Parser::ParseMainProgram() {
   if (Tok.is(tok::kw_program)) {
     ProgramLoc = Tok.getLocation();
     ConsumeToken();
-    if (Tok.is(tok::identifier) && !Tok.isAtStartOfNonContinuationLine()) {
+    if (Tok.isInLine(tok::identifier)) {
       ProgramName = Tok.getIdentifierInfo();
       ProgramNameLoc = Tok.getLocation();
       ConsumeToken();
@@ -713,21 +710,21 @@ Parser::ParseMainProgram() {
   if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
     SubPgmBody = Actions.ActOnCompoundStmt(ProgramLoc, ProgramLoc,
-                                       MultiStmtArg(), false);
+                                           MultiStmtArg(), false);
   }
 
   SourceLocation EndLoc = Tok.getLocation();
 
   if (Tok.is(tok::kw_end)) {
     ConsumeToken();
-    if (Tok.is(tok::kw_program) && !Tok.isAtStartOfNonContinuationLine())
+    if (Tok.isInLine(tok::kw_program))
       ConsumeToken();
   } else {
     if (ExpectAndConsume(tok::kw_endprogram, diag::err_expected_end_program, ""))
       SkipToNextLine();
   }
 
-  if (Tok.is(tok::identifier) && !Tok.isAtStartOfNonContinuationLine()) {
+  if (Tok.isInLine(tok::identifier)) {
     IdentifierInfo *EndProgramName = Tok.getIdentifierInfo();
     if (ProgramName && ProgramName != EndProgramName) {
       Diag(ConsumeToken(), diag::warn_end_program_name_mismatch)

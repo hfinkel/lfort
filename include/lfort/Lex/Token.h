@@ -283,6 +283,16 @@ public:
   bool isAtStartOfNonContinuationLine() const {
     return isAtStartOfLine() && !hadContinuation();
   }
+
+  /// Predicates to check if this token is a specific kind (but not at the
+  // start of a non-continuation line).
+  bool isInLine(tok::TokenKind K) const {
+    return is(K) && !isAtStartOfNonContinuationLine();
+  }
+  bool isNotOrAtStartOfNonContinuationLine(tok::TokenKind K) const {
+    return isNot(K) || isAtStartOfNonContinuationLine();
+  }
+
 };
 
 /// \brief Information about the conditional stack (\#if directives)
