@@ -10,7 +10,7 @@ class DDecl<Decl base, bit abstract = 0> : Decl<abstract> {
 
 class DeclContext { }
 
-def TranslationUnit : Decl, DeclContext;
+def Program : Decl, DeclContext;
 def Named : Decl<1>;
   def Namespace : DDecl<Named>, DeclContext;
   def UsingDirective : DDecl<Named>;

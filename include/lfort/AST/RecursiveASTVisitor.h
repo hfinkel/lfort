@@ -1307,7 +1307,7 @@ DEF_TRAVERSE_DECL(StaticAssertDecl, {
     TRY_TO(TraverseStmt(D->getMessage()));
   })
 
-DEF_TRAVERSE_DECL(TranslationUnitDecl, {
+DEF_TRAVERSE_DECL(ProgramDecl, {
     // Code in an unnamed namespace shows up automatically in
     // decls_begin()/decls_end().  Thus we don't need to recurse on
     // D->getAnonymousNamespace().

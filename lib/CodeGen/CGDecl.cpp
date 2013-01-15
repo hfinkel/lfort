@@ -32,7 +32,7 @@ using namespace CodeGen;
 
 void CodeGenSubprogram::EmitDecl(const Decl &D) {
   switch (D.getKind()) {
-  case Decl::TranslationUnit:
+  case Decl::Program:
   case Decl::Namespace:
   case Decl::UnresolvedUsingTypename:
   case Decl::ClassTemplateSpecialization:

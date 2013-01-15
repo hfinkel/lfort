@@ -438,11 +438,11 @@ public:
 };
 
 
-/// \brief Holds the cache used by isBeforeInTranslationUnit.
+/// \brief Holds the cache used by isBeforeInProgram.
 ///
 /// The cache structure is complex enough to be worth breaking out of
 /// SourceManager.
-class IsBeforeInTranslationUnitCache {
+class IsBeforeInProgramCache {
   /// \brief The FileID's of the cached query.
   ///
   /// If these match up with a subsequent query, the result can be reused.
@@ -642,8 +642,8 @@ class SourceManager : public RefCountedBase<SourceManager> {
   // Statistics for -print-stats.
   mutable unsigned NumLinearScans, NumBinaryProbes;
 
-  // Cache results for the isBeforeInTranslationUnit method.
-  mutable IsBeforeInTranslationUnitCache IsBeforeInTUCache;
+  // Cache results for the isBeforeInProgram method.
+  mutable IsBeforeInProgramCache IsBeforeInPgmCache;
 
   // Cache for the "fake" buffer used for error-recovery purposes.
   mutable llvm::MemoryBuffer *FakeBufferForRecovery;
@@ -1370,7 +1370,7 @@ public:
   /// \brief Determines the order of 2 source locations in the translation unit.
   ///
   /// \returns true if LHS source location comes before RHS, false otherwise.
-  bool isBeforeInTranslationUnit(SourceLocation LHS, SourceLocation RHS) const;
+  bool isBeforeInProgram(SourceLocation LHS, SourceLocation RHS) const;
 
   /// \brief Determines the order of 2 source locations in the "source location
   /// address space".
@@ -1589,7 +1589,7 @@ public:
   explicit BeforeThanCompare(SourceManager &SM) : SM(SM) { }
 
   bool operator()(SourceLocation LHS, SourceLocation RHS) const {
-    return SM.isBeforeInTranslationUnit(LHS, RHS);
+    return SM.isBeforeInProgram(LHS, RHS);
   }
 };
 
@@ -1602,7 +1602,7 @@ public:
   explicit BeforeThanCompare(SourceManager &SM) : SM(SM) { }
 
   bool operator()(SourceRange LHS, SourceRange RHS) {
-    return SM.isBeforeInTranslationUnit(LHS.getBegin(), RHS.getBegin());
+    return SM.isBeforeInProgram(LHS.getBegin(), RHS.getBegin());
   }
 };
 

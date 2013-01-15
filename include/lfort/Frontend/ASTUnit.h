@@ -105,7 +105,7 @@ private:
   bool MainFileIsAST;
 
   /// \brief What kind of translation unit this AST represents.
-  TranslationUnitKind TUKind;
+  ProgramKind PgmKind;
 
   /// \brief Whether we should time each operation.
   bool WantTiming;
@@ -325,11 +325,11 @@ public:
     return CachedCompletionAllocator;
   }
 
-  CodeCompletionTUInfo &getCodeCompletionTUInfo() {
-    if (!CCTUInfo)
-      CCTUInfo.reset(new CodeCompletionTUInfo(
+  CodeCompletionPgmInfo &getCodeCompletionPgmInfo() {
+    if (!CCPgmInfo)
+      CCPgmInfo.reset(new CodeCompletionPgmInfo(
                                             new GlobalCodeCompletionAllocator));
-    return *CCTUInfo;
+    return *CCPgmInfo;
   }
 
 private:
@@ -337,7 +337,7 @@ private:
   IntrusiveRefCntPtr<GlobalCodeCompletionAllocator>
     CachedCompletionAllocator;
   
-  OwningPtr<CodeCompletionTUInfo> CCTUInfo;
+  OwningPtr<CodeCompletionPgmInfo> CCPgmInfo;
 
   /// \brief The set of cached code-completion results.
   std::vector<CachedCodeCompletionResult> CachedCompletionResults;
@@ -639,7 +639,7 @@ public:
                                        std::string *ErrorStr = 0);
 
   /// \brief Determine what kind of translation unit this AST represents.
-  TranslationUnitKind getTranslationUnitKind() const { return TUKind; }
+  ProgramKind getProgramKind() const { return PgmKind; }
 
   typedef llvm::PointerUnion<const char *, const llvm::MemoryBuffer *>
       FilenameOrMemBuf;
@@ -739,7 +739,7 @@ public:
                                              bool OnlyLocalDecls = false,
                                              bool CaptureDiagnostics = false,
                                              bool PrecompilePreamble = false,
-                                      TranslationUnitKind TUKind = TU_Complete,
+                                      ProgramKind PgmKind = PGM_Complete,
                                        bool CacheCodeCompletionResults = false,
                             bool IncludeBriefCommentsInCodeCompletion = false,
                                              bool UserFilesAreVolatile = false);
@@ -772,7 +772,7 @@ public:
                                       unsigned NumRemappedFiles = 0,
                                       bool RemappedFilesKeepOriginalName = true,
                                       bool PrecompilePreamble = false,
-                                      TranslationUnitKind TUKind = TU_Complete,
+                                      ProgramKind PgmKind = PGM_Complete,
                                       bool CacheCodeCompletionResults = false,
                             bool IncludeBriefCommentsInCodeCompletion = false,
                                       bool AllowPCHWithCompilerErrors = false,

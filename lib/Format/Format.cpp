@@ -1127,9 +1127,9 @@ private:
                                        TheLine.Tokens.back().Tok.getLocation());
 
     for (unsigned i = 0, e = Ranges.size(); i != e; ++i) {
-      if (SourceMgr.isBeforeInTranslationUnit(LineRange.getEnd(),
+      if (SourceMgr.isBeforeInProgram(LineRange.getEnd(),
                                               Ranges[i].getBegin()) ||
-          SourceMgr.isBeforeInTranslationUnit(Ranges[i].getEnd(),
+          SourceMgr.isBeforeInProgram(Ranges[i].getEnd(),
                                               LineRange.getBegin()))
         continue;
 

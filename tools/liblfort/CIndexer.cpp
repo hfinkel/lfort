@@ -52,7 +52,7 @@ std::string CIndexer::getLFortResourcesPath() {
 #ifdef LLVM_ON_WIN32
   MEMORY_BASIC_INFORMATION mbi;
   char path[MAX_PATH];
-  VirtualQuery((void *)(uintptr_t)lfort_createTranslationUnit, &mbi,
+  VirtualQuery((void *)(uintptr_t)lfort_createProgram, &mbi,
                sizeof(mbi));
   GetModuleFileNameA((HINSTANCE)mbi.AllocationBase, path, MAX_PATH);
 
@@ -71,7 +71,7 @@ std::string CIndexer::getLFortResourcesPath() {
 #else
   // This silly cast below avoids a C++ warning.
   Dl_info info;
-  if (dladdr((void *)(uintptr_t)lfort_createTranslationUnit, &info) == 0)
+  if (dladdr((void *)(uintptr_t)lfort_createProgram, &info) == 0)
     llvm_unreachable("Call to dladdr() failed");
   
   llvm::sys::Path LibLFortPath(info.dli_fname);

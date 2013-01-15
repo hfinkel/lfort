@@ -91,7 +91,7 @@ namespace {
       }
     }
 
-    virtual void HandleTranslationUnit(ASTContext &Ctx) {
+    virtual void HandleProgram(ASTContext &Ctx) {
       if (Diags.hasErrorOccurred()) {
         M.reset();
         return;

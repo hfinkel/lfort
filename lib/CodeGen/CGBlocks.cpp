@@ -1242,7 +1242,7 @@ CodeGenSubprogram::GenerateCopyHelperSubprogram(const CGBlockInfo &blockInfo) {
   maybeInitializeDebugInfo();
 
   SubprogramDecl *FD = SubprogramDecl::Create(C,
-                                          C.getTranslationUnitDecl(),
+                                          C.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
                                           SC_Static,
@@ -1394,7 +1394,7 @@ CodeGenSubprogram::GenerateDestroyHelperSubprogram(const CGBlockInfo &blockInfo)
   IdentifierInfo *II
     = &CGM.getContext().Idents.get("__destroy_helper_block_");
 
-  SubprogramDecl *FD = SubprogramDecl::Create(C, C.getTranslationUnitDecl(),
+  SubprogramDecl *FD = SubprogramDecl::Create(C, C.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
                                           SC_Static,
@@ -1682,7 +1682,7 @@ generateByrefCopyHelper(CodeGenSubprogram &CGF,
     = &Context.Idents.get("__Block_byref_object_copy_");
 
   SubprogramDecl *FD = SubprogramDecl::Create(Context,
-                                          Context.getTranslationUnitDecl(),
+                                          Context.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, R, 0,
                                           SC_Static,
@@ -1755,7 +1755,7 @@ generateByrefDisposeHelper(CodeGenSubprogram &CGF,
     = &Context.Idents.get("__Block_byref_object_dispose_");
 
   SubprogramDecl *FD = SubprogramDecl::Create(Context,
-                                          Context.getTranslationUnitDecl(),
+                                          Context.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, R, 0,
                                           SC_Static,

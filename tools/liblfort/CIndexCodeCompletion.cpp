@@ -16,7 +16,7 @@
 #include "CIndexDiagnostic.h"
 #include "CXCursor.h"
 #include "CXString.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort/AST/Decl.h"
 #include "lfort/AST/DeclObjC.h"
 #include "lfort/AST/Type.h"
@@ -520,16 +520,16 @@ static unsigned long long getContextsForContextKind(
 namespace {
   class CaptureCompletionResults : public CodeCompleteConsumer {
     AllocatedCXCodeCompleteResults &AllocatedResults;
-    CodeCompletionTUInfo CCTUInfo;
+    CodeCompletionPgmInfo CCPgmInfo;
     SmallVector<CXCompletionResult, 16> StoredResults;
-    CXTranslationUnit *TU;
+    CXProgram *Pgm;
   public:
     CaptureCompletionResults(const CodeCompleteOptions &Opts,
                              AllocatedCXCodeCompleteResults &Results,
-                             CXTranslationUnit *TranslationUnit)
+                             CXProgram *Program)
       : CodeCompleteConsumer(Opts, false), 
-        AllocatedResults(Results), CCTUInfo(Results.CodeCompletionAllocator),
-        TU(TranslationUnit) { }
+        AllocatedResults(Results), CCPgmInfo(Results.CodeCompletionAllocator),
+        Pgm(Program) { }
     ~CaptureCompletionResults() { Finish(); }
     
     virtual void ProcessCodeCompleteResults(Sema &S, 
@@ -540,7 +540,7 @@ namespace {
       for (unsigned I = 0; I != NumResults; ++I) {
         CodeCompletionString *StoredCompletion        
           = Results[I].CreateCodeCompletionString(S, getAllocator(),
-                                                  getCodeCompletionTUInfo(),
+                                                  getCodeCompletionPgmInfo(),
                                                   includeBriefComments());
         
         CXCompletionResult R;
@@ -588,7 +588,7 @@ namespace {
       }
       
       if (D != NULL) {
-        CXCursor cursor = cxcursor::MakeCXCursor(D, *TU);
+        CXCursor cursor = cxcursor::MakeCXCursor(D, *Pgm);
         
         CXCursorKind cursorKind = lfort_getCursorKind(cursor);
         CXString cursorUSR = lfort_getCursorUSR(cursor);
@@ -596,7 +596,7 @@ namespace {
         // Normally, clients of CXString shouldn't care whether or not
         // a CXString is managed by a pool or by explicitly malloc'ed memory.
         // However, there are cases when AllocatedResults outlives the
-        // CXTranslationUnit.  This is a workaround that failure mode.
+        // CXProgram.  This is a workaround that failure mode.
         if (cxstring::isManagedByPool(cursorUSR)) {
           CXString heapStr =
             cxstring::createCXString(lfort_getCString(cursorUSR), true);
@@ -629,7 +629,7 @@ namespace {
       for (unsigned I = 0; I != NumCandidates; ++I) {
         CodeCompletionString *StoredCompletion
           = Candidates[I].CreateSignatureString(CurrentArg, S, getAllocator(),
-                                                getCodeCompletionTUInfo());
+                                                getCodeCompletionPgmInfo());
         
         CXCompletionResult R;
         R.CursorKind = CXCursor_NotImplemented;
@@ -642,7 +642,7 @@ namespace {
       return *AllocatedResults.CodeCompletionAllocator;
     }
 
-    virtual CodeCompletionTUInfo &getCodeCompletionTUInfo() { return CCTUInfo; }
+    virtual CodeCompletionPgmInfo &getCodeCompletionPgmInfo() { return CCPgmInfo; }
     
   private:
     void Finish() {
@@ -657,7 +657,7 @@ namespace {
 
 extern "C" {
 struct CodeCompleteAtInfo {
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   const char *complete_filename;
   unsigned complete_line;
   unsigned complete_column;
@@ -668,7 +668,7 @@ struct CodeCompleteAtInfo {
 };
 void lfort_codeCompleteAt_Impl(void *UserData) {
   CodeCompleteAtInfo *CCAI = static_cast<CodeCompleteAtInfo*>(UserData);
-  CXTranslationUnit TU = CCAI->TU;
+  CXProgram Pgm = CCAI->Pgm;
   const char *complete_filename = CCAI->complete_filename;
   unsigned complete_line = CCAI->complete_line;
   unsigned complete_column = CCAI->complete_column;
@@ -686,11 +686,11 @@ void lfort_codeCompleteAt_Impl(void *UserData) {
 
   bool EnableLogging = getenv("LIBLFORT_CODE_COMPLETION_LOGGING") != 0;
   
-  ASTUnit *AST = static_cast<ASTUnit *>(TU->TUData);
+  ASTUnit *AST = static_cast<ASTUnit *>(Pgm->PgmData);
   if (!AST)
     return;
 
-  CIndexer *CXXIdx = (CIndexer*)TU->CIdx;
+  CIndexer *CXXIdx = (CIndexer*)Pgm->CIdx;
   if (CXXIdx->isOptEnabled(CXGlobalOpt_ThreadBackgroundPriorityForEditing))
     setThreadBackgroundPriority();
 
@@ -719,7 +719,7 @@ void lfort_codeCompleteAt_Impl(void *UserData) {
   // Create a code-completion consumer to capture the results.
   CodeCompleteOptions Opts;
   Opts.IncludeBriefComments = IncludeBriefComments;
-  CaptureCompletionResults Capture(Opts, *Results, &TU);
+  CaptureCompletionResults Capture(Opts, *Results, &Pgm);
 
   // Perform completion.
   AST->CodeComplete(complete_filename, complete_line, complete_column,
@@ -814,14 +814,14 @@ void lfort_codeCompleteAt_Impl(void *UserData) {
 #endif
   CCAI->result = Results;
 }
-CXCodeCompleteResults *lfort_codeCompleteAt(CXTranslationUnit TU,
+CXCodeCompleteResults *lfort_codeCompleteAt(CXProgram Pgm,
                                             const char *complete_filename,
                                             unsigned complete_line,
                                             unsigned complete_column,
                                             struct CXUnsavedFile *unsaved_files,
                                             unsigned num_unsaved_files,
                                             unsigned options) {
-  CodeCompleteAtInfo CCAI = { TU, complete_filename, complete_line,
+  CodeCompleteAtInfo CCAI = { Pgm, complete_filename, complete_line,
                               complete_column, unsaved_files, num_unsaved_files,
                               options, 0 };
 
@@ -834,10 +834,10 @@ CXCodeCompleteResults *lfort_codeCompleteAt(CXTranslationUnit TU,
 
   if (!RunSafely(CRC, lfort_codeCompleteAt_Impl, &CCAI)) {
     fprintf(stderr, "liblfort: crash detected in code completion\n");
-    static_cast<ASTUnit *>(TU->TUData)->setUnsafeToFree(true);
+    static_cast<ASTUnit *>(Pgm->PgmData)->setUnsafeToFree(true);
     return 0;
   } else if (getenv("LIBLFORT_RESOURCE_USAGE"))
-    PrintLiblfortResourceUsage(TU);
+    PrintLiblfortResourceUsage(Pgm);
 
   return CCAI.result;
 }

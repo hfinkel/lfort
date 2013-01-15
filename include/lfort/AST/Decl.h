@@ -67,8 +67,8 @@ public:
   TypeLoc getTypeLoc() const; // implemented in TypeLoc.h
 };
 
-/// TranslationUnitDecl - The top declaration context.
-class TranslationUnitDecl : public Decl, public DeclContext {
+/// ProgramDecl - The top declaration context.
+class ProgramDecl : public Decl, public DeclContext {
   virtual void anchor();
   ASTContext &Ctx;
 
@@ -76,9 +76,9 @@ class TranslationUnitDecl : public Decl, public DeclContext {
   /// translation unit, if one has been created.
   NamespaceDecl *AnonymousNamespace;
 
-  explicit TranslationUnitDecl(ASTContext &ctx)
-    : Decl(TranslationUnit, 0, SourceLocation()),
-      DeclContext(TranslationUnit),
+  explicit ProgramDecl(ASTContext &ctx)
+    : Decl(Program, 0, SourceLocation()),
+      DeclContext(Program),
       Ctx(ctx), AnonymousNamespace(0) {}
 public:
   ASTContext &getASTContext() const { return Ctx; }
@@ -86,15 +86,15 @@ public:
   NamespaceDecl *getAnonymousNamespace() const { return AnonymousNamespace; }
   void setAnonymousNamespace(NamespaceDecl *D) { AnonymousNamespace = D; }
 
-  static TranslationUnitDecl *Create(ASTContext &C);
+  static ProgramDecl *Create(ASTContext &C);
   // Implement isa/cast/dyncast/etc.
   static bool classof(const Decl *D) { return classofKind(D->getKind()); }
-  static bool classofKind(Kind K) { return K == TranslationUnit; }
-  static DeclContext *castToDeclContext(const TranslationUnitDecl *D) {
-    return static_cast<DeclContext *>(const_cast<TranslationUnitDecl*>(D));
+  static bool classofKind(Kind K) { return K == Program; }
+  static DeclContext *castToDeclContext(const ProgramDecl *D) {
+    return static_cast<DeclContext *>(const_cast<ProgramDecl*>(D));
   }
-  static TranslationUnitDecl *castFromDeclContext(const DeclContext *DC) {
-    return static_cast<TranslationUnitDecl *>(const_cast<DeclContext*>(DC));
+  static ProgramDecl *castFromDeclContext(const DeclContext *DC) {
+    return static_cast<ProgramDecl *>(const_cast<DeclContext*>(DC));
   }
 };
 
@@ -973,7 +973,7 @@ public:
   }
 
   /// \brief Get the tentative definition that acts as the real definition in
-  /// a TU. Returns null if there is a proper definition available.
+  /// a program. Returns null if there is a proper definition available.
   VarDecl *getActingDefinition();
   const VarDecl *getActingDefinition() const {
     return const_cast<VarDecl*>(this)->getActingDefinition();

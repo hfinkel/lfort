@@ -63,7 +63,7 @@ namespace {
     const LangOptions &LangOpts;
     ASTContext *Context;
     SourceManager *SM;
-    TranslationUnitDecl *TUDecl;
+    ProgramDecl *PgmDecl;
     FileID MainFileID;
     const char *MainFileStart, *MainFileEnd;
     Stmt *CurrentBody;
@@ -192,7 +192,7 @@ namespace {
 
     ~RewriteObjC() {}
 
-    virtual void HandleTranslationUnit(ASTContext &C);
+    virtual void HandleProgram(ASTContext &C);
 
     void ReplaceStmt(Stmt *Old, Stmt *New) {
       Stmt *ReplacingStmt = ReplacedNodes[Old];
@@ -602,7 +602,7 @@ ASTConsumer *lfort::CreateObjCRewriter(const std::string& InFile,
 void RewriteObjC::InitializeCommon(ASTContext &context) {
   Context = &context;
   SM = &Context->getSourceManager();
-  TUDecl = Context->getTranslationUnitDecl();
+  PgmDecl = Context->getProgramDecl();
   MsgSendSubprogramDecl = 0;
   MsgSendSuperSubprogramDecl = 0;
   MsgSendStretSubprogramDecl = 0;
@@ -2264,7 +2264,7 @@ void RewriteObjC::SynthSelGetUidSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getFuncType =
     getSimpleSubprogramType(Context->getObjCSelType(), &ArgTys[0], ArgTys.size());
-  SelGetUidSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  SelGetUidSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                SourceLocation(),
                                                SourceLocation(),
                                                SelGetUidIdent, getFuncType, 0,
@@ -2360,7 +2360,7 @@ void RewriteObjC::SynthSuperContructorSubprogramDecl() {
   ArgTys.push_back(argT);
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size());
-  SuperContructorSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  SuperContructorSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                      SourceLocation(),
                                                      SourceLocation(),
                                                      msgSendIdent, msgSendType,
@@ -2380,7 +2380,7 @@ void RewriteObjC::SynthMsgSendSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                              SourceLocation(),
                                              SourceLocation(),
                                              msgSendIdent, msgSendType, 0,
@@ -2391,7 +2391,7 @@ void RewriteObjC::SynthMsgSendSubprogramDecl() {
 void RewriteObjC::SynthMsgSendSuperSubprogramDecl() {
   IdentifierInfo *msgSendIdent = &Context->Idents.get("objc_msgSendSuper");
   SmallVector<QualType, 16> ArgTys;
-  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                       SourceLocation(), SourceLocation(),
                                       &Context->Idents.get("objc_super"));
   QualType argT = Context->getPointerType(Context->getTagDeclType(RD));
@@ -2403,7 +2403,7 @@ void RewriteObjC::SynthMsgSendSuperSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendSuperSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSuperSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2423,7 +2423,7 @@ void RewriteObjC::SynthMsgSendStretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendStretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2436,7 +2436,7 @@ void RewriteObjC::SynthMsgSendSuperStretSubprogramDecl() {
   IdentifierInfo *msgSendIdent =
     &Context->Idents.get("objc_msgSendSuper_stret");
   SmallVector<QualType, 16> ArgTys;
-  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                       SourceLocation(), SourceLocation(),
                                       &Context->Idents.get("objc_super"));
   QualType argT = Context->getPointerType(Context->getTagDeclType(RD));
@@ -2448,7 +2448,7 @@ void RewriteObjC::SynthMsgSendSuperStretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendSuperStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSuperStretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                        SourceLocation(),
                                                        SourceLocation(),
                                                        msgSendIdent,
@@ -2469,7 +2469,7 @@ void RewriteObjC::SynthMsgSendFpretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->DoubleTy,
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendFpretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendFpretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2483,7 +2483,7 @@ void RewriteObjC::SynthGetClassSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getClassType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                               SourceLocation(),
                                               SourceLocation(),
                                               getClassIdent, getClassType, 0,
@@ -2498,7 +2498,7 @@ void RewriteObjC::SynthGetSuperClassSubprogramDecl() {
   ArgTys.push_back(Context->getObjCClassType());
   QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetSuperClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetSuperClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                    SourceLocation(),
                                                    SourceLocation(),
                                                    getSuperClassIdent,
@@ -2513,7 +2513,7 @@ void RewriteObjC::SynthGetMetaClassSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getClassType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetMetaClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetMetaClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   getClassIdent, getClassType,
@@ -2548,7 +2548,7 @@ Stmt *RewriteObjC::RewriteObjCStringLiteral(ObjCStringLiteral *Exp) {
   Preamble += ",";
   Preamble += utostr(Exp->getString()->getByteLength()) + "};\n";
 
-  VarDecl *NewVD = VarDecl::Create(*Context, TUDecl, SourceLocation(),
+  VarDecl *NewVD = VarDecl::Create(*Context, PgmDecl, SourceLocation(),
                                    SourceLocation(), &Context->Idents.get(S),
                                    strType, 0, SC_Static, SC_None);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(NewVD, false, strType, VK_LValue,
@@ -2568,7 +2568,7 @@ Stmt *RewriteObjC::RewriteObjCStringLiteral(ObjCStringLiteral *Exp) {
 // struct objc_super { struct objc_object *receiver; struct objc_class *super; };
 QualType RewriteObjC::getSuperStructType() {
   if (!SuperStructDecl) {
-    SuperStructDecl = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+    SuperStructDecl = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                          SourceLocation(), SourceLocation(),
                                          &Context->Idents.get("objc_super"));
     QualType FieldTypes[2];
@@ -2596,7 +2596,7 @@ QualType RewriteObjC::getSuperStructType() {
 
 QualType RewriteObjC::getConstantStringStructType() {
   if (!ConstantStringDecl) {
-    ConstantStringDecl = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+    ConstantStringDecl = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                             SourceLocation(), SourceLocation(),
                          &Context->Idents.get("__NSConstantStringImpl"));
     QualType FieldTypes[4];
@@ -3100,7 +3100,7 @@ QualType RewriteObjC::getProtocolType() {
   if (!ProtocolTypeDecl) {
     TypeSourceInfo *TInfo
       = Context->getTrivialTypeSourceInfo(Context->getObjCIdType());
-    ProtocolTypeDecl = TypedefDecl::Create(*Context, TUDecl,
+    ProtocolTypeDecl = TypedefDecl::Create(*Context, PgmDecl,
                                            SourceLocation(), SourceLocation(),
                                            &Context->Idents.get("Protocol"),
                                            TInfo);
@@ -3111,11 +3111,11 @@ QualType RewriteObjC::getProtocolType() {
 /// RewriteObjCProtocolExpr - Rewrite a protocol expression into
 /// a synthesized/forward data reference (to the protocol's metadata).
 /// The forward references (and metadata) are generated in
-/// RewriteObjC::HandleTranslationUnit().
+/// RewriteObjC::HandleProgram().
 Stmt *RewriteObjC::RewriteObjCProtocolExpr(ObjCProtocolExpr *Exp) {
   std::string Name = "_OBJC_PROTOCOL_" + Exp->getProtocol()->getNameAsString();
   IdentifierInfo *ID = &Context->Idents.get(Name);
-  VarDecl *VD = VarDecl::Create(*Context, TUDecl, SourceLocation(),
+  VarDecl *VD = VarDecl::Create(*Context, PgmDecl, SourceLocation(),
                                 SourceLocation(), ID, getProtocolType(), 0,
                                 SC_Extern, SC_None);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(VD, false, getProtocolType(),
@@ -3852,7 +3852,7 @@ Stmt *RewriteObjC::SynthesizeBlockCall(CallExpr *Exp, const Expr *BlockExp) {
   const SubprogramProtoType *FTP = dyn_cast<SubprogramProtoType>(FT);
   // FTP will be null for closures that don't take arguments.
 
-  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                       SourceLocation(), SourceLocation(),
                                       &Context->Idents.get("__block_impl"));
   QualType PtrBlock = Context->getPointerType(Context->getTagDeclType(RD));
@@ -4452,7 +4452,7 @@ void RewriteObjC::CollectBlockDeclRefInfo(BlockExpr *Exp) {
 SubprogramDecl *RewriteObjC::SynthBlockInitSubprogramDecl(StringRef name) {
   IdentifierInfo *ID = &Context->Idents.get(name);
   QualType FType = Context->getSubprogramNoProtoType(Context->VoidPtrTy);
-  return SubprogramDecl::Create(*Context, TUDecl, SourceLocation(),
+  return SubprogramDecl::Create(*Context, PgmDecl, SourceLocation(),
                               SourceLocation(), ID, FType, 0, SC_Extern,
                               SC_None, false, false);
 }
@@ -4534,7 +4534,7 @@ Stmt *RewriteObjC::SynthBlockInitExpr(BlockExpr *Exp,
   // Initialize the block descriptor.
   std::string DescData = "__" + FuncName + "_block_desc_" + BlockNumber + "_DATA";
 
-  VarDecl *NewVD = VarDecl::Create(*Context, TUDecl,
+  VarDecl *NewVD = VarDecl::Create(*Context, PgmDecl,
                                    SourceLocation(), SourceLocation(),
                                    &Context->Idents.get(DescData.c_str()),
                                    Context->VoidPtrTy, 0,
@@ -4596,7 +4596,7 @@ Stmt *RewriteObjC::SynthBlockInitExpr(BlockExpr *Exp,
       RewriteByRefString(RecName, Name, ND, true);
       IdentifierInfo *II = &Context->Idents.get(RecName.c_str() 
                                                 + sizeof("struct"));
-      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                           SourceLocation(), SourceLocation(),
                                           II);
       assert(RD && "SynthBlockInitExpr(): Can't find RecordDecl");
@@ -5018,7 +5018,7 @@ void RewriteObjC::HandleDeclInMainFile(Decl *D) {
   // Nothing yet.
 }
 
-void RewriteObjC::HandleTranslationUnit(ASTContext &C) {
+void RewriteObjC::HandleProgram(ASTContext &C) {
   if (Diags.hasErrorOccurred())
     return;
 
@@ -5956,7 +5956,7 @@ Stmt *RewriteObjCFragileABI::RewriteObjCIvarRefExpr(ObjCIvarRefExpr *IV) {
       std::string RecName = clsDeclared->getIdentifier()->getName();
       RecName += "_IMPL";
       IdentifierInfo *II = &Context->Idents.get(RecName);
-      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                           SourceLocation(), SourceLocation(),
                                           II);
       assert(RD && "RewriteObjCIvarRefExpr(): Can't find RecordDecl");
@@ -5997,7 +5997,7 @@ Stmt *RewriteObjCFragileABI::RewriteObjCIvarRefExpr(ObjCIvarRefExpr *IV) {
       std::string RecName = clsDeclared->getIdentifier()->getName();
       RecName += "_IMPL";
       IdentifierInfo *II = &Context->Idents.get(RecName);
-      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                           SourceLocation(), SourceLocation(),
                                           II);
       assert(RD && "RewriteObjCIvarRefExpr(): Can't find RecordDecl");

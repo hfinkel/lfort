@@ -14,7 +14,7 @@
 #ifndef LLVM_LFORT_CXCOMMENT_H
 #define LLVM_LFORT_CXCOMMENT_H
 
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort-c/Index.h"
 #include "lfort/AST/ASTContext.h"
 #include "lfort/AST/Comment.h"
@@ -28,10 +28,10 @@ namespace comments {
 namespace cxcomment {
 
 inline CXComment createCXComment(const comments::Comment *C,
-                                 CXTranslationUnit TU) {
+                                 CXProgram Pgm) {
   CXComment Result;
   Result.ASTNode = C;
-  Result.TranslationUnit = TU;
+  Result.Program = Pgm;
   return Result;
 }
 
@@ -49,7 +49,7 @@ inline const T *getASTNodeAs(CXComment CXC) {
 }
 
 inline ASTContext &getASTContext(CXComment CXC) {
-  return static_cast<ASTUnit *>(CXC.TranslationUnit->TUData)->getASTContext();
+  return static_cast<ASTUnit *>(CXC.Program->PgmData)->getASTContext();
 }
 
 inline comments::CommandTraits &getCommandTraits(CXComment CXC) {

@@ -562,12 +562,12 @@ void CheckerManager::runCheckersForEvalCall(ExplodedNodeSet &Dst,
 }
 
 /// \brief Run checkers for the entire Translation Unit.
-void CheckerManager::runCheckersOnEndOfTranslationUnit(
-                                                  const TranslationUnitDecl *TU,
+void CheckerManager::runCheckersOnEndOfProgram(
+                                                  const ProgramDecl *Pgm,
                                                   AnalysisManager &mgr,
                                                   BugReporter &BR) {
-  for (unsigned i = 0, e = EndOfTranslationUnitCheckers.size(); i != e; ++i)
-    EndOfTranslationUnitCheckers[i](TU, mgr, BR);
+  for (unsigned i = 0, e = EndOfProgramCheckers.size(); i != e; ++i)
+    EndOfProgramCheckers[i](Pgm, mgr, BR);
 }
 
 void CheckerManager::runCheckersForPrintState(raw_ostream &Out,
@@ -668,9 +668,9 @@ void CheckerManager::_registerForEvalCall(EvalCallFunc checkfn) {
   EvalCallCheckers.push_back(checkfn);
 }
 
-void CheckerManager::_registerForEndOfTranslationUnit(
-                                            CheckEndOfTranslationUnit checkfn) {
-  EndOfTranslationUnitCheckers.push_back(checkfn);
+void CheckerManager::_registerForEndOfProgram(
+                                            CheckEndOfProgram checkfn) {
+  EndOfProgramCheckers.push_back(checkfn);
 }
 
 //===----------------------------------------------------------------------===//

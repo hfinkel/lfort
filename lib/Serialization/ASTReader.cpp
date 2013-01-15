@@ -1843,7 +1843,7 @@ bool ASTReader::ReadASTBlock(ModuleFile &F) {
         return true;
       }
 
-      DeclContext *DC = Context.getTranslationUnitDecl();
+      DeclContext *DC = Context.getProgramDecl();
       if (!DC->hasExternalVisibleStorage() && DC->hasExternalLexicalStorage())
         DC->setMustBuildLookupTable();
 
@@ -2001,13 +2001,13 @@ bool ASTReader::ReadASTBlock(ModuleFile &F) {
       break;
     }
         
-    case TU_UPDATE_LEXICAL: {
-      DeclContext *TU = Context.getTranslationUnitDecl();
-      DeclContextInfo &Info = F.DeclContextInfos[TU];
+    case PGM_UPDATE_LEXICAL: {
+      DeclContext *Pgm = Context.getProgramDecl();
+      DeclContextInfo &Info = F.DeclContextInfos[Pgm];
       Info.LexicalDecls = reinterpret_cast<const KindDeclIDPair *>(BlobStart);
       Info.NumLexicalDecls 
         = static_cast<unsigned int>(BlobLen / sizeof(KindDeclIDPair));
-      TU->setHasExternalLexicalStorage(true);
+      Pgm->setHasExternalLexicalStorage(true);
       break;
     }
 
@@ -2019,10 +2019,10 @@ bool ASTReader::ReadASTBlock(ModuleFile &F) {
                         (const unsigned char *)BlobStart + Record[Idx++],
                         (const unsigned char *)BlobStart,
                         ASTDeclContextNameLookupTrait(*this, F));
-      if (ID == PREDEF_DECL_TRANSLATION_UNIT_ID) { // Is it the TU?
-        DeclContext *TU = Context.getTranslationUnitDecl();
-        F.DeclContextInfos[TU].NameLookupTableData = Table;
-        TU->setHasExternalVisibleStorage(true);
+      if (ID == PREDEF_DECL_PROGRAM_ID) { // Is it the Pgm?
+        DeclContext *Pgm = Context.getProgramDecl();
+        F.DeclContextInfos[Pgm].NameLookupTableData = Table;
+        Pgm->setHasExternalVisibleStorage(true);
       } else
         PendingVisibleUpdates[ID].push_back(std::make_pair(Table, &F));
       break;
@@ -2926,13 +2926,13 @@ ASTReader::ReadASTCore(StringRef FileName,
 void ASTReader::InitializeContext() {  
   // If there's a listener, notify them that we "read" the translation unit.
   if (DeserializationListener)
-    DeserializationListener->DeclRead(PREDEF_DECL_TRANSLATION_UNIT_ID, 
-                                      Context.getTranslationUnitDecl());
+    DeserializationListener->DeclRead(PREDEF_DECL_PROGRAM_ID, 
+                                      Context.getProgramDecl());
 
   // Make sure we load the declaration update records for the translation unit,
   // if there are any.
-  loadDeclUpdateRecords(PREDEF_DECL_TRANSLATION_UNIT_ID, 
-                        Context.getTranslationUnitDecl());
+  loadDeclUpdateRecords(PREDEF_DECL_PROGRAM_ID, 
+                        Context.getProgramDecl());
   
   // FIXME: Find a better way to deal with collisions between these
   // built-in types. Right now, we just ignore the problem.
@@ -3906,17 +3906,17 @@ struct PPEntityComp {
   bool operator()(const PPEntityOffset &L, const PPEntityOffset &R) const {
     SourceLocation LHS = getLoc(L);
     SourceLocation RHS = getLoc(R);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(const PPEntityOffset &L, SourceLocation RHS) const {
     SourceLocation LHS = getLoc(L);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(SourceLocation LHS, const PPEntityOffset &R) const {
     SourceLocation RHS = getLoc(R);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   SourceLocation getLoc(const PPEntityOffset &PPE) const {
@@ -3959,7 +3959,7 @@ ASTReader::findBeginPreprocessedEntity(SourceLocation BLoc) const {
     Half = Count/2;
     PPI = First;
     std::advance(PPI, Half);
-    if (SourceMgr.isBeforeInTranslationUnit(ReadSourceLocation(M, PPI->End),
+    if (SourceMgr.isBeforeInProgram(ReadSourceLocation(M, PPI->End),
                                             BLoc)){
       First = PPI;
       ++First;
@@ -4009,7 +4009,7 @@ std::pair<unsigned, unsigned>
     ASTReader::findPreprocessedEntitiesInRange(SourceRange Range) {
   if (Range.isInvalid())
     return std::make_pair(0,0);
-  assert(!SourceMgr.isBeforeInTranslationUnit(Range.getEnd(),Range.getBegin()));
+  assert(!SourceMgr.isBeforeInProgram(Range.getEnd(),Range.getBegin()));
 
   PreprocessedEntityID BeginID = findBeginPreprocessedEntity(Range.getBegin());
   PreprocessedEntityID EndID = findEndPreprocessedEntity(Range.getEnd());
@@ -5085,8 +5085,8 @@ Decl *ASTReader::GetDecl(DeclID ID) {
     case PREDEF_DECL_NULL_ID:
       return 0;
         
-    case PREDEF_DECL_TRANSLATION_UNIT_ID:
-      return Context.getTranslationUnitDecl();
+    case PREDEF_DECL_PROGRAM_ID:
+      return Context.getProgramDecl();
         
     case PREDEF_DECL_OBJC_ID_ID:
       return Context.getObjCIdDecl();
@@ -5235,7 +5235,7 @@ namespace {
 ExternalLoadResult ASTReader::FindExternalLexicalDecls(const DeclContext *DC,
                                          bool (*isKindWeWant)(Decl::Kind),
                                          SmallVectorImpl<Decl*> &Decls) {
-  // There might be lexical decls in multiple modules, for the TU at
+  // There might be lexical decls in multiple modules, for the program at
   // least. Walk all of the modules in the order they were loaded.
   FindExternalLexicalDeclsVisitor Visitor(*this, DC, isKindWeWant, Decls);
   ModuleMgr.visitDepthFirst(&FindExternalLexicalDeclsVisitor::visit, &Visitor);
@@ -5255,17 +5255,17 @@ public:
   bool operator()(LocalDeclID L, LocalDeclID R) const {
     SourceLocation LHS = getLocation(L);
     SourceLocation RHS = getLocation(R);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(SourceLocation LHS, LocalDeclID R) const {
     SourceLocation RHS = getLocation(R);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(LocalDeclID L, SourceLocation RHS) const {
     SourceLocation LHS = getLocation(L);
-    return Reader.getSourceManager().isBeforeInTranslationUnit(LHS, RHS);
+    return Reader.getSourceManager().isBeforeInProgram(LHS, RHS);
   }
 
   SourceLocation getLocation(LocalDeclID ID) const {
@@ -5549,7 +5549,7 @@ void ASTReader::PassInterestingDeclToConsumer(Decl *D) {
     Consumer->HandleInterestingDecl(DeclGroupRef(D));
 }
 
-void ASTReader::StartTranslationUnit(ASTConsumer *Consumer) {
+void ASTReader::StartProgram(ASTConsumer *Consumer) {
   this->Consumer = Consumer;
 
   if (!Consumer)

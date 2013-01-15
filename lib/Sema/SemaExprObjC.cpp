@@ -97,7 +97,7 @@ ExprResult Sema::BuildObjCStringLiteral(SourceLocation AtLoc, StringLiteral *S){
     else
       NSIdent = &Context.Idents.get(StringClass);
     
-    NamedDecl *IF = LookupSingleName(TUScope, NSIdent, AtLoc,
+    NamedDecl *IF = LookupSingleName(PgmScope, NSIdent, AtLoc,
                                      LookupOrdinaryName);
     if (ObjCInterfaceDecl *StrIF = dyn_cast_or_null<ObjCInterfaceDecl>(IF)) {
       Context.setObjCConstantStringInterface(StrIF);
@@ -112,7 +112,7 @@ ExprResult Sema::BuildObjCStringLiteral(SourceLocation AtLoc, StringLiteral *S){
     }
   } else {
     IdentifierInfo *NSIdent = NSAPIObj->getNSClassId(NSAPI::ClassId_NSString);
-    NamedDecl *IF = LookupSingleName(TUScope, NSIdent, AtLoc,
+    NamedDecl *IF = LookupSingleName(PgmScope, NSIdent, AtLoc,
                                      LookupOrdinaryName);
     if (ObjCInterfaceDecl *StrIF = dyn_cast_or_null<ObjCInterfaceDecl>(IF)) {
       Context.setObjCConstantStringInterface(StrIF);
@@ -127,7 +127,7 @@ ExprResult Sema::BuildObjCStringLiteral(SourceLocation AtLoc, StringLiteral *S){
       if (Ty.isNull()) {
         ObjCInterfaceDecl *NSStringIDecl = 
           ObjCInterfaceDecl::Create (Context, 
-                                     Context.getTranslationUnitDecl(), 
+                                     Context.getProgramDecl(), 
                                      SourceLocation(), NSIdent, 
                                      0, SourceLocation());
         Ty = Context.getObjCInterfaceType(NSStringIDecl);
@@ -195,14 +195,14 @@ static ObjCMethodDecl *getNSNumberFactoryMethod(Sema &S, SourceLocation Loc,
   if (!S.NSNumberDecl) {
     IdentifierInfo *NSNumberId =
       S.NSAPIObj->getNSClassId(NSAPI::ClassId_NSNumber);
-    NamedDecl *IF = S.LookupSingleName(S.TUScope, NSNumberId,
+    NamedDecl *IF = S.LookupSingleName(S.PgmScope, NSNumberId,
                                        Loc, Sema::LookupOrdinaryName);
     S.NSNumberDecl = dyn_cast_or_null<ObjCInterfaceDecl>(IF);
     if (!S.NSNumberDecl) {
       if (S.getLangOpts().DebuggerObjCLiteral) {
         // Create a stub definition of NSNumber.
         S.NSNumberDecl = ObjCInterfaceDecl::Create(CX,
-                                                   CX.getTranslationUnitDecl(),
+                                                   CX.getProgramDecl(),
                                                    SourceLocation(), NSNumberId,
                                                    0, SourceLocation());
       } else {
@@ -439,14 +439,14 @@ ExprResult Sema::BuildObjCBoxedExpr(SourceRange SR, Expr *ValueExpr) {
       if (!NSStringDecl) {
         IdentifierInfo *NSStringId =
           NSAPIObj->getNSClassId(NSAPI::ClassId_NSString);
-        NamedDecl *Decl = LookupSingleName(TUScope, NSStringId,
+        NamedDecl *Decl = LookupSingleName(PgmScope, NSStringId,
                                            SR.getBegin(), LookupOrdinaryName);
         NSStringDecl = dyn_cast_or_null<ObjCInterfaceDecl>(Decl);
         if (!NSStringDecl) {
           if (getLangOpts().DebuggerObjCLiteral) {
             // Support boxed expressions in the debugger w/o NSString declaration.
-            DeclContext *TU = Context.getTranslationUnitDecl();
-            NSStringDecl = ObjCInterfaceDecl::Create(Context, TU,
+            DeclContext *Pgm = Context.getProgramDecl();
+            NSStringDecl = ObjCInterfaceDecl::Create(Context, Pgm,
                                                      SourceLocation(),
                                                      NSStringId,
                                                      0, SourceLocation());
@@ -614,14 +614,14 @@ ExprResult Sema::BuildObjCSubscriptExpression(SourceLocation RB, Expr *BaseExpr,
 ExprResult Sema::BuildObjCArrayLiteral(SourceRange SR, MultiExprArg Elements) {
   // Look up the NSArray class, if we haven't done so already.
   if (!NSArrayDecl) {
-    NamedDecl *IF = LookupSingleName(TUScope,
+    NamedDecl *IF = LookupSingleName(PgmScope,
                                  NSAPIObj->getNSClassId(NSAPI::ClassId_NSArray),
                                  SR.getBegin(),
                                  LookupOrdinaryName);
     NSArrayDecl = dyn_cast_or_null<ObjCInterfaceDecl>(IF);
     if (!NSArrayDecl && getLangOpts().DebuggerObjCLiteral)
       NSArrayDecl =  ObjCInterfaceDecl::Create (Context,
-                            Context.getTranslationUnitDecl(),
+                            Context.getProgramDecl(),
                             SourceLocation(),
                             NSAPIObj->getNSClassId(NSAPI::ClassId_NSArray),
                             0, SourceLocation());
@@ -644,7 +644,7 @@ ExprResult Sema::BuildObjCArrayLiteral(SourceRange SR, MultiExprArg Elements) {
                            SourceLocation(), SourceLocation(), Sel,
                            IdT,
                            ResultTInfo,
-                           Context.getTranslationUnitDecl(),
+                           Context.getProgramDecl(),
                            false /*Instance*/, false/*isVariadic*/,
                            /*isPropertyAccessor=*/false,
                            /*isImplicitlyDeclared=*/true, /*isDefined=*/false,
@@ -733,13 +733,13 @@ ExprResult Sema::BuildObjCDictionaryLiteral(SourceRange SR,
                                             unsigned NumElements) {
   // Look up the NSDictionary class, if we haven't done so already.
   if (!NSDictionaryDecl) {
-    NamedDecl *IF = LookupSingleName(TUScope,
+    NamedDecl *IF = LookupSingleName(PgmScope,
                             NSAPIObj->getNSClassId(NSAPI::ClassId_NSDictionary),
                             SR.getBegin(), LookupOrdinaryName);
     NSDictionaryDecl = dyn_cast_or_null<ObjCInterfaceDecl>(IF);
     if (!NSDictionaryDecl && getLangOpts().DebuggerObjCLiteral)
       NSDictionaryDecl =  ObjCInterfaceDecl::Create (Context,
-                            Context.getTranslationUnitDecl(),
+                            Context.getProgramDecl(),
                             SourceLocation(),
                             NSAPIObj->getNSClassId(NSAPI::ClassId_NSDictionary),
                             0, SourceLocation());
@@ -762,7 +762,7 @@ ExprResult Sema::BuildObjCDictionaryLiteral(SourceRange SR,
                            SourceLocation(), SourceLocation(), Sel,
                            IdT,
                            0 /*TypeSourceInfo */,
-                           Context.getTranslationUnitDecl(),
+                           Context.getProgramDecl(),
                            false /*Instance*/, false/*isVariadic*/,
                            /*isPropertyAccessor=*/false,
                            /*isImplicitlyDeclared=*/true, /*isDefined=*/false,
@@ -2775,7 +2775,7 @@ bool Sema::isKnownName(StringRef name) {
     return false;
   LookupResult R(*this, &Context.Idents.get(name), SourceLocation(),
                  Sema::LookupOrdinaryName);
-  return LookupName(R, TUScope, false);
+  return LookupName(R, PgmScope, false);
 }
 
 static void addFixitForObjCARCConversion(Sema &S,

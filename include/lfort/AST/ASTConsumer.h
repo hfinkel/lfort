@@ -61,9 +61,9 @@ public:
   /// the consumer. The default implementation forwards to HandleTopLevelDecl.
   virtual void HandleInterestingDecl(DeclGroupRef D);
 
-  /// HandleTranslationUnit - This method is called when the ASTs for entire
+  /// HandleProgram - This method is called when the ASTs for entire
   /// translation unit have been parsed.
-  virtual void HandleTranslationUnit(ASTContext &Ctx) {}
+  virtual void HandleProgram(ASTContext &Ctx) {}
 
   /// HandleTagDeclDefinition - This callback is invoked each time a TagDecl
   /// (e.g. struct, union, enum, class) is completed.  This allows the client to

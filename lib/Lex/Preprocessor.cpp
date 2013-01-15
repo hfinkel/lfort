@@ -320,7 +320,7 @@ StringRef Preprocessor::getLastMacroWithSpelling(
     // Choose the macro defined latest.
     if (BestLocation.isInvalid() ||
         (Location.isValid() &&
-         SourceMgr.isBeforeInTranslationUnit(BestLocation, Location))) {
+         SourceMgr.isBeforeInProgram(BestLocation, Location))) {
       BestLocation = Location;
       BestSpelling = I->first->getName();
     }

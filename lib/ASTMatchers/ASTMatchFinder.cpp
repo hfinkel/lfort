@@ -48,9 +48,9 @@ public:
   /// \brief Builds and returns the translation unit's parent map.
   ///
   ///  The caller takes ownership of the returned \c ParentMap.
-  static ParentMap *buildMap(TranslationUnitDecl &TU) {
+  static ParentMap *buildMap(ProgramDecl &Pgm) {
     ParentMapASTVisitor Visitor(new ParentMap);
-    Visitor.TraverseDecl(&TU);
+    Visitor.TraverseDecl(&Pgm);
     return Visitor.Parents;
   }
 
@@ -338,12 +338,12 @@ public:
        ActiveASTContext(NULL) {
   }
 
-  void onStartOfTranslationUnit() {
+  void onStartOfProgram() {
     for (std::vector<std::pair<const internal::DynTypedMatcher*,
                                MatchCallback*> >::const_iterator
              I = MatcherCallbackPairs->begin(), E = MatcherCallbackPairs->end();
          I != E; ++I) {
-      I->second->onStartOfTranslationUnit();
+      I->second->onStartOfProgram();
     }
   }
 
@@ -462,7 +462,7 @@ public:
       // We always need to run over the whole translation unit, as
       // \c hasAncestor can escape any subtree.
       Parents.reset(ParentMapASTVisitor::buildMap(
-        *ActiveASTContext->getTranslationUnitDecl()));
+        *ActiveASTContext->getProgramDecl()));
     }
     return matchesAncestorOfRecursively(Node, Matcher, Builder, MatchMode);
   }
@@ -480,8 +480,8 @@ private:
   bool matchesAncestorOfRecursively(
       const ast_type_traits::DynTypedNode &Node, const DynTypedMatcher &Matcher,
       BoundNodesTreeBuilder *Builder, AncestorMatchMode MatchMode) {
-    if (Node.get<TranslationUnitDecl>() ==
-        ActiveASTContext->getTranslationUnitDecl())
+    if (Node.get<ProgramDecl>() ==
+        ActiveASTContext->getProgramDecl())
       return false;
     assert(Node.getMemoizationData() &&
            "Invariant broken: only nodes that support memoization may be "
@@ -701,13 +701,13 @@ public:
       ParsingDone(ParsingDone) {}
 
 private:
-  virtual void HandleTranslationUnit(ASTContext &Context) {
+  virtual void HandleProgram(ASTContext &Context) {
     if (ParsingDone != NULL) {
       ParsingDone->run();
     }
     Visitor.set_active_ast_context(&Context);
-    Visitor.onStartOfTranslationUnit();
-    Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+    Visitor.onStartOfProgram();
+    Visitor.TraverseDecl(Context.getProgramDecl());
     Visitor.set_active_ast_context(NULL);
   }
 

@@ -124,7 +124,7 @@ namespace lfort {
     bool IsStructuralMatch(EnumConstantDecl *FromEC, EnumConstantDecl *ToEC);
     bool IsStructuralMatch(ClassTemplateDecl *From, ClassTemplateDecl *To);
     Decl *VisitDecl(Decl *D);
-    Decl *VisitTranslationUnitDecl(TranslationUnitDecl *D);
+    Decl *VisitProgramDecl(ProgramDecl *D);
     Decl *VisitNamespaceDecl(NamespaceDecl *D);
     Decl *VisitTypedefNameDecl(TypedefNameDecl *D, bool IsAlias);
     Decl *VisitTypedefDecl(TypedefDecl *D);
@@ -2185,9 +2185,9 @@ Decl *ASTNodeImporter::VisitDecl(Decl *D) {
   return 0;
 }
 
-Decl *ASTNodeImporter::VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-  TranslationUnitDecl *ToD = 
-    Importer.getToContext().getTranslationUnitDecl();
+Decl *ASTNodeImporter::VisitProgramDecl(ProgramDecl *D) {
+  ProgramDecl *ToD = 
+    Importer.getToContext().getProgramDecl();
     
   Importer.Imported(D, ToD);
     
@@ -2207,8 +2207,8 @@ Decl *ASTNodeImporter::VisitNamespaceDecl(NamespaceDecl *D) {
     // This is an anonymous namespace. Adopt an existing anonymous
     // namespace if we can.
     // FIXME: Not testable.
-    if (TranslationUnitDecl *TU = dyn_cast<TranslationUnitDecl>(DC))
-      MergeWithNamespace = TU->getAnonymousNamespace();
+    if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(DC))
+      MergeWithNamespace = Pgm->getAnonymousNamespace();
     else
       MergeWithNamespace = cast<NamespaceDecl>(DC)->getAnonymousNamespace();
   } else {
@@ -2249,8 +2249,8 @@ Decl *ASTNodeImporter::VisitNamespaceDecl(NamespaceDecl *D) {
     // If this is an anonymous namespace, register it as the anonymous
     // namespace within its context.
     if (!Name) {
-      if (TranslationUnitDecl *TU = dyn_cast<TranslationUnitDecl>(DC))
-        TU->setAnonymousNamespace(ToNamespace);
+      if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(DC))
+        Pgm->setAnonymousNamespace(ToNamespace);
       else
         cast<NamespaceDecl>(DC)->setAnonymousNamespace(ToNamespace);
     }
@@ -3102,7 +3102,7 @@ Decl *ASTNodeImporter::VisitVarDecl(VarDecl *D) {
 Decl *ASTNodeImporter::VisitImplicitParamDecl(ImplicitParamDecl *D) {
   // Parameters are created in the translation unit's context, then moved
   // into the function declaration's context afterward.
-  DeclContext *DC = Importer.getToContext().getTranslationUnitDecl();
+  DeclContext *DC = Importer.getToContext().getProgramDecl();
   
   // Import the name of this declaration.
   DeclarationName Name = Importer.Import(D->getDeclName());
@@ -3128,7 +3128,7 @@ Decl *ASTNodeImporter::VisitImplicitParamDecl(ImplicitParamDecl *D) {
 Decl *ASTNodeImporter::VisitParmVarDecl(ParmVarDecl *D) {
   // Parameters are created in the translation unit's context, then moved
   // into the function declaration's context afterward.
-  DeclContext *DC = Importer.getToContext().getTranslationUnitDecl();
+  DeclContext *DC = Importer.getToContext().getProgramDecl();
   
   // Import the name of this declaration.
   DeclarationName Name = Importer.Import(D->getDeclName());
@@ -3851,7 +3851,7 @@ Decl *ASTNodeImporter::VisitTemplateTypeParmDecl(TemplateTypeParmDecl *D) {
   
   // FIXME: Import default argument.
   return TemplateTypeParmDecl::Create(Importer.getToContext(),
-                              Importer.getToContext().getTranslationUnitDecl(),
+                              Importer.getToContext().getProgramDecl(),
                                       Importer.Import(D->getLocStart()),
                                       Importer.Import(D->getLocation()),
                                       D->getDepth(),
@@ -3884,7 +3884,7 @@ ASTNodeImporter::VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *D) {
   // FIXME: Import default argument.
   
   return NonTypeTemplateParmDecl::Create(Importer.getToContext(),
-                               Importer.getToContext().getTranslationUnitDecl(),
+                               Importer.getToContext().getProgramDecl(),
                                          Importer.Import(D->getInnerLocStart()),
                                          Loc, D->getDepth(), D->getPosition(),
                                          Name.getAsIdentifierInfo(),
@@ -3910,7 +3910,7 @@ ASTNodeImporter::VisitTemplateTemplateParmDecl(TemplateTemplateParmDecl *D) {
   // FIXME: Import default argument.
   
   return TemplateTemplateParmDecl::Create(Importer.getToContext(), 
-                              Importer.getToContext().getTranslationUnitDecl(), 
+                              Importer.getToContext().getProgramDecl(), 
                                           Loc, D->getDepth(), D->getPosition(),
                                           D->isParameterPack(),
                                           Name.getAsIdentifierInfo(), 
@@ -4331,8 +4331,8 @@ ASTImporter::ASTImporter(ASTContext &ToContext, FileManager &ToFileManager,
     ToFileManager(ToFileManager), FromFileManager(FromFileManager),
     Minimal(MinimalImport), LastDiagFromFrom(false)
 {
-  ImportedDecls[FromContext.getTranslationUnitDecl()]
-    = ToContext.getTranslationUnitDecl();
+  ImportedDecls[FromContext.getProgramDecl()]
+    = ToContext.getProgramDecl();
 }
 
 ASTImporter::~ASTImporter() { }

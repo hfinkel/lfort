@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "CXString.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort-c/Index.h"
 #include "lfort/Frontend/ASTUnit.h"
 #include "llvm/ADT/SmallString.h"
@@ -86,10 +86,10 @@ void cxstring::disposeCXStringPool(void *p) {
   }
 }
 
-CXStringBuf *cxstring::getCXStringBuf(CXTranslationUnit TU) {
-  CXStringPool *pool = static_cast<CXStringPool*>(TU->StringPool);
+CXStringBuf *cxstring::getCXStringBuf(CXProgram Pgm) {
+  CXStringPool *pool = static_cast<CXStringPool*>(Pgm->StringPool);
   if (pool->empty())
-    return new CXStringBuf(TU);
+    return new CXStringBuf(Pgm);
   CXStringBuf *buf = pool->back();
   buf->Data.clear();
   pool->pop_back();
@@ -98,7 +98,7 @@ CXStringBuf *cxstring::getCXStringBuf(CXTranslationUnit TU) {
 
 void cxstring::disposeCXStringBuf(CXStringBuf *buf) {
   if (buf)
-    static_cast<CXStringPool*>(buf->TU->StringPool)->push_back(buf);
+    static_cast<CXStringPool*>(buf->Pgm->StringPool)->push_back(buf);
 }
 
 bool cxstring::isManagedByPool(CXString str) {

@@ -45,7 +45,7 @@ class ObjCProtocolDecl;
 struct PrintingPolicy;
 class Stmt;
 class StoredDeclsMap;
-class TranslationUnitDecl;
+class ProgramDecl;
 class UsingDirectiveDecl;
 }
 
@@ -376,9 +376,9 @@ public:
     return const_cast<Decl*>(this)->getNonClosureContext();
   }
 
-  TranslationUnitDecl *getTranslationUnitDecl();
-  const TranslationUnitDecl *getTranslationUnitDecl() const {
-    return const_cast<Decl*>(this)->getTranslationUnitDecl();
+  ProgramDecl *getProgramDecl();
+  const ProgramDecl *getProgramDecl() const {
+    return const_cast<Decl*>(this)->getProgramDecl();
   }
 
   bool isInAnonymousNamespace() const;
@@ -899,7 +899,7 @@ typedef llvm::ArrayRef<NamedDecl*> DeclContextLookupConstResult;
 /// can act as declaration contexts. These decls are (only the top classes
 /// that directly derive from DeclContext are mentioned, not their subclasses):
 ///
-///   TranslationUnitDecl
+///   ProgramDecl
 ///   NamespaceDecl
 ///   SubprogramDecl
 ///   TagDecl
@@ -1024,11 +1024,11 @@ public:
   }
 
   bool isFileContext() const {
-    return DeclKind == Decl::TranslationUnit || DeclKind == Decl::Namespace;
+    return DeclKind == Decl::Program || DeclKind == Decl::Namespace;
   }
 
-  bool isTranslationUnit() const {
-    return DeclKind == Decl::TranslationUnit;
+  bool isProgram() const {
+    return DeclKind == Decl::Program;
   }
 
   bool isRecord() const {

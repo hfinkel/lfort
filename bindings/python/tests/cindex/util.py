@@ -1,7 +1,7 @@
 # This file provides common utility functions for the test suite.
 
 from lfort.cindex import Cursor
-from lfort.cindex import TranslationUnit
+from lfort.cindex import Program
 
 def get_tu(source, lang='c', all_warnings=False):
     """Obtain a translation unit from source and language.
@@ -27,7 +27,7 @@ def get_tu(source, lang='c', all_warnings=False):
     if all_warnings:
         args += ['-Wall', '-Wextra']
 
-    return TranslationUnit.from_source(name, args, unsaved_files=[(name,
+    return Program.from_source(name, args, unsaved_files=[(name,
                                        source)])
 
 def get_cursor(source, spelling):
@@ -35,7 +35,7 @@ def get_cursor(source, spelling):
 
     This provides a convenient search mechanism to find a cursor with specific
     spelling within a source. The first argument can be either a
-    TranslationUnit or Cursor instance.
+    Program or Cursor instance.
 
     If the cursor is not found, None is returned.
     """
@@ -62,7 +62,7 @@ def get_cursors(source, spelling):
 
     This provides a convenient search mechanism to find all cursors with specific
     spelling within a source. The first argument can be either a
-    TranslationUnit or Cursor instance.
+    Program or Cursor instance.
 
     If no cursors are found, an empty list is returned.
     """

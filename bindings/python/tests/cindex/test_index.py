@@ -12,4 +12,4 @@ def test_parse():
     index = Index.create()
     assert isinstance(index, Index)
     tu = index.parse(os.path.join(kInputsDir, 'hello.cpp'))
-    assert isinstance(tu, TranslationUnit)
+    assert isinstance(tu, Program)

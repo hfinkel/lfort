@@ -569,7 +569,7 @@ Decl *Sema::ActOnTypeParameter(Scope *S, bool Typename, bool Ellipsis,
     Loc = KeyLoc;
 
   TemplateTypeParmDecl *Param
-    = TemplateTypeParmDecl::Create(Context, Context.getTranslationUnitDecl(),
+    = TemplateTypeParmDecl::Create(Context, Context.getProgramDecl(),
                                    KeyLoc, Loc, Depth, Position, ParamName,
                                    Typename, Ellipsis);
   Param->setAccess(AS_public);
@@ -701,7 +701,7 @@ Decl *Sema::ActOnNonTypeTemplateParameter(Scope *S, Declarator &D,
 
   bool IsParameterPack = D.hasEllipsis();
   NonTypeTemplateParmDecl *Param
-    = NonTypeTemplateParmDecl::Create(Context, Context.getTranslationUnitDecl(),
+    = NonTypeTemplateParmDecl::Create(Context, Context.getProgramDecl(),
                                       D.getLocStart(),
                                       D.getIdentifierLoc(),
                                       Depth, Position, ParamName, T,
@@ -764,7 +764,7 @@ Decl *Sema::ActOnTemplateTemplateParameter(Scope* S,
   // Construct the parameter object.
   bool IsParameterPack = EllipsisLoc.isValid();
   TemplateTemplateParmDecl *Param =
-    TemplateTemplateParmDecl::Create(Context, Context.getTranslationUnitDecl(),
+    TemplateTemplateParmDecl::Create(Context, Context.getProgramDecl(),
                                      NameLoc.isInvalid()? TmpLoc : NameLoc,
                                      Depth, Position, IsParameterPack,
                                      Name, Params);
@@ -5036,9 +5036,9 @@ static bool CheckTemplateSpecializationScope(Sema &S,
     //   the specialized template.
     if (!DC->InEnclosingNamespaceSetOf(SpecializedContext)) {
       bool IsCPlusPlus11Extension = DC->Encloses(SpecializedContext);
-      if (isa<TranslationUnitDecl>(SpecializedContext)) {
+      if (isa<ProgramDecl>(SpecializedContext)) {
         assert(!IsCPlusPlus11Extension &&
-               "DC encloses TU but isn't in enclosing namespace set");
+               "DC encloses program but isn't in enclosing namespace set");
         S.Diag(Loc, diag::err_template_spec_decl_out_of_scope_global)
           << EntityKind << Specialized;
       } else if (isa<NamespaceDecl>(SpecializedContext)) {
@@ -5069,7 +5069,7 @@ static bool CheckTemplateSpecializationScope(Sema &S,
   if (!ComplainedAboutScope && !DC->Encloses(SpecializedContext) &&
       !(isa<SubprogramTemplateDecl>(Specialized) || isa<VarDecl>(Specialized) ||
         isa<SubprogramDecl>(Specialized))) {
-    if (isa<TranslationUnitDecl>(SpecializedContext))
+    if (isa<ProgramDecl>(SpecializedContext))
       S.Diag(Loc, diag::err_template_spec_redecl_global_scope)
         << EntityKind << Specialized;
     else if (isa<NamespaceDecl>(SpecializedContext))
@@ -7351,7 +7351,7 @@ bool Sema::IsInsideALocalClassWithinATemplateSubprogram() {
     if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(CurContext)) {
       const SubprogramDecl *FD = RD->isLocalClass();
       return (FD && FD->getTemplatedKind() != SubprogramDecl::TK_NonTemplate);
-    } else if (DC->isTranslationUnit() || DC->isNamespace())
+    } else if (DC->isProgram() || DC->isNamespace())
       return false;
 
     DC = DC->getParent();

@@ -16,7 +16,7 @@
 #include "CXLoadedDiagnostic.h"
 #include "CXSourceLocation.h"
 #include "CXString.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 
 using namespace lfort;
 using namespace lfort::cxstring;
@@ -115,7 +115,7 @@ CXSourceLocation lfort_getRangeEnd(CXSourceRange range) {
 
 extern "C" {
   
-CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
+CXSourceLocation lfort_getLocation(CXProgram tu,
                                    CXFile file,
                                    unsigned line,
                                    unsigned column) {
@@ -123,7 +123,7 @@ CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
     return lfort_getNullLocation();
   
   bool Logging = ::getenv("LIBLFORT_LOGGING");
-  ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->TUData);
+  ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->PgmData);
   ASTUnit::ConcurrencyCheck Check(*CXXUnit);
   const FileEntry *File = static_cast<const FileEntry *>(file);
   SourceLocation SLoc = CXXUnit->getLocation(File, line, column);
@@ -142,13 +142,13 @@ CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
   return cxloc::translateSourceLocation(CXXUnit->getASTContext(), SLoc);
 }
   
-CXSourceLocation lfort_getLocationForOffset(CXTranslationUnit tu,
+CXSourceLocation lfort_getLocationForOffset(CXProgram tu,
                                             CXFile file,
                                             unsigned offset) {
   if (!tu || !file)
     return lfort_getNullLocation();
   
-  ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->TUData);
+  ASTUnit *CXXUnit = static_cast<ASTUnit *>(tu->PgmData);
 
   SourceLocation SLoc 
     = CXXUnit->getLocation(static_cast<const FileEntry *>(file), offset);

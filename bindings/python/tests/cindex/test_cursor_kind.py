@@ -5,7 +5,7 @@ def test_name():
 
 def test_get_all_kinds():
     assert CursorKind.UNEXPOSED_DECL in CursorKind.get_all_kinds()
-    assert CursorKind.TRANSLATION_UNIT in CursorKind.get_all_kinds()
+    assert CursorKind.PROGRAM in CursorKind.get_all_kinds()
 
 def test_kind_groups():
     """Check that every kind classifies to exactly one group."""
@@ -16,7 +16,7 @@ def test_kind_groups():
     assert CursorKind.UNEXPOSED_STMT.is_statement()
     assert CursorKind.INVALID_FILE.is_invalid()
 
-    assert CursorKind.TRANSLATION_UNIT.is_translation_unit()
+    assert CursorKind.PROGRAM.is_translation_unit()
     assert not CursorKind.TYPE_REF.is_translation_unit()
 
     assert CursorKind.PREPROCESSING_DIRECTIVE.is_preprocessing()
@@ -30,7 +30,7 @@ def test_kind_groups():
                              'is_statement', 'is_invalid', 'is_attribute')
                  if getattr(k, n)()]
 
-        if k in (   CursorKind.TRANSLATION_UNIT,
+        if k in (   CursorKind.PROGRAM,
                     CursorKind.MACRO_DEFINITION,
                     CursorKind.MACRO_INSTANTIATION,
                     CursorKind.INCLUSION_DIRECTIVE,

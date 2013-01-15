@@ -8727,7 +8727,7 @@ struct CompareOverloadCandidatesForDisplay {
     if (LLoc.isInvalid()) return false;
     if (RLoc.isInvalid()) return true;
 
-    return S.SourceMgr.isBeforeInTranslationUnit(LLoc, RLoc);
+    return S.SourceMgr.isBeforeInProgram(LLoc, RLoc);
   }
 };
 

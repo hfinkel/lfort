@@ -27,7 +27,7 @@ set(SOURCES
   CXStoredDiagnostic.cpp
   CXString.cpp
   CXString.h
-  CXTranslationUnit.h
+  CXProgram.h
   CXType.cpp
   CXType.h
   IndexBody.cpp

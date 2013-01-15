@@ -49,7 +49,7 @@ namespace lfort {
     void Visit(Decl *D);
 
     void VisitDecl(Decl *D);
-    void VisitTranslationUnitDecl(TranslationUnitDecl *D);
+    void VisitProgramDecl(ProgramDecl *D);
     void VisitNamedDecl(NamedDecl *D);
     void VisitLabelDecl(LabelDecl *LD);
     void VisitNamespaceDecl(NamespaceDecl *D);
@@ -162,8 +162,8 @@ void ASTDeclWriter::VisitDecl(Decl *D) {
   Record.push_back(Writer.inferSubmoduleIDFromLocation(D->getLocation()));
 }
 
-void ASTDeclWriter::VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-  llvm_unreachable("Translation units aren't directly serialized");
+void ASTDeclWriter::VisitProgramDecl(ProgramDecl *D) {
+  llvm_unreachable("Programs aren't directly serialized");
 }
 
 void ASTDeclWriter::VisitNamedDecl(NamedDecl *D) {
@@ -852,12 +852,12 @@ void ASTDeclWriter::VisitNamespaceDecl(NamespaceDecl *D) {
   if (Writer.hasChain() && D->isAnonymousNamespace() && 
       D == D->getMostRecentDecl()) {
     // This is a most recent reopening of the anonymous namespace. If its parent
-    // is in a previous PCH (or is the TU), mark that parent for update, because
+    // is in a previous PCH (or is the program), mark that parent for update, because
     // the original namespace always points to the latest re-opening of its
     // anonymous namespace.
     Decl *Parent = cast<Decl>(
         D->getParent()->getRedeclContext()->getPrimaryContext());
-    if (Parent->isFromASTFile() || isa<TranslationUnitDecl>(Parent)) {
+    if (Parent->isFromASTFile() || isa<ProgramDecl>(Parent)) {
       ASTWriter::UpdateRecord &Record = Writer.DeclUpdates[Parent];
       Record.push_back(UPD_CXX_ADDED_ANONYMOUS_NAMESPACE);
       Writer.AddDeclRef(D, Record);

@@ -264,7 +264,7 @@ static bool ShouldUseExternalRTTIDescriptor(CodeGenModule &CGM, QualType Ty) {
     if (!RD->isDynamicClass())
       return false;
 
-    return !CGM.getVTables().ShouldEmitVTableInThisTU(RD);
+    return !CGM.getVTables().ShouldEmitVTableInThisProgram(RD);
   }
   
   return false;

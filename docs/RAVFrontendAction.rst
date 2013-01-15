@@ -37,17 +37,17 @@ Creating an ASTConsumer
 ASTConsumer is an interface used to write generic actions on an AST,
 regardless of how the AST was produced. ASTConsumer provides many
 different entry points, but for our use case the only one needed is
-HandleTranslationUnit, which is called with the ASTContext for the
+HandleProgram, which is called with the ASTContext for the
 translation unit.
 
 ::
 
       class FindNamedClassConsumer : public lfort::ASTConsumer {
       public:
-        virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
+        virtual void HandleProgram(lfort::ASTContext &Context) {
           // Traversing the translation unit decl via a RecursiveASTVisitor
           // will visit all nodes in the AST.
-          Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+          Visitor.TraverseDecl(Context.getProgramDecl());
         }
       private:
         // A RecursiveASTVisitor implementation.
@@ -176,8 +176,8 @@ Now we can combine all of the above into a small example program:
         explicit FindNamedClassConsumer(ASTContext *Context)
           : Visitor(Context) {}
 
-        virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
-          Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+        virtual void HandleProgram(lfort::ASTContext &Context) {
+          Visitor.TraverseDecl(Context.getProgramDecl());
         }
       private:
         FindNamedClassVisitor Visitor;

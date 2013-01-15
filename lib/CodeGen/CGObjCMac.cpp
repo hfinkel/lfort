@@ -5015,7 +5015,7 @@ ObjCCommonTypesHelper::ObjCCommonTypesHelper(CodeGen::CodeGenModule &cgm)
   //   Class cls;
   // }
   RecordDecl *RD = RecordDecl::Create(Ctx, TTK_Struct,
-                                      Ctx.getTranslationUnitDecl(),
+                                      Ctx.getProgramDecl(),
                                       SourceLocation(), SourceLocation(),
                                       &Ctx.Idents.get("_objc_super"));
   RD->addDecl(FieldDecl::Create(Ctx, RD, SourceLocation(), SourceLocation(), 0,
@@ -5397,7 +5397,7 @@ ObjCNonFragileABITypesHelper::ObjCNonFragileABITypesHelper(CodeGen::CodeGenModul
 
   // First the lfort type for struct _message_ref_t
   RecordDecl *RD = RecordDecl::Create(Ctx, TTK_Struct,
-                                      Ctx.getTranslationUnitDecl(),
+                                      Ctx.getProgramDecl(),
                                       SourceLocation(), SourceLocation(),
                                       &Ctx.Idents.get("_message_ref_t"));
   RD->addDecl(FieldDecl::Create(Ctx, RD, SourceLocation(), SourceLocation(), 0,

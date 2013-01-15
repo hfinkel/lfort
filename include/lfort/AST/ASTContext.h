@@ -73,7 +73,7 @@ namespace lfort {
   class TagDecl;
   class TemplateTemplateParmDecl;
   class TemplateTypeParmDecl;
-  class TranslationUnitDecl;
+  class ProgramDecl;
   class TypeDecl;
   class TypedefNameDecl;
   class UsingDecl;
@@ -357,7 +357,7 @@ class ASTContext : public RefCountedBase<ASTContext> {
   ImportDecl *FirstLocalImport;
   ImportDecl *LastLocalImport;
   
-  TranslationUnitDecl *TUDecl;
+  ProgramDecl *PgmDecl;
 
   /// \brief The associated SourceManager object.a
   SourceManager &SourceMgr;
@@ -538,7 +538,7 @@ public:
   /// Return parsed documentation comment attached to a given declaration.
   /// Returns NULL if no comment is attached.
   ///
-  /// \param PP the Preprocessor used with this TU.  Could be NULL if
+  /// \param PP the Preprocessor used with this program.  Could be NULL if
   /// preprocessor is not available.
   comments::FullComment *getCommentForDecl(const Decl *D,
                                            const Preprocessor *PP) const;
@@ -695,7 +695,7 @@ public:
   }
   import_iterator local_import_end() const { return import_iterator(); }
   
-  TranslationUnitDecl *getTranslationUnitDecl() const { return TUDecl; }
+  ProgramDecl *getProgramDecl() const { return PgmDecl; }
 
 
   // Builtin Types.
@@ -1932,7 +1932,7 @@ public:
   /// none exists.
   ObjCCategoryImplDecl   *getObjCImplementation(ObjCCategoryDecl *D);
 
-  /// \brief Return true if there is at least one \@implementation in the TU.
+  /// \brief Return true if there is at least one \@implementation in the program.
   bool AnyObjCImplementation() {
     return !ObjCImpls.empty();
   }

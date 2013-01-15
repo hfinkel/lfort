@@ -1028,7 +1028,7 @@ Declaration contexts
 Every declaration in a program exists within some *declaration context*, such
 as a translation unit, namespace, class, or function.  Declaration contexts in
 LFort are represented by the ``DeclContext`` class, from which the various
-declaration-context AST nodes (``TranslationUnitDecl``, ``NamespaceDecl``,
+declaration-context AST nodes (``ProgramDecl``, ``NamespaceDecl``,
 ``RecordDecl``, ``FunctionDecl``, etc.) will derive.  The ``DeclContext`` class
 provides several facilities common to each declaration context:
 

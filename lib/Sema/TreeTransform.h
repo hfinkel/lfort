@@ -2425,8 +2425,8 @@ public:
     // Find the declaration for __builtin_shufflevector
     const IdentifierInfo &Name
       = SemaRef.Context.Idents.get("__builtin_shufflevector");
-    TranslationUnitDecl *TUDecl = SemaRef.Context.getTranslationUnitDecl();
-    DeclContext::lookup_result Lookup = TUDecl->lookup(DeclarationName(&Name));
+    ProgramDecl *PgmDecl = SemaRef.Context.getProgramDecl();
+    DeclContext::lookup_result Lookup = PgmDecl->lookup(DeclarationName(&Name));
     assert(!Lookup.empty() && "No __builtin_shufflevector?");
 
     // Build a reference to the __builtin_shufflevector builtin

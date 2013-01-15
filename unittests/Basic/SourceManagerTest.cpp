@@ -60,7 +60,7 @@ class VoidModuleLoader : public ModuleLoader {
   }
 };
 
-TEST_F(SourceManagerTest, isBeforeInTranslationUnit) {
+TEST_F(SourceManagerTest, isBeforeInProgram) {
   const char *source =
     "#define M(x) [x]\n"
     "M(foo)";
@@ -105,10 +105,10 @@ TEST_F(SourceManagerTest, isBeforeInTranslationUnit) {
   ASSERT_EQ("M", PP.getSpelling(macroExpStartLoc, str));
   ASSERT_EQ(")", PP.getSpelling(macroExpEndLoc, str));
 
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(lsqrLoc, idLoc));
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(idLoc, rsqrLoc));
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(macroExpStartLoc, idLoc));
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(idLoc, macroExpEndLoc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(lsqrLoc, idLoc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(idLoc, rsqrLoc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(macroExpStartLoc, idLoc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(idLoc, macroExpEndLoc));
 }
 
 TEST_F(SourceManagerTest, getColumnNumber) {
@@ -260,7 +260,7 @@ public:
 
 }
 
-TEST_F(SourceManagerTest, isBeforeInTranslationUnitWithMacroInInclude) {
+TEST_F(SourceManagerTest, isBeforeInProgramWithMacroInInclude) {
   const char *header =
     "#define MACRO_IN_INCLUDE 0\n";
 
@@ -336,11 +336,11 @@ TEST_F(SourceManagerTest, isBeforeInTranslationUnitWithMacroInInclude) {
 
   // The INC expansion in #include M(INC) comes before the first
   // MACRO_IN_INCLUDE definition of the included file.
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(Macros[3].Loc, Macros[4].Loc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(Macros[3].Loc, Macros[4].Loc));
 
   // The INC2 expansion in #include M(INC2) comes before the second
   // MACRO_IN_INCLUDE definition of the included file.
-  EXPECT_TRUE(SourceMgr.isBeforeInTranslationUnit(Macros[7].Loc, Macros[8].Loc));
+  EXPECT_TRUE(SourceMgr.isBeforeInProgram(Macros[7].Loc, Macros[8].Loc));
 }
 
 #endif

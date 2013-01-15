@@ -3484,21 +3484,21 @@ TEST(MatchFinder, CanMatchStatementsRecursively) {
     new VerifyRecursiveMatch<lfort::Stmt>("if", declStmt())));
 }
 
-class VerifyStartOfTranslationUnit : public MatchFinder::MatchCallback {
+class VerifyStartOfProgram : public MatchFinder::MatchCallback {
 public:
-  VerifyStartOfTranslationUnit() : Called(false) {}
+  VerifyStartOfProgram() : Called(false) {}
   virtual void run(const MatchFinder::MatchResult &Result) {
     EXPECT_TRUE(Called);
   }
-  virtual void onStartOfTranslationUnit() {
+  virtual void onStartOfProgram() {
     Called = true;
   }
   bool Called;
 };
 
-TEST(MatchFinder, InterceptsStartOfTranslationUnit) {
+TEST(MatchFinder, InterceptsStartOfProgram) {
   MatchFinder Finder;
-  VerifyStartOfTranslationUnit VerifyCallback;
+  VerifyStartOfProgram VerifyCallback;
   Finder.addMatcher(decl(), &VerifyCallback);
   OwningPtr<FrontendActionFactory> Factory(newFrontendActionFactory(&Finder));
   ASSERT_TRUE(tooling::runToolOnCode(Factory->create(), "int x;"));

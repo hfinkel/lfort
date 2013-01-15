@@ -157,7 +157,7 @@ struct CXStoredDiagnostic : public CXDiagnosticImpl {
 };
 
 namespace cxdiag {
-CXDiagnosticSetImpl *lazyCreateDiags(CXTranslationUnit TU,
+CXDiagnosticSetImpl *lazyCreateDiags(CXProgram Pgm,
                                      bool checkIfChanged = false);
 } // end namespace cxdiag
 

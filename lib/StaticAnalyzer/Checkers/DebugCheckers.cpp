@@ -110,12 +110,12 @@ void ento::registerCFGDumper(CheckerManager &mgr) {
 //===----------------------------------------------------------------------===//
 
 namespace {
-class CallGraphViewer : public Checker< check::ASTDecl<TranslationUnitDecl> > {
+class CallGraphViewer : public Checker< check::ASTDecl<ProgramDecl> > {
 public:
-  void checkASTDecl(const TranslationUnitDecl *TU, AnalysisManager& mgr,
+  void checkASTDecl(const ProgramDecl *Pgm, AnalysisManager& mgr,
                     BugReporter &BR) const {
     CallGraph CG;
-    CG.addToCallGraph(const_cast<TranslationUnitDecl*>(TU));
+    CG.addToCallGraph(const_cast<ProgramDecl*>(Pgm));
     CG.viewGraph();
   }
 };
@@ -130,12 +130,12 @@ void ento::registerCallGraphViewer(CheckerManager &mgr) {
 //===----------------------------------------------------------------------===//
 
 namespace {
-class CallGraphDumper : public Checker< check::ASTDecl<TranslationUnitDecl> > {
+class CallGraphDumper : public Checker< check::ASTDecl<ProgramDecl> > {
 public:
-  void checkASTDecl(const TranslationUnitDecl *TU, AnalysisManager& mgr,
+  void checkASTDecl(const ProgramDecl *Pgm, AnalysisManager& mgr,
                     BugReporter &BR) const {
     CallGraph CG;
-    CG.addToCallGraph(const_cast<TranslationUnitDecl*>(TU));
+    CG.addToCallGraph(const_cast<ProgramDecl*>(Pgm));
     CG.dump();
   }
 };
@@ -151,9 +151,9 @@ void ento::registerCallGraphDumper(CheckerManager &mgr) {
 //===----------------------------------------------------------------------===//
 
 namespace {
-class ConfigDumper : public Checker< check::EndOfTranslationUnit > {
+class ConfigDumper : public Checker< check::EndOfProgram > {
 public:
-  void checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
+  void checkEndOfProgram(const ProgramDecl *Pgm,
                                  AnalysisManager& mgr,
                                  BugReporter &BR) const {
 

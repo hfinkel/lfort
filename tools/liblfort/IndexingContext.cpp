@@ -9,7 +9,7 @@
 
 #include "IndexingContext.h"
 #include "CIndexDiagnostic.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort/AST/DeclCXX.h"
 #include "lfort/AST/DeclTemplate.h"
 #include "lfort/Frontend/ASTUnit.h"
@@ -30,7 +30,7 @@ IndexingContext::ObjCProtocolListInfo::ObjCProtocolListInfo(
     ProtEntities.push_back(EntityInfo());
     IdxCtx.getEntityInfo(PD, ProtEntities.back(), SA);
     CXIdxObjCProtocolRefInfo ProtInfo = { 0,
-                                MakeCursorObjCProtocolRef(PD, Loc, IdxCtx.CXTU),
+                                MakeCursorObjCProtocolRef(PD, Loc, IdxCtx.CXPgm),
                                 IdxCtx.getIndexLoc(Loc) };
     ProtInfos.push_back(ProtInfo);
 
@@ -69,7 +69,7 @@ AttrListInfo::AttrListInfo(const Decl *D, IndexingContext &IdxCtx)
   for (AttrVec::const_iterator AttrI = D->attr_begin(), AttrE = D->attr_end();
          AttrI != AttrE; ++AttrI) {
     const Attr *A = *AttrI;
-    CXCursor C = MakeCXCursor(A, const_cast<Decl *>(D), IdxCtx.CXTU);
+    CXCursor C = MakeCXCursor(A, const_cast<Decl *>(D), IdxCtx.CXPgm);
     CXIdxLoc Loc =  IdxCtx.getIndexLoc(A->getLocation());
     switch (C.kind) {
     default:
@@ -103,7 +103,7 @@ AttrListInfo::AttrListInfo(const Decl *D, IndexingContext &IdxCtx)
         IdxCtx.getEntityInfo(InterD, IBInfo.ClassInfo, SA);
         IBInfo.IBCollInfo.objcClass = &IBInfo.ClassInfo;
         IBInfo.IBCollInfo.classCursor = MakeCursorObjCClassRef(InterD,
-                                        IBAttr->getInterfaceLoc(), IdxCtx.CXTU);
+                                        IBAttr->getInterfaceLoc(), IdxCtx.CXPgm);
       }
     }
   }
@@ -142,7 +142,7 @@ IndexingContext::CXXBasesListInfo::CXXBasesListInfo(const CXXRecordDecl *D,
     if (BaseD)
       IdxCtx.getEntityInfo(BaseD, BaseEntities.back(), SA);
     CXIdxBaseClassInfo BaseInfo = { 0,
-                         MakeCursorCXXBaseSpecifier(&Base, IdxCtx.CXTU),
+                         MakeCursorCXXBaseSpecifier(&Base, IdxCtx.CXPgm),
                          IdxCtx.getIndexLoc(Loc) };
     BaseInfos.push_back(BaseInfo);
   }
@@ -196,11 +196,11 @@ const char *ScratchAlloc::copyCStr(StringRef Str) {
 
 void IndexingContext::setASTContext(ASTContext &ctx) {
   Ctx = &ctx;
-  static_cast<ASTUnit*>(CXTU->TUData)->setASTContext(&ctx);
+  static_cast<ASTUnit*>(CXPgm->PgmData)->setASTContext(&ctx);
 }
 
 void IndexingContext::setPreprocessor(Preprocessor &PP) {
-  static_cast<ASTUnit*>(CXTU->TUData)->setPreprocessor(&PP);
+  static_cast<ASTUnit*>(CXPgm->PgmData)->setPreprocessor(&PP);
 }
 
 bool IndexingContext::isSubprogramLocalDecl(const Decl *D) {
@@ -286,11 +286,11 @@ void IndexingContext::importedPCH(const FileEntry *File) {
   (void)astFile;
 }
 
-void IndexingContext::startedTranslationUnit() {
+void IndexingContext::startedProgram() {
   CXIdxClientContainer idxCont = 0;
-  if (CB.startedTranslationUnit)
-    idxCont = CB.startedTranslationUnit(ClientData, 0);
-  addContainerInMap(Ctx->getTranslationUnitDecl(), idxCont);
+  if (CB.startedProgram)
+    idxCont = CB.startedProgram(ClientData, 0);
+  addContainerInMap(Ctx->getProgramDecl(), idxCont);
 }
 
 void IndexingContext::handleDiagnosticSet(CXDiagnostic CXDiagSet) {
@@ -424,7 +424,7 @@ bool IndexingContext::handleObjCInterface(const ObjCInterfaceDecl *D) {
                                     /*isImplementation=*/false);
     return handleObjCContainer(D, D->getLocation(),
                                MakeCursorObjCClassRef(D, D->getLocation(),
-                                                      CXTU), 
+                                                      CXPgm), 
                                ContDInfo);
   }
 
@@ -437,7 +437,7 @@ bool IndexingContext::handleObjCInterface(const ObjCInterfaceDecl *D) {
     getEntityInfo(SuperD, BaseEntity, SA);
     SourceLocation SuperLoc = D->getSuperClassLoc();
     BaseClass.base = &BaseEntity;
-    BaseClass.cursor = MakeCursorObjCSuperClassRef(SuperD, SuperLoc, CXTU);
+    BaseClass.cursor = MakeCursorObjCSuperClassRef(SuperD, SuperLoc, CXPgm);
     BaseClass.loc = getIndexLoc(SuperLoc);
 
     if (shouldSuppressRefs())
@@ -479,7 +479,7 @@ bool IndexingContext::handleObjCProtocol(const ObjCProtocolDecl *D) {
                                     /*isImplementation=*/false);
     return handleObjCContainer(D, D->getLocation(), 
                                MakeCursorObjCProtocolRef(D, D->getLocation(),
-                                                         CXTU),
+                                                         CXPgm),
                                ContDInfo);    
   }
   
@@ -516,7 +516,7 @@ bool IndexingContext::handleObjCCategory(const ObjCCategoryDecl *D) {
   if (IFaceD) {
     CatDInfo.ObjCCatDeclInfo.objcClass = &ClassEntity;
     CatDInfo.ObjCCatDeclInfo.classCursor =
-        MakeCursorObjCClassRef(IFaceD, ClassLoc, CXTU);
+        MakeCursorObjCClassRef(IFaceD, ClassLoc, CXPgm);
   } else {
     CatDInfo.ObjCCatDeclInfo.objcClass = 0;
     CatDInfo.ObjCCatDeclInfo.classCursor = lfort_getNullCursor();
@@ -546,7 +546,7 @@ bool IndexingContext::handleObjCCategoryImpl(const ObjCCategoryImplDecl *D) {
   if (IFaceD) {
     CatDInfo.ObjCCatDeclInfo.objcClass = &ClassEntity;
     CatDInfo.ObjCCatDeclInfo.classCursor =
-        MakeCursorObjCClassRef(IFaceD, ClassLoc, CXTU);
+        MakeCursorObjCClassRef(IFaceD, ClassLoc, CXPgm);
   } else {
     CatDInfo.ObjCCatDeclInfo.objcClass = 0;
     CatDInfo.ObjCCatDeclInfo.classCursor = lfort_getNullCursor();
@@ -645,7 +645,7 @@ bool IndexingContext::handleReference(const NamedDecl *D, SourceLocation Loc,
     return false;
 
   CXCursor Cursor = E ? MakeCXCursor(const_cast<Expr*>(E),
-                                     const_cast<Decl*>(cast<Decl>(DC)), CXTU)
+                                     const_cast<Decl*>(cast<Decl>(DC)), CXPgm)
                       : getRefCursor(D, Loc);
   return handleReference(D, Loc, Cursor, Parent, DC, E, Kind);
 }
@@ -1114,21 +1114,21 @@ void IndexingContext::getContainerInfo(const DeclContext *DC,
 
 CXCursor IndexingContext::getRefCursor(const NamedDecl *D, SourceLocation Loc) {
   if (const TypeDecl *TD = dyn_cast<TypeDecl>(D))
-    return MakeCursorTypeRef(TD, Loc, CXTU);
+    return MakeCursorTypeRef(TD, Loc, CXPgm);
   if (const ObjCInterfaceDecl *ID = dyn_cast<ObjCInterfaceDecl>(D))
-    return MakeCursorObjCClassRef(ID, Loc, CXTU);
+    return MakeCursorObjCClassRef(ID, Loc, CXPgm);
   if (const ObjCProtocolDecl *PD = dyn_cast<ObjCProtocolDecl>(D))
-    return MakeCursorObjCProtocolRef(PD, Loc, CXTU);
+    return MakeCursorObjCProtocolRef(PD, Loc, CXPgm);
   if (const TemplateDecl *Template = dyn_cast<TemplateDecl>(D))
-    return MakeCursorTemplateRef(Template, Loc, CXTU);
+    return MakeCursorTemplateRef(Template, Loc, CXPgm);
   if (const NamespaceDecl *Namespace = dyn_cast<NamespaceDecl>(D))
-    return MakeCursorNamespaceRef(Namespace, Loc, CXTU);
+    return MakeCursorNamespaceRef(Namespace, Loc, CXPgm);
   if (const NamespaceAliasDecl *Namespace = dyn_cast<NamespaceAliasDecl>(D))
-    return MakeCursorNamespaceRef(Namespace, Loc, CXTU);
+    return MakeCursorNamespaceRef(Namespace, Loc, CXPgm);
   if (const FieldDecl *Field = dyn_cast<FieldDecl>(D))
-    return MakeCursorMemberRef(Field, Loc, CXTU);
+    return MakeCursorMemberRef(Field, Loc, CXPgm);
   if (const VarDecl *Var = dyn_cast<VarDecl>(D))
-    return MakeCursorVariableRef(Var, Loc, CXTU);
+    return MakeCursorVariableRef(Var, Loc, CXPgm);
   
   return lfort_getNullCursor();
 }

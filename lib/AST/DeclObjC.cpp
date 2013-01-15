@@ -883,7 +883,7 @@ static void collectOnCategoriesAfterLocation(SourceLocation Loc,
 
   for (const ObjCCategoryDecl *Category = Class->getCategoryList();
        Category; Category = Category->getNextClassCategory())
-    if (SM.isBeforeInTranslationUnit(Loc, Category->getLocation()))
+    if (SM.isBeforeInProgram(Loc, Category->getLocation()))
       CollectOverriddenMethodsRecurse(Category, Method, Methods, true);
 
   collectOnCategoriesAfterLocation(Loc, Class->getSuperClass(), SM,

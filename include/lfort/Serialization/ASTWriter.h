@@ -743,7 +743,7 @@ public:
                StringRef isysroot, raw_ostream *Out);
   ~PCHGenerator();
   virtual void InitializeSema(Sema &S) { SemaPtr = &S; }
-  virtual void HandleTranslationUnit(ASTContext &Ctx);
+  virtual void HandleProgram(ASTContext &Ctx);
   virtual PPMutationListener *GetPPMutationListener();
   virtual ASTMutationListener *GetASTMutationListener();
   virtual ASTDeserializationListener *GetASTDeserializationListener();

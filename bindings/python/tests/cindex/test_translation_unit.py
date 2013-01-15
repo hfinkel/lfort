@@ -7,8 +7,8 @@ from lfort.cindex import File
 from lfort.cindex import Index
 from lfort.cindex import SourceLocation
 from lfort.cindex import SourceRange
-from lfort.cindex import TranslationUnitSaveError
-from lfort.cindex import TranslationUnit
+from lfort.cindex import ProgramSaveError
+from lfort.cindex import Program
 from .util import get_cursor
 from .util import get_tu
 
@@ -16,7 +16,7 @@ kInputsDir = os.path.join(os.path.dirname(__file__), 'INPUTS')
 
 def test_spelling():
     path = os.path.join(kInputsDir, 'hello.cpp')
-    tu = TranslationUnit.from_source(path)
+    tu = Program.from_source(path)
     assert tu.spelling == path
 
 def test_cursor():
@@ -24,25 +24,25 @@ def test_cursor():
     tu = get_tu(path)
     c = tu.cursor
     assert isinstance(c, Cursor)
-    assert c.kind is CursorKind.TRANSLATION_UNIT
+    assert c.kind is CursorKind.PROGRAM
 
 def test_parse_arguments():
     path = os.path.join(kInputsDir, 'parse_arguments.c')
-    tu = TranslationUnit.from_source(path, ['-DDECL_ONE=hello', '-DDECL_TWO=hi'])
+    tu = Program.from_source(path, ['-DDECL_ONE=hello', '-DDECL_TWO=hi'])
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-2] == 'hello'
     assert spellings[-1] == 'hi'
 
 def test_reparse_arguments():
     path = os.path.join(kInputsDir, 'parse_arguments.c')
-    tu = TranslationUnit.from_source(path, ['-DDECL_ONE=hello', '-DDECL_TWO=hi'])
+    tu = Program.from_source(path, ['-DDECL_ONE=hello', '-DDECL_TWO=hi'])
     tu.reparse()
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-2] == 'hello'
     assert spellings[-1] == 'hi'
 
 def test_unsaved_files():
-    tu = TranslationUnit.from_source('fake.c', ['-I./'], unsaved_files = [
+    tu = Program.from_source('fake.c', ['-I./'], unsaved_files = [
             ('fake.c', """
 #include "fake.h"
 int x;
@@ -58,7 +58,7 @@ int SOME_DEFINE;
 
 def test_unsaved_files_2():
     import StringIO
-    tu = TranslationUnit.from_source('fake.c', unsaved_files = [
+    tu = Program.from_source('fake.c', unsaved_files = [
             ('fake.c', StringIO.StringIO('int x;'))])
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-1] == 'x'
@@ -83,12 +83,12 @@ def test_includes():
     h3 = os.path.join(kInputsDir, "header3.h")
     inc = [(src, h1), (h1, h3), (src, h2), (h2, h3)]
 
-    tu = TranslationUnit.from_source(src)
+    tu = Program.from_source(src)
     for i in zip(inc, tu.get_includes()):
         assert eq(i[0], i[1])
 
 def save_tu(tu):
-    """Convenience API to save a TranslationUnit to a file.
+    """Convenience API to save a Program to a file.
 
     Returns the filename it was saved to.
     """
@@ -106,7 +106,7 @@ def save_tu(tu):
     return path
 
 def test_save():
-    """Ensure TranslationUnit.save() works."""
+    """Ensure Program.save() works."""
 
     tu = get_tu('int foo();')
 
@@ -126,12 +126,12 @@ def test_save_translation_errors():
     try:
         tu.save(path)
         assert False
-    except TranslationUnitSaveError as ex:
-        expected = TranslationUnitSaveError.ERROR_UNKNOWN
+    except ProgramSaveError as ex:
+        expected = ProgramSaveError.ERROR_UNKNOWN
         assert ex.save_error == expected
 
 def test_load():
-    """Ensure TranslationUnits can be constructed from saved files."""
+    """Ensure Programs can be constructed from saved files."""
 
     tu = get_tu('int foo();')
     assert len(tu.diagnostics) == 0
@@ -140,7 +140,7 @@ def test_load():
     assert os.path.exists(path)
     assert os.path.getsize(path) > 0
 
-    tu2 = TranslationUnit.from_ast_file(filename=path)
+    tu2 = Program.from_ast_file(filename=path)
     assert len(tu2.diagnostics) == 0
 
     foo = get_cursor(tu2, 'foo')
@@ -155,7 +155,7 @@ def test_index_parse():
     path = os.path.join(kInputsDir, 'hello.cpp')
     index = Index.create()
     tu = index.parse(path)
-    assert isinstance(tu, TranslationUnit)
+    assert isinstance(tu, Program)
 
 def test_get_file():
     """Ensure tu.get_file() works appropriately."""

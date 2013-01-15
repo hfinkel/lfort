@@ -218,7 +218,7 @@ static llvm::sys::cas_flag ActiveASTUnitObjects;
 ASTUnit::ASTUnit(bool _MainFileIsAST)
   : Reader(0), OnlyLocalDecls(false), CaptureDiagnostics(false),
     MainFileIsAST(_MainFileIsAST), 
-    TUKind(TU_Complete), WantTiming(getenv("LIBLFORT_TIMING")),
+    PgmKind(PGM_Complete), WantTiming(getenv("LIBLFORT_TIMING")),
     OwnsRemappedFileBuffers(true),
     NumStoredDiagnosticsFromDriver(0),
     PreambleRebuildCounter(0), SavedMainFileBuffer(0), PreambleBuffer(0),
@@ -356,9 +356,9 @@ void ASTUnit::CacheCodeCompletionResults() {
   typedef CodeCompletionResult Result;
   SmallVector<Result, 8> Results;
   CachedCompletionAllocator = new GlobalCodeCompletionAllocator;
-  CodeCompletionTUInfo CCTUInfo(CachedCompletionAllocator);
+  CodeCompletionPgmInfo CCPgmInfo(CachedCompletionAllocator);
   TheSema->GatherGlobalCodeCompletions(*CachedCompletionAllocator,
-                                       CCTUInfo, Results);
+                                       CCPgmInfo, Results);
   
   // Translate global code completions into cached completions.
   llvm::DenseMap<CanQualType, unsigned> CompletionTypes;
@@ -370,7 +370,7 @@ void ASTUnit::CacheCodeCompletionResults() {
       CachedCodeCompletionResult CachedResult;
       CachedResult.Completion = Results[I].CreateCodeCompletionString(*TheSema,
                                                     *CachedCompletionAllocator,
-                                                    CCTUInfo,
+                                                    CCPgmInfo,
                                           IncludeBriefCommentsInCodeCompletion);
       CachedResult.ShowInContexts = getDeclShowContexts(Results[I].Declaration,
                                                         Ctx->getLangOpts(),
@@ -436,7 +436,7 @@ void ASTUnit::CacheCodeCompletionResults() {
           CachedResult.Completion 
             = Results[I].CreateCodeCompletionString(*TheSema,
                                                     *CachedCompletionAllocator,
-                                                    CCTUInfo,
+                                                    CCPgmInfo,
                                         IncludeBriefCommentsInCodeCompletion);
           CachedResult.ShowInContexts = RemainingContexts;
           CachedResult.Priority = CCP_NestedNameSpecifier;
@@ -459,7 +459,7 @@ void ASTUnit::CacheCodeCompletionResults() {
       CachedResult.Completion 
         = Results[I].CreateCodeCompletionString(*TheSema,
                                                 *CachedCompletionAllocator,
-                                                CCTUInfo,
+                                                CCPgmInfo,
                                           IncludeBriefCommentsInCodeCompletion);
       CachedResult.ShowInContexts
         = (1LL << CodeCompletionContext::CCC_TopLevel)
@@ -857,7 +857,7 @@ void AddTopLevelDeclarationToHash(Decl *D, unsigned &Hash) {
   if (!DC)
     return;
   
-  if (!(DC->isTranslationUnit() || DC->getLookupParent()->isTranslationUnit()))
+  if (!(DC->isProgram() || DC->getLookupParent()->isProgram()))
     return;
 
   if (NamedDecl *ND = dyn_cast<NamedDecl>(D)) {
@@ -942,8 +942,8 @@ public:
   TopLevelDeclTrackerAction(ASTUnit &_Unit) : Unit(_Unit) {}
 
   virtual bool hasCodeCompletionSupport() const { return false; }
-  virtual TranslationUnitKind getTranslationUnitKind()  { 
-    return Unit.getTranslationUnitKind(); 
+  virtual ProgramKind getProgramKind()  { 
+    return Unit.getProgramKind(); 
   }
 };
 
@@ -975,8 +975,8 @@ public:
     return true;
   }
 
-  virtual void HandleTranslationUnit(ASTContext &Ctx) {
-    PCHGenerator::HandleTranslationUnit(Ctx);
+  virtual void HandleProgram(ASTContext &Ctx) {
+    PCHGenerator::HandleProgram(Ctx);
     if (!Unit.getDiagnostics().hasErrorOccurred()) {
       // Translate the top-level declarations we captured during
       // parsing into declaration IDs in the precompiled
@@ -1016,7 +1016,7 @@ public:
 
   virtual bool hasCodeCompletionSupport() const { return false; }
   virtual bool hasASTFileSupport() const { return false; }
-  virtual TranslationUnitKind getTranslationUnitKind() { return TU_Prefix; }
+  virtual ProgramKind getProgramKind() { return PGM_Prefix; }
 };
 
 }
@@ -1741,7 +1741,7 @@ ASTUnit *ASTUnit::LoadFromCompilerInvocationAction(CompilerInvocation *CI,
   AST->CaptureDiagnostics = CaptureDiagnostics;
   if (PrecompilePreamble)
     AST->PreambleRebuildCounter = 2;
-  AST->TUKind = Action ? Action->getTranslationUnitKind() : TU_Complete;
+  AST->PgmKind = Action ? Action->getProgramKind() : PGM_Complete;
   AST->ShouldCacheCodeCompletionResults = CacheCodeCompletionResults;
   AST->IncludeBriefCommentsInCodeCompletion
     = IncludeBriefCommentsInCodeCompletion;
@@ -1883,7 +1883,7 @@ ASTUnit *ASTUnit::LoadFromCompilerInvocation(CompilerInvocation *CI,
                                              bool OnlyLocalDecls,
                                              bool CaptureDiagnostics,
                                              bool PrecompilePreamble,
-                                             TranslationUnitKind TUKind,
+                                             ProgramKind PgmKind,
                                              bool CacheCodeCompletionResults,
                                     bool IncludeBriefCommentsInCodeCompletion,
                                              bool UserFilesAreVolatile) {
@@ -1894,7 +1894,7 @@ ASTUnit *ASTUnit::LoadFromCompilerInvocation(CompilerInvocation *CI,
   AST->Diagnostics = Diags;
   AST->OnlyLocalDecls = OnlyLocalDecls;
   AST->CaptureDiagnostics = CaptureDiagnostics;
-  AST->TUKind = TUKind;
+  AST->PgmKind = PgmKind;
   AST->ShouldCacheCodeCompletionResults = CacheCodeCompletionResults;
   AST->IncludeBriefCommentsInCodeCompletion
     = IncludeBriefCommentsInCodeCompletion;
@@ -1921,7 +1921,7 @@ ASTUnit *ASTUnit::LoadFromCommandLine(const char **ArgBegin,
                                       unsigned NumRemappedFiles,
                                       bool RemappedFilesKeepOriginalName,
                                       bool PrecompilePreamble,
-                                      TranslationUnitKind TUKind,
+                                      ProgramKind PgmKind,
                                       bool CacheCodeCompletionResults,
                                       bool IncludeBriefCommentsInCodeCompletion,
                                       bool AllowPCHWithCompilerErrors,
@@ -1983,7 +1983,7 @@ ASTUnit *ASTUnit::LoadFromCommandLine(const char **ArgBegin,
   AST->FileMgr = new FileManager(AST->FileSystemOpts);
   AST->OnlyLocalDecls = OnlyLocalDecls;
   AST->CaptureDiagnostics = CaptureDiagnostics;
-  AST->TUKind = TUKind;
+  AST->PgmKind = PgmKind;
   AST->ShouldCacheCodeCompletionResults = CacheCodeCompletionResults;
   AST->IncludeBriefCommentsInCodeCompletion
     = IncludeBriefCommentsInCodeCompletion;
@@ -2067,7 +2067,7 @@ bool ASTUnit::Reparse(RemappedFile *RemappedFiles, unsigned NumRemappedFiles) {
 
   // We now need to clear out the completion info related to this translation
   // unit; it'll be recreated if necessary.
-  CCTUInfo.reset();
+  CCPgmInfo.reset();
   
   return Result;
 }
@@ -2129,8 +2129,8 @@ namespace {
       return Next.getAllocator();
     }
 
-    virtual CodeCompletionTUInfo &getCodeCompletionTUInfo() {
-      return Next.getCodeCompletionTUInfo();
+    virtual CodeCompletionPgmInfo &getCodeCompletionPgmInfo() {
+      return Next.getCodeCompletionPgmInfo();
     }
   };
 }
@@ -2288,7 +2288,7 @@ void AugmentedCodeCompleteConsumer::ProcessCodeCompleteResults(Sema &S,
         Context.getKind() == CodeCompletionContext::CCC_MacroNameUse) {
       // Create a new code-completion string that just contains the
       // macro name, without its arguments.
-      CodeCompletionBuilder Builder(getAllocator(), getCodeCompletionTUInfo(),
+      CodeCompletionBuilder Builder(getAllocator(), getCodeCompletionPgmInfo(),
                                     CCP_CodePattern, C->Availability);
       Builder.AddTypedTextChunk(C->Completion->getTypedText());
       Priority = CCP_CodePattern;

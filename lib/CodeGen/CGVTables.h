@@ -78,8 +78,8 @@ public:
   VTableContext &getVTableContext() { return VTContext; }
 
   /// \brief True if the VTable of this record must be emitted in the
-  /// translation unit.
-  bool ShouldEmitVTableInThisTU(const CXXRecordDecl *RD);
+  /// program.
+  bool ShouldEmitVTableInThisProgram(const CXXRecordDecl *RD);
 
   /// needsVTTParameter - Return whether the given global decl needs a VTT
   /// parameter, which it does if it's a base constructor or destructor with

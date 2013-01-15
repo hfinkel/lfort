@@ -64,21 +64,21 @@ public:
   }
 };
 
-class EndOfTranslationUnit {
+class EndOfProgram {
   template <typename CHECKER>
-  static void _checkEndOfTranslationUnit(void *checker,
-                                         const TranslationUnitDecl *TU, 
+  static void _checkEndOfProgram(void *checker,
+                                         const ProgramDecl *Pgm, 
                                          AnalysisManager& mgr,
                                          BugReporter &BR) {
-    ((const CHECKER *)checker)->checkEndOfTranslationUnit(TU, mgr, BR);
+    ((const CHECKER *)checker)->checkEndOfProgram(Pgm, mgr, BR);
   }
 
 public:
   template <typename CHECKER>
   static void _register(CHECKER *checker, CheckerManager &mgr){
-    mgr._registerForEndOfTranslationUnit(
-                              CheckerManager::CheckEndOfTranslationUnit(checker,
-                                          _checkEndOfTranslationUnit<CHECKER>));
+    mgr._registerForEndOfProgram(
+                              CheckerManager::CheckEndOfProgram(checker,
+                                          _checkEndOfProgram<CHECKER>));
   }
 };
 

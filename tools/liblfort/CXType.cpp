@@ -14,7 +14,7 @@
 #include "CIndexer.h"
 #include "CXCursor.h"
 #include "CXString.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "CXType.h"
 #include "lfort/AST/Decl.h"
 #include "lfort/AST/DeclObjC.h"
@@ -93,11 +93,11 @@ static CXTypeKind GetTypeKind(QualType T) {
 }
 
 
-CXType cxtype::MakeCXType(QualType T, CXTranslationUnit TU) {
+CXType cxtype::MakeCXType(QualType T, CXProgram Pgm) {
   CXTypeKind TK = CXType_Invalid;
 
-  if (TU && !T.isNull()) {
-    ASTContext &Ctx = static_cast<ASTUnit *>(TU->TUData)->getASTContext();
+  if (Pgm && !T.isNull()) {
+    ASTContext &Ctx = static_cast<ASTUnit *>(Pgm->PgmData)->getASTContext();
     if (Ctx.getLangOpts().ObjC1) {
       QualType UnqualT = T.getUnqualifiedType();
       if (Ctx.isObjCIdType(UnqualT))
@@ -111,7 +111,7 @@ CXType cxtype::MakeCXType(QualType T, CXTranslationUnit TU) {
   if (TK == CXType_Invalid)
     TK = GetTypeKind(T);
 
-  CXType CT = { TK, { TK == CXType_Invalid ? 0 : T.getAsOpaquePtr(), TU }};
+  CXType CT = { TK, { TK == CXType_Invalid ? 0 : T.getAsOpaquePtr(), Pgm }};
   return CT;
 }
 
@@ -121,8 +121,8 @@ static inline QualType GetQualType(CXType CT) {
   return QualType::getFromOpaquePtr(CT.data[0]);
 }
 
-static inline CXTranslationUnit GetTU(CXType CT) {
-  return static_cast<CXTranslationUnit>(CT.data[1]);
+static inline CXProgram GetPgm(CXType CT) {
+  return static_cast<CXProgram>(CT.data[1]);
 }
 
 extern "C" {
@@ -130,29 +130,29 @@ extern "C" {
 CXType lfort_getCursorType(CXCursor C) {
   using namespace cxcursor;
   
-  CXTranslationUnit TU = cxcursor::getCursorTU(C);
-  ASTContext &Context = static_cast<ASTUnit *>(TU->TUData)->getASTContext();
+  CXProgram Pgm = cxcursor::getCursorPgm(C);
+  ASTContext &Context = static_cast<ASTUnit *>(Pgm->PgmData)->getASTContext();
   if (lfort_isExpression(C.kind)) {
     QualType T = cxcursor::getCursorExpr(C)->getType();
-    return MakeCXType(T, TU);
+    return MakeCXType(T, Pgm);
   }
 
   if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (!D)
-      return MakeCXType(QualType(), TU);
+      return MakeCXType(QualType(), Pgm);
 
     if (TypeDecl *TD = dyn_cast<TypeDecl>(D))
-      return MakeCXType(Context.getTypeDeclType(TD), TU);
+      return MakeCXType(Context.getTypeDeclType(TD), Pgm);
     if (ObjCInterfaceDecl *ID = dyn_cast<ObjCInterfaceDecl>(D))
-      return MakeCXType(Context.getObjCInterfaceType(ID), TU);
+      return MakeCXType(Context.getObjCInterfaceType(ID), Pgm);
     if (ValueDecl *VD = dyn_cast<ValueDecl>(D))
-      return MakeCXType(VD->getType(), TU);
+      return MakeCXType(VD->getType(), Pgm);
     if (ObjCPropertyDecl *PD = dyn_cast<ObjCPropertyDecl>(D))
-      return MakeCXType(PD->getType(), TU);
+      return MakeCXType(PD->getType(), Pgm);
     if (SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D))
-      return MakeCXType(FD->getType(), TU);
-    return MakeCXType(QualType(), TU);
+      return MakeCXType(FD->getType(), Pgm);
+    return MakeCXType(QualType(), Pgm);
   }
   
   if (lfort_isReference(C.kind)) {
@@ -160,28 +160,28 @@ CXType lfort_getCursorType(CXCursor C) {
     case CXCursor_ObjCSuperClassRef: {
       QualType T
         = Context.getObjCInterfaceType(getCursorObjCSuperClassRef(C).first);
-      return MakeCXType(T, TU);
+      return MakeCXType(T, Pgm);
     }
         
     case CXCursor_ObjCClassRef: {
       QualType T = Context.getObjCInterfaceType(getCursorObjCClassRef(C).first);
-      return MakeCXType(T, TU);
+      return MakeCXType(T, Pgm);
     }
         
     case CXCursor_TypeRef: {
       QualType T = Context.getTypeDeclType(getCursorTypeRef(C).first);
-      return MakeCXType(T, TU);
+      return MakeCXType(T, Pgm);
 
     }
       
     case CXCursor_CXXBaseSpecifier:
-      return cxtype::MakeCXType(getCursorCXXBaseSpecifier(C)->getType(), TU);
+      return cxtype::MakeCXType(getCursorCXXBaseSpecifier(C)->getType(), Pgm);
 
     case CXCursor_MemberRef:
-      return cxtype::MakeCXType(getCursorMemberRef(C).first->getType(), TU);
+      return cxtype::MakeCXType(getCursorMemberRef(C).first->getType(), Pgm);
 
     case CXCursor_VariableRef:
-      return cxtype::MakeCXType(getCursorVariableRef(C).first->getType(), TU);
+      return cxtype::MakeCXType(getCursorVariableRef(C).first->getType(), Pgm);
 
     case CXCursor_ObjCProtocolRef:
     case CXCursor_TemplateRef:
@@ -191,46 +191,46 @@ CXType lfort_getCursorType(CXCursor C) {
       break;
     }
     
-    return MakeCXType(QualType(), TU);
+    return MakeCXType(QualType(), Pgm);
   }
 
-  return MakeCXType(QualType(), TU);
+  return MakeCXType(QualType(), Pgm);
 }
 
 CXType lfort_getTypedefDeclUnderlyingType(CXCursor C) {
   using namespace cxcursor;
-  CXTranslationUnit TU = cxcursor::getCursorTU(C);
+  CXProgram Pgm = cxcursor::getCursorPgm(C);
 
   if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (TypedefNameDecl *TD = dyn_cast_or_null<TypedefNameDecl>(D)) {
       QualType T = TD->getUnderlyingType();
-      return MakeCXType(T, TU);
+      return MakeCXType(T, Pgm);
     }
 
-    return MakeCXType(QualType(), TU);
+    return MakeCXType(QualType(), Pgm);
   }
 
-  return MakeCXType(QualType(), TU);
+  return MakeCXType(QualType(), Pgm);
 }
 
 CXType lfort_getEnumDeclIntegerType(CXCursor C) {
   using namespace cxcursor;
-  CXTranslationUnit TU = cxcursor::getCursorTU(C);
+  CXProgram Pgm = cxcursor::getCursorPgm(C);
 
   if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
 
     if (EnumDecl *TD = dyn_cast_or_null<EnumDecl>(D)) {
       QualType T = TD->getIntegerType();
-      return MakeCXType(T, TU);
+      return MakeCXType(T, Pgm);
     }
 
-    return MakeCXType(QualType(), TU);
+    return MakeCXType(QualType(), Pgm);
   }
 
-  return MakeCXType(QualType(), TU);
+  return MakeCXType(QualType(), Pgm);
 }
 
 long long lfort_getEnumConstantDeclValue(CXCursor C) {
@@ -285,13 +285,13 @@ CXType lfort_getCanonicalType(CXType CT) {
     return CT;
 
   QualType T = GetQualType(CT);
-  CXTranslationUnit TU = GetTU(CT);
+  CXProgram Pgm = GetPgm(CT);
 
   if (T.isNull())
-    return MakeCXType(QualType(), GetTU(CT));
+    return MakeCXType(QualType(), GetPgm(CT));
 
-  ASTUnit *AU = static_cast<ASTUnit*>(TU->TUData);
-  return MakeCXType(AU->getASTContext().getCanonicalType(T), TU);
+  ASTUnit *AU = static_cast<ASTUnit*>(Pgm->PgmData);
+  return MakeCXType(AU->getASTContext().getCanonicalType(T), Pgm);
 }
 
 unsigned lfort_isConstQualifiedType(CXType CT) {
@@ -314,7 +314,7 @@ CXType lfort_getPointeeType(CXType CT) {
   const Type *TP = T.getTypePtrOrNull();
   
   if (!TP)
-    return MakeCXType(QualType(), GetTU(CT));
+    return MakeCXType(QualType(), GetPgm(CT));
   
   switch (TP->getTypeClass()) {
     case Type::Pointer:
@@ -334,7 +334,7 @@ CXType lfort_getPointeeType(CXType CT) {
       T = QualType();
       break;
   }
-  return MakeCXType(T, GetTU(CT));
+  return MakeCXType(T, GetPgm(CT));
 }
 
 CXCursor lfort_getTypeDeclaration(CXType CT) {
@@ -389,7 +389,7 @@ try_again:
   if (!D)
     return cxcursor::MakeCXCursorInvalid(CXCursor_NoDeclFound);
 
-  return cxcursor::MakeCXCursor(D, GetTU(CT));
+  return cxcursor::MakeCXCursor(D, GetPgm(CT));
 }
 
 CXString lfort_getTypeKindSpelling(enum CXTypeKind K) {
@@ -507,40 +507,40 @@ int lfort_getNumArgTypes(CXType X) {
 CXType lfort_getArgType(CXType X, unsigned i) {
   QualType T = GetQualType(X);
   if (T.isNull())
-    return MakeCXType(QualType(), GetTU(X));
+    return MakeCXType(QualType(), GetPgm(X));
 
   if (const SubprogramProtoType *FD = T->getAs<SubprogramProtoType>()) {
     unsigned numArgs = FD->getNumArgs();
     if (i >= numArgs)
-      return MakeCXType(QualType(), GetTU(X));
+      return MakeCXType(QualType(), GetPgm(X));
     
-    return MakeCXType(FD->getArgType(i), GetTU(X));
+    return MakeCXType(FD->getArgType(i), GetPgm(X));
   }
   
-  return MakeCXType(QualType(), GetTU(X));
+  return MakeCXType(QualType(), GetPgm(X));
 }
 
 CXType lfort_getResultType(CXType X) {
   QualType T = GetQualType(X);
   if (T.isNull())
-    return MakeCXType(QualType(), GetTU(X));
+    return MakeCXType(QualType(), GetPgm(X));
   
   if (const SubprogramType *FD = T->getAs<SubprogramType>())
-    return MakeCXType(FD->getResultType(), GetTU(X));
+    return MakeCXType(FD->getResultType(), GetPgm(X));
   
-  return MakeCXType(QualType(), GetTU(X));
+  return MakeCXType(QualType(), GetPgm(X));
 }
 
 CXType lfort_getCursorResultType(CXCursor C) {
   if (lfort_isDeclaration(C.kind)) {
     Decl *D = cxcursor::getCursorDecl(C);
     if (const ObjCMethodDecl *MD = dyn_cast_or_null<ObjCMethodDecl>(D))
-      return MakeCXType(MD->getResultType(), cxcursor::getCursorTU(C));
+      return MakeCXType(MD->getResultType(), cxcursor::getCursorPgm(C));
 
     return lfort_getResultType(lfort_getCursorType(C));
   }
 
-  return MakeCXType(QualType(), cxcursor::getCursorTU(C));
+  return MakeCXType(QualType(), cxcursor::getCursorPgm(C));
 }
 
 unsigned lfort_isPODType(CXType X) {
@@ -548,8 +548,8 @@ unsigned lfort_isPODType(CXType X) {
   if (T.isNull())
     return 0;
   
-  CXTranslationUnit TU = GetTU(X);
-  ASTUnit *AU = static_cast<ASTUnit*>(TU->TUData);
+  CXProgram Pgm = GetPgm(X);
+  ASTUnit *AU = static_cast<ASTUnit*>(Pgm->PgmData);
 
   return T.isPODType(AU->getASTContext()) ? 1 : 0;
 }
@@ -574,7 +574,7 @@ CXType lfort_getElementType(CXType CT) {
       break;
     }
   }
-  return MakeCXType(ET, GetTU(CT));
+  return MakeCXType(ET, GetPgm(CT));
 }
 
 long long lfort_getNumElements(CXType CT) {
@@ -611,7 +611,7 @@ CXType lfort_getArrayElementType(CXType CT) {
       break;
     }
   }
-  return MakeCXType(ET, GetTU(CT));
+  return MakeCXType(ET, GetPgm(CT));
 }
 
 long long lfort_getArraySize(CXType CT) {
@@ -636,8 +636,8 @@ CXString lfort_getDeclObjCTypeEncoding(CXCursor C) {
     return cxstring::createCXString("");
 
   Decl *D = static_cast<Decl*>(C.data[0]);
-  CXTranslationUnit TU = static_cast<CXTranslationUnit>(C.data[2]);
-  ASTUnit *AU = static_cast<ASTUnit*>(TU->TUData);
+  CXProgram Pgm = static_cast<CXProgram>(C.data[2]);
+  ASTUnit *AU = static_cast<ASTUnit*>(Pgm->PgmData);
   ASTContext &Ctx = AU->getASTContext();
   std::string encoding;
 

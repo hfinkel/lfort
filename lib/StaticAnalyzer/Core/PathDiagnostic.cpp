@@ -217,11 +217,11 @@ compareControlFlow(const PathDiagnosticControlFlowPiece &X,
   FullSourceLoc XSL = X.getStartLocation().asLocation();
   FullSourceLoc YSL = Y.getStartLocation().asLocation();
   if (XSL != YSL)
-    return XSL.isBeforeInTranslationUnitThan(YSL);
+    return XSL.isBeforeInProgramThan(YSL);
   FullSourceLoc XEL = X.getEndLocation().asLocation();
   FullSourceLoc YEL = Y.getEndLocation().asLocation();
   if (XEL != YEL)
-    return XEL.isBeforeInTranslationUnitThan(YEL);
+    return XEL.isBeforeInProgramThan(YEL);
   return llvm::Optional<bool>();
 }
 
@@ -237,15 +237,15 @@ compareCall(const PathDiagnosticCallPiece &X,
   FullSourceLoc X_CEL = X.callEnter.asLocation();
   FullSourceLoc Y_CEL = Y.callEnter.asLocation();
   if (X_CEL != Y_CEL)
-    return X_CEL.isBeforeInTranslationUnitThan(Y_CEL);
+    return X_CEL.isBeforeInProgramThan(Y_CEL);
   FullSourceLoc X_CEWL = X.callEnterWithin.asLocation();
   FullSourceLoc Y_CEWL = Y.callEnterWithin.asLocation();
   if (X_CEWL != Y_CEWL)
-    return X_CEWL.isBeforeInTranslationUnitThan(Y_CEWL);
+    return X_CEWL.isBeforeInProgramThan(Y_CEWL);
   FullSourceLoc X_CRL = X.callReturn.asLocation();
   FullSourceLoc Y_CRL = Y.callReturn.asLocation();
   if (X_CRL != Y_CRL)
-    return X_CRL.isBeforeInTranslationUnitThan(Y_CRL);
+    return X_CRL.isBeforeInProgramThan(Y_CRL);
   return comparePath(X.path, Y.path);
 }
 
@@ -257,7 +257,7 @@ static llvm::Optional<bool> comparePiece(const PathDiagnosticPiece &X,
   FullSourceLoc XL = X.getLocation().asLocation();
   FullSourceLoc YL = Y.getLocation().asLocation();
   if (XL != YL)
-    return XL.isBeforeInTranslationUnitThan(YL);
+    return XL.isBeforeInProgramThan(YL);
 
   if (X.getString() != Y.getString())
     return X.getString() < Y.getString();
@@ -272,8 +272,8 @@ static llvm::Optional<bool> comparePiece(const PathDiagnosticPiece &X,
     SourceRange YR = Y.getRanges()[i];
     if (XR != YR) {
       if (XR.getBegin() != YR.getBegin())
-        return SM.isBeforeInTranslationUnit(XR.getBegin(), YR.getBegin());
-      return SM.isBeforeInTranslationUnit(XR.getEnd(), YR.getEnd());
+        return SM.isBeforeInProgram(XR.getBegin(), YR.getBegin());
+      return SM.isBeforeInProgram(XR.getEnd(), YR.getEnd());
     }
   }
   
@@ -309,7 +309,7 @@ static bool compare(const PathDiagnostic &X, const PathDiagnostic &Y) {
   FullSourceLoc XL = X.getLocation().asLocation();
   FullSourceLoc YL = Y.getLocation().asLocation();
   if (XL != YL)
-    return XL.isBeforeInTranslationUnitThan(YL);
+    return XL.isBeforeInProgramThan(YL);
   if (X.getBugType() != Y.getBugType())
     return X.getBugType() < Y.getBugType();
   if (X.getCategory() != Y.getCategory())
@@ -329,7 +329,7 @@ static bool compare(const PathDiagnostic &X, const PathDiagnostic &Y) {
     SourceLocation YDL = YD->getLocation();
     if (XDL != YDL) {
       const SourceManager &SM = XL.getManager();
-      return SM.isBeforeInTranslationUnit(XDL, YDL);
+      return SM.isBeforeInProgram(XDL, YDL);
     }
   }
   PathDiagnostic::meta_iterator XI = X.meta_begin(), XE = X.meta_end();

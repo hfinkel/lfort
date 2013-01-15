@@ -14,7 +14,7 @@
 
 #include "CIndexer.h"
 #include "CXSourceLocation.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort/AST/DeclVisitor.h"
 #include "lfort/Frontend/ASTUnit.h"
 #include "llvm/ADT/SmallString.h"
@@ -22,10 +22,10 @@
 using namespace lfort;
 
 extern "C" {
-void lfort_getInclusions(CXTranslationUnit TU, CXInclusionVisitor CB,
+void lfort_getInclusions(CXProgram Pgm, CXInclusionVisitor CB,
                          CXClientData clientData) {
   
-  ASTUnit *CXXUnit = static_cast<ASTUnit *>(TU->TUData);
+  ASTUnit *CXXUnit = static_cast<ASTUnit *>(Pgm->PgmData);
   SourceManager &SM = CXXUnit->getSourceManager();
   ASTContext &Ctx = CXXUnit->getASTContext();
 

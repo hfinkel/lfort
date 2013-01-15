@@ -449,7 +449,7 @@ ActOnStartClassInterface(SourceLocation AtInterfaceLoc,
   assert(ClassName && "Missing class identifier");
 
   // Check for another declaration kind with the same name.
-  NamedDecl *PrevDecl = LookupSingleName(TUScope, ClassName, ClassLoc,
+  NamedDecl *PrevDecl = LookupSingleName(PgmScope, ClassName, ClassLoc,
                                          LookupOrdinaryName, ForRedeclaration);
 
   if (PrevDecl && !isa<ObjCInterfaceDecl>(PrevDecl)) {
@@ -474,8 +474,8 @@ ActOnStartClassInterface(SourceLocation AtInterfaceLoc,
   }
   
   if (AttrList)
-    ProcessDeclAttributeList(TUScope, IDecl, AttrList);
-  PushOnScopeChains(IDecl, TUScope);
+    ProcessDeclAttributeList(PgmScope, IDecl, AttrList);
+  PushOnScopeChains(IDecl, PgmScope);
 
   // Start the definition of this class. If we're in a redefinition case, there 
   // may already be a definition, so we'll end up adding to it.
@@ -484,7 +484,7 @@ ActOnStartClassInterface(SourceLocation AtInterfaceLoc,
   
   if (SuperName) {
     // Check if a different kind of symbol declared in this scope.
-    PrevDecl = LookupSingleName(TUScope, SuperName, SuperLoc,
+    PrevDecl = LookupSingleName(PgmScope, SuperName, SuperLoc,
                                 LookupOrdinaryName);
 
     if (!PrevDecl) {
@@ -492,7 +492,7 @@ ActOnStartClassInterface(SourceLocation AtInterfaceLoc,
       // to the class we're defining.
       ObjCInterfaceValidatorCCC Validator(IDecl);
       if (TypoCorrection Corrected = CorrectTypo(
-          DeclarationNameInfo(SuperName, SuperLoc), LookupOrdinaryName, TUScope,
+          DeclarationNameInfo(SuperName, SuperLoc), LookupOrdinaryName, PgmScope,
           NULL, Validator)) {
         PrevDecl = Corrected.getCorrectionDeclAs<ObjCInterfaceDecl>();
         Diag(SuperLoc, diag::err_undef_superclass_suggest)
@@ -577,7 +577,7 @@ Decl *Sema::ActOnCompatibilityAlias(SourceLocation AtLoc,
                                     IdentifierInfo *ClassName,
                                     SourceLocation ClassLocation) {
   // Look for previous declaration of alias name
-  NamedDecl *ADecl = LookupSingleName(TUScope, AliasName, AliasLocation,
+  NamedDecl *ADecl = LookupSingleName(PgmScope, AliasName, AliasLocation,
                                       LookupOrdinaryName, ForRedeclaration);
   if (ADecl) {
     if (isa<ObjCCompatibleAliasDecl>(ADecl))
@@ -588,7 +588,7 @@ Decl *Sema::ActOnCompatibilityAlias(SourceLocation AtLoc,
     return 0;
   }
   // Check for class declaration
-  NamedDecl *CDeclU = LookupSingleName(TUScope, ClassName, ClassLocation,
+  NamedDecl *CDeclU = LookupSingleName(PgmScope, ClassName, ClassLocation,
                                        LookupOrdinaryName, ForRedeclaration);
   if (const TypedefNameDecl *TDecl =
         dyn_cast_or_null<TypedefNameDecl>(CDeclU)) {
@@ -596,7 +596,7 @@ Decl *Sema::ActOnCompatibilityAlias(SourceLocation AtLoc,
     if (T->isObjCObjectType()) {
       if (NamedDecl *IDecl = T->getAs<ObjCObjectType>()->getInterface()) {
         ClassName = IDecl->getIdentifier();
-        CDeclU = LookupSingleName(TUScope, ClassName, ClassLocation,
+        CDeclU = LookupSingleName(PgmScope, ClassName, ClassLocation,
                                   LookupOrdinaryName, ForRedeclaration);
       }
     }
@@ -614,7 +614,7 @@ Decl *Sema::ActOnCompatibilityAlias(SourceLocation AtLoc,
     ObjCCompatibleAliasDecl::Create(Context, CurContext, AtLoc, AliasName, CDecl);
 
   if (!CheckObjCDeclScope(AliasDecl))
-    PushOnScopeChains(AliasDecl, TUScope);
+    PushOnScopeChains(AliasDecl, PgmScope);
 
   return AliasDecl;
 }
@@ -689,12 +689,12 @@ Sema::ActOnStartProtocolInterface(SourceLocation AtProtoInterfaceLoc,
                                      ProtocolLoc, AtProtoInterfaceLoc,
                                      /*PrevDecl=*/PrevDecl);
     
-    PushOnScopeChains(PDecl, TUScope);
+    PushOnScopeChains(PDecl, PgmScope);
     PDecl->startDefinition();
   }
   
   if (AttrList)
-    ProcessDeclAttributeList(TUScope, PDecl, AttrList);
+    ProcessDeclAttributeList(PgmScope, PDecl, AttrList);
   
   // Merge attributes from previous declarations.
   if (PrevDecl)
@@ -725,7 +725,7 @@ Sema::FindProtocolDeclaration(bool WarnOnDeclarations,
       DeclFilterCCC<ObjCProtocolDecl> Validator;
       TypoCorrection Corrected = CorrectTypo(
           DeclarationNameInfo(ProtocolId[i].first, ProtocolId[i].second),
-          LookupObjCProtocolName, TUScope, NULL, Validator);
+          LookupObjCProtocolName, PgmScope, NULL, Validator);
       if ((PDecl = Corrected.getCorrectionDeclAs<ObjCProtocolDecl>())) {
         Diag(ProtocolId[i].second, diag::err_undeclared_protocol_suggest)
           << ProtocolId[i].first << Corrected.getCorrection();
@@ -796,11 +796,11 @@ Sema::ActOnForwardProtocolDeclaration(SourceLocation AtProtocolLoc,
                                  IdentList[i].second, AtProtocolLoc,
                                  PrevDecl);
         
-    PushOnScopeChains(PDecl, TUScope);
+    PushOnScopeChains(PDecl, PgmScope);
     CheckObjCDeclScope(PDecl);
     
     if (attrList)
-      ProcessDeclAttributeList(TUScope, PDecl, attrList);
+      ProcessDeclAttributeList(PgmScope, PDecl, attrList);
     
     if (PrevDecl)
       mergeDeclAttributes(PDecl, PrevDecl);
@@ -950,7 +950,7 @@ Decl *Sema::ActOnStartClassImplementation(
   ObjCInterfaceDecl* IDecl = 0;
   // Check for another declaration kind with the same name.
   NamedDecl *PrevDecl
-    = LookupSingleName(TUScope, ClassName, ClassLoc, LookupOrdinaryName,
+    = LookupSingleName(PgmScope, ClassName, ClassLoc, LookupOrdinaryName,
                        ForRedeclaration);
   if (PrevDecl && !isa<ObjCInterfaceDecl>(PrevDecl)) {
     Diag(ClassLoc, diag::err_redefinition_different_kind) << ClassName;
@@ -963,7 +963,7 @@ Decl *Sema::ActOnStartClassImplementation(
     // typos in the class name.
     ObjCInterfaceValidatorCCC Validator;
     if (TypoCorrection Corrected = CorrectTypo(
-        DeclarationNameInfo(ClassName, ClassLoc), LookupOrdinaryName, TUScope,
+        DeclarationNameInfo(ClassName, ClassLoc), LookupOrdinaryName, PgmScope,
         NULL, Validator)) {
       // Suggest the (potentially) correct interface name. However, put the
       // fix-it hint itself in a separate note, since changing the name in 
@@ -986,7 +986,7 @@ Decl *Sema::ActOnStartClassImplementation(
   ObjCInterfaceDecl* SDecl = 0;
   if (SuperClassname) {
     // Check if a different kind of symbol declared in this scope.
-    PrevDecl = LookupSingleName(TUScope, SuperClassname, SuperClassLoc,
+    PrevDecl = LookupSingleName(PgmScope, SuperClassname, SuperClassLoc,
                                 LookupOrdinaryName);
     if (PrevDecl && !isa<ObjCInterfaceDecl>(PrevDecl)) {
       Diag(SuperClassLoc, diag::err_redefinition_different_kind)
@@ -1027,7 +1027,7 @@ Decl *Sema::ActOnStartClassImplementation(
       IDecl->setEndOfDefinitionLoc(ClassLoc);
     }
     
-    PushOnScopeChains(IDecl, TUScope);
+    PushOnScopeChains(IDecl, PgmScope);
   } else {
     // Mark the interface as being completed, even if it was just as
     //   @class ....;
@@ -1051,7 +1051,7 @@ Decl *Sema::ActOnStartClassImplementation(
          diag::note_previous_definition);
   } else { // add it to the list.
     IDecl->setImplementation(IMPDecl);
-    PushOnScopeChains(IMPDecl, TUScope);
+    PushOnScopeChains(IMPDecl, PgmScope);
     // Warn on implementating deprecated class under 
     // -Wdeprecated-implementations flag.
     DiagnoseObjCImplementedDeprecations(*this, 
@@ -1893,7 +1893,7 @@ Sema::ActOnForwardClassDeclaration(SourceLocation AtClassLoc,
   for (unsigned i = 0; i != NumElts; ++i) {
     // Check for another declaration kind with the same name.
     NamedDecl *PrevDecl
-      = LookupSingleName(TUScope, IdentList[i], IdentLocs[i], 
+      = LookupSingleName(PgmScope, IdentList[i], IdentLocs[i], 
                          LookupOrdinaryName, ForRedeclaration);
     if (PrevDecl && PrevDecl->isTemplateParameter()) {
       // Maybe we will complain about the shadowed template parameter.
@@ -1935,7 +1935,7 @@ Sema::ActOnForwardClassDeclaration(SourceLocation AtClassLoc,
                                   IdentList[i], PrevIDecl, IdentLocs[i]);
     IDecl->setAtEndRange(IdentLocs[i]);
     
-    PushOnScopeChains(IDecl, TUScope);
+    PushOnScopeChains(IDecl, PgmScope);
     CheckObjCDeclScope(IDecl);
     DeclsInGroup.push_back(IDecl);
   }
@@ -2283,7 +2283,7 @@ Sema::ObjCContainerKind Sema::getObjCContainerKind() const {
 Decl *Sema::ActOnAtEnd(Scope *S, SourceRange AtEnd,
                        Decl **allMethods, unsigned allNum,
                        Decl **allProperties, unsigned pNum,
-                       DeclGroupPtrTy *allTUVars, unsigned tuvNum) {
+                       DeclGroupPtrTy *allPgmVars, unsigned tuvNum) {
 
   if (getObjCContainerKind() == Sema::OCK_None)
     return 0;
@@ -2433,7 +2433,7 @@ Decl *Sema::ActOnAtEnd(Scope *S, SourceRange AtEnd,
             << IDecl->getIdentifier();
           // See if NSObject is in the current scope, and if it is, suggest
           // adding " : NSObject " to the class declaration.
-          NamedDecl *IF = LookupSingleName(TUScope,
+          NamedDecl *IF = LookupSingleName(PgmScope,
                                            NSAPIObj->getNSClassId(NSAPI::ClassId_NSObject),
                                            DeclLoc, LookupOrdinaryName);
           ObjCInterfaceDecl *NSObjectDecl = dyn_cast_or_null<ObjCInterfaceDecl>(IF);
@@ -2476,7 +2476,7 @@ Decl *Sema::ActOnAtEnd(Scope *S, SourceRange AtEnd,
   if (isInterfaceDeclKind) {
     // Reject invalid vardecls.
     for (unsigned i = 0; i != tuvNum; i++) {
-      DeclGroupRef DG = allTUVars[i].getAsVal<DeclGroupRef>();
+      DeclGroupRef DG = allPgmVars[i].getAsVal<DeclGroupRef>();
       for (DeclGroupRef::iterator I = DG.begin(), E = DG.end(); I != E; ++I)
         if (VarDecl *VDecl = dyn_cast<VarDecl>(*I)) {
           if (!VDecl->hasExternalStorage())
@@ -2487,7 +2487,7 @@ Decl *Sema::ActOnAtEnd(Scope *S, SourceRange AtEnd,
   ActOnObjCContainerFinishDefinition();
 
   for (unsigned i = 0; i != tuvNum; i++) {
-    DeclGroupRef DG = allTUVars[i].getAsVal<DeclGroupRef>();
+    DeclGroupRef DG = allPgmVars[i].getAsVal<DeclGroupRef>();
     for (DeclGroupRef::iterator I = DG.begin(), E = DG.end(); I != E; ++I)
       (*I)->setTopLevelDeclInObjCContainer();
     Consumer.HandleTopLevelDeclInObjCContainer(DG);
@@ -2913,7 +2913,7 @@ Decl *Sema::ActOnMethodDeclaration(
       CvtQTToAstBitMask(ArgInfo[i].DeclSpec.getObjCDeclQualifier()));
 
     // Apply the attributes to the parameter.
-    ProcessDeclAttributeList(TUScope, Param, ArgInfo[i].ArgAttrs);
+    ProcessDeclAttributeList(PgmScope, Param, ArgInfo[i].ArgAttrs);
 
     if (Param->hasAttr<BlocksAttr>()) {
       Diag(Param->getLocation(), diag::err_block_on_nonlocal);
@@ -2949,7 +2949,7 @@ Decl *Sema::ActOnMethodDeclaration(
     CvtQTToAstBitMask(ReturnQT.getObjCDeclQualifier()));
 
   if (AttrList)
-    ProcessDeclAttributeList(TUScope, ObjCMethod, AttrList);
+    ProcessDeclAttributeList(PgmScope, ObjCMethod, AttrList);
 
   // Add the method now.
   const ObjCMethodDecl *PrevMethod = 0;
@@ -3055,7 +3055,7 @@ bool Sema::CheckObjCDeclScope(Decl *D) {
 
   // If we switched context to translation unit while we are still lexically in
   // an objc container, it means the parser missed emitting an error.
-  if (isa<TranslationUnitDecl>(getCurLexicalContext()->getRedeclContext()))
+  if (isa<ProgramDecl>(getCurLexicalContext()->getRedeclContext()))
     return false;
   
   Diag(D->getLocation(), diag::err_objc_decls_may_only_appear_in_global_scope);
@@ -3222,7 +3222,7 @@ void Sema::DiagnoseUseOfUnimplementedSelectors() {
   
   // Warning will be issued only when selector table is
   // generated (which means there is at lease one implementation
-  // in the TU). This is to match gcc's behavior.
+  // in the program). This is to match gcc's behavior.
   if (ReferencedSelectors.empty() || 
       !Context.AnyObjCImplementation())
     return;

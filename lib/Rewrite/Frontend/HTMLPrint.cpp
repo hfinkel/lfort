@@ -43,7 +43,7 @@ namespace {
         HighlightMacros(_HighlightMacros) {}
 
     void Initialize(ASTContext &context);
-    void HandleTranslationUnit(ASTContext &Ctx);
+    void HandleProgram(ASTContext &Ctx);
   };
 }
 
@@ -58,7 +58,7 @@ void HTMLPrinter::Initialize(ASTContext &context) {
   R.setSourceMgr(context.getSourceManager(), context.getLangOpts());
 }
 
-void HTMLPrinter::HandleTranslationUnit(ASTContext &Ctx) {
+void HTMLPrinter::HandleProgram(ASTContext &Ctx) {
   if (PP.getDiagnostics().hasErrorOccurred())
     return;
 

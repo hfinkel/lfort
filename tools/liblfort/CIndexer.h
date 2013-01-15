@@ -90,7 +90,7 @@ public:
   void setThreadBackgroundPriority();
 
   /// \brief Print liblfort's resource usage to standard error.
-  void PrintLiblfortResourceUsage(CXTranslationUnit TU);
+  void PrintLiblfortResourceUsage(CXProgram Pgm);
 
   namespace cxindex {
     void printDiagsToStderr(ASTUnit *Unit);

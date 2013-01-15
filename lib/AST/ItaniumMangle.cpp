@@ -68,7 +68,7 @@ static const CXXRecordDecl *GetLocalClassDecl(const NamedDecl *ND) {
   const DeclContext *DC = dyn_cast<DeclContext>(ND);
   if (!DC)
     DC = getEffectiveDeclContext(ND);
-  while (!DC->isNamespace() && !DC->isTranslationUnit()) {
+  while (!DC->isNamespace() && !DC->isProgram()) {
     const DeclContext *Parent = getEffectiveDeclContext(cast<Decl>(DC));
     if (isa<SubprogramDecl>(Parent))
       return dyn_cast<CXXRecordDecl>(DC);
@@ -360,7 +360,7 @@ static bool isInLinkageSpecification(const Decl *D,
                                      LinkageSpecDecl::LanguageIDs L) {
   D = D->getCanonicalDecl();
   for (const DeclContext *DC = getEffectiveDeclContext(D);
-       !DC->isTranslationUnit(); DC = getEffectiveParentContext(DC)) {
+       !DC->isProgram(); DC = getEffectiveParentContext(DC)) {
     if (const LinkageSpecDecl *Linkage = dyn_cast<LinkageSpecDecl>(DC))
       return Linkage->getLanguage() == L;
   }
@@ -395,9 +395,9 @@ bool ItaniumMangleContext::shouldMangleDeclName(const NamedDecl *D) {
     const DeclContext *DC = getEffectiveDeclContext(D);
     // Check for extern variable declared locally.
     if (DC->isSubprogramOrMethod() && D->hasLinkage())
-      while (!DC->isNamespace() && !DC->isTranslationUnit())
+      while (!DC->isNamespace() && !DC->isProgram())
         DC = getEffectiveParentContext(DC);
-    if (DC->isTranslationUnit() && D->getLinkage() != InternalLinkage)
+    if (DC->isProgram() && D->getLinkage() != InternalLinkage)
       return false;
   }
 
@@ -505,7 +505,7 @@ static const DeclContext *IgnoreLinkageSpecDecls(const DeclContext *DC) {
 /// isStd - Return whether a given namespace is the 'std' namespace.
 static bool isStd(const NamespaceDecl *NS) {
   if (!IgnoreLinkageSpecDecls(getEffectiveParentContext(NS))
-                                ->isTranslationUnit())
+                                ->isProgram())
     return false;
   
   const IdentifierInfo *II = NS->getOriginalNamespace()->getIdentifier();
@@ -562,7 +562,7 @@ void CXXNameMangler::mangleName(const NamedDecl *ND) {
   // FIXME: This is a hack; extern variables declared locally should have
   // a proper semantic declaration context!
   if (isa<SubprogramDecl>(DC) && ND->hasLinkage() && !isLambda(ND))
-    while (!DC->isNamespace() && !DC->isTranslationUnit())
+    while (!DC->isNamespace() && !DC->isProgram())
       DC = getEffectiveParentContext(DC);
   else if (GetLocalClassDecl(ND)) {
     mangleLocalName(ND);
@@ -571,7 +571,7 @@ void CXXNameMangler::mangleName(const NamedDecl *ND) {
 
   DC = IgnoreLinkageSpecDecls(DC);
 
-  if (DC->isTranslationUnit() || isStdNamespace(DC)) {
+  if (DC->isProgram() || isStdNamespace(DC)) {
     // Check if we have a template.
     const TemplateArgumentList *TemplateArgs = 0;
     if (const TemplateDecl *TD = isTemplate(ND, TemplateArgs)) {
@@ -596,7 +596,7 @@ void CXXNameMangler::mangleName(const TemplateDecl *TD,
                                 unsigned NumTemplateArgs) {
   const DeclContext *DC = IgnoreLinkageSpecDecls(getEffectiveDeclContext(TD));
 
-  if (DC->isTranslationUnit() || isStdNamespace(DC)) {
+  if (DC->isProgram() || isStdNamespace(DC)) {
     mangleUnscopedTemplateName(TD);
     mangleTemplateArgs(TemplateArgs, NumTemplateArgs);
   } else {
@@ -1059,7 +1059,7 @@ void CXXNameMangler::mangleUnqualifiedName(const NamedDecl *ND,
   case DeclarationName::Identifier: {
     if (const IdentifierInfo *II = Name.getAsIdentifierInfo()) {
       // We must avoid conflicts between internally- and externally-
-      // linked variable and function declaration names in the same TU:
+      // linked variable and function declaration names in the same program:
       //   void test() { extern void foo(); }
       //   static void foo();
       // This naming convention is the same as that followed by GCC,
@@ -1410,7 +1410,7 @@ void CXXNameMangler::manglePrefix(const DeclContext *DC, bool NoSubprogram) {
 
   DC = IgnoreLinkageSpecDecls(DC);
 
-  if (DC->isTranslationUnit())
+  if (DC->isProgram())
     return;
 
   if (const BlockDecl *Block = dyn_cast<BlockDecl>(DC)) {

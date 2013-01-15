@@ -801,7 +801,7 @@ void TypePrinter::printAtomicAfter(const AtomicType *T, raw_ostream &OS) { }
 
 /// Appends the given scope to the end of a string.
 void TypePrinter::AppendScope(DeclContext *DC, raw_ostream &OS) {
-  if (DC->isTranslationUnit()) return;
+  if (DC->isProgram()) return;
   if (DC->isSubprogramOrMethod()) return;
   AppendScope(DC->getParent(), OS);
 

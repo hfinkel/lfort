@@ -45,13 +45,13 @@ class PPConditionalDirectiveRecord : public PPCallbacks {
       explicit Comp(SourceManager &SM) : SM(SM) {}
       bool operator()(const CondDirectiveLoc &LHS,
                       const CondDirectiveLoc &RHS) {
-        return SM.isBeforeInTranslationUnit(LHS.getLoc(), RHS.getLoc());
+        return SM.isBeforeInProgram(LHS.getLoc(), RHS.getLoc());
       }
       bool operator()(const CondDirectiveLoc &LHS, SourceLocation RHS) {
-        return SM.isBeforeInTranslationUnit(LHS.getLoc(), RHS);
+        return SM.isBeforeInProgram(LHS.getLoc(), RHS);
       }
       bool operator()(SourceLocation LHS, const CondDirectiveLoc &RHS) {
-        return SM.isBeforeInTranslationUnit(LHS, RHS.getLoc());
+        return SM.isBeforeInProgram(LHS, RHS.getLoc());
       }
     };
   };

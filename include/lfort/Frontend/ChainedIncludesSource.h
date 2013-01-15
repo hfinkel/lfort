@@ -53,7 +53,7 @@ protected:
   virtual void CompleteType(ObjCInterfaceDecl *Class);
   virtual void StartedDeserializing();
   virtual void FinishedDeserializing();
-  virtual void StartTranslationUnit(ASTConsumer *Consumer);
+  virtual void StartProgram(ASTConsumer *Consumer);
   virtual void PrintStats();
 
   /// Return the amount of memory used by memory buffers, breaking down

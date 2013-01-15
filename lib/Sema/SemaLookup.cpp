@@ -505,7 +505,7 @@ static bool LookupBuiltin(Sema &S, LookupResult &R) {
           return false;
 
         if (NamedDecl *D = S.LazilyCreateBuiltin((IdentifierInfo *)II,
-                                                 BuiltinID, S.TUScope,
+                                                 BuiltinID, S.PgmScope,
                                                  R.isForRedeclaration(),
                                                  R.getNameLoc())) {
           R.addDecl(D);
@@ -657,7 +657,7 @@ static bool LookupDirect(Sema &S, LookupResult &R, const DeclContext *DC) {
     }
   }
 
-  if (!Found && DC->isTranslationUnit() && LookupBuiltin(S, R))
+  if (!Found && DC->isProgram() && LookupBuiltin(S, R))
     return true;
 
   if (R.getLookupName().getNameKind()
@@ -755,7 +755,7 @@ CppNamespaceLookup(Sema &S, LookupResult &R, ASTContext &Context,
   return Found;
 }
 
-static bool isNamespaceOrTranslationUnitScope(Scope *S) {
+static bool isNamespaceOrProgramScope(Scope *S) {
   if (DeclContext *Ctx = static_cast<DeclContext*>(S->getEntity()))
     return Ctx->isFileContext();
   return false;
@@ -800,7 +800,7 @@ static std::pair<DeclContext *, bool> findOuterContext(Scope *S) {
   //   }
   //
   // In this example, the lexical context we return is the
-  // TranslationUnit, while the semantic context is the namespace N.
+  // Program, while the semantic context is the namespace N.
   if (!Lexical || !DC || !S->getParent() ||
       !S->getParent()->isTemplateParamScope())
     return std::make_pair(Lexical, false);
@@ -870,7 +870,7 @@ bool Sema::CppLookupName(LookupResult &R, Scope *S) {
   // }
   //
   DeclContext *OutsideOfTemplateParamDC = 0;
-  for (; S && !isNamespaceOrTranslationUnitScope(S); S = S->getParent()) {
+  for (; S && !isNamespaceOrProgramScope(S); S = S->getParent()) {
     DeclContext *Ctx = static_cast<DeclContext*>(S->getEntity());
 
     // Check whether the IdResolver has anything in this scope.
@@ -1163,7 +1163,7 @@ bool Sema::LookupName(LookupResult &R, Scope *S, bool AllowBuiltinCreation) {
           // If the scope containing the declaration is the translation unit,
           // then we'll need to perform our checks based on the matching
           // DeclContexts rather than matching scopes.
-          if (S && isNamespaceOrTranslationUnitScope(S))
+          if (S && isNamespaceOrProgramScope(S))
             S = 0;
 
           // Compute the DeclContext, if we need it.
@@ -2043,7 +2043,7 @@ addAssociatedClassesAndNamespaces(AssociatedLookup &Result, QualType Ty) {
     case Type::ObjCObject:
     case Type::ObjCInterface:
     case Type::ObjCObjectPointer:
-      Result.Namespaces.insert(Result.S.Context.getTranslationUnitDecl());
+      Result.Namespaces.insert(Result.S.Context.getProgramDecl());
       break;
 
     // Atomic types are just wrappers; use the associations of the
@@ -2173,7 +2173,7 @@ NamedDecl *Sema::LookupSingleName(Scope *S, DeclarationName Name,
 ObjCProtocolDecl *Sema::LookupProtocol(IdentifierInfo *II,
                                        SourceLocation IdLoc,
                                        RedeclarationKind Redecl) {
-  Decl *D = LookupSingleName(TUScope, II, IdLoc,
+  Decl *D = LookupSingleName(PgmScope, II, IdLoc,
                              LookupObjCProtocolName, Redecl);
   return cast_or_null<ObjCProtocolDecl>(D);
 }
@@ -3033,7 +3033,7 @@ static void LookupVisibleDecls(Scope *S, LookupResult &Result,
     // translation unit decl when the IdentifierInfo chains would suffice.
     // Once we fix that problem (which is part of a more general "don't look
     // in DeclContexts unless we have to" optimization), we can eliminate this.
-    Entity = Result.getSema().Context.getTranslationUnitDecl();
+    Entity = Result.getSema().Context.getProgramDecl();
     LookupVisibleDecls(Entity, Result, /*QualifiedNameLookup=*/false,
                        /*InBaseClass=*/false, Consumer, Visited);
   }
@@ -3063,7 +3063,7 @@ void Sema::LookupVisibleDecls(Scope *S, LookupNameKind Kind,
   UnqualUsingDirectiveSet UDirs;
   if (getLangOpts().CPlusPlus) {
     // Find the first namespace or translation-unit scope.
-    while (S && !isNamespaceOrTranslationUnitScope(S))
+    while (S && !isNamespaceOrProgramScope(S))
       S = S->getParent();
 
     UDirs.visitScopeChain(Initial, S);
@@ -3074,7 +3074,7 @@ void Sema::LookupVisibleDecls(Scope *S, LookupNameKind Kind,
   LookupResult Result(*this, DeclarationName(), SourceLocation(), Kind);
   VisibleDeclsRecord Visited;
   if (!IncludeGlobalScope)
-    Visited.visitedContext(Context.getTranslationUnitDecl());
+    Visited.visitedContext(Context.getProgramDecl());
   ShadowContextRAII Shadow(Visited);
   ::LookupVisibleDecls(Initial, Result, UDirs, Consumer, Visited);
 }
@@ -3085,7 +3085,7 @@ void Sema::LookupVisibleDecls(DeclContext *Ctx, LookupNameKind Kind,
   LookupResult Result(*this, DeclarationName(), SourceLocation(), Kind);
   VisibleDeclsRecord Visited;
   if (!IncludeGlobalScope)
-    Visited.visitedContext(Context.getTranslationUnitDecl());
+    Visited.visitedContext(Context.getProgramDecl());
   ShadowContextRAII Shadow(Visited);
   ::LookupVisibleDecls(Ctx, Result, /*QualifiedNameLookup=*/true,
                        /*InBaseClass=*/false, Consumer, Visited);

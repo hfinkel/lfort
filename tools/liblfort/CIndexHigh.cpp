@@ -10,14 +10,14 @@
 #include "CursorVisitor.h"
 #include "CXCursor.h"
 #include "CXSourceLocation.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort/AST/DeclObjC.h"
 #include "lfort/Frontend/ASTUnit.h"
 
 using namespace lfort;
 using namespace cxcursor;
 
-static void getTopOverriddenMethods(CXTranslationUnit TU,
+static void getTopOverriddenMethods(CXProgram Pgm,
                                     Decl *D,
                                     SmallVectorImpl<Decl *> &Methods) {
   if (!D)
@@ -26,7 +26,7 @@ static void getTopOverriddenMethods(CXTranslationUnit TU,
     return;
 
   SmallVector<CXCursor, 8> Overridden;
-  cxcursor::getOverriddenCursors(cxcursor::MakeCXCursor(D, TU), Overridden);
+  cxcursor::getOverriddenCursors(cxcursor::MakeCXCursor(D, Pgm), Overridden);
   
   if (Overridden.empty()) {
     Methods.push_back(D->getCanonicalDecl());
@@ -35,13 +35,13 @@ static void getTopOverriddenMethods(CXTranslationUnit TU,
 
   for (SmallVector<CXCursor, 8>::iterator
          I = Overridden.begin(), E = Overridden.end(); I != E; ++I)
-    getTopOverriddenMethods(TU, cxcursor::getCursorDecl(*I), Methods);
+    getTopOverriddenMethods(Pgm, cxcursor::getCursorDecl(*I), Methods);
 }
 
 namespace {
 
 struct FindFileIdRefVisitData {
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   FileID FID;
   Decl *Dcl;
   int SelectorIdIdx;
@@ -50,16 +50,16 @@ struct FindFileIdRefVisitData {
   typedef SmallVector<Decl *, 8> TopMethodsTy;
   TopMethodsTy TopMethods;
 
-  FindFileIdRefVisitData(CXTranslationUnit TU, FileID FID,
+  FindFileIdRefVisitData(CXProgram Pgm, FileID FID,
                          Decl *D, int selectorIdIdx,
                          CXCursorAndRangeVisitor visitor)
-    : TU(TU), FID(FID), SelectorIdIdx(selectorIdIdx), visitor(visitor) {
+    : Pgm(Pgm), FID(FID), SelectorIdIdx(selectorIdIdx), visitor(visitor) {
     Dcl = getCanonical(D);
-    getTopOverriddenMethods(TU, Dcl, TopMethods);
+    getTopOverriddenMethods(Pgm, Dcl, TopMethods);
   }
 
   ASTContext &getASTContext() const {
-    return static_cast<ASTUnit *>(TU->TUData)->getASTContext();
+    return static_cast<ASTUnit *>(Pgm->PgmData)->getASTContext();
   }
 
   /// \brief We are looking to find all semantically relevant identifiers,
@@ -111,7 +111,7 @@ private:
       return true;
 
     TopMethodsTy methods;
-    getTopOverriddenMethods(TU, D, methods);
+    getTopOverriddenMethods(Pgm, D, methods);
     for (TopMethodsTy::iterator
            I = methods.begin(), E = methods.end(); I != E; ++I) {
       if (std::find(TopMethods.begin(), TopMethods.end(), *I) !=
@@ -207,11 +207,11 @@ static enum CXChildVisitResult findFileIdRefVisit(CXCursor cursor,
   return CXChildVisit_Recurse;
 }
 
-static void findIdRefsInFile(CXTranslationUnit TU, CXCursor declCursor,
+static void findIdRefsInFile(CXProgram Pgm, CXCursor declCursor,
                            const FileEntry *File,
                            CXCursorAndRangeVisitor Visitor) {
   assert(lfort_isDeclaration(declCursor.kind));
-  ASTUnit *Unit = static_cast<ASTUnit*>(TU->TUData);
+  ASTUnit *Unit = static_cast<ASTUnit*>(Pgm->PgmData);
   SourceManager &SM = Unit->getSourceManager();
 
   FileID FID = SM.translateFile(File);
@@ -219,18 +219,18 @@ static void findIdRefsInFile(CXTranslationUnit TU, CXCursor declCursor,
   if (!Dcl)
     return;
 
-  FindFileIdRefVisitData data(TU, FID, Dcl,
+  FindFileIdRefVisitData data(Pgm, FID, Dcl,
                               cxcursor::getSelectorIdentifierIndex(declCursor),
                               Visitor);
 
   if (DeclContext *DC = Dcl->getParentSubprogramOrMethod()) {
-    lfort_visitChildren(cxcursor::MakeCXCursor(cast<Decl>(DC), TU),
+    lfort_visitChildren(cxcursor::MakeCXCursor(cast<Decl>(DC), Pgm),
                         findFileIdRefVisit, &data);
     return;
   }
 
   SourceRange Range(SM.getLocForStartOfFile(FID), SM.getLocForEndOfFile(FID));
-  CursorVisitor FindIdRefsVisitor(TU,
+  CursorVisitor FindIdRefsVisitor(Pgm,
                                   findFileIdRefVisit, &data,
                                   /*VisitPreprocessorLast=*/true,
                                   /*VisitIncludedEntities=*/false,
@@ -302,14 +302,14 @@ static enum CXChildVisitResult findFileMacroRefVisit(CXCursor cursor,
   return CXChildVisit_Continue;
 }
 
-static void findMacroRefsInFile(CXTranslationUnit TU, CXCursor Cursor,
+static void findMacroRefsInFile(CXProgram Pgm, CXCursor Cursor,
                                 const FileEntry *File,
                                 CXCursorAndRangeVisitor Visitor) {
   if (Cursor.kind != CXCursor_MacroDefinition &&
       Cursor.kind != CXCursor_MacroExpansion)
     return;
 
-  ASTUnit *Unit = static_cast<ASTUnit*>(TU->TUData);
+  ASTUnit *Unit = static_cast<ASTUnit*>(Pgm->PgmData);
   SourceManager &SM = Unit->getSourceManager();
 
   FileID FID = SM.translateFile(File);
@@ -324,7 +324,7 @@ static void findMacroRefsInFile(CXTranslationUnit TU, CXCursor Cursor,
   FindFileMacroRefVisitData data(*Unit, File, Macro, Visitor);
 
   SourceRange Range(SM.getLocForStartOfFile(FID), SM.getLocForEndOfFile(FID));
-  CursorVisitor FindMacroRefsVisitor(TU,
+  CursorVisitor FindMacroRefsVisitor(Pgm,
                                   findFileMacroRefVisit, &data,
                                   /*VisitPreprocessorLast=*/false,
                                   /*VisitIncludedEntities=*/false,
@@ -372,7 +372,7 @@ void lfort_findReferencesInFile(CXCursor cursor, CXFile file,
 
   if (cursor.kind == CXCursor_MacroDefinition ||
       cursor.kind == CXCursor_MacroExpansion) {
-    findMacroRefsInFile(cxcursor::getCursorTU(cursor),
+    findMacroRefsInFile(cxcursor::getCursorPgm(cursor),
                         cursor,
                         static_cast<const FileEntry *>(file),
                         visitor);
@@ -397,7 +397,7 @@ void lfort_findReferencesInFile(CXCursor cursor, CXFile file,
     return;
   }
 
-  findIdRefsInFile(cxcursor::getCursorTU(cursor),
+  findIdRefsInFile(cxcursor::getCursorPgm(cursor),
                    refCursor,
                    static_cast<const FileEntry *>(file),
                    visitor);

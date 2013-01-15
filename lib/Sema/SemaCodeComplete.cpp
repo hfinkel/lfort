@@ -124,7 +124,7 @@ namespace {
     /// \brief The allocator used to allocate new code-completion strings.
     CodeCompletionAllocator &Allocator;
 
-    CodeCompletionTUInfo &CCTUInfo;
+    CodeCompletionPgmInfo &CCPgmInfo;
     
     /// \brief If non-NULL, a filter function used to remove any code-completion
     /// results that are not desirable.
@@ -168,10 +168,10 @@ namespace {
     
   public:
     explicit ResultBuilder(Sema &SemaRef, CodeCompletionAllocator &Allocator,
-                           CodeCompletionTUInfo &CCTUInfo,
+                           CodeCompletionPgmInfo &CCPgmInfo,
                            const CodeCompletionContext &CompletionContext,
                            LookupFilter Filter = 0)
-      : SemaRef(SemaRef), Allocator(Allocator), CCTUInfo(CCTUInfo),
+      : SemaRef(SemaRef), Allocator(Allocator), CCPgmInfo(CCPgmInfo),
         Filter(Filter), 
         AllowNestedNameSpecifiers(false), HasObjectTypeQualifiers(false), 
         CompletionContext(CompletionContext),
@@ -256,7 +256,7 @@ namespace {
     /// \brief Retrieve the allocator used to allocate code completion strings.
     CodeCompletionAllocator &getAllocator() const { return Allocator; }
 
-    CodeCompletionTUInfo &getCodeCompletionTUInfo() const { return CCTUInfo; }
+    CodeCompletionPgmInfo &getCodeCompletionPgmInfo() const { return CCPgmInfo; }
     
     /// \brief Determine whether the given declaration is at all interesting
     /// as a code-completion result.
@@ -1241,7 +1241,7 @@ static void AddTypeSpecifierResults(const LangOptions &LangOpts,
   }
   
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   if (LangOpts.CPlusPlus) {
     // C++-specific
     Results.AddResult(Result("bool", CCP_Type + 
@@ -1352,7 +1352,7 @@ static void AddObjCTopLevelResults(ResultBuilder &Results, bool NeedAt);
 
 static void AddTypedefResult(ResultBuilder &Results) {
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   Builder.AddTypedTextChunk("typedef");
   Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
   Builder.AddPlaceholderChunk("type");
@@ -1446,7 +1446,7 @@ static void addThisCompletion(Sema &S, ResultBuilder &Results) {
     return;
   
   CodeCompletionAllocator &Allocator = Results.getAllocator();
-  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionTUInfo());
+  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionPgmInfo());
   PrintingPolicy Policy = getCompletionPrintingPolicy(S);
   Builder.AddResultTypeChunk(GetCompletionTypeString(ThisTy, 
                                                      S.Context, 
@@ -1462,7 +1462,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
                                    Sema &SemaRef,
                                    ResultBuilder &Results) {
   CodeCompletionAllocator &Allocator = Results.getAllocator();
-  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionTUInfo());
+  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionPgmInfo());
   PrintingPolicy Policy = getCompletionPrintingPolicy(SemaRef);
   
   typedef CodeCompletionResult Result;
@@ -2209,7 +2209,7 @@ static void AddSubprogramParameterChunks(ASTContext &Context,
       // When we see an optional default argument, put that argument and
       // the remaining default arguments into a new, optional string.
       CodeCompletionBuilder Opt(Result.getAllocator(),
-                                Result.getCodeCompletionTUInfo());
+                                Result.getCodeCompletionPgmInfo());
       if (!FirstParameter)
         Opt.AddChunk(CodeCompletionString::CK_Comma);
       AddSubprogramParameterChunks(Context, Policy, Subprogram, Opt, P, true);
@@ -2301,7 +2301,7 @@ static void AddTemplateParameterChunks(ASTContext &Context,
       // When we see an optional default argument, put that argument and
       // the remaining default arguments into a new, optional string.
       CodeCompletionBuilder Opt(Result.getAllocator(),
-                                Result.getCodeCompletionTUInfo());
+                                Result.getCodeCompletionPgmInfo());
       if (!FirstParameter)
         Opt.AddChunk(CodeCompletionString::CK_Comma);
       AddTemplateParameterChunks(Context, Policy, Template, Opt, MaxParameters,
@@ -2457,9 +2457,9 @@ static void AddTypedNameChunk(ASTContext &Context, const PrintingPolicy &Policy,
 
 CodeCompletionString *CodeCompletionResult::CreateCodeCompletionString(Sema &S,
                                          CodeCompletionAllocator &Allocator,
-                                         CodeCompletionTUInfo &CCTUInfo,
+                                         CodeCompletionPgmInfo &CCPgmInfo,
                                          bool IncludeBriefComments) {
-  return CreateCodeCompletionString(S.Context, S.PP, Allocator, CCTUInfo,
+  return CreateCodeCompletionString(S.Context, S.PP, Allocator, CCPgmInfo,
                                     IncludeBriefComments);
 }
 
@@ -2473,9 +2473,9 @@ CodeCompletionString *
 CodeCompletionResult::CreateCodeCompletionString(ASTContext &Ctx,
                                                  Preprocessor &PP,
                                            CodeCompletionAllocator &Allocator,
-                                           CodeCompletionTUInfo &CCTUInfo,
+                                           CodeCompletionPgmInfo &CCPgmInfo,
                                            bool IncludeBriefComments) {
-  CodeCompletionBuilder Result(Allocator, CCTUInfo, Priority, Availability);
+  CodeCompletionBuilder Result(Allocator, CCPgmInfo, Priority, Availability);
   
   PrintingPolicy Policy = getCompletionPrintingPolicy(Ctx, PP);
   if (Kind == RK_Pattern) {
@@ -2737,11 +2737,11 @@ CodeCompleteConsumer::OverloadCandidate::CreateSignatureString(
                                                           unsigned CurrentArg,
                                                                Sema &S,
                                      CodeCompletionAllocator &Allocator,
-                                     CodeCompletionTUInfo &CCTUInfo) const {
+                                     CodeCompletionPgmInfo &CCPgmInfo) const {
   PrintingPolicy Policy = getCompletionPrintingPolicy(S);
 
   // FIXME: Set priority, availability appropriately.
-  CodeCompletionBuilder Result(Allocator,CCTUInfo, 1, CXAvailability_Available);
+  CodeCompletionBuilder Result(Allocator,CCPgmInfo, 1, CXAvailability_Available);
   SubprogramDecl *FDecl = getSubprogram();
   AddResultTypeChunk(S.Context, Policy, FDecl, Result);
   const SubprogramProtoType *Proto 
@@ -2868,7 +2868,7 @@ CXCursorKind lfort::getCursorKindForDecl(Decl *D) {
     case Decl::ClassTemplatePartialSpecialization:
       return CXCursor_ClassTemplatePartialSpecialization;
     case Decl::UsingDirective:     return CXCursor_UsingDirective;
-    case Decl::TranslationUnit:    return CXCursor_TranslationUnit;
+    case Decl::Program:    return CXCursor_Program;
       
     case Decl::Using:
     case Decl::UnresolvedUsingValue:
@@ -3036,7 +3036,7 @@ static void MaybeAddOverrideCalls(Sema &S, DeclContext *InContext,
                                    MEnd = Method->end_overridden_methods();
        M != MEnd; ++M) {
     CodeCompletionBuilder Builder(Results.getAllocator(),
-                                  Results.getCodeCompletionTUInfo());
+                                  Results.getCodeCompletionPgmInfo());
     CXXMethodDecl *Overridden = const_cast<CXXMethodDecl *>(*M);
     if (Overridden->getCanonicalDecl() == Method->getCanonicalDecl())
       continue;
@@ -3084,12 +3084,12 @@ void Sema::CodeCompleteModuleImport(SourceLocation ImportLoc,
                                     ModuleIdPath Path) {
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   
   CodeCompletionAllocator &Allocator = Results.getAllocator();
-  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionTUInfo());
+  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionPgmInfo());
   typedef CodeCompletionResult Result;
   if (Path.empty()) {
     // Enumerate all top-level modules.
@@ -3135,7 +3135,7 @@ void Sema::CodeCompleteModuleImport(SourceLocation ImportLoc,
 void Sema::CodeCompleteOrdinaryName(Scope *S, 
                                     ParserCompletionContext CompletionContext) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         mapCodeCompletionContext(*this, CompletionContext));
   Results.EnterNewScope();
   
@@ -3231,7 +3231,7 @@ void Sema::CodeCompleteDeclSpec(Scope *S, DeclSpec &DS,
                                 bool AllowNestedNameSpecifiers) {
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         AllowNestedNameSpecifiers
                           ? CodeCompletionContext::CCC_PotentiallyQualifiedName
                           : CodeCompletionContext::CCC_Name);
@@ -3305,7 +3305,7 @@ struct Sema::CodeCompleteExpressionData {
 void Sema::CodeCompleteExpression(Scope *S, 
                                   const CodeCompleteExpressionData &Data) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Expression);
   if (Data.ObjCCollection)
     Results.setFilter(&ResultBuilder::IsObjCCollection);
@@ -3410,7 +3410,7 @@ static void AddObjCProperties(ObjCContainerDecl *Container,
         if (IdentifierInfo *Name = M->getSelector().getIdentifierInfoForSlot(0))
           if (AddedProperties.insert(Name)) {
             CodeCompletionBuilder Builder(Results.getAllocator(),
-                                          Results.getCodeCompletionTUInfo());
+                                          Results.getCodeCompletionPgmInfo());
             AddResultTypeChunk(Context, Policy, *M, Builder);
             Builder.AddTypedTextChunk(
                             Results.getAllocator().CopyString(Name->getName()));
@@ -3502,7 +3502,7 @@ void Sema::CodeCompleteMemberReferenceExpr(Scope *S, Expr *Base,
   }
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                   CodeCompletionContext(contextKind,
                                         BaseType),
                         &ResultBuilder::IsMember);
@@ -3613,7 +3613,7 @@ void Sema::CodeCompleteTag(Scope *S, unsigned TagSpec) {
   }
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(), ContextKind);
+                        CodeCompleter->getCodeCompletionPgmInfo(), ContextKind);
   CodeCompletionDeclConsumer Consumer(Results, CurContext);
 
   // First pass: look for tags.
@@ -3633,7 +3633,7 @@ void Sema::CodeCompleteTag(Scope *S, unsigned TagSpec) {
 
 void Sema::CodeCompleteTypeQualifiers(DeclSpec &DS) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_TypeQualifiers);
   Results.EnterNewScope();
   if (!(DS.getTypeQualifiers() & DeclSpec::TQ_const))
@@ -3716,7 +3716,7 @@ void Sema::CodeCompleteCase(Scope *S) {
   
   // Add any enumerators that have not yet been mentioned.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Expression);
   Results.EnterNewScope();
   for (EnumDecl::enumerator_iterator E = Enum->enumerator_begin(),
@@ -3906,7 +3906,7 @@ void Sema::CodeCompleteReturn(Scope *S) {
 
 void Sema::CodeCompleteAfterIf(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         mapCodeCompletionContext(*this, PCC_Statement));
   Results.setFilter(&ResultBuilder::IsOrdinaryName);
   Results.EnterNewScope();
@@ -3919,7 +3919,7 @@ void Sema::CodeCompleteAfterIf(Scope *S) {
   
   // "else" block
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   Builder.AddTypedTextChunk("else");
   if (Results.includeCodePatterns()) {
     Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
@@ -3986,7 +3986,7 @@ void Sema::CodeCompleteQualifiedId(Scope *S, CXXScopeSpec &SS,
     return;
 
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Name);
   Results.EnterNewScope();
   
@@ -4018,7 +4018,7 @@ void Sema::CodeCompleteUsing(Scope *S) {
     return;
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_PotentiallyQualifiedName,
                         &ResultBuilder::IsNestedNameSpecifier);
   Results.EnterNewScope();
@@ -4046,7 +4046,7 @@ void Sema::CodeCompleteUsingDirective(Scope *S) {
   // After "using namespace", we expect to see a namespace name or namespace
   // alias.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Namespace,
                         &ResultBuilder::IsNamespaceOrAlias);
   Results.EnterNewScope();
@@ -4065,13 +4065,13 @@ void Sema::CodeCompleteNamespaceDecl(Scope *S)  {
   
   DeclContext *Ctx = (DeclContext *)S->getEntity();
   if (!S->getParent())
-    Ctx = Context.getTranslationUnitDecl();
+    Ctx = Context.getProgramDecl();
   
   bool SuppressedGlobalResults
-    = Ctx && !CodeCompleter->includeGlobals() && isa<TranslationUnitDecl>(Ctx);
+    = Ctx && !CodeCompleter->includeGlobals() && isa<ProgramDecl>(Ctx);
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         SuppressedGlobalResults
                           ? CodeCompletionContext::CCC_Namespace
                           : CodeCompletionContext::CCC_Other,
@@ -4111,7 +4111,7 @@ void Sema::CodeCompleteNamespaceAliasDecl(Scope *S)  {
   
   // After "namespace", we expect to see a namespace or alias.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Namespace,
                         &ResultBuilder::IsNamespaceOrAlias);
   CodeCompletionDeclConsumer Consumer(Results, CurContext);
@@ -4128,7 +4128,7 @@ void Sema::CodeCompleteOperatorName(Scope *S) {
 
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Type,
                         &ResultBuilder::IsType);
   Results.EnterNewScope();
@@ -4164,7 +4164,7 @@ void Sema::CodeCompleteConstructorInitializer(Decl *ConstructorD,
     return;
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_PotentiallyQualifiedName);
   Results.EnterNewScope();
   
@@ -4182,7 +4182,7 @@ void Sema::CodeCompleteConstructorInitializer(Decl *ConstructorD,
   
   // Add completions for base classes.
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   bool SawLastInitializer = (NumInitializers == 0);
   CXXRecordDecl *ClassDecl = Constructor->getParent();
   for (CXXRecordDecl::base_class_iterator Base = ClassDecl->bases_begin(),
@@ -4280,7 +4280,7 @@ static bool isNamespaceScope(Scope *S) {
 void Sema::CodeCompleteLambdaIntroducer(Scope *S, LambdaIntroducer &Intro,
                                         bool AfterAmpersand) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
 
@@ -4335,7 +4335,7 @@ static void AddObjCImplementationResults(const LangOptions &LangOpts,
   Results.AddResult(Result(OBJC_AT_KEYWORD_NAME(NeedAt,"end")));
   
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   if (LangOpts.ObjC2) {
     // @dynamic
     Builder.AddTypedTextChunk(OBJC_AT_KEYWORD_NAME(NeedAt,"dynamic"));
@@ -4374,7 +4374,7 @@ static void AddObjCInterfaceResults(const LangOptions &LangOpts,
 static void AddObjCTopLevelResults(ResultBuilder &Results, bool NeedAt) {
   typedef CodeCompletionResult Result;
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   
   // @class name ;
   Builder.AddTypedTextChunk(OBJC_AT_KEYWORD_NAME(NeedAt,"class"));
@@ -4415,7 +4415,7 @@ static void AddObjCTopLevelResults(ResultBuilder &Results, bool NeedAt) {
 
 void Sema::CodeCompleteObjCAtDirective(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   if (isa<ObjCImplDecl>(CurContext))
@@ -4433,7 +4433,7 @@ void Sema::CodeCompleteObjCAtDirective(Scope *S) {
 static void AddObjCExpressionResults(ResultBuilder &Results, bool NeedAt) {
   typedef CodeCompletionResult Result;
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
 
   // @encode ( type-name )
   const char *EncodeType = "char[]";
@@ -4498,7 +4498,7 @@ static void AddObjCExpressionResults(ResultBuilder &Results, bool NeedAt) {
 static void AddObjCStatementResults(ResultBuilder &Results, bool NeedAt) {
   typedef CodeCompletionResult Result;
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   
   if (Results.includeCodePatterns()) {
     // @try { statements } @catch ( declaration ) { statements } @finally
@@ -4554,7 +4554,7 @@ static void AddObjCVisibilityResults(const LangOptions &LangOpts,
 
 void Sema::CodeCompleteObjCAtVisibility(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   AddObjCVisibilityResults(getLangOpts(), Results, false);
@@ -4566,7 +4566,7 @@ void Sema::CodeCompleteObjCAtVisibility(Scope *S) {
 
 void Sema::CodeCompleteObjCAtStatement(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   AddObjCStatementResults(Results, false);
@@ -4579,7 +4579,7 @@ void Sema::CodeCompleteObjCAtStatement(Scope *S) {
 
 void Sema::CodeCompleteObjCAtExpression(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   AddObjCExpressionResults(Results, false);
@@ -4629,7 +4629,7 @@ void Sema::CodeCompleteObjCPropertyFlags(Scope *S, ObjCDeclSpec &ODS) {
   unsigned Attributes = ODS.getPropertyAttributes();
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   if (!ObjCPropertyFlagConflicts(Attributes, ObjCDeclSpec::DQ_PR_readonly))
@@ -4659,7 +4659,7 @@ void Sema::CodeCompleteObjCPropertyFlags(Scope *S, ObjCDeclSpec &ODS) {
 
   if (!ObjCPropertyFlagConflicts(Attributes, ObjCDeclSpec::DQ_PR_setter)) {
     CodeCompletionBuilder Setter(Results.getAllocator(),
-                                 Results.getCodeCompletionTUInfo());
+                                 Results.getCodeCompletionPgmInfo());
     Setter.AddTypedTextChunk("setter");
     Setter.AddTextChunk(" = ");
     Setter.AddPlaceholderChunk("method");
@@ -4667,7 +4667,7 @@ void Sema::CodeCompleteObjCPropertyFlags(Scope *S, ObjCDeclSpec &ODS) {
   }
   if (!ObjCPropertyFlagConflicts(Attributes, ObjCDeclSpec::DQ_PR_getter)) {
     CodeCompletionBuilder Getter(Results.getAllocator(),
-                                 Results.getCodeCompletionTUInfo());
+                                 Results.getCodeCompletionPgmInfo());
     Getter.AddTypedTextChunk("getter");
     Getter.AddTextChunk(" = ");
     Getter.AddPlaceholderChunk("method");
@@ -4857,7 +4857,7 @@ void Sema::CodeCompleteObjCPropertyGetter(Scope *S) {
 
   // Find all of the potential getters.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
 
@@ -4885,7 +4885,7 @@ void Sema::CodeCompleteObjCPropertySetter(Scope *S) {
 
   // Find all of the potential getters.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
 
@@ -4902,7 +4902,7 @@ void Sema::CodeCompleteObjCPropertySetter(Scope *S) {
 void Sema::CodeCompleteObjCPassingType(Scope *S, ObjCDeclSpec &DS,
                                        bool IsParameter) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Type);
   Results.EnterNewScope();
   
@@ -4935,7 +4935,7 @@ void Sema::CodeCompleteObjCPassingType(Scope *S, ObjCDeclSpec &DS,
   if (DS.getObjCDeclQualifier() == 0 && !IsParameter &&
       Context.Idents.get("IBAction").hasMacroDefinition()) {
     CodeCompletionBuilder Builder(Results.getAllocator(),
-                                  Results.getCodeCompletionTUInfo(),
+                                  Results.getCodeCompletionPgmInfo(),
                                   CCP_CodePattern, CXAvailability_Available);
     Builder.AddTypedTextChunk("IBAction");
     Builder.AddChunk(CodeCompletionString::CK_RightParen);
@@ -5108,7 +5108,7 @@ static ObjCMethodDecl *AddSuperSendCompletion(Sema &S, bool NeedSuperKeyword,
   
   // We have a superclass method. Now, form the send-to-super completion.
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   
   // Give this completion a return type.
   AddResultTypeChunk(S.Context, getCompletionPrintingPolicy(S), SuperMethod, 
@@ -5162,7 +5162,7 @@ static ObjCMethodDecl *AddSuperSendCompletion(Sema &S, bool NeedSuperKeyword,
 void Sema::CodeCompleteObjCMessageReceiver(Scope *S) {
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCMessageReceiver,
                         getLangOpts().CPlusPlus11
                           ? &ResultBuilder::IsObjCMessageReceiverOrLambdaCapture
@@ -5383,7 +5383,7 @@ void Sema::CodeCompleteObjCClassMessage(Scope *S, ParsedType Receiver,
   QualType T = this->GetTypeFromParser(Receiver);
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
               CodeCompletionContext(CodeCompletionContext::CCC_ObjCClassMessage,
                                     T, SelIdents, NumSelIdents));
     
@@ -5449,7 +5449,7 @@ void Sema::CodeCompleteObjCInstanceMessage(Scope *S, Expr *Receiver,
 
   // Build the set of methods we can see.
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
            CodeCompletionContext(CodeCompletionContext::CCC_ObjCInstanceMessage,
                                  ReceiverType, SelIdents, NumSelIdents));
   
@@ -5601,7 +5601,7 @@ void Sema::CodeCompleteObjCSelector(Scope *S, IdentifierInfo **SelIdents,
   }
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_SelectorName);
   Results.EnterNewScope();
   for (GlobalMethodPool::iterator M = MethodPool.begin(),
@@ -5613,7 +5613,7 @@ void Sema::CodeCompleteObjCSelector(Scope *S, IdentifierInfo **SelIdents,
       continue;
 
     CodeCompletionBuilder Builder(Results.getAllocator(),
-                                  Results.getCodeCompletionTUInfo());
+                                  Results.getCodeCompletionPgmInfo());
     if (Sel.isUnarySelector()) {
       Builder.AddTypedTextChunk(Builder.getAllocator().CopyString(
                                                        Sel.getNameForSlot(0)));
@@ -5664,7 +5664,7 @@ static void AddProtocolResults(DeclContext *Ctx, DeclContext *CurContext,
 void Sema::CodeCompleteObjCProtocolReferences(IdentifierLocPair *Protocols,
                                               unsigned NumProtocols) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCProtocolName);
   
   if (CodeCompleter && CodeCompleter->includeGlobals()) {
@@ -5679,7 +5679,7 @@ void Sema::CodeCompleteObjCProtocolReferences(IdentifierLocPair *Protocols,
         Results.Ignore(Protocol);
 
     // Add all protocols.
-    AddProtocolResults(Context.getTranslationUnitDecl(), CurContext, false,
+    AddProtocolResults(Context.getProgramDecl(), CurContext, false,
                        Results);
 
     Results.ExitScope();
@@ -5692,14 +5692,14 @@ void Sema::CodeCompleteObjCProtocolReferences(IdentifierLocPair *Protocols,
 
 void Sema::CodeCompleteObjCProtocolDecl(Scope *) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCProtocolName);
   
   if (CodeCompleter && CodeCompleter->includeGlobals()) {
     Results.EnterNewScope();
     
     // Add all protocols.
-    AddProtocolResults(Context.getTranslationUnitDecl(), CurContext, true,
+    AddProtocolResults(Context.getProgramDecl(), CurContext, true,
                        Results);
 
     Results.ExitScope();
@@ -5731,13 +5731,13 @@ static void AddInterfaceResults(DeclContext *Ctx, DeclContext *CurContext,
 
 void Sema::CodeCompleteObjCInterfaceDecl(Scope *S) { 
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   
   if (CodeCompleter->includeGlobals()) {
     // Add all classes.
-    AddInterfaceResults(Context.getTranslationUnitDecl(), CurContext, false,
+    AddInterfaceResults(Context.getProgramDecl(), CurContext, false,
                         false, Results);
   }
   
@@ -5751,19 +5751,19 @@ void Sema::CodeCompleteObjCInterfaceDecl(Scope *S) {
 void Sema::CodeCompleteObjCSuperclass(Scope *S, IdentifierInfo *ClassName,
                                       SourceLocation ClassNameLoc) { 
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCInterfaceName);
   Results.EnterNewScope();
   
   // Make sure that we ignore the class we're currently defining.
   NamedDecl *CurClass
-    = LookupSingleName(TUScope, ClassName, ClassNameLoc, LookupOrdinaryName);
+    = LookupSingleName(PgmScope, ClassName, ClassNameLoc, LookupOrdinaryName);
   if (CurClass && isa<ObjCInterfaceDecl>(CurClass))
     Results.Ignore(CurClass);
 
   if (CodeCompleter->includeGlobals()) {
     // Add all classes.
-    AddInterfaceResults(Context.getTranslationUnitDecl(), CurContext, false,
+    AddInterfaceResults(Context.getProgramDecl(), CurContext, false,
                         false, Results);
   }
   
@@ -5776,13 +5776,13 @@ void Sema::CodeCompleteObjCSuperclass(Scope *S, IdentifierInfo *ClassName,
 
 void Sema::CodeCompleteObjCImplementationDecl(Scope *S) { 
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
 
   if (CodeCompleter->includeGlobals()) {
     // Add all unimplemented classes.
-    AddInterfaceResults(Context.getTranslationUnitDecl(), CurContext, false,
+    AddInterfaceResults(Context.getProgramDecl(), CurContext, false,
                         true, Results);
   }
   
@@ -5799,14 +5799,14 @@ void Sema::CodeCompleteObjCInterfaceCategory(Scope *S,
   typedef CodeCompletionResult Result;
   
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCCategoryName);
   
   // Ignore any categories we find that have already been implemented by this
   // interface.
   llvm::SmallPtrSet<IdentifierInfo *, 16> CategoryNames;
   NamedDecl *CurClass
-    = LookupSingleName(TUScope, ClassName, ClassNameLoc, LookupOrdinaryName);
+    = LookupSingleName(PgmScope, ClassName, ClassNameLoc, LookupOrdinaryName);
   if (ObjCInterfaceDecl *Class = dyn_cast_or_null<ObjCInterfaceDecl>(CurClass))
     for (ObjCCategoryDecl *Category = Class->getCategoryList(); Category;
          Category = Category->getNextClassCategory())
@@ -5814,9 +5814,9 @@ void Sema::CodeCompleteObjCInterfaceCategory(Scope *S,
   
   // Add all of the categories we know about.
   Results.EnterNewScope();
-  TranslationUnitDecl *TU = Context.getTranslationUnitDecl();
-  for (DeclContext::decl_iterator D = TU->decls_begin(), 
-                               DEnd = TU->decls_end();
+  ProgramDecl *Pgm = Context.getProgramDecl();
+  for (DeclContext::decl_iterator D = Pgm->decls_begin(), 
+                               DEnd = Pgm->decls_end();
        D != DEnd; ++D) 
     if (ObjCCategoryDecl *Category = dyn_cast<ObjCCategoryDecl>(*D))
       if (CategoryNames.insert(Category->getIdentifier()))
@@ -5837,13 +5837,13 @@ void Sema::CodeCompleteObjCImplementationCategory(Scope *S,
   // program itself is ill-formed. However, we'll try to be helpful still by
   // providing the list of all of the categories we know about.
   NamedDecl *CurClass
-    = LookupSingleName(TUScope, ClassName, ClassNameLoc, LookupOrdinaryName);
+    = LookupSingleName(PgmScope, ClassName, ClassNameLoc, LookupOrdinaryName);
   ObjCInterfaceDecl *Class = dyn_cast_or_null<ObjCInterfaceDecl>(CurClass);
   if (!Class)
     return CodeCompleteObjCInterfaceCategory(S, ClassName, ClassNameLoc);
     
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_ObjCCategoryName);
   
   // Add all of the categories that have have corresponding interface 
@@ -5871,7 +5871,7 @@ void Sema::CodeCompleteObjCImplementationCategory(Scope *S,
 
 void Sema::CodeCompleteObjCPropertyDefinition(Scope *S) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
 
   // Figure out where this @synthesize lives.
@@ -5913,7 +5913,7 @@ void Sema::CodeCompleteObjCPropertySynthesizeIvar(Scope *S,
                                                   IdentifierInfo *PropertyName) {
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
 
   // Figure out where this @synthesize lives.
@@ -5983,7 +5983,7 @@ void Sema::CodeCompleteObjCPropertySynthesizeIvar(Scope *S,
     unsigned Priority = CCP_MemberDeclaration + 1;
     typedef CodeCompletionResult Result;
     CodeCompletionAllocator &Allocator = Results.getAllocator();
-    CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionTUInfo(),
+    CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionPgmInfo(),
                                   Priority,CXAvailability_Available);
 
     PrintingPolicy Policy = getCompletionPrintingPolicy(*this);
@@ -6142,7 +6142,7 @@ static void AddObjCKeyValueCompletions(ObjCPropertyDecl *Property,
   // Builder that will create each code completion.
   typedef CodeCompletionResult Result;
   CodeCompletionAllocator &Allocator = Results.getAllocator();
-  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionTUInfo());
+  CodeCompletionBuilder Builder(Allocator, Results.getCodeCompletionPgmInfo());
   
   // The selector table.
   SelectorTable &Selectors = Context.Selectors;
@@ -6798,7 +6798,7 @@ void Sema::CodeCompleteObjCMethodDecl(Scope *S,
   // Add declarations or definitions for each of the known methods.
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   Results.EnterNewScope();
   PrintingPolicy Policy = getCompletionPrintingPolicy(*this);
@@ -6807,7 +6807,7 @@ void Sema::CodeCompleteObjCMethodDecl(Scope *S,
        M != MEnd; ++M) {
     ObjCMethodDecl *Method = M->second.first;
     CodeCompletionBuilder Builder(Results.getAllocator(),
-                                  Results.getCodeCompletionTUInfo());
+                                  Results.getCodeCompletionPgmInfo());
     
     // If the result type was not already provided, add it to the
     // pattern as (type).
@@ -6942,7 +6942,7 @@ void Sema::CodeCompleteObjCMethodDeclSelector(Scope *S,
   // Build the set of methods we can see.
   typedef CodeCompletionResult Result;
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_Other);
   
   if (ReturnTy)
@@ -6966,7 +6966,7 @@ void Sema::CodeCompleteObjCMethodDeclSelector(Scope *S,
           ParmVarDecl *Param = MethList->Method->param_begin()[NumSelIdents-1];
           if (Param->getIdentifier()) {
             CodeCompletionBuilder Builder(Results.getAllocator(),
-                                          Results.getCodeCompletionTUInfo());
+                                          Results.getCodeCompletionPgmInfo());
             Builder.AddTypedTextChunk(Builder.getAllocator().CopyString(
                                            Param->getIdentifier()->getName()));
             Results.AddResult(Builder.TakeString());
@@ -6992,13 +6992,13 @@ void Sema::CodeCompleteObjCMethodDeclSelector(Scope *S,
 
 void Sema::CodeCompletePreprocessorDirective(bool InConditional) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_PreprocessorDirective);
   Results.EnterNewScope();
   
   // #if <condition>
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   Builder.AddTypedTextChunk("if");
   Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
   Builder.AddPlaceholderChunk("condition");
@@ -7157,13 +7157,13 @@ void Sema::CodeCompleteInPreprocessorConditionalExclusion(Scope *S) {
 
 void Sema::CodeCompletePreprocessorMacroName(bool IsDefinition) {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         IsDefinition? CodeCompletionContext::CCC_MacroName
                                     : CodeCompletionContext::CCC_MacroNameUse);
   if (!IsDefinition && (!CodeCompleter || CodeCompleter->includeMacros())) {
     // Add just the names of macros, not their arguments.    
     CodeCompletionBuilder Builder(Results.getAllocator(),
-                                  Results.getCodeCompletionTUInfo());
+                                  Results.getCodeCompletionPgmInfo());
     Results.EnterNewScope();
     for (Preprocessor::macro_iterator M = PP.macro_begin(), 
                                    MEnd = PP.macro_end();
@@ -7185,7 +7185,7 @@ void Sema::CodeCompletePreprocessorMacroName(bool IsDefinition) {
 
 void Sema::CodeCompletePreprocessorExpression() {
   ResultBuilder Results(*this, CodeCompleter->getAllocator(),
-                        CodeCompleter->getCodeCompletionTUInfo(),
+                        CodeCompleter->getCodeCompletionPgmInfo(),
                         CodeCompletionContext::CCC_PreprocessorExpression);
   
   if (!CodeCompleter || CodeCompleter->includeMacros())
@@ -7194,7 +7194,7 @@ void Sema::CodeCompletePreprocessorExpression() {
     // defined (<macro>)
   Results.EnterNewScope();
   CodeCompletionBuilder Builder(Results.getAllocator(),
-                                Results.getCodeCompletionTUInfo());
+                                Results.getCodeCompletionPgmInfo());
   Builder.AddTypedTextChunk("defined");
   Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
   Builder.AddChunk(CodeCompletionString::CK_LeftParen);
@@ -7226,14 +7226,14 @@ void Sema::CodeCompleteNaturalLanguage() {
 }
 
 void Sema::GatherGlobalCodeCompletions(CodeCompletionAllocator &Allocator,
-                                       CodeCompletionTUInfo &CCTUInfo,
+                                       CodeCompletionPgmInfo &CCPgmInfo,
                  SmallVectorImpl<CodeCompletionResult> &Results) {
-  ResultBuilder Builder(*this, Allocator, CCTUInfo,
+  ResultBuilder Builder(*this, Allocator, CCPgmInfo,
                         CodeCompletionContext::CCC_Recovery);
   if (!CodeCompleter || CodeCompleter->includeGlobals()) {
     CodeCompletionDeclConsumer Consumer(Builder, 
-                                        Context.getTranslationUnitDecl());
-    LookupVisibleDecls(Context.getTranslationUnitDecl(), LookupAnyName, 
+                                        Context.getProgramDecl());
+    LookupVisibleDecls(Context.getProgramDecl(), LookupAnyName, 
                        Consumer);
   }
   

@@ -31,7 +31,7 @@ using namespace CodeGen;
 CodeGenVTables::CodeGenVTables(CodeGenModule &CGM)
   : CGM(CGM), VTContext(CGM.getContext()) { }
 
-bool CodeGenVTables::ShouldEmitVTableInThisTU(const CXXRecordDecl *RD) {
+bool CodeGenVTables::ShouldEmitVTableInThisProgram(const CXXRecordDecl *RD) {
   assert(RD->isDynamicClass() && "Non dynamic classes have no VTable.");
 
   TemplateSpecializationKind TSK = RD->getTemplateSpecializationKind();
@@ -646,7 +646,7 @@ llvm::GlobalVariable *CodeGenVTables::GetAddrOfVTable(const CXXRecordDecl *RD) {
     return VTable;
 
   // We may need to generate a definition for this vtable.
-  if (ShouldEmitVTableInThisTU(RD))
+  if (ShouldEmitVTableInThisProgram(RD))
     CGM.DeferredVTables.push_back(RD);
 
   SmallString<256> OutName;
@@ -757,6 +757,6 @@ CodeGenVTables::GenerateClassData(llvm::GlobalVariable::LinkageTypes Linkage,
       isa<NamespaceDecl>(DC) &&
       cast<NamespaceDecl>(DC)->getIdentifier() &&
       cast<NamespaceDecl>(DC)->getIdentifier()->isStr("__cxxabiv1") &&
-      DC->getParent()->isTranslationUnit())
+      DC->getParent()->isProgram())
     CGM.EmitFundamentalRTTIDescriptors();
 }

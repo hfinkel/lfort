@@ -36,8 +36,8 @@ private:
   public:
     Visitor(std::vector<std::string> &decl_names) : decl_names_(decl_names) {}
 
-    virtual void HandleTranslationUnit(ASTContext &context) {
-      TraverseDecl(context.getTranslationUnitDecl());
+    virtual void HandleProgram(ASTContext &context) {
+      TraverseDecl(context.getProgramDecl());
     }
 
     virtual bool VisitNamedDecl(NamedDecl *Decl) {

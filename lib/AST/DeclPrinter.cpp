@@ -45,7 +45,7 @@ namespace {
 
     void VisitDeclContext(DeclContext *DC, bool Indent = true);
 
-    void VisitTranslationUnitDecl(TranslationUnitDecl *D);
+    void VisitProgramDecl(ProgramDecl *D);
     void VisitTypedefDecl(TypedefDecl *D);
     void VisitTypeAliasDecl(TypeAliasDecl *D);
     void VisitEnumDecl(EnumDecl *D);
@@ -168,10 +168,10 @@ void Decl::printGroup(Decl** Begin, unsigned NumDecls,
 void DeclContext::dumpDeclContext() const {
   // Get the translation unit
   const DeclContext *DC = this;
-  while (!DC->isTranslationUnit())
+  while (!DC->isProgram())
     DC = DC->getParent();
   
-  ASTContext &Ctx = cast<TranslationUnitDecl>(DC)->getASTContext();
+  ASTContext &Ctx = cast<ProgramDecl>(DC)->getASTContext();
   DeclPrinter Printer(llvm::errs(), Ctx.getPrintingPolicy(), 0);
   Printer.VisitDeclContext(const_cast<DeclContext *>(this), /*Indent=*/false);
 }
@@ -322,7 +322,7 @@ void DeclPrinter::VisitDeclContext(DeclContext *DC, bool Indent) {
     Indentation -= Policy.Indentation;
 }
 
-void DeclPrinter::VisitTranslationUnitDecl(TranslationUnitDecl *D) {
+void DeclPrinter::VisitProgramDecl(ProgramDecl *D) {
   VisitDeclContext(D, false);
 }
 

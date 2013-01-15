@@ -32,7 +32,7 @@ bool PPConditionalDirectiveRecord::rangeIntersectsConditionalDirective(
   if (low == CondDirectiveLocs.end())
     return false;
 
-  if (SourceMgr.isBeforeInTranslationUnit(Range.getEnd(), low->getLoc()))
+  if (SourceMgr.isBeforeInProgram(Range.getEnd(), low->getLoc()))
     return false;
 
   CondDirectiveLocsTy::const_iterator
@@ -52,7 +52,7 @@ SourceLocation PPConditionalDirectiveRecord::findConditionalDirectiveRegionLoc(
   if (CondDirectiveLocs.empty())
     return SourceLocation();
 
-  if (SourceMgr.isBeforeInTranslationUnit(CondDirectiveLocs.back().getLoc(),
+  if (SourceMgr.isBeforeInProgram(CondDirectiveLocs.back().getLoc(),
                                           Loc))
     return CondDirectiveStack.back();
 
@@ -70,7 +70,7 @@ void PPConditionalDirectiveRecord::addCondDirectiveLoc(
     return;
 
   assert(CondDirectiveLocs.empty() ||
-         SourceMgr.isBeforeInTranslationUnit(CondDirectiveLocs.back().getLoc(),
+         SourceMgr.isBeforeInProgram(CondDirectiveLocs.back().getLoc(),
                                              DirLoc.getLoc()));
   CondDirectiveLocs.push_back(DirLoc);
 }

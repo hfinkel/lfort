@@ -1854,7 +1854,7 @@ static bool MoveUpIncludeHierarchy(std::pair<FileID, unsigned> &Loc,
 /// \brief Determines the order of 2 source locations in the translation unit.
 ///
 /// \returns true if LHS source location comes before RHS, false otherwise.
-bool SourceManager::isBeforeInTranslationUnit(SourceLocation LHS,
+bool SourceManager::isBeforeInProgram(SourceLocation LHS,
                                               SourceLocation RHS) const {
   assert(LHS.isValid() && RHS.isValid() && "Passed invalid source location!");
   if (LHS == RHS)
@@ -1869,11 +1869,11 @@ bool SourceManager::isBeforeInTranslationUnit(SourceLocation LHS,
 
   // If we are comparing a source location with multiple locations in the same
   // file, we get a big win by caching the result.
-  if (IsBeforeInTUCache.isCacheValid(LOffs.first, ROffs.first))
-    return IsBeforeInTUCache.getCachedResult(LOffs.second, ROffs.second);
+  if (IsBeforeInPgmCache.isCacheValid(LOffs.first, ROffs.first))
+    return IsBeforeInPgmCache.getCachedResult(LOffs.second, ROffs.second);
 
   // Okay, we missed in the cache, start updating the cache for this query.
-  IsBeforeInTUCache.setQueryFIDs(LOffs.first, ROffs.first,
+  IsBeforeInPgmCache.setQueryFIDs(LOffs.first, ROffs.first,
                           /*isLFIDBeforeRFID=*/LOffs.first.ID < ROffs.first.ID);
 
   // We need to find the common ancestor. The only way of doing this is to
@@ -1899,14 +1899,14 @@ bool SourceManager::isBeforeInTranslationUnit(SourceLocation LHS,
   // If we exited because we found a nearest common ancestor, compare the
   // locations within the common file and cache them.
   if (LOffs.first == ROffs.first) {
-    IsBeforeInTUCache.setCommonLoc(LOffs.first, LOffs.second, ROffs.second);
-    return IsBeforeInTUCache.getCachedResult(LOffs.second, ROffs.second);
+    IsBeforeInPgmCache.setCommonLoc(LOffs.first, LOffs.second, ROffs.second);
+    return IsBeforeInPgmCache.getCachedResult(LOffs.second, ROffs.second);
   }
 
   // This can happen if a location is in a built-ins buffer.
   // But see PR5662.
   // Clear the lookup cache, it depends on a common location.
-  IsBeforeInTUCache.clear();
+  IsBeforeInPgmCache.clear();
   bool LIsBuiltins = strcmp("<built-in>",
                             getBuffer(LOffs.first)->getBufferIdentifier()) == 0;
   bool RIsBuiltins = strcmp("<built-in>",

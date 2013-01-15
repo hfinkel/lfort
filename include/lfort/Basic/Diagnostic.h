@@ -240,7 +240,7 @@ private:
         return false;
       if (Loc.isInvalid())
         return true;
-      return Loc.isBeforeInTranslationUnitThan(RHS.Loc);
+      return Loc.isBeforeInProgramThan(RHS.Loc);
     }
   };
 
@@ -267,7 +267,7 @@ private:
     assert(Loc.isValid() && "Adding invalid loc point");
     assert(!DiagStatePoints.empty() &&
            (DiagStatePoints.back().Loc.isInvalid() ||
-            DiagStatePoints.back().Loc.isBeforeInTranslationUnitThan(Loc)) &&
+            DiagStatePoints.back().Loc.isBeforeInProgramThan(Loc)) &&
            "Previous point loc comes after or is the same as new one");
     DiagStatePoints.push_back(DiagStatePoint(State, Loc));
   }

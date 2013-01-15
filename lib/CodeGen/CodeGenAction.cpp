@@ -110,13 +110,13 @@ namespace lfort {
       return true;
     }
 
-    virtual void HandleTranslationUnit(ASTContext &C) {
+    virtual void HandleProgram(ASTContext &C) {
       {
         PrettyStackTraceString CrashInfo("Per-file LLVM IR generation");
         if (llvm::TimePassesIsEnabled)
           LLVMIRGeneration.startTimer();
 
-        Gen->HandleTranslationUnit(C);
+        Gen->HandleProgram(C);
 
         if (llvm::TimePassesIsEnabled)
           LLVMIRGeneration.stopTimer();

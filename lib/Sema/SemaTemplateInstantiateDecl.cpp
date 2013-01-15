@@ -111,8 +111,8 @@ void Sema::InstantiateAttrs(const MultiLevelTemplateArgumentList &TemplateArgs,
 }
 
 Decl *
-TemplateDeclInstantiator::VisitTranslationUnitDecl(TranslationUnitDecl *D) {
-  llvm_unreachable("Translation units cannot be instantiated");
+TemplateDeclInstantiator::VisitProgramDecl(ProgramDecl *D) {
+  llvm_unreachable("Programs cannot be instantiated");
 }
 
 Decl *
@@ -811,7 +811,7 @@ Decl *TemplateDeclInstantiator::VisitClassTemplateDecl(ClassTemplateDecl *D) {
           if (DCParent2->isNamespace() &&
               cast<NamespaceDecl>(DCParent2)->getIdentifier() &&
               cast<NamespaceDecl>(DCParent2)->getIdentifier()->isStr("std") &&
-              DCParent2->getParent()->isTranslationUnit())
+              DCParent2->getParent()->isProgram())
             Complain = false;
         }
       }

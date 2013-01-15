@@ -117,7 +117,7 @@ ChainedIncludesSource *ChainedIncludesSource::create(CompilerInstance &CI) {
     LFort->getASTContext().setASTMutationListener(
                                             consumer->GetASTMutationListener());
     LFort->setASTConsumer(consumer.take());
-    LFort->createSema(TU_Prefix, 0);
+    LFort->createSema(PGM_Prefix, 0);
 
     if (firstInclude) {
       Preprocessor &PP = LFort->getPreprocessor();
@@ -214,8 +214,8 @@ void ChainedIncludesSource::StartedDeserializing() {
 void ChainedIncludesSource::FinishedDeserializing() {
   return getFinalReader().FinishedDeserializing();
 }
-void ChainedIncludesSource::StartTranslationUnit(ASTConsumer *Consumer) {
-  return getFinalReader().StartTranslationUnit(Consumer);
+void ChainedIncludesSource::StartProgram(ASTConsumer *Consumer) {
+  return getFinalReader().StartProgram(Consumer);
 }
 void ChainedIncludesSource::PrintStats() {
   return getFinalReader().PrintStats();

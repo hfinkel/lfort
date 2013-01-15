@@ -344,7 +344,7 @@ public:
                               const CallEvent &CE, ExprEngine &Eng);
   
   /// \brief Run checkers for the entire Translation Unit.
-  void runCheckersOnEndOfTranslationUnit(const TranslationUnitDecl *TU,
+  void runCheckersOnEndOfProgram(const ProgramDecl *Pgm,
                                          AnalysisManager &mgr,
                                          BugReporter &BR);
 
@@ -430,9 +430,9 @@ public:
   typedef CheckerFn<bool (const CallExpr *, CheckerContext &)>
       EvalCallFunc;
 
-  typedef CheckerFn<void (const TranslationUnitDecl *,
+  typedef CheckerFn<void (const ProgramDecl *,
                           AnalysisManager&, BugReporter &)>
-      CheckEndOfTranslationUnit;
+      CheckEndOfProgram;
 
   typedef bool (*HandlesStmtFunc)(const Stmt *D);
   void _registerForPreStmt(CheckStmtFunc checkfn,
@@ -469,7 +469,7 @@ public:
 
   void _registerForEvalCall(EvalCallFunc checkfn);
 
-  void _registerForEndOfTranslationUnit(CheckEndOfTranslationUnit checkfn);
+  void _registerForEndOfProgram(CheckEndOfProgram checkfn);
 
 //===----------------------------------------------------------------------===//
 // Internal registration functions for events.
@@ -596,7 +596,7 @@ private:
 
   std::vector<EvalCallFunc> EvalCallCheckers;
 
-  std::vector<CheckEndOfTranslationUnit> EndOfTranslationUnitCheckers;
+  std::vector<CheckEndOfProgram> EndOfProgramCheckers;
 
   struct EventInfo {
     SmallVector<CheckEventFunc, 4> Checkers;

@@ -1,7 +1,7 @@
 import gc
 
 from lfort.cindex import CursorKind
-from lfort.cindex import TranslationUnit
+from lfort.cindex import Program
 from lfort.cindex import TypeKind
 from .util import get_cursor
 from .util import get_cursors
@@ -74,18 +74,18 @@ def test_get_children():
     assert tu_nodes[2].is_definition() == True
 
 def test_references():
-    """Ensure that references to TranslationUnit are kept."""
+    """Ensure that references to Program are kept."""
     tu = get_tu('int x;')
     cursors = list(tu.cursor.get_children())
     assert len(cursors) > 0
 
     cursor = cursors[0]
-    assert isinstance(cursor.translation_unit, TranslationUnit)
+    assert isinstance(cursor.translation_unit, Program)
 
     # Delete reference to TU and perform a full GC.
     del tu
     gc.collect()
-    assert isinstance(cursor.translation_unit, TranslationUnit)
+    assert isinstance(cursor.translation_unit, Program)
 
     # If the TU was destroyed, this should cause a segfault.
     parent = cursor.semantic_parent

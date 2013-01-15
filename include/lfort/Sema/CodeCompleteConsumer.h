@@ -529,12 +529,12 @@ class GlobalCodeCompletionAllocator
 
 };
 
-class CodeCompletionTUInfo {
+class CodeCompletionPgmInfo {
   llvm::DenseMap<DeclContext *, StringRef> ParentNames;
   IntrusiveRefCntPtr<GlobalCodeCompletionAllocator> AllocatorRef;
 
 public:
-  explicit CodeCompletionTUInfo(
+  explicit CodeCompletionPgmInfo(
                     IntrusiveRefCntPtr<GlobalCodeCompletionAllocator> Allocator)
     : AllocatorRef(Allocator) { }
 
@@ -566,7 +566,7 @@ public:
 
 private:
   CodeCompletionAllocator &Allocator;
-  CodeCompletionTUInfo &CCTUInfo;
+  CodeCompletionPgmInfo &CCPgmInfo;
   unsigned Priority;
   CXAvailabilityKind Availability;
   StringRef ParentName;
@@ -579,15 +579,15 @@ private:
 
 public:
   CodeCompletionBuilder(CodeCompletionAllocator &Allocator,
-                        CodeCompletionTUInfo &CCTUInfo)
-    : Allocator(Allocator), CCTUInfo(CCTUInfo),
+                        CodeCompletionPgmInfo &CCPgmInfo)
+    : Allocator(Allocator), CCPgmInfo(CCPgmInfo),
       Priority(0), Availability(CXAvailability_Available),
       BriefComment(NULL) { }
 
   CodeCompletionBuilder(CodeCompletionAllocator &Allocator,
-                        CodeCompletionTUInfo &CCTUInfo,
+                        CodeCompletionPgmInfo &CCPgmInfo,
                         unsigned Priority, CXAvailabilityKind Availability)
-    : Allocator(Allocator), CCTUInfo(CCTUInfo),
+    : Allocator(Allocator), CCPgmInfo(CCPgmInfo),
       Priority(Priority), Availability(Availability),
       BriefComment(NULL) { }
 
@@ -595,7 +595,7 @@ public:
   /// strings should be allocated.
   CodeCompletionAllocator &getAllocator() const { return Allocator; }
 
-  CodeCompletionTUInfo &getCodeCompletionTUInfo() const { return CCTUInfo; }
+  CodeCompletionPgmInfo &getCodeCompletionPgmInfo() const { return CCPgmInfo; }
 
   /// \brief Take the resulting completion string.
   ///
@@ -783,12 +783,12 @@ public:
   /// string itself.
   CodeCompletionString *CreateCodeCompletionString(Sema &S,
                                            CodeCompletionAllocator &Allocator,
-                                           CodeCompletionTUInfo &CCTUInfo,
+                                           CodeCompletionPgmInfo &CCPgmInfo,
                                            bool IncludeBriefComments);
   CodeCompletionString *CreateCodeCompletionString(ASTContext &Ctx,
                                                    Preprocessor &PP,
                                            CodeCompletionAllocator &Allocator,
-                                           CodeCompletionTUInfo &CCTUInfo,
+                                           CodeCompletionPgmInfo &CCPgmInfo,
                                            bool IncludeBriefComments);
 
   /// \brief Determine a base priority for the given declaration.
@@ -893,7 +893,7 @@ public:
     CodeCompletionString *CreateSignatureString(unsigned CurrentArg,
                                                 Sema &S,
                                       CodeCompletionAllocator &Allocator,
-                                      CodeCompletionTUInfo &CCTUInfo) const;
+                                      CodeCompletionPgmInfo &CCPgmInfo) const;
   };
 
   CodeCompleteConsumer(const CodeCompleteOptions &CodeCompleteOpts,
@@ -953,7 +953,7 @@ public:
   /// code completion strings.
   virtual CodeCompletionAllocator &getAllocator() = 0;
 
-  virtual CodeCompletionTUInfo &getCodeCompletionTUInfo() = 0;
+  virtual CodeCompletionPgmInfo &getCodeCompletionPgmInfo() = 0;
 };
 
 /// \brief A simple code-completion consumer that prints the results it
@@ -962,7 +962,7 @@ class PrintingCodeCompleteConsumer : public CodeCompleteConsumer {
   /// \brief The raw output stream.
   raw_ostream &OS;
 
-  CodeCompletionTUInfo CCTUInfo;
+  CodeCompletionPgmInfo CCPgmInfo;
 
 public:
   /// \brief Create a new printing code-completion consumer that prints its
@@ -970,7 +970,7 @@ public:
   PrintingCodeCompleteConsumer(const CodeCompleteOptions &CodeCompleteOpts,
                                raw_ostream &OS)
     : CodeCompleteConsumer(CodeCompleteOpts, false), OS(OS),
-      CCTUInfo(new GlobalCodeCompletionAllocator) {}
+      CCPgmInfo(new GlobalCodeCompletionAllocator) {}
 
   /// \brief Prints the finalized code-completion results.
   virtual void ProcessCodeCompleteResults(Sema &S,
@@ -983,10 +983,10 @@ public:
                                          unsigned NumCandidates);
 
   virtual CodeCompletionAllocator &getAllocator() {
-    return CCTUInfo.getAllocator();
+    return CCPgmInfo.getAllocator();
   }
 
-  virtual CodeCompletionTUInfo &getCodeCompletionTUInfo() { return CCTUInfo; }
+  virtual CodeCompletionPgmInfo &getCodeCompletionPgmInfo() { return CCPgmInfo; }
 };
 
 } // end namespace lfort

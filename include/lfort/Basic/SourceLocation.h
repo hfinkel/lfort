@@ -315,22 +315,22 @@ public:
   /// \brief Determines the order of 2 source locations in the translation unit.
   ///
   /// \returns true if this source location comes before 'Loc', false otherwise.
-  bool isBeforeInTranslationUnitThan(SourceLocation Loc) const;
+  bool isBeforeInProgramThan(SourceLocation Loc) const;
 
   /// \brief Determines the order of 2 source locations in the translation unit.
   ///
   /// \returns true if this source location comes before 'Loc', false otherwise.
-  bool isBeforeInTranslationUnitThan(FullSourceLoc Loc) const {
+  bool isBeforeInProgramThan(FullSourceLoc Loc) const {
     assert(Loc.isValid());
     assert(SrcMgr == Loc.SrcMgr && "Loc comes from another SourceManager!");
-    return isBeforeInTranslationUnitThan((SourceLocation)Loc);
+    return isBeforeInProgramThan((SourceLocation)Loc);
   }
 
   /// \brief Comparison function class, useful for sorting FullSourceLocs.
   struct BeforeThanCompare : public std::binary_function<FullSourceLoc,
                                                          FullSourceLoc, bool> {
     bool operator()(const FullSourceLoc& lhs, const FullSourceLoc& rhs) const {
-      return lhs.isBeforeInTranslationUnitThan(rhs);
+      return lhs.isBeforeInProgramThan(rhs);
     }
   };
 

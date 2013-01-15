@@ -234,7 +234,7 @@ void USRGenerator::VisitNamedDecl(NamedDecl *D) {
 
 void USRGenerator::VisitVarDecl(VarDecl *D) {
   // VarDecls can be declared 'extern' within a function or method body,
-  // but their enclosing DeclContext is the function, not the TU.  We need
+  // but their enclosing DeclContext is the function, not the Pgm.  We need
   // to check the storage class to correctly generate the USR.
   if (ShouldGenerateLocation(D) && GenLoc(D))
     return;
@@ -824,11 +824,11 @@ CXString lfort_getCursorUSR(CXCursor C) {
     if (!D)
       return createCXString("");
 
-    CXTranslationUnit TU = cxcursor::getCursorTU(C);
-    if (!TU)
+    CXProgram Pgm = cxcursor::getCursorPgm(C);
+    if (!Pgm)
       return createCXString("");
 
-    CXStringBuf *buf = cxstring::getCXStringBuf(TU);
+    CXStringBuf *buf = cxstring::getCXStringBuf(Pgm);
     if (!buf)
       return createCXString("");
 
@@ -845,11 +845,11 @@ CXString lfort_getCursorUSR(CXCursor C) {
   }
 
   if (K == CXCursor_MacroDefinition) {
-    CXTranslationUnit TU = cxcursor::getCursorTU(C);
-    if (!TU)
+    CXProgram Pgm = cxcursor::getCursorPgm(C);
+    if (!Pgm)
       return createCXString("");
 
-    CXStringBuf *buf = cxstring::getCXStringBuf(TU);
+    CXStringBuf *buf = cxstring::getCXStringBuf(Pgm);
     if (!buf)
       return createCXString("");
 

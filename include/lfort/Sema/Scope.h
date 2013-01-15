@@ -245,7 +245,7 @@ public:
   /// method scope or is inside one.
   bool isInCXXInlineMethodScope() const {
     if (const Scope *SubPgmS = getSubPgmParent()) {
-      assert(SubPgmS->getParent() && "TUScope not created?");
+      assert(SubPgmS->getParent() && "PgmScope not created?");
       return SubPgmS->getParent()->isClassScope();
     }
     return false;

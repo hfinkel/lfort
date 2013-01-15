@@ -2690,7 +2690,7 @@ static void handleCleanupAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   // Look up the function
   // FIXME: Lookup probably isn't looking in the right place
   NamedDecl *CleanupDecl
-    = S.LookupSingleName(S.TUScope, Attr.getParameterName(),
+    = S.LookupSingleName(S.PgmScope, Attr.getParameterName(),
                          Attr.getParameterLoc(), Sema::LookupOrdinaryName);
   if (!CleanupDecl) {
     S.Diag(Attr.getParameterLoc(), diag::err_attribute_cleanup_arg_not_found) <<
@@ -4701,9 +4701,9 @@ void Sema::DeclApplyPragmaWeak(Scope *S, NamedDecl *ND, WeakInfo &W) {
     NewD->addAttr(::new (Context) WeakAttr(W.getLocation(), Context));
     WeakTopLevelDecl.push_back(NewD);
     // FIXME: "hideous" code from Sema::LazilyCreateBuiltin
-    // to insert Decl at TU scope, sorry.
+    // to insert Decl at program scope, sorry.
     DeclContext *SavedContext = CurContext;
-    CurContext = Context.getTranslationUnitDecl();
+    CurContext = Context.getProgramDecl();
     PushOnScopeChains(NewD, S);
     CurContext = SavedContext;
   } else { // just add weak to existing

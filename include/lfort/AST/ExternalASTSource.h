@@ -201,7 +201,7 @@ public:
   /// translation unit involving this external AST source.
   ///
   /// The default implementation of this method is a no-op.
-  virtual void StartTranslationUnit(ASTConsumer *Consumer) { }
+  virtual void StartProgram(ASTConsumer *Consumer) { }
 
   /// \brief Print any statistics that have been gathered regarding
   /// the external AST source.

@@ -597,7 +597,7 @@ std::string PredefinedExpr::ComputeName(IdentType IT, const Decl *CurrentDecl) {
     Out.flush();
     return Name.str().str();
   }
-  if (isa<TranslationUnitDecl>(CurrentDecl) && IT == PrettyFunction) {
+  if (isa<ProgramDecl>(CurrentDecl) && IT == PrettyFunction) {
     // __PRETTY_FUNCTION__ -> "top level", the others produce an empty string.
     return "top level";
   }

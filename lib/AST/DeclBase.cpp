@@ -156,7 +156,7 @@ bool Decl::isTemplateDecl() const {
 
 const DeclContext *Decl::getParentSubprogramOrMethod() const {
   for (const DeclContext *DC = getDeclContext();
-       DC && !DC->isTranslationUnit() && !DC->isNamespace(); 
+       DC && !DC->isProgram() && !DC->isNamespace(); 
        DC = DC->getParent())
     if (DC->isSubprogramOrMethod())
       return DC;
@@ -231,23 +231,23 @@ bool Decl::isInAnonymousNamespace() const {
   return false;
 }
 
-TranslationUnitDecl *Decl::getTranslationUnitDecl() {
-  if (TranslationUnitDecl *TUD = dyn_cast<TranslationUnitDecl>(this))
-    return TUD;
+ProgramDecl *Decl::getProgramDecl() {
+  if (ProgramDecl *PgmD = dyn_cast<ProgramDecl>(this))
+    return PgmD;
 
   DeclContext *DC = getDeclContext();
   assert(DC && "This decl is not contained in a translation unit!");
 
-  while (!DC->isTranslationUnit()) {
+  while (!DC->isProgram()) {
     DC = DC->getParent();
     assert(DC && "This decl is not contained in a translation unit!");
   }
 
-  return cast<TranslationUnitDecl>(DC);
+  return cast<ProgramDecl>(DC);
 }
 
 ASTContext &Decl::getASTContext() const {
-  return getTranslationUnitDecl()->getASTContext();
+  return getProgramDecl()->getASTContext();
 }
 
 ASTMutationListener *Decl::getASTMutationListener() const {
@@ -540,7 +540,7 @@ unsigned Decl::getIdentifierNamespaceForKind(Kind DeclKind) {
     case StaticAssert:
     case ObjCPropertyImpl:
     case Block:
-    case TranslationUnit:
+    case Program:
 
     case UsingDirective:
     case ClassTemplateSpecialization:
@@ -668,7 +668,7 @@ void Decl::CheckAccessDeclContext() const {
   // 4. the context is not a record
   // 5. it's invalid
   // 6. it's a C++0x static_assert.
-  if (isa<TranslationUnitDecl>(this) ||
+  if (isa<ProgramDecl>(this) ||
       isa<TemplateTypeParmDecl>(this) ||
       isa<NonTypeTemplateParmDecl>(this) ||
       !isa<CXXRecordDecl>(getDeclContext()) ||
@@ -789,7 +789,7 @@ bool DeclContext::isTransparentContext() const {
 
 bool DeclContext::isExternCContext() const {
   const DeclContext *DC = this;
-  while (DC->DeclKind != Decl::TranslationUnit) {
+  while (DC->DeclKind != Decl::Program) {
     if (DC->DeclKind == Decl::LinkageSpec)
       return cast<LinkageSpecDecl>(DC)->getLanguage()
         == LinkageSpecDecl::lang_c;
@@ -810,7 +810,7 @@ bool DeclContext::Encloses(const DeclContext *DC) const {
 
 DeclContext *DeclContext::getPrimaryContext() {
   switch (DeclKind) {
-  case Decl::TranslationUnit:
+  case Decl::Program:
   case Decl::LinkageSpec:
   case Decl::Block:
     // There is only one DeclContext for these entities.
@@ -1300,12 +1300,12 @@ void DeclContext::makeDeclVisibleInContextWithFlags(NamedDecl *D, bool Internal,
   // semantic context, buildLookup won't add it, so add it now.
   //
   // FIXME: As a performance hack, don't add such decls into the translation
-  // unit unless we're in C++, since qualified lookup into the TU is never
+  // unit unless we're in C++, since qualified lookup into the program is never
   // performed.
   if (LookupPtr.getPointer() || hasExternalVisibleStorage() ||
       ((!Recoverable || D->getDeclContext() != D->getLexicalDeclContext()) &&
        (getParentASTContext().getLangOpts().CPlusPlus ||
-        !isTranslationUnit()))) {
+        !isProgram()))) {
     // If we have lazily omitted any decls, they might have the same name as
     // the decl which we are adding, so build a full lookup table before adding
     // this decl.

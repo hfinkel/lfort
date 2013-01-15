@@ -41,8 +41,8 @@ namespace {
         : Out(Out ? *Out : llvm::outs()), Dump(Dump),
           FilterString(FilterString) {}
 
-    virtual void HandleTranslationUnit(ASTContext &Context) {
-      TranslationUnitDecl *D = Context.getTranslationUnitDecl();
+    virtual void HandleProgram(ASTContext &Context) {
+      ProgramDecl *D = Context.getProgramDecl();
 
       if (FilterString.empty()) {
         if (Dump)
@@ -97,8 +97,8 @@ namespace {
     ASTDeclNodeLister(raw_ostream *Out = NULL)
         : Out(Out ? *Out : llvm::outs()) {}
 
-    virtual void HandleTranslationUnit(ASTContext &Context) {
-      TraverseDecl(Context.getTranslationUnitDecl());
+    virtual void HandleProgram(ASTContext &Context) {
+      TraverseDecl(Context.getProgramDecl());
     }
 
     bool shouldWalkTypesOfTypeLocs() const { return false; }
@@ -172,8 +172,8 @@ class DeclContextPrinter : public ASTConsumer {
 public:
   DeclContextPrinter() : Out(llvm::errs()) {}
 
-  void HandleTranslationUnit(ASTContext &C) {
-    PrintDeclContext(C.getTranslationUnitDecl(), 4);
+  void HandleProgram(ASTContext &C) {
+    PrintDeclContext(C.getProgramDecl(), 4);
   }
 
   void PrintDeclContext(const DeclContext* DC, unsigned Indentation);
@@ -184,8 +184,8 @@ void DeclContextPrinter::PrintDeclContext(const DeclContext* DC,
                                           unsigned Indentation) {
   // Print DeclContext name.
   switch (DC->getDeclKind()) {
-  case Decl::TranslationUnit:
-    Out << "[translation unit] " << DC;
+  case Decl::Program:
+    Out << "[program] " << DC;
     break;
   case Decl::Namespace: {
     Out << "[namespace] ";
@@ -482,8 +482,8 @@ class ASTDumpXML : public ASTConsumer {
 public:
   ASTDumpXML(raw_ostream &OS) : OS(OS) {}
 
-  void HandleTranslationUnit(ASTContext &C) {
-    C.getTranslationUnitDecl()->dumpXML(OS);
+  void HandleProgram(ASTContext &C) {
+    C.getProgramDecl()->dumpXML(OS);
   }  
 };
 }

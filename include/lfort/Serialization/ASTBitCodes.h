@@ -414,9 +414,9 @@ namespace lfort {
       /// \brief Record code for referenced selector pool.
       REFERENCED_SELECTOR_POOL = 21,
 
-      /// \brief Record code for an update to the TU's lexically contained
+      /// \brief Record code for an update to the program's lexically contained
       /// declarations.
-      TU_UPDATE_LEXICAL = 22,
+      PGM_UPDATE_LEXICAL = 22,
       
       /// \brief Record code for the array describing the locations (in the
       /// LOCAL_REDECLARATIONS record) of the redeclaration chains, indexed by
@@ -441,7 +441,7 @@ namespace lfort {
 
       /// \brief Record code for an update to a decl context's lookup table.
       ///
-      /// In practice, this should only be used for the TU and namespaces.
+      /// In practice, this should only be used for the program and namespaces.
       UPDATE_VISIBLE = 28,
 
       /// \brief Record for offsets of DECL_UPDATES records for declarations
@@ -851,7 +851,7 @@ namespace lfort {
       PREDEF_DECL_NULL_ID       = 0,
       
       /// \brief The translation unit.
-      PREDEF_DECL_TRANSLATION_UNIT_ID = 1,
+      PREDEF_DECL_PROGRAM_ID = 1,
       
       /// \brief The Objective-C 'id' type.
       PREDEF_DECL_OBJC_ID_ID = 2,

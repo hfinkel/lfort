@@ -24,8 +24,8 @@ namespace cxstring {
   
 struct CXStringBuf {
   SmallString<128> Data;
-  CXTranslationUnit TU;
-  CXStringBuf(CXTranslationUnit tu) : TU(tu) {}
+  CXProgram Pgm;
+  CXStringBuf(CXProgram tu) : Pgm(tu) {}
 };
 
 /// \brief Create a CXString object from a C string.
@@ -43,7 +43,7 @@ void *createCXStringPool();
 /// \brief Dispose of a string pool.
 void disposeCXStringPool(void *pool);
   
-CXStringBuf *getCXStringBuf(CXTranslationUnit TU);
+CXStringBuf *getCXStringBuf(CXProgram Pgm);
  
 void disposeCXStringBuf(CXStringBuf *buf);
 

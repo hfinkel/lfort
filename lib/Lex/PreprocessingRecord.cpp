@@ -124,7 +124,7 @@ bool PreprocessingRecord::isEntityInFileID(iterator PPEI, FileID FID) {
 std::pair<int, int>
 PreprocessingRecord::getPreprocessedEntitiesInRangeSlow(SourceRange Range) {
   assert(Range.isValid());
-  assert(!SourceMgr.isBeforeInTranslationUnit(Range.getEnd(),Range.getBegin()));
+  assert(!SourceMgr.isBeforeInProgram(Range.getEnd(),Range.getBegin()));
   
   std::pair<unsigned, unsigned>
     Local = findLocalPreprocessedEntitiesInRange(Range);
@@ -156,7 +156,7 @@ PreprocessingRecord::findLocalPreprocessedEntitiesInRange(
                                                       SourceRange Range) const {
   if (Range.isInvalid())
     return std::make_pair(0,0);
-  assert(!SourceMgr.isBeforeInTranslationUnit(Range.getEnd(),Range.getBegin()));
+  assert(!SourceMgr.isBeforeInProgram(Range.getEnd(),Range.getBegin()));
 
   unsigned Begin = findBeginLocalPreprocessedEntity(Range.getBegin());
   unsigned End = findEndLocalPreprocessedEntity(Range.getEnd());
@@ -174,17 +174,17 @@ struct PPEntityComp {
   bool operator()(PreprocessedEntity *L, PreprocessedEntity *R) const {
     SourceLocation LHS = getLoc(L);
     SourceLocation RHS = getLoc(R);
-    return SM.isBeforeInTranslationUnit(LHS, RHS);
+    return SM.isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(PreprocessedEntity *L, SourceLocation RHS) const {
     SourceLocation LHS = getLoc(L);
-    return SM.isBeforeInTranslationUnit(LHS, RHS);
+    return SM.isBeforeInProgram(LHS, RHS);
   }
 
   bool operator()(SourceLocation LHS, PreprocessedEntity *R) const {
     SourceLocation RHS = getLoc(R);
-    return SM.isBeforeInTranslationUnit(LHS, RHS);
+    return SM.isBeforeInProgram(LHS, RHS);
   }
 
   SourceLocation getLoc(PreprocessedEntity *PPE) const {
@@ -214,7 +214,7 @@ unsigned PreprocessingRecord::findBeginLocalPreprocessedEntity(
     Half = Count/2;
     I = First;
     std::advance(I, Half);
-    if (SourceMgr.isBeforeInTranslationUnit((*I)->getSourceRange().getEnd(),
+    if (SourceMgr.isBeforeInProgram((*I)->getSourceRange().getEnd(),
                                             Loc)){
       First = I;
       ++First;
@@ -246,7 +246,7 @@ PreprocessingRecord::addPreprocessedEntity(PreprocessedEntity *Entity) {
 
   if (!isa<class InclusionDirective>(Entity)) {
     assert((PreprocessedEntities.empty() ||
-            !SourceMgr.isBeforeInTranslationUnit(BeginLoc,
+            !SourceMgr.isBeforeInProgram(BeginLoc,
                    PreprocessedEntities.back()->getSourceRange().getBegin())) &&
            "a macro directive was encountered out-of-order");
     PreprocessedEntities.push_back(Entity);
@@ -255,7 +255,7 @@ PreprocessingRecord::addPreprocessedEntity(PreprocessedEntity *Entity) {
 
   // Check normal case, this entity begin location is after the previous one.
   if (PreprocessedEntities.empty() ||
-      !SourceMgr.isBeforeInTranslationUnit(BeginLoc,
+      !SourceMgr.isBeforeInProgram(BeginLoc,
                    PreprocessedEntities.back()->getSourceRange().getBegin())) {
     PreprocessedEntities.push_back(Entity);
     return getPPEntityID(PreprocessedEntities.size()-1, /*isLoaded=*/false);
@@ -275,7 +275,7 @@ PreprocessingRecord::addPreprocessedEntity(PreprocessedEntity *Entity) {
        RI != Begin && count < 4; --RI, ++count) {
     pp_iter I = RI;
     --I;
-    if (!SourceMgr.isBeforeInTranslationUnit(BeginLoc,
+    if (!SourceMgr.isBeforeInProgram(BeginLoc,
                                            (*I)->getSourceRange().getBegin())) {
       pp_iter insertI = PreprocessedEntities.insert(RI, Entity);
       return getPPEntityID(insertI - PreprocessedEntities.begin(),

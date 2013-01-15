@@ -447,7 +447,7 @@ void Parser::Initialize() {
   // Create the translation unit scope.  Install it as the current scope.
   assert(getCurScope() == 0 && "A scope is already active?");
   EnterScope(Scope::DeclScope);
-  Actions.ActOnTranslationUnitScope(getCurScope());
+  Actions.ActOnProgramScope(getCurScope());
 
   // Initialization for Objective-C context sensitive keywords recognition.
   // Referenced in Parser::ParseObjCTypeQualifierList.
@@ -549,7 +549,7 @@ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result) {
     if (getLangOpts().DelayedTemplateParsing)
       Actions.SetLateTemplateParser(LateTemplateParserCallback, this);
     if (!PP.isIncrementalProcessingEnabled())
-      Actions.ActOnEndOfTranslationUnit();
+      Actions.ActOnEndOfProgram();
     //else don't tell Sema that we ended parsing: more input might come.
 
     return true;
@@ -1254,7 +1254,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
            !TemplateInfo.TemplateParams &&
            (Tok.is(tok::l_brace) || Tok.is(tok::kw_try) ||
             Tok.is(tok::colon)) && 
-      Actions.CurContext->isTranslationUnit()) {
+      Actions.CurContext->isProgram()) {
     ParseScope BodyScope(this, Scope::SubPgmScope|Scope::DeclScope);
     Scope *ParentScope = getCurScope()->getParent();
     

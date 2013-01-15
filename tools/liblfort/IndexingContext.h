@@ -282,7 +282,7 @@ class IndexingContext {
   CXClientData ClientData;
   IndexerCallbacks &CB;
   unsigned IndexOptions;
-  CXTranslationUnit CXTU;
+  CXProgram CXPgm;
   
   typedef llvm::DenseMap<const FileEntry *, CXIdxClientFile> FileMapTy;
   typedef llvm::DenseMap<const DeclContext *, CXIdxClientContainer>
@@ -295,7 +295,7 @@ class IndexingContext {
 
   llvm::DenseSet<RefFileOccurence> RefFileOccurences;
 
-  std::deque<DeclGroupRef> TUDeclsInObjCContainer;
+  std::deque<DeclGroupRef> PgmDeclsInObjCContainer;
   
   llvm::BumpPtrAllocator StrScratch;
   unsigned StrAdapterCount;
@@ -338,9 +338,9 @@ class IndexingContext {
 
 public:
   IndexingContext(CXClientData clientData, IndexerCallbacks &indexCallbacks,
-                  unsigned indexOptions, CXTranslationUnit cxTU)
+                  unsigned indexOptions, CXProgram cxPgm)
     : Ctx(0), ClientData(clientData), CB(indexCallbacks),
-      IndexOptions(indexOptions), CXTU(cxTU),
+      IndexOptions(indexOptions), CXPgm(cxPgm),
       StrScratch(/*size=*/1024), StrAdapterCount(0) { }
 
   ASTContext &getASTContext() const { return *Ctx; }
@@ -375,7 +375,7 @@ public:
   void importedModule(const ImportDecl *ImportD);
   void importedPCH(const FileEntry *File);
 
-  void startedTranslationUnit();
+  void startedProgram();
 
   void indexDecl(const Decl *D);
 
@@ -447,11 +447,11 @@ public:
   bool isNotFromSourceFile(SourceLocation Loc) const;
 
   void indexTopLevelDecl(const Decl *D);
-  void indexTUDeclsInObjCContainer();
+  void indexPgmDeclsInObjCContainer();
   void indexDeclGroupRef(DeclGroupRef DG);
 
-  void addTUDeclInObjCContainer(DeclGroupRef DG) {
-    TUDeclsInObjCContainer.push_back(DG);
+  void addPgmDeclInObjCContainer(DeclGroupRef DG) {
+    PgmDeclsInObjCContainer.push_back(DG);
   }
 
   void translateLoc(SourceLocation Loc, CXIdxClientFile *indexFile, CXFile *file,
@@ -494,7 +494,7 @@ private:
   void getContainerInfo(const DeclContext *DC, ContainerInfo &ContInfo);
 
   CXCursor getCursor(const Decl *D) {
-    return cxcursor::MakeCXCursor(const_cast<Decl*>(D), CXTU);
+    return cxcursor::MakeCXCursor(const_cast<Decl*>(D), CXPgm);
   }
 
   CXCursor getRefCursor(const NamedDecl *D, SourceLocation Loc);

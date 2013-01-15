@@ -73,11 +73,11 @@ void PrettyStackTraceParserEntry::print(raw_ostream &OS) const {
 ///
 void lfort::ParseAST(Preprocessor &PP, ASTConsumer *Consumer,
                      ASTContext &Ctx, bool PrintStats,
-                     TranslationUnitKind TUKind,
+                     ProgramKind PgmKind,
                      CodeCompleteConsumer *CompletionConsumer,
                      bool SkipSubprogramBodies) {
 
-  OwningPtr<Sema> S(new Sema(PP, Ctx, *Consumer, TUKind, CompletionConsumer));
+  OwningPtr<Sema> S(new Sema(PP, Ctx, *Consumer, PgmKind, CompletionConsumer));
 
   // Recover resources if we crash before exiting this method.
   llvm::CrashRecoveryContextCleanupRegistrar<Sema> CleanupSema(S.get());
@@ -115,7 +115,7 @@ void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipSubprogramBodies) {
   Parser::DeclGroupPtrTy ADecl;
   ExternalASTSource *External = S.getASTContext().getExternalSource();
   if (External)
-    External->StartTranslationUnit(Consumer);
+    External->StartProgram(Consumer);
 
   if (!P.ParseTopLevelDecl(ADecl)) {
     do {
@@ -133,7 +133,7 @@ void lfort::ParseAST(Sema &S, bool PrintStats, bool SkipSubprogramBodies) {
        E = S.WeakTopLevelDecls().end(); I != E; ++I)
     Consumer->HandleTopLevelDecl(DeclGroupRef(*I));
   
-  Consumer->HandleTranslationUnit(S.getASTContext());
+  Consumer->HandleProgram(S.getASTContext());
 
   std::swap(OldCollectStats, S.CollectStats);
   if (PrintStats) {

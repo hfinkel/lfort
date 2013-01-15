@@ -148,7 +148,7 @@ DeclContext *Sema::computeDeclContext(const CXXScopeSpec &SS,
   }
 
   case NestedNameSpecifier::Global:
-    return Context.getTranslationUnitDecl();
+    return Context.getProgramDecl();
   }
 
   llvm_unreachable("Invalid NestedNameSpecifier::Kind!");

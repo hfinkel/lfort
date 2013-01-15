@@ -45,7 +45,7 @@ static bool InNamespace(const Decl *D, StringRef NS) {
   const IdentifierInfo *II = ND->getIdentifier();
   if (!II || !II->getName().equals(NS))
     return false;
-  return isa<TranslationUnitDecl>(ND->getDeclContext());
+  return isa<ProgramDecl>(ND->getDeclContext());
 }
 
 static bool IsStdString(QualType T) {

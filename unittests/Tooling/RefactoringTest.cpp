@@ -221,8 +221,8 @@ private:
   public:
     FindConsumer(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
-      Visitor->TraverseDecl(Context.getTranslationUnitDecl());
+    virtual void HandleProgram(lfort::ASTContext &Context) {
+      Visitor->TraverseDecl(Context.getProgramDecl());
     }
 
   private:

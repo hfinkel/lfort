@@ -1,4 +1,4 @@
-//===- CXTranslationUnit.h - Routines for manipulating CXTranslationUnits -===//
+//===- CXProgram.h - Routines for manipulating CXPrograms -===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines routines for manipulating CXTranslationUnits.
+// This file defines routines for manipulating CXPrograms.
 //
 //===----------------------------------------------------------------------===//
 
@@ -15,9 +15,9 @@
 #define LLVM_LFORT_CXTRANSLATIONUNIT_H
 
 extern "C" {
-struct CXTranslationUnitImpl {
+struct CXProgramImpl {
   void *CIdx;
-  void *TUData;
+  void *PgmData;
   void *StringPool;
   void *Diagnostics;
   void *OverridenCursorsPool;
@@ -32,21 +32,21 @@ namespace lfort {
 
 namespace cxtu {
 
-CXTranslationUnitImpl *MakeCXTranslationUnit(CIndexer *CIdx, ASTUnit *TU);
+CXProgramImpl *MakeCXProgram(CIndexer *CIdx, ASTUnit *Pgm);
   
-class CXTUOwner {
-  CXTranslationUnitImpl *TU;
+class CXPgmOwner {
+  CXProgramImpl *Pgm;
   
 public:
-  CXTUOwner(CXTranslationUnitImpl *tu) : TU(tu) { }
-  ~CXTUOwner();
+  CXPgmOwner(CXProgramImpl *tu) : Pgm(tu) { }
+  ~CXPgmOwner();
 
-  CXTranslationUnitImpl *getTU() const { return TU; }
+  CXProgramImpl *getPgm() const { return Pgm; }
 
-  CXTranslationUnitImpl *takeTU() {
-    CXTranslationUnitImpl *retTU = TU;
-    TU = 0;
-    return retTU;
+  CXProgramImpl *takePgm() {
+    CXProgramImpl *retPgm = Pgm;
+    Pgm = 0;
+    return retPgm;
   }
 };
 

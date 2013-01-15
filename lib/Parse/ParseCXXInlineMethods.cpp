@@ -338,7 +338,7 @@ void Parser::ParseLexedMethodDeclaration(LateParsedMethodDeclaration &LM) {
                                           DefArgResult.take());
       }
 
-      assert(!PP.getSourceManager().isBeforeInTranslationUnit(origLoc,
+      assert(!PP.getSourceManager().isBeforeInProgram(origLoc,
                                                          Tok.getLocation()) &&
              "ParseAssignmentExpression went over the default arg tokens!");
       // There could be leftover tokens (e.g. because of an error).
@@ -402,7 +402,7 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
 
   if (Tok.is(tok::kw_try)) {
     ParseSubprogramTryBlock(LM.D, SubPgmScope);
-    assert(!PP.getSourceManager().isBeforeInTranslationUnit(origLoc,
+    assert(!PP.getSourceManager().isBeforeInProgram(origLoc,
                                                          Tok.getLocation()) &&
            "ParseSubprogramTryBlock went over the cached tokens!");
     // There could be leftover tokens (e.g. because of an error).
@@ -432,8 +432,8 @@ void Parser::ParseLexedMethodDef(LexedMethod &LM) {
     // there are still cached tokens left. If it's the latter case skip the
     // leftover tokens.
     // Since this is an uncommon situation that should be avoided, use the
-    // expensive isBeforeInTranslationUnit call.
-    if (PP.getSourceManager().isBeforeInTranslationUnit(Tok.getLocation(),
+    // expensive isBeforeInProgram call.
+    if (PP.getSourceManager().isBeforeInProgram(Tok.getLocation(),
                                                         origLoc))
       while (Tok.getLocation() != origLoc && Tok.isNot(tok::eof))
         ConsumeAnyToken();

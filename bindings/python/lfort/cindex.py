@@ -28,7 +28,7 @@ The major indexing objects are:
 
     The top-level object which manages some global library state.
 
-  TranslationUnit
+  Program
 
     High-level object encapsulating the AST for a single translation unit. These
     can be loaded from .ast files or parsed on the fly.
@@ -77,18 +77,18 @@ callbacks = {}
 
 ### Exception Classes ###
 
-class TranslationUnitLoadError(Exception):
-    """Represents an error that occurred when loading a TranslationUnit.
+class ProgramLoadError(Exception):
+    """Represents an error that occurred when loading a Program.
 
-    This is raised in the case where a TranslationUnit could not be
+    This is raised in the case where a Program could not be
     instantiated due to failure in the liblfort library.
 
     FIXME: Make liblfort expose additional error information in this scenario.
     """
     pass
 
-class TranslationUnitSaveError(Exception):
-    """Represents an error that occurred when saving a TranslationUnit.
+class ProgramSaveError(Exception):
+    """Represents an error that occurred when saving a Program.
 
     Each error has associated with it an enumerated value, accessible under
     e.save_error. Consumers can compare the value with one of the ERROR_
@@ -100,7 +100,7 @@ class TranslationUnitSaveError(Exception):
     ERROR_UNKNOWN = 1
 
     # Indicates that errors during translation prevented saving. The errors
-    # should be available via the TranslationUnit's diagnostics.
+    # should be available via the Program's diagnostics.
     ERROR_TRANSLATION_ERRORS = 2
 
     # Indicates that the translation unit was somehow invalid.
@@ -110,7 +110,7 @@ class TranslationUnitSaveError(Exception):
         assert isinstance(enumeration, int)
 
         if enumeration < 1 or enumeration > 3:
-            raise Exception("Encountered undefined TranslationUnit save error "
+            raise Exception("Encountered undefined Program save error "
                             "constant: %d. Please file a bug to have this "
                             "value supported." % enumeration)
 
@@ -188,7 +188,7 @@ class SourceLocation(Structure):
     def from_offset(tu, file, offset):
         """Retrieve a SourceLocation from a given character offset.
 
-        tu -- TranslationUnit file belongs to
+        tu -- Program file belongs to
         file -- File instance to obtain offset from
         offset -- Integer character offset within file
         """
@@ -542,7 +542,7 @@ class CursorKind(object):
 
     def is_translation_unit(self):
         """Test if this is a translation unit kind."""
-        return conf.lib.lfort_isTranslationUnit(self)
+        return conf.lib.lfort_isProgram(self)
 
     def is_preprocessing(self):
         """Test if this is a preprocessing kind."""
@@ -1012,7 +1012,7 @@ CursorKind.DECL_STMT = CursorKind(231)
 #
 # The translation unit cursor exists primarily to act as the root cursor for
 # traversing the contents of a translation unit.
-CursorKind.TRANSLATION_UNIT = CursorKind(300)
+CursorKind.PROGRAM = CursorKind(300)
 
 ###
 # Attributes
@@ -1266,7 +1266,7 @@ class Cursor(Structure):
 
     @property
     def translation_unit(self):
-        """Returns the TranslationUnit to which this Cursor belongs."""
+        """Returns the Program to which this Cursor belongs."""
         # If this triggers an AttributeError, the instance was not properly
         # created.
         return self._tu
@@ -1325,7 +1325,7 @@ class Cursor(Structure):
         # before the Cursor.
         tu = None
         for arg in args:
-            if isinstance(arg, TranslationUnit):
+            if isinstance(arg, Program):
                 tu = arg
                 break
 
@@ -1517,7 +1517,7 @@ class Type(Structure):
 
     @property
     def translation_unit(self):
-        """The TranslationUnit to which this Type is associated."""
+        """The Program to which this Type is associated."""
         # If this triggers an AttributeError, the instance was not properly
         # instantiated.
         return self._tu
@@ -1848,8 +1848,8 @@ class Index(LFortObject):
         conf.lib.lfort_disposeIndex(self)
 
     def read(self, path):
-        """Load a TranslationUnit from the given AST file."""
-        return TranslationUnit.from_ast(path, self)
+        """Load a Program from the given AST file."""
+        return Program.from_ast(path, self)
 
     def parse(self, path, args=None, unsaved_files=None, options = 0):
         """Load the translation unit from the given source code file by running
@@ -1861,13 +1861,13 @@ class Index(LFortObject):
         and the second should be the contents to be substituted for the
         file. The contents may be passed as strings or file objects.
 
-        If an error was encountered during parsing, a TranslationUnitLoadError
+        If an error was encountered during parsing, a ProgramLoadError
         will be raised.
         """
-        return TranslationUnit.from_source(path, args, unsaved_files, options,
+        return Program.from_source(path, args, unsaved_files, options,
                                            self)
 
-class TranslationUnit(LFortObject):
+class Program(LFortObject):
     """Represents a source code translation unit.
 
     This is one of the main types in the API. Any time you wish to interact
@@ -1909,7 +1909,7 @@ class TranslationUnit(LFortObject):
     @classmethod
     def from_source(cls, filename, args=None, unsaved_files=None, options=0,
                     index=None):
-        """Create a TranslationUnit by parsing source.
+        """Create a Program by parsing source.
 
         This is capable of processing source code both from files on the
         filesystem as well as in-memory contents.
@@ -1925,11 +1925,11 @@ class TranslationUnit(LFortObject):
         a file object is being used, content will be read until EOF and the
         read cursor will not be reset to its original position.
 
-        options is a bitwise or of TranslationUnit.PARSE_XXX flags which will
+        options is a bitwise or of Program.PARSE_XXX flags which will
         control parsing behavior.
 
         index is an Index instance to utilize. If not provided, a new Index
-        will be created for this TranslationUnit.
+        will be created for this Program.
 
         To parse source from the filesystem, the filename of the file to parse
         is specified by the filename argument. Or, filename could be None and
@@ -1939,9 +1939,9 @@ class TranslationUnit(LFortObject):
         filename you wish to associate with this source (e.g. "test.c"). The
         contents of that file are then provided in unsaved_files.
 
-        If an error occurs, a TranslationUnitLoadError is raised.
+        If an error occurs, a ProgramLoadError is raised.
 
-        Please note that a TranslationUnit with parser errors may be returned.
+        Please note that a Program with parser errors may be returned.
         It is the caller's responsibility to check tu.diagnostics for errors.
 
         Also note that LFort infers the source language from the extension of
@@ -1972,23 +1972,23 @@ class TranslationUnit(LFortObject):
                 unsaved_array[i].contents = contents
                 unsaved_array[i].length = len(contents)
 
-        ptr = conf.lib.lfort_parseTranslationUnit(index, filename, args_array,
+        ptr = conf.lib.lfort_parseProgram(index, filename, args_array,
                                     len(args), unsaved_array,
                                     len(unsaved_files), options)
 
         if ptr is None:
-            raise TranslationUnitLoadError("Error parsing translation unit.")
+            raise ProgramLoadError("Error parsing translation unit.")
 
         return cls(ptr, index=index)
 
     @classmethod
     def from_ast_file(cls, filename, index=None):
-        """Create a TranslationUnit instance from a saved AST file.
+        """Create a Program instance from a saved AST file.
 
         A previously-saved AST file (provided with -emit-ast or
-        TranslationUnit.save()) is loaded from the filename specified.
+        Program.save()) is loaded from the filename specified.
 
-        If the file cannot be loaded, a TranslationUnitLoadError will be
+        If the file cannot be loaded, a ProgramLoadError will be
         raised.
 
         index is optional and is the Index instance to use. If not provided,
@@ -1997,16 +1997,16 @@ class TranslationUnit(LFortObject):
         if index is None:
             index = Index.create()
 
-        ptr = conf.lib.lfort_createTranslationUnit(index, filename)
+        ptr = conf.lib.lfort_createProgram(index, filename)
         if ptr is None:
-            raise TranslationUnitLoadError(filename)
+            raise ProgramLoadError(filename)
 
         return cls(ptr=ptr, index=index)
 
     def __init__(self, ptr, index):
-        """Create a TranslationUnit instance.
+        """Create a Program instance.
 
-        TranslationUnits should be created using one of the from_* @classmethod
+        Programs should be created using one of the from_* @classmethod
         functions above. __init__ is only called internally.
         """
         assert isinstance(index, Index)
@@ -2014,17 +2014,17 @@ class TranslationUnit(LFortObject):
         LFortObject.__init__(self, ptr)
 
     def __del__(self):
-        conf.lib.lfort_disposeTranslationUnit(self)
+        conf.lib.lfort_disposeProgram(self)
 
     @property
     def cursor(self):
         """Retrieve the cursor that represents the given translation unit."""
-        return conf.lib.lfort_getTranslationUnitCursor(self)
+        return conf.lib.lfort_getProgramCursor(self)
 
     @property
     def spelling(self):
         """Get the original translation unit source file name."""
-        return conf.lib.lfort_getTranslationUnitSpelling(self)
+        return conf.lib.lfort_getProgramSpelling(self)
 
     def get_includes(self):
         """
@@ -2153,30 +2153,30 @@ class TranslationUnit(LFortObject):
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
-        ptr = conf.lib.lfort_reparseTranslationUnit(self, len(unsaved_files),
+        ptr = conf.lib.lfort_reparseProgram(self, len(unsaved_files),
                 unsaved_files_array, options)
 
     def save(self, filename):
-        """Saves the TranslationUnit to a file.
+        """Saves the Program to a file.
 
         This is equivalent to passing -emit-ast to the lfort frontend. The
-        saved file can be loaded back into a TranslationUnit. Or, if it
+        saved file can be loaded back into a Program. Or, if it
         corresponds to a header, it can be used as a pre-compiled header file.
 
-        If an error occurs while saving, a TranslationUnitSaveError is raised.
-        If the error was TranslationUnitSaveError.ERROR_INVALID_TU, this means
-        the constructed TranslationUnit was not valid at time of save. In this
+        If an error occurs while saving, a ProgramSaveError is raised.
+        If the error was ProgramSaveError.ERROR_INVALID_TU, this means
+        the constructed Program was not valid at time of save. In this
         case, the reason(s) why should be available via
-        TranslationUnit.diagnostics().
+        Program.diagnostics().
 
         filename -- The path to save the translation unit to.
         """
         options = conf.lib.lfort_defaultSaveOptions(self)
-        result = int(conf.lib.lfort_saveTranslationUnit(self, filename,
+        result = int(conf.lib.lfort_saveProgram(self, filename,
                                                         options))
         if result != 0:
-            raise TranslationUnitSaveError(result,
-                'Error saving TranslationUnit.')
+            raise ProgramSaveError(result,
+                'Error saving Program.')
 
     def codeComplete(self, path, line, column, unsaved_files=None,
                      include_macros=False, include_code_patterns=False,
@@ -2267,7 +2267,7 @@ class File(LFortObject):
     def from_cursor_result(res, fn, args):
         assert isinstance(res, File)
 
-        # Copy a reference to the TranslationUnit to prevent premature GC.
+        # Copy a reference to the Program to prevent premature GC.
         res._tu = args[0]._tu
         return res
 
@@ -2411,7 +2411,7 @@ class Token(Structure):
     Tokens are effectively segments of source code. Source code is first parsed
     into tokens before being converted into the AST and Cursors.
 
-    Tokens are obtained from parsed TranslationUnit instances. You currently
+    Tokens are obtained from parsed Program instances. You currently
     can't create tokens manually.
     """
     _fields_ = [
@@ -2461,7 +2461,7 @@ callbacks['cursor_visit'] = CFUNCTYPE(c_int, Cursor, Cursor, py_object)
 # Functions strictly alphabetical order.
 functionList = [
   ("lfort_annotateTokens",
-   [TranslationUnit, POINTER(Token), c_uint, POINTER(Cursor)]),
+   [Program, POINTER(Token), c_uint, POINTER(Cursor)]),
 
   ("lfort_CompilationDatabase_dispose",
    [c_object_p]),
@@ -2502,7 +2502,7 @@ functionList = [
    c_uint),
 
   ("lfort_codeCompleteAt",
-   [TranslationUnit, c_char_p, c_int, c_int, c_void_p, c_int, c_int],
+   [Program, c_char_p, c_int, c_int, c_void_p, c_int, c_int],
    POINTER(CCRStructure)),
 
   ("lfort_codeCompleteGetDiagnostic",
@@ -2517,7 +2517,7 @@ functionList = [
    [c_int, c_int],
    c_object_p),
 
-  ("lfort_createTranslationUnit",
+  ("lfort_createProgram",
    [Index, c_char_p],
    c_object_p),
 
@@ -2530,7 +2530,7 @@ functionList = [
    bool),
 
   ("lfort_defaultSaveOptions",
-   [TranslationUnit],
+   [Program],
    c_uint),
 
   ("lfort_disposeCodeCompleteResults",
@@ -2549,10 +2549,10 @@ functionList = [
    [_CXString]),
 
   ("lfort_disposeTokens",
-   [TranslationUnit, POINTER(Token), c_uint]),
+   [Program, POINTER(Token), c_uint]),
 
-  ("lfort_disposeTranslationUnit",
-   [TranslationUnit]),
+  ("lfort_disposeProgram",
+   [Program]),
 
   ("lfort_equalCursors",
    [Cursor, Cursor],
@@ -2623,7 +2623,7 @@ functionList = [
    c_char_p),
 
   ("lfort_getCursor",
-   [TranslationUnit, SourceLocation],
+   [Program, SourceLocation],
    Cursor),
 
   ("lfort_getCursorDefinition",
@@ -2679,7 +2679,7 @@ functionList = [
    _CXString.from_result),
 
 # ("lfort_getCXTUResourceUsage",
-#  [TranslationUnit],
+#  [Program],
 #  CXTUResourceUsage),
 
   ("lfort_getCXXAccessSpecifier",
@@ -2758,7 +2758,7 @@ functionList = [
    Type.from_result),
 
   ("lfort_getFile",
-   [TranslationUnit, c_char_p],
+   [Program, c_char_p],
    c_object_p),
 
   ("lfort_getFileName",
@@ -2780,18 +2780,18 @@ functionList = [
    File.from_cursor_result),
 
   ("lfort_getInclusions",
-   [TranslationUnit, callbacks['translation_unit_includes'], py_object]),
+   [Program, callbacks['translation_unit_includes'], py_object]),
 
   ("lfort_getInstantiationLocation",
    [SourceLocation, POINTER(c_object_p), POINTER(c_uint), POINTER(c_uint),
     POINTER(c_uint)]),
 
   ("lfort_getLocation",
-   [TranslationUnit, File, c_uint, c_uint],
+   [Program, File, c_uint, c_uint],
    SourceLocation),
 
   ("lfort_getLocationForOffset",
-   [TranslationUnit, File, c_uint],
+   [Program, File, c_uint],
    SourceLocation),
 
   ("lfort_getNullCursor",
@@ -2855,7 +2855,7 @@ functionList = [
    c_uint),
 
   ("lfort_getTokenExtent",
-   [TranslationUnit, Token],
+   [Program, Token],
    SourceRange),
 
   ("lfort_getTokenKind",
@@ -2863,21 +2863,21 @@ functionList = [
    c_uint),
 
   ("lfort_getTokenLocation",
-   [TranslationUnit, Token],
+   [Program, Token],
    SourceLocation),
 
   ("lfort_getTokenSpelling",
-   [TranslationUnit, Token],
+   [Program, Token],
    _CXString,
    _CXString.from_result),
 
-  ("lfort_getTranslationUnitCursor",
-   [TranslationUnit],
+  ("lfort_getProgramCursor",
+   [Program],
    Cursor,
    Cursor.from_result),
 
-  ("lfort_getTranslationUnitSpelling",
-   [TranslationUnit],
+  ("lfort_getProgramSpelling",
+   [Program],
    _CXString,
    _CXString.from_result),
 
@@ -2925,7 +2925,7 @@ functionList = [
    bool),
 
   ("lfort_isFileMultipleIncludeGuarded",
-   [TranslationUnit, File],
+   [Program, File],
    bool),
 
   ("lfort_isFunctionTypeVariadic",
@@ -2956,7 +2956,7 @@ functionList = [
    [CursorKind],
    bool),
 
-  ("lfort_isTranslationUnit",
+  ("lfort_isProgram",
    [CursorKind],
    bool),
 
@@ -2972,20 +2972,20 @@ functionList = [
    [Type],
    bool),
 
-  ("lfort_parseTranslationUnit",
+  ("lfort_parseProgram",
    [Index, c_char_p, c_void_p, c_int, c_void_p, c_int, c_int],
    c_object_p),
 
-  ("lfort_reparseTranslationUnit",
-   [TranslationUnit, c_int, c_void_p, c_int],
+  ("lfort_reparseProgram",
+   [Program, c_int, c_void_p, c_int],
    c_int),
 
-  ("lfort_saveTranslationUnit",
-   [TranslationUnit, c_char_p, c_uint],
+  ("lfort_saveProgram",
+   [Program, c_char_p, c_uint],
    c_int),
 
   ("lfort_tokenize",
-   [TranslationUnit, SourceRange, POINTER(POINTER(Token)), POINTER(c_uint)]),
+   [Program, SourceRange, POINTER(POINTER(Token)), POINTER(c_uint)]),
 
   ("lfort_visitChildren",
    [Cursor, callbacks['cursor_visit'], py_object],
@@ -3157,8 +3157,8 @@ __all__ = [
     'SourceRange',
     'TokenKind',
     'Token',
-    'TranslationUnitLoadError',
-    'TranslationUnit',
+    'ProgramLoadError',
+    'Program',
     'TypeKind',
     'Type',
 ]

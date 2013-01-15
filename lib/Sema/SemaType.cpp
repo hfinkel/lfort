@@ -1803,21 +1803,21 @@ static void DiagnoseIgnoredQualifiers(unsigned Quals,
     ConstFixIt = FixItHint::CreateRemoval(ConstQualLoc);
     QualStr = "const";
     ++NumQuals;
-    if (!Loc.isValid() || SM.isBeforeInTranslationUnit(ConstQualLoc, Loc))
+    if (!Loc.isValid() || SM.isBeforeInProgram(ConstQualLoc, Loc))
       Loc = ConstQualLoc;
   }
   if (Quals & Qualifiers::Volatile) {
     VolatileFixIt = FixItHint::CreateRemoval(VolatileQualLoc);
     QualStr += (NumQuals == 0 ? "volatile" : " volatile");
     ++NumQuals;
-    if (!Loc.isValid() || SM.isBeforeInTranslationUnit(VolatileQualLoc, Loc))
+    if (!Loc.isValid() || SM.isBeforeInProgram(VolatileQualLoc, Loc))
       Loc = VolatileQualLoc;
   }
   if (Quals & Qualifiers::Restrict) {
     RestrictFixIt = FixItHint::CreateRemoval(RestrictQualLoc);
     QualStr += (NumQuals == 0 ? "restrict" : " restrict");
     ++NumQuals;
-    if (!Loc.isValid() || SM.isBeforeInTranslationUnit(RestrictQualLoc, Loc))
+    if (!Loc.isValid() || SM.isBeforeInProgram(RestrictQualLoc, Loc))
       Loc = RestrictQualLoc;
   }
 

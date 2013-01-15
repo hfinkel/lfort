@@ -37,7 +37,7 @@ public:
   virtual void HandleCXXStaticMemberVarInstantiation(VarDecl *VD);
   virtual bool HandleTopLevelDecl(DeclGroupRef D);
   virtual void HandleInterestingDecl(DeclGroupRef D);
-  virtual void HandleTranslationUnit(ASTContext &Ctx);
+  virtual void HandleProgram(ASTContext &Ctx);
   virtual void HandleTagDeclDefinition(TagDecl *D);
   virtual void HandleCXXImplicitSubprogramInstantiation(SubprogramDecl *D);
   virtual void HandleTopLevelDeclInObjCContainer(DeclGroupRef D);

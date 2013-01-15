@@ -558,7 +558,7 @@ public:
                                raw_ostream &OS);
 
   /// \brief Create the Sema object to be used for parsing.
-  void createSema(TranslationUnitKind TUKind,
+  void createSema(ProgramKind PgmKind,
                   CodeCompleteConsumer *CompletionConsumer);
   
   /// Create the frontend timer and replace any existing one with it.

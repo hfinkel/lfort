@@ -1273,7 +1273,7 @@ void Parser::ParseLateTemplatedFuncDef(LateParsedTemplatedSubprogram &LMT) {
     // Get the list of DeclContext to reenter.
     SmallVector<DeclContext*, 4> DeclContextToReenter;
     DeclContext *DD = FD->getLexicalParent();
-    while (DD && !DD->isTranslationUnit()) {
+    while (DD && !DD->isProgram()) {
       DeclContextToReenter.push_back(DD);
       DD = DD->getLexicalParent();
     }

@@ -75,15 +75,15 @@ extern "C" {
  */
 
 /**
- * \brief An "index" that consists of a set of translation units that would
+ * \brief An "index" that consists of a set of programs that would
  * typically be linked together into an executable or library.
  */
 typedef void *CXIndex;
 
 /**
- * \brief A single translation unit, which resides in an index.
+ * \brief A single program, which resides in an index.
  */
-typedef struct CXTranslationUnitImpl *CXTranslationUnit;
+typedef struct CXProgramImpl *CXProgram;
 
 /**
  * \brief Opaque pointer representing client data that will be passed through
@@ -167,14 +167,14 @@ typedef struct CXVersion {
 } CXVersion;
   
 /**
- * \brief Provides a shared context for creating translation units.
+ * \brief Provides a shared context for creating programs.
  *
  * It provides two options:
  *
  * - excludeDeclarationsFromPCH: When non-zero, allows enumeration of "local"
- * declarations (when loading any new translation units). A "local" declaration
- * is one that belongs in the translation unit itself and not in a precompiled
- * header that was used by the translation unit. If zero, all declarations
+ * declarations (when loading any new programs). A "local" declaration
+ * is one that belongs in the program itself and not in a precompiled
+ * header that was used by the program. If zero, all declarations
  * will be enumerated.
  *
  * Here is an example:
@@ -185,21 +185,21 @@ typedef struct CXVersion {
  *
  *   // IndexTest.pch was produced with the following command:
  *   // "lfort -x c IndexTest.h -emit-ast -o IndexTest.pch"
- *   TU = lfort_createTranslationUnit(Idx, "IndexTest.pch");
+ *   Pgm = lfort_createProgram(Idx, "IndexTest.pch");
  *
  *   // This will load all the symbols from 'IndexTest.pch'
- *   lfort_visitChildren(lfort_getTranslationUnitCursor(TU),
- *                       TranslationUnitVisitor, 0);
- *   lfort_disposeTranslationUnit(TU);
+ *   lfort_visitChildren(lfort_getProgramCursor(Pgm),
+ *                       ProgramVisitor, 0);
+ *   lfort_disposeProgram(Pgm);
  *
- *   // This will load all the symbols from 'IndexTest.c', excluding symbols
+ *   // This will load all the symbols from 'IndexTest.F90', excluding symbols
  *   // from 'IndexTest.pch'.
  *   char *args[] = { "-Xlfort", "-include-pch=IndexTest.pch" };
- *   TU = lfort_createTranslationUnitFromSourceFile(Idx, "IndexTest.c", 2, args,
+ *   Pgm = lfort_createProgramFromSourceFile(Idx, "IndexTest.F90", 2, args,
  *                                                  0, 0);
- *   lfort_visitChildren(lfort_getTranslationUnitCursor(TU),
- *                       TranslationUnitVisitor, 0);
- *   lfort_disposeTranslationUnit(TU);
+ *   lfort_visitChildren(lfort_getProgramCursor(Pgm),
+ *                       ProgramVisitor, 0);
+ *   lfort_disposeProgram(Pgm);
  * \endcode
  *
  * This process of creating the 'pch', loading it separately, and using it (via
@@ -212,7 +212,7 @@ CINDEX_LINKAGE CXIndex lfort_createIndex(int excludeDeclarationsFromPCH,
 /**
  * \brief Destroy the given index.
  *
- * The index must not be destroyed until all of the translation units created
+ * The index must not be destroyed until all of the programs created
  * within that index have been destroyed.
  */
 CINDEX_LINKAGE void lfort_disposeIndex(CXIndex index);
@@ -227,8 +227,8 @@ typedef enum {
    * \brief Used to indicate that threads that liblfort creates for indexing
    * purposes should use background priority.
    *
-   * Affects #lfort_indexSourceFile, #lfort_indexTranslationUnit,
-   * #lfort_parseTranslationUnit, #lfort_saveTranslationUnit.
+   * Affects #lfort_indexSourceFile, #lfort_indexProgram,
+   * #lfort_parseProgram, #lfort_saveProgram.
    */
   CXGlobalOpt_ThreadBackgroundPriorityForIndexing = 0x1,
 
@@ -236,7 +236,7 @@ typedef enum {
    * \brief Used to indicate that threads that liblfort creates for editing
    * purposes should use background priority.
    *
-   * Affects #lfort_reparseTranslationUnit, #lfort_codeCompleteAt,
+   * Affects #lfort_reparseProgram, #lfort_codeCompleteAt,
    * #lfort_annotateTokens
    */
   CXGlobalOpt_ThreadBackgroundPriorityForEditing = 0x2,
@@ -281,7 +281,7 @@ CINDEX_LINKAGE unsigned lfort_CXIndex_getGlobalOptions(CXIndex);
  */
 
 /**
- * \brief A particular source file that is part of a translation unit.
+ * \brief A particular source file that is part of a program.
  */
 typedef void *CXFile;
 
@@ -302,19 +302,19 @@ CINDEX_LINKAGE time_t lfort_getFileTime(CXFile SFile);
  * \#ifndef/\#define/\#endif macro guards or with \#pragma once.
  */
 CINDEX_LINKAGE unsigned 
-lfort_isFileMultipleIncludeGuarded(CXTranslationUnit tu, CXFile file);
+lfort_isFileMultipleIncludeGuarded(CXProgram tu, CXFile file);
 
 /**
- * \brief Retrieve a file handle within the given translation unit.
+ * \brief Retrieve a file handle within the given program.
  *
- * \param tu the translation unit
+ * \param tu the program
  *
  * \param file_name the name of the file.
  *
- * \returns the file handle for the named file in the translation unit \p tu,
- * or a NULL file handle if the file was not a part of this translation unit.
+ * \returns the file handle for the named file in the program \p tu,
+ * or a NULL file handle if the file was not a part of this program.
  */
-CINDEX_LINKAGE CXFile lfort_getFile(CXTranslationUnit tu,
+CINDEX_LINKAGE CXFile lfort_getFile(CXProgram tu,
                                     const char *file_name);
 
 /**
@@ -365,7 +365,7 @@ CINDEX_LINKAGE CXSourceLocation lfort_getNullLocation();
 
 /**
  * \brief Determine whether two source locations, which must refer into
- * the same translation unit, refer to exactly the same point in the source
+ * the same program, refer to exactly the same point in the source
  * code.
  *
  * \returns non-zero if the source locations refer to the same location, zero
@@ -376,17 +376,17 @@ CINDEX_LINKAGE unsigned lfort_equalLocations(CXSourceLocation loc1,
 
 /**
  * \brief Retrieves the source location associated with a given file/line/column
- * in a particular translation unit.
+ * in a particular program.
  */
-CINDEX_LINKAGE CXSourceLocation lfort_getLocation(CXTranslationUnit tu,
+CINDEX_LINKAGE CXSourceLocation lfort_getLocation(CXProgram tu,
                                                   CXFile file,
                                                   unsigned line,
                                                   unsigned column);
 /**
  * \brief Retrieves the source location associated with a given character offset
- * in a particular translation unit.
+ * in a particular program.
  */
-CINDEX_LINKAGE CXSourceLocation lfort_getLocationForOffset(CXTranslationUnit tu,
+CINDEX_LINKAGE CXSourceLocation lfort_getLocationForOffset(CXProgram tu,
                                                            CXFile file,
                                                            unsigned offset);
 
@@ -706,30 +706,30 @@ CINDEX_LINKAGE CXDiagnosticSet lfort_getChildDiagnostics(CXDiagnostic D);
 
 /**
  * \brief Determine the number of diagnostics produced for the given
- * translation unit.
+ * program.
  */
-CINDEX_LINKAGE unsigned lfort_getNumDiagnostics(CXTranslationUnit Unit);
+CINDEX_LINKAGE unsigned lfort_getNumDiagnostics(CXProgram Unit);
 
 /**
- * \brief Retrieve a diagnostic associated with the given translation unit.
+ * \brief Retrieve a diagnostic associated with the given program.
  *
- * \param Unit the translation unit to query.
+ * \param Unit the program to query.
  * \param Index the zero-based diagnostic number to retrieve.
  *
  * \returns the requested diagnostic. This diagnostic must be freed
  * via a call to \c lfort_disposeDiagnostic().
  */
-CINDEX_LINKAGE CXDiagnostic lfort_getDiagnostic(CXTranslationUnit Unit,
+CINDEX_LINKAGE CXDiagnostic lfort_getDiagnostic(CXProgram Unit,
                                                 unsigned Index);
 
 /**
  * \brief Retrieve the complete set of diagnostics associated with a
- *        translation unit.
+ *        program.
  *
- * \param Unit the translation unit to query.
+ * \param Unit the program to query.
  */
 CINDEX_LINKAGE CXDiagnosticSet
-  lfort_getDiagnosticSetFromTU(CXTranslationUnit Unit);  
+  lfort_getDiagnosticSetFromPgm(CXProgram Unit);  
 
 /**
  * \brief Destroy a diagnostic.
@@ -959,23 +959,23 @@ CINDEX_LINKAGE CXString lfort_getDiagnosticFixIt(CXDiagnostic Diagnostic,
  */
 
 /**
- * \defgroup CINDEX_TRANSLATION_UNIT Translation unit manipulation
+ * \defgroup CINDEX_PROGRAM Translation unit manipulation
  *
  * The routines in this group provide the ability to create and destroy
- * translation units from files, either by parsing the contents of the files or
- * by reading in a serialized representation of a translation unit.
+ * programs from files, either by parsing the contents of the files or
+ * by reading in a serialized representation of a program.
  *
  * @{
  */
 
 /**
- * \brief Get the original translation unit source file name.
+ * \brief Get the original program source file name.
  */
 CINDEX_LINKAGE CXString
-lfort_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
+lfort_getProgramSpelling(CXProgram CPgm);
 
 /**
- * \brief Return the CXTranslationUnit for a given source file and the provided
+ * \brief Return the CXProgram for a given source file and the provided
  * command line arguments one would pass to the compiler.
  *
  * Note: The 'source_filename' argument is optional.  If the caller provides a
@@ -990,7 +990,7 @@ lfort_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
  *   '-fsyntax-only'
  *   '-o \<output file>'  (both '-o' and '\<output file>' are ignored)
  *
- * \param CIdx The index object with which the translation unit will be
+ * \param CIdx The index object with which the program will be
  * associated.
  *
  * \param source_filename The name of the source file to load, or NULL if the
@@ -1014,7 +1014,7 @@ lfort_getTranslationUnitSpelling(CXTranslationUnit CTUnit);
  * CXUnsavedFile) are copied when necessary, so the client only needs to
  * guarantee their validity until the call to this function returns.
  */
-CINDEX_LINKAGE CXTranslationUnit lfort_createTranslationUnitFromSourceFile(
+CINDEX_LINKAGE CXProgram lfort_createProgramFromSourceFile(
                                          CXIndex CIdx,
                                          const char *source_filename,
                                          int num_lfort_command_line_args,
@@ -1023,24 +1023,24 @@ CINDEX_LINKAGE CXTranslationUnit lfort_createTranslationUnitFromSourceFile(
                                          struct CXUnsavedFile *unsaved_files);
 
 /**
- * \brief Create a translation unit from an AST file (-emit-ast).
+ * \brief Create a program from an AST file (-emit-ast).
  */
-CINDEX_LINKAGE CXTranslationUnit lfort_createTranslationUnit(CXIndex,
+CINDEX_LINKAGE CXProgram lfort_createProgram(CXIndex,
                                              const char *ast_filename);
 
 /**
- * \brief Flags that control the creation of translation units.
+ * \brief Flags that control the creation of programs.
  *
  * The enumerators in this enumeration type are meant to be bitwise
  * ORed together to specify which options should be used when
- * constructing the translation unit.
+ * constructing the program.
  */
-enum CXTranslationUnit_Flags {
+enum CXProgram_Flags {
   /**
    * \brief Used to indicate that no special translation-unit options are
    * needed.
    */
-  CXTranslationUnit_None = 0x0,
+  CXProgram_None = 0x0,
 
   /**
    * \brief Used to indicate that the parser should construct a "detailed"
@@ -1052,55 +1052,55 @@ enum CXTranslationUnit_Flags {
    * applications that require more detailed information about the
    * behavior of the preprocessor.
    */
-  CXTranslationUnit_DetailedPreprocessingRecord = 0x01,
+  CXProgram_DetailedPreprocessingRecord = 0x01,
 
   /**
-   * \brief Used to indicate that the translation unit is incomplete.
+   * \brief Used to indicate that the program is incomplete.
    *
-   * When a translation unit is considered "incomplete", semantic
+   * When a program is considered "incomplete", semantic
    * analysis that is typically performed at the end of the
-   * translation unit will be suppressed. For example, this suppresses
+   * program will be suppressed. For example, this suppresses
    * the completion of tentative declarations in C and of
    * instantiation of implicitly-instantiation function templates in
    * C++. This option is typically used when parsing a header with the
    * intent of producing a precompiled header.
    */
-  CXTranslationUnit_Incomplete = 0x02,
+  CXProgram_Incomplete = 0x02,
   
   /**
-   * \brief Used to indicate that the translation unit should be built with an 
+   * \brief Used to indicate that the program should be built with an 
    * implicit precompiled header for the preamble.
    *
    * An implicit precompiled header is used as an optimization when a
-   * particular translation unit is likely to be reparsed many times
+   * particular program is likely to be reparsed many times
    * when the sources aren't changing that often. In this case, an
    * implicit precompiled header will be built containing all of the
    * initial includes at the top of the main file (what we refer to as
    * the "preamble" of the file). In subsequent parses, if the
    * preamble or the files in it have not changed, \c
-   * lfort_reparseTranslationUnit() will re-use the implicit
+   * lfort_reparseProgram() will re-use the implicit
    * precompiled header to improve parsing performance.
    */
-  CXTranslationUnit_PrecompiledPreamble = 0x04,
+  CXProgram_PrecompiledPreamble = 0x04,
   
   /**
-   * \brief Used to indicate that the translation unit should cache some
+   * \brief Used to indicate that the program should cache some
    * code-completion results with each reparse of the source file.
    *
    * Caching of code-completion results is a performance optimization that
    * introduces some overhead to reparsing but improves the performance of
    * code-completion operations.
    */
-  CXTranslationUnit_CacheCompletionResults = 0x08,
+  CXProgram_CacheCompletionResults = 0x08,
 
   /**
-   * \brief Used to indicate that the translation unit will be serialized with
-   * \c lfort_saveTranslationUnit.
+   * \brief Used to indicate that the program will be serialized with
+   * \c lfort_saveProgram.
    *
    * This option is typically used when parsing a header with the intent of
    * producing a precompiled header.
    */
-  CXTranslationUnit_ForSerialization = 0x10,
+  CXProgram_ForSerialization = 0x10,
 
   /**
    * \brief DEPRECATED: Enabled chained precompiled preambles in C++.
@@ -1108,7 +1108,7 @@ enum CXTranslationUnit_Flags {
    * Note: this is a *temporary* option that is available only while
    * we are testing C++ precompiled preamble support. It is deprecated.
    */
-  CXTranslationUnit_CXXChainedPCH = 0x20,
+  CXProgram_CXXChainedPCH = 0x20,
 
   /**
    * \brief Used to indicate that function/method bodies should be skipped while
@@ -1117,41 +1117,41 @@ enum CXTranslationUnit_Flags {
    * This option can be used to search for declarations/definitions while
    * ignoring the usages.
    */
-  CXTranslationUnit_SkipSubprogramBodies = 0x40,
+  CXProgram_SkipSubprogramBodies = 0x40,
 
   /**
    * \brief Used to indicate that brief documentation comments should be
    * included into the set of code completions returned from this translation
    * unit.
    */
-  CXTranslationUnit_IncludeBriefCommentsInCodeCompletion = 0x80
+  CXProgram_IncludeBriefCommentsInCodeCompletion = 0x80
 };
 
 /**
  * \brief Returns the set of flags that is suitable for parsing a translation
  * unit that is being edited.
  *
- * The set of flags returned provide options for \c lfort_parseTranslationUnit()
- * to indicate that the translation unit is likely to be reparsed many times,
- * either explicitly (via \c lfort_reparseTranslationUnit()) or implicitly
+ * The set of flags returned provide options for \c lfort_parseProgram()
+ * to indicate that the program is likely to be reparsed many times,
+ * either explicitly (via \c lfort_reparseProgram()) or implicitly
  * (e.g., by code completion (\c lfort_codeCompletionAt())). The returned flag
  * set contains an unspecified set of optimizations (e.g., the precompiled 
  * preamble) geared toward improving the performance of these routines. The
  * set of optimizations enabled may change from one version to the next.
  */
-CINDEX_LINKAGE unsigned lfort_defaultEditingTranslationUnitOptions(void);
+CINDEX_LINKAGE unsigned lfort_defaultEditingProgramOptions(void);
   
 /**
- * \brief Parse the given source file and the translation unit corresponding
+ * \brief Parse the given source file and the program corresponding
  * to that file.
  *
  * This routine is the main entry point for the LFort C API, providing the
- * ability to parse a source file into a translation unit that can then be
+ * ability to parse a source file into a program that can then be
  * queried by other functions in the API. This routine accepts a set of
  * command-line arguments so that the compilation can be configured in the same
  * way that the compiler is configured on the command line.
  *
- * \param CIdx The index object with which the translation unit will be 
+ * \param CIdx The index object with which the program will be 
  * associated.
  *
  * \param source_filename The name of the source file to load, or NULL if the
@@ -1175,15 +1175,15 @@ CINDEX_LINKAGE unsigned lfort_defaultEditingTranslationUnitOptions(void);
  * \param num_unsaved_files the number of unsaved file entries in \p
  * unsaved_files.
  *
- * \param options A bitmask of options that affects how the translation unit
+ * \param options A bitmask of options that affects how the program
  * is managed but not its compilation. This should be a bitwise OR of the
- * CXTranslationUnit_XXX flags.
+ * CXProgram_XXX flags.
  *
- * \returns A new translation unit describing the parsed code and containing
+ * \returns A new program describing the parsed code and containing
  * any diagnostics produced by the compiler. If there is a failure from which
  * the compiler cannot recover, returns NULL.
  */
-CINDEX_LINKAGE CXTranslationUnit lfort_parseTranslationUnit(CXIndex CIdx,
+CINDEX_LINKAGE CXProgram lfort_parseProgram(CXIndex CIdx,
                                                     const char *source_filename,
                                          const char * const *command_line_args,
                                                       int num_command_line_args,
@@ -1192,17 +1192,17 @@ CINDEX_LINKAGE CXTranslationUnit lfort_parseTranslationUnit(CXIndex CIdx,
                                                             unsigned options);
   
 /**
- * \brief Flags that control how translation units are saved.
+ * \brief Flags that control how programs are saved.
  *
  * The enumerators in this enumeration type are meant to be bitwise
  * ORed together to specify which options should be used when
- * saving the translation unit.
+ * saving the program.
  */
-enum CXSaveTranslationUnit_Flags {
+enum CXSaveProgram_Flags {
   /**
    * \brief Used to indicate that no special saving options are needed.
    */
-  CXSaveTranslationUnit_None = 0x0
+  CXSaveProgram_None = 0x0
 };
 
 /**
@@ -1210,19 +1210,19 @@ enum CXSaveTranslationUnit_Flags {
  * unit.
  *
  * The set of flags returned provide options for
- * \c lfort_saveTranslationUnit() by default. The returned flag
- * set contains an unspecified set of options that save translation units with
+ * \c lfort_saveProgram() by default. The returned flag
+ * set contains an unspecified set of options that save programs with
  * the most commonly-requested data.
  */
-CINDEX_LINKAGE unsigned lfort_defaultSaveOptions(CXTranslationUnit TU);
+CINDEX_LINKAGE unsigned lfort_defaultSaveOptions(CXProgram Pgm);
 
 /**
  * \brief Describes the kind of error that occurred (if any) in a call to
- * \c lfort_saveTranslationUnit().
+ * \c lfort_saveProgram().
  */
 enum CXSaveError {
   /**
-   * \brief Indicates that no error occurred while saving a translation unit.
+   * \brief Indicates that no error occurred while saving a program.
    */
   CXSaveError_None = 0,
   
@@ -1237,58 +1237,58 @@ enum CXSaveError {
   
   /**
    * \brief Indicates that errors during translation prevented this attempt
-   * to save the translation unit.
+   * to save the program.
    * 
-   * Errors that prevent the translation unit from being saved can be
+   * Errors that prevent the program from being saved can be
    * extracted using \c lfort_getNumDiagnostics() and \c lfort_getDiagnostic().
    */
   CXSaveError_TranslationErrors = 2,
   
   /**
-   * \brief Indicates that the translation unit to be saved was somehow
+   * \brief Indicates that the program to be saved was somehow
    * invalid (e.g., NULL).
    */
-  CXSaveError_InvalidTU = 3
+  CXSaveError_InvalidPgm = 3
 };
   
 /**
- * \brief Saves a translation unit into a serialized representation of
- * that translation unit on disk.
+ * \brief Saves a program into a serialized representation of
+ * that program on disk.
  *
- * Any translation unit that was parsed without error can be saved
- * into a file. The translation unit can then be deserialized into a
- * new \c CXTranslationUnit with \c lfort_createTranslationUnit() or,
- * if it is an incomplete translation unit that corresponds to a
+ * Any program that was parsed without error can be saved
+ * into a file. The program can then be deserialized into a
+ * new \c CXProgram with \c lfort_createProgram() or,
+ * if it is an incomplete program that corresponds to a
  * header, used as a precompiled header when parsing other translation
  * units.
  *
- * \param TU The translation unit to save.
+ * \param Pgm The program to save.
  *
- * \param FileName The file to which the translation unit will be saved.
+ * \param FileName The file to which the program will be saved.
  *
- * \param options A bitmask of options that affects how the translation unit
+ * \param options A bitmask of options that affects how the program
  * is saved. This should be a bitwise OR of the
- * CXSaveTranslationUnit_XXX flags.
+ * CXSaveProgram_XXX flags.
  *
  * \returns A value that will match one of the enumerators of the CXSaveError
- * enumeration. Zero (CXSaveError_None) indicates that the translation unit was 
+ * enumeration. Zero (CXSaveError_None) indicates that the program was 
  * saved successfully, while a non-zero value indicates that a problem occurred.
  */
-CINDEX_LINKAGE int lfort_saveTranslationUnit(CXTranslationUnit TU,
+CINDEX_LINKAGE int lfort_saveProgram(CXProgram Pgm,
                                              const char *FileName,
                                              unsigned options);
 
 /**
- * \brief Destroy the specified CXTranslationUnit object.
+ * \brief Destroy the specified CXProgram object.
  */
-CINDEX_LINKAGE void lfort_disposeTranslationUnit(CXTranslationUnit);
+CINDEX_LINKAGE void lfort_disposeProgram(CXProgram);
 
 /**
- * \brief Flags that control the reparsing of translation units.
+ * \brief Flags that control the reparsing of programs.
  *
  * The enumerators in this enumeration type are meant to be bitwise
  * ORed together to specify which options should be used when
- * reparsing the translation unit.
+ * reparsing the program.
  */
 enum CXReparse_Flags {
   /**
@@ -1302,32 +1302,32 @@ enum CXReparse_Flags {
  * unit.
  *
  * The set of flags returned provide options for
- * \c lfort_reparseTranslationUnit() by default. The returned flag
+ * \c lfort_reparseProgram() by default. The returned flag
  * set contains an unspecified set of optimizations geared toward common uses
  * of reparsing. The set of optimizations enabled may change from one version 
  * to the next.
  */
-CINDEX_LINKAGE unsigned lfort_defaultReparseOptions(CXTranslationUnit TU);
+CINDEX_LINKAGE unsigned lfort_defaultReparseOptions(CXProgram Pgm);
 
 /**
- * \brief Reparse the source files that produced this translation unit.
+ * \brief Reparse the source files that produced this program.
  *
  * This routine can be used to re-parse the source files that originally
- * created the given translation unit, for example because those source files
+ * created the given program, for example because those source files
  * have changed (either on disk or as passed via \p unsaved_files). The
  * source code will be reparsed with the same command-line options as it
  * was originally parsed. 
  *
- * Reparsing a translation unit invalidates all cursors and source locations
- * that refer into that translation unit. This makes reparsing a translation
- * unit semantically equivalent to destroying the translation unit and then
- * creating a new translation unit with the same command-line arguments.
+ * Reparsing a program invalidates all cursors and source locations
+ * that refer into that program. This makes reparsing a translation
+ * unit semantically equivalent to destroying the program and then
+ * creating a new program with the same command-line arguments.
  * However, it may be more efficient to reparse a translation 
  * unit using this routine.
  *
- * \param TU The translation unit whose contents will be re-parsed. The
- * translation unit must originally have been built with 
- * \c lfort_createTranslationUnitFromSourceFile().
+ * \param Pgm The program whose contents will be re-parsed. The
+ * program must originally have been built with 
+ * \c lfort_createProgramFromSourceFile().
  *
  * \param num_unsaved_files The number of unsaved file entries in \p
  * unsaved_files.
@@ -1340,42 +1340,42 @@ CINDEX_LINKAGE unsigned lfort_defaultReparseOptions(CXTranslationUnit TU);
  * 
  * \param options A bitset of options composed of the flags in CXReparse_Flags.
  * The function \c lfort_defaultReparseOptions() produces a default set of
- * options recommended for most uses, based on the translation unit.
+ * options recommended for most uses, based on the program.
  *
  * \returns 0 if the sources could be reparsed. A non-zero value will be
- * returned if reparsing was impossible, such that the translation unit is
- * invalid. In such cases, the only valid call for \p TU is 
- * \c lfort_disposeTranslationUnit(TU).
+ * returned if reparsing was impossible, such that the program is
+ * invalid. In such cases, the only valid call for \p Pgm is 
+ * \c lfort_disposeProgram(Pgm).
  */
-CINDEX_LINKAGE int lfort_reparseTranslationUnit(CXTranslationUnit TU,
+CINDEX_LINKAGE int lfort_reparseProgram(CXProgram Pgm,
                                                 unsigned num_unsaved_files,
                                           struct CXUnsavedFile *unsaved_files,
                                                 unsigned options);
 
 /**
-  * \brief Categorizes how memory is being used by a translation unit.
+  * \brief Categorizes how memory is being used by a program.
   */
-enum CXTUResourceUsageKind {
-  CXTUResourceUsage_AST = 1,
-  CXTUResourceUsage_Identifiers = 2,
-  CXTUResourceUsage_Selectors = 3,
-  CXTUResourceUsage_GlobalCompletionResults = 4,
-  CXTUResourceUsage_SourceManagerContentCache = 5,
-  CXTUResourceUsage_AST_SideTables = 6,
-  CXTUResourceUsage_SourceManager_Membuffer_Malloc = 7,
-  CXTUResourceUsage_SourceManager_Membuffer_MMap = 8,
-  CXTUResourceUsage_ExternalASTSource_Membuffer_Malloc = 9, 
-  CXTUResourceUsage_ExternalASTSource_Membuffer_MMap = 10, 
-  CXTUResourceUsage_Preprocessor = 11,
-  CXTUResourceUsage_PreprocessingRecord = 12,
-  CXTUResourceUsage_SourceManager_DataStructures = 13,
-  CXTUResourceUsage_Preprocessor_HeaderSearch = 14,
-  CXTUResourceUsage_MEMORY_IN_BYTES_BEGIN = CXTUResourceUsage_AST,
-  CXTUResourceUsage_MEMORY_IN_BYTES_END =
-    CXTUResourceUsage_Preprocessor_HeaderSearch,
+enum CXPgmResourceUsageKind {
+  CXPgmResourceUsage_AST = 1,
+  CXPgmResourceUsage_Identifiers = 2,
+  CXPgmResourceUsage_Selectors = 3,
+  CXPgmResourceUsage_GlobalCompletionResults = 4,
+  CXPgmResourceUsage_SourceManagerContentCache = 5,
+  CXPgmResourceUsage_AST_SideTables = 6,
+  CXPgmResourceUsage_SourceManager_Membuffer_Malloc = 7,
+  CXPgmResourceUsage_SourceManager_Membuffer_MMap = 8,
+  CXPgmResourceUsage_ExternalASTSource_Membuffer_Malloc = 9, 
+  CXPgmResourceUsage_ExternalASTSource_Membuffer_MMap = 10, 
+  CXPgmResourceUsage_Preprocessor = 11,
+  CXPgmResourceUsage_PreprocessingRecord = 12,
+  CXPgmResourceUsage_SourceManager_DataStructures = 13,
+  CXPgmResourceUsage_Preprocessor_HeaderSearch = 14,
+  CXPgmResourceUsage_MEMORY_IN_BYTES_BEGIN = CXPgmResourceUsage_AST,
+  CXPgmResourceUsage_MEMORY_IN_BYTES_END =
+    CXPgmResourceUsage_Preprocessor_HeaderSearch,
 
-  CXTUResourceUsage_First = CXTUResourceUsage_AST,
-  CXTUResourceUsage_Last = CXTUResourceUsage_Preprocessor_HeaderSearch
+  CXPgmResourceUsage_First = CXPgmResourceUsage_AST,
+  CXPgmResourceUsage_Last = CXPgmResourceUsage_Preprocessor_HeaderSearch
 };
 
 /**
@@ -1383,20 +1383,20 @@ enum CXTUResourceUsageKind {
   *  the name of the memory category.  This string should never be freed.
   */
 CINDEX_LINKAGE
-const char *lfort_getTUResourceUsageName(enum CXTUResourceUsageKind kind);
+const char *lfort_getPgmResourceUsageName(enum CXPgmResourceUsageKind kind);
 
-typedef struct CXTUResourceUsageEntry {
+typedef struct CXPgmResourceUsageEntry {
   /* \brief The memory usage category. */
-  enum CXTUResourceUsageKind kind;  
+  enum CXPgmResourceUsageKind kind;  
   /* \brief Amount of resources used. 
       The units will depend on the resource kind. */
   unsigned long amount;
-} CXTUResourceUsageEntry;
+} CXPgmResourceUsageEntry;
 
 /**
-  * \brief The memory usage of a CXTranslationUnit, broken into categories.
+  * \brief The memory usage of a CXProgram, broken into categories.
   */
-typedef struct CXTUResourceUsage {
+typedef struct CXPgmResourceUsage {
   /* \brief Private data member, used for queries. */
   void *data;
 
@@ -1405,17 +1405,17 @@ typedef struct CXTUResourceUsage {
 
   /* \brief An array of key-value pairs, representing the breakdown of memory
             usage. */
-  CXTUResourceUsageEntry *entries;
+  CXPgmResourceUsageEntry *entries;
 
-} CXTUResourceUsage;
+} CXPgmResourceUsage;
 
 /**
-  * \brief Return the memory usage of a translation unit.  This object
-  *  should be released with lfort_disposeCXTUResourceUsage().
+  * \brief Return the memory usage of a program.  This object
+  *  should be released with lfort_disposeCXPgmResourceUsage().
   */
-CINDEX_LINKAGE CXTUResourceUsage lfort_getCXTUResourceUsage(CXTranslationUnit TU);
+CINDEX_LINKAGE CXPgmResourceUsage lfort_getCXPgmResourceUsage(CXProgram Pgm);
 
-CINDEX_LINKAGE void lfort_disposeCXTUResourceUsage(CXTUResourceUsage usage);
+CINDEX_LINKAGE void lfort_disposeCXPgmResourceUsage(CXPgmResourceUsage usage);
 
 /**
  * @}
@@ -2038,12 +2038,12 @@ enum CXCursorKind {
   CXCursor_LastStmt                      = CXCursor_DeclStmt,
 
   /**
-   * \brief Cursor that represents the translation unit itself.
+   * \brief Cursor that represents the program itself.
    *
-   * The translation unit cursor exists primarily to act as the root
-   * cursor for traversing the contents of a translation unit.
+   * The program cursor exists primarily to act as the root
+   * cursor for traversing the contents of a program.
    */
-  CXCursor_TranslationUnit               = 300,
+  CXCursor_Program               = 300,
 
   /* Attributes */
   CXCursor_FirstAttr                     = 400,
@@ -2082,7 +2082,7 @@ enum CXCursorKind {
 
 /**
  * \brief A cursor representing some element in the abstract syntax tree for
- * a translation unit.
+ * a program.
  *
  * The cursor abstraction unifies the different kinds of entities in a
  * program--declaration, statements, expressions, references to declarations,
@@ -2092,9 +2092,9 @@ enum CXCursorKind {
  * cursor, and retrieving cursors for any child nodes of a particular cursor.
  *
  * Cursors can be produced in two specific ways.
- * lfort_getTranslationUnitCursor() produces a cursor for a translation unit,
+ * lfort_getProgramCursor() produces a cursor for a program,
  * from which one can use lfort_visitChildren() to explore the rest of the
- * translation unit. lfort_getCursor() maps from a physical source location
+ * program. lfort_getCursor() maps from a physical source location
  * to the entity that resides at that location, allowing one to map from the
  * source code into the AST.
  */
@@ -2109,7 +2109,7 @@ typedef struct {
  */
 typedef struct {
   const void *ASTNode;
-  CXTranslationUnit TranslationUnit;
+  CXProgram Program;
 } CXComment;
 
 /**
@@ -2124,12 +2124,12 @@ typedef struct {
 CINDEX_LINKAGE CXCursor lfort_getNullCursor(void);
 
 /**
- * \brief Retrieve the cursor that represents the given translation unit.
+ * \brief Retrieve the cursor that represents the given program.
  *
- * The translation unit cursor can be used to start traversing the
- * various declarations within the given translation unit.
+ * The program cursor can be used to start traversing the
+ * various declarations within the given program.
  */
-CINDEX_LINKAGE CXCursor lfort_getTranslationUnitCursor(CXTranslationUnit);
+CINDEX_LINKAGE CXCursor lfort_getProgramCursor(CXProgram);
 
 /**
  * \brief Determine whether two cursors are equivalent.
@@ -2191,7 +2191,7 @@ CINDEX_LINKAGE unsigned lfort_isInvalid(enum CXCursorKind);
  * \brief Determine whether the given cursor kind represents a translation
  * unit.
  */
-CINDEX_LINKAGE unsigned lfort_isTranslationUnit(enum CXCursorKind);
+CINDEX_LINKAGE unsigned lfort_isProgram(enum CXCursorKind);
 
 /***
  * \brief Determine whether the given cursor represents a preprocessing
@@ -2346,9 +2346,9 @@ CINDEX_LINKAGE enum CXLanguageKind {
 CINDEX_LINKAGE enum CXLanguageKind lfort_getCursorLanguage(CXCursor cursor);
 
 /**
- * \brief Returns the translation unit that a cursor originated from.
+ * \brief Returns the program that a cursor originated from.
  */
-CINDEX_LINKAGE CXTranslationUnit lfort_Cursor_getTranslationUnit(CXCursor);
+CINDEX_LINKAGE CXProgram lfort_Cursor_getProgram(CXCursor);
 
 
 /**
@@ -2402,7 +2402,7 @@ CINDEX_LINKAGE unsigned lfort_CXCursorSet_insert(CXCursorSet cset,
  * In the out-of-line definition of \c C::f, the semantic parent is the 
  * the class \c C, of which this function is a member. The lexical parent is
  * the place where the declaration actually occurs in the source code; in this
- * case, the definition occurs in the translation unit. In general, the 
+ * case, the definition occurs in the program. In general, the 
  * lexical parent for a given entity can change without affecting the semantics
  * of the program, and the lexical parent of different declarations of the
  * same entity may be different. Changing the semantic parent of a declaration,
@@ -2411,9 +2411,9 @@ CINDEX_LINKAGE unsigned lfort_CXCursorSet_insert(CXCursorSet cset,
  *
  * In the example above, both declarations of \c C::f have \c C as their
  * semantic context, while the lexical context of the first \c C::f is \c C
- * and the lexical context of the second \c C::f is the translation unit.
+ * and the lexical context of the second \c C::f is the program.
  *
- * For global declarations, the semantic parent is the translation unit.
+ * For global declarations, the semantic parent is the program.
  */
 CINDEX_LINKAGE CXCursor lfort_getCursorSemanticParent(CXCursor cursor);
 
@@ -2437,7 +2437,7 @@ CINDEX_LINKAGE CXCursor lfort_getCursorSemanticParent(CXCursor cursor);
  * In the out-of-line definition of \c C::f, the semantic parent is the 
  * the class \c C, of which this function is a member. The lexical parent is
  * the place where the declaration actually occurs in the source code; in this
- * case, the definition occurs in the translation unit. In general, the 
+ * case, the definition occurs in the program. In general, the 
  * lexical parent for a given entity can change without affecting the semantics
  * of the program, and the lexical parent of different declarations of the
  * same entity may be different. Changing the semantic parent of a declaration,
@@ -2446,10 +2446,10 @@ CINDEX_LINKAGE CXCursor lfort_getCursorSemanticParent(CXCursor cursor);
  *
  * In the example above, both declarations of \c C::f have \c C as their
  * semantic context, while the lexical context of the first \c C::f is \c C
- * and the lexical context of the second \c C::f is the translation unit.
+ * and the lexical context of the second \c C::f is the program.
  *
  * For declarations written in the global scope, the lexical parent is
- * the translation unit.
+ * the program.
  */
 CINDEX_LINKAGE CXCursor lfort_getCursorLexicalParent(CXCursor cursor);
 
@@ -2542,7 +2542,7 @@ CINDEX_LINKAGE CXFile lfort_getIncludedFile(CXCursor cursor);
  * \returns a cursor representing the entity at the given source location, or
  * a NULL cursor if no such entity can be found.
  */
-CINDEX_LINKAGE CXCursor lfort_getCursor(CXTranslationUnit, CXSourceLocation);
+CINDEX_LINKAGE CXCursor lfort_getCursor(CXProgram, CXSourceLocation);
 
 /**
  * \brief Retrieve the physical location of the source constructor referenced
@@ -3052,7 +3052,7 @@ unsigned lfort_visitChildrenWithBlock(CXCursor parent,
  * \defgroup CINDEX_CURSOR_XREF Cross-referencing in the AST
  *
  * These routines provide the ability to determine references within and
- * across translation units, by providing the names of the entities referenced
+ * across programs, by providing the names of the entities referenced
  * by cursors, follow reference cursors to the declarations they reference,
  * and associate declarations with their definitions.
  *
@@ -3065,8 +3065,8 @@ unsigned lfort_visitChildrenWithBlock(CXCursor parent,
  *
  * A Unified Symbol Resolution (USR) is a string that identifies a particular
  * entity (function, class, variable, etc.) within a program. USRs can be
- * compared across translation units to determine, e.g., when references in
- * one translation refer to an entity defined in another translation unit.
+ * compared across programs to determine, e.g., when references in
+ * one translation refer to an entity defined in another program.
  */
 CINDEX_LINKAGE CXString lfort_getCursorUSR(CXCursor);
 
@@ -3178,7 +3178,7 @@ CINDEX_LINKAGE CXCursor lfort_getCursorReferenced(CXCursor);
  *
  *  If given a cursor for which there is no corresponding definition,
  *  e.g., because there is no definition of that entity within this
- *  translation unit, returns a NULL cursor.
+ *  program, returns a NULL cursor.
  */
 CINDEX_LINKAGE CXCursor lfort_getCursorDefinition(CXCursor);
 
@@ -3192,7 +3192,7 @@ CINDEX_LINKAGE unsigned lfort_isCursorDefinition(CXCursor);
  * \brief Retrieve the canonical cursor corresponding to the given cursor.
  *
  * In the C family of languages, many kinds of entities can be declared several
- * times within a single translation unit. For example, a structure type can
+ * times within a single program. For example, a structure type can
  * be forward-declared (possibly multiple times) and later defined:
  *
  * \code
@@ -3972,7 +3972,7 @@ enum CXNameRefFlags {
  * \defgroup CINDEX_LEX Token extraction and manipulation
  *
  * The routines in this group provide access to the tokens within a
- * translation unit, along with a semantic mapping of those tokens to
+ * program, along with a semantic mapping of those tokens to
  * their corresponding cursors.
  *
  * @{
@@ -4027,37 +4027,37 @@ CINDEX_LINKAGE CXTokenKind lfort_getTokenKind(CXToken);
  * The spelling of a token is the textual representation of that token, e.g.,
  * the text of an identifier or keyword.
  */
-CINDEX_LINKAGE CXString lfort_getTokenSpelling(CXTranslationUnit, CXToken);
+CINDEX_LINKAGE CXString lfort_getTokenSpelling(CXProgram, CXToken);
 
 /**
  * \brief Retrieve the source location of the given token.
  */
-CINDEX_LINKAGE CXSourceLocation lfort_getTokenLocation(CXTranslationUnit,
+CINDEX_LINKAGE CXSourceLocation lfort_getTokenLocation(CXProgram,
                                                        CXToken);
 
 /**
  * \brief Retrieve a source range that covers the given token.
  */
-CINDEX_LINKAGE CXSourceRange lfort_getTokenExtent(CXTranslationUnit, CXToken);
+CINDEX_LINKAGE CXSourceRange lfort_getTokenExtent(CXProgram, CXToken);
 
 /**
  * \brief Tokenize the source code described by the given range into raw
  * lexical tokens.
  *
- * \param TU the translation unit whose text is being tokenized.
+ * \param Pgm the program whose text is being tokenized.
  *
  * \param Range the source range in which text should be tokenized. All of the
  * tokens produced by tokenization will fall within this source range,
  *
  * \param Tokens this pointer will be set to point to the array of tokens
  * that occur within the given source range. The returned pointer must be
- * freed with lfort_disposeTokens() before the translation unit is destroyed.
+ * freed with lfort_disposeTokens() before the program is destroyed.
  *
  * \param NumTokens will be set to the number of tokens in the \c *Tokens
  * array.
  *
  */
-CINDEX_LINKAGE void lfort_tokenize(CXTranslationUnit TU, CXSourceRange Range,
+CINDEX_LINKAGE void lfort_tokenize(CXProgram Pgm, CXSourceRange Range,
                                    CXToken **Tokens, unsigned *NumTokens);
 
 /**
@@ -4081,7 +4081,7 @@ CINDEX_LINKAGE void lfort_tokenize(CXTranslationUnit TU, CXSourceRange Range,
  * part of the full syntax of the function call expression, which is
  * not provided as an annotation.
  *
- * \param TU the translation unit that owns the given tokens.
+ * \param Pgm the program that owns the given tokens.
  *
  * \param Tokens the set of tokens to annotate.
  *
@@ -4090,14 +4090,14 @@ CINDEX_LINKAGE void lfort_tokenize(CXTranslationUnit TU, CXSourceRange Range,
  * \param Cursors an array of \p NumTokens cursors, whose contents will be
  * replaced with the cursors corresponding to each token.
  */
-CINDEX_LINKAGE void lfort_annotateTokens(CXTranslationUnit TU,
+CINDEX_LINKAGE void lfort_annotateTokens(CXProgram Pgm,
                                          CXToken *Tokens, unsigned NumTokens,
                                          CXCursor *Cursors);
 
 /**
  * \brief Free the given set of tokens.
  */
-CINDEX_LINKAGE void lfort_disposeTokens(CXTranslationUnit TU,
+CINDEX_LINKAGE void lfort_disposeTokens(CXProgram Pgm,
                                         CXToken *Tokens, unsigned NumTokens);
 
 /**
@@ -4676,7 +4676,7 @@ enum CXCompletionContext {
 CINDEX_LINKAGE unsigned lfort_defaultCodeCompleteOptions(void);
 
 /**
- * \brief Perform code completion at a given location in a translation unit.
+ * \brief Perform code completion at a given location in a program.
  *
  * This function performs code completion at a particular file, line, and
  * column within source code, providing results that suggest potential
@@ -4706,15 +4706,15 @@ CINDEX_LINKAGE unsigned lfort_defaultCodeCompleteOptions(void);
  * results from the filtering of results on a per-character basis, which must
  * have a lower latency.
  *
- * \param TU The translation unit in which code-completion should
- * occur. The source files for this translation unit need not be
+ * \param Pgm The program in which code-completion should
+ * occur. The source files for this program need not be
  * completely up-to-date (and the contents of those source files may
  * be overridden via \p unsaved_files). Cursors referring into the
- * translation unit may be invalidated by this invocation.
+ * program may be invalidated by this invocation.
  *
  * \param complete_filename The name of the source file where code
  * completion should be performed. This filename may be any file
- * included in the translation unit.
+ * included in the program.
  *
  * \param complete_line The line at which code-completion should occur.
  *
@@ -4744,7 +4744,7 @@ CINDEX_LINKAGE unsigned lfort_defaultCodeCompleteOptions(void);
  * completion fails, returns NULL.
  */
 CINDEX_LINKAGE
-CXCodeCompleteResults *lfort_codeCompleteAt(CXTranslationUnit TU,
+CXCodeCompleteResults *lfort_codeCompleteAt(CXProgram Pgm,
                                             const char *complete_filename,
                                             unsigned complete_line,
                                             unsigned complete_column,
@@ -4877,12 +4877,12 @@ CINDEX_LINKAGE CXString lfort_getLFortVersion();
 CINDEX_LINKAGE void lfort_toggleCrashRecovery(unsigned isEnabled);
   
  /**
-  * \brief Visitor invoked for each file in a translation unit
+  * \brief Visitor invoked for each file in a program
   *        (used with lfort_getInclusions()).
   *
   * This visitor function will be invoked by lfort_getInclusions() for each
   * file included (either at the top-level or by \#include directives) within
-  * a translation unit.  The first argument is the file being included, and
+  * a program.  The first argument is the file being included, and
   * the second and third arguments provide the inclusion stack.  The
   * array is sorted in order of immediate inclusion.  For example,
   * the first element refers to the location that included 'included_file'.
@@ -4893,12 +4893,12 @@ typedef void (*CXInclusionVisitor)(CXFile included_file,
                                    CXClientData client_data);
 
 /**
- * \brief Visit the set of preprocessor inclusions in a translation unit.
+ * \brief Visit the set of preprocessor inclusions in a program.
  *   The visitor function is called with the provided data for every included
  *   file.  This does not include headers included by the PCH file (unless one
  *   is inspecting the inclusions in the PCH file itself).
  */
-CINDEX_LINKAGE void lfort_getInclusions(CXTranslationUnit tu,
+CINDEX_LINKAGE void lfort_getInclusions(CXProgram tu,
                                         CXInclusionVisitor visitor,
                                         CXClientData client_data);
 
@@ -5314,7 +5314,7 @@ typedef struct {
 
 /**
  * \brief A group of callbacks used by #lfort_indexSourceFile and
- * #lfort_indexTranslationUnit.
+ * #lfort_indexProgram.
  */
 typedef struct {
   /**
@@ -5350,9 +5350,9 @@ typedef struct {
                                         const CXIdxImportedASTFileInfo *);
 
   /**
-   * \brief Called at the beginning of indexing a translation unit.
+   * \brief Called at the beginning of indexing a program.
    */
-  CXIdxClientContainer (*startedTranslationUnit)(CXClientData client_data,
+  CXIdxClientContainer (*startedProgram)(CXClientData client_data,
                                                  void *reserved);
 
   void (*indexDeclaration)(CXClientData client_data,
@@ -5417,13 +5417,13 @@ lfort_index_setClientEntity(const CXIdxEntityInfo *, CXIdxClientEntity);
 
 /**
  * \brief An indexing action/session, to be applied to one or multiple
- * translation units.
+ * programs.
  */
 typedef void *CXIndexAction;
 
 /**
  * \brief An indexing action/session, to be applied to one or multiple
- * translation units.
+ * programs.
  *
  * \param CIdx The index object with which the index action will be associated.
  */
@@ -5432,7 +5432,7 @@ CINDEX_LINKAGE CXIndexAction lfort_IndexAction_create(CXIndex CIdx);
 /**
  * \brief Destroy the given index action.
  *
- * The index action must not be destroyed until all of the translation units
+ * The index action must not be destroyed until all of the programs
  * created within that index action have been destroyed.
  */
 CINDEX_LINKAGE void lfort_IndexAction_dispose(CXIndexAction);
@@ -5477,7 +5477,7 @@ typedef enum {
 } CXIndexOptFlags;
 
 /**
- * \brief Index the given source file and the translation unit corresponding
+ * \brief Index the given source file and the program corresponding
  * to that file via callbacks implemented through #IndexerCallbacks.
  *
  * \param client_data pointer data supplied by the client, which will
@@ -5492,13 +5492,13 @@ typedef enum {
  * \param index_options A bitmask of options that affects how indexing is
  * performed. This should be a bitwise OR of the CXIndexOpt_XXX flags.
  *
- * \param out_TU [out] pointer to store a CXTranslationUnit that can be reused
+ * \param out_Pgm [out] pointer to store a CXProgram that can be reused
  * after indexing is finished. Set to NULL if you do not require it.
  *
  * \returns If there is a failure from which the there is no recovery, returns
  * non-zero, otherwise returns 0.
  *
- * The rest of the parameters are the same as #lfort_parseTranslationUnit.
+ * The rest of the parameters are the same as #lfort_parseProgram.
  */
 CINDEX_LINKAGE int lfort_indexSourceFile(CXIndexAction,
                                          CXClientData client_data,
@@ -5510,11 +5510,11 @@ CINDEX_LINKAGE int lfort_indexSourceFile(CXIndexAction,
                                          int num_command_line_args,
                                          struct CXUnsavedFile *unsaved_files,
                                          unsigned num_unsaved_files,
-                                         CXTranslationUnit *out_TU,
-                                         unsigned TU_options);
+                                         CXProgram *out_Pgm,
+                                         unsigned Pgm_options);
 
 /**
- * \brief Index the given translation unit via callbacks implemented through
+ * \brief Index the given program via callbacks implemented through
  * #IndexerCallbacks.
  * 
  * The order of callback invocations is not guaranteed to be the same as
@@ -5529,12 +5529,12 @@ CINDEX_LINKAGE int lfort_indexSourceFile(CXIndexAction,
  * \returns If there is a failure from which the there is no recovery, returns
  * non-zero, otherwise returns 0.
  */
-CINDEX_LINKAGE int lfort_indexTranslationUnit(CXIndexAction,
+CINDEX_LINKAGE int lfort_indexProgram(CXIndexAction,
                                               CXClientData client_data,
                                               IndexerCallbacks *index_callbacks,
                                               unsigned index_callbacks_size,
                                               unsigned index_options,
-                                              CXTranslationUnit);
+                                              CXProgram);
 
 /**
  * \brief Retrieve the CXIdxFile, file, line, column, and offset represented by

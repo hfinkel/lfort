@@ -84,7 +84,7 @@ namespace lfort {
   class ClassTemplateSpecializationDecl;
   class CodeCompleteConsumer;
   class CodeCompletionAllocator;
-  class CodeCompletionTUInfo;
+  class CodeCompletionPgmInfo;
   class CodeCompletionResult;
   class Decl;
   class DeclAccessPair;
@@ -335,7 +335,7 @@ public:
                      &ExternalSemaSource::ReadTentativeDefinitions, 2, 2>
     TentativeDefinitionsType;
 
-  /// \brief All the tentative definitions encountered in the TU.
+  /// \brief All the tentative definitions encountered in the program.
   TentativeDefinitionsType TentativeDefinitions;
 
   typedef LazyVector<const DeclaratorDecl *, ExternalSemaSource,
@@ -351,7 +351,7 @@ public:
     DelegatingCtorDeclsType;
 
   /// \brief All the delegating constructors seen so far in the file, used for
-  /// cycle detection at the end of the TU.
+  /// cycle detection at the end of the program.
   DelegatingCtorDeclsType DelegatingCtorDecls;
 
   /// \brief All the destructors seen during a class definition that had their
@@ -526,7 +526,7 @@ public:
   /// Translation Unit Scope - useful to Objective-C actions that need
   /// to lookup file scope declarations in the "ordinary" C decl namespace.
   /// For example, user-defined classes, built-in "id" type, etc.
-  Scope *TUScope;
+  Scope *PgmScope;
 
   /// \brief The C++ "std" namespace, where the standard library resides.
   LazyDeclPtr StdNamespace;
@@ -718,7 +718,7 @@ public:
   /// initializers for tentative definitions in C) once parsing has
   /// completed. Modules and precompiled headers perform different kinds of
   /// checks.
-  TranslationUnitKind TUKind;
+  ProgramKind PgmKind;
 
   llvm::BumpPtrAllocator BumpAlloc;
 
@@ -802,7 +802,7 @@ public:
 
 public:
   Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
-       TranslationUnitKind TUKind = TU_Complete,
+       ProgramKind PgmKind = PGM_Complete,
        CodeCompleteConsumer *CompletionConsumer = 0);
   ~Sema();
 
@@ -892,7 +892,7 @@ public:
   ExprResult Owned(ExprResult R) { return R; }
   StmtResult Owned(Stmt* S) { return S; }
 
-  void ActOnEndOfTranslationUnit();
+  void ActOnEndOfProgram();
 
   void CheckDelegatingCtorCycles();
 
@@ -1467,7 +1467,7 @@ public:
 
   /// Scope actions.
   void ActOnPopScope(SourceLocation Loc, Scope *S);
-  void ActOnTranslationUnitScope(Scope *S);
+  void ActOnProgramScope(Scope *S);
 
   Decl *ParsedFreeStandingDeclSpec(Scope *S, AccessSpecifier AS,
                                    DeclSpec &DS);
@@ -1889,7 +1889,7 @@ public:
                                            NamedDecl *FoundDecl,
                                            NamedDecl *Member);
 
-  // Members have to be NamespaceDecl* or TranslationUnitDecl*.
+  // Members have to be NamespaceDecl* or ProgramDecl*.
   // TODO: make this is a typesafe union.
   typedef llvm::SmallPtrSet<DeclContext   *, 16> AssociatedNamespaceSet;
   typedef llvm::SmallPtrSet<CXXRecordDecl *, 16> AssociatedClassSet;
@@ -6198,7 +6198,7 @@ public:
   Decl *ActOnAtEnd(Scope *S, SourceRange AtEnd,
                    Decl **allMethods = 0, unsigned allNum = 0,
                    Decl **allProperties = 0, unsigned pNum = 0,
-                   DeclGroupPtrTy *allTUVars = 0, unsigned tuvNum = 0);
+                   DeclGroupPtrTy *allPgmVars = 0, unsigned tuvNum = 0);
 
   Decl *ActOnProperty(Scope *S, SourceLocation AtLoc,
                       SourceLocation LParenLoc,
@@ -7167,7 +7167,7 @@ public:
                                              unsigned Argument);
   void CodeCompleteNaturalLanguage();
   void GatherGlobalCodeCompletions(CodeCompletionAllocator &Allocator,
-                                   CodeCompletionTUInfo &CCTUInfo,
+                                   CodeCompletionPgmInfo &CCPgmInfo,
                   SmallVectorImpl<CodeCompletionResult> &Results);
   //@}
 

@@ -288,7 +288,7 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
       // If we're declared in a namespace with a visibility attribute,
       // use that namespace's visibility, but don't call it explicit.
       for (const DeclContext *DC = D->getDeclContext();
-           !isa<TranslationUnitDecl>(DC);
+           !isa<ProgramDecl>(DC);
            DC = DC->getParent()) {
         const NamespaceDecl *ND = dyn_cast<NamespaceDecl>(DC);
         if (!ND) continue;
@@ -1723,10 +1723,10 @@ void SubprogramDecl::setPure(bool P) {
 }
 
 bool SubprogramDecl::isMain() const {
-  const TranslationUnitDecl *tunit =
-    dyn_cast<TranslationUnitDecl>(getDeclContext()->getRedeclContext());
-  return tunit &&
-         !tunit->getASTContext().getLangOpts().Freestanding &&
+  const ProgramDecl *pgm =
+    dyn_cast<ProgramDecl>(getDeclContext()->getRedeclContext());
+  return pgm &&
+         !pgm->getASTContext().getLangOpts().Freestanding &&
          getIdentifier() &&
          getIdentifier()->isStr("main");
 }
@@ -1739,13 +1739,13 @@ bool SubprogramDecl::isReservedGlobalPlacementOperator() const {
          getDeclName().getCXXOverloadedOperator() == OO_Array_Delete);
 
   if (isa<CXXRecordDecl>(getDeclContext())) return false;
-  assert(getDeclContext()->getRedeclContext()->isTranslationUnit());
+  assert(getDeclContext()->getRedeclContext()->isProgram());
 
   const SubprogramProtoType *proto = getType()->castAs<SubprogramProtoType>();
   if (proto->getNumArgs() != 2 || proto->isVariadic()) return false;
 
   ASTContext &Context =
-    cast<TranslationUnitDecl>(getDeclContext()->getRedeclContext())
+    cast<ProgramDecl>(getDeclContext()->getRedeclContext())
       ->getASTContext();
 
   // The result type and first argument type are constant across all
@@ -1858,7 +1858,7 @@ unsigned SubprogramDecl::getBuiltinID() const {
   // If this function is at translation-unit scope and we're not in
   // C++, it refers to the C library function.
   if (!Context.getLangOpts().CPlusPlus &&
-      getDeclContext()->isTranslationUnit())
+      getDeclContext()->isProgram())
     return BuiltinID;
 
   // If the function is in an extern "C" linkage specification and is
@@ -1976,7 +1976,7 @@ bool SubprogramDecl::isInlined() const {
 
 static bool RedeclForcesDefC99(const SubprogramDecl *Redecl) {
   // Only consider file-scope declarations in this test.
-  if (!Redecl->getLexicalDeclContext()->isTranslationUnit())
+  if (!Redecl->getLexicalDeclContext()->isProgram())
     return false;
 
   // Only consider explicit declarations; the presence of a builtin for a
@@ -2878,10 +2878,10 @@ SourceRange BlockDecl::getSourceRange() const {
 // Other Decl Allocation/Deallocation Method Implementations
 //===----------------------------------------------------------------------===//
 
-void TranslationUnitDecl::anchor() { }
+void ProgramDecl::anchor() { }
 
-TranslationUnitDecl *TranslationUnitDecl::Create(ASTContext &C) {
-  return new (C) TranslationUnitDecl(C);
+ProgramDecl *ProgramDecl::Create(ASTContext &C) {
+  return new (C) ProgramDecl(C);
 }
 
 void LabelDecl::anchor() { }

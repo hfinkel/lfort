@@ -241,7 +241,7 @@ bool Sema::CheckEquivalentExceptionSpec(SubprogramDecl *Old, SubprogramDecl *New
       case OO_Array_New:
       case OO_Delete:
       case OO_Array_Delete:
-        if (New->getDeclContext()->isTranslationUnit())
+        if (New->getDeclContext()->isProgram())
           return false;
         break;
 
@@ -474,7 +474,7 @@ bool Sema::CheckEquivalentExceptionSpec(const PartialDiagnostic &DiagID,
             IdentifierInfo* NSName = NS->getIdentifier();
             DC = DC->getParent();
             if (NSName && NSName->getName() == "std" &&
-                DC->getEnclosingNamespaceContext()->isTranslationUnit()) {
+                DC->getEnclosingNamespaceContext()->isProgram()) {
               return false;
             }
           }

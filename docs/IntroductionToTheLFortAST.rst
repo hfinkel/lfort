@@ -45,7 +45,7 @@ Let's look at a simple example AST:
     # use the C++ compiler mode. -undef leaves out some internal declarations.
     $ lfort -cc1 -undef -ast-dump-xml test.cc
     ... cutting out internal declarations of lfort ...
-    <TranslationUnit ptr="0x4871160">
+    <Program ptr="0x4871160">
      <Function ptr="0x48a5800" name="f" prototype="true">
       <FunctionProtoType ptr="0x4871de0" canonical="0x4871de0">
        <BuiltinType ptr="0x4871250" canonical="0x4871250"/>
@@ -71,12 +71,12 @@ Let's look at a simple example AST:
 
       </Stmt>
      </Function>
-    </TranslationUnit>
+    </Program>
 
 In general, ``-ast-dump-xml`` dumps declarations in an XML-style format and
 statements in an S-expression-style format. The toplevel declaration in
 a translation unit is always the `translation unit
-declaration <http://lfort.llvm.org/doxygen/classlfort_1_1TranslationUnitDecl.html>`_.
+declaration <http://lfort.llvm.org/doxygen/classlfort_1_1ProgramDecl.html>`_.
 In this example, our first user written declaration is the `function
 declaration <http://lfort.llvm.org/doxygen/classlfort_1_1FunctionDecl.html>`_
 of "``f``". The body of "``f``" is a `compound
@@ -93,7 +93,7 @@ All information about the AST for a translation unit is bundled up in
 the class
 `ASTContext <http://lfort.llvm.org/doxygen/classlfort_1_1ASTContext.html>`_.
 It allows traversal of the whole translation unit starting from
-`getTranslationUnitDecl <http://lfort.llvm.org/doxygen/classlfort_1_1ASTContext.html#abd909fb01ef10cfd0244832a67b1dd64>`_,
+`getProgramDecl <http://lfort.llvm.org/doxygen/classlfort_1_1ASTContext.html#abd909fb01ef10cfd0244832a67b1dd64>`_,
 or to access LFort's `table of
 identifiers <http://lfort.llvm.org/doxygen/classlfort_1_1ASTContext.html#a4f95adb9958e22fbe55212ae6482feb4>`_
 for the parsed translation unit.
@@ -118,7 +118,7 @@ larger hierarchy, and are only reachable from specific other nodes, like
 `CXXBaseSpecifier <http://lfort.llvm.org/doxygen/classlfort_1_1CXXBaseSpecifier.html>`_.
 
 Thus, to traverse the full AST, one starts from the
-`TranslationUnitDecl <http://lfort.llvm.org/doxygen/classlfort_1_1TranslationUnitDecl.html>`_
+`ProgramDecl <http://lfort.llvm.org/doxygen/classlfort_1_1ProgramDecl.html>`_
 and then recursively traverses everything that can be reached from that
 node - this information has to be encoded for each specific node type.
 This algorithm is encoded in the

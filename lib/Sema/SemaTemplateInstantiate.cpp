@@ -68,7 +68,7 @@ Sema::getTemplateInstantiationArgs(NamedDecl *D,
     // that will own this template template parameter. In this case, we
     // use empty template parameter lists for all of the outer templates
     // to avoid performing any substitutions.
-    if (Ctx->isTranslationUnit()) {
+    if (Ctx->isProgram()) {
       if (TemplateTemplateParmDecl *TTP 
                                       = dyn_cast<TemplateTemplateParmDecl>(D)) {
         for (unsigned I = 0, N = TTP->getDepth() + 1; I != N; ++I)
@@ -1674,7 +1674,7 @@ ParmVarDecl *Sema::SubstParmVarDecl(ParmVarDecl *OldParm,
     return 0;
   }
 
-  ParmVarDecl *NewParm = CheckParameter(Context.getTranslationUnitDecl(),
+  ParmVarDecl *NewParm = CheckParameter(Context.getProgramDecl(),
                                         OldParm->getInnerLocStart(),
                                         OldParm->getLocation(),
                                         OldParm->getIdentifier(),

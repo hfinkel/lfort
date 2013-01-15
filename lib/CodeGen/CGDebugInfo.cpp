@@ -780,9 +780,9 @@ llvm::DIType CGDebugInfo::createFieldType(StringRef name,
                                           SourceLocation loc,
                                           AccessSpecifier AS,
                                           uint64_t offsetInBits,
-                                          llvm::DIFile tunit,
+                                          llvm::DIFile pgm,
                                           llvm::DIDescriptor scope) {
-  llvm::DIType debugType = getOrCreateType(type, tunit);
+  llvm::DIType debugType = getOrCreateType(type, pgm);
 
   // Get the location for the field.
   llvm::DIFile file = getOrCreateFile(loc);
@@ -810,7 +810,7 @@ llvm::DIType CGDebugInfo::createFieldType(StringRef name,
 /// CollectRecordFields - A helper function to collect debug info for
 /// record fields. This is used while creating debug info entry for a Record.
 void CGDebugInfo::
-CollectRecordFields(const RecordDecl *record, llvm::DIFile tunit,
+CollectRecordFields(const RecordDecl *record, llvm::DIFile pgm,
                     SmallVectorImpl<llvm::Value *> &elements,
                     llvm::DIType RecordTy) {
   const ASTRecordLayout &layout = CGM.getContext().getASTRecordLayout(record);
@@ -891,7 +891,7 @@ CollectRecordFields(const RecordDecl *record, llvm::DIFile tunit,
       llvm::DIType fieldType
         = createFieldType(name, type, SizeInBitsOverride,
                           field->getLocation(), field->getAccess(),
-                          layout.getFieldOffset(fieldNo), tunit, RecordTy);
+                          layout.getFieldOffset(fieldNo), pgm, RecordTy);
 
       elements.push_back(fieldType);
     }
@@ -2572,7 +2572,7 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
 
   // Collect some general information about the block's location.
   SourceLocation loc = blockDecl->getCaretLocation();
-  llvm::DIFile tunit = getOrCreateFile(loc);
+  llvm::DIFile pgm = getOrCreateFile(loc);
   unsigned line = getLineNumber(loc);
   unsigned column = getColumnNumber(loc);
   
@@ -2585,23 +2585,23 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
   SmallVector<llvm::Value*, 16> fields;
   fields.push_back(createFieldType("__isa", C.VoidPtrTy, 0, loc, AS_public,
                                    blockLayout->getElementOffsetInBits(0),
-                                   tunit, tunit));
+                                   pgm, pgm));
   fields.push_back(createFieldType("__flags", C.IntTy, 0, loc, AS_public,
                                    blockLayout->getElementOffsetInBits(1),
-                                   tunit, tunit));
+                                   pgm, pgm));
   fields.push_back(createFieldType("__reserved", C.IntTy, 0, loc, AS_public,
                                    blockLayout->getElementOffsetInBits(2),
-                                   tunit, tunit));
+                                   pgm, pgm));
   fields.push_back(createFieldType("__FuncPtr", C.VoidPtrTy, 0, loc, AS_public,
                                    blockLayout->getElementOffsetInBits(3),
-                                   tunit, tunit));
+                                   pgm, pgm));
   fields.push_back(createFieldType("__descriptor",
                                    C.getPointerType(block.NeedsCopyDispose ?
                                         C.getBlockDescriptorExtendedType() :
                                         C.getBlockDescriptorType()),
                                    0, loc, AS_public,
                                    blockLayout->getElementOffsetInBits(4),
-                                   tunit, tunit));
+                                   pgm, pgm));
 
   // We want to sort the captures by offset, not because DWARF
   // requires this, but because we're paranoid about debuggers.
@@ -2650,7 +2650,7 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
       QualType type = method->getThisType(C);
 
       fields.push_back(createFieldType("this", type, 0, loc, AS_public,
-                                       offsetInBits, tunit, tunit));
+                                       offsetInBits, pgm, pgm));
       continue;
     }
 
@@ -2665,12 +2665,12 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
       uint64_t xoffset;
       fieldType = EmitTypeForVarWithBlocksAttr(variable, &xoffset);
       fieldType = DBuilder.createPointerType(fieldType, ptrInfo.first);
-      fieldType = DBuilder.createMemberType(tunit, name, tunit, line,
+      fieldType = DBuilder.createMemberType(pgm, name, pgm, line,
                                             ptrInfo.first, ptrInfo.second,
                                             offsetInBits, 0, fieldType);
     } else {
       fieldType = createFieldType(name, variable->getType(), 0,
-                                  loc, AS_public, offsetInBits, tunit, tunit);
+                                  loc, AS_public, offsetInBits, pgm, pgm);
     }
     fields.push_back(fieldType);
   }
@@ -2682,7 +2682,7 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
   llvm::DIArray fieldsArray = DBuilder.getOrCreateArray(fields);
 
   llvm::DIType type =
-    DBuilder.createStructType(tunit, typeName.str(), tunit, line,
+    DBuilder.createStructType(pgm, typeName.str(), pgm, line,
                               CGM.getContext().toBits(block.BlockSize),
                               CGM.getContext().toBits(block.BlockAlign),
                               0, fieldsArray);
@@ -2697,7 +2697,7 @@ void CGDebugInfo::EmitDeclareOfBlockLiteralArgVariable(const CGBlockInfo &block,
   llvm::DIVariable debugVar =
     DBuilder.createLocalVariable(llvm::dwarf::DW_TAG_arg_variable,
                                  llvm::DIDescriptor(scope), 
-                                 name, tunit, line, type, 
+                                 name, pgm, line, type, 
                                  CGM.getLangOpts().Optimize, flags,
                                  cast<llvm::Argument>(addr)->getArgNo() + 1);
     

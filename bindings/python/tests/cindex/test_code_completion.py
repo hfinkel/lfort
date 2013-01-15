@@ -1,4 +1,4 @@
-from lfort.cindex import TranslationUnit
+from lfort.cindex import Program
 
 def check_completion_results(cr, expected):
     assert cr is not None
@@ -22,8 +22,8 @@ void f() {
 }
 """)]
 
-    tu = TranslationUnit.from_source('fake.c', ['-std=c99'], unsaved_files=files,
-            options=TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
+    tu = Program.from_source('fake.c', ['-std=c99'], unsaved_files=files,
+            options=Program.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
 
     cr = tu.codeComplete('fake.c', 9, 1, unsaved_files=files, include_brief_comments=True)
 
@@ -52,7 +52,7 @@ void f(P x, Q y) {
 }
 """)]
 
-    tu = TranslationUnit.from_source('fake.cpp', ['-std=c++98'], unsaved_files=files)
+    tu = Program.from_source('fake.cpp', ['-std=c++98'], unsaved_files=files)
 
     cr = tu.codeComplete('fake.cpp', 12, 5, unsaved_files=files)
 

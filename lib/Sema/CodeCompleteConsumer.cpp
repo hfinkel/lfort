@@ -267,7 +267,7 @@ const char *CodeCompletionAllocator::CopyString(Twine String) {
   return CopyString(String.toStringRef(Data));
 }
 
-StringRef CodeCompletionTUInfo::getParentName(DeclContext *DC) {
+StringRef CodeCompletionPgmInfo::getParentName(DeclContext *DC) {
   NamedDecl *ND = dyn_cast<NamedDecl>(DC);
   if (!ND)
     return StringRef();
@@ -378,7 +378,7 @@ void CodeCompletionBuilder::AddChunk(CodeCompletionString::ChunkKind CK,
 }
 
 void CodeCompletionBuilder::addParentContext(DeclContext *DC) {
-  if (DC->isTranslationUnit()) {
+  if (DC->isProgram()) {
     return;
   }
   
@@ -389,7 +389,7 @@ void CodeCompletionBuilder::addParentContext(DeclContext *DC) {
   if (!ND)
     return;
   
-  ParentName = getCodeCompletionTUInfo().getParentName(DC);
+  ParentName = getCodeCompletionPgmInfo().getParentName(DC);
 }
 
 void CodeCompletionBuilder::addBriefComment(StringRef Comment) {
@@ -476,7 +476,7 @@ PrintingCodeCompleteConsumer::ProcessCodeCompleteResults(Sema &SemaRef,
         OS << " (Hidden)";
       if (CodeCompletionString *CCS 
             = Results[I].CreateCodeCompletionString(SemaRef, getAllocator(),
-                                                    CCTUInfo,
+                                                    CCPgmInfo,
                                                     includeBriefComments())) {
         OS << " : " << CCS->getAsString();
         if (const char *BriefComment = CCS->getBriefComment())
@@ -494,7 +494,7 @@ PrintingCodeCompleteConsumer::ProcessCodeCompleteResults(Sema &SemaRef,
       OS << Results[I].Macro->getName();
       if (CodeCompletionString *CCS 
             = Results[I].CreateCodeCompletionString(SemaRef, getAllocator(),
-                                                    CCTUInfo,
+                                                    CCPgmInfo,
                                                     includeBriefComments())) {
         OS << " : " << CCS->getAsString();
       }
@@ -519,7 +519,7 @@ PrintingCodeCompleteConsumer::ProcessOverloadCandidates(Sema &SemaRef,
   for (unsigned I = 0; I != NumCandidates; ++I) {
     if (CodeCompletionString *CCS
           = Candidates[I].CreateSignatureString(CurrentArg, SemaRef,
-                                                getAllocator(), CCTUInfo)) {
+                                                getAllocator(), CCPgmInfo)) {
       OS << "OVERLOAD: " << CCS->getAsString() << "\n";
     }
   }

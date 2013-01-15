@@ -46,7 +46,7 @@ class CheckerDocumentation : public Checker< check::PreStmt<ReturnStmt>,
                                        check::DeadSymbols,
                                        check::EndSubprogram,
                                        check::EndAnalysis,
-                                       check::EndOfTranslationUnit,
+                                       check::EndOfProgram,
                                        eval::Call,
                                        eval::Assume,
                                        check::LiveSymbols,
@@ -172,10 +172,10 @@ public:
                         BugReporter &BR,
                         ExprEngine &Eng) const {}
 
-  /// \brief Called after analysis of a TranslationUnit is complete.
+  /// \brief Called after analysis of a Program is complete.
   ///
-  /// check::EndOfTranslationUnit
-  void checkEndOfTranslationUnit(const TranslationUnitDecl *TU,
+  /// check::EndOfProgram
+  void checkEndOfProgram(const ProgramDecl *Pgm,
                                  AnalysisManager &Mgr,
                                  BugReporter &BR) const {}
 

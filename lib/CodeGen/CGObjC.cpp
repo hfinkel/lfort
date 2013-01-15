@@ -2826,7 +2826,7 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperSubprogram(
   IdentifierInfo *II
     = &CGM.getContext().Idents.get("__assign_helper_atomic_property_");
   SubprogramDecl *FD = SubprogramDecl::Create(C,
-                                          C.getTranslationUnitDecl(),
+                                          C.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
                                           SC_Static,
@@ -2911,7 +2911,7 @@ CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperSubprogram(
   IdentifierInfo *II
   = &CGM.getContext().Idents.get("__copy_helper_atomic_property_");
   SubprogramDecl *FD = SubprogramDecl::Create(C,
-                                          C.getTranslationUnitDecl(),
+                                          C.getProgramDecl(),
                                           SourceLocation(),
                                           SourceLocation(), II, C.VoidTy, 0,
                                           SC_Static,

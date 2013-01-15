@@ -713,18 +713,18 @@ ExprResult Sema::DefaultVariadicArgumentPromotion(Expr *E, VariadicCallType CT,
     UnqualifiedId Name;
     Name.setIdentifier(PP.getIdentifierInfo("__builtin_trap"),
                        E->getLocStart());
-    ExprResult TrapSubPgm = ActOnIdExpression(TUScope, SS, TemplateKWLoc,
+    ExprResult TrapSubPgm = ActOnIdExpression(PgmScope, SS, TemplateKWLoc,
                                           Name, true, false);
     if (TrapSubPgm.isInvalid())
       return ExprError();
 
-    ExprResult Call = ActOnCallExpr(TUScope, TrapSubPgm.get(),
+    ExprResult Call = ActOnCallExpr(PgmScope, TrapSubPgm.get(),
                                     E->getLocStart(), MultiExprArg(),
                                     E->getLocEnd());
     if (Call.isInvalid())
       return ExprError();
 
-    ExprResult Comma = ActOnBinOp(TUScope, E->getLocStart(), tok::comma,
+    ExprResult Comma = ActOnBinOp(PgmScope, E->getLocStart(), tok::comma,
                                   Call.get(), E);
     if (Comma.isInvalid())
       return ExprError();
@@ -2577,7 +2577,7 @@ ExprResult Sema::ActOnPredefinedExpr(SourceLocation Loc, tok::TokenKind Kind) {
 
   if (!currentDecl) {
     Diag(Loc, diag::ext_predef_outside_function);
-    currentDecl = Context.getTranslationUnitDecl();
+    currentDecl = Context.getProgramDecl();
   }
 
   QualType ResTy;
@@ -10505,7 +10505,7 @@ diagnoseUncapturableValueReference(Sema &S, SourceLocation loc,
   //  we're actually just using one parameter in the declaration of
   //  the next.
   if (isa<ParmVarDecl>(var) &&
-      isa<TranslationUnitDecl>(VarDC))
+      isa<ProgramDecl>(VarDC))
     return;
 
   // For C code, don't diagnose about capture if we're not actually in code

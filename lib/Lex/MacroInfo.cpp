@@ -69,9 +69,9 @@ const MacroInfo *MacroInfo::findDefinitionAtLoc(SourceLocation L,
   assert(L.isValid() && "SourceLocation is invalid.");
   for (const MacroInfo *MI = this; MI; MI = MI->PreviousDefinition) {
     if (MI->Location.isInvalid() ||  // For macros defined on the command line.
-        SM.isBeforeInTranslationUnit(MI->Location, L))
+        SM.isBeforeInProgram(MI->Location, L))
       return (MI->UndefLocation.isInvalid() ||
-              SM.isBeforeInTranslationUnit(L, MI->UndefLocation)) ? MI : NULL;
+              SM.isBeforeInProgram(L, MI->UndefLocation)) ? MI : NULL;
   }
   return NULL;
 }

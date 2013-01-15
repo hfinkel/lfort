@@ -111,15 +111,15 @@ public:
   }
 };
 
-/// \brief Describes the kind of translation unit being processed.
-enum TranslationUnitKind {
-  /// \brief The translation unit is a complete translation unit.
-  TU_Complete,
-  /// \brief The translation unit is a prefix to a translation unit, and is
+/// \brief Describes the kind of program being processed.
+enum ProgramKind {
+  /// \brief The program is a complete program.
+  PGM_Complete,
+  /// \brief The program is a prefix to a program, and is
   /// not complete.
-  TU_Prefix,
-  /// \brief The translation unit is a module.
-  TU_Module
+  PGM_Prefix,
+  /// \brief The program is a module.
+  PGM_Module
 };
   
 }  // end namespace lfort

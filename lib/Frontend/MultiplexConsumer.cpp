@@ -218,9 +218,9 @@ void MultiplexConsumer::HandleInterestingDecl(DeclGroupRef D) {
     Consumers[i]->HandleInterestingDecl(D);
 }
 
-void MultiplexConsumer::HandleTranslationUnit(ASTContext &Ctx) {
+void MultiplexConsumer::HandleProgram(ASTContext &Ctx) {
   for (size_t i = 0, e = Consumers.size(); i != e; ++i)
-    Consumers[i]->HandleTranslationUnit(Ctx);
+    Consumers[i]->HandleProgram(Ctx);
 }
 
 void MultiplexConsumer::HandleTagDeclDefinition(TagDecl *D) {

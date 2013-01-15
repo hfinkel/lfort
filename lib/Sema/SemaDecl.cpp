@@ -1090,8 +1090,8 @@ void Sema::PushOnScopeChains(NamedDecl *D, Scope *S, bool AddToContext) {
 }
 
 void Sema::pushExternalDeclIntoScope(NamedDecl *D, DeclarationName Name) {
-  if (IdResolver.tryAddTopLevelDecl(D, Name) && TUScope)
-    TUScope->AddDecl(D);
+  if (IdResolver.tryAddTopLevelDecl(D, Name) && PgmScope)
+    PgmScope->AddDecl(D);
 }
 
 bool Sema::isDeclInScope(NamedDecl *&D, DeclContext *Ctx, Scope *S,
@@ -1406,14 +1406,14 @@ ObjCInterfaceDecl *Sema::getObjCInterfaceDecl(IdentifierInfo *&Id,
                                               bool DoTypoCorrection) {
   // The third "scope" argument is 0 since we aren't enabling lazy built-in
   // creation from this context.
-  NamedDecl *IDecl = LookupSingleName(TUScope, Id, IdLoc, LookupOrdinaryName);
+  NamedDecl *IDecl = LookupSingleName(PgmScope, Id, IdLoc, LookupOrdinaryName);
 
   if (!IDecl && DoTypoCorrection) {
     // Perform typo correction at the given location, but only if we
     // find an Objective-C class name.
     DeclFilterCCC<ObjCInterfaceDecl> Validator;
     if (TypoCorrection C = CorrectTypo(DeclarationNameInfo(Id, IdLoc),
-                                       LookupOrdinaryName, TUScope, NULL,
+                                       LookupOrdinaryName, PgmScope, NULL,
                                        Validator)) {
       IDecl = C.getCorrectionDeclAs<ObjCInterfaceDecl>();
       Diag(IdLoc, diag::err_undef_interface_suggest)
@@ -1532,7 +1532,7 @@ NamedDecl *Sema::LazilyCreateBuiltin(IdentifierInfo *II, unsigned bid,
   }
 
   SubprogramDecl *New = SubprogramDecl::Create(Context,
-                                           Context.getTranslationUnitDecl(),
+                                           Context.getProgramDecl(),
                                            Loc, Loc, II, R, /*TInfo=*/0,
                                            SC_Extern,
                                            SC_None, false,
@@ -1557,13 +1557,13 @@ NamedDecl *Sema::LazilyCreateBuiltin(IdentifierInfo *II, unsigned bid,
 
   AddKnownSubprogramAttributes(New);
 
-  // TUScope is the translation-unit scope to insert this function into.
+  // PgmScope is the translation-unit scope to insert this function into.
   // FIXME: This is hideous. We need to teach PushOnScopeChains to
   // relate Scopes to DeclContexts, and probably eliminate CurContext
   // entirely, but we're not there yet.
   DeclContext *SavedContext = CurContext;
-  CurContext = Context.getTranslationUnitDecl();
-  PushOnScopeChains(New, TUScope);
+  CurContext = Context.getProgramDecl();
+  PushOnScopeChains(New, PgmScope);
   CurContext = SavedContext;
   return New;
 }
@@ -3046,7 +3046,7 @@ Decl *Sema::BuildAnonymousStructOrUnion(Scope *S, DeclSpec &DS,
       //   Anonymous unions declared in a named namespace or in the
       //   global namespace shall be declared static.
       if (DS.getStorageClassSpec() != DeclSpec::SCS_static &&
-          (isa<TranslationUnitDecl>(Owner) ||
+          (isa<ProgramDecl>(Owner) ||
            (isa<NamespaceDecl>(Owner) &&
             cast<NamespaceDecl>(Owner)->getDeclName()))) {
         Diag(Record->getLocation(), diag::err_anonymous_union_not_static)
@@ -3613,7 +3613,7 @@ bool Sema::diagnoseQualifiedDeclaration(CXXScopeSpec &SS, DeclContext *DC,
     if (Cur->isRecord())
       Diag(Loc, diag::err_member_qualification)
         << Name << SS.getRange();
-    else if (isa<TranslationUnitDecl>(DC))
+    else if (isa<ProgramDecl>(DC))
       Diag(Loc, diag::err_invalid_declarator_global_scope)
         << Name << SS.getRange();
     else if (isa<SubprogramDecl>(Cur))
@@ -3764,7 +3764,7 @@ Decl *Sema::HandleDeclarator(Scope *S, Declarator &D,
         IsLinkageLookup = true;
     } else if (D.getDeclSpec().getStorageClassSpec() == DeclSpec::SCS_extern)
       IsLinkageLookup = true;
-    else if (CurContext->getRedeclContext()->isTranslationUnit() &&
+    else if (CurContext->getRedeclContext()->isProgram() &&
              D.getDeclSpec().getStorageClassSpec() != DeclSpec::SCS_static)
       IsLinkageLookup = true;
 
@@ -4147,7 +4147,7 @@ Sema::ActOnTypedefNameDecl(Scope *S, DeclContext *DC, TypedefNameDecl *NewTD,
   // If this is the C FILE type, notify the AST context.
   if (IdentifierInfo *II = NewTD->getIdentifier())
     if (!NewTD->isInvalidDecl() &&
-        NewTD->getDeclContext()->getRedeclContext()->isTranslationUnit()) {
+        NewTD->getDeclContext()->getRedeclContext()->isProgram()) {
       if (II->isStr("FILE"))
         Context.setFILEDecl(NewTD);
       else if (II->isStr("jmp_buf"))
@@ -6087,7 +6087,7 @@ Sema::ActOnSubprogramDeclarator(Scope *S, Declarator &D, DeclContext *DC,
   if (getLangOpts().CUDA)
     if (IdentifierInfo *II = NewFD->getIdentifier())
       if (!NewFD->isInvalidDecl() &&
-          NewFD->getDeclContext()->getRedeclContext()->isTranslationUnit()) {
+          NewFD->getDeclContext()->getRedeclContext()->isProgram()) {
         if (II->isStr("cudaConfigureCall")) {
           if (!R->getAs<SubprogramType>()->getResultType()->isScalarType())
             Diag(NewFD->getLocation(), diag::err_config_scalar_return);
@@ -7631,7 +7631,7 @@ Decl *Sema::ActOnParamDeclarator(Scope *S, Declarator &D) {
   // Temporarily put parameter variables in the translation unit, not
   // the enclosing context.  This prevents them from accidentally
   // looking like class members in C++.
-  ParmVarDecl *New = CheckParameter(Context.getTranslationUnitDecl(),
+  ParmVarDecl *New = CheckParameter(Context.getProgramDecl(),
                                     D.getLocStart(),
                                     D.getIdentifierLoc(), II,
                                     parmDeclType, TInfo,
@@ -7993,12 +7993,12 @@ Decl *Sema::ActOnStartOfSubprogramDef(Scope *SubPgmBodyScope, Decl *D) {
       // Some of these decls (like enums) may have been pinned to the translation unit
       // for lack of a real context earlier. If so, remove from the translation unit
       // and reattach to the current context.
-      if (D->getLexicalDeclContext() == Context.getTranslationUnitDecl()) {
+      if (D->getLexicalDeclContext() == Context.getProgramDecl()) {
         // Is the decl actually in the context?
-        for (DeclContext::decl_iterator DI = Context.getTranslationUnitDecl()->decls_begin(),
-               DE = Context.getTranslationUnitDecl()->decls_end(); DI != DE; ++DI) {
+        for (DeclContext::decl_iterator DI = Context.getProgramDecl()->decls_begin(),
+               DE = Context.getProgramDecl()->decls_end(); DI != DE; ++DI) {
           if (*DI == D) {  
-            Context.getTranslationUnitDecl()->removeDecl(D);
+            Context.getProgramDecl()->removeDecl(D);
             break;
           }
         }
@@ -8352,9 +8352,9 @@ NamedDecl *Sema::ImplicitlyDefineSubprogram(SourceLocation Loc,
   // Insert this function into translation-unit scope.
 
   DeclContext *PrevDC = CurContext;
-  CurContext = Context.getTranslationUnitDecl();
+  CurContext = Context.getProgramDecl();
 
-  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ActOnDeclarator(TUScope, D));
+  SubprogramDecl *FD = dyn_cast<SubprogramDecl>(ActOnDeclarator(PgmScope, D));
   FD->setImplicit();
 
   CurContext = PrevDC;
@@ -8425,7 +8425,7 @@ void Sema::AddKnownSubprogramAttributes(SubprogramDecl *FD) {
   if (!Name)
     return;
   if ((!getLangOpts().CPlusPlus &&
-       FD->getDeclContext()->isTranslationUnit()) ||
+       FD->getDeclContext()->isProgram()) ||
       (isa<LinkageSpecDecl>(FD->getDeclContext()) &&
        cast<LinkageSpecDecl>(FD->getDeclContext())->getLanguage() ==
        LinkageSpecDecl::lang_c)) {
@@ -8886,7 +8886,7 @@ Decl *Sema::ActOnTag(Scope *S, unsigned TagSpec, TagUseKind TUK,
     // If this is an enum declaration in function prototype scope, set its
     // initial context to the translation unit.
     // FIXME: [citation needed]
-    SearchDC = Context.getTranslationUnitDecl();
+    SearchDC = Context.getProgramDecl();
   }
 
   if (Previous.isSingleResult() &&
@@ -9388,7 +9388,7 @@ CreateNewDecl:
   // If this is the C FILE type, notify the AST context.
   if (IdentifierInfo *II = New->getIdentifier())
     if (!New->isInvalidDecl() &&
-        New->getDeclContext()->getRedeclContext()->isTranslationUnit() &&
+        New->getDeclContext()->getRedeclContext()->isProgram() &&
         II->isStr("FILE"))
       Context.setFILEDecl(New);
 
@@ -9845,8 +9845,8 @@ FieldDecl *Sema::CheckFieldDecl(DeclarationName Name, QualType T,
   // FIXME: We need to pass in the attributes given an AST
   // representation, not a parser representation.
   if (D)
-    // FIXME: What to pass instead of TUScope?
-    ProcessDeclAttributes(TUScope, NewFD, *D);
+    // FIXME: What to pass instead of PgmScope?
+    ProcessDeclAttributes(PgmScope, NewFD, *D);
 
   // In auto-retain/release, infer strong retension for fields of
   // retainable type.
@@ -11146,10 +11146,10 @@ DeclResult Sema::ActOnModuleImport(SourceLocation AtLoc,
   }
 
   ImportDecl *Import = ImportDecl::Create(Context, 
-                                          Context.getTranslationUnitDecl(),
+                                          Context.getProgramDecl(),
                                           AtLoc.isValid()? AtLoc : ImportLoc, 
                                           Mod, IdentifierLocs);
-  Context.getTranslationUnitDecl()->addDecl(Import);
+  Context.getProgramDecl()->addDecl(Import);
   return Import;
 }
 
@@ -11158,7 +11158,7 @@ void Sema::ActOnPragmaRedefineExtname(IdentifierInfo* Name,
                                       SourceLocation PragmaLoc,
                                       SourceLocation NameLoc,
                                       SourceLocation AliasNameLoc) {
-  Decl *PrevDecl = LookupSingleName(TUScope, Name, NameLoc,
+  Decl *PrevDecl = LookupSingleName(PgmScope, Name, NameLoc,
                                     LookupOrdinaryName);
   AsmLabelAttr *Attr =
      ::new (Context) AsmLabelAttr(AliasNameLoc, Context, AliasName->getName());
@@ -11173,7 +11173,7 @@ void Sema::ActOnPragmaRedefineExtname(IdentifierInfo* Name,
 void Sema::ActOnPragmaWeakID(IdentifierInfo* Name,
                              SourceLocation PragmaLoc,
                              SourceLocation NameLoc) {
-  Decl *PrevDecl = LookupSingleName(TUScope, Name, NameLoc, LookupOrdinaryName);
+  Decl *PrevDecl = LookupSingleName(PgmScope, Name, NameLoc, LookupOrdinaryName);
 
   if (PrevDecl) {
     PrevDecl->addAttr(::new (Context) WeakAttr(PragmaLoc, Context));
@@ -11189,14 +11189,14 @@ void Sema::ActOnPragmaWeakAlias(IdentifierInfo* Name,
                                 SourceLocation PragmaLoc,
                                 SourceLocation NameLoc,
                                 SourceLocation AliasNameLoc) {
-  Decl *PrevDecl = LookupSingleName(TUScope, AliasName, AliasNameLoc,
+  Decl *PrevDecl = LookupSingleName(PgmScope, AliasName, AliasNameLoc,
                                     LookupOrdinaryName);
   WeakInfo W = WeakInfo(Name, NameLoc);
 
   if (PrevDecl) {
     if (!PrevDecl->hasAttr<AliasAttr>())
       if (NamedDecl *ND = dyn_cast<NamedDecl>(PrevDecl))
-        DeclApplyPragmaWeak(TUScope, ND, W);
+        DeclApplyPragmaWeak(PgmScope, ND, W);
   } else {
     (void)WeakUndeclaredIdentifiers.insert(
       std::pair<IdentifierInfo*,WeakInfo>(AliasName, W));

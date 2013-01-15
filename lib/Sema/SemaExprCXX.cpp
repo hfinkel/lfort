@@ -379,7 +379,7 @@ Sema::ActOnCXXTypeid(SourceLocation OpLoc, SourceLocation LParenLoc,
     // Microsoft's typeinfo doesn't have type_info in std but in the global
     // namespace if _HAS_EXCEPTIONS is defined to 0. See PR13153.
     if (!CXXTypeInfoDecl && LangOpts.MicrosoftMode) {
-      LookupQualifiedName(R, Context.getTranslationUnitDecl());
+      LookupQualifiedName(R, Context.getProgramDecl());
       CXXTypeInfoDecl = R.getAsSingle<RecordDecl>();
     }
     if (!CXXTypeInfoDecl)
@@ -450,7 +450,7 @@ Sema::ActOnCXXUuidof(SourceLocation OpLoc, SourceLocation LParenLoc,
   if (!MSVCGuidDecl) {
     IdentifierInfo *GuidII = &PP.getIdentifierTable().get("_GUID");
     LookupResult R(*this, GuidII, SourceLocation(), LookupTagName);
-    LookupQualifiedName(R, Context.getTranslationUnitDecl());
+    LookupQualifiedName(R, Context.getProgramDecl());
     MSVCGuidDecl = R.getAsSingle<RecordDecl>();
     if (!MSVCGuidDecl)
       return ExprError(Diag(OpLoc, diag::err_need_header_before_ms_uuidof));
@@ -1510,9 +1510,9 @@ bool Sema::FindAllocationSubprograms(SourceLocation StartLoc, SourceRange Range,
   if (!OperatorNew) {
     // Didn't find a member overload. Look for a global one.
     DeclareGlobalNewDelete();
-    DeclContext *TUDecl = Context.getTranslationUnitDecl();
+    DeclContext *PgmDecl = Context.getProgramDecl();
     if (FindAllocationOverload(StartLoc, Range, NewName, &AllocArgs[0],
-                          AllocArgs.size(), TUDecl, /*AllowMissing=*/false,
+                          AllocArgs.size(), PgmDecl, /*AllowMissing=*/false,
                           OperatorNew))
       return true;
   }
@@ -1549,7 +1549,7 @@ bool Sema::FindAllocationSubprograms(SourceLocation StartLoc, SourceRange Range,
 
   if (FoundDelete.empty()) {
     DeclareGlobalNewDelete();
-    LookupQualifiedName(FoundDelete, Context.getTranslationUnitDecl());
+    LookupQualifiedName(FoundDelete, Context.getProgramDecl());
   }
 
   FoundDelete.suppressDiagnostics();
@@ -1849,7 +1849,7 @@ void Sema::DeclareGlobalNewDelete() {
 void Sema::DeclareGlobalAllocationSubprogram(DeclarationName Name,
                                            QualType Return, QualType Argument,
                                            bool AddMallocAttr) {
-  DeclContext *GlobalCtx = Context.getTranslationUnitDecl();
+  DeclContext *GlobalCtx = Context.getProgramDecl();
 
   // Check if this function is already declared.
   {
@@ -1913,7 +1913,7 @@ void Sema::DeclareGlobalAllocationSubprogram(DeclarationName Name,
   // FIXME: Also add this declaration to the IdentifierResolver, but
   // make sure it is at the end of the chain to coincide with the
   // global scope.
-  Context.getTranslationUnitDecl()->addDecl(Alloc);
+  Context.getProgramDecl()->addDecl(Alloc);
 }
 
 bool Sema::FindDeallocationSubprogram(SourceLocation StartLoc, CXXRecordDecl *RD,
@@ -1991,13 +1991,13 @@ bool Sema::FindDeallocationSubprogram(SourceLocation StartLoc, CXXRecordDecl *RD
 
   // Look for a global declaration.
   DeclareGlobalNewDelete();
-  DeclContext *TUDecl = Context.getTranslationUnitDecl();
+  DeclContext *PgmDecl = Context.getProgramDecl();
 
   CXXNullPtrLiteralExpr Null(Context.VoidPtrTy, SourceLocation());
   Expr* DeallocArgs[1];
   DeallocArgs[0] = &Null;
   if (FindAllocationOverload(StartLoc, SourceRange(), Name,
-                             DeallocArgs, 1, TUDecl, !Diagnose,
+                             DeallocArgs, 1, PgmDecl, !Diagnose,
                              Operator, Diagnose))
     return true;
 
@@ -2184,13 +2184,13 @@ Sema::ActOnCXXDelete(SourceLocation StartLoc, bool UseGlobal,
     if (!OperatorDelete) {
       // Look for a global declaration.
       DeclareGlobalNewDelete();
-      DeclContext *TUDecl = Context.getTranslationUnitDecl();
+      DeclContext *PgmDecl = Context.getProgramDecl();
       Expr *Arg = Ex.get();
       if (!Context.hasSameType(Arg->getType(), Context.VoidPtrTy))
         Arg = ImplicitCastExpr::Create(Context, Context.VoidPtrTy,
                                        CK_BitCast, Arg, 0, VK_RValue);
       if (FindAllocationOverload(StartLoc, SourceRange(), DeleteName,
-                                 &Arg, 1, TUDecl, /*AllowMissing=*/false,
+                                 &Arg, 1, PgmDecl, /*AllowMissing=*/false,
                                  OperatorDelete))
         return ExprError();
     }
@@ -3383,7 +3383,7 @@ static bool evaluateTypeTrait(Sema &S, TypeTrait Kind, SourceLocation KWLoc,
     // trap at translation unit scope.
     EnterExpressionEvaluationContext Unevaluated(S, Sema::Unevaluated);
     Sema::SFINAETrap SFINAE(S, /*AccessCheckingSFINAE=*/true);
-    Sema::ContextRAII TUContext(S, S.Context.getTranslationUnitDecl());
+    Sema::ContextRAII PgmContext(S, S.Context.getProgramDecl());
     InitializedEntity To(InitializedEntity::InitializeTemporary(Args[0]));
     InitializationKind InitKind(InitializationKind::CreateDirect(KWLoc, KWLoc,
                                                                  RParenLoc));
@@ -3545,7 +3545,7 @@ static bool EvaluateBinaryTypeTrait(Sema &Self, BinaryTypeTrait BTT,
     // trap at translation unit scope.
     EnterExpressionEvaluationContext Unevaluated(Self, Sema::Unevaluated);
     Sema::SFINAETrap SFINAE(Self, /*AccessCheckingSFINAE=*/true);
-    Sema::ContextRAII TUContext(Self, Self.Context.getTranslationUnitDecl());
+    Sema::ContextRAII PgmContext(Self, Self.Context.getProgramDecl());
     InitializationSequence Init(Self, To, Kind, &FromPtr, 1);
     if (Init.Failed())
       return false;
@@ -3594,7 +3594,7 @@ static bool EvaluateBinaryTypeTrait(Sema &Self, BinaryTypeTrait BTT,
     // trap at translation unit scope.
     EnterExpressionEvaluationContext Unevaluated(Self, Sema::Unevaluated);
     Sema::SFINAETrap SFINAE(Self, /*AccessCheckingSFINAE=*/true);
-    Sema::ContextRAII TUContext(Self, Self.Context.getTranslationUnitDecl());
+    Sema::ContextRAII PgmContext(Self, Self.Context.getProgramDecl());
     ExprResult Result = Self.BuildBinOp(/*S=*/0, KeyLoc, BO_Assign, &Lhs, &Rhs);
     if (Result.isInvalid() || SFINAE.hasErrorOccurred())
       return false;

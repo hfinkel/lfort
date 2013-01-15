@@ -64,7 +64,7 @@ namespace {
     const LangOptions &LangOpts;
     ASTContext *Context;
     SourceManager *SM;
-    TranslationUnitDecl *TUDecl;
+    ProgramDecl *PgmDecl;
     FileID MainFileID;
     const char *MainFileStart, *MainFileEnd;
     Stmt *CurrentBody;
@@ -207,7 +207,7 @@ namespace {
     
     ~RewriteModernObjC() {}
     
-    virtual void HandleTranslationUnit(ASTContext &C);
+    virtual void HandleProgram(ASTContext &C);
 
     void ReplaceStmt(Stmt *Old, Stmt *New) {
       Stmt *ReplacingStmt = ReplacedNodes[Old];
@@ -626,7 +626,7 @@ ASTConsumer *lfort::CreateModernObjCRewriter(const std::string& InFile,
 void RewriteModernObjC::InitializeCommon(ASTContext &context) {
   Context = &context;
   SM = &Context->getSourceManager();
-  TUDecl = Context->getTranslationUnitDecl();
+  PgmDecl = Context->getProgramDecl();
   MsgSendSubprogramDecl = 0;
   MsgSendSuperSubprogramDecl = 0;
   MsgSendStretSubprogramDecl = 0;
@@ -818,7 +818,7 @@ RewriteModernObjC::getIvarAccessString(ObjCIvarDecl *D) {
         CDecl = CatDecl->getClassInterface();
       std::string RecName = CDecl->getName();
       RecName += "_IMPL";
-      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                           SourceLocation(), SourceLocation(),
                                           &Context->Idents.get(RecName.c_str()));
       QualType PtrStructIMPL = Context->getPointerType(Context->getTagDeclType(RD));
@@ -2308,7 +2308,7 @@ void RewriteModernObjC::SynthSelGetUidSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getFuncType =
     getSimpleSubprogramType(Context->getObjCSelType(), &ArgTys[0], ArgTys.size());
-  SelGetUidSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  SelGetUidSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                SourceLocation(),
                                                SourceLocation(),
                                                SelGetUidIdent, getFuncType, 0,
@@ -2406,7 +2406,7 @@ void RewriteModernObjC::SynthSuperContructorSubprogramDecl() {
   ArgTys.push_back(argT);
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size());
-  SuperContructorSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  SuperContructorSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                      SourceLocation(),
                                                      SourceLocation(),
                                                      msgSendIdent, msgSendType,
@@ -2426,7 +2426,7 @@ void RewriteModernObjC::SynthMsgSendSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                              SourceLocation(),
                                              SourceLocation(),
                                              msgSendIdent, msgSendType, 0,
@@ -2441,7 +2441,7 @@ void RewriteModernObjC::SynthMsgSendSuperSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], 1,
                                                true /*isVariadic*/);
-  MsgSendSuperSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSuperSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2461,7 +2461,7 @@ void RewriteModernObjC::SynthMsgSendStretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendStretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2478,7 +2478,7 @@ void RewriteModernObjC::SynthMsgSendSuperStretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->getObjCIdType(),
                                                &ArgTys[0], 1,
                                                true /*isVariadic*/);
-  MsgSendSuperStretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendSuperStretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                        SourceLocation(),
                                                        SourceLocation(),
                                                        msgSendIdent,
@@ -2499,7 +2499,7 @@ void RewriteModernObjC::SynthMsgSendFpretSubprogramDecl() {
   QualType msgSendType = getSimpleSubprogramType(Context->DoubleTy,
                                                &ArgTys[0], ArgTys.size(),
                                                true /*isVariadic*/);
-  MsgSendFpretSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  MsgSendFpretSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   msgSendIdent, msgSendType, 0,
@@ -2513,7 +2513,7 @@ void RewriteModernObjC::SynthGetClassSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                               SourceLocation(),
                                               SourceLocation(),
                                               getClassIdent, getClassType, 0,
@@ -2528,7 +2528,7 @@ void RewriteModernObjC::SynthGetSuperClassSubprogramDecl() {
   ArgTys.push_back(Context->getObjCClassType());
   QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetSuperClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetSuperClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                    SourceLocation(),
                                                    SourceLocation(),
                                                    getSuperClassIdent,
@@ -2543,7 +2543,7 @@ void RewriteModernObjC::SynthGetMetaClassSubprogramDecl() {
   ArgTys.push_back(Context->getPointerType(Context->CharTy.withConst()));
   QualType getClassType = getSimpleSubprogramType(Context->getObjCClassType(),
                                                 &ArgTys[0], ArgTys.size());
-  GetMetaClassSubprogramDecl = SubprogramDecl::Create(*Context, TUDecl,
+  GetMetaClassSubprogramDecl = SubprogramDecl::Create(*Context, PgmDecl,
                                                   SourceLocation(),
                                                   SourceLocation(),
                                                   getClassIdent, getClassType,
@@ -2578,7 +2578,7 @@ Stmt *RewriteModernObjC::RewriteObjCStringLiteral(ObjCStringLiteral *Exp) {
   Preamble += ",";
   Preamble += utostr(Exp->getString()->getByteLength()) + "};\n";
 
-  VarDecl *NewVD = VarDecl::Create(*Context, TUDecl, SourceLocation(),
+  VarDecl *NewVD = VarDecl::Create(*Context, PgmDecl, SourceLocation(),
                                    SourceLocation(), &Context->Idents.get(S),
                                    strType, 0, SC_Static, SC_None);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(NewVD, false, strType, VK_LValue,
@@ -3023,7 +3023,7 @@ Stmt *RewriteModernObjC::RewriteObjCDictionaryLiteralExpr(ObjCDictionaryLiteral 
 // };
 QualType RewriteModernObjC::getSuperStructType() {
   if (!SuperStructDecl) {
-    SuperStructDecl = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+    SuperStructDecl = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                          SourceLocation(), SourceLocation(),
                                          &Context->Idents.get("__rw_objc_super"));
     QualType FieldTypes[2];
@@ -3051,7 +3051,7 @@ QualType RewriteModernObjC::getSuperStructType() {
 
 QualType RewriteModernObjC::getConstantStringStructType() {
   if (!ConstantStringDecl) {
-    ConstantStringDecl = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+    ConstantStringDecl = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                             SourceLocation(), SourceLocation(),
                          &Context->Idents.get("__NSConstantStringImpl"));
     QualType FieldTypes[4];
@@ -3202,7 +3202,7 @@ Expr *RewriteModernObjC::SynthMsgSendStretCallExpr(SubprogramDecl *MsgSendStretF
   
   // AST for __Stretn(receiver, args).s;
   IdentifierInfo *ID = &Context->Idents.get(name);
-  SubprogramDecl *FD = SubprogramDecl::Create(*Context, TUDecl, SourceLocation(),
+  SubprogramDecl *FD = SubprogramDecl::Create(*Context, PgmDecl, SourceLocation(),
                                           SourceLocation(), ID, castType, 0,
                                           SC_Extern, SC_None, false, false);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(FD, false, castType, VK_RValue,
@@ -3659,7 +3659,7 @@ QualType RewriteModernObjC::getProtocolType() {
   if (!ProtocolTypeDecl) {
     TypeSourceInfo *TInfo
       = Context->getTrivialTypeSourceInfo(Context->getObjCIdType());
-    ProtocolTypeDecl = TypedefDecl::Create(*Context, TUDecl,
+    ProtocolTypeDecl = TypedefDecl::Create(*Context, PgmDecl,
                                            SourceLocation(), SourceLocation(),
                                            &Context->Idents.get("Protocol"),
                                            TInfo);
@@ -3670,12 +3670,12 @@ QualType RewriteModernObjC::getProtocolType() {
 /// RewriteObjCProtocolExpr - Rewrite a protocol expression into
 /// a synthesized/forward data reference (to the protocol's metadata).
 /// The forward references (and metadata) are generated in
-/// RewriteModernObjC::HandleTranslationUnit().
+/// RewriteModernObjC::HandleProgram().
 Stmt *RewriteModernObjC::RewriteObjCProtocolExpr(ObjCProtocolExpr *Exp) {
   std::string Name = "_OBJC_PROTOCOL_REFERENCE_$_" + 
                       Exp->getProtocol()->getNameAsString();
   IdentifierInfo *ID = &Context->Idents.get(Name);
-  VarDecl *VD = VarDecl::Create(*Context, TUDecl, SourceLocation(),
+  VarDecl *VD = VarDecl::Create(*Context, PgmDecl, SourceLocation(),
                                 SourceLocation(), ID, getProtocolType(), 0,
                                 SC_Extern, SC_None);
   DeclRefExpr *DRE = new (Context) DeclRefExpr(VD, false, getProtocolType(),
@@ -3733,7 +3733,7 @@ bool RewriteModernObjC::IsTagDefinedInsideClass(ObjCContainerDecl *IDecl,
       return false;
     IsNamedDefinition = true;
     TagLocation = RD->getLocation();
-    return Context->getSourceManager().isBeforeInTranslationUnit(
+    return Context->getSourceManager().isBeforeInProgram(
                                           IDecl->getLocation(), TagLocation);
   }
   if (EnumDecl *ED = dyn_cast<EnumDecl>(Tag)) {
@@ -3741,7 +3741,7 @@ bool RewriteModernObjC::IsTagDefinedInsideClass(ObjCContainerDecl *IDecl,
       return false;
     IsNamedDefinition = true;
     TagLocation = ED->getLocation();
-    return Context->getSourceManager().isBeforeInTranslationUnit(
+    return Context->getSourceManager().isBeforeInProgram(
                                           IDecl->getLocation(), TagLocation);
 
   }
@@ -4583,7 +4583,7 @@ Stmt *RewriteModernObjC::SynthesizeBlockCall(CallExpr *Exp, const Expr *BlockExp
   const SubprogramProtoType *FTP = dyn_cast<SubprogramProtoType>(FT);
   // FTP will be null for closures that don't take arguments.
 
-  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+  RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                       SourceLocation(), SourceLocation(),
                                       &Context->Idents.get("__block_impl"));
   QualType PtrBlock = Context->getPointerType(Context->getTagDeclType(RD));
@@ -5200,7 +5200,7 @@ void RewriteModernObjC::CollectBlockDeclRefInfo(BlockExpr *Exp) {
 SubprogramDecl *RewriteModernObjC::SynthBlockInitSubprogramDecl(StringRef name) {
   IdentifierInfo *ID = &Context->Idents.get(name);
   QualType FType = Context->getSubprogramNoProtoType(Context->VoidPtrTy);
-  return SubprogramDecl::Create(*Context, TUDecl, SourceLocation(),
+  return SubprogramDecl::Create(*Context, PgmDecl, SourceLocation(),
                               SourceLocation(), ID, FType, 0, SC_Extern,
                               SC_None, false, false);
 }
@@ -5299,7 +5299,7 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
   // Initialize the block descriptor.
   std::string DescData = "__" + FuncName + "_block_desc_" + BlockNumber + "_DATA";
 
-  VarDecl *NewVD = VarDecl::Create(*Context, TUDecl,
+  VarDecl *NewVD = VarDecl::Create(*Context, PgmDecl,
                                    SourceLocation(), SourceLocation(),
                                    &Context->Idents.get(DescData.c_str()),
                                    Context->VoidPtrTy, 0,
@@ -5361,7 +5361,7 @@ Stmt *RewriteModernObjC::SynthBlockInitExpr(BlockExpr *Exp,
       RewriteByRefString(RecName, Name, ND, true);
       IdentifierInfo *II = &Context->Idents.get(RecName.c_str() 
                                                 + sizeof("struct"));
-      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+      RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                           SourceLocation(), SourceLocation(),
                                           II);
       assert(RD && "SynthBlockInitExpr(): Can't find RecordDecl");
@@ -5830,7 +5830,7 @@ static void Write_ProtocolExprReferencedMetadata(ASTContext *Context,
   Result += ";\n";
 }
 
-void RewriteModernObjC::HandleTranslationUnit(ASTContext &C) {
+void RewriteModernObjC::HandleProgram(ASTContext &C) {
   if (Diags.hasErrorOccurred())
     return;
 
@@ -5852,7 +5852,7 @@ void RewriteModernObjC::HandleTranslationUnit(ASTContext &C) {
   for (unsigned i = 0, e = ObjCInterfacesSeen.size(); i < e; i++) {
     ObjCInterfaceDecl *CDecl = ObjCInterfacesSeen[i];
     // Write struct declaration for the class matching its ivar declarations.
-    // Note that for modern abi, this is postponed until the end of TU
+    // Note that for modern abi, this is postponed until the end of the program 
     // because class extensions and the implementation might declare their own
     // private ivars.
     RewriteInterfaceDecl(CDecl);
@@ -6616,7 +6616,7 @@ static void Write_category_t(RewriteModernObjC &RewriteObj, ASTContext *Context,
   StringRef CatName = CatDecl->getName();
   StringRef ClassName = ClassDecl->getName();
   // must declare an extern class object in case this class is not implemented 
-  // in this TU.
+  // in this program.
   Result += "\n";
   Result += "extern \"C\" ";
   if (ClassDecl->getImplementation())
@@ -7523,7 +7523,7 @@ Stmt *RewriteModernObjC::RewriteObjCIvarRefExpr(ObjCIvarRefExpr *IV) {
                                                     Context->getPointerType(Context->CharTy),
                                                     CK_BitCast,
                                                     BaseExpr);
-      VarDecl *NewVD = VarDecl::Create(*Context, TUDecl, SourceLocation(),
+      VarDecl *NewVD = VarDecl::Create(*Context, PgmDecl, SourceLocation(),
                                        SourceLocation(), &Context->Idents.get(IvarOffsetName),
                                        Context->UnsignedLongTy, 0, SC_Extern, SC_None);
       DeclRefExpr *DRE = new (Context) DeclRefExpr(NewVD, false,
@@ -7551,7 +7551,7 @@ Stmt *RewriteModernObjC::RewriteObjCIvarRefExpr(ObjCIvarRefExpr *IV) {
             CDecl = CatDecl->getClassInterface();
           std::string RecName = CDecl->getName();
           RecName += "_IMPL";
-          RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, TUDecl,
+          RecordDecl *RD = RecordDecl::Create(*Context, TTK_Struct, PgmDecl,
                                               SourceLocation(), SourceLocation(),
                                               &Context->Idents.get(RecName.c_str()));
           QualType PtrStructIMPL = Context->getPointerType(Context->getTagDeclType(RD));

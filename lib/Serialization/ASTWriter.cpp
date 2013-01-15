@@ -807,7 +807,7 @@ void ASTWriter::WriteBlockInfoBlock() {
   RECORD(EXT_VECTOR_DECLS);
   RECORD(PPD_ENTITIES_OFFSETS);
   RECORD(REFERENCED_SELECTOR_POOL);
-  RECORD(TU_UPDATE_LEXICAL);
+  RECORD(PGM_UPDATE_LEXICAL);
   RECORD(LOCAL_REDECLARATIONS_MAP);
   RECORD(SEMA_DECL_REFS);
   RECORD(WEAK_UNDECLARED_IDENTIFIERS);
@@ -3016,7 +3016,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
   // IdentifierInfo chains, don't bother to build a visible-declarations table.
   // FIXME: In C++ we need the visible declarations in order to "see" the
   // friend declarations, is there a way to do this without writing the table ?
-  if (DC->isTranslationUnit() && !Context.getLangOpts().CPlusPlus)
+  if (DC->isProgram() && !Context.getLangOpts().CPlusPlus)
     return 0;
 
   // Serialize the contents of the mapping used for lookup. Note that,
@@ -3089,7 +3089,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
 /// \brief Write an UPDATE_VISIBLE block for the given context.
 ///
 /// UPDATE_VISIBLE blocks contain the declarations that are added to an existing
-/// DeclContext in a dependent AST file. As such, they only exist for the TU
+/// DeclContext in a dependent AST file. As such, they only exist for the program
 /// (in C++), for namespaces, and for classes with forward-declared unscoped
 /// enumeration members (in C++11).
 void ASTWriter::WriteDeclContextVisibleUpdate(const DeclContext *DC) {
@@ -3425,7 +3425,7 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
   Preprocessor &PP = SemaRef.PP;
 
   // Set up predefined declaration IDs.
-  DeclIDs[Context.getTranslationUnitDecl()] = PREDEF_DECL_TRANSLATION_UNIT_ID;
+  DeclIDs[Context.getProgramDecl()] = PREDEF_DECL_PROGRAM_ID;
   if (Context.ObjCIdDecl)
     DeclIDs[Context.ObjCIdDecl] = PREDEF_DECL_OBJC_ID_ID;
   if (Context.ObjCSelDecl)
@@ -3577,21 +3577,21 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
 
   // Create a lexical update block containing all of the declarations in the
   // translation unit that do not come from other AST files.
-  const TranslationUnitDecl *TU = Context.getTranslationUnitDecl();
+  const ProgramDecl *Pgm = Context.getProgramDecl();
   SmallVector<KindDeclIDPair, 64> NewGlobalDecls;
-  for (DeclContext::decl_iterator I = TU->noload_decls_begin(),
-                                  E = TU->noload_decls_end();
+  for (DeclContext::decl_iterator I = Pgm->noload_decls_begin(),
+                                  E = Pgm->noload_decls_end();
        I != E; ++I) {
     if (!(*I)->isFromASTFile())
       NewGlobalDecls.push_back(std::make_pair((*I)->getKind(), GetDeclRef(*I)));
   }
   
   llvm::BitCodeAbbrev *Abv = new llvm::BitCodeAbbrev();
-  Abv->Add(llvm::BitCodeAbbrevOp(TU_UPDATE_LEXICAL));
+  Abv->Add(llvm::BitCodeAbbrevOp(PGM_UPDATE_LEXICAL));
   Abv->Add(llvm::BitCodeAbbrevOp(llvm::BitCodeAbbrevOp::Blob));
   unsigned TuUpdateLexicalAbbrev = Stream.EmitAbbrev(Abv);
   Record.clear();
-  Record.push_back(TU_UPDATE_LEXICAL);
+  Record.push_back(PGM_UPDATE_LEXICAL);
   Stream.EmitRecordWithBlob(TuUpdateLexicalAbbrev, Record,
                             data(NewGlobalDecls));
   
@@ -3602,12 +3602,12 @@ void ASTWriter::WriteASTCore(Sema &SemaRef,
   Abv->Add(llvm::BitCodeAbbrevOp(llvm::BitCodeAbbrevOp::Fixed, 32));
   Abv->Add(llvm::BitCodeAbbrevOp(llvm::BitCodeAbbrevOp::Blob));
   UpdateVisibleAbbrev = Stream.EmitAbbrev(Abv);
-  WriteDeclContextVisibleUpdate(TU);
+  WriteDeclContextVisibleUpdate(Pgm);
   
   // If the translation unit has an anonymous namespace, and we don't already
   // have an update block for it, write it as an update block.
-  if (NamespaceDecl *NS = TU->getAnonymousNamespace()) {
-    ASTWriter::UpdateRecord &Record = DeclUpdates[TU];
+  if (NamespaceDecl *NS = Pgm->getAnonymousNamespace()) {
+    ASTWriter::UpdateRecord &Record = DeclUpdates[Pgm];
     if (Record.empty()) {
       Record.push_back(UPD_CXX_ADDED_ANONYMOUS_NAMESPACE);
       Record.push_back(reinterpret_cast<uint64_t>(NS));
@@ -4164,7 +4164,7 @@ void ASTWriter::associateDeclWithFile(const Decl *D, DeclID ID) {
   if (!D->getLexicalDeclContext()->isFileContext())
     return;
   // FIXME: ParmVarDecls that are part of a function type of a parameter of
-  // a function/objc method, should not have TU as lexical context.
+  // a function/objc method, should not have program as lexical context.
   if (isa<ParmVarDecl>(D))
     return;
 
@@ -4745,8 +4745,8 @@ void ASTWriter::CompletedTagDefinition(const TagDecl *D) {
 void ASTWriter::AddedVisibleDecl(const DeclContext *DC, const Decl *D) {
   assert(!WritingAST && "Already writing the AST!");
 
-  // TU and namespaces are handled elsewhere.
-  if (isa<TranslationUnitDecl>(DC) || isa<NamespaceDecl>(DC))
+  // Program and namespaces are handled elsewhere.
+  if (isa<ProgramDecl>(DC) || isa<NamespaceDecl>(DC))
     return;
 
   if (!(!D->isFromASTFile() && cast<Decl>(DC)->isFromASTFile()))

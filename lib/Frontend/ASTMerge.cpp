@@ -55,9 +55,9 @@ void ASTMergeAction::ExecuteAction() {
                          Unit->getFileManager(),
                          /*MinimalImport=*/false);
 
-    TranslationUnitDecl *TU = Unit->getASTContext().getTranslationUnitDecl();
-    for (DeclContext::decl_iterator D = TU->decls_begin(), 
-                                 DEnd = TU->decls_end();
+    ProgramDecl *Pgm = Unit->getASTContext().getProgramDecl();
+    for (DeclContext::decl_iterator D = Pgm->decls_begin(), 
+                                 DEnd = Pgm->decls_end();
          D != DEnd; ++D) {
       // Don't re-import __va_list_tag, __builtin_va_list.
       if (NamedDecl *ND = dyn_cast<NamedDecl>(*D))
@@ -93,8 +93,8 @@ bool ASTMergeAction::usesPreprocessorOnly() const {
   return AdaptedAction->usesPreprocessorOnly();
 }
 
-TranslationUnitKind ASTMergeAction::getTranslationUnitKind() {
-  return AdaptedAction->getTranslationUnitKind();
+ProgramKind ASTMergeAction::getProgramKind() {
+  return AdaptedAction->getProgramKind();
 }
 
 bool ASTMergeAction::hasPCHSupport() const {

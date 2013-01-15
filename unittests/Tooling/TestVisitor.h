@@ -64,9 +64,9 @@ protected:
   public:
     FindConsumer(TestVisitor *Visitor) : Visitor(Visitor) {}
 
-    virtual void HandleTranslationUnit(lfort::ASTContext &Context) {
+    virtual void HandleProgram(lfort::ASTContext &Context) {
       Visitor->Context = &Context;
-      Visitor->TraverseDecl(Context.getTranslationUnitDecl());
+      Visitor->TraverseDecl(Context.getProgramDecl());
     }
 
   private:

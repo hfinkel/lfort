@@ -147,7 +147,7 @@ public:
   /// optimization to make sure we do not deserialize everything from disk.
   /// The local declaration to all declarations ratio might be very small when
   /// working with a PCH file.
-  SetOfDecls LocalTUDecls;
+  SetOfDecls LocalPgmDecls;
                            
   // Set of PathDiagnosticConsumers.  Owned by AnalysisManager.
   PathDiagnosticConsumers PathConsumers;
@@ -159,7 +159,7 @@ public:
   OwningPtr<AnalysisManager> Mgr;
 
   /// Time the analyzes time of each translation unit.
-  static llvm::Timer* TUTotalTimer;
+  static llvm::Timer* PgmTotalTimer;
 
   /// The information about analyzed functions shared throughout the
   /// translation unit.
@@ -174,13 +174,13 @@ public:
     DigestAnalyzerOptions();
     if (Opts->PrintStats) {
       llvm::EnableStatistics();
-      TUTotalTimer = new llvm::Timer("Analyzer Total Time");
+      PgmTotalTimer = new llvm::Timer("Analyzer Total Time");
     }
   }
 
   ~AnalysisConsumer() {
     if (Opts->PrintStats)
-      delete TUTotalTimer;
+      delete PgmTotalTimer;
   }
 
   void DigestAnalyzerOptions() {
@@ -270,16 +270,16 @@ public:
   virtual bool HandleTopLevelDecl(DeclGroupRef D);
   virtual void HandleTopLevelDeclInObjCContainer(DeclGroupRef D);
 
-  virtual void HandleTranslationUnit(ASTContext &C);
+  virtual void HandleProgram(ASTContext &C);
 
   /// \brief Determine which inlining mode should be used when this function is
   /// analyzed. For example, determines if the callees should be inlined.
   ExprEngine::InliningModes
   getInliningModeForSubprogram(const Decl *D, SetOfConstDecls Visited);
 
-  /// \brief Build the call graph for all the top level decls of this TU and
+  /// \brief Build the call graph for all the top level decls of this program and
   /// use it to define the order in which the functions should be visited.
-  void HandleDeclsCallGraph(const unsigned LocalTUDeclsSize);
+  void HandleDeclsCallGraph(const unsigned LocalPgmDeclsSize);
 
   /// \brief Run analyzes(syntax or path sensitive) on the given function.
   /// \param Mode - determines if we are requesting syntax only or path
@@ -353,7 +353,7 @@ private:
 //===----------------------------------------------------------------------===//
 // AnalysisConsumer implementation.
 //===----------------------------------------------------------------------===//
-llvm::Timer* AnalysisConsumer::TUTotalTimer = 0;
+llvm::Timer* AnalysisConsumer::PgmTotalTimer = 0;
 
 bool AnalysisConsumer::HandleTopLevelDecl(DeclGroupRef DG) {
   storeTopLevelDecls(DG);
@@ -372,7 +372,7 @@ void AnalysisConsumer::storeTopLevelDecls(DeclGroupRef DG) {
     if (isa<ObjCMethodDecl>(*I))
       continue;
 
-    LocalTUDecls.push_back(*I);
+    LocalPgmDecls.push_back(*I);
   }
 }
 
@@ -417,14 +417,14 @@ AnalysisConsumer::getInliningModeForSubprogram(const Decl *D,
   return HowToInline;
 }
 
-void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
+void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalPgmDeclsSize) {
   // Build the Call Graph by adding all the top level declarations to the graph.
   // Note: CallGraph can trigger deserialization of more items from a pch
-  // (though HandleInterestingDecl); triggering additions to LocalTUDecls.
+  // (though HandleInterestingDecl); triggering additions to LocalPgmDecls.
   // We rely on random access to add the initially processed Decls to CG.
   CallGraph CG;
-  for (unsigned i = 0 ; i < LocalTUDeclsSize ; ++i) {
-    CG.addToCallGraph(LocalTUDecls[i]);
+  for (unsigned i = 0 ; i < LocalPgmDeclsSize ; ++i) {
+    CG.addToCallGraph(LocalPgmDecls[i]);
   }
 
   // Walk over all of the call graph nodes in topological order, so that we
@@ -467,19 +467,19 @@ void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
   }
 }
 
-void AnalysisConsumer::HandleTranslationUnit(ASTContext &C) {
+void AnalysisConsumer::HandleProgram(ASTContext &C) {
   // Don't run the actions if an error has occurred with parsing the file.
   DiagnosticsEngine &Diags = PP.getDiagnostics();
   if (Diags.hasErrorOccurred() || Diags.hasFatalErrorOccurred())
     return;
 
   {
-    if (TUTotalTimer) TUTotalTimer->startTimer();
+    if (PgmTotalTimer) PgmTotalTimer->startTimer();
 
     // Introduce a scope to destroy BR before Mgr.
     BugReporter BR(*Mgr);
-    TranslationUnitDecl *TU = C.getTranslationUnitDecl();
-    checkerMgr->runCheckersOnASTDecl(TU, *Mgr, BR);
+    ProgramDecl *Pgm = C.getProgramDecl();
+    checkerMgr->runCheckersOnASTDecl(Pgm, *Mgr, BR);
 
     // Run the AST-only checks using the order in which functions are defined.
     // If inlining is not turned on, use the simplest function order for path
@@ -491,20 +491,20 @@ void AnalysisConsumer::HandleTranslationUnit(ASTContext &C) {
 
     // Process all the top level declarations.
     //
-    // Note: TraverseDecl may modify LocalTUDecls, but only by appending more
-    // entries.  Thus we don't use an iterator, but rely on LocalTUDecls
+    // Note: TraverseDecl may modify LocalPgmDecls, but only by appending more
+    // entries.  Thus we don't use an iterator, but rely on LocalPgmDecls
     // random access.  By doing so, we automatically compensate for iterators
     // possibly being invalidated, although this is a bit slower.
-    const unsigned LocalTUDeclsSize = LocalTUDecls.size();
-    for (unsigned i = 0 ; i < LocalTUDeclsSize ; ++i) {
-      TraverseDecl(LocalTUDecls[i]);
+    const unsigned LocalPgmDeclsSize = LocalPgmDecls.size();
+    for (unsigned i = 0 ; i < LocalPgmDeclsSize ; ++i) {
+      TraverseDecl(LocalPgmDecls[i]);
     }
 
     if (Mgr->shouldInlineCall())
-      HandleDeclsCallGraph(LocalTUDeclsSize);
+      HandleDeclsCallGraph(LocalPgmDeclsSize);
 
-    // After all decls handled, run checkers on the entire TranslationUnit.
-    checkerMgr->runCheckersOnEndOfTranslationUnit(TU, *Mgr, BR);
+    // After all decls handled, run checkers on the entire Program.
+    checkerMgr->runCheckersOnEndOfProgram(Pgm, *Mgr, BR);
 
     RecVisitorBR = 0;
   }
@@ -515,7 +515,7 @@ void AnalysisConsumer::HandleTranslationUnit(ASTContext &C) {
   // used with option -disable-free.
   Mgr.reset(NULL);
 
-  if (TUTotalTimer) TUTotalTimer->stopTimer();
+  if (PgmTotalTimer) PgmTotalTimer->stopTimer();
 
   // Count how many basic blocks we have not covered.
   NumBlocksInAnalyzedSubprograms = SubprogramSummaries.getTotalNumBasicBlocks();

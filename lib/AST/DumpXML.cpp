@@ -414,8 +414,8 @@ struct XMLDumper : public XMLDeclVisitor<XMLDumper>,
   }
 
 
-  // TranslationUnitDecl
-  void visitTranslationUnitDeclAsContext(TranslationUnitDecl *D) {
+  // ProgramDecl
+  void visitProgramDeclAsContext(ProgramDecl *D) {
     visitDeclContext(D);
   }
 

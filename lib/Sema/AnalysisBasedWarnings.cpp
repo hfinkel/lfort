@@ -910,7 +910,7 @@ public:
   explicit StmtUseSorter(const SourceManager &SM) : SM(SM) { }
 
   bool operator()(const StmtUsesPair &LHS, const StmtUsesPair &RHS) {
-    return SM.isBeforeInTranslationUnit(LHS.first->getLocStart(),
+    return SM.isBeforeInProgram(LHS.first->getLocStart(),
                                         RHS.first->getLocStart());
   }
 };
@@ -1209,7 +1209,7 @@ struct SortDiagBySourceLocation {
   bool operator()(const DelayedDiag &left, const DelayedDiag &right) {
     // Although this call will be slow, this is only called when outputting
     // multiple warnings.
-    return SM.isBeforeInTranslationUnit(left.first.first, right.first.first);
+    return SM.isBeforeInProgram(left.first.first, right.first.first);
   }
 };
 

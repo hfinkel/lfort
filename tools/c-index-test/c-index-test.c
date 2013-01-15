@@ -62,23 +62,23 @@ extern char *dirname(char *);
 
 /** \brief Return the default parsing options. */
 static unsigned getDefaultParsingOptions() {
-  unsigned options = CXTranslationUnit_DetailedPreprocessingRecord;
+  unsigned options = CXProgram_DetailedPreprocessingRecord;
 
   if (getenv("CINDEXTEST_EDITING"))
-    options |= lfort_defaultEditingTranslationUnitOptions();
+    options |= lfort_defaultEditingProgramOptions();
   if (getenv("CINDEXTEST_COMPLETION_CACHING"))
-    options |= CXTranslationUnit_CacheCompletionResults;
+    options |= CXProgram_CacheCompletionResults;
   if (getenv("CINDEXTEST_COMPLETION_NO_CACHING"))
-    options &= ~CXTranslationUnit_CacheCompletionResults;
+    options &= ~CXProgram_CacheCompletionResults;
   if (getenv("CINDEXTEST_SKIP_FUNCTION_BODIES"))
-    options |= CXTranslationUnit_SkipSubprogramBodies;
+    options |= CXProgram_SkipSubprogramBodies;
   if (getenv("CINDEXTEST_COMPLETION_BRIEF_COMMENTS"))
-    options |= CXTranslationUnit_IncludeBriefCommentsInCodeCompletion;
+    options |= CXProgram_IncludeBriefCommentsInCodeCompletion;
   
   return options;
 }
 
-static int checkForErrors(CXTranslationUnit TU);
+static int checkForErrors(CXProgram Pgm);
 
 static void PrintExtent(FILE *out, unsigned begin_line, unsigned begin_column,
                         unsigned end_line, unsigned end_column) {
@@ -86,11 +86,11 @@ static void PrintExtent(FILE *out, unsigned begin_line, unsigned begin_column,
           end_line, end_column);
 }
 
-static unsigned CreateTranslationUnit(CXIndex Idx, const char *file,
-                                      CXTranslationUnit *TU) {
+static unsigned CreateProgram(CXIndex Idx, const char *file,
+                                      CXProgram *Pgm) {
 
-  *TU = lfort_createTranslationUnit(Idx, file);
-  if (!*TU) {
+  *Pgm = lfort_createProgram(Idx, file);
+  if (!*Pgm) {
     fprintf(stderr, "Unable to load translation unit from '%s'!\n", file);
     return 0;
   }
@@ -574,7 +574,7 @@ static int lineCol_cmp(const void *p1, const void *p2) {
 
 static void PrintCursor(CXCursor Cursor,
                         CommentXMLValidationData *ValidationData) {
-  CXTranslationUnit TU = lfort_Cursor_getTranslationUnit(Cursor);
+  CXProgram Pgm = lfort_Cursor_getProgram(Cursor);
   if (lfort_isInvalid(Cursor.kind)) {
     CXString ks = lfort_getCursorKindSpelling(Cursor.kind);
     printf("Invalid Cursor => %s", lfort_getCString(ks));
@@ -762,7 +762,7 @@ static void PrintCursor(CXCursor Cursor,
       printf(" (%s)", lfort_getCString(Included));
       lfort_disposeString(Included);
       
-      if (lfort_isFileMultipleIncludeGuarded(TU, File))
+      if (lfort_isFileMultipleIncludeGuarded(Pgm, File))
         printf("  [multi-include guarded]");
     }
     
@@ -811,7 +811,7 @@ static const char* GetCursorSource(CXCursor Cursor) {
 /* Callbacks.                                                                 */
 /******************************************************************************/
 
-typedef void (*PostVisitTU)(CXTranslationUnit);
+typedef void (*PostVisitPgm)(CXProgram);
 
 void PrintDiagnostic(CXDiagnostic Diagnostic) {
   FILE *out = stderr;
@@ -882,19 +882,19 @@ void PrintDiagnosticSet(CXDiagnosticSet Set) {
   }  
 }
 
-void PrintDiagnostics(CXTranslationUnit TU) {
-  CXDiagnosticSet TUSet = lfort_getDiagnosticSetFromTU(TU);
-  PrintDiagnosticSet(TUSet);
-  lfort_disposeDiagnosticSet(TUSet);
+void PrintDiagnostics(CXProgram Pgm) {
+  CXDiagnosticSet PgmSet = lfort_getDiagnosticSetFromPgm(Pgm);
+  PrintDiagnosticSet(PgmSet);
+  lfort_disposeDiagnosticSet(PgmSet);
 }
 
-void PrintMemoryUsage(CXTranslationUnit TU) {
+void PrintMemoryUsage(CXProgram Pgm) {
   unsigned long total = 0;
   unsigned i = 0;
-  CXTUResourceUsage usage = lfort_getCXTUResourceUsage(TU);
+  CXPgmResourceUsage usage = lfort_getCXPgmResourceUsage(Pgm);
   fprintf(stderr, "Memory usage:\n");
   for (i = 0 ; i != usage.numEntries; ++i) {
-    const char *name = lfort_getTUResourceUsageName(usage.entries[i].kind);
+    const char *name = lfort_getPgmResourceUsageName(usage.entries[i].kind);
     unsigned long amount = usage.entries[i].amount;
     total += amount;
     fprintf(stderr, "  %s : %ld bytes (%f MBytes)\n", name, amount,
@@ -902,7 +902,7 @@ void PrintMemoryUsage(CXTranslationUnit TU) {
   }
   fprintf(stderr, "  TOTAL = %ld bytes (%f MBytes)\n", total,
           ((double) total)/(1024*1024));
-  lfort_disposeCXTUResourceUsage(usage);  
+  lfort_disposeCXPgmResourceUsage(usage);  
 }
 
 /******************************************************************************/
@@ -916,7 +916,7 @@ static void PrintCursorExtent(CXCursor C) {
 
 /* Data used by the visitors. */
 typedef struct {
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   enum CXCursorKind *Filter;
   CommentXMLValidationData ValidationData;
 } VisitorData;
@@ -978,8 +978,8 @@ static enum CXChildVisitResult SubprogramScanVisitor(CXCursor Cursor,
     source = lfort_getFileName(file);
     if (lfort_getCString(source)) {
       CXSourceLocation RefLoc
-        = lfort_getLocation(Data->TU, file, curLine, curColumn);
-      Ref = lfort_getCursor(Data->TU, RefLoc);
+        = lfort_getLocation(Data->Pgm, file, curLine, curColumn);
+      Ref = lfort_getCursor(Data->Pgm, RefLoc);
       if (Ref.kind == CXCursor_NoDeclFound) {
         /* Nothing found here; that's fine. */
       } else if (Ref.kind != CXCursor_SubprogramDecl) {
@@ -1048,8 +1048,8 @@ void InclusionVisitor(CXFile includedFile, CXSourceLocation *includeStack,
   printf("\n");
 }
 
-void PrintInclusionStack(CXTranslationUnit TU) {
-  lfort_getInclusions(TU, InclusionVisitor, NULL);
+void PrintInclusionStack(CXProgram Pgm) {
+  lfort_getInclusions(Pgm, InclusionVisitor, NULL);
 }
 
 /******************************************************************************/
@@ -1163,10 +1163,10 @@ static enum CXChildVisitResult PrintBitWidth(CXCursor cursor, CXCursor p,
 /* Loading ASTs/source.                                                       */
 /******************************************************************************/
 
-static int perform_test_load(CXIndex Idx, CXTranslationUnit TU,
+static int perform_test_load(CXIndex Idx, CXProgram Pgm,
                              const char *filter, const char *prefix,
                              CXCursorVisitor Visitor,
-                             PostVisitTU PV,
+                             PostVisitPgm PV,
                              const char *CommentSchemaFile) {
 
   if (prefix)
@@ -1196,54 +1196,54 @@ static int perform_test_load(CXIndex Idx, CXTranslationUnit TU,
       return 1;
     }
 
-    Data.TU = TU;
+    Data.Pgm = Pgm;
     Data.Filter = ck;
     Data.ValidationData.CommentSchemaFile = CommentSchemaFile;
 #ifdef LFORT_HAVE_LIBXML
     Data.ValidationData.RNGParser = NULL;
     Data.ValidationData.Schema = NULL;
 #endif
-    lfort_visitChildren(lfort_getTranslationUnitCursor(TU), Visitor, &Data);
+    lfort_visitChildren(lfort_getProgramCursor(Pgm), Visitor, &Data);
   }
 
   if (PV)
-    PV(TU);
+    PV(Pgm);
 
-  PrintDiagnostics(TU);
-  if (checkForErrors(TU) != 0) {
-    lfort_disposeTranslationUnit(TU);
+  PrintDiagnostics(Pgm);
+  if (checkForErrors(Pgm) != 0) {
+    lfort_disposeProgram(Pgm);
     return -1;
   }
 
-  lfort_disposeTranslationUnit(TU);
+  lfort_disposeProgram(Pgm);
   return 0;
 }
 
 int perform_test_load_tu(const char *file, const char *filter,
                          const char *prefix, CXCursorVisitor Visitor,
-                         PostVisitTU PV) {
+                         PostVisitPgm PV) {
   CXIndex Idx;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   int result;
   Idx = lfort_createIndex(/* excludeDeclsFromPCH */
                           !strcmp(filter, "local") ? 1 : 0,
                           /* displayDiagnosics=*/1);
 
-  if (!CreateTranslationUnit(Idx, file, &TU)) {
+  if (!CreateProgram(Idx, file, &Pgm)) {
     lfort_disposeIndex(Idx);
     return 1;
   }
 
-  result = perform_test_load(Idx, TU, filter, prefix, Visitor, PV, NULL);
+  result = perform_test_load(Idx, Pgm, filter, prefix, Visitor, PV, NULL);
   lfort_disposeIndex(Idx);
   return result;
 }
 
 int perform_test_load_source(int argc, const char **argv,
                              const char *filter, CXCursorVisitor Visitor,
-                             PostVisitTU PV) {
+                             PostVisitPgm PV) {
   CXIndex Idx;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   const char *CommentSchemaFile;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
@@ -1264,19 +1264,19 @@ int perform_test_load_source(int argc, const char **argv,
     return -1;
   }
 
-  TU = lfort_parseTranslationUnit(Idx, 0,
+  Pgm = lfort_parseProgram(Idx, 0,
                                   argv + num_unsaved_files,
                                   argc - num_unsaved_files,
                                   unsaved_files, num_unsaved_files, 
                                   getDefaultParsingOptions());
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "Unable to load translation unit!\n");
     free_remapped_files(unsaved_files, num_unsaved_files);
     lfort_disposeIndex(Idx);
     return 1;
   }
 
-  result = perform_test_load(Idx, TU, filter, NULL, Visitor, PV,
+  result = perform_test_load(Idx, Pgm, filter, NULL, Visitor, PV,
                              CommentSchemaFile);
   free_remapped_files(unsaved_files, num_unsaved_files);
   lfort_disposeIndex(Idx);
@@ -1285,9 +1285,9 @@ int perform_test_load_source(int argc, const char **argv,
 
 int perform_test_reparse_source(int argc, const char **argv, int trials,
                                 const char *filter, CXCursorVisitor Visitor,
-                                PostVisitTU PV) {
+                                PostVisitPgm PV) {
   CXIndex Idx;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
   int result;
@@ -1306,18 +1306,18 @@ int perform_test_reparse_source(int argc, const char **argv, int trials,
   
   /* Load the initial translation unit -- we do this without honoring remapped
    * files, so that we have a way to test results after changing the source. */
-  TU = lfort_parseTranslationUnit(Idx, 0,
+  Pgm = lfort_parseProgram(Idx, 0,
                                   argv + num_unsaved_files,
                                   argc - num_unsaved_files,
                                   0, 0, getDefaultParsingOptions());
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "Unable to load translation unit!\n");
     free_remapped_files(unsaved_files, num_unsaved_files);
     lfort_disposeIndex(Idx);
     return 1;
   }
   
-  if (checkForErrors(TU) != 0)
+  if (checkForErrors(Pgm) != 0)
     return -1;
 
   if (getenv("CINDEXTEST_REMAP_AFTER_TRIAL")) {
@@ -1326,22 +1326,22 @@ int perform_test_reparse_source(int argc, const char **argv, int trials,
   }
 
   for (trial = 0; trial < trials; ++trial) {
-    if (lfort_reparseTranslationUnit(TU,
+    if (lfort_reparseProgram(Pgm,
                              trial >= remap_after_trial ? num_unsaved_files : 0,
                              trial >= remap_after_trial ? unsaved_files : 0,
-                                     lfort_defaultReparseOptions(TU))) {
+                                     lfort_defaultReparseOptions(Pgm))) {
       fprintf(stderr, "Unable to reparse translation unit!\n");
-      lfort_disposeTranslationUnit(TU);
+      lfort_disposeProgram(Pgm);
       free_remapped_files(unsaved_files, num_unsaved_files);
       lfort_disposeIndex(Idx);
       return -1;      
     }
 
-    if (checkForErrors(TU) != 0)
+    if (checkForErrors(Pgm) != 0)
       return -1;
   }
   
-  result = perform_test_load(Idx, TU, filter, NULL, Visitor, PV, NULL);
+  result = perform_test_load(Idx, Pgm, filter, NULL, Visitor, PV, NULL);
 
   free_remapped_files(unsaved_files, num_unsaved_files);
   lfort_disposeIndex(Idx);
@@ -1352,7 +1352,7 @@ int perform_test_reparse_source(int argc, const char **argv, int trials,
 /* Logic for testing lfort_getCursor().                                       */
 /******************************************************************************/
 
-static void print_cursor_file_scan(CXTranslationUnit TU, CXCursor cursor,
+static void print_cursor_file_scan(CXProgram Pgm, CXCursor cursor,
                                    unsigned start_line, unsigned start_col,
                                    unsigned end_line, unsigned end_col,
                                    const char *prefix) {
@@ -1368,7 +1368,7 @@ static void print_cursor_file_scan(CXTranslationUnit TU, CXCursor cursor,
 static int perform_file_scan(const char *ast_file, const char *source_file,
                              const char *prefix) {
   CXIndex Idx;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   FILE *fp;
   CXCursor prevCursor = lfort_getNullCursor();
   CXFile file;
@@ -1381,7 +1381,7 @@ static int perform_file_scan(const char *ast_file, const char *source_file,
     return 1;
   }
 
-  if (!CreateTranslationUnit(Idx, ast_file, &TU))
+  if (!CreateProgram(Idx, ast_file, &Pgm))
     return 1;
 
   if ((fp = fopen(source_file, "r")) == NULL) {
@@ -1389,7 +1389,7 @@ static int perform_file_scan(const char *ast_file, const char *source_file,
     return 1;
   }
 
-  file = lfort_getFile(TU, source_file);
+  file = lfort_getFile(Pgm, source_file);
   for (;;) {
     CXCursor cursor;
     int c = fgetc(fp);
@@ -1403,10 +1403,10 @@ static int perform_file_scan(const char *ast_file, const char *source_file,
     /* Check the cursor at this position, and dump the previous one if we have
      * found something new.
      */
-    cursor = lfort_getCursor(TU, lfort_getLocation(TU, file, line, col));
+    cursor = lfort_getCursor(Pgm, lfort_getLocation(Pgm, file, line, col));
     if ((c == EOF || !lfort_equalCursors(cursor, prevCursor)) &&
         prevCursor.kind != CXCursor_InvalidFile) {
-      print_cursor_file_scan(TU, prevCursor, start_line, start_col,
+      print_cursor_file_scan(Pgm, prevCursor, start_line, start_col,
                              line, col, prefix);
       start_line = line;
       start_col = col;
@@ -1418,7 +1418,7 @@ static int perform_file_scan(const char *ast_file, const char *source_file,
   }
 
   fclose(fp);
-  lfort_disposeTranslationUnit(TU);
+  lfort_disposeProgram(Pgm);
   lfort_disposeIndex(Idx);
   return 0;
 }
@@ -1519,7 +1519,7 @@ lfort_getCompletionChunkKindSpelling(enum CXCompletionChunkKind Kind) {
   return "Unknown";
 }
 
-static int checkForErrors(CXTranslationUnit TU) {
+static int checkForErrors(CXProgram Pgm) {
   unsigned Num, i;
   CXDiagnostic Diag;
   CXString DiagStr;
@@ -1527,9 +1527,9 @@ static int checkForErrors(CXTranslationUnit TU) {
   if (!getenv("CINDEXTEST_FAILONERROR"))
     return 0;
 
-  Num = lfort_getNumDiagnostics(TU);
+  Num = lfort_getNumDiagnostics(Pgm);
   for (i = 0; i != Num; ++i) {
-    Diag = lfort_getDiagnostic(TU, i);
+    Diag = lfort_getDiagnostic(Pgm, i);
     if (lfort_getDiagnosticSeverity(Diag) >= CXDiagnostic_Error) {
       DiagStr = lfort_formatDiagnostic(Diag,
                                        lfort_defaultDiagnosticDisplayOptions());
@@ -1752,7 +1752,7 @@ int perform_code_completion(int argc, const char **argv, int timing_only) {
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
   CXCodeCompleteResults *results = 0;
-  CXTranslationUnit TU = 0;
+  CXProgram Pgm = 0;
   unsigned I, Repeats = 1;
   unsigned completionOptions = lfort_defaultCodeCompleteOptions();
   
@@ -1778,22 +1778,22 @@ int perform_code_completion(int argc, const char **argv, int timing_only) {
   if (getenv("CINDEXTEST_EDITING"))
     Repeats = 5;
   
-  TU = lfort_parseTranslationUnit(CIdx, 0,
+  Pgm = lfort_parseProgram(CIdx, 0,
                                   argv + num_unsaved_files + 2,
                                   argc - num_unsaved_files - 2,
                                   0, 0, getDefaultParsingOptions());
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "Unable to load translation unit!\n");
     return 1;
   }
 
-  if (lfort_reparseTranslationUnit(TU, 0, 0, lfort_defaultReparseOptions(TU))) {
+  if (lfort_reparseProgram(Pgm, 0, 0, lfort_defaultReparseOptions(Pgm))) {
     fprintf(stderr, "Unable to reparse translation init!\n");
     return 1;
   }
   
   for (I = 0; I != Repeats; ++I) {
-    results = lfort_codeCompleteAt(TU, filename, line, column,
+    results = lfort_codeCompleteAt(Pgm, filename, line, column,
                                    unsaved_files, num_unsaved_files,
                                    completionOptions);
     if (!results) {
@@ -1858,7 +1858,7 @@ int perform_code_completion(int argc, const char **argv, int timing_only) {
     
     lfort_disposeCodeCompleteResults(results);
   }
-  lfort_disposeTranslationUnit(TU);
+  lfort_disposeProgram(Pgm);
   lfort_disposeIndex(CIdx);
   free(filename);
 
@@ -1878,7 +1878,7 @@ static int inspect_cursor_at(int argc, const char **argv) {
   int errorCode;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   CXCursor Cursor;
   CursorSourceLocation *Locations = 0;
   unsigned NumLocations = 0, Loc;
@@ -1911,42 +1911,42 @@ static int inspect_cursor_at(int argc, const char **argv) {
   /* Parse the translation unit. When we're testing lfort_getCursor() after
      reparsing, don't remap unsaved files until the second parse. */
   CIdx = lfort_createIndex(1, 1);
-  TU = lfort_parseTranslationUnit(CIdx, argv[argc - 1],
+  Pgm = lfort_parseProgram(CIdx, argv[argc - 1],
                                   argv + num_unsaved_files + 1 + NumLocations,
                                   argc - num_unsaved_files - 2 - NumLocations,
                                   unsaved_files,
                                   Repeats > 1? 0 : num_unsaved_files,
                                   getDefaultParsingOptions());
                                                  
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "unable to parse input\n");
     return -1;
   }
 
-  if (checkForErrors(TU) != 0)
+  if (checkForErrors(Pgm) != 0)
     return -1;
 
   for (I = 0; I != Repeats; ++I) {
     if (Repeats > 1 &&
-        lfort_reparseTranslationUnit(TU, num_unsaved_files, unsaved_files, 
-                                     lfort_defaultReparseOptions(TU))) {
-      lfort_disposeTranslationUnit(TU);
+        lfort_reparseProgram(Pgm, num_unsaved_files, unsaved_files, 
+                                     lfort_defaultReparseOptions(Pgm))) {
+      lfort_disposeProgram(Pgm);
       return 1;
     }
 
-    if (checkForErrors(TU) != 0)
+    if (checkForErrors(Pgm) != 0)
       return -1;
     
     for (Loc = 0; Loc < NumLocations; ++Loc) {
-      CXFile file = lfort_getFile(TU, Locations[Loc].filename);
+      CXFile file = lfort_getFile(Pgm, Locations[Loc].filename);
       if (!file)
         continue;
 
-      Cursor = lfort_getCursor(TU,
-                               lfort_getLocation(TU, file, Locations[Loc].line,
+      Cursor = lfort_getCursor(Pgm,
+                               lfort_getLocation(Pgm, file, Locations[Loc].line,
                                                  Locations[Loc].column));
 
-      if (checkForErrors(TU) != 0)
+      if (checkForErrors(Pgm) != 0)
         return -1;
 
       if (I + 1 == Repeats) {
@@ -2015,8 +2015,8 @@ static int inspect_cursor_at(int argc, const char **argv) {
     }
   }
   
-  PrintDiagnostics(TU);
-  lfort_disposeTranslationUnit(TU);
+  PrintDiagnostics(Pgm);
+  lfort_disposeProgram(Pgm);
   lfort_disposeIndex(CIdx);
   free(Locations);
   free_remapped_files(unsaved_files, num_unsaved_files);
@@ -2039,7 +2039,7 @@ static int find_file_refs_at(int argc, const char **argv) {
   int errorCode;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   CXCursor Cursor;
   CursorSourceLocation *Locations = 0;
   unsigned NumLocations = 0, Loc;
@@ -2072,42 +2072,42 @@ static int find_file_refs_at(int argc, const char **argv) {
   /* Parse the translation unit. When we're testing lfort_getCursor() after
      reparsing, don't remap unsaved files until the second parse. */
   CIdx = lfort_createIndex(1, 1);
-  TU = lfort_parseTranslationUnit(CIdx, argv[argc - 1],
+  Pgm = lfort_parseProgram(CIdx, argv[argc - 1],
                                   argv + num_unsaved_files + 1 + NumLocations,
                                   argc - num_unsaved_files - 2 - NumLocations,
                                   unsaved_files,
                                   Repeats > 1? 0 : num_unsaved_files,
                                   getDefaultParsingOptions());
                                                  
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "unable to parse input\n");
     return -1;
   }
 
-  if (checkForErrors(TU) != 0)
+  if (checkForErrors(Pgm) != 0)
     return -1;
 
   for (I = 0; I != Repeats; ++I) {
     if (Repeats > 1 &&
-        lfort_reparseTranslationUnit(TU, num_unsaved_files, unsaved_files, 
-                                     lfort_defaultReparseOptions(TU))) {
-      lfort_disposeTranslationUnit(TU);
+        lfort_reparseProgram(Pgm, num_unsaved_files, unsaved_files, 
+                                     lfort_defaultReparseOptions(Pgm))) {
+      lfort_disposeProgram(Pgm);
       return 1;
     }
 
-    if (checkForErrors(TU) != 0)
+    if (checkForErrors(Pgm) != 0)
       return -1;
     
     for (Loc = 0; Loc < NumLocations; ++Loc) {
-      CXFile file = lfort_getFile(TU, Locations[Loc].filename);
+      CXFile file = lfort_getFile(Pgm, Locations[Loc].filename);
       if (!file)
         continue;
 
-      Cursor = lfort_getCursor(TU,
-                               lfort_getLocation(TU, file, Locations[Loc].line,
+      Cursor = lfort_getCursor(Pgm,
+                               lfort_getLocation(Pgm, file, Locations[Loc].line,
                                                  Locations[Loc].column));
 
-      if (checkForErrors(TU) != 0)
+      if (checkForErrors(Pgm) != 0)
         return -1;
 
       if (I + 1 == Repeats) {
@@ -2117,14 +2117,14 @@ static int find_file_refs_at(int argc, const char **argv) {
         lfort_findReferencesInFile(Cursor, file, visitor);
         free(Locations[Loc].filename);
 
-        if (checkForErrors(TU) != 0)
+        if (checkForErrors(Pgm) != 0)
           return -1;
       }
     }
   }
   
-  PrintDiagnostics(TU);
-  lfort_disposeTranslationUnit(TU);
+  PrintDiagnostics(Pgm);
+  lfort_disposeProgram(Pgm);
   lfort_disposeIndex(CIdx);
   free(Locations);
   free_remapped_files(unsaved_files, num_unsaved_files);
@@ -2465,14 +2465,14 @@ static CXIdxClientFile index_importedASTFile(CXClientData client_data,
   return (CXIdxClientFile)info->file;
 }
 
-static CXIdxClientContainer index_startedTranslationUnit(CXClientData client_data,
+static CXIdxClientContainer index_startedProgram(CXClientData client_data,
                                                    void *reserved) {
   IndexData *index_data;
   index_data = (IndexData *)client_data;
   printCheck(index_data);
 
-  printf("[startedTranslationUnit]\n");
-  return (CXIdxClientContainer)"TU";
+  printf("[startedProgram]\n");
+  return (CXIdxClientContainer)"Pgm";
 }
 
 static void index_indexDeclaration(CXClientData client_data,
@@ -2601,7 +2601,7 @@ static IndexerCallbacks IndexCB = {
   index_enteredMainFile,
   index_ppIncludedFile,
   index_importedASTFile,
-  index_startedTranslationUnit,
+  index_startedProgram,
   index_indexDeclaration,
   index_indexEntityReference
 };
@@ -2655,12 +2655,12 @@ static int index_ast_file(const char *ast_file,
                           CXIndexAction idxAction,
                           ImportedASTFilesData *importedASTs,
                           const char *check_prefix) {
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   IndexData index_data;
   unsigned index_opts;
   int result;
 
-  if (!CreateTranslationUnit(Idx, ast_file, &TU))
+  if (!CreateProgram(Idx, ast_file, &Pgm))
     return -1;
 
   index_data.check_prefix = check_prefix;
@@ -2671,13 +2671,13 @@ static int index_ast_file(const char *ast_file,
   index_data.importedASTs = importedASTs;
 
   index_opts = getIndexOptions();
-  result = lfort_indexTranslationUnit(idxAction, &index_data,
+  result = lfort_indexProgram(idxAction, &index_data,
                                       &IndexCB,sizeof(IndexCB),
-                                      index_opts, TU);
+                                      index_opts, Pgm);
   if (index_data.fail_for_error)
     result = -1;
 
-  lfort_disposeTranslationUnit(TU);
+  lfort_disposeProgram(Pgm);
   return result;
 }
 
@@ -2885,7 +2885,7 @@ int perform_token_annotation(int argc, const char **argv) {
   unsigned line, second_line;
   unsigned column, second_column;
   CXIndex CIdx;
-  CXTranslationUnit TU = 0;
+  CXProgram Pgm = 0;
   int errorCode;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
@@ -2908,13 +2908,13 @@ int perform_token_annotation(int argc, const char **argv) {
   }
 
   CIdx = lfort_createIndex(0, 1);
-  TU = lfort_parseTranslationUnit(CIdx, argv[argc - 1],
+  Pgm = lfort_parseProgram(CIdx, argv[argc - 1],
                                   argv + num_unsaved_files + 2,
                                   argc - num_unsaved_files - 3,
                                   unsaved_files,
                                   num_unsaved_files,
                                   getDefaultParsingOptions());
-  if (!TU) {
+  if (!Pgm) {
     fprintf(stderr, "unable to parse input\n");
     lfort_disposeIndex(CIdx);
     free(filename);
@@ -2923,15 +2923,15 @@ int perform_token_annotation(int argc, const char **argv) {
   }
   errorCode = 0;
 
-  if (checkForErrors(TU) != 0) {
+  if (checkForErrors(Pgm) != 0) {
     errorCode = -1;
     goto teardown;
   }
 
   if (getenv("CINDEXTEST_EDITING")) {
     for (i = 0; i < 5; ++i) {
-      if (lfort_reparseTranslationUnit(TU, num_unsaved_files, unsaved_files,
-                                       lfort_defaultReparseOptions(TU))) {
+      if (lfort_reparseProgram(Pgm, num_unsaved_files, unsaved_files,
+                                       lfort_defaultReparseOptions(Pgm))) {
         fprintf(stderr, "Unable to reparse translation unit!\n");
         errorCode = -1;
         goto teardown;
@@ -2939,19 +2939,19 @@ int perform_token_annotation(int argc, const char **argv) {
     }
   }
 
-  if (checkForErrors(TU) != 0) {
+  if (checkForErrors(Pgm) != 0) {
     errorCode = -1;
     goto teardown;
   }
 
-  file = lfort_getFile(TU, filename);
+  file = lfort_getFile(Pgm, filename);
   if (!file) {
     fprintf(stderr, "file %s is not in this translation unit\n", filename);
     errorCode = -1;
     goto teardown;
   }
 
-  startLoc = lfort_getLocation(TU, file, line, column);
+  startLoc = lfort_getLocation(Pgm, file, line, column);
   if (lfort_equalLocations(lfort_getNullLocation(), startLoc)) {
     fprintf(stderr, "invalid source location %s:%d:%d\n", filename, line,
             column);
@@ -2959,7 +2959,7 @@ int perform_token_annotation(int argc, const char **argv) {
     goto teardown;
   }
 
-  endLoc = lfort_getLocation(TU, file, second_line, second_column);
+  endLoc = lfort_getLocation(Pgm, file, second_line, second_column);
   if (lfort_equalLocations(lfort_getNullLocation(), endLoc)) {
     fprintf(stderr, "invalid source location %s:%d:%d\n", filename,
             second_line, second_column);
@@ -2968,25 +2968,25 @@ int perform_token_annotation(int argc, const char **argv) {
   }
 
   range = lfort_getRange(startLoc, endLoc);
-  lfort_tokenize(TU, range, &tokens, &num_tokens);
+  lfort_tokenize(Pgm, range, &tokens, &num_tokens);
 
-  if (checkForErrors(TU) != 0) {
+  if (checkForErrors(Pgm) != 0) {
     errorCode = -1;
     goto teardown;
   }
 
   cursors = (CXCursor *)malloc(num_tokens * sizeof(CXCursor));
-  lfort_annotateTokens(TU, tokens, num_tokens, cursors);
+  lfort_annotateTokens(Pgm, tokens, num_tokens, cursors);
 
-  if (checkForErrors(TU) != 0) {
+  if (checkForErrors(Pgm) != 0) {
     errorCode = -1;
     goto teardown;
   }
 
   for (i = 0; i != num_tokens; ++i) {
     const char *kind = "<unknown>";
-    CXString spelling = lfort_getTokenSpelling(TU, tokens[i]);
-    CXSourceRange extent = lfort_getTokenExtent(TU, tokens[i]);
+    CXString spelling = lfort_getTokenSpelling(Pgm, tokens[i]);
+    CXSourceRange extent = lfort_getTokenExtent(Pgm, tokens[i]);
     unsigned start_line, start_column, end_line, end_column;
 
     switch (lfort_getTokenKind(tokens[i])) {
@@ -3010,11 +3010,11 @@ int perform_token_annotation(int argc, const char **argv) {
     printf("\n");
   }
   free(cursors);
-  lfort_disposeTokens(TU, tokens, num_tokens);
+  lfort_disposeTokens(Pgm, tokens, num_tokens);
 
  teardown:
-  PrintDiagnostics(TU);
-  lfort_disposeTranslationUnit(TU);
+  PrintDiagnostics(Pgm);
+  lfort_disposeProgram(Pgm);
   lfort_disposeIndex(CIdx);
   free(filename);
   free_remapped_files(unsaved_files, num_unsaved_files);
@@ -3280,7 +3280,7 @@ int print_usrs_file(const char *file_name) {
 /******************************************************************************/
 int write_pch_file(const char *filename, int argc, const char *argv[]) {
   CXIndex Idx;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   struct CXUnsavedFile *unsaved_files = 0;
   int num_unsaved_files = 0;
   int result = 0;
@@ -3292,22 +3292,22 @@ int write_pch_file(const char *filename, int argc, const char *argv[]) {
     return -1;
   }
   
-  TU = lfort_parseTranslationUnit(Idx, 0,
+  Pgm = lfort_parseProgram(Idx, 0,
                                   argv + num_unsaved_files,
                                   argc - num_unsaved_files,
                                   unsaved_files,
                                   num_unsaved_files,
-                                  CXTranslationUnit_Incomplete |
-                                    CXTranslationUnit_ForSerialization);
-  if (!TU) {
+                                  CXProgram_Incomplete |
+                                    CXProgram_ForSerialization);
+  if (!Pgm) {
     fprintf(stderr, "Unable to load translation unit!\n");
     free_remapped_files(unsaved_files, num_unsaved_files);
     lfort_disposeIndex(Idx);
     return 1;
   }
 
-  switch (lfort_saveTranslationUnit(TU, filename, 
-                                    lfort_defaultSaveOptions(TU))) {
+  switch (lfort_saveProgram(Pgm, filename, 
+                                    lfort_defaultSaveOptions(Pgm))) {
   case CXSaveError_None:
     break;
 
@@ -3317,7 +3317,7 @@ int write_pch_file(const char *filename, int argc, const char *argv[]) {
     result = 2;    
     break;
 
-  case CXSaveError_InvalidTU:
+  case CXSaveError_InvalidPgm:
     fprintf(stderr, "Unable to write PCH file %s: invalid translation unit\n", 
             filename);
     result = 3;    
@@ -3330,7 +3330,7 @@ int write_pch_file(const char *filename, int argc, const char *argv[]) {
     break;
   }
   
-  lfort_disposeTranslationUnit(TU);
+  lfort_disposeProgram(Pgm);
   free_remapped_files(unsaved_files, num_unsaved_files);
   lfort_disposeIndex(Idx);
   return result;
@@ -3603,7 +3603,7 @@ int cindextest_main(int argc, const char **argv) {
   else if (argc >= 4 && strncmp(argv[1], "-test-load-source", 17) == 0) {
     CXCursorVisitor I = GetVisitor(argv[1] + 17);
     
-    PostVisitTU postVisit = 0;
+    PostVisitPgm postVisit = 0;
     if (strstr(argv[1], "-memory-usage"))
       postVisit = PrintMemoryUsage;
     

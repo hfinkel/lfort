@@ -23,7 +23,7 @@ class ASTUnit;
   
 namespace cxtype {
   
-CXType MakeCXType(QualType T, CXTranslationUnit TU);
+CXType MakeCXType(QualType T, CXProgram Pgm);
   
 }} // end namespace lfort::cxtype
 #endif

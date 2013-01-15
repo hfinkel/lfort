@@ -271,7 +271,7 @@ addition, a lookup table provides a mapping from that numeric ID to the offset
 within the precompiled header where that declaration is described.
 
 Declarations in LFort's abstract syntax trees are stored hierarchically.  At
-the top of the hierarchy is the translation unit (``TranslationUnitDecl``),
+the top of the hierarchy is the translation unit (``ProgramDecl``),
 which contains all of the declarations in the translation unit but is not
 actually written as a specific declaration node.  Its child declarations (such
 as functions or struct types) may also contain other declarations inside them,

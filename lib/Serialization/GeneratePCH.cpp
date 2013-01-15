@@ -37,7 +37,7 @@ PCHGenerator::PCHGenerator(const Preprocessor &PP,
 PCHGenerator::~PCHGenerator() {
 }
 
-void PCHGenerator::HandleTranslationUnit(ASTContext &Ctx) {
+void PCHGenerator::HandleProgram(ASTContext &Ctx) {
   if (PP.getDiagnostics().hasErrorOccurred())
     return;
   

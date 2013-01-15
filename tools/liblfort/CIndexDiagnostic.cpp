@@ -12,7 +12,7 @@
 \*===----------------------------------------------------------------------===*/
 #include "CIndexDiagnostic.h"
 #include "CIndexer.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "CXSourceLocation.h"
 #include "CXString.h"
 
@@ -156,17 +156,17 @@ public:
 };  
 }
 
-CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXTranslationUnit TU,
+CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXProgram Pgm,
                                              bool checkIfChanged) {
-  ASTUnit *AU = static_cast<ASTUnit *>(TU->TUData);
+  ASTUnit *AU = static_cast<ASTUnit *>(Pgm->PgmData);
 
-  if (TU->Diagnostics && checkIfChanged) {
+  if (Pgm->Diagnostics && checkIfChanged) {
     // In normal use, ASTUnit's diagnostics should not change unless we reparse.
     // Currently they can only change by using the internal testing flag
     // '-error-on-deserialized-decl' which will error during deserialization of
     // a declaration. What will happen is:
     //
-    //  -c-index-test gets a CXTranslationUnit
+    //  -c-index-test gets a CXProgram
     //  -checks the diagnostics, the diagnostics set is lazily created,
     //     no errors are reported
     //  -later does an operation, like annotation of tokens, that triggers
@@ -179,18 +179,18 @@ CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXTranslationUnit TU,
     // diagnostic set was created, in which case we reset it.
 
     CXDiagnosticSetImpl *
-      Set = static_cast<CXDiagnosticSetImpl*>(TU->Diagnostics);
+      Set = static_cast<CXDiagnosticSetImpl*>(Pgm->Diagnostics);
     if (AU->stored_diag_size() != Set->getNumDiagnostics()) {
       // Diagnostics in the ASTUnit were updated, reset the associated
       // diagnostics.
       delete Set;
-      TU->Diagnostics = 0;
+      Pgm->Diagnostics = 0;
     }
   }
 
-  if (!TU->Diagnostics) {
+  if (!Pgm->Diagnostics) {
     CXDiagnosticSetImpl *Set = new CXDiagnosticSetImpl();
-    TU->Diagnostics = Set;
+    Pgm->Diagnostics = Set;
     llvm::IntrusiveRefCntPtr<DiagnosticOptions> DOpts = new DiagnosticOptions;
     CXDiagnosticRenderer Renderer(AU->getASTContext().getLangOpts(),
                                   &*DOpts, Set);
@@ -200,7 +200,7 @@ CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXTranslationUnit TU,
       Renderer.emitStoredDiagnostic(*it);
     }
   }
-  return static_cast<CXDiagnosticSetImpl*>(TU->Diagnostics);
+  return static_cast<CXDiagnosticSetImpl*>(Pgm->Diagnostics);
 }
 
 //-----------------------------------------------------------------------------
@@ -208,14 +208,14 @@ CXDiagnosticSetImpl *cxdiag::lazyCreateDiags(CXTranslationUnit TU,
 //-----------------------------------------------------------------------------
 extern "C" {
 
-unsigned lfort_getNumDiagnostics(CXTranslationUnit Unit) {
-  if (!Unit->TUData)
+unsigned lfort_getNumDiagnostics(CXProgram Unit) {
+  if (!Unit->PgmData)
     return 0;
   return lazyCreateDiags(Unit, /*checkIfChanged=*/true)->getNumDiagnostics();
 }
 
-CXDiagnostic lfort_getDiagnostic(CXTranslationUnit Unit, unsigned Index) {
-  CXDiagnosticSet D = lfort_getDiagnosticSetFromTU(Unit);
+CXDiagnostic lfort_getDiagnostic(CXProgram Unit, unsigned Index) {
+  CXDiagnosticSet D = lfort_getDiagnosticSetFromPgm(Unit);
   if (!D)
     return 0;
 
@@ -226,8 +226,8 @@ CXDiagnostic lfort_getDiagnostic(CXTranslationUnit Unit, unsigned Index) {
   return Diags->getDiagnostic(Index);
 }
   
-CXDiagnosticSet lfort_getDiagnosticSetFromTU(CXTranslationUnit Unit) {
-  if (!Unit->TUData)
+CXDiagnosticSet lfort_getDiagnosticSetFromPgm(CXProgram Unit) {
+  if (!Unit->PgmData)
     return 0;
   return static_cast<CXDiagnostic>(lazyCreateDiags(Unit));
 }

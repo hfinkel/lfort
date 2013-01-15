@@ -59,15 +59,15 @@ PrintingPolicy Sema::getPrintingPolicy(const ASTContext &Context,
   return Policy;
 }
 
-void Sema::ActOnTranslationUnitScope(Scope *S) {
-  TUScope = S;
-  PushDeclContext(S, Context.getTranslationUnitDecl());
+void Sema::ActOnProgramScope(Scope *S) {
+  PgmScope = S;
+  PushDeclContext(S, Context.getProgramDecl());
 
   VAListTagName = PP.getIdentifierInfo("__va_list_tag");
 }
 
 Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
-           TranslationUnitKind TUKind,
+           ProgramKind PgmKind,
            CodeCompleteConsumer *CodeCompleter)
   : TheTargetAttributesSema(0), ExternalSource(0), 
     isMultiplexExternalSource(false), FPFeatures(pp.getLangOpts()),
@@ -84,14 +84,14 @@ Sema::Sema(Preprocessor &pp, ASTContext &ctxt, ASTConsumer &consumer,
     NSArrayDecl(0), ArrayWithObjectsMethod(0),
     NSDictionaryDecl(0), DictionaryWithObjectsMethod(0),
     GlobalNewDeleteDeclared(false), 
-    TUKind(TUKind),
+    PgmKind(PgmKind),
     NumSFINAEErrors(0), InSubprogramDeclarator(0),
     AccessCheckingSFINAE(false), InNonInstantiationSFINAEContext(false),
     NonInstantiationEntries(0), ArgumentPackSubstitutionIndex(-1),
     CurrentInstantiationScope(0), TyposCorrected(0),
     AnalysisWarnings(*this)
 {
-  TUScope = 0;
+  PgmScope = 0;
   
   LoadedExternalKnownNamespaces = false;
   for (unsigned I = 0; I != NSAPI::NumNSNumberLiteralMethods; ++I)
@@ -133,11 +133,11 @@ void Sema::Initialize() {
     // define them now.
     DeclarationName Int128 = &Context.Idents.get("__int128_t");
     if (IdResolver.begin(Int128) == IdResolver.end())
-      PushOnScopeChains(Context.getInt128Decl(), TUScope);
+      PushOnScopeChains(Context.getInt128Decl(), PgmScope);
 
     DeclarationName UInt128 = &Context.Idents.get("__uint128_t");
     if (IdResolver.begin(UInt128) == IdResolver.end())
-      PushOnScopeChains(Context.getUInt128Decl(), TUScope);
+      PushOnScopeChains(Context.getUInt128Decl(), PgmScope);
   }
   
 
@@ -147,28 +147,28 @@ void Sema::Initialize() {
     // predefined 'SEL'.
     DeclarationName SEL = &Context.Idents.get("SEL");
     if (IdResolver.begin(SEL) == IdResolver.end())
-      PushOnScopeChains(Context.getObjCSelDecl(), TUScope);
+      PushOnScopeChains(Context.getObjCSelDecl(), PgmScope);
 
     // If 'id' does not yet refer to any declarations, make it refer to the
     // predefined 'id'.
     DeclarationName Id = &Context.Idents.get("id");
     if (IdResolver.begin(Id) == IdResolver.end())
-      PushOnScopeChains(Context.getObjCIdDecl(), TUScope);
+      PushOnScopeChains(Context.getObjCIdDecl(), PgmScope);
     
     // Create the built-in typedef for 'Class'.
     DeclarationName Class = &Context.Idents.get("Class");
     if (IdResolver.begin(Class) == IdResolver.end())
-      PushOnScopeChains(Context.getObjCClassDecl(), TUScope);
+      PushOnScopeChains(Context.getObjCClassDecl(), PgmScope);
 
     // Create the built-in forward declaratino for 'Protocol'.
     DeclarationName Protocol = &Context.Idents.get("Protocol");
     if (IdResolver.begin(Protocol) == IdResolver.end())
-      PushOnScopeChains(Context.getObjCProtocolDecl(), TUScope);
+      PushOnScopeChains(Context.getObjCProtocolDecl(), PgmScope);
   }
 
   DeclarationName BuiltinVaList = &Context.Idents.get("__builtin_va_list");
   if (IdResolver.begin(BuiltinVaList) == IdResolver.end())
-    PushOnScopeChains(Context.getBuiltinVaListDecl(), TUScope);
+    PushOnScopeChains(Context.getBuiltinVaListDecl(), PgmScope);
 }
 
 Sema::~Sema() {
@@ -379,7 +379,7 @@ namespace {
   };
 
   bool operator<(const UndefinedInternal &l, const UndefinedInternal &r) {
-    return l.useLoc.isBeforeInTranslationUnitThan(r.useLoc);
+    return l.useLoc.isBeforeInProgramThan(r.useLoc);
   }
 }
 
@@ -453,7 +453,7 @@ typedef llvm::DenseMap<const CXXRecordDecl*, bool> RecordCompleteMap;
 /// \brief Returns true, if all methods and nested classes of the given
 /// CXXRecordDecl are defined in this translation unit.
 ///
-/// Should only be called from ActOnEndOfTranslationUnit so that all
+/// Should only be called from ActOnEndOfProgram so that all
 /// definitions are actually read.
 static bool MethodsAndNestedClassesComplete(const CXXRecordDecl *RD,
                                             RecordCompleteMap &MNCComplete) {
@@ -489,7 +489,7 @@ static bool MethodsAndNestedClassesComplete(const CXXRecordDecl *RD,
 /// friends, friend functions and nested classes are fully defined in this
 /// translation unit.
 ///
-/// Should only be called from ActOnEndOfTranslationUnit so that all
+/// Should only be called from ActOnEndOfProgram so that all
 /// definitions are actually read.
 static bool IsRecordFullyDefined(const CXXRecordDecl *RD,
                                  RecordCompleteMap &RecordsComplete,
@@ -522,10 +522,10 @@ static bool IsRecordFullyDefined(const CXXRecordDecl *RD,
   return Complete;
 }
 
-/// ActOnEndOfTranslationUnit - This is called at the very end of the
+/// ActOnEndOfProgram - This is called at the very end of the
 /// translation unit when EOF is reached and all but the top-level scope is
 /// popped.
-void Sema::ActOnEndOfTranslationUnit() {
+void Sema::ActOnEndOfProgram() {
   assert(DelayedDiagnostics.getCurrentPool() == NULL
          && "reached end of translation unit with a pool attached?");
 
@@ -536,7 +536,7 @@ void Sema::ActOnEndOfTranslationUnit() {
 
   // Only complete translation units define vtables and perform implicit
   // instantiations.
-  if (TUKind == TU_Complete) {
+  if (PgmKind == PGM_Complete) {
     DiagnoseUseOfUnimplementedSelectors();
 
     // If any dynamic classes have their key function defined within
@@ -580,9 +580,9 @@ void Sema::ActOnEndOfTranslationUnit() {
                                            this)),
                               UnusedFileScopedDecls.end());
 
-  if (TUKind == TU_Prefix) {
+  if (PgmKind == PGM_Prefix) {
     // Translation unit prefixes don't need any of the checking below.
-    TUScope = 0;
+    PgmScope = 0;
     return;
   }
 
@@ -599,7 +599,7 @@ void Sema::ActOnEndOfTranslationUnit() {
       << I->first;
   }
 
-  if (TUKind == TU_Module) {
+  if (PgmKind == PGM_Module) {
     // If we are building a module, resolve all of the exported declarations
     // now.
     if (Module *CurrentModule = PP.getCurrentModule()) {
@@ -627,7 +627,7 @@ void Sema::ActOnEndOfTranslationUnit() {
     }
     
     // Modules don't need any of the checking below.
-    TUScope = 0;
+    PgmScope = 0;
     return;
   }
   
@@ -766,7 +766,7 @@ void Sema::ActOnEndOfTranslationUnit() {
   assert(ParsingInitForAutoVars.empty() &&
          "Didn't unmark var as having its initializer parsed");
 
-  TUScope = 0;
+  PgmScope = 0;
 }
 
 

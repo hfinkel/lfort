@@ -219,7 +219,7 @@ namespace lfort {
     }
 
     void VisitDecl(Decl *D);
-    void VisitTranslationUnitDecl(TranslationUnitDecl *TU);
+    void VisitProgramDecl(ProgramDecl *Pgm);
     void VisitNamedDecl(NamedDecl *ND);
     void VisitLabelDecl(LabelDecl *LD);
     void VisitNamespaceDecl(NamespaceDecl *D);
@@ -352,7 +352,7 @@ void ASTDeclReader::VisitDecl(Decl *D) {
     // unit DeclContext as a placeholder.
     DeclContextIDForTemplateParmDecl = ReadDeclID(Record, Idx);
     LexicalDeclContextIDForTemplateParmDecl = ReadDeclID(Record, Idx);
-    D->setDeclContext(Reader.getContext().getTranslationUnitDecl()); 
+    D->setDeclContext(Reader.getContext().getProgramDecl()); 
   } else {
     DeclContext *SemaDC = ReadDeclAs<DeclContext>(Record, Idx);
     DeclContext *LexicalDC = ReadDeclAs<DeclContext>(Record, Idx);
@@ -400,8 +400,8 @@ void ASTDeclReader::VisitDecl(Decl *D) {
   }
 }
 
-void ASTDeclReader::VisitTranslationUnitDecl(TranslationUnitDecl *TU) {
-  llvm_unreachable("Translation units are not serialized");
+void ASTDeclReader::VisitProgramDecl(ProgramDecl *Pgm) {
+  llvm_unreachable("Programs are not serialized");
 }
 
 void ASTDeclReader::VisitNamedDecl(NamedDecl *ND) {
@@ -1785,7 +1785,7 @@ ASTDeclReader::FindExistingResult::~FindExistingResult() {
   if (!AddResult || Existing)
     return;
   
-  if (New->getDeclContext()->getRedeclContext()->isTranslationUnit()
+  if (New->getDeclContext()->getRedeclContext()->isProgram()
       && Reader.SemaObj) {
     Reader.SemaObj->IdResolver.tryAddTopLevelDecl(New, New->getDeclName());
   } else {
@@ -1808,7 +1808,7 @@ ASTDeclReader::FindExistingResult ASTDeclReader::findExisting(NamedDecl *D) {
   if (!DC->isFileContext())
     return FindExistingResult(Reader);
   
-  if (DC->isTranslationUnit() && Reader.SemaObj) {
+  if (DC->isProgram() && Reader.SemaObj) {
     IdentifierResolver &IdResolver = Reader.SemaObj->IdResolver;
     for (IdentifierResolver::iterator I = IdResolver.begin(Name), 
                                    IEnd = IdResolver.end();
@@ -2115,8 +2115,8 @@ Decl *ASTReader::ReadDeclRecord(DeclID ID) {
   LoadedDecl(Index, D);
   // Set the DeclContext before doing any deserialization, to make sure internal
   // calls to Decl::getASTContext() by Decl's methods will find the
-  // TranslationUnitDecl without crashing.
-  D->setDeclContext(Context.getTranslationUnitDecl());
+  // ProgramDecl without crashing.
+  D->setDeclContext(Context.getProgramDecl());
   Reader.Visit(D);
 
   // If this declaration is also a declaration context, get the
@@ -2502,8 +2502,8 @@ void ASTDeclReader::UpdateDecl(Decl *D, ModuleFile &ModuleFile,
       // any other module's anonymous namespaces, so don't attach the anonymous
       // namespace at all.
       if (ModuleFile.Kind != MK_Module) {
-        if (TranslationUnitDecl *TU = dyn_cast<TranslationUnitDecl>(D))
-          TU->setAnonymousNamespace(Anon);
+        if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(D))
+          Pgm->setAnonymousNamespace(Anon);
         else
           cast<NamespaceDecl>(D)->setAnonymousNamespace(Anon);
       }

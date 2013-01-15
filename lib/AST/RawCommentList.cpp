@@ -210,7 +210,7 @@ void RawCommentList::addComment(const RawComment &RC,
 
   // Check if the comments are not in source order.
   while (!Comments.empty() &&
-         !SourceMgr.isBeforeInTranslationUnit(
+         !SourceMgr.isBeforeInProgram(
               Comments.back()->getSourceRange().getBegin(),
               RC.getSourceRange().getBegin())) {
     // If they are, just pop a few last comments that don't fit.

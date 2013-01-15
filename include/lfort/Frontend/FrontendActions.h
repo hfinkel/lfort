@@ -79,8 +79,8 @@ protected:
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
                                          StringRef InFile);
 
-  virtual TranslationUnitKind getTranslationUnitKind() {
-    return TU_Prefix;
+  virtual ProgramKind getProgramKind() {
+    return PGM_Prefix;
   }
 
   virtual bool hasASTFileSupport() const { return false; }
@@ -104,8 +104,8 @@ protected:
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
                                          StringRef InFile);
   
-  virtual TranslationUnitKind getTranslationUnitKind() { 
-    return TU_Module;
+  virtual ProgramKind getProgramKind() { 
+    return PGM_Module;
   }
   
   virtual bool hasASTFileSupport() const { return false; }
@@ -163,7 +163,7 @@ public:
   virtual ~ASTMergeAction();
 
   virtual bool usesPreprocessorOnly() const;
-  virtual TranslationUnitKind getTranslationUnitKind();
+  virtual ProgramKind getProgramKind();
   virtual bool hasPCHSupport() const;
   virtual bool hasASTFileSupport() const;
   virtual bool hasCodeCompletionSupport() const;

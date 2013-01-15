@@ -42,7 +42,7 @@ class BlockInvocationContext;
 class AnalysisDeclContextManager;
 class LocationContext;
 
-namespace idx { class TranslationUnit; }
+namespace idx { class Program; }
 
 /// The base class of a hierarchy of objects representing analyses tied
 /// to AnalysisDeclContext.

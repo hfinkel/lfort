@@ -11,7 +11,7 @@
 #define LLVM_LFORT_LIBLFORT_CURSORVISITOR_H
 
 #include "CXCursor.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "Index_Internal.h"
 #include "lfort/AST/DeclVisitor.h"
 #include "lfort/AST/TypeLocVisitor.h"
@@ -61,7 +61,7 @@ public:
 
 private:
   /// \brief The translation unit we are traversing.
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   ASTUnit *AU;
 
   /// \brief The parent cursor whose children we are traversing.
@@ -139,14 +139,14 @@ private:
   };
 
 public:
-  CursorVisitor(CXTranslationUnit TU, CXCursorVisitor Visitor,
+  CursorVisitor(CXProgram Pgm, CXCursorVisitor Visitor,
                 CXClientData ClientData,
                 bool VisitPreprocessorLast,
                 bool VisitIncludedPreprocessingEntries = false,
                 SourceRange RegionOfInterest = SourceRange(),
                 bool VisitDeclsOnly = false,
                 PostChildrenVisitorTy PostChildrenVisitor = 0)
-    : TU(TU), AU(static_cast<ASTUnit*>(TU->TUData)),
+    : Pgm(Pgm), AU(static_cast<ASTUnit*>(Pgm->PgmData)),
       Visitor(Visitor), PostChildrenVisitor(PostChildrenVisitor),
       ClientData(ClientData),
       VisitPreprocessorLast(VisitPreprocessorLast),
@@ -170,8 +170,8 @@ public:
     }
   }
 
-  ASTUnit *getASTUnit() const { return static_cast<ASTUnit*>(TU->TUData); }
-  CXTranslationUnit getTU() const { return TU; }
+  ASTUnit *getASTUnit() const { return static_cast<ASTUnit*>(Pgm->PgmData); }
+  CXProgram getPgm() const { return Pgm; }
 
   bool Visit(CXCursor Cursor, bool CheckedRegionOfInterest = false);
 
@@ -199,7 +199,7 @@ public:
   bool VisitCXXRecordDecl(CXXRecordDecl *D);
   llvm::Optional<bool> shouldVisitCursor(CXCursor C);
   bool VisitDeclContext(DeclContext *DC);
-  bool VisitTranslationUnitDecl(TranslationUnitDecl *D);
+  bool VisitProgramDecl(ProgramDecl *D);
   bool VisitTypedefDecl(TypedefDecl *D);
   bool VisitTagDecl(TagDecl *D);
   bool VisitClassTemplateSpecializationDecl(ClassTemplateSpecializationDecl *D);

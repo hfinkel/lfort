@@ -29,13 +29,13 @@ namespace lfort {
   /// This operation inserts the parsed decls into the translation
   /// unit held by Ctx.
   ///
-  /// \param TUKind The kind of translation unit being parsed.
+  /// \param PgmKind The kind of translation unit being parsed.
   ///
   /// \param CompletionConsumer If given, an object to consume code completion
   /// results.
   void ParseAST(Preprocessor &pp, ASTConsumer *C,
                 ASTContext &Ctx, bool PrintStats = false,
-                TranslationUnitKind TUKind = TU_Complete,
+                ProgramKind PgmKind = PGM_Complete,
                 CodeCompleteConsumer *CompletionConsumer = 0,
                 bool SkipSubprogramBodies = false);
 

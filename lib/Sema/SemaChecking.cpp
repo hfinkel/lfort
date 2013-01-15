@@ -1217,7 +1217,7 @@ Sema::SemaBuiltinAtomicOverloaded(ExprResult TheCallResult) {
     // Perform builtin lookup to avoid redeclaring it.
     DeclarationName DN(&Context.Idents.get(NewBuiltinName));
     LookupResult Res(*this, DN, DRE->getLocStart(), LookupOrdinaryName);
-    LookupName(Res, TUScope, /*AllowBuiltinCreation=*/true);
+    LookupName(Res, PgmScope, /*AllowBuiltinCreation=*/true);
     assert(Res.getFoundDecl());
     NewBuiltinDecl = dyn_cast<SubprogramDecl>(Res.getFoundDecl());
     if (NewBuiltinDecl == 0)

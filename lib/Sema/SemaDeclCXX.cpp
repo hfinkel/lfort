@@ -6038,7 +6038,7 @@ Decl *Sema::ActOnStartNamespaceDef(Scope *NamespcScope,
       IsInvalid = true;
       // Continue on to push Namespc as current DeclContext and return it.
     } else if (II->isStr("std") &&
-               CurContext->getRedeclContext()->isTranslationUnit()) {
+               CurContext->getRedeclContext()->isProgram()) {
       // This is the first "real" definition of the namespace "std", so update
       // our cache of the "std" namespace to point at this definition.
       PrevNS = getStdNamespace();
@@ -6053,8 +6053,8 @@ Decl *Sema::ActOnStartNamespaceDef(Scope *NamespcScope,
     
     // Determine whether the parent already has an anonymous namespace.
     DeclContext *Parent = CurContext->getRedeclContext();
-    if (TranslationUnitDecl *TU = dyn_cast<TranslationUnitDecl>(Parent)) {
-      PrevNS = TU->getAnonymousNamespace();
+    if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(Parent)) {
+      PrevNS = Pgm->getAnonymousNamespace();
     } else {
       NamespaceDecl *ND = cast<NamespaceDecl>(Parent);
       PrevNS = ND->getAnonymousNamespace();
@@ -6086,8 +6086,8 @@ Decl *Sema::ActOnStartNamespaceDef(Scope *NamespcScope,
   } else {
     // Link the anonymous namespace into its parent.
     DeclContext *Parent = CurContext->getRedeclContext();
-    if (TranslationUnitDecl *TU = dyn_cast<TranslationUnitDecl>(Parent)) {
-      TU->setAnonymousNamespace(Namespc);
+    if (ProgramDecl *Pgm = dyn_cast<ProgramDecl>(Parent)) {
+      Pgm->setAnonymousNamespace(Namespc);
     } else {
       cast<NamespaceDecl>(Parent)->setAnonymousNamespace(Namespc);
     }
@@ -6170,7 +6170,7 @@ NamespaceDecl *Sema::getOrCreateStdNamespace() {
   if (!StdNamespace) {
     // The "std" namespace has not yet been defined, so build one implicitly.
     StdNamespace = NamespaceDecl::Create(Context, 
-                                         Context.getTranslationUnitDecl(),
+                                         Context.getProgramDecl(),
                                          /*Inline=*/false,
                                          SourceLocation(), SourceLocation(),
                                          &PP.getIdentifierTable().get("std"),
@@ -6311,7 +6311,7 @@ bool Sema::isInitListConstructor(const CXXConstructorDecl* Ctor) {
 /// apply in all contexts.
 static bool IsUsingDirectiveInToplevelContext(DeclContext *CurContext) {
   switch (CurContext->getDeclKind()) {
-    case Decl::TranslationUnit:
+    case Decl::Program:
       return true;
     case Decl::LinkageSpec:
       return IsUsingDirectiveInToplevelContext(CurContext->getParent());
@@ -7948,7 +7948,7 @@ buildMemcpyForAssignmentOp(Sema &S, SourceLocation Loc, QualType T,
     "__builtin_memcpy";
   LookupResult R(S, &S.Context.Idents.get(MemCpyName), Loc,
                  Sema::LookupOrdinaryName);
-  S.LookupName(R, S.TUScope, true);
+  S.LookupName(R, S.PgmScope, true);
 
   SubprogramDecl *MemCpy = R.getAsSingle<SubprogramDecl>();
   if (!MemCpy)
@@ -9630,7 +9630,7 @@ CheckOperatorNewDeleteDeclarationScope(Sema &SemaRef,
       << SubPgmDecl->getDeclName();
   }
   
-  if (isa<TranslationUnitDecl>(DC) && 
+  if (isa<ProgramDecl>(DC) && 
       SubPgmDecl->getStorageClass() == SC_Static) {
     return SemaRef.Diag(SubPgmDecl->getLocation(),
                         diag::err_operator_new_delete_declared_static)
@@ -10658,7 +10658,7 @@ Decl *Sema::ActOnFriendSubprogramDecl(Scope *S, Declarator &D,
         break;
 
       if (isTemplateId) {
-        if (isa<TranslationUnitDecl>(DC)) break;
+        if (isa<ProgramDecl>(DC)) break;
       } else {
         if (DC->isFileContext()) break;
       }
@@ -11293,7 +11293,7 @@ bool Sema::DefineUsedVTables() {
     }
 
     // The exception specifications for all virtual members may be needed even
-    // if we are not providing an authoritative form of the vtable in this TU.
+    // if we are not providing an authoritative form of the vtable in this program.
     // We may choose to emit it available_externally anyway.
     if (!DefineVTable) {
       MarkVirtualMemberExceptionSpecsNeeded(Loc, Class);

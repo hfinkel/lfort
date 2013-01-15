@@ -59,7 +59,7 @@ enum CXCursorKind lfort_getTemplateCursorKind(CXCursor C) {
     if (TemplateDecl *Template
                            = dyn_cast_or_null<TemplateDecl>(getCursorDecl(C)))
       return MakeCXCursor(Template->getTemplatedDecl(), 
-                          static_cast<CXTranslationUnit>(C.data[2])).kind;
+                          static_cast<CXProgram>(C.data[2])).kind;
     break;
       
   case CXCursor_ClassTemplatePartialSpecialization:
@@ -122,7 +122,7 @@ CXCursor lfort_getSpecializedCursorTemplate(CXCursor C) {
   if (!Template)
     return lfort_getNullCursor();
   
-  return MakeCXCursor(Template, static_cast<CXTranslationUnit>(C.data[2]));
+  return MakeCXCursor(Template, static_cast<CXProgram>(C.data[2]));
 }
   
 } // end extern "C"

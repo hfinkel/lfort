@@ -369,8 +369,8 @@ private:
   llvm::DenseMap<FileID, FileDeclsInfo> FileDeclIDs;
 
   // Updates for visible decls can occur for other contexts than just the
-  // TU, and when we read those update records, the actual context will not
-  // be available yet (unless it's the TU), so have this pending map using the
+  // program, and when we read those update records, the actual context will not
+  // be available yet (unless it's the program), so have this pending map using the
   // ID as a key. It will be realized when the context is actually loaded.
   typedef
     SmallVector<std::pair<serialization::reader::ASTDeclContextNameLookupTable *,
@@ -585,7 +585,7 @@ private:
 
   /// \brief The IDs of all tentative definitions stored in the chain.
   ///
-  /// Sema keeps track of all tentative definitions in a TU because it has to
+  /// Sema keeps track of all tentative definitions in a program because it has to
   /// complete them and pass them on to CodeGen. Thus, tentative definitions in
   /// the PCH chain must be eagerly deserialized.
   SmallVector<uint64_t, 16> TentativeDefinitions;
@@ -600,7 +600,7 @@ private:
   /// \brief A snapshot of the pending instantiations in the chain.
   ///
   /// This record tracks the instantiations that Sema has to perform at the
-  /// end of the TU. It consists of a pair of values for every pending
+  /// end of the program. It consists of a pair of values for every pending
   /// instantiation where the first value is the ID of the decl and the second
   /// is the instantiation location.
   SmallVector<uint64_t, 64> PendingInstantiations;
@@ -647,7 +647,7 @@ private:
   /// \brief The IDs of all dynamic class declarations in the chain.
   ///
   /// Sema tracks these because it checks for the key functions being defined
-  /// at the end of the TU, in which case it directs CodeGen to emit the VTable.
+  /// at the end of the program, in which case it directs CodeGen to emit the VTable.
   SmallVector<uint64_t, 16> DynamicClasses;
 
   /// \brief The IDs of the declarations Sema stores directly.
@@ -1431,7 +1431,7 @@ public:
   ///
   /// This function will provide all of the external definitions to
   /// the ASTConsumer.
-  virtual void StartTranslationUnit(ASTConsumer *Consumer);
+  virtual void StartProgram(ASTConsumer *Consumer);
 
   /// \brief Print some statistics about AST usage.
   virtual void PrintStats();

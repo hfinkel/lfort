@@ -426,10 +426,10 @@ CompilerInstance::createCodeCompletionConsumer(Preprocessor &PP,
   return new PrintingCodeCompleteConsumer(Opts, OS);
 }
 
-void CompilerInstance::createSema(TranslationUnitKind TUKind,
+void CompilerInstance::createSema(ProgramKind PgmKind,
                                   CodeCompleteConsumer *CompletionConsumer) {
   TheSema.reset(new Sema(getPreprocessor(), getASTContext(), getASTConsumer(),
-                         TUKind, CompletionConsumer));
+                         PgmKind, CompletionConsumer));
 }
 
 // Output Files
@@ -1025,7 +1025,7 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
       if (hasSema())
         ModuleManager->InitializeSema(getSema());
       if (hasASTConsumer())
-        ModuleManager->StartTranslationUnit(&getASTConsumer());
+        ModuleManager->StartProgram(&getASTConsumer());
     }
 
     // Try to load the module we found.
@@ -1193,11 +1193,11 @@ CompilerInstance::loadModule(SourceLocation ImportLoc,
   // If this module import was due to an inclusion directive, create an 
   // implicit import declaration to capture it in the AST.
   if (IsInclusionDirective && hasASTContext()) {
-    TranslationUnitDecl *TU = getASTContext().getTranslationUnitDecl();
-    ImportDecl *ImportD = ImportDecl::CreateImplicit(getASTContext(), TU,
+    ProgramDecl *Pgm = getASTContext().getProgramDecl();
+    ImportDecl *ImportD = ImportDecl::CreateImplicit(getASTContext(), Pgm,
                                                      ImportLoc, Module,
                                                      Path.back().second);
-    TU->addDecl(ImportD);
+    Pgm->addDecl(ImportD);
     if (Consumer)
       Consumer->HandleImplicitImportDecl(ImportD);
   }

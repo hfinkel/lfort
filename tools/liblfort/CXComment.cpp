@@ -96,7 +96,7 @@ CXComment lfort_Comment_getChild(CXComment CXC, unsigned ChildIdx) {
   if (!C || ChildIdx >= C->child_count())
     return createCXComment(NULL, NULL);
 
-  return createCXComment(*(C->child_begin() + ChildIdx), CXC.TranslationUnit);
+  return createCXComment(*(C->child_begin() + ChildIdx), CXC.Program);
 }
 
 unsigned lfort_Comment_isWhitespace(CXComment CXC) {
@@ -248,7 +248,7 @@ CXComment lfort_BlockCommandComment_getParagraph(CXComment CXC) {
   if (!BCC)
     return createCXComment(NULL, NULL);
 
-  return createCXComment(BCC->getParagraph(), CXC.TranslationUnit);
+  return createCXComment(BCC->getParagraph(), CXC.Program);
 }
 
 CXString lfort_ParamCommandComment_getParamName(CXComment CXC) {
@@ -1366,25 +1366,25 @@ CXString lfort_FullComment_getAsXML(CXComment CXC) {
   if (!FC)
     return createCXString((const char *) 0);
   ASTContext &Context = FC->getDeclInfo()->CurrentDecl->getASTContext();
-  CXTranslationUnit TU = CXC.TranslationUnit;
-  SourceManager &SM = static_cast<ASTUnit *>(TU->TUData)->getSourceManager();
+  CXProgram Pgm = CXC.Program;
+  SourceManager &SM = static_cast<ASTUnit *>(Pgm->PgmData)->getSourceManager();
   
   SimpleFormatContext *SFC =
-    static_cast<SimpleFormatContext*>(TU->FormatContext);
+    static_cast<SimpleFormatContext*>(Pgm->FormatContext);
   if (!SFC) {
     SFC = new SimpleFormatContext(Context.getLangOpts());
-    TU->FormatContext = SFC;
-  } else if ((TU->FormatInMemoryUniqueId % 1000) == 0) {
+    Pgm->FormatContext = SFC;
+  } else if ((Pgm->FormatInMemoryUniqueId % 1000) == 0) {
     // Delete after some number of iterators, so the buffers don't grow
     // too large.
     delete SFC;
     SFC = new SimpleFormatContext(Context.getLangOpts());
-    TU->FormatContext = SFC;
+    Pgm->FormatContext = SFC;
   }
 
   SmallString<1024> XML;
   CommentASTToXMLConverter Converter(FC, XML, getCommandTraits(CXC), SM,
-                                     *SFC, TU->FormatInMemoryUniqueId++);
+                                     *SFC, Pgm->FormatInMemoryUniqueId++);
   Converter.visit(FC);
   return createCXString(XML.str(), /* DupString = */ true);
 }

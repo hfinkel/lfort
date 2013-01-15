@@ -499,7 +499,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
        P != PEnd; ++P) {
     if (TemplateTypeParmDecl *TTP = dyn_cast<TemplateTypeParmDecl>(*P))
       CanonParams.push_back(
-                  TemplateTypeParmDecl::Create(*this, getTranslationUnitDecl(), 
+                  TemplateTypeParmDecl::Create(*this, getProgramDecl(), 
                                                SourceLocation(),
                                                SourceLocation(),
                                                TTP->getDepth(),
@@ -519,7 +519,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
                                 getTrivialTypeSourceInfo(ExpandedTypes.back()));
         }
         
-        Param = NonTypeTemplateParmDecl::Create(*this, getTranslationUnitDecl(),
+        Param = NonTypeTemplateParmDecl::Create(*this, getProgramDecl(),
                                                 SourceLocation(),
                                                 SourceLocation(),
                                                 NTTP->getDepth(),
@@ -530,7 +530,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
                                                 ExpandedTypes.size(),
                                                 ExpandedTInfos.data());
       } else {
-        Param = NonTypeTemplateParmDecl::Create(*this, getTranslationUnitDecl(),
+        Param = NonTypeTemplateParmDecl::Create(*this, getProgramDecl(),
                                                 SourceLocation(),
                                                 SourceLocation(),
                                                 NTTP->getDepth(),
@@ -547,7 +547,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
   }
 
   TemplateTemplateParmDecl *CanonTTP
-    = TemplateTemplateParmDecl::Create(*this, getTranslationUnitDecl(), 
+    = TemplateTemplateParmDecl::Create(*this, getProgramDecl(), 
                                        SourceLocation(), TTP->getDepth(),
                                        TTP->getPosition(), 
                                        TTP->isParameterPack(),
@@ -636,7 +636,7 @@ ASTContext::ASTContext(LangOptions& LOpts, SourceManager &SM,
     UniqueBlockByRefTypeID(0)
 {
   if (size_reserve > 0) Types.reserve(size_reserve);
-  TUDecl = TranslationUnitDecl::Create(*this);
+  PgmDecl = ProgramDecl::Create(*this);
   
   if (!DelayInitialization) {
     assert(t && "No target supplied for ASTContext initialization");
@@ -747,7 +747,7 @@ TypedefDecl *ASTContext::getInt128Decl() const {
   if (!Int128Decl) {
     TypeSourceInfo *TInfo = getTrivialTypeSourceInfo(Int128Ty);
     Int128Decl = TypedefDecl::Create(const_cast<ASTContext &>(*this), 
-                                     getTranslationUnitDecl(),
+                                     getProgramDecl(),
                                      SourceLocation(),
                                      SourceLocation(),
                                      &Idents.get("__int128_t"),
@@ -761,7 +761,7 @@ TypedefDecl *ASTContext::getUInt128Decl() const {
   if (!UInt128Decl) {
     TypeSourceInfo *TInfo = getTrivialTypeSourceInfo(UnsignedInt128Ty);
     UInt128Decl = TypedefDecl::Create(const_cast<ASTContext &>(*this), 
-                                     getTranslationUnitDecl(),
+                                     getProgramDecl(),
                                      SourceLocation(),
                                      SourceLocation(),
                                      &Idents.get("__uint128_t"),
@@ -4262,7 +4262,7 @@ CreateRecordDecl(const ASTContext &Ctx, RecordDecl::TagKind TK,
 QualType ASTContext::getCFConstantStringType() const {
   if (!CFConstantStringTypeDecl) {
     CFConstantStringTypeDecl =
-      CreateRecordDecl(*this, TTK_Struct, TUDecl,
+      CreateRecordDecl(*this, TTK_Struct, PgmDecl,
                        &Idents.get("NSConstantString"));
     CFConstantStringTypeDecl->startDefinition();
 
@@ -4299,8 +4299,8 @@ QualType ASTContext::getCFConstantStringType() const {
 QualType ASTContext::getObjCSuperType() const {
   if (ObjCSuperType.isNull()) {
     RecordDecl *ObjCSuperTypeDecl  =
-      CreateRecordDecl(*this, TTK_Struct, TUDecl, &Idents.get("objc_super"));
-    TUDecl->addDecl(ObjCSuperTypeDecl);
+      CreateRecordDecl(*this, TTK_Struct, PgmDecl, &Idents.get("objc_super"));
+    PgmDecl->addDecl(ObjCSuperTypeDecl);
     ObjCSuperType = getTagDeclType(ObjCSuperTypeDecl);
   }
   return ObjCSuperType;
@@ -4318,7 +4318,7 @@ QualType ASTContext::getBlockDescriptorType() const {
 
   RecordDecl *T;
   // FIXME: Needs the FlagAppleBlock bit.
-  T = CreateRecordDecl(*this, TTK_Struct, TUDecl,
+  T = CreateRecordDecl(*this, TTK_Struct, PgmDecl,
                        &Idents.get("__block_descriptor"));
   T->startDefinition();
   
@@ -4357,7 +4357,7 @@ QualType ASTContext::getBlockDescriptorExtendedType() const {
 
   RecordDecl *T;
   // FIXME: Needs the FlagAppleBlock bit.
-  T = CreateRecordDecl(*this, TTK_Struct, TUDecl,
+  T = CreateRecordDecl(*this, TTK_Struct, PgmDecl,
                        &Idents.get("__block_descriptor_withcopydispose"));
   T->startDefinition();
   
@@ -4461,7 +4461,7 @@ bool ASTContext::getByrefLifetime(QualType Ty,
 TypedefDecl *ASTContext::getObjCInstanceTypeDecl() {
   if (!ObjCInstanceTypeDecl)
     ObjCInstanceTypeDecl = TypedefDecl::Create(*this, 
-                                               getTranslationUnitDecl(),
+                                               getProgramDecl(),
                                                SourceLocation(), 
                                                SourceLocation(),
                                                &Idents.get("instancetype"), 
@@ -5425,7 +5425,7 @@ TypedefDecl *ASTContext::getObjCIdDecl() const {
     T = getObjCObjectPointerType(T);
     TypeSourceInfo *IdInfo = getTrivialTypeSourceInfo(T);
     ObjCIdDecl = TypedefDecl::Create(const_cast<ASTContext &>(*this),
-                                     getTranslationUnitDecl(),
+                                     getProgramDecl(),
                                      SourceLocation(), SourceLocation(),
                                      &Idents.get("id"), IdInfo);
   }
@@ -5438,7 +5438,7 @@ TypedefDecl *ASTContext::getObjCSelDecl() const {
     QualType SelT = getPointerType(ObjCBuiltinSelTy);
     TypeSourceInfo *SelInfo = getTrivialTypeSourceInfo(SelT);
     ObjCSelDecl = TypedefDecl::Create(const_cast<ASTContext &>(*this),
-                                      getTranslationUnitDecl(),
+                                      getProgramDecl(),
                                       SourceLocation(), SourceLocation(),
                                       &Idents.get("SEL"), SelInfo);
   }
@@ -5451,7 +5451,7 @@ TypedefDecl *ASTContext::getObjCClassDecl() const {
     T = getObjCObjectPointerType(T);
     TypeSourceInfo *ClassInfo = getTrivialTypeSourceInfo(T);
     ObjCClassDecl = TypedefDecl::Create(const_cast<ASTContext &>(*this),
-                                        getTranslationUnitDecl(),
+                                        getProgramDecl(),
                                         SourceLocation(), SourceLocation(),
                                         &Idents.get("Class"), ClassInfo);
   }
@@ -5462,7 +5462,7 @@ TypedefDecl *ASTContext::getObjCClassDecl() const {
 ObjCInterfaceDecl *ASTContext::getObjCProtocolDecl() const {
   if (!ObjCProtocolClassDecl) {
     ObjCProtocolClassDecl 
-      = ObjCInterfaceDecl::Create(*this, getTranslationUnitDecl(), 
+      = ObjCInterfaceDecl::Create(*this, getProgramDecl(), 
                                   SourceLocation(),
                                   &Idents.get("Protocol"),
                                   /*PrevDecl=*/0,
@@ -5484,7 +5484,7 @@ static TypedefDecl *CreateCharPtrBuiltinVaListDecl(const ASTContext *Context) {
 
   TypedefDecl *VaListTypeDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           TInfo);
@@ -5499,7 +5499,7 @@ static TypedefDecl *CreateVoidPtrBuiltinVaListDecl(const ASTContext *Context) {
 
   TypedefDecl *VaListTypeDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           TInfo);
@@ -5511,7 +5511,7 @@ static TypedefDecl *CreatePowerABIBuiltinVaListDecl(const ASTContext *Context) {
   RecordDecl *VaListTagDecl;
 
   VaListTagDecl = CreateRecordDecl(*Context, TTK_Struct,
-                                   Context->getTranslationUnitDecl(),
+                                   Context->getProgramDecl(),
                                    &Context->Idents.get("__va_list_tag"));
   VaListTagDecl->startDefinition();
 
@@ -5559,7 +5559,7 @@ static TypedefDecl *CreatePowerABIBuiltinVaListDecl(const ASTContext *Context) {
   // } __va_list_tag;
   TypedefDecl *VaListTagTypedefDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__va_list_tag"),
                           Context->getTrivialTypeSourceInfo(VaListTagType));
@@ -5575,7 +5575,7 @@ static TypedefDecl *CreatePowerABIBuiltinVaListDecl(const ASTContext *Context) {
     = Context->getTrivialTypeSourceInfo(VaListTagArrayType);
   TypedefDecl *VaListTypedefDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           TInfo);
@@ -5588,7 +5588,7 @@ CreateX86_64ABIBuiltinVaListDecl(const ASTContext *Context) {
   // typedef struct __va_list_tag {
   RecordDecl *VaListTagDecl;
   VaListTagDecl = CreateRecordDecl(*Context, TTK_Struct,
-                                   Context->getTranslationUnitDecl(),
+                                   Context->getProgramDecl(),
                                    &Context->Idents.get("__va_list_tag"));
   VaListTagDecl->startDefinition();
 
@@ -5633,7 +5633,7 @@ CreateX86_64ABIBuiltinVaListDecl(const ASTContext *Context) {
   // } __va_list_tag;
   TypedefDecl *VaListTagTypedefDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__va_list_tag"),
                           Context->getTrivialTypeSourceInfo(VaListTagType));
@@ -5649,7 +5649,7 @@ CreateX86_64ABIBuiltinVaListDecl(const ASTContext *Context) {
     = Context->getTrivialTypeSourceInfo(VaListTagArrayType);
   TypedefDecl *VaListTypedefDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           TInfo);
@@ -5665,7 +5665,7 @@ static TypedefDecl *CreatePNaClABIBuiltinVaListDecl(const ASTContext *Context) {
 				    Size, ArrayType::Normal, 0);
   TypedefDecl *VaListTypedefDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           Context->getTrivialTypeSourceInfo(IntArrayType));
@@ -5680,13 +5680,13 @@ CreateAAPCSABIBuiltinVaListDecl(const ASTContext *Context) {
     // namespace std { struct __va_list {
     NamespaceDecl *NS;
     NS = NamespaceDecl::Create(const_cast<ASTContext &>(*Context),
-                               Context->getTranslationUnitDecl(),
+                               Context->getProgramDecl(),
                                /*Inline*/false, SourceLocation(),
                                SourceLocation(), &Context->Idents.get("std"),
                                /*PrevDecl*/0);
 
     VaListDecl = CXXRecordDecl::Create(*Context, TTK_Struct,
-                                       Context->getTranslationUnitDecl(),
+                                       Context->getProgramDecl(),
                                        SourceLocation(), SourceLocation(),
                                        &Context->Idents.get("__va_list"));
 
@@ -5695,7 +5695,7 @@ CreateAAPCSABIBuiltinVaListDecl(const ASTContext *Context) {
   } else {
     // struct __va_list {
     VaListDecl = CreateRecordDecl(*Context, TTK_Struct,
-                                  Context->getTranslationUnitDecl(),
+                                  Context->getProgramDecl(),
                                   &Context->Idents.get("__va_list"));
   }
 
@@ -5724,7 +5724,7 @@ CreateAAPCSABIBuiltinVaListDecl(const ASTContext *Context) {
 
   TypedefDecl *VaListTypeDecl
     = TypedefDecl::Create(const_cast<ASTContext &>(*Context),
-                          Context->getTranslationUnitDecl(),
+                          Context->getProgramDecl(),
                           SourceLocation(), SourceLocation(),
                           &Context->Idents.get("__builtin_va_list"),
                           TInfo);
@@ -7547,7 +7547,7 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
   if (VD->isThisDeclarationADefinition() == VarDecl::DeclarationOnly)
     return false;
 
-  // Variables that can be needed in other TUs are required.
+  // Variables that can be needed in other programs are required.
   GVALinkage L = GetGVALinkageForVariable(VD);
   if (L != GVA_Internal && L != GVA_TemplateInstantiation)
     return true;

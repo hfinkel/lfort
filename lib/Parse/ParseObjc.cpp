@@ -368,7 +368,7 @@ void Parser::ParseObjCInterfaceDeclList(tok::ObjCKeywordKind contextKey,
                                         Decl *CDecl) {
   SmallVector<Decl *, 32> allMethods;
   SmallVector<Decl *, 16> allProperties;
-  SmallVector<DeclGroupPtrTy, 8> allTUVariables;
+  SmallVector<DeclGroupPtrTy, 8> allPgmVariables;
   tok::ObjCKeywordKind MethodImplKind = tok::objc_not_keyword;
 
   SourceRange AtEnd;
@@ -422,7 +422,7 @@ void Parser::ParseObjCInterfaceDeclList(tok::ObjCKeywordKind contextKey,
       if (Tok.is(tok::r_brace))
         break;
       ParsedAttributesWithRange attrs(AttrFactory);
-      allTUVariables.push_back(ParseDeclarationOrSubprogramDefinition(attrs));
+      allPgmVariables.push_back(ParseDeclarationOrSubprogramDefinition(attrs));
       continue;
     }
 
@@ -523,7 +523,7 @@ void Parser::ParseObjCInterfaceDeclList(tok::ObjCKeywordKind contextKey,
   Actions.ActOnAtEnd(getCurScope(), AtEnd,
                      allMethods.data(), allMethods.size(),
                      allProperties.data(), allProperties.size(),
-                     allTUVariables.data(), allTUVariables.size());
+                     allPgmVariables.data(), allPgmVariables.size());
 }
 
 ///   Parse property attribute declarations.
@@ -2907,8 +2907,8 @@ void Parser::ParseLexedObjCMethodDefs(LexedMethod &LM, bool parseMethod) {
     // there are still cached tokens left. If it's the latter case skip the
     // leftover tokens.
     // Since this is an uncommon situation that should be avoided, use the
-    // expensive isBeforeInTranslationUnit call.
-    if (PP.getSourceManager().isBeforeInTranslationUnit(Tok.getLocation(),
+    // expensive isBeforeInProgram call.
+    if (PP.getSourceManager().isBeforeInProgram(Tok.getLocation(),
                                                      OrigLoc))
       while (Tok.getLocation() != OrigLoc && Tok.isNot(tok::eof))
         ConsumeAnyToken();

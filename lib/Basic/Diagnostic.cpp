@@ -155,7 +155,7 @@ DiagnosticsEngine::GetDiagStatePointForLoc(SourceLocation L) const {
   DiagStatePointsTy::iterator Pos = DiagStatePoints.end();
   FullSourceLoc LastStateChangePos = DiagStatePoints.back().Loc;
   if (LastStateChangePos.isValid() &&
-      Loc.isBeforeInTranslationUnitThan(LastStateChangePos))
+      Loc.isBeforeInProgramThan(LastStateChangePos))
     Pos = std::upper_bound(DiagStatePoints.begin(), DiagStatePoints.end(),
                            DiagStatePoint(0, Loc));
   --Pos;
@@ -192,7 +192,7 @@ void DiagnosticsEngine::setDiagnosticMapping(diag::kind Diag, diag::Mapping Map,
   // Another common case; modifying diagnostic state in a source location
   // after the previous one.
   if ((Loc.isValid() && LastStateChangePos.isInvalid()) ||
-      LastStateChangePos.isBeforeInTranslationUnitThan(Loc)) {
+      LastStateChangePos.isBeforeInProgramThan(Loc)) {
     // A diagnostic pragma occurred, create a new DiagState initialized with
     // the current one and a new DiagStatePoint to record at which location
     // the new state became active.
@@ -222,7 +222,7 @@ void DiagnosticsEngine::setDiagnosticMapping(diag::kind Diag, diag::Mapping Map,
 
   // Create a new state/point and fit it into the vector of DiagStatePoints
   // so that the vector is always ordered according to location.
-  Pos->Loc.isBeforeInTranslationUnitThan(Loc);
+  Pos->Loc.isBeforeInProgramThan(Loc);
   DiagStates.push_back(*Pos->State);
   DiagState *NewState = &DiagStates.back();
   GetCurDiagState()->setMappingInfo(Diag, MappingInfo);

@@ -117,9 +117,9 @@ bool FullSourceLoc::isInSystemHeader() const {
   return SrcMgr->isInSystemHeader(*this);
 }
 
-bool FullSourceLoc::isBeforeInTranslationUnitThan(SourceLocation Loc) const {
+bool FullSourceLoc::isBeforeInProgramThan(SourceLocation Loc) const {
   assert(isValid());
-  return SrcMgr->isBeforeInTranslationUnit(*this, Loc);
+  return SrcMgr->isBeforeInProgram(*this, Loc);
 }
 
 void FullSourceLoc::dump() const {

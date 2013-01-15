@@ -148,7 +148,7 @@ public:
   virtual bool usesPreprocessorOnly() const = 0;
 
   /// \brief For AST-based actions, the kind of translation unit we're handling.
-  virtual TranslationUnitKind getTranslationUnitKind() { return TU_Complete; }
+  virtual ProgramKind getProgramKind() { return PGM_Complete; }
 
   /// hasPCHSupport - Does this action support use with PCH?
   virtual bool hasPCHSupport() const { return !usesPreprocessorOnly(); }
@@ -265,7 +265,7 @@ public:
   WrapperFrontendAction(FrontendAction *WrappedAction);
 
   virtual bool usesPreprocessorOnly() const;
-  virtual TranslationUnitKind getTranslationUnitKind();
+  virtual ProgramKind getProgramKind();
   virtual bool hasPCHSupport() const;
   virtual bool hasASTFileSupport() const;
   virtual bool hasIRSupport() const;

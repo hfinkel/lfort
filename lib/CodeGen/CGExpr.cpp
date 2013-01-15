@@ -1854,7 +1854,7 @@ LValue CodeGenSubprogram::EmitPredefinedLValue(const PredefinedExpr *E) {
 
     const Decl *CurDecl = CurCodeDecl;
     if (CurDecl == 0)
-      CurDecl = getContext().getTranslationUnitDecl();
+      CurDecl = getContext().getProgramDecl();
 
     std::string SubprogramName =
         (isa<BlockDecl>(CurDecl)

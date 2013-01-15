@@ -154,7 +154,7 @@ class CGDebugInfo {
   llvm::DIType createFieldType(StringRef name, QualType type,
                                uint64_t sizeInBitsOverride, SourceLocation loc,
                                AccessSpecifier AS, uint64_t offsetInBits,
-                               llvm::DIFile tunit,
+                               llvm::DIFile pgm,
                                llvm::DIDescriptor scope);
   void CollectRecordStaticVars(const RecordDecl *, llvm::DIType);
   void CollectRecordFields(const RecordDecl *Decl, llvm::DIFile F,

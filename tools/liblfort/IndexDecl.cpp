@@ -126,7 +126,7 @@ public:
     IndexCtx.handleObjCInterface(D);
 
     if (D->isThisDeclarationADefinition()) {
-      IndexCtx.indexTUDeclsInObjCContainer();
+      IndexCtx.indexPgmDeclsInObjCContainer();
       IndexCtx.indexDeclContext(D);
     }
     return true;
@@ -136,7 +136,7 @@ public:
     IndexCtx.handleObjCProtocol(D);
 
     if (D->isThisDeclarationADefinition()) {
-      IndexCtx.indexTUDeclsInObjCContainer();
+      IndexCtx.indexPgmDeclsInObjCContainer();
       IndexCtx.indexDeclContext(D);
     }
     return true;
@@ -152,7 +152,7 @@ public:
 
     IndexCtx.handleObjCImplementation(D);
 
-    IndexCtx.indexTUDeclsInObjCContainer();
+    IndexCtx.indexPgmDeclsInObjCContainer();
 
     // Index the ivars first to make sure the synthesized ivars are indexed
     // before indexing the methods that can reference them.
@@ -173,7 +173,7 @@ public:
   bool VisitObjCCategoryDecl(ObjCCategoryDecl *D) {
     IndexCtx.handleObjCCategory(D);
 
-    IndexCtx.indexTUDeclsInObjCContainer();
+    IndexCtx.indexPgmDeclsInObjCContainer();
     IndexCtx.indexDeclContext(D);
     return true;
   }
@@ -185,7 +185,7 @@ public:
 
     IndexCtx.handleObjCCategoryImpl(D);
 
-    IndexCtx.indexTUDeclsInObjCContainer();
+    IndexCtx.indexPgmDeclsInObjCContainer();
     IndexCtx.indexDeclContext(D);
     return true;
   }
@@ -344,10 +344,10 @@ void IndexingContext::indexDeclGroupRef(DeclGroupRef DG) {
     indexTopLevelDecl(*I);
 }
 
-void IndexingContext::indexTUDeclsInObjCContainer() {
-  while (!TUDeclsInObjCContainer.empty()) {
-    DeclGroupRef DG = TUDeclsInObjCContainer.front();
-    TUDeclsInObjCContainer.pop_front();
+void IndexingContext::indexPgmDeclsInObjCContainer() {
+  while (!PgmDeclsInObjCContainer.empty()) {
+    DeclGroupRef DG = PgmDeclsInObjCContainer.front();
+    PgmDeclsInObjCContainer.pop_front();
     indexDeclGroupRef(DG);
   }
 }

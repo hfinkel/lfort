@@ -145,9 +145,9 @@ void MultiplexExternalSemaSource::FinishedDeserializing() {
     Sources[i]->FinishedDeserializing();
 }
 
-void MultiplexExternalSemaSource::StartTranslationUnit(ASTConsumer *Consumer) {
+void MultiplexExternalSemaSource::StartProgram(ASTConsumer *Consumer) {
   for(size_t i = 0; i < Sources.size(); ++i)
-    Sources[i]->StartTranslationUnit(Consumer);
+    Sources[i]->StartProgram(Consumer);
 }
 
 void MultiplexExternalSemaSource::PrintStats() {

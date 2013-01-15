@@ -960,8 +960,8 @@ void Parser::ParseLexedAttribute(LateParsedAttribute &LA,
     // Due to a parsing error, we either went over the cached tokens or
     // there are still cached tokens left, so we skip the leftover tokens.
     // Since this is an uncommon situation that should be avoided, use the
-    // expensive isBeforeInTranslationUnit call.
-    if (PP.getSourceManager().isBeforeInTranslationUnit(Tok.getLocation(),
+    // expensive isBeforeInProgram call.
+    if (PP.getSourceManager().isBeforeInProgram(Tok.getLocation(),
                                                         OrigLoc))
     while (Tok.getLocation() != OrigLoc && Tok.isNot(tok::eof))
       ConsumeAnyToken();

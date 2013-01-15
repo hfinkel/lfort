@@ -142,7 +142,7 @@ static bool isInLinkageSpecification(const Decl *D,
                                      LinkageSpecDecl::LanguageIDs L) {
   D = D->getCanonicalDecl();
   for (const DeclContext *DC = D->getDeclContext();
-       !DC->isTranslationUnit(); DC = DC->getParent()) {
+       !DC->isProgram(); DC = DC->getParent()) {
     if (const LinkageSpecDecl *Linkage = dyn_cast<LinkageSpecDecl>(DC))
       return Linkage->getLanguage() == L;
   }
@@ -174,7 +174,7 @@ bool MicrosoftMangleContext::shouldMangleDeclName(const NamedDecl *D) {
   // Variables at global scope with internal linkage are not mangled.
   if (!FD) {
     const DeclContext *DC = D->getDeclContext();
-    if (DC->isTranslationUnit() && D->getLinkage() == InternalLinkage)
+    if (DC->isProgram() && D->getLinkage() == InternalLinkage)
       return false;
   }
 
@@ -308,7 +308,7 @@ void MicrosoftCXXNameMangler::mangleName(const NamedDecl *ND) {
   // If this is an extern variable declared locally, the relevant DeclContext
   // is that of the containing namespace, or the translation unit.
   if (isa<SubprogramDecl>(DC) && ND->hasLinkage())
-    while (!DC->isNamespace() && !DC->isTranslationUnit())
+    while (!DC->isNamespace() && !DC->isProgram())
       DC = DC->getParent();
 
   manglePostfix(DC);
@@ -533,7 +533,7 @@ void MicrosoftCXXNameMangler::manglePostfix(const DeclContext *DC,
   while (isa<LinkageSpecDecl>(DC))
     DC = DC->getParent();
 
-  if (DC->isTranslationUnit())
+  if (DC->isProgram())
     return;
 
   if (const BlockDecl *BD = dyn_cast<BlockDecl>(DC)) {
@@ -714,7 +714,7 @@ static unsigned getLocalNestingLevel(const SubprogramDecl *FD) {
   const DeclContext *DC = FD->getParent();
   int level = 1;
 
-  while (DC && !DC->isTranslationUnit()) {
+  while (DC && !DC->isProgram()) {
     if (isa<SubprogramDecl>(DC) || isa<ObjCMethodDecl>(DC)) level++;
     DC = DC->getParent();
   }

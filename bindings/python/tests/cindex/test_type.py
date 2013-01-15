@@ -1,7 +1,7 @@
 import gc
 
 from lfort.cindex import CursorKind
-from lfort.cindex import TranslationUnit
+from lfort.cindex import Program
 from lfort.cindex import TypeKind
 from nose.tools import raises
 from .util import get_cursor
@@ -77,7 +77,7 @@ def test_a_struct():
     assert fields[7].type.get_pointee().get_pointee().get_pointee().kind == TypeKind.INT
 
 def test_references():
-    """Ensure that a Type maintains a reference to a TranslationUnit."""
+    """Ensure that a Type maintains a reference to a Program."""
 
     tu = get_tu('int x;')
     children = list(tu.cursor.get_children())
@@ -86,12 +86,12 @@ def test_references():
     cursor = children[0]
     t = cursor.type
 
-    assert isinstance(t.translation_unit, TranslationUnit)
+    assert isinstance(t.translation_unit, Program)
 
-    # Delete main TranslationUnit reference and force a GC.
+    # Delete main Program reference and force a GC.
     del tu
     gc.collect()
-    assert isinstance(t.translation_unit, TranslationUnit)
+    assert isinstance(t.translation_unit, Program)
 
     # If the TU was destroyed, this should cause a segfault.
     decl = t.get_declaration()

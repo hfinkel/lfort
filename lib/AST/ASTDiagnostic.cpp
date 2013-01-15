@@ -327,7 +327,7 @@ void lfort::FormatASTNodeDiagnosticArgument(
       DeclContext *DC = reinterpret_cast<DeclContext *> (Val);
       assert(DC && "Should never have a null declaration context");
       
-      if (DC->isTranslationUnit()) {
+      if (DC->isProgram()) {
         // FIXME: Get these strings from some localized place
         if (Context.getLangOpts().CPlusPlus)
           S = "the global namespace";

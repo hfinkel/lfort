@@ -13,7 +13,7 @@
 #include "CXCursor.h"
 #include "CXSourceLocation.h"
 #include "CXString.h"
-#include "CXTranslationUnit.h"
+#include "CXProgram.h"
 #include "lfort/AST/ASTConsumer.h"
 #include "lfort/AST/DeclVisitor.h"
 #include "lfort/Frontend/ASTUnit.h"
@@ -36,7 +36,7 @@ using namespace cxstring;
 using namespace cxtu;
 using namespace cxindex;
 
-static void indexDiagnostics(CXTranslationUnit TU, IndexingContext &IdxCtx);
+static void indexDiagnostics(CXProgram Pgm, IndexingContext &IdxCtx);
 
 namespace {
 
@@ -51,9 +51,9 @@ namespace {
 
 class SessionSkipBodyData { };
 
-class TUSkipBodyControl {
+class PgmSkipBodyControl {
 public:
-  TUSkipBodyControl(SessionSkipBodyData &sessionData,
+  PgmSkipBodyControl(SessionSkipBodyData &sessionData,
                     PPConditionalDirectiveRecord &ppRec) { }
   bool isParsed(SourceLocation Loc, FileID FID, const FileEntry *FE) {
     return false;
@@ -165,7 +165,7 @@ public:
   }
 };
 
-class TUSkipBodyControl {
+class PgmSkipBodyControl {
   SessionSkipBodyData &SessionData;
   PPConditionalDirectiveRecord &PPRec;
   Preprocessor &PP;
@@ -176,7 +176,7 @@ class TUSkipBodyControl {
   bool LastIsParsed;
 
 public:
-  TUSkipBodyControl(SessionSkipBodyData &sessionData,
+  PgmSkipBodyControl(SessionSkipBodyData &sessionData,
                     PPConditionalDirectiveRecord &ppRec,
                     Preprocessor &pp)
     : SessionData(sessionData), PPRec(ppRec), PP(pp) {
@@ -306,20 +306,20 @@ public:
 
 class IndexingConsumer : public ASTConsumer {
   IndexingContext &IndexCtx;
-  TUSkipBodyControl *SKCtrl;
+  PgmSkipBodyControl *SKCtrl;
 
 public:
-  IndexingConsumer(IndexingContext &indexCtx, TUSkipBodyControl *skCtrl)
+  IndexingConsumer(IndexingContext &indexCtx, PgmSkipBodyControl *skCtrl)
     : IndexCtx(indexCtx), SKCtrl(skCtrl) { }
 
   // ASTConsumer Implementation
 
   virtual void Initialize(ASTContext &Context) {
     IndexCtx.setASTContext(Context);
-    IndexCtx.startedTranslationUnit();
+    IndexCtx.startedProgram();
   }
 
-  virtual void HandleTranslationUnit(ASTContext &Ctx) {
+  virtual void HandleProgram(ASTContext &Ctx) {
     if (SKCtrl)
       SKCtrl->finished();
   }
@@ -333,7 +333,7 @@ public:
   /// and ObjC container.
   virtual void HandleTopLevelDeclInObjCContainer(DeclGroupRef D) {
     // They will be handled after the interface is seen first.
-    IndexCtx.addTUDeclInObjCContainer(D);
+    IndexCtx.addPgmDeclInObjCContainer(D);
   }
 
   /// \brief This is called by the AST reader when deserializing things.
@@ -408,19 +408,19 @@ public:
 
 class IndexingFrontendAction : public ASTFrontendAction {
   IndexingContext IndexCtx;
-  CXTranslationUnit CXTU;
+  CXProgram CXPgm;
 
   SessionSkipBodyData *SKData;
-  OwningPtr<TUSkipBodyControl> SKCtrl;
+  OwningPtr<PgmSkipBodyControl> SKCtrl;
 
 public:
   IndexingFrontendAction(CXClientData clientData,
                          IndexerCallbacks &indexCallbacks,
                          unsigned indexOptions,
-                         CXTranslationUnit cxTU,
+                         CXProgram cxPgm,
                          SessionSkipBodyData *skData)
-    : IndexCtx(clientData, indexCallbacks, indexOptions, cxTU),
-      CXTU(cxTU), SKData(skData) { }
+    : IndexCtx(clientData, indexCallbacks, indexOptions, cxPgm),
+      CXPgm(cxPgm), SKData(skData) { }
 
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
                                          StringRef InFile) {
@@ -440,21 +440,21 @@ public:
       PPConditionalDirectiveRecord *
         PPRec = new PPConditionalDirectiveRecord(PP.getSourceManager());
       PP.addPPCallbacks(PPRec);
-      SKCtrl.reset(new TUSkipBodyControl(*SKData, *PPRec, PP));
+      SKCtrl.reset(new PgmSkipBodyControl(*SKData, *PPRec, PP));
     }
 
     return new IndexingConsumer(IndexCtx, SKCtrl.get());
   }
 
   virtual void EndSourceFileAction() {
-    indexDiagnostics(CXTU, IndexCtx);
+    indexDiagnostics(CXPgm, IndexCtx);
   }
 
-  virtual TranslationUnitKind getTranslationUnitKind() {
+  virtual ProgramKind getProgramKind() {
     if (IndexCtx.shouldIndexImplicitTemplateInsts())
-      return TU_Complete;
+      return PGM_Complete;
     else
-      return TU_Prefix;
+      return PGM_Prefix;
   }
   virtual bool hasCodeCompletionSupport() const { return false; }
 };
@@ -482,8 +482,8 @@ struct IndexSourceFileInfo {
   int num_command_line_args;
   struct CXUnsavedFile *unsaved_files;
   unsigned num_unsaved_files;
-  CXTranslationUnit *out_TU;
-  unsigned TU_options;
+  CXProgram *out_Pgm;
+  unsigned PGM_options;
   int result;
 };
 
@@ -500,25 +500,25 @@ struct MemBufferOwner {
 } // anonymous namespace
 
 static void lfort_indexSourceFile_Impl(void *UserData) {
-  IndexSourceFileInfo *ITUI =
+  IndexSourceFileInfo *IPgmI =
     static_cast<IndexSourceFileInfo*>(UserData);
-  CXIndexAction cxIdxAction = ITUI->idxAction;
-  CXClientData client_data = ITUI->client_data;
-  IndexerCallbacks *client_index_callbacks = ITUI->index_callbacks;
-  unsigned index_callbacks_size = ITUI->index_callbacks_size;
-  unsigned index_options = ITUI->index_options;
-  const char *source_filename = ITUI->source_filename;
-  const char * const *command_line_args = ITUI->command_line_args;
-  int num_command_line_args = ITUI->num_command_line_args;
-  struct CXUnsavedFile *unsaved_files = ITUI->unsaved_files;
-  unsigned num_unsaved_files = ITUI->num_unsaved_files;
-  CXTranslationUnit *out_TU  = ITUI->out_TU;
-  unsigned TU_options = ITUI->TU_options;
-  ITUI->result = 1; // init as error.
+  CXIndexAction cxIdxAction = IPgmI->idxAction;
+  CXClientData client_data = IPgmI->client_data;
+  IndexerCallbacks *client_index_callbacks = IPgmI->index_callbacks;
+  unsigned index_callbacks_size = IPgmI->index_callbacks_size;
+  unsigned index_options = IPgmI->index_options;
+  const char *source_filename = IPgmI->source_filename;
+  const char * const *command_line_args = IPgmI->command_line_args;
+  int num_command_line_args = IPgmI->num_command_line_args;
+  struct CXUnsavedFile *unsaved_files = IPgmI->unsaved_files;
+  unsigned num_unsaved_files = IPgmI->num_unsaved_files;
+  CXProgram *out_Pgm  = IPgmI->out_Pgm;
+  unsigned PGM_options = IPgmI->PGM_options;
+  IPgmI->result = 1; // init as error.
   
-  if (out_TU)
-    *out_TU = 0;
-  bool requestedToGetTU = (out_TU != 0); 
+  if (out_Pgm)
+    *out_Pgm = 0;
+  bool requestedToGetPgm = (out_Pgm != 0); 
 
   if (!cxIdxAction)
     return;
@@ -611,11 +611,11 @@ static void lfort_indexSourceFile_Impl(void *UserData) {
   ASTUnit *Unit = ASTUnit::create(CInvok.getPtr(), Diags,
                                   /*CaptureDiagnostics=*/true,
                                   /*UserFilesAreVolatile=*/true);
-  OwningPtr<CXTUOwner> CXTU(new CXTUOwner(MakeCXTranslationUnit(CXXIdx, Unit)));
+  OwningPtr<CXPgmOwner> CXPgm(new CXPgmOwner(MakeCXProgram(CXXIdx, Unit)));
 
   // Recover resources if we crash before exiting this method.
-  llvm::CrashRecoveryContextCleanupRegistrar<CXTUOwner>
-    CXTUCleanup(CXTU.get());
+  llvm::CrashRecoveryContextCleanupRegistrar<CXPgmOwner>
+    CXPgmCleanup(CXPgm.get());
 
   // Enable the skip-parsed-bodies optimization only for C++; this may be
   // revisited.
@@ -626,33 +626,33 @@ static void lfort_indexSourceFile_Impl(void *UserData) {
 
   OwningPtr<IndexingFrontendAction> IndexAction;
   IndexAction.reset(new IndexingFrontendAction(client_data, CB,
-                                               index_options, CXTU->getTU(),
+                                               index_options, CXPgm->getPgm(),
                               SkipBodies ? IdxSession->SkipBodyData.get() : 0));
 
   // Recover resources if we crash before exiting this method.
   llvm::CrashRecoveryContextCleanupRegistrar<IndexingFrontendAction>
     IndexActionCleanup(IndexAction.get());
 
-  bool Persistent = requestedToGetTU;
+  bool Persistent = requestedToGetPgm;
   bool OnlyLocalDecls = false;
   bool PrecompilePreamble = false;
   bool CacheCodeCompletionResults = false;
   PreprocessorOptions &PPOpts = CInvok->getPreprocessorOpts(); 
   PPOpts.AllowPCHWithCompilerErrors = true;
 
-  if (requestedToGetTU) {
+  if (requestedToGetPgm) {
     OnlyLocalDecls = CXXIdx->getOnlyLocalDecls();
-    PrecompilePreamble = TU_options & CXTranslationUnit_PrecompiledPreamble;
+    PrecompilePreamble = PGM_options & CXProgram_PrecompiledPreamble;
     // FIXME: Add a flag for modules.
     CacheCodeCompletionResults
-      = TU_options & CXTranslationUnit_CacheCompletionResults;
+      = PGM_options & CXProgram_CacheCompletionResults;
   }
 
-  if (TU_options & CXTranslationUnit_DetailedPreprocessingRecord) {
+  if (PGM_options & CXProgram_DetailedPreprocessingRecord) {
     PPOpts.DetailedRecord = true;
   }
 
-  if (!requestedToGetTU && !CInvok->getLangOpts()->Modules)
+  if (!requestedToGetPgm && !CInvok->getLangOpts()->Modules)
     PPOpts.DetailedRecord = false;
 
   DiagnosticErrorTrap DiagTrap(*Diags);
@@ -673,25 +673,25 @@ static void lfort_indexSourceFile_Impl(void *UserData) {
   if (!Success)
     return;
 
-  if (out_TU)
-    *out_TU = CXTU->takeTU();
+  if (out_Pgm)
+    *out_Pgm = CXPgm->takePgm();
 
-  ITUI->result = 0; // success.
+  IPgmI->result = 0; // success.
 }
 
 //===----------------------------------------------------------------------===//
-// lfort_indexTranslationUnit Implementation
+// lfort_indexProgram Implementation
 //===----------------------------------------------------------------------===//
 
 namespace {
 
-struct IndexTranslationUnitInfo {
+struct IndexProgramInfo {
   CXIndexAction idxAction;
   CXClientData client_data;
   IndexerCallbacks *index_callbacks;
   unsigned index_callbacks_size;
   unsigned index_options;
-  CXTranslationUnit TU;
+  CXProgram Pgm;
   int result;
 };
 
@@ -733,34 +733,34 @@ static bool topLevelDeclVisitor(void *context, const Decl *D) {
   return true;
 }
 
-static void indexTranslationUnit(ASTUnit &Unit, IndexingContext &IdxCtx) {
+static void indexProgram(ASTUnit &Unit, IndexingContext &IdxCtx) {
   Unit.visitLocalTopLevelDecls(&IdxCtx, topLevelDeclVisitor);
 }
 
-static void indexDiagnostics(CXTranslationUnit TU, IndexingContext &IdxCtx) {
+static void indexDiagnostics(CXProgram Pgm, IndexingContext &IdxCtx) {
   if (!IdxCtx.hasDiagnosticCallback())
     return;
 
-  CXDiagnosticSetImpl *DiagSet = cxdiag::lazyCreateDiags(TU);
+  CXDiagnosticSetImpl *DiagSet = cxdiag::lazyCreateDiags(Pgm);
   IdxCtx.handleDiagnosticSet(DiagSet);
 }
 
-static void lfort_indexTranslationUnit_Impl(void *UserData) {
-  IndexTranslationUnitInfo *ITUI =
-    static_cast<IndexTranslationUnitInfo*>(UserData);
-  CXTranslationUnit TU = ITUI->TU;
-  CXClientData client_data = ITUI->client_data;
-  IndexerCallbacks *client_index_callbacks = ITUI->index_callbacks;
-  unsigned index_callbacks_size = ITUI->index_callbacks_size;
-  unsigned index_options = ITUI->index_options;
-  ITUI->result = 1; // init as error.
+static void lfort_indexProgram_Impl(void *UserData) {
+  IndexProgramInfo *IPgmI =
+    static_cast<IndexProgramInfo*>(UserData);
+  CXProgram Pgm = IPgmI->Pgm;
+  CXClientData client_data = IPgmI->client_data;
+  IndexerCallbacks *client_index_callbacks = IPgmI->index_callbacks;
+  unsigned index_callbacks_size = IPgmI->index_callbacks_size;
+  unsigned index_options = IPgmI->index_options;
+  IPgmI->result = 1; // init as error.
 
-  if (!TU)
+  if (!Pgm)
     return;
   if (!client_index_callbacks || index_callbacks_size == 0)
     return;
 
-  CIndexer *CXXIdx = (CIndexer*)TU->CIdx;
+  CIndexer *CXXIdx = (CIndexer*)Pgm->CIdx;
   if (CXXIdx->isOptEnabled(CXGlobalOpt_ThreadBackgroundPriorityForIndexing))
     setThreadBackgroundPriority();
 
@@ -771,7 +771,7 @@ static void lfort_indexTranslationUnit_Impl(void *UserData) {
   memcpy(&CB, client_index_callbacks, ClientCBSize);
 
   OwningPtr<IndexingContext> IndexCtx;
-  IndexCtx.reset(new IndexingContext(client_data, CB, index_options, TU));
+  IndexCtx.reset(new IndexingContext(client_data, CB, index_options, Pgm));
 
   // Recover resources if we crash before exiting this method.
   llvm::CrashRecoveryContextCleanupRegistrar<IndexingContext>
@@ -784,7 +784,7 @@ static void lfort_indexTranslationUnit_Impl(void *UserData) {
   llvm::CrashRecoveryContextCleanupRegistrar<IndexingConsumer>
     IndexConsumerCleanup(IndexConsumer.get());
 
-  ASTUnit *Unit = static_cast<ASTUnit *>(TU->TUData);
+  ASTUnit *Unit = static_cast<ASTUnit *>(Pgm->PgmData);
   if (!Unit)
     return;
 
@@ -803,10 +803,10 @@ static void lfort_indexTranslationUnit_Impl(void *UserData) {
   IndexConsumer->Initialize(Unit->getASTContext());
 
   indexPreprocessingRecord(*Unit, *IndexCtx);
-  indexTranslationUnit(*Unit, *IndexCtx);
-  indexDiagnostics(TU, *IndexCtx);
+  indexProgram(*Unit, *IndexCtx);
+  indexDiagnostics(Pgm, *IndexCtx);
 
-  ITUI->result = 0;
+  IPgmI->result = 0;
 }
 
 //===----------------------------------------------------------------------===//
@@ -966,23 +966,23 @@ int lfort_indexSourceFile(CXIndexAction idxAction,
                           int num_command_line_args,
                           struct CXUnsavedFile *unsaved_files,
                           unsigned num_unsaved_files,
-                          CXTranslationUnit *out_TU,
-                          unsigned TU_options) {
+                          CXProgram *out_Pgm,
+                          unsigned PGM_options) {
 
-  IndexSourceFileInfo ITUI = { idxAction, client_data, index_callbacks,
+  IndexSourceFileInfo IPgmI = { idxAction, client_data, index_callbacks,
                                index_callbacks_size, index_options,
                                source_filename, command_line_args,
                                num_command_line_args, unsaved_files,
-                               num_unsaved_files, out_TU, TU_options, 0 };
+                               num_unsaved_files, out_Pgm, PGM_options, 0 };
 
   if (getenv("LIBLFORT_NOTHREADS")) {
-    lfort_indexSourceFile_Impl(&ITUI);
-    return ITUI.result;
+    lfort_indexSourceFile_Impl(&IPgmI);
+    return IPgmI.result;
   }
 
   llvm::CrashRecoveryContext CRC;
 
-  if (!RunSafely(CRC, lfort_indexSourceFile_Impl, &ITUI)) {
+  if (!RunSafely(CRC, lfort_indexSourceFile_Impl, &IPgmI)) {
     fprintf(stderr, "liblfort: crash detected during indexing source file: {\n");
     fprintf(stderr, "  'source_filename' : '%s'\n", source_filename);
     fprintf(stderr, "  'command_line_args' : [");
@@ -1000,43 +1000,43 @@ int lfort_indexSourceFile(CXIndexAction idxAction,
               unsaved_files[i].Length);
     }
     fprintf(stderr, "],\n");
-    fprintf(stderr, "  'options' : %d,\n", TU_options);
+    fprintf(stderr, "  'options' : %d,\n", PGM_options);
     fprintf(stderr, "}\n");
     
     return 1;
   } else if (getenv("LIBLFORT_RESOURCE_USAGE")) {
-    if (out_TU)
-      PrintLiblfortResourceUsage(*out_TU);
+    if (out_Pgm)
+      PrintLiblfortResourceUsage(*out_Pgm);
   }
   
-  return ITUI.result;
+  return IPgmI.result;
 }
 
-int lfort_indexTranslationUnit(CXIndexAction idxAction,
+int lfort_indexProgram(CXIndexAction idxAction,
                                CXClientData client_data,
                                IndexerCallbacks *index_callbacks,
                                unsigned index_callbacks_size,
                                unsigned index_options,
-                               CXTranslationUnit TU) {
+                               CXProgram Pgm) {
 
-  IndexTranslationUnitInfo ITUI = { idxAction, client_data, index_callbacks,
-                                    index_callbacks_size, index_options, TU,
+  IndexProgramInfo IPgmI = { idxAction, client_data, index_callbacks,
+                                    index_callbacks_size, index_options, Pgm,
                                     0 };
 
   if (getenv("LIBLFORT_NOTHREADS")) {
-    lfort_indexTranslationUnit_Impl(&ITUI);
-    return ITUI.result;
+    lfort_indexProgram_Impl(&IPgmI);
+    return IPgmI.result;
   }
 
   llvm::CrashRecoveryContext CRC;
 
-  if (!RunSafely(CRC, lfort_indexTranslationUnit_Impl, &ITUI)) {
-    fprintf(stderr, "liblfort: crash detected during indexing TU\n");
+  if (!RunSafely(CRC, lfort_indexProgram_Impl, &IPgmI)) {
+    fprintf(stderr, "liblfort: crash detected during indexing Pgm\n");
     
     return 1;
   }
 
-  return ITUI.result;
+  return IPgmI.result;
 }
 
 void lfort_indexLoc_getFileLocation(CXIdxLoc location,

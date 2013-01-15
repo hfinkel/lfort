@@ -2273,7 +2273,7 @@ CodeGenModule::GetAddrOfConstantString(const StringLiteral *Literal) {
   if (!NSConstantStringType) {
     // Construct the type for a constant NSString.
     RecordDecl *D = CreateRecordDecl(Context, TTK_Struct, 
-                                     Context.getTranslationUnitDecl(),
+                                     Context.getProgramDecl(),
                                    &Context.Idents.get("__builtin_NSString"));
     D->startDefinition();
       
@@ -2349,7 +2349,7 @@ CodeGenModule::GetAddrOfConstantString(const StringLiteral *Literal) {
 QualType CodeGenModule::getObjCFastEnumerationStateType() {
   if (ObjCFastEnumerationStateType.isNull()) {
     RecordDecl *D = CreateRecordDecl(Context, TTK_Struct, 
-                                     Context.getTranslationUnitDecl(),
+                                     Context.getProgramDecl(),
                       &Context.Idents.get("__objcFastEnumerationState"));
     D->startDefinition();
     
