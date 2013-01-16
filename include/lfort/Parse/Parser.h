@@ -2226,6 +2226,7 @@ public:
   DeclGroupPtrTy ParseImplicit();
 
   StmtResult ParseBlock();
+  StmtResult ParseExecutionPartConstruct(StmtVector &Stmts);
 };
 
 }  // end namespace lfort

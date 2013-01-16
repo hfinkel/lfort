@@ -738,17 +738,6 @@ Parser::ParseMainProgram() {
   return Actions.ConvertDeclToDeclGroup(TheDecl);
 }
 
-Parser::StmtResult
-Parser::ParseBlock() {
-  StmtVector Stmts;
-
-  SourceLocation OpenLoc = Tok.getLocation();
-
-  SourceLocation CloseLoc = Tok.getLocation();
-
-  return Actions.ActOnCompoundStmt(OpenLoc, CloseLoc, Stmts, false);
-}
-
 /*
  * R204 specification-part
  *    is [ use-stmt ] ... 

@@ -23,6 +23,9 @@
 #ifndef KEYWORD
 #define KEYWORD(X,Y) TOK(kw_ ## X)
 #endif
+#ifndef ENDKEYWORD
+#define ENDKEYWORD(X,Y) KEYWORD(X,Y)
+#endif
 #ifndef ALIAS
 #define ALIAS(X,Y,Z)
 #endif
@@ -335,26 +338,26 @@ KEYWORD(elemental                   , KEYF95)
 KEYWORD(else                        , KEYALL)
 KEYWORD(elseif                      , KEYALL)
 KEYWORD(elsewhere                   , KEYF03)
-KEYWORD(end                         , KEYALL)
-KEYWORD(endassociate                , KEYF03)
-KEYWORD(endblock                    , KEYALL)
-KEYWORD(endblockdata                , KEYALL)
-KEYWORD(endcritical                 , KEYF03)
-KEYWORD(enddo                       , KEYALL)
-KEYWORD(endenum                     , KEYF03)
-KEYWORD(endfile                     , KEYALL)
-KEYWORD(endforall                   , KEYF95)
-KEYWORD(endfunction                 , KEYALL)
-KEYWORD(endif                       , KEYALL)
-KEYWORD(endinterface                , KEYF03)
-KEYWORD(endmodule                   , KEYF90)
-KEYWORD(endprocedure                , KEYF03)
-KEYWORD(endprogram                  , KEYALL)
-KEYWORD(endselect                   , KEYF03)
-KEYWORD(endsubmodule                , KEYF03)
-KEYWORD(endsubroutine               , KEYALL)
-KEYWORD(endtype                     , KEYF03)
-KEYWORD(endwhere                    , KEYF03)
+ENDKEYWORD(end                      , KEYALL)
+ENDKEYWORD(endassociate             , KEYF03)
+ENDKEYWORD(endblock                 , KEYALL)
+ENDKEYWORD(endblockdata             , KEYALL)
+ENDKEYWORD(endcritical              , KEYF03)
+ENDKEYWORD(enddo                    , KEYALL)
+ENDKEYWORD(endenum                  , KEYF03)
+ENDKEYWORD(endfile                  , KEYALL)
+ENDKEYWORD(endforall                , KEYF95)
+ENDKEYWORD(endfunction              , KEYALL)
+ENDKEYWORD(endif                    , KEYALL)
+ENDKEYWORD(endinterface             , KEYF03)
+ENDKEYWORD(endmodule                , KEYF90)
+ENDKEYWORD(endprocedure             , KEYF03)
+ENDKEYWORD(endprogram               , KEYALL)
+ENDKEYWORD(endselect                , KEYF03)
+ENDKEYWORD(endsubmodule             , KEYF03)
+ENDKEYWORD(endsubroutine            , KEYALL)
+ENDKEYWORD(endtype                  , KEYF03)
+ENDKEYWORD(endwhere                 , KEYF03)
 KEYWORD(entry                       , KEYALL)
 KEYWORD(enum                        , KEYF03)
 KEYWORD(enumerator                  , KEYF03)
@@ -814,6 +817,7 @@ ANNOTATION(pragma_opencl_extension)
 #undef CXX_KEYWORD_OPERATOR
 #undef PPKEYWORD
 #undef ALIAS
+#undef ENDKEYWORD
 #undef KEYWORD
 #undef PUNCTUATOR
 #undef TOK

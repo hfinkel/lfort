@@ -305,6 +305,14 @@ Retry:
   return Res;
 }
 
+StmtResult
+Parser::ParseExecutionPartConstruct(StmtVector &Stmts) {
+  // TODO:
+  ConsumeToken();
+  return StmtEmpty();
+}
+
+
 /// \brief Parse an expression statement.
 StmtResult Parser::ParseExprStatement() {
   // If a case keyword is missing, this is where it should be inserted.
@@ -874,6 +882,49 @@ StmtResult Parser::ParseCompoundStatementBody(bool isStmtExpr) {
 
   return Actions.ActOnCompoundStmt(T.getOpenLocation(), CloseLoc,
                                    Stmts, isStmtExpr);
+}
+
+/*
+ * R801 block
+ *    is [ execution-part-construct ] ... 
+ */
+
+Parser::StmtResult
+Parser::ParseBlock() {
+  PrettyStackTraceLoc CrashInfo(PP.getSourceManager(),
+                                Tok.getLocation(), "in block");
+
+  // Record the state of the FP_CONTRACT pragma, restore on leaving the block.
+  Sema::FPContractStateRAII SaveFPContractState(Actions);
+
+  InMessageExpressionRAIIObject InMessage(*this, false);
+  Sema::CompoundScopeRAII CompoundScope(Actions);
+
+  // Parse any pragmas at the beginning of the block.
+  ParseCompoundStatementLeadingPragmas();
+
+  StmtVector Stmts;
+
+  SourceLocation OpenLoc = Tok.getLocation();
+
+  while (Tok.isNot(tok::eof)
+#define KEYWORD(X,Y)
+#define ENDKEYWORD(X,Y) && Tok.isNot(tok::kw_ ## X)
+#include "lfort/Basic/TokenKinds.def"
+        ) {
+    if (Tok.is(tok::annot_pragma_unused)) {
+      HandlePragmaUnused();
+      continue;
+    }
+
+    StmtResult R = ParseExecutionPartConstruct(Stmts);
+    if (R.isUsable())
+      Stmts.push_back(R.release());
+  }
+
+  SourceLocation CloseLoc = Tok.getLocation();
+
+  return Actions.ActOnCompoundStmt(OpenLoc, CloseLoc, Stmts, false);
 }
 
 /// ParseParenExprOrCondition:
