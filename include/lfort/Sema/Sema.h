@@ -2559,7 +2559,7 @@ public:
 
   void ActOnStartOfCompoundStmt();
   void ActOnFinishOfCompoundStmt();
-  StmtResult ActOnCompoundStmt(SourceLocation L, SourceLocation R,
+  StmtResult ActOnBlock(SourceLocation L, SourceLocation R,
                                        MultiStmtArg Elts,
                                        bool isStmtExpr);
 

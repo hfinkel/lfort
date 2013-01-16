@@ -306,7 +306,7 @@ Retry:
 }
 
 StmtResult
-Parser::ParseExecutionPartConstruct(StmtVector &Stmts) {
+Parser::ParseExecOrSpecPartConstruct(StmtVector &Stmts) {
   // TODO:
   ConsumeToken();
   return StmtEmpty();
@@ -757,7 +757,7 @@ void Parser::ParseCompoundStatementLeadingPragmas() {
 }
 
 /// ParseCompoundStatementBody - Parse a sequence of statements and invoke the
-/// ActOnCompoundStmt action.  This expects the '{' to be the current token, and
+/// ActOnBlock action.  This expects the '{' to be the current token, and
 /// consume the '}' at the end of the block.  It does not manipulate the scope
 /// stack.
 StmtResult Parser::ParseCompoundStatementBody(bool isStmtExpr) {
@@ -880,7 +880,7 @@ StmtResult Parser::ParseCompoundStatementBody(bool isStmtExpr) {
     // instead of dropping everything and returning StmtError();
     CloseLoc = T.getCloseLocation();
 
-  return Actions.ActOnCompoundStmt(T.getOpenLocation(), CloseLoc,
+  return Actions.ActOnBlock(T.getOpenLocation(), CloseLoc,
                                    Stmts, isStmtExpr);
 }
 
@@ -917,14 +917,14 @@ Parser::ParseBlock() {
       continue;
     }
 
-    StmtResult R = ParseExecutionPartConstruct(Stmts);
+    StmtResult R = ParseExecOrSpecPartConstruct(Stmts);
     if (R.isUsable())
       Stmts.push_back(R.release());
   }
 
   SourceLocation CloseLoc = Tok.getLocation();
 
-  return Actions.ActOnCompoundStmt(OpenLoc, CloseLoc, Stmts, false);
+  return Actions.ActOnBlock(OpenLoc, CloseLoc, Stmts, false);
 }
 
 /// ParseParenExprOrCondition:
@@ -2066,7 +2066,7 @@ Decl *Parser::ParseSubprogramStatementBody(Decl *Decl, ParseScope &BodyScope) {
   // If the function body could not be parsed, make a bogus compoundstmt.
   if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    SubPgmBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
+    SubPgmBody = Actions.ActOnBlock(LBraceLoc, LBraceLoc,
                                        MultiStmtArg(), false);
   }
 
@@ -2104,7 +2104,7 @@ Decl *Parser::ParseSubprogramTryBlock(Decl *Decl, ParseScope &BodyScope) {
   // compound statement as the body.
   if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    SubPgmBody = Actions.ActOnCompoundStmt(LBraceLoc, LBraceLoc,
+    SubPgmBody = Actions.ActOnBlock(LBraceLoc, LBraceLoc,
                                        MultiStmtArg(), false);
   }
 

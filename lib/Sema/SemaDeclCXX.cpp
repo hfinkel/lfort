@@ -8545,7 +8545,7 @@ void Sema::DefineImplicitCopyAssignment(SourceLocation CurrentLocation,
   StmtResult Body;
   {
     CompoundScopeRAII CompoundScope(*this);
-    Body = ActOnCompoundStmt(Loc, Loc, Statements,
+    Body = ActOnBlock(Loc, Loc, Statements,
                              /*isStmtExpr=*/false);
     assert(!Body.isInvalid() && "Compound statement creation cannot fail");
   }
@@ -9003,7 +9003,7 @@ void Sema::DefineImplicitMoveAssignment(SourceLocation CurrentLocation,
   StmtResult Body;
   {
     CompoundScopeRAII CompoundScope(*this);
-    Body = ActOnCompoundStmt(Loc, Loc, Statements,
+    Body = ActOnBlock(Loc, Loc, Statements,
                              /*isStmtExpr=*/false);
     assert(!Body.isInvalid() && "Compound statement creation cannot fail");
   }
@@ -9166,7 +9166,7 @@ void Sema::DefineImplicitCopyConstructor(SourceLocation CurrentLocation,
     CopyConstructor->setInvalidDecl();
   }  else {
     Sema::CompoundScopeRAII CompoundScope(*this);
-    CopyConstructor->setBody(ActOnCompoundStmt(CopyConstructor->getLocation(),
+    CopyConstructor->setBody(ActOnBlock(CopyConstructor->getLocation(),
                                                CopyConstructor->getLocation(),
                                                MultiStmtArg(),
                                                /*isStmtExpr=*/false)
@@ -9357,7 +9357,7 @@ void Sema::DefineImplicitMoveConstructor(SourceLocation CurrentLocation,
     MoveConstructor->setInvalidDecl();
   }  else {
     Sema::CompoundScopeRAII CompoundScope(*this);
-    MoveConstructor->setBody(ActOnCompoundStmt(MoveConstructor->getLocation(),
+    MoveConstructor->setBody(ActOnBlock(MoveConstructor->getLocation(),
                                                MoveConstructor->getLocation(),
                                                MultiStmtArg(),
                                                /*isStmtExpr=*/false)

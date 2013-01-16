@@ -258,7 +258,7 @@ sema::CompoundScopeInfo &Sema::getCurCompoundScope() const {
 }
 
 StmtResult
-Sema::ActOnCompoundStmt(SourceLocation L, SourceLocation R,
+Sema::ActOnBlock(SourceLocation L, SourceLocation R,
                         MultiStmtArg elts, bool isStmtExpr) {
   unsigned NumElts = elts.size();
   Stmt **Elts = elts.data();

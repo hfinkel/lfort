@@ -1016,7 +1016,7 @@ public:
                                        MultiStmtArg Statements,
                                        SourceLocation RBraceLoc,
                                        bool IsStmtExpr) {
-    return getSema().ActOnCompoundStmt(LBraceLoc, RBraceLoc, Statements,
+    return getSema().ActOnBlock(LBraceLoc, RBraceLoc, Statements,
                                        IsStmtExpr);
   }
 

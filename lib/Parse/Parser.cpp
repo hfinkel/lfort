@@ -709,7 +709,7 @@ Parser::ParseMainProgram() {
   // If the function body could not be parsed, make a bogus compoundstmt.
   if (SubPgmBody.isInvalid()) {
     Sema::CompoundScopeRAII CompoundScope(Actions);
-    SubPgmBody = Actions.ActOnCompoundStmt(ProgramLoc, ProgramLoc,
+    SubPgmBody = Actions.ActOnBlock(ProgramLoc, ProgramLoc,
                                            MultiStmtArg(), false);
   }
 
