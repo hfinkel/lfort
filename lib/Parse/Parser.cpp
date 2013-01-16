@@ -704,7 +704,7 @@ Parser::ParseMainProgram() {
   PrettyDeclStackTraceEntry CrashInfo(Actions, Res, ProgramLoc,
                                       "parsing program body");
 
-  StmtResult SubPgmBody(ParseExecutionPart());
+  StmtResult SubPgmBody(ParseBlock());
 
   // If the function body could not be parsed, make a bogus compoundstmt.
   if (SubPgmBody.isInvalid()) {
@@ -739,7 +739,7 @@ Parser::ParseMainProgram() {
 }
 
 Parser::StmtResult
-Parser::ParseExecutionPart() {
+Parser::ParseBlock() {
   StmtVector Stmts;
 
   SourceLocation OpenLoc = Tok.getLocation();
