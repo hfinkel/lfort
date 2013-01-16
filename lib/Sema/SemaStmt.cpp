@@ -262,6 +262,7 @@ Sema::ActOnBlock(SourceLocation L, SourceLocation R,
                         MultiStmtArg elts, bool isStmtExpr) {
   unsigned NumElts = elts.size();
   Stmt **Elts = elts.data();
+  // FIXME: This applies to all Fortran versions...
   // If we're in C89 mode, check that we don't have any decls after stmts.  If
   // so, emit an extension diagnostic.
   if (!getLangOpts().C99 && !getLangOpts().CPlusPlus) {
