@@ -2228,6 +2228,8 @@ public:
   StmtResult ParseBlock();
   StmtResult ParseExecOrSpecPartConstruct(StmtVector &Stmts);
 
+  bool isDeclarationConstruct();
+
   void MaybeParseAttributes(Declarator &D,
                             LateParsedAttrList *LateAttrs = 0) {
     if (Tok.is(tok::kw_attribute)) {

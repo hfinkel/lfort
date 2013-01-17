@@ -3923,6 +3923,37 @@ bool Parser::isTypeSpecifierQualifier() {
   }
 }
 
+/// Return true if the current token is the start of a declaration-construct.
+/// This is used to disambiguate between an expression and a declaration.
+bool Parser::isDeclarationConstruct() {
+  switch (Tok.getKind()) {
+  default: return false;
+
+  case tok::kw_type:      // derived-type-def or type-declaration-stmt
+  case tok::kw_entry:     // entry-stmt
+  case tok::kw_enum:      // enum-def
+  case tok::kw_format:    // format-stmt
+  case tok::kw_interface: // interface-stmt
+  case tok::kw_abstract:  // interface-stmt
+  case tok::kw_parameter: // parameter-stmt
+  case tok::kw_procedure: // procedure-declaration-stmt
+  case tok::kw_class:     // type-declaration-stmt
+  case tok::kw_byte:      // type-declaration-stmt
+  case tok::kw_integer:   // type-declaration-stmt
+  case tok::kw_real:      // type-declaration-stmt
+  case tok::kw_double:    // type-declaration-stmt
+  case tok::kw_doublecomplex:   // type-declaration-stmt
+  case tok::kw_doubleprecision: // type-declaration-stmt
+  case tok::kw_complex:   // type-declaration-stmt
+  case tok::kw_character: // type-declaration-stmt
+  case tok::kw_logical:   // type-declaration-stmt
+  case tok::kw_pointer:   // type-declaration-stmt
+    return true;
+
+  // FIXME: stmt-function-stmt
+  }
+}
+
 /// isDeclarationSpecifier() - Return true if the current token is part of a
 /// declaration specifier.
 ///
