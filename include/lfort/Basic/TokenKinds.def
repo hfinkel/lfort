@@ -305,6 +305,7 @@ KEYWORD(assign                      , KEYALL)
 KEYWORD(assignment                  , KEYF03)
 KEYWORD(associate                   , KEYF03)
 KEYWORD(asynchronous                , KEYF03)
+KEYWORD(attribute                   , KEYALL) // LFort extension
 KEYWORD(automatic                   , KEYALL)
 KEYWORD(backspace                   , KEYALL)
 KEYWORD(bind                        , KEYF03)

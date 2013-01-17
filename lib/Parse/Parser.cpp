@@ -556,6 +556,7 @@ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result) {
   }
 
   ParsedAttributesWithRange attrs(AttrFactory);
+  MaybeParseAttributes(attrs);
   Result = ParseProgramUnit(attrs);
   return false;
 }
@@ -660,7 +661,11 @@ Parser::ParseMainProgram() {
   SmallVector<ParsedType, 2> DynamicExceptions;
   SmallVector<SourceRange, 2> DynamicExceptionRanges;
   ParsedType TrailingReturnType;
+
   ParsedAttributes SubPgmAttrs(AttrFactory);
+
+  // FIXME: attributes need a comma first and are comma separated.
+  MaybeParseAttributes(SubPgmAttrs);
 
   // Remember that we parsed a function type, and remember the attributes.
   D.AddTypeInfo(DeclaratorChunk::getSubprogram(true,

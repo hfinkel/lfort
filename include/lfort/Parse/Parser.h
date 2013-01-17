@@ -2227,6 +2227,31 @@ public:
 
   StmtResult ParseBlock();
   StmtResult ParseExecOrSpecPartConstruct(StmtVector &Stmts);
+
+  void MaybeParseAttributes(Declarator &D,
+                            LateParsedAttrList *LateAttrs = 0) {
+    if (Tok.is(tok::kw_attribute)) {
+      ParsedAttributes attrs(AttrFactory);
+      SourceLocation endLoc;
+      ParseAttributes(attrs, &endLoc, LateAttrs);
+      D.takeAttributes(attrs, endLoc);
+    }
+  }
+  void MaybeParseAttributes(ParsedAttributes &attrs,
+                               SourceLocation *endLoc = 0,
+                               LateParsedAttrList *LateAttrs = 0) {
+    if (Tok.is(tok::kw_attribute))
+      ParseAttributes(attrs, endLoc, LateAttrs);
+  }
+  void ParseAttributes(ParsedAttributes &attrs,
+                       SourceLocation *endLoc = 0,
+                       LateParsedAttrList *LateAttrs = 0);
+  void ParseAttributeArgs(IdentifierInfo *AttrName,
+                          SourceLocation AttrNameLoc,
+                          ParsedAttributes &Attrs,
+                          SourceLocation *EndLoc,
+                          IdentifierInfo *ScopeName,
+                          SourceLocation ScopeLoc);
 };
 
 }  // end namespace lfort

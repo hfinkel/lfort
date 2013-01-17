@@ -293,6 +293,169 @@ void Parser::ParseGNUAttributeArgs(IdentifierInfo *AttrName,
   }
 }
 
+// Parse LFort attributes (these are similar to GNU-style attributes in C)
+void Parser::ParseAttributes(ParsedAttributes &attrs,
+                                SourceLocation *endLoc,
+                                LateParsedAttrList *LateAttrs) {
+  assert(Tok.is(tok::kw_attribute) && "Not an attribute list!");
+
+  // FIXME: attributes are comma separated!
+  while (Tok.is(tok::kw_attribute)) {
+    ConsumeToken();
+    if (ExpectAndConsume(tok::l_paren, diag::err_expected_lparen_after,
+                         "attribute")) {
+      // FIXME: Stop skipping at EOL
+      SkipUntil(tok::r_paren, true); // skip until ) or ;
+      return;
+    }
+
+    // Parse the attribute-list. e.g. __attribute__(( weak, alias("__f") ))
+    while (Tok.is(tok::identifier) || Tok.is(tok::comma) ||
+           isDeclarationSpecifier()) {
+      if (Tok.is(tok::comma)) {
+        // allows for empty/non-empty attributes. ((__vector_size__(16),,,,))
+        ConsumeToken();
+        continue;
+      }
+      // we have an identifier or declaration specifier (const, int, etc.)
+      IdentifierInfo *AttrName = Tok.getIdentifierInfo();
+      SourceLocation AttrNameLoc = ConsumeToken();
+
+      if (Tok.is(tok::l_paren)) {
+        // handle "parameterized" attributes
+        if (LateAttrs && isAttributeLateParsed(*AttrName)) {
+          LateParsedAttribute *LA =
+            new LateParsedAttribute(this, *AttrName, AttrNameLoc);
+          LateAttrs->push_back(LA);
+
+          // Attributes in a class are parsed at the end of the class, along
+          // with other late-parsed declarations.
+          if (!ClassStack.empty() && !LateAttrs->parseSoon())
+            getCurrentClass().LateParsedDeclarations.push_back(LA);
+
+          // consume everything up to and including the matching right parens
+          ConsumeAndStoreUntil(tok::r_paren, LA->Toks, true, false);
+
+          Token Eof;
+          Eof.startToken();
+          Eof.setLocation(Tok.getLocation());
+          LA->Toks.push_back(Eof);
+        } else {
+          ParseAttributeArgs(AttrName, AttrNameLoc, attrs, endLoc,
+                             0, SourceLocation());
+        }
+      } else {
+        attrs.addNew(AttrName, AttrNameLoc, 0, AttrNameLoc,
+                     0, SourceLocation(), 0, 0, AttributeList::AS_GNU);
+      }
+    }
+    SourceLocation Loc = Tok.getLocation();
+    if (ExpectAndConsume(tok::r_paren, diag::err_expected_rparen))
+      // FIXME: Skip until EOL
+      SkipUntil(tok::r_paren, false);
+    if (endLoc)
+      *endLoc = Loc;
+  }
+}
+
+
+/// Parse the arguments to a parameterized attribute.
+void Parser::ParseAttributeArgs(IdentifierInfo *AttrName,
+                                   SourceLocation AttrNameLoc,
+                                   ParsedAttributes &Attrs,
+                                   SourceLocation *EndLoc,
+                                   IdentifierInfo *ScopeName,
+                                   SourceLocation ScopeLoc) {
+
+  assert(Tok.is(tok::l_paren) && "Attribute arg list not starting with '('");
+
+  // Availability attributes have their own grammar.
+  if (AttrName->isStr("availability")) {
+    ParseAvailabilityAttribute(*AttrName, AttrNameLoc, Attrs, EndLoc);
+    return;
+  }
+  // Thread safety attributes fit into the FIXME case above, so we
+  // just parse the arguments as a list of expressions
+  if (IsThreadSafetyAttribute(AttrName->getName())) {
+    ParseThreadSafetyAttribute(*AttrName, AttrNameLoc, Attrs, EndLoc);
+    return;
+  }
+  // Type safety attributes have their own grammar.
+  if (AttrName->isStr("type_tag_for_datatype")) {
+    ParseTypeTagForDatatypeAttribute(*AttrName, AttrNameLoc, Attrs, EndLoc);
+    return;
+  }
+
+  ConsumeParen(); // ignore the left paren loc for now
+
+  IdentifierInfo *ParmName = 0;
+  SourceLocation ParmLoc;
+  bool BuiltinType = false;
+
+  switch (Tok.getKind()) {
+  case tok::kw_char:
+  case tok::kw_wchar_t:
+  case tok::kw_char16_t:
+  case tok::kw_char32_t:
+  case tok::kw_bool:
+  case tok::kw_short:
+  case tok::kw_int:
+  case tok::kw_long:
+  case tok::kw___int64:
+  case tok::kw___int128:
+  case tok::kw_signed:
+  case tok::kw_unsigned:
+  case tok::kw_float:
+  case tok::kw_double:
+  case tok::kw_void:
+  case tok::kw_typeof:
+    // __attribute__(( vec_type_hint(char) ))
+    // FIXME: Don't just discard the builtin type token.
+    ConsumeToken();
+    BuiltinType = true;
+    break;
+
+  case tok::identifier:
+    ParmName = Tok.getIdentifierInfo();
+    ParmLoc = ConsumeToken();
+    break;
+
+  default:
+    break;
+  }
+
+  ExprVector ArgExprs;
+
+  if (!BuiltinType &&
+      (ParmLoc.isValid() ? Tok.is(tok::comma) : Tok.isNot(tok::r_paren))) {
+    // Eat the comma.
+    if (ParmLoc.isValid())
+      ConsumeToken();
+
+    // Parse the non-empty comma-separated list of expressions.
+    while (1) {
+      ExprResult ArgExpr(ParseAssignmentExpression());
+      if (ArgExpr.isInvalid()) {
+        SkipUntil(tok::r_paren);
+        return;
+      }
+      ArgExprs.push_back(ArgExpr.release());
+      if (Tok.isNot(tok::comma))
+        break;
+      ConsumeToken(); // Eat the comma, move to the next argument
+    }
+  }
+
+  SourceLocation RParen = Tok.getLocation();
+  if (!ExpectAndConsume(tok::r_paren, diag::err_expected_rparen)) {
+    SourceLocation AttrLoc = ScopeLoc.isValid() ? ScopeLoc : AttrNameLoc;
+    Attrs.addNew(AttrName, SourceRange(AttrLoc, RParen),
+                 ScopeName, ScopeLoc, ParmName, ParmLoc,
+                 ArgExprs.data(), ArgExprs.size(), AttributeList::AS_GNU);
+  }
+}
+
+
 /// \brief Parses a single argument for a declspec, including the
 /// surrounding parens.
 void Parser::ParseMicrosoftDeclSpecWithSingleArg(IdentifierInfo *AttrName,
