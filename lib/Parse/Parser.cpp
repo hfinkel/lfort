@@ -606,6 +606,52 @@ Parser::ParseProgramUnit(ParsedAttributesWithRange &attrs,
       return ParseModule();
   case tok::annot_pragma_parser_crash:
     LLVM_BUILTIN_TRAP;
+  case tok::annot_pragma_vis:
+    HandlePragmaVisibility();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_pack:
+    HandlePragmaPack();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_msstruct:
+    HandlePragmaMSStruct();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_align:
+    HandlePragmaAlign();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_weak:
+    HandlePragmaWeak();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_weakalias:
+    HandlePragmaWeakAlias();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_redefine_extname:
+    HandlePragmaRedefineExtname();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_fp_contract:
+    HandlePragmaFPContract();
+    return DeclGroupPtrTy();
+  case tok::annot_pragma_opencl_extension:
+    HandlePragmaOpenCLExtension();
+    return DeclGroupPtrTy();
+  case tok::semi:
+    ConsumeExtraSemi(OutsideSubprogram);
+    // TODO: Invoke action for top-level semicolon.
+    return DeclGroupPtrTy();
+  case tok::kw_asm: {
+    SourceLocation StartLoc = Tok.getLocation();
+    SourceLocation EndLoc;
+    ExprResult Result(ParseSimpleAsm(&EndLoc));
+
+    if (!Tok.isAtStartOfNonContinuationLine())
+      ExpectAndConsume(tok::semi, diag::err_expected_semi_after,
+                       "top-level asm block");
+
+    if (Result.isInvalid())
+      return DeclGroupPtrTy();
+    return Actions.ConvertDeclToDeclGroup(
+      Actions.ActOnFileScopeAsmDecl(Result.get(), StartLoc, EndLoc));
+    break;
+  }
   default:
     ; // empty
   }

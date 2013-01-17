@@ -269,7 +269,6 @@ KEYWORD(__objc_no                   , KEYALL)
 
 
 // C++ 2.11p1: Keywords.
-KEYWORD(asm                         , KEYCXX|KEYGNU)
 KEYWORD(bool                        , BOOLSUPPORT|KEYALTIVEC)
 KEYWORD(catch                       , KEYCXX)
 KEYWORD(const_cast                  , KEYCXX)
@@ -301,6 +300,7 @@ KEYWORD(acquired_lock               , KEYF08)
 KEYWORD(all                         , KEYF08)
 KEYWORD(allocatable                 , KEYF90)
 KEYWORD(allocate                    , KEYF90)
+KEYWORD(asm                         , KEYALL) // LFort extension
 KEYWORD(assign                      , KEYALL)
 KEYWORD(assignment                  , KEYF03)
 KEYWORD(associate                   , KEYF03)
