@@ -36,4 +36,6 @@ complex*32 r4
 ! CHECK: %r2 = alloca { double, double }, align 8
 ! CHECK: %r3 = alloca { x86_fp80, x86_fp80 }, align 16
 ! CHECK: %r4 = alloca { x86_fp80, x86_fp80 }, align 16
+byte b
+! CHECK: %b = alloca i8, align 1
 end program hello

@@ -3191,6 +3191,12 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
                                          DiagID);
     }
     break;
+  case tok::kw_byte:
+    isInvalid = DS.SetTypeSpecSign(DeclSpec::TSS_unsigned, Loc, PrevSpec,
+                                     DiagID);
+    isInvalid |= DS.SetTypeSpecType(DeclSpec::TST_char, Loc, PrevSpec,
+                                   DiagID);
+    break;
   case tok::kw_logical:
     if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
       bool OldStyle = NextToken().isInLine(tok::star);
