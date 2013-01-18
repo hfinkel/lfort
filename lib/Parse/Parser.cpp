@@ -329,6 +329,10 @@ bool Parser::SkipUntil(ArrayRef<tok::TokenKind> Toks, bool StopAtSemi,
         return false;
       // FALL THROUGH.
     default:
+      if (StopAtSemi && !isFirstTokenSkipped &&
+          Tok.isAtStartOfNonContinuationLine())
+        return false;
+
       // Skip this token.
       ConsumeToken();
       break;

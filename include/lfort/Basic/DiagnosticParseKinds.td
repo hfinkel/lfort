@@ -708,6 +708,8 @@ def err_expected_end_program : Error<
   "expected 'endprogram', 'end program', or just 'end'">;
 def warn_end_program_name_mismatch : Warning<
   "end program name does not match program name '%0'">;
+def err_invalid_kind_value : Error<
+  "kind for the type %1 evaluates to %0; allowed values are: %2">;
 
 // Language specific pragmas
 // - Generic warnings

@@ -3189,6 +3189,46 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
                                          DiagID);
     }
     break;
+  case tok::kw_logical:
+    if (NextToken().isInLine(tok::l_paren)) {
+      ConsumeToken();
+      if (NextToken().isInLine(tok::kw_kind)) {
+        ConsumeParen();
+        if (NextToken().isInLine(tok::equal)) {
+          ConsumeToken();
+        } else {
+          Diag(NextToken(), diag::err_expected_equal_after) << "kind";
+          SkipUntil(tok::r_paren);
+          return;
+        }
+      }
+
+      ConsumeAnyToken();
+      ExprResult Res(ParseConstantExpression());
+      if (Res.isInvalid()) {
+        SkipUntil(tok::r_paren);
+        return;
+      }
+
+      if (!Tok.isInLine(tok::r_paren)) {
+        Diag(Tok, diag::err_expected_rparen);
+        SkipUntil(tok::r_paren);
+        return;
+      }
+
+      // FIXME: This logic should be in Sema.
+      unsigned KindValue =
+        Res.get()->EvaluateKnownConstInt(
+          Actions.getASTContext()).getZExtValue();
+      if (KindValue != 1) {
+        Diag(Res.get()->getExprLoc(), diag::err_invalid_kind_value) <<
+          KindValue << "logical" << "1";
+      }
+    }
+
+    isInvalid = DS.SetTypeSpecType(DeclSpec::TST_bool, Loc, PrevSpec,
+                                   DiagID);
+    break;
     // FIXME: everything else
   }
 
@@ -3200,7 +3240,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
   }
 
   DS.SetRangeEnd(Tok.getLocation());
-  ConsumeToken();
+  ConsumeAnyToken();
 
   // Now there may be a comma-separated list of attributes...
   // FIXME:
