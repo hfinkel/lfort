@@ -3224,11 +3224,6 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
       unsigned FloatBytes = (getTargetInfo().getFloatWidth()+7)/8;
       unsigned DoubleBytes = (getTargetInfo().getDoubleWidth()+7)/8;
       unsigned LongDoubleBytes = (getTargetInfo().getLongDoubleWidth()+7)/8;
-      if (isComplex) {
-        FloatBytes *= 2;
-        DoubleBytes *= 2;
-        LongDoubleBytes *= 2;
-      }
 
       if (KindValue == FloatBytes) {
         T = DeclSpec::TST_float;
