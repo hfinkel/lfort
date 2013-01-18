@@ -24,4 +24,10 @@ real(kind = 16) x4
 ! CHECK: %x2 = alloca float, align 4
 ! CHECK: %x3 = alloca double, align 8
 ! CHECK: %x4 = alloca x86_fp80, align 16
+complex(8) r
+complex(16) r2
+complex(32) r3
+! CHECK: %r = alloca { float, float }, align 4
+! CHECK: %r2 = alloca { double, double }, align 8
+! CHECK: %r3 = alloca { x86_fp80, x86_fp80 }, align 16
 end program hello

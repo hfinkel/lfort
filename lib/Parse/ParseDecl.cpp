@@ -3208,7 +3208,12 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     isInvalid = DS.SetTypeSpecType(DeclSpec::TST_bool, Loc, PrevSpec,
                                    DiagID);
     break;
+  case tok::kw_complex:
+    isInvalid = DS.SetTypeSpecComplex(DeclSpec::TSC_complex, Loc, PrevSpec,
+                                      DiagID);
+    // fall through
   case tok::kw_real:
+    bool isComplex = Tok.is(tok::kw_complex);
     DeclSpec::TST T = DeclSpec::TST_float;
     if (NextToken().isInLine(tok::l_paren)) {
       unsigned KindValue;
@@ -3219,6 +3224,11 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
       unsigned FloatBytes = (getTargetInfo().getFloatWidth()+7)/8;
       unsigned DoubleBytes = (getTargetInfo().getDoubleWidth()+7)/8;
       unsigned LongDoubleBytes = (getTargetInfo().getLongDoubleWidth()+7)/8;
+      if (isComplex) {
+        FloatBytes *= 2;
+        DoubleBytes *= 2;
+        LongDoubleBytes *= 2;
+      }
 
       if (KindValue == FloatBytes) {
         T = DeclSpec::TST_float;
@@ -3226,8 +3236,8 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         T = DeclSpec::TST_double;
       } else if (KindValue == LongDoubleBytes) {
         T = DeclSpec::TST_double;
-        isInvalid = DS.SetTypeSpecWidth(DeclSpec::TSW_long, Loc, PrevSpec,
-                                        DiagID);
+        isInvalid |= DS.SetTypeSpecWidth(DeclSpec::TSW_long, Loc, PrevSpec,
+                                         DiagID);
       } else {
         llvm::SmallVector<unsigned, 3> AllowedKinds(1, FloatBytes);
         if (AllowedKinds.back() != DoubleBytes)
@@ -3246,11 +3256,11 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         }
 
         Diag(KindValueLoc, diag::err_invalid_kind_value) <<
-          KindValue << "real" << AKStr;
+          KindValue << (isComplex ? "complex" : "real") << AKStr;
       }
     }
 
-    isInvalid &= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
+    isInvalid |= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
     break;
     // FIXME: everything else
   }
