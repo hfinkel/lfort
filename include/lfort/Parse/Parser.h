@@ -275,10 +275,9 @@ private:
     return T;
   }
 
-  Token LoweredTok;
-  const Token &lowerToken(const Token &T) {
-    LoweredTok = T;
-    return lowerToken(T);
+  Token lowerTokenCopy(const Token &T) {
+    Token LoweredTok = T;
+    return lowerToken(LoweredTok);
   }
 
   /// isTokenParen - Return true if the cur token is '(' or ')'.
@@ -454,16 +453,16 @@ private:
   /// Note that this differs from the Preprocessor's LookAhead method, because
   /// the Parser always has one token lexed that the preprocessor doesn't.
   ///
-  const Token &GetLookAheadToken(unsigned N) {
+  Token GetLookAheadToken(unsigned N) {
     if (N == 0 || Tok.is(tok::eof)) return Tok;
-    return lowerToken(PP.LookAhead(N-1));
+    return lowerTokenCopy(PP.LookAhead(N-1));
   }
 
 public:
   /// NextToken - This peeks ahead one token and returns it without
   /// consuming it.
-  const Token &NextToken() {
-    return lowerToken(PP.LookAhead(0));
+  Token NextToken() {
+    return lowerTokenCopy(PP.LookAhead(0));
   }
 
   /// getTypeAnnotation - Read a parsed type out of an annotation token.
@@ -1468,7 +1467,6 @@ private:
                                          bool OnlyStatement,
                                          SourceLocation *TrailingElseLoc,
                                          ParsedAttributesWithRange &Attrs);
-  StmtResult ParseExprStatement();
   StmtResult ParseLabeledStatement(ParsedAttributesWithRange &attrs);
   StmtResult ParseCaseStatement(bool MissingCase = false,
                                 ExprResult Expr = ExprResult());
@@ -1482,7 +1480,6 @@ private:
                                  Decl *&DeclResult,
                                  SourceLocation Loc,
                                  bool ConvertToBoolean);
-  StmtResult ParseIfStatement(SourceLocation *TrailingElseLoc);
   StmtResult ParseSwitchStatement(SourceLocation *TrailingElseLoc);
   StmtResult ParseWhileStatement(SourceLocation *TrailingElseLoc);
   StmtResult ParseDoStatement();
@@ -2208,7 +2205,8 @@ private:
 public:
   //===--------------------------------------------------------------------===//
   // Fortran
-  void SkipToNextLine();
+  void SkipToNextLine(bool StopAtSemi = true, bool DontConsume = false,
+                      bool StopAtCodeCompletion = false);
 
   DeclGroupPtrTy ParseProgramUnit(ParsedAttributesWithRange &attrs,
                                           ParsingDeclSpec *DS = 0);
@@ -2226,9 +2224,35 @@ public:
   DeclGroupPtrTy ParseImplicit();
 
   StmtResult ParseBlock();
-  StmtResult ParseExecOrSpecPartConstruct(StmtVector &Stmts);
+  StmtResult ParseExecOrSpecPartConstruct(StmtVector &Stmts,
+             bool ExecOnly = false, bool ActionOnly = false);
+  StmtResult ParseExecPartConstruct() {
+    StmtVector Stmts;
+    return ParseExecOrSpecPartConstruct(Stmts, true);
+  }
+  StmtResult ParseActionStatement() {
+    StmtVector Stmts;
+    return ParseExecOrSpecPartConstruct(Stmts, true, true);
+  }
 
   bool isDeclarationConstruct();
+  DeclGroupPtrTy ParseDeclarationConstruct(StmtVector &Stmts,
+                                           unsigned Context,
+                                           SourceLocation &DeclEnd);
+  DeclGroupPtrTy ParseEntityDeclList(ParsingDeclSpec &DS, unsigned Context,
+                                bool AllowSubprogramDefinitions,
+                                SourceLocation *DeclEnd = 0,
+                                ForRangeInit *FRI = 0);
+  void ParseEntityDecl(Declarator &D);
+
+  StmtResult ParseExprStatement();
+  StmtResult ParseIfStatement();
+
+  void ParseDeclarationTypeSpec(DeclSpec &DS,
+                const ParsedTemplateInfo &TemplateInfo = ParsedTemplateInfo(),
+                AccessSpecifier AS = AS_none,
+                DeclSpecContext DSC = DSC_normal,
+                LateParsedAttrList *LateAttrs = 0);
 
   void MaybeParseAttributes(Declarator &D,
                             LateParsedAttrList *LateAttrs = 0) {

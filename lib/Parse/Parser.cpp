@@ -562,12 +562,20 @@ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result) {
 }
 
 void
-Parser::SkipToNextLine() {
-  if (Tok.isNot(tok::eof) && Tok.isNot(tok::code_completion))
+Parser::SkipToNextLine(bool StopAtSemi, bool DontConsume,
+                       bool StopAtCodeCompletion) {
+  if (Tok.isNot(tok::eof) &&
+      (!StopAtCodeCompletion || Tok.isNot(tok::code_completion)) &&
+      (!StopAtSemi || Tok.isNot(tok::semi)))
     ConsumeAnyToken();
 
-  while (Tok.isNot(tok::eof) && Tok.isNot(tok::code_completion) &&
+  while (Tok.isNot(tok::eof) &&
+         (!StopAtCodeCompletion || Tok.isNot(tok::code_completion)) &&
+         (!StopAtSemi || Tok.isNot(tok::semi)) &&
          !Tok.isAtStartOfNonContinuationLine())
+    ConsumeAnyToken();
+
+  if (!DontConsume && !Tok.isAtStartOfNonContinuationLine() && Tok.isNot(tok::eof))
     ConsumeAnyToken();
 }
 

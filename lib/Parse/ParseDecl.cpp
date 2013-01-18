@@ -1384,6 +1384,17 @@ Parser::DeclGroupPtrTy Parser::ParseDeclaration(StmtVector &Stmts,
   return Actions.ConvertDeclToDeclGroup(SingleDecl, OwnedType);
 }
 
+Parser::DeclGroupPtrTy Parser::ParseDeclarationConstruct(StmtVector &Stmts,
+                                                         unsigned Context,
+                                                         SourceLocation &DeclEnd) {
+  // Parse the common declaration-specifiers piece.
+  ParsingDeclSpec DS(*this);
+  ParseDeclarationTypeSpec(DS, ParsedTemplateInfo(), AS_none,
+                           getDeclSpecContextFromDeclaratorContext(Context));
+
+  return ParseEntityDeclList(DS, Context, /*SubprogramDefs=*/ false, &DeclEnd, 0 /*FRI*/);
+}
+
 ///       simple-declaration: [C99 6.7: declaration] [C++ 7p1: dcl.dcl]
 ///         declaration-specifiers init-declarator-list[opt] ';'
 /// [C++11] attribute-specifier-seq decl-specifier-seq[opt]
@@ -1711,6 +1722,62 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
         ConsumeToken();
     }
   }
+
+  return Actions.FinalizeDeclaratorGroup(getCurScope(), DS,
+                                         DeclsInGroup.data(),
+                                         DeclsInGroup.size());
+}
+
+Parser::DeclGroupPtrTy Parser::ParseEntityDeclList(ParsingDeclSpec &DS,
+                                              unsigned Context,
+                                              bool AllowSubprogramDefinitions,
+                                              SourceLocation *DeclEnd,
+                                              ForRangeInit *FRI) {
+  // Parse the first declarator.
+  ParsingDeclarator D(*this, DS, static_cast<Declarator::TheContext>(Context));
+  ParseEntityDecl(D);
+
+  // Bail out if the first declarator didn't seem well-formed.
+  if (!D.hasName() && !D.mayOmitIdentifier()) {
+    SkipMalformedDecl();
+    return DeclGroupPtrTy();
+  }
+
+  SmallVector<Decl *, 8> DeclsInGroup;
+  Decl *FirstDecl = ParseDeclarationAfterDeclaratorAndAttributes(D);
+  D.complete(FirstDecl);
+  if (FirstDecl)
+    DeclsInGroup.push_back(FirstDecl);
+
+  // If we don't have a comma, it is either the end of the list (a ';') or an
+  // error, bail out.
+  while (Tok.is(tok::comma)) {
+    SourceLocation CommaLoc = ConsumeToken();
+
+    if (Tok.isAtStartOfNonContinuationLine()) {
+      // This comma was followed by a line-break and something which can't be
+      // the start of a declarator. The comma was probably a typo for a
+      // semicolon.
+      Diag(CommaLoc, diag::err_expected_semi_declaration)
+        << FixItHint::CreateReplacement(CommaLoc, ";");
+      break;
+    }
+
+    // Parse the next declarator.
+    D.clear();
+    D.setCommaLoc(CommaLoc);
+
+    ParseEntityDecl(D);
+    if (!D.isInvalidType()) {
+      Decl *ThisDecl = ParseDeclarationAfterDeclarator(D);
+      D.complete(ThisDecl);
+      if (ThisDecl)
+        DeclsInGroup.push_back(ThisDecl);
+    }
+  }
+
+  if (DeclEnd)
+    *DeclEnd = Tok.getLocation();
 
   return Actions.FinalizeDeclaratorGroup(getCurScope(), DS,
                                          DeclsInGroup.data(),
@@ -3065,6 +3132,80 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
   }
 }
 
+/// R403 declaration-type-spec is
+///      intrinsic-type-spec
+///   or TYPE ( intrinsic-type-spec )
+///   or TYPE ( derived-type-spec )
+///   or CLASS ( derived-type-spec )
+///   or CLASS ( * )
+///
+/// R404 intrinsic-type-spec
+///   is INTEGER [ kind-selector ]
+///   or REAL [ kind-selector ]
+///   or DOUBLE PRECISION
+///   or COMPLEX [ kind-selector ]
+///   or CHARACTER [ char-selector ]
+///   or LOGICAL [ kind-selector ]
+///   or POINTER [Cray pointer extension]
+///   or BYTE [extension]
+///   or DOUBLE COMPLEX [extension]
+///
+/// R405 kind-selector is ( [ KIND = ] scalar-int-constant-expr )
+///
+void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
+                                      const ParsedTemplateInfo &TemplateInfo,
+                                      AccessSpecifier AS,
+                                      DeclSpecContext DSContext,
+                                      LateParsedAttrList *LateAttrs) {
+  if (DS.getSourceRange().isInvalid()) {
+    DS.SetRangeStart(Tok.getLocation());
+    DS.SetRangeEnd(Tok.getLocation());
+  }
+
+  bool isInvalid = false;
+  const char *PrevSpec = 0;
+  unsigned DiagID = 0;
+
+  SourceLocation Loc = Tok.getLocation();
+
+  switch (Tok.getKind()) {
+  default:
+    // If this is not a declaration specifier token, we're done reading decl
+    // specifiers.  First verify that DeclSpec's are consistent.
+    DS.Finish(Diags, PP);
+    return;
+  case tok::kw_double:
+  case tok::kw_doubleprecision:
+  case tok::kw_doublecomplex:
+    if (Tok.is(tok::kw_double) && NextToken().isInLine(tok::kw_precision))
+      ConsumeToken();
+    isInvalid = DS.SetTypeSpecType(DeclSpec::TST_double, Loc, PrevSpec,
+                                   DiagID);
+    if (Tok.is(tok::kw_doublecomplex) ||
+        (Tok.is(tok::kw_double) && NextToken().isInLine(tok::kw_complex))) {
+      if (Tok.is(tok::kw_double) && NextToken().isInLine(tok::kw_complex))
+        ConsumeToken();
+      isInvalid |= DS.SetTypeSpecComplex(DeclSpec::TSC_complex, Loc, PrevSpec,
+                                         DiagID);
+    }
+    break;
+    // FIXME: everything else
+  }
+
+  // If the specifier wasn't legal, issue a diagnostic.
+  if (isInvalid) {
+    assert(PrevSpec && "Method did not return previous specifier!");
+    assert(DiagID);
+    Diag(Tok, DiagID) << PrevSpec;
+  }
+
+  DS.SetRangeEnd(Tok.getLocation());
+  ConsumeToken();
+
+  // Now there may be a comma-separated list of attributes...
+  // FIXME:
+}
+
 /// ParseStructDeclaration - Parse a struct declaration without the terminating
 /// semicolon.
 ///
@@ -4326,6 +4467,17 @@ void Parser::ParseDeclarator(Declarator &D) {
   /// This implements the 'declarator' production in the C grammar, then checks
   /// for well-formedness and issues diagnostics.
   ParseDeclaratorInternal(D, &Parser::ParseDirectDeclarator);
+}
+
+void Parser::ParseEntityDecl(Declarator &D) {
+  DeclaratorScopeObj DeclScopeObj(*this, D.getCXXScopeSpec());
+
+  if (Tok.is(tok::identifier) && D.mayHaveIdentifier()) {
+    D.SetIdentifier(Tok.getIdentifierInfo(), Tok.getLocation());
+    ConsumeToken();
+  } else return;
+
+  
 }
 
 static bool isPtrOperatorToken(tok::TokenKind Kind, const LangOptions &Lang) {

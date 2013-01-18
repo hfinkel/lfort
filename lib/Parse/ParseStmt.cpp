@@ -197,7 +197,7 @@ Retry:
   }
 
   case tok::kw_if:                  // C99 6.8.4.1: if-statement
-    return ParseIfStatement(TrailingElseLoc);
+    return ParseIfStatement();
   case tok::kw_switch:              // C99 6.8.4.2: switch-statement
     return ParseSwitchStatement(TrailingElseLoc);
 
@@ -306,12 +306,193 @@ Retry:
 }
 
 StmtResult
-Parser::ParseExecOrSpecPartConstruct(StmtVector &Stmts) {
-  // TODO:
-  ConsumeToken();
-  return StmtEmpty();
-}
+Parser::ParseExecOrSpecPartConstruct(StmtVector &Stmts, bool ExecOnly,
+                                     bool ActionOnly) {
+  assert((!ActionOnly || ExecOnly) &&
+         "Requested only actions without requesting only"
+         " executable constructs");
 
+  const char *SemiError = 0;
+  StmtResult Res;
+
+  // Cases in this switch statement should fall through if the parser expects
+  // the token to end in a semicolon (in which case SemiError should be set),
+  // or they directly 'return;' if not.
+Retry:
+  tok::TokenKind Kind  = Tok.getKind();
+  switch (Kind) {
+  case tok::code_completion:
+    Actions.CodeCompleteOrdinaryName(getCurScope(), Sema::PCC_Statement);
+    cutOffParsing();
+    return StmtError();
+
+  case tok::identifier: {
+    Token Next = NextToken();
+    if (Next.isInLine(tok::colon)) { // A named construct
+      // identifier ':' statement
+      // This syntax is used to name constructs (such as if constructs)
+      // FIXME: Do something with this...
+      ConsumeToken(); ConsumeToken();
+      goto Retry;
+    }
+
+    // Look up the identifier, and typo-correct it to a keyword if it's not
+    // found. % is the Fortran scope-separation token.
+    if (Next.isNot(tok::percent)) {
+      // Try to limit which sets of keywords should be included in typo
+      // correction based on what the next token is.
+      // FIXME: Pass the next token into the CorrectionCandidateCallback and
+      //        do this filtering in a more fine-grained manner.
+      CorrectionCandidateCallback DefaultValidator;
+      DefaultValidator.WantTypeSpecifiers =
+          Next.isInLine(tok::identifier) ||
+          Next.is(tok::l_paren) || Next.isInLine(tok::comma) ||
+          Next.isInLine(tok::coloncolon);
+      DefaultValidator.WantExpressionKeywords =
+          Next.is(tok::l_paren) || Next.is(tok::identifier);
+      DefaultValidator.WantRemainingKeywords =
+          Next.is(tok::l_paren) || Next.is(tok::semi) ||
+          Next.is(tok::identifier) || Next.isAtStartOfNonContinuationLine();
+      DefaultValidator.WantCXXNamedCasts = false;
+      if (TryAnnotateName(/*IsAddressOfOperand*/false, &DefaultValidator)
+            == ANK_Error) {
+        // Handle errors here by skipping up to the next semicolon or '}', and
+        // eat the semicolon if that's what stopped us.
+        SkipToNextLine(/*StopAtSemi=*/true, /*DontConsume=*/true);
+        if (Tok.is(tok::semi))
+          ConsumeToken();
+        return StmtError();
+      }
+
+      // If the identifier was typo-corrected, try again.
+      if (Tok.isNot(tok::identifier))
+        goto Retry;
+    }
+
+    // Fall through
+  }
+
+  default: {
+    if (isDeclarationConstruct()) {
+      if (ExecOnly) {
+        SkipToNextLine(/*StopAtSemi=*/true, /*DontConsume=*/true);
+        if (Tok.is(tok::semi))
+          ConsumeToken();
+        return StmtError();
+      }
+
+      SourceLocation DeclStart = Tok.getLocation(), DeclEnd;
+      DeclGroupPtrTy Decl = ParseDeclarationConstruct(Stmts,
+        Declarator::BlockContext, DeclEnd);
+      return Actions.ActOnDeclStmt(Decl, DeclStart, DeclEnd);
+    }
+
+    // An assignment or pointer-assignment statement
+    return ParseExprStatement();
+  }
+
+  case tok::kw_case:                // C99 6.8.1: labeled-statement
+    return ParseCaseStatement();
+  case tok::kw_default:             // C99 6.8.1: labeled-statement
+    return ParseDefaultStatement();
+
+  case tok::l_brace:                // C99 6.8.2: compound-statement
+    return ParseCompoundStatement();
+  case tok::semi: {                 // C99 6.8.3p3: expression[opt] ';'
+    bool HasLeadingEmptyMacro = Tok.hasLeadingEmptyMacro();
+    return Actions.ActOnNullStmt(ConsumeToken(), HasLeadingEmptyMacro);
+  }
+
+  case tok::kw_if:                  // C99 6.8.4.1: if-statement
+    return ParseIfStatement();
+  case tok::kw_switch:              // C99 6.8.4.2: switch-statement
+    return ParseSwitchStatement(0/*TrailingElseLoc*/);
+
+  case tok::kw_while:               // C99 6.8.5.1: while-statement
+    return ParseWhileStatement(0/*TrailingElseLoc*/);
+  case tok::kw_do:                  // C99 6.8.5.2: do-statement
+    Res = ParseDoStatement();
+    SemiError = "do/while";
+    break;
+  case tok::kw_for:                 // C99 6.8.5.3: for-statement
+    return ParseForStatement(0/*TrailingElseLoc*/);
+
+  case tok::kw_goto:                // C99 6.8.6.1: goto-statement
+    Res = ParseGotoStatement();
+    SemiError = "goto";
+    break;
+  case tok::kw_continue:            // C99 6.8.6.2: continue-statement
+    Res = ParseContinueStatement();
+    SemiError = "continue";
+    break;
+  case tok::kw_break:               // C99 6.8.6.3: break-statement
+    Res = ParseBreakStatement();
+    SemiError = "break";
+    break;
+  case tok::kw_return:              // C99 6.8.6.4: return-statement
+    Res = ParseReturnStatement();
+    SemiError = "return";
+    break;
+
+  case tok::kw_asm: {
+    bool msAsm = false;
+    Res = ParseAsmStatement(msAsm);
+    Res = Actions.ActOnFinishFullStmt(Res.get());
+    if (msAsm) return Res;
+    SemiError = "asm";
+    break;
+  }
+
+  case tok::annot_pragma_vis:
+    HandlePragmaVisibility();
+    return StmtEmpty();
+
+  case tok::annot_pragma_pack:
+    HandlePragmaPack();
+    return StmtEmpty();
+
+  case tok::annot_pragma_msstruct:
+    HandlePragmaMSStruct();
+    return StmtEmpty();
+
+  case tok::annot_pragma_align:
+    HandlePragmaAlign();
+    return StmtEmpty();
+
+  case tok::annot_pragma_weak:
+    HandlePragmaWeak();
+    return StmtEmpty();
+
+  case tok::annot_pragma_weakalias:
+    HandlePragmaWeakAlias();
+    return StmtEmpty();
+
+  case tok::annot_pragma_redefine_extname:
+    HandlePragmaRedefineExtname();
+    return StmtEmpty();
+
+  case tok::annot_pragma_fp_contract:
+    Diag(Tok, diag::err_pragma_fp_contract_scope);
+    ConsumeToken();
+    return StmtError();
+  }
+
+  if (!Tok.isAtStartOfNonContinuationLine()) {
+    // If we reached this code, the statement must end in a semicolon.
+    if (Tok.is(tok::semi)) {
+      ConsumeToken();
+    } else if (!Res.isInvalid()) {
+      // If the result was valid, then we do want to diagnose this.  Use
+      // ExpectAndConsume to emit the diagnostic, even though we know it won't
+      // succeed.
+      ExpectAndConsume(tok::semi, diag::err_expected_semi_after_stmt, SemiError);
+      // Skip until we get to the next line or ;, but don't eat it.
+      SkipToNextLine(true, true);
+    }
+  }
+
+  return Res;
+}
 
 /// \brief Parse an expression statement.
 StmtResult Parser::ParseExprStatement() {
@@ -336,6 +517,7 @@ StmtResult Parser::ParseExprStatement() {
     // suggest a missing case keyword.
     Diag(OldToken, diag::err_expected_case_before_expression)
       << FixItHint::CreateInsertion(OldToken.getLocation(), "case ");
+    // FIXME: In Fortran, the case values must have parens around them!
 
     // Recover parsing as a case statement.
     return ParseCaseStatement(/*MissingCase=*/true, Expr);
@@ -985,37 +1167,34 @@ bool Parser::ParseParenExprOrCondition(ExprResult &ExprResult,
 
 
 /// ParseIfStatement
-///       if-statement: [C99 6.8.4.1]
-///         'if' '(' expression ')' statement
-///         'if' '(' expression ')' statement 'else' statement
-/// [C++]   'if' '(' condition ')' statement
-/// [C++]   'if' '(' condition ')' statement 'else' statement
+///   R837
+///     if-stmt is IF ( scalar-logical-expr ) action-stmt
+///   As an extension, any expression convertable to a logical is allowed.
 ///
-StmtResult Parser::ParseIfStatement(SourceLocation *TrailingElseLoc) {
+///   R832
+///     if-construct is if-then-stmt block
+///       [ else-if-stmt block ] ...  [ else-stmt block ] end-if-stmt
+///
+///   R833
+///     if-then-stmt is [ if-construct-name : ]
+///       IF ( scalar-logical-expr ) THEN
+///   R834
+///     else-if-stmt is ELSE IF ( scalar-logical-expr )
+///       THEN [ if-construct-name ]
+///   R835
+///     else-stmt is ELSE [ if-construct-name ]
+///   R836
+///     end-if-stmt is END IF [ if-construct-name ]
+///
+StmtResult Parser::ParseIfStatement() {
   assert(Tok.is(tok::kw_if) && "Not an if stmt!");
   SourceLocation IfLoc = ConsumeToken();  // eat the 'if'.
 
   if (Tok.isNot(tok::l_paren)) {
     Diag(Tok, diag::err_expected_lparen_after) << "if";
-    SkipUntil(tok::semi);
+    SkipToNextLine(true, true);
     return StmtError();
   }
-
-  bool C99orCXX = getLangOpts().C99 || getLangOpts().CPlusPlus;
-
-  // C99 6.8.4p3 - In C99, the if statement is a block.  This is not
-  // the case for C90.
-  //
-  // C++ 6.4p3:
-  // A name introduced by a declaration in a condition is in scope from its
-  // point of declaration until the end of the substatements controlled by the
-  // condition.
-  // C++ 3.3.2p4:
-  // Names declared in the for-init-statement, and in the condition of if,
-  // while, for, and switch statements are local to the if, while, for, or
-  // switch statement (including the controlled statement).
-  //
-  ParseScope IfScope(this, Scope::DeclScope | Scope::ControlScope, C99orCXX);
 
   // Parse the condition.
   ExprResult CondExp;
@@ -1025,73 +1204,37 @@ StmtResult Parser::ParseIfStatement(SourceLocation *TrailingElseLoc) {
 
   FullExprArg FullCondExp(Actions.MakeFullExpr(CondExp.get(), IfLoc));
 
-  // C99 6.8.4p3 - In C99, the body of the if statement is a scope, even if
-  // there is no compound stmt.  C90 does not have this clause.  We only do this
-  // if the body isn't a compound statement to avoid push/pop in common cases.
-  //
-  // C++ 6.4p1:
-  // The substatement in a selection-statement (each substatement, in the else
-  // form of the if statement) implicitly defines a local scope.
-  //
-  // For C++ we create a scope for the condition and a new scope for
-  // substatements because:
-  // -When the 'then' scope exits, we want the condition declaration to still be
-  //    active for the 'else' scope too.
-  // -Sema will detect name clashes by considering declarations of a
-  //    'ControlScope' as part of its direct subscope.
-  // -If we wanted the condition and substatement to be in the same scope, we
-  //    would have to notify ParseStatement not to create a new scope. It's
-  //    simpler to let it create a new scope.
-  //
-  ParseScope InnerScope(this, Scope::DeclScope,
-                        C99orCXX && Tok.isNot(tok::l_brace));
-
-  // Read the 'then' stmt.
-  SourceLocation ThenStmtLoc = Tok.getLocation();
-
-  SourceLocation InnerStatementTrailingElseLoc;
-  StmtResult ThenStmt(ParseStatement(&InnerStatementTrailingElseLoc));
-
-  // Pop the 'if' scope if needed.
-  InnerScope.Exit();
-
   // If it has an else, parse it.
   SourceLocation ElseLoc;
   SourceLocation ElseStmtLoc;
   StmtResult ElseStmt;
 
-  if (Tok.is(tok::kw_else)) {
-    if (TrailingElseLoc)
-      *TrailingElseLoc = Tok.getLocation();
+  // Read the 'then' stmt.
+  SourceLocation ThenStmtLoc = Tok.getLocation();
+  StmtResult ThenStmt;
+  if (!Tok.isInLine(tok::kw_then)) {
+    ThenStmt = ParseActionStatement();
 
-    ElseLoc = ConsumeToken();
-    ElseStmtLoc = Tok.getLocation();
+    if (Tok.is(tok::code_completion)) {
+      Actions.CodeCompleteAfterIf(getCurScope());
+      cutOffParsing();
+      return StmtError();
+    }
+  } else {
+    ThenStmt = ParseBlock();
 
-    // C99 6.8.4p3 - In C99, the body of the if statement is a scope, even if
-    // there is no compound stmt.  C90 does not have this clause.  We only do
-    // this if the body isn't a compound statement to avoid push/pop in common
-    // cases.
-    //
-    // C++ 6.4p1:
-    // The substatement in a selection-statement (each substatement, in the else
-    // form of the if statement) implicitly defines a local scope.
-    //
-    ParseScope InnerScope(this, Scope::DeclScope,
-                          C99orCXX && Tok.isNot(tok::l_brace));
+    // FIXME: Handle else if
 
-    ElseStmt = ParseStatement();
-
-    // Pop the 'else' scope if needed.
-    InnerScope.Exit();
-  } else if (Tok.is(tok::code_completion)) {
-    Actions.CodeCompleteAfterIf(getCurScope());
-    cutOffParsing();
-    return StmtError();
-  } else if (InnerStatementTrailingElseLoc.isValid()) {
-    Diag(InnerStatementTrailingElseLoc, diag::warn_dangling_else);
+    if (Tok.is(tok::kw_else)) {
+      ElseLoc = ConsumeToken();
+      ElseStmtLoc = Tok.getLocation();
+      ElseStmt = ParseStatement();
+    } else if (Tok.is(tok::code_completion)) {
+      Actions.CodeCompleteAfterIf(getCurScope());
+      cutOffParsing();
+      return StmtError();
+    }
   }
-
-  IfScope.Exit();
 
   // If the condition was invalid, discard the if statement.  We could recover
   // better by replacing it with a valid expr, but don't do that yet.

@@ -3518,6 +3518,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
                                   TypoCorrectionConsumer &Consumer,
                                   Scope *S, CorrectionCandidateCallback &CCC,
                                   bool AfterNestedNameSpecifier) {
+  // FIXME: Fortran keywords, not C/C++!
   if (AfterNestedNameSpecifier) {
     // For 'X::', we know exactly which keywords can appear next.
     Consumer.addKeywordResult("template");
