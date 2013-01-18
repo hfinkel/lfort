@@ -15,6 +15,7 @@
 #include "RAIIObjectsForParser.h"
 #include "lfort/Basic/AddressSpaces.h"
 #include "lfort/Basic/OpenCL.h"
+#include "lfort/Basic/TargetInfo.h"
 #include "lfort/Parse/ParseDiagnostic.h"
 #include "lfort/Sema/Lookup.h"
 #include "lfort/Sema/ParsedTemplate.h"
@@ -22,6 +23,7 @@
 #include "lfort/Sema/Scope.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringSwitch.h"
 using namespace lfort;
 
@@ -3191,43 +3193,64 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     break;
   case tok::kw_logical:
     if (NextToken().isInLine(tok::l_paren)) {
-      ConsumeToken();
-      if (NextToken().isInLine(tok::kw_kind)) {
-        ConsumeParen();
-        if (NextToken().isInLine(tok::equal)) {
-          ConsumeToken();
-        } else {
-          Diag(NextToken(), diag::err_expected_equal_after) << "kind";
-          SkipUntil(tok::r_paren);
-          return;
-        }
-      }
-
-      ConsumeAnyToken();
-      ExprResult Res(ParseConstantExpression());
-      if (Res.isInvalid()) {
-        SkipUntil(tok::r_paren);
+      unsigned KindValue;
+      SourceLocation KindValueLoc;
+      if (!ParseDeclKind(KindValue, KindValueLoc))
         return;
-      }
 
-      if (!Tok.isInLine(tok::r_paren)) {
-        Diag(Tok, diag::err_expected_rparen);
-        SkipUntil(tok::r_paren);
-        return;
-      }
-
-      // FIXME: This logic should be in Sema.
-      unsigned KindValue =
-        Res.get()->EvaluateKnownConstInt(
-          Actions.getASTContext()).getZExtValue();
-      if (KindValue != 1) {
-        Diag(Res.get()->getExprLoc(), diag::err_invalid_kind_value) <<
-          KindValue << "logical" << "1";
+      unsigned BoolBytes = (getTargetInfo().getBoolWidth()+7)/8;
+      if (KindValue != BoolBytes) {
+        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+          KindValue << "logical" << BoolBytes;
       }
     }
 
     isInvalid = DS.SetTypeSpecType(DeclSpec::TST_bool, Loc, PrevSpec,
                                    DiagID);
+    break;
+  case tok::kw_real:
+    DeclSpec::TST T = DeclSpec::TST_float;
+    if (NextToken().isInLine(tok::l_paren)) {
+      unsigned KindValue;
+      SourceLocation KindValueLoc;
+      if (!ParseDeclKind(KindValue, KindValueLoc))
+        return;
+
+      unsigned FloatBytes = (getTargetInfo().getFloatWidth()+7)/8;
+      unsigned DoubleBytes = (getTargetInfo().getDoubleWidth()+7)/8;
+      unsigned LongDoubleBytes = (getTargetInfo().getLongDoubleWidth()+7)/8;
+
+      if (KindValue == FloatBytes) {
+        T = DeclSpec::TST_float;
+      } else if (KindValue == DoubleBytes) {
+        T = DeclSpec::TST_double;
+      } else if (KindValue == LongDoubleBytes) {
+        T = DeclSpec::TST_double;
+        isInvalid = DS.SetTypeSpecWidth(DeclSpec::TSW_long, Loc, PrevSpec,
+                                        DiagID);
+      } else {
+        llvm::SmallVector<unsigned, 3> AllowedKinds(1, FloatBytes);
+        if (AllowedKinds.back() != DoubleBytes)
+          AllowedKinds.push_back(DoubleBytes);
+        if (AllowedKinds.back() != LongDoubleBytes)
+          AllowedKinds.push_back(LongDoubleBytes);
+
+        std::string AKStr;
+        for (unsigned i = 0, e = AllowedKinds.size(); i != e; ++i) {
+          if (e > 1 && i == e-1)
+            AKStr += " and ";
+          else if (i > 0)
+            AKStr += ", ";
+
+          AKStr += llvm::utostr_32(AllowedKinds[i]);
+        }
+
+        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+          KindValue << "real" << AKStr;
+      }
+    }
+
+    isInvalid &= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
     break;
     // FIXME: everything else
   }
@@ -3244,6 +3267,46 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
 
   // Now there may be a comma-separated list of attributes...
   // FIXME:
+}
+
+bool Parser::ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
+  assert(NextToken().isInLine(tok::l_paren) &&
+         "expected next token to be l_paren");
+
+  // Consume the prior token (the last token of the type name).
+  ConsumeToken();
+
+  if (NextToken().isInLine(tok::kw_kind)) {
+    ConsumeParen();
+    if (NextToken().isInLine(tok::equal)) {
+      ConsumeToken();
+    } else {
+      Diag(NextToken(), diag::err_expected_equal_after) << "kind";
+      SkipUntil(tok::r_paren);
+      return false;
+    }
+  }
+
+  ConsumeAnyToken();
+  ExprResult Res(ParseConstantExpression());
+  if (Res.isInvalid()) {
+    SkipUntil(tok::r_paren);
+    return false;
+  }
+
+  if (!Tok.isInLine(tok::r_paren)) {
+    Diag(Tok, diag::err_expected_rparen);
+    SkipUntil(tok::r_paren);
+    return false;
+  }
+
+  // FIXME: This logic should be in Sema.
+  KindValue =
+    Res.get()->EvaluateKnownConstInt(
+      Actions.getASTContext()).getZExtValue();
+  KindValueLoc = Res.get()->getExprLoc();
+
+  return true;
 }
 
 /// ParseStructDeclaration - Parse a struct declaration without the terminating

@@ -2253,7 +2253,10 @@ public:
                 AccessSpecifier AS = AS_none,
                 DeclSpecContext DSC = DSC_normal,
                 LateParsedAttrList *LateAttrs = 0);
+private:
+  bool ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc);
 
+public:
   void MaybeParseAttributes(Declarator &D,
                             LateParsedAttrList *LateAttrs = 0) {
     if (Tok.is(tok::kw_attribute)) {

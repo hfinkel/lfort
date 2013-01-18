@@ -1,4 +1,4 @@
-! RUN: %lfort_cc1  %s -emit-llvm -o - | FileCheck %s
+! RUN: %lfort_cc1 -triple x86_64-apple-darwin %s -emit-llvm -o - | FileCheck %s
 program hello
 ! CHECK: @MAIN__
 double x, y
@@ -18,4 +18,10 @@ logical(kind = 1) q3
 ! CHECK: %q = alloca i8, align 1
 ! CHECK: %q2 = alloca i8, align 1
 ! CHECK: %q3 = alloca i8, align 1
+real(kind = 4) x2
+real(kind = 8) x3
+real(kind = 16) x4
+! CHECK: %x2 = alloca float, align 4
+! CHECK: %x3 = alloca double, align 8
+! CHECK: %x4 = alloca x86_fp80, align 16
 end program hello
