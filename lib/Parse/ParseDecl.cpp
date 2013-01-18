@@ -3223,7 +3223,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     isInvalid = DS.SetTypeSpecComplex(DeclSpec::TSC_complex, Loc, PrevSpec,
                                       DiagID);
     // fall through
-  case tok::kw_real:
+  case tok::kw_real: {
     bool isComplex = Tok.is(tok::kw_complex);
     DeclSpec::TST T = DeclSpec::TST_float;
     if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
@@ -3277,7 +3277,74 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     }
 
     isInvalid |= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
-    break;
+    break; }
+  case tok::kw_integer: {
+    DeclSpec::TST T = DeclSpec::TST_int;
+    if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
+      bool OldStyle = NextToken().isInLine(tok::star);
+      unsigned KindValue;
+      SourceLocation KindValueLoc;
+      if (!ParseDeclKind(KindValue, KindValueLoc))
+        return;
+
+      unsigned CharBytes = (getTargetInfo().getCharWidth()+7)/8;
+      unsigned ShortBytes =
+        (getTargetInfo().getTypeWidth(TargetInfo::UnsignedShort)+7)/8;
+      unsigned IntBytes =
+        (getTargetInfo().getTypeWidth(TargetInfo::UnsignedInt)+7)/8;
+      unsigned LongBytes =
+        (getTargetInfo().getTypeWidth(TargetInfo::UnsignedLong)+7)/8;
+      unsigned LongLongBytes =
+        (getTargetInfo().getTypeWidth(TargetInfo::UnsignedLongLong)+7)/8;
+
+      if (KindValue == CharBytes) {
+        T = DeclSpec::TST_char;
+      } else if (KindValue == ShortBytes) {
+        T = DeclSpec::TST_int;
+        isInvalid |= DS.SetTypeSpecWidth(DeclSpec::TSW_short, Loc, PrevSpec,
+                                         DiagID);
+      } else if (KindValue == IntBytes) {
+        T = DeclSpec::TST_int;
+      } else if (KindValue == LongBytes) {
+        T = DeclSpec::TST_int;
+        isInvalid |= DS.SetTypeSpecWidth(DeclSpec::TSW_long, Loc, PrevSpec,
+                                         DiagID);
+      } else if (KindValue == LongLongBytes) {
+        T = DeclSpec::TST_int;
+        isInvalid |= DS.SetTypeSpecWidth(DeclSpec::TSW_longlong, Loc, PrevSpec,
+                                         DiagID);
+      } else {
+        llvm::SmallVector<unsigned, 3> AllowedKinds(1, CharBytes);
+        if (AllowedKinds.back() != ShortBytes)
+          AllowedKinds.push_back(ShortBytes);
+        if (AllowedKinds.back() != IntBytes)
+          AllowedKinds.push_back(IntBytes);
+        if (AllowedKinds.back() != LongBytes)
+          AllowedKinds.push_back(LongBytes);
+        if (AllowedKinds.back() != LongLongBytes)
+          AllowedKinds.push_back(LongLongBytes);
+
+        std::string AKStr;
+        for (unsigned i = 0, e = AllowedKinds.size(); i != e; ++i) {
+          if (e > 1 && i == e-1)
+            AKStr += " and ";
+          else if (i > 0)
+            AKStr += ", ";
+
+          AKStr += llvm::utostr_32(AllowedKinds[i]);
+        }
+
+        if (OldStyle)
+          Diag(KindValueLoc, diag::err_invalid_old_kind_value) <<
+            "integer" << AKStr;
+        else
+          Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+            KindValue << "integer" << AKStr;
+      }
+    }
+
+    isInvalid |= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
+    break; }
     // FIXME: everything else
   }
 

@@ -38,4 +38,16 @@ complex*32 r4
 ! CHECK: %r4 = alloca { x86_fp80, x86_fp80 }, align 16
 byte b
 ! CHECK: %b = alloca i8, align 1
+integer i
+integer*4 i2
+integer(kind = 1) i3
+integer(kind = 2) i4
+integer(kind = 4) i5
+integer(kind = 8) i6
+! CHECK: %i = alloca i32, align 4
+! CHECK: %i2 = alloca i32, align 4
+! CHECK: %i3 = alloca i8, align 1
+! CHECK: %i4 = alloca i16, align 2
+! CHECK: %i5 = alloca i32, align 4
+! CHECK: %i6 = alloca i64, align 8
 end program hello
