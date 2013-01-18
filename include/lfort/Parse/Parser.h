@@ -2255,6 +2255,7 @@ public:
                 LateParsedAttrList *LateAttrs = 0);
 private:
   bool ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc);
+  bool ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc);
 
 public:
   void MaybeParseAttributes(Declarator &D,

@@ -3192,7 +3192,8 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     }
     break;
   case tok::kw_logical:
-    if (NextToken().isInLine(tok::l_paren)) {
+    if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
+      bool OldStyle = NextToken().isInLine(tok::star);
       unsigned KindValue;
       SourceLocation KindValueLoc;
       if (!ParseDeclKind(KindValue, KindValueLoc))
@@ -3200,8 +3201,12 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
 
       unsigned BoolBytes = (getTargetInfo().getBoolWidth()+7)/8;
       if (KindValue != BoolBytes) {
-        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
-          KindValue << "logical" << BoolBytes;
+        if (OldStyle)
+          Diag(KindValueLoc, diag::err_invalid_old_kind_value) <<
+            "logical" << BoolBytes;
+        else
+          Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+            KindValue << "logical" << BoolBytes;
       }
     }
 
@@ -3215,7 +3220,8 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
   case tok::kw_real:
     bool isComplex = Tok.is(tok::kw_complex);
     DeclSpec::TST T = DeclSpec::TST_float;
-    if (NextToken().isInLine(tok::l_paren)) {
+    if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
+      bool OldStyle = NextToken().isInLine(tok::star);
       unsigned KindValue;
       SourceLocation KindValueLoc;
       if (!ParseDeclKind(KindValue, KindValueLoc))
@@ -3224,6 +3230,11 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
       unsigned FloatBytes = (getTargetInfo().getFloatWidth()+7)/8;
       unsigned DoubleBytes = (getTargetInfo().getDoubleWidth()+7)/8;
       unsigned LongDoubleBytes = (getTargetInfo().getLongDoubleWidth()+7)/8;
+      if (isComplex && OldStyle) {
+        FloatBytes *= 2;
+        DoubleBytes *= 2;
+        LongDoubleBytes *= 2;
+      }
 
       if (KindValue == FloatBytes) {
         T = DeclSpec::TST_float;
@@ -3250,8 +3261,12 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
           AKStr += llvm::utostr_32(AllowedKinds[i]);
         }
 
-        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
-          KindValue << (isComplex ? "complex" : "real") << AKStr;
+        if (OldStyle)
+          Diag(KindValueLoc, diag::err_invalid_old_kind_value) <<
+            (isComplex ? "complex" : "real") << AKStr;
+        else
+          Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+            KindValue << (isComplex ? "complex" : "real") << AKStr;
       }
     }
 
@@ -3275,6 +3290,9 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
 }
 
 bool Parser::ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
+  if (NextToken().isInLine(tok::star))
+    return ParseOldStyleDeclKind(KindValue, KindValueLoc);
+
   assert(NextToken().isInLine(tok::l_paren) &&
          "expected next token to be l_paren");
 
@@ -3305,6 +3323,35 @@ bool Parser::ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
     return false;
   }
 
+  // FIXME: This logic should be in Sema.
+  KindValue =
+    Res.get()->EvaluateKnownConstInt(
+      Actions.getASTContext()).getZExtValue();
+  KindValueLoc = Res.get()->getExprLoc();
+
+  return true;
+}
+
+bool Parser::ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
+  assert(NextToken().isInLine(tok::star) &&
+         "expected next token to be star");
+
+  // Consume the prior token (the last token of the type name).
+  ConsumeToken();
+
+  if (!NextToken().isInLine(tok::numeric_constant)) {
+    Diag(NextToken(), diag::err_expected_integer_constant);
+    SkipToNextLine();
+    return false;
+  }
+
+  ConsumeToken();
+  ExprResult Res(Actions.ActOnNumericConstant(Tok, getCurScope()));
+  if (Res.isInvalid()) {
+    SkipToNextLine();
+    return false;
+  }
+ 
   // FIXME: This logic should be in Sema.
   KindValue =
     Res.get()->EvaluateKnownConstInt(

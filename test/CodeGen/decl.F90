@@ -15,19 +15,25 @@ double complex w3
 logical q
 logical(1) q2
 logical(kind = 1) q3
+logical*1 q4
 ! CHECK: %q = alloca i8, align 1
 ! CHECK: %q2 = alloca i8, align 1
 ! CHECK: %q3 = alloca i8, align 1
+! CHECK: %q4 = alloca i8, align 1
 real(kind = 4) x2
 real(kind = 8) x3
 real(kind = 16) x4
+real*16 x5
 ! CHECK: %x2 = alloca float, align 4
 ! CHECK: %x3 = alloca double, align 8
 ! CHECK: %x4 = alloca x86_fp80, align 16
+! CHECK: %x5 = alloca x86_fp80, align 16
 complex(4) r
 complex(8) r2
 complex(16) r3
+complex*32 r4
 ! CHECK: %r = alloca { float, float }, align 4
 ! CHECK: %r2 = alloca { double, double }, align 8
 ! CHECK: %r3 = alloca { x86_fp80, x86_fp80 }, align 16
+! CHECK: %r4 = alloca { x86_fp80, x86_fp80 }, align 16
 end program hello

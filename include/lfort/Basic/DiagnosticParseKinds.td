@@ -710,6 +710,10 @@ def warn_end_program_name_mismatch : Warning<
   "end program name does not match program name '%0'">;
 def err_invalid_kind_value : Error<
   "kind for the type %1 evaluates to %0; allowed values are: %2">;
+def err_invalid_old_kind_value : Error<
+  "invalid old-style kind specifier for the type %0; allowed values are: %1">;
+def err_expected_integer_constant : Error<
+  "expected a constant integer">;
 
 // Language specific pragmas
 // - Generic warnings
