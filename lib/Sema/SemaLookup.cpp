@@ -3601,7 +3601,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
       }
     }
 
-    if (SemaRef.getLangOpts().C11) {
+    if (SemaRef.getLangOpts().F90) {
       // FIXME: We should not suggest _Alignof if the alignof macro
       // is present.
       Consumer.addKeywordResult("_Alignof");

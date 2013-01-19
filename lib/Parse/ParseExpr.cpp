@@ -931,7 +931,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     return Res;
   }
   case tok::kw__Alignof:   // unary-expression: '_Alignof' '(' type-name ')'
-    if (!getLangOpts().C11)
+    if (!getLangOpts().F90)
       Diag(Tok, diag::ext_c11_alignment) << Tok.getName();
     // fallthrough
   case tok::kw_alignof:    // unary-expression: 'alignof' '(' type-id ')'
@@ -2202,7 +2202,7 @@ ExprResult Parser::ParseGenericSelectionExpression() {
   assert(Tok.is(tok::kw__Generic) && "_Generic keyword expected");
   SourceLocation KeyLoc = ConsumeToken();
 
-  if (!getLangOpts().C11)
+  if (!getLangOpts().F90)
     Diag(KeyLoc, diag::ext_c11_generic_selection);
 
   BalancedDelimiterTracker T(*this, tok::l_paren);

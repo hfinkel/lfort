@@ -830,10 +830,10 @@ static bool HasFeature(const Preprocessor &PP, const IdentifierInfo *II) {
            .Case("objc_boxed_expressions", LangOpts.ObjC2)
            .Case("arc_cf_code_audited", true)
            // C11 features
-           .Case("c_alignas", LangOpts.C11)
-           .Case("c_atomic", LangOpts.C11)
-           .Case("c_generic_selections", LangOpts.C11)
-           .Case("c_static_assert", LangOpts.C11)
+           .Case("c_alignas", LangOpts.F90)
+           .Case("c_atomic", LangOpts.F90)
+           .Case("c_generic_selections", LangOpts.F90)
+           .Case("c_static_assert", LangOpts.F90)
            // C++11 features
            .Case("cxx_access_control_sfinae", LangOpts.CPlusPlus11)
            .Case("cxx_alias_templates", LangOpts.CPlusPlus11)

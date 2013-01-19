@@ -2852,7 +2852,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
 
     // alignment-specifier
     case tok::kw__Alignas:
-      if (!getLangOpts().C11)
+      if (!getLangOpts().F90)
         Diag(Tok, diag::ext_c11_alignment) << Tok.getName();
       ParseAlignmentSpecifier(DS.getAttributes());
       continue;

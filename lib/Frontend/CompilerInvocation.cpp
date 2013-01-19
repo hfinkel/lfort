@@ -935,7 +935,7 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
   const LangStandard &Std = LangStandard::getLangStandardForKind(LangStd);
   Opts.LineComment = Std.hasLineComments();
   Opts.C99 = Std.isC99();
-  Opts.C11 = Std.isC11();
+  Opts.F90 = Std.isC11();
   Opts.CPlusPlus = Std.isCPlusPlus();
   Opts.CPlusPlus11 = Std.isCPlusPlus11();
   Opts.CPlusPlus1y = Std.isCPlusPlus1y();

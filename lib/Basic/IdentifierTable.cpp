@@ -138,7 +138,7 @@ static void AddKeyword(StringRef Keyword,
   else if (LangOpts.AltiVec && (Flags & KEYALTIVEC)) AddResult = 2;
   else if (LangOpts.OpenCL && (Flags & KEYOPENCL)) AddResult = 2;
   else if (!LangOpts.CPlusPlus && (Flags & KEYNOCXX)) AddResult = 2;
-  else if (LangOpts.C11 && (Flags & KEYC11)) AddResult = 2;
+  else if (LangOpts.F90 && (Flags & KEYC11)) AddResult = 2;
   else if (LangOpts.F90 && (Flags & KEYF90)) AddResult = 2;
   else if (LangOpts.F95 && (Flags & KEYF95)) AddResult = 2;
   else if (LangOpts.F03 && (Flags & KEYF03)) AddResult = 2;

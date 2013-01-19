@@ -850,7 +850,7 @@ void StmtPrinter::VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *Node){
   case UETT_AlignOf:
     if (Policy.LangOpts.CPlusPlus)
       OS << "alignof";
-    else if (Policy.LangOpts.C11)
+    else if (Policy.LangOpts.F90)
       OS << "_Alignof";
     else
       OS << "__alignof";

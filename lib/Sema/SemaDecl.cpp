@@ -1722,7 +1722,7 @@ void Sema::MergeTypedefNameDecl(TypedefNameDecl *New, LookupResult &OldDecls) {
   }
 
   // PCModules always permit redefinition of typedefs, as does C11.
-  if (getLangOpts().PCModules || getLangOpts().C11)
+  if (getLangOpts().PCModules || getLangOpts().F90)
     return;
   
   // If we have a redefinition of a typedef in C, emit a warning.  This warning
@@ -3028,11 +3028,11 @@ Decl *Sema::BuildAnonymousStructOrUnion(Scope *S, DeclSpec &DS,
   DeclContext *Owner = Record->getDeclContext();
 
   // Diagnose whether this anonymous struct/union is an extension.
-  if (Record->isUnion() && !getLangOpts().CPlusPlus && !getLangOpts().C11)
+  if (Record->isUnion() && !getLangOpts().CPlusPlus && !getLangOpts().F90)
     Diag(Record->getLocation(), diag::ext_anonymous_union);
   else if (!Record->isUnion() && getLangOpts().CPlusPlus)
     Diag(Record->getLocation(), diag::ext_gnu_anonymous_struct);
-  else if (!Record->isUnion() && !getLangOpts().C11)
+  else if (!Record->isUnion() && !getLangOpts().F90)
     Diag(Record->getLocation(), diag::ext_c11_anonymous_struct);
 
   // C and C++ require different kinds of checks for anonymous

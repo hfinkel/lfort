@@ -1959,7 +1959,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       AddObjCExpressionResults(Results, true);
     }
 
-    if (SemaRef.getLangOpts().C11) {
+    if (SemaRef.getLangOpts().F90) {
       // _Alignof
       Builder.AddResultTypeChunk("size_t");
       if (SemaRef.getASTContext().Idents.get("alignof").hasMacroDefinition())
