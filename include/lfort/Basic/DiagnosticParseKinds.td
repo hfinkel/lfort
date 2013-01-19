@@ -715,6 +715,11 @@ def err_invalid_old_kind_value : Error<
 def err_expected_integer_constant : Error<
   "expected a constant integer">;
 
+def ext_intrinsic_type : Extension<
+  "the %0 intrinsic type is a non-standard extension">;
+def ext_old_style_kind : Extension<
+  "old-style kind specifiers are a non-standard extension">;
+
 // Language specific pragmas
 // - Generic warnings
 def warn_pragma_expected_lparen : Warning<

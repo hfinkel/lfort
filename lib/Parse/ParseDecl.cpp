@@ -3189,6 +3189,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         ConsumeToken();
       isInvalid |= DS.SetTypeSpecComplex(DeclSpec::TSC_complex, Loc, PrevSpec,
                                          DiagID);
+      Diag(Tok, diag::ext_intrinsic_type) << "double complex";
     }
     break;
   case tok::kw_byte:
@@ -3196,6 +3197,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
                                      DiagID);
     isInvalid |= DS.SetTypeSpecType(DeclSpec::TST_char, Loc, PrevSpec,
                                    DiagID);
+    Diag(Tok, diag::ext_intrinsic_type) << "byte";
     break;
   case tok::kw_logical:
     if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
@@ -3431,6 +3433,7 @@ bool Parser::ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValu
       Actions.getASTContext()).getZExtValue();
   KindValueLoc = Res.get()->getExprLoc();
 
+  Diag(Tok, diag::ext_old_style_kind);
   return true;
 }
 
