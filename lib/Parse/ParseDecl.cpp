@@ -1391,10 +1391,13 @@ Parser::DeclGroupPtrTy Parser::ParseDeclarationConstruct(StmtVector &Stmts,
                                                          SourceLocation &DeclEnd) {
   // Parse the common declaration-specifiers piece.
   ParsingDeclSpec DS(*this);
-  ParseDeclarationTypeSpec(DS, ParsedTemplateInfo(), AS_none,
+
+  llvm::SmallVector<DeclaratorChunk, 4> DeclaratorChunks;
+  ParseDeclarationTypeSpec(DS, DeclaratorChunks, ParsedTemplateInfo(), AS_none,
                            getDeclSpecContextFromDeclaratorContext(Context));
 
-  return ParseEntityDeclList(DS, Context, /*SubprogramDefs=*/ false, &DeclEnd, 0 /*FRI*/);
+  return ParseEntityDeclList(DS, DeclaratorChunks, Context,
+                             /*SubprogramDefs=*/ false, &DeclEnd, 0 /*FRI*/);
 }
 
 ///       simple-declaration: [C99 6.7: declaration] [C++ 7p1: dcl.dcl]
@@ -1731,12 +1734,14 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
 }
 
 Parser::DeclGroupPtrTy Parser::ParseEntityDeclList(ParsingDeclSpec &DS,
-                                              unsigned Context,
-                                              bool AllowSubprogramDefinitions,
-                                              SourceLocation *DeclEnd,
-                                              ForRangeInit *FRI) {
+                                 llvm::SmallVector<DeclaratorChunk, 4> &DeclaratorChunks,
+                                 unsigned Context, bool AllowSubprogramDefinitions,
+                                 SourceLocation *DeclEnd, ForRangeInit *FRI) {
   // Parse the first declarator.
   ParsingDeclarator D(*this, DS, static_cast<Declarator::TheContext>(Context));
+  for (unsigned i = 0; i < DeclaratorChunks.size(); ++i)
+    D.AddInnermostTypeInfo(DeclaratorChunks[i]);
+
   ParseEntityDecl(D);
 
   // Bail out if the first declarator didn't seem well-formed.
@@ -3169,10 +3174,11 @@ static std::string sizeArrAsStr(llvm::ArrayRef<unsigned> A) {
 /// R405 kind-selector is ( [ KIND = ] scalar-int-constant-expr )
 ///
 void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
-                                      const ParsedTemplateInfo &TemplateInfo,
-                                      AccessSpecifier AS,
-                                      DeclSpecContext DSContext,
-                                      LateParsedAttrList *LateAttrs) {
+               llvm::SmallVector<DeclaratorChunk, 4> &DeclaratorChunks,
+               const ParsedTemplateInfo &TemplateInfo,
+               AccessSpecifier AS,
+               DeclSpecContext DSContext,
+               LateParsedAttrList *LateAttrs) {
   if (DS.getSourceRange().isInvalid()) {
     DS.SetRangeStart(Tok.getLocation());
     DS.SetRangeEnd(Tok.getLocation());
@@ -3352,28 +3358,36 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
       bool OldStyle = NextToken().isInLine(tok::star);
       unsigned KindValue;
-      SourceLocation KindValueLoc;
-      if (!ParseDeclKind(KindValue, KindValueLoc))
+      ExprResult LenValue;
+      SourceLocation KindValueLoc, LenValueLoc;
+      if (!ParseCharSelector(KindValue, KindValueLoc, LenValue, LenValueLoc))
         return;
 
       if (OldStyle)
         TrailingCommaAllowed = true;
 
-      unsigned CharBytes = (getTargetInfo().getCharWidth()+7)/8;
-      unsigned WCharBytes = (getTargetInfo().getWCharWidth()+7)/8;
+      if (!KindValueLoc.isInvalid()) {
+        unsigned CharBytes = (getTargetInfo().getCharWidth()+7)/8;
+        unsigned WCharBytes = (getTargetInfo().getWCharWidth()+7)/8;
 
-      if (KindValue == CharBytes) {
-        T = DeclSpec::TST_char;
-      } else if (KindValue == WCharBytes) {
-        T = DeclSpec::TST_wchar;
-      } else {
-        llvm::SmallVector<unsigned, 2> AllowedKinds(1, CharBytes);
-        if (AllowedKinds.back() != WCharBytes)
-          AllowedKinds.push_back(WCharBytes);
+        if (KindValue == CharBytes) {
+          T = DeclSpec::TST_char;
+        } else if (KindValue == WCharBytes) {
+          T = DeclSpec::TST_wchar;
+        } else {
+          llvm::SmallVector<unsigned, 2> AllowedKinds(1, CharBytes);
+          if (AllowedKinds.back() != WCharBytes)
+            AllowedKinds.push_back(WCharBytes);
 
-        std::string AKStr = sizeArrAsStr(AllowedKinds);
-        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
-          KindValue << "character" << AKStr;
+          std::string AKStr = sizeArrAsStr(AllowedKinds);
+          Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+            KindValue << "character" << AKStr;
+        }
+      }
+
+      if (!LenValueLoc.isInvalid()) {
+        DeclaratorChunks.push_back(DeclaratorChunk::getArray(0, false, 0,
+          LenValue.release(), LenValueLoc, LenValueLoc));
       }
     }
 
@@ -3442,7 +3456,8 @@ bool Parser::ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
   return true;
 }
 
-bool Parser::ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {
+bool Parser::ParseOldStyleDeclKindExpr(ExprResult &KindValue,
+                                       SourceLocation &KindValueLoc) {
   assert(NextToken().isInLine(tok::star) &&
          "expected next token to be star");
 
@@ -3463,12 +3478,88 @@ bool Parser::ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValu
   }
  
   // FIXME: This logic should be in Sema.
+  KindValue = Res.take();
+  KindValueLoc = KindValue.get()->getExprLoc();
+  return true;
+}
+
+bool Parser::ParseOldStyleDeclKind(unsigned &KindValue,
+                                   SourceLocation &KindValueLoc, bool IsExt) {
+  ExprResult Res;
+  if (!ParseOldStyleDeclKindExpr(Res, KindValueLoc))
+    return false;
+
+  // FIXME: This logic should be in Sema.
   KindValue =
     Res.get()->EvaluateKnownConstInt(
       Actions.getASTContext()).getZExtValue();
-  KindValueLoc = Res.get()->getExprLoc();
 
-  Diag(Tok, diag::ext_old_style_kind);
+  if (IsExt)
+    Diag(Tok, diag::ext_old_style_kind);
+  return true;
+}
+
+bool Parser::ParseCharSelector(unsigned &KindValue, SourceLocation &KindValueLoc,
+                               ExprResult &LenValue, SourceLocation &LenValueLoc) {
+  bool ParamNamesAllowed = true;
+  if (NextToken().isInLine(tok::star)) {
+    if (GetLookAheadToken(2).isInLine(tok::l_paren)) {
+      ConsumeToken();
+      ParamNamesAllowed = false;
+    } else {
+      return ParseOldStyleDeclKindExpr(LenValue, LenValueLoc);
+    }
+  }
+
+  assert(NextToken().isInLine(tok::l_paren) &&
+         "expected next token to be l_paren");
+
+  // Consume the prior token (the last token of the type name).
+  ConsumeToken();
+
+NextParam:
+  bool IsLen = true;
+  if (NextToken().isInLine(tok::kw_kind) ||
+      NextToken().isInLine(tok::kw_len)) {
+    IsLen = NextToken().isInLine(tok::kw_len);
+    ConsumeAnyToken(); // Consume a l_paren or a comma.
+    if (NextToken().isInLine(tok::equal)) {
+      ConsumeToken();
+    } else {
+      Diag(NextToken(), diag::err_expected_equal_after) <<
+        (IsLen ? "len" : "kind");
+      SkipUntil(tok::r_paren);
+      return false;
+    }
+  }
+
+  ConsumeAnyToken();
+  ExprResult Res(ParseConstantExpression());
+  if (Res.isInvalid()) {
+    SkipUntil(tok::r_paren);
+    return false;
+  }
+
+  if (!Tok.isInLine(tok::r_paren) && !Tok.isInLine(tok::comma)) {
+    Diag(Tok, diag::err_expected_rparen);
+    SkipUntil(tok::r_paren);
+    return false;
+  }
+
+  // FIXME: This logic should be in Sema.
+  if (IsLen) {
+    LenValue = Res.take();
+    LenValueLoc = LenValue.get()->getExprLoc();
+  } else {
+    KindValue = Res.get()->EvaluateKnownConstInt(
+      Actions.getASTContext()).getZExtValue();
+    KindValueLoc = Res.get()->getExprLoc();
+  }
+
+  if (Tok.isInLine(tok::comma)) {
+    goto NextParam;
+  }
+
   return true;
 }
 

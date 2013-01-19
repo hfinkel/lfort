@@ -2239,23 +2239,30 @@ public:
   DeclGroupPtrTy ParseDeclarationConstruct(StmtVector &Stmts,
                                            unsigned Context,
                                            SourceLocation &DeclEnd);
-  DeclGroupPtrTy ParseEntityDeclList(ParsingDeclSpec &DS, unsigned Context,
-                                bool AllowSubprogramDefinitions,
-                                SourceLocation *DeclEnd = 0,
-                                ForRangeInit *FRI = 0);
+  DeclGroupPtrTy ParseEntityDeclList(ParsingDeclSpec &DS,
+                llvm::SmallVector<DeclaratorChunk, 4> &DeclaratorChunks,
+                unsigned Context, bool AllowSubprogramDefinitions,
+                SourceLocation *DeclEnd = 0, ForRangeInit *FRI = 0);
   void ParseEntityDecl(Declarator &D);
 
   StmtResult ParseExprStatement();
   StmtResult ParseIfStatement();
 
   void ParseDeclarationTypeSpec(DeclSpec &DS,
+                llvm::SmallVector<DeclaratorChunk, 4> &DeclaratorChunks,
                 const ParsedTemplateInfo &TemplateInfo = ParsedTemplateInfo(),
                 AccessSpecifier AS = AS_none,
                 DeclSpecContext DSC = DSC_normal,
                 LateParsedAttrList *LateAttrs = 0);
 private:
   bool ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc);
-  bool ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc);
+  bool ParseOldStyleDeclKindExpr(ExprResult &KindValue,
+                                 SourceLocation &KindValueLoc);
+  bool ParseOldStyleDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc,
+                             bool IsExt = true);
+  bool ParseCharSelector(unsigned &KindValue, SourceLocation &KindValueLoc,
+                         ExprResult &LenValue, SourceLocation &LenValueLoc);
+
 
 public:
   void MaybeParseAttributes(Declarator &D,

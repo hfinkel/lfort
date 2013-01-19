@@ -54,4 +54,16 @@ character c
 character(kind = 4) c2
 ! CHECK: %c = alloca i8, align 1
 ! CHECK: %c2 = alloca i32, align 4
+character*3 c3
+character*4, c4
+character*(2+3) c5
+character(kind = 1, len = 6) c6
+character(kind = 4, len = 7) c7
+character(len = 8) c8
+! CHECK: %c3 = alloca [3 x i8], align 1
+! CHECK: %c4 = alloca [4 x i8], align 1
+! CHECK: %c5 = alloca [5 x i8], align 1
+! CHECK: %c6 = alloca [6 x i8], align 1
+! CHECK: %c7 = alloca [7 x i32], align 16
+! CHECK: %c8 = alloca [8 x i8], align 1
 end program hello
