@@ -141,7 +141,7 @@ CodeGenTBAA::getTBAAInfo(QualType QTy) {
     // are the same -- see C99 6.2.7p1. For now, be conservative. We could
     // theoretically implement this by combining information about all the
     // members into a single identifying MDNode.
-    if (!Features.CPlusPlus &&
+    if (!Features.F90 &&
         ETy->getDecl()->getTypedefNameForAnonDecl())
       return MetadataCache[Ty] = getChar();
 
@@ -149,7 +149,7 @@ CodeGenTBAA::getTBAAInfo(QualType QTy) {
     // on their mangled names, if they're external.
     // TODO: Is there a way to get a program-wide unique name for a
     // decl with local linkage or no linkage?
-    if (Features.CPlusPlus &&
+    if (Features.F90 &&
         ETy->getDecl()->getLinkage() != ExternalLinkage)
       return MetadataCache[Ty] = getChar();
 

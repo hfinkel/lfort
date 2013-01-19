@@ -415,7 +415,7 @@ bool ExprEngine::shouldInlineDecl(const Decl *D, ExplodedNode *Pred) {
       return false;
   }
 
-  if (getContext().getLangOpts().CPlusPlus) {
+  if (getContext().getLangOpts().F90) {
     if (const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D)) {
       // Conditionally allow the inlining of template functions.
       if (!AMgr.options.mayInlineTemplateSubprograms())

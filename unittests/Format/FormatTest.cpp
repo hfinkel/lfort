@@ -27,7 +27,7 @@ protected:
         1,
         CharSourceRange::getCharRange(Start, Start.getLocWithOffset(Length)));
     LangOptions LangOpts;
-    LangOpts.CPlusPlus = 1;
+    LangOpts.F90 = 1;
     LangOpts.F90 = 1;
     Lexer Lex(ID, Context.Sources.getBuffer(ID), Context.Sources, LangOpts);
     tooling::Replacements Replace =

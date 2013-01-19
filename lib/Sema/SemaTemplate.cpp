@@ -138,7 +138,7 @@ TemplateNameKind Sema::isTemplateName(Scope *S,
                                       bool EnteringContext,
                                       TemplateTy &TemplateResult,
                                       bool &MemberOfUnknownSpecialization) {
-  assert(getLangOpts().CPlusPlus && "No template names in C!");
+  assert(getLangOpts().F90 && "No template names in C!");
 
   DeclarationName TName;
   MemberOfUnknownSpecialization = false;

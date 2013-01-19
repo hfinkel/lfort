@@ -123,7 +123,7 @@ static llvm::Constant *getTerminateFn(CodeGenSubprogram &CGF) {
   StringRef name;
 
   // In C++, use std::terminate().
-  if (CGF.getLangOpts().CPlusPlus)
+  if (CGF.getLangOpts().F90)
     name = "_ZSt9terminatev"; // FIXME: mangling!
   else if (CGF.getLangOpts().ObjC1 &&
            CGF.getLangOpts().ObjCRuntime.hasTerminate())
@@ -229,9 +229,9 @@ static const EHPersonality &getObjCXXPersonality(const LangOptions &L) {
 }
 
 const EHPersonality &EHPersonality::get(const LangOptions &L) {
-  if (L.CPlusPlus && L.ObjC1)
+  if (L.F90 && L.ObjC1)
     return getObjCXXPersonality(L);
-  else if (L.CPlusPlus)
+  else if (L.F90)
     return getCXXPersonality(L);
   else if (L.ObjC1)
     return getObjCPersonality(L);
@@ -308,7 +308,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
 /// when it really needs it.
 void CodeGenModule::SimplifyPersonality() {
   // If we're not in ObjC++ -fexceptions, there's nothing to do.
-  if (!LangOpts.CPlusPlus || !LangOpts.ObjC1 || !LangOpts.Exceptions)
+  if (!LangOpts.F90 || !LangOpts.ObjC1 || !LangOpts.Exceptions)
     return;
 
   // Both the problem this endeavors to fix and the way the logic

@@ -323,7 +323,7 @@ protected:
       Builder.defineMacro("__ANDROID__", "1");
     if (Opts.POSIXThreads)
       Builder.defineMacro("_REENTRANT");
-    if (Opts.CPlusPlus)
+    if (Opts.F90)
       Builder.defineMacro("_GNU_SOURCE");
   }
 public:
@@ -527,7 +527,7 @@ protected:
       Builder.defineMacro("_XOPEN_SOURCE", "600");
     else
       Builder.defineMacro("_XOPEN_SOURCE", "500");
-    if (Opts.CPlusPlus)
+    if (Opts.F90)
       Builder.defineMacro("__C99FEATURES__");
     Builder.defineMacro("_LARGEFILE_SOURCE");
     Builder.defineMacro("_LARGEFILE64_SOURCE");
@@ -553,7 +553,7 @@ protected:
   }
   void getVisualStudioDefines(const LangOptions &Opts,
                               MacroBuilder &Builder) const {
-    if (Opts.CPlusPlus) {
+    if (Opts.F90) {
       if (Opts.RTTI)
         Builder.defineMacro("_CPPRTTI");
 
@@ -597,7 +597,7 @@ class NaClTargetInfo : public OSTargetInfo<Target> {
                             MacroBuilder &Builder) const {
     if (Opts.POSIXThreads)
       Builder.defineMacro("_REENTRANT");
-    if (Opts.CPlusPlus)
+    if (Opts.F90)
       Builder.defineMacro("_GNU_SOURCE");
 
     DefineStd(Builder, "unix", Opts);
@@ -2768,7 +2768,7 @@ public:
     Builder.defineMacro("__CYGWIN__");
     Builder.defineMacro("__CYGWIN32__");
     DefineStd(Builder, "unix", Opts);
-    if (Opts.CPlusPlus)
+    if (Opts.F90)
       Builder.defineMacro("_GNU_SOURCE");
   }
 };

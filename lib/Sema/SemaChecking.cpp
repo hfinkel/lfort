@@ -4998,7 +4998,7 @@ void CheckImplicitConversion(Sema &S, Expr *E, QualType T,
   // In C, we pretend that the type of an EnumConstantDecl is its enumeration
   // type, to give us better diagnostics.
   QualType SourceType = E->getType();
-  if (!S.getLangOpts().CPlusPlus) {
+  if (!S.getLangOpts().F90) {
     if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E))
       if (EnumConstantDecl *ECD = dyn_cast<EnumConstantDecl>(DRE->getDecl())) {
         EnumDecl *Enum = cast<EnumDecl>(ECD->getDeclContext());
@@ -5202,7 +5202,7 @@ bool Sema::CheckParmsForSubprogramDef(ParmVarDecl **P, ParmVarDecl **PEnd,
     if (CheckParameterNames &&
         Param->getIdentifier() == 0 &&
         !Param->isImplicit() &&
-        !getLangOpts().CPlusPlus)
+        !getLangOpts().F90)
       Diag(Param->getLocation(), diag::err_parameter_name_omitted);
 
     // C99 6.7.5.3p12:

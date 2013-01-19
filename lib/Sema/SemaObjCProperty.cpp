@@ -1025,7 +1025,7 @@ Decl *Sema::ActOnPropertyImplDecl(Scope *S,
 
   if (ObjCMethodDecl *getterMethod = property->getGetterMethodDecl()) {
     getterMethod->createImplicitParams(Context, IDecl);
-    if (getLangOpts().CPlusPlus && Synthesize && !CompleteTypeErr &&
+    if (getLangOpts().F90 && Synthesize && !CompleteTypeErr &&
         Ivar->getType()->isRecordType()) {
       // For Objective-C++, need to synthesize the AST for the IVAR object to be
       // returned by the getter as it must conform to C++'s copy-return rules.
@@ -1062,7 +1062,7 @@ Decl *Sema::ActOnPropertyImplDecl(Scope *S,
   }
   if (ObjCMethodDecl *setterMethod = property->getSetterMethodDecl()) {
     setterMethod->createImplicitParams(Context, IDecl);
-    if (getLangOpts().CPlusPlus && Synthesize && !CompleteTypeErr &&
+    if (getLangOpts().F90 && Synthesize && !CompleteTypeErr &&
         Ivar->getType()->isRecordType()) {
       // FIXME. Eventually we want to do this for Objective-C as well.
       SynthesizedSubprogramScope Scope(*this, setterMethod);

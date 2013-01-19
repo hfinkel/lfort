@@ -510,7 +510,7 @@ static void DiagUninitUse(Sema &S, const VarDecl *VD, const UninitUse &Use,
     // and branch 1 is taken if the condition is false.
     int RemoveDiagKind = -1;
     const char *FixitStr =
-        S.getLangOpts().CPlusPlus ? (I->Output ? "true" : "false")
+        S.getLangOpts().F90 ? (I->Output ? "true" : "false")
                                   : (I->Output ? "1" : "0");
     FixItHint Fixit1, Fixit2;
 

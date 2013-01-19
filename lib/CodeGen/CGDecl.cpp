@@ -122,7 +122,7 @@ void CodeGenSubprogram::EmitVarDecl(const VarDecl &D) {
     // uniqued.  We can't do this in C, though, because there's no
     // standard way to agree on which variables are the same (i.e.
     // there's no mangling).
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       if (llvm::GlobalValue::isWeakForLinker(CurFn->getLinkage()))
         Linkage = CurFn->getLinkage();
 
@@ -142,7 +142,7 @@ void CodeGenSubprogram::EmitVarDecl(const VarDecl &D) {
 static std::string GetStaticDeclName(CodeGenSubprogram &CGF, const VarDecl &D,
                                      const char *Separator) {
   CodeGenModule &CGM = CGF.CGM;
-  if (CGF.getLangOpts().CPlusPlus) {
+  if (CGF.getLangOpts().F90) {
     StringRef Name = CGM.getMangledName(&D);
     return Name.str();
   }
@@ -223,7 +223,7 @@ CodeGenSubprogram::AddInitializerToStaticVarDecl(const VarDecl &D,
   // If constant emission failed, then this should be a C++ static
   // initializer.
   if (!Init) {
-    if (!getLangOpts().CPlusPlus)
+    if (!getLangOpts().F90)
       CGM.ErrorUnsupported(D.getInit(), "constant l-value expression");
     else if (Builder.GetInsertBlock()) {
       // Since we have a static initializer, this global variable can't

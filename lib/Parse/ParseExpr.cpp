@@ -325,7 +325,7 @@ Parser::ParseRHSOfBinaryExpression(ExprResult LHS, prec::Level MinPrec) {
     if (getLangOpts().F90 && Tok.is(tok::l_brace)) {
       RHS = ParseBraceInitializer();
       RHSIsInitList = true;
-    } else if (getLangOpts().CPlusPlus && NextTokPrec <= prec::Conditional)
+    } else if (getLangOpts().F90 && NextTokPrec <= prec::Conditional)
       RHS = ParseAssignmentExpression();
     else
       RHS = ParseCastExpression(false);
@@ -636,7 +636,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     // If this expression is limited to being a unary-expression, the parent can
     // not start a cast expression.
     ParenParseOption ParenExprType =
-      (isUnaryExpression && !getLangOpts().CPlusPlus)? CompoundLiteral : CastExpr;
+      (isUnaryExpression && !getLangOpts().F90)? CompoundLiteral : CastExpr;
     ParsedType CastTy;
     SourceLocation RParenLoc;
     
@@ -698,7 +698,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
                                // constant: enumeration-constant
     // Turn a potentially qualified name into a annot_typename or
     // annot_cxxscope if it would be valid.  This handles things like x::y, etc.
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       // Avoid the unnecessary parse-time lookup in the common case
       // where the syntax forbids a type.
       const Token &Next = NextToken();
@@ -776,7 +776,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
       
       // Allow either an identifier or the keyword 'class' (in C++).
       if (Tok.isNot(tok::identifier) && 
-          !(getLangOpts().CPlusPlus && Tok.is(tok::kw_class))) {
+          !(getLangOpts().F90 && Tok.is(tok::kw_class))) {
         Diag(Tok, diag::err_expected_property_name);
         return ExprError();
       }
@@ -893,7 +893,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     //     ++ cast-expression
     //     -- cast-expression
     SourceLocation SavedLoc = ConsumeToken();
-    Res = ParseCastExpression(!getLangOpts().CPlusPlus);
+    Res = ParseCastExpression(!getLangOpts().F90);
     if (!Res.isInvalid())
       Res = Actions.ActOnUnaryOp(getCurScope(), SavedLoc, SavedKind, Res.get());
     return Res;
@@ -1024,7 +1024,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
   case tok::kw_image2d_t:
   case tok::kw_image2d_array_t:
   case tok::kw_image3d_t: {
-    if (!getLangOpts().CPlusPlus) {
+    if (!getLangOpts().F90) {
       Diag(Tok, diag::err_expected_expression);
       return ExprError();
     }
@@ -1446,7 +1446,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
       CXXScopeSpec SS;
       ParsedType ObjectType;
       bool MayBePseudoDestructor = false;
-      if (getLangOpts().CPlusPlus && !LHS.isInvalid()) {
+      if (getLangOpts().F90 && !LHS.isInvalid()) {
         LHS = Actions.ActOnStartCXXMemberReference(getCurScope(), LHS.take(),
                                                    OpLoc, OpKind, ObjectType,
                                                    MayBePseudoDestructor);
@@ -1561,7 +1561,7 @@ Parser::ParseExprAfterUnaryExprOrTypeTrait(const Token &OpTok,
   // If the operand doesn't start with an '(', it must be an expression.
   if (Tok.isNot(tok::l_paren)) {
     isCastExpr = false;
-    if (OpTok.is(tok::kw_typeof) && !getLangOpts().CPlusPlus) {
+    if (OpTok.is(tok::kw_typeof) && !getLangOpts().F90) {
       Diag(Tok,diag::err_expected_lparen_after_id) << OpTok.getIdentifierInfo();
       return ExprError();
     }
@@ -1586,7 +1586,7 @@ Parser::ParseExprAfterUnaryExprOrTypeTrait(const Token &OpTok,
       return ExprEmpty();
     }
 
-    if (getLangOpts().CPlusPlus || OpTok.isNot(tok::kw_typeof)) {
+    if (getLangOpts().F90 || OpTok.isNot(tok::kw_typeof)) {
       // GNU typeof in C requires the expression to be parenthesized. Not so for
       // sizeof/alignof or in C++. Therefore, the parenthesized expression is
       // the start of a unary-expression, but doesn't include any postfix 

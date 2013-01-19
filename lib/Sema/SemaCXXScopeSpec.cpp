@@ -181,7 +181,7 @@ bool Sema::isUnknownSpecialization(const CXXScopeSpec &SS) {
 ///
 /// \param NNS a dependent nested name specifier.
 CXXRecordDecl *Sema::getCurrentInstantiationOf(NestedNameSpecifier *NNS) {
-  assert(getLangOpts().CPlusPlus && "Only callable in C++");
+  assert(getLangOpts().F90 && "Only callable in C++");
   assert(NNS->isDependent() && "Only dependent nested-name-specifier allowed");
 
   if (!NNS->getAsType())
@@ -716,7 +716,7 @@ bool Sema::ActOnCXXNestedNameSpecifierDecltype(CXXScopeSpec &SS,
   QualType T = BuildDecltypeType(DS.getRepAsExpr(), DS.getTypeSpecTypeLoc());
   if (!T->isDependentType() && !T->getAs<TagType>()) {
     Diag(DS.getTypeSpecTypeLoc(), diag::err_expected_class) 
-      << T << getLangOpts().CPlusPlus;
+      << T << getLangOpts().F90;
     return true;
   }
 

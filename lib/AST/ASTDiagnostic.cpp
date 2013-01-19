@@ -329,7 +329,7 @@ void lfort::FormatASTNodeDiagnosticArgument(
       
       if (DC->isProgram()) {
         // FIXME: Get these strings from some localized place
-        if (Context.getLangOpts().CPlusPlus)
+        if (Context.getLangOpts().F90)
           S = "the global namespace";
         else
           S = "the global scope";

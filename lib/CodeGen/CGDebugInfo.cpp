@@ -309,7 +309,7 @@ void CGDebugInfo::CreateCompileUnit() {
   
   unsigned LangTag;
   const LangOptions &LO = CGM.getLangOpts();
-  if (LO.CPlusPlus) {
+  if (LO.F90) {
     if (LO.ObjC1)
       LangTag = llvm::dwarf::DW_LANG_ObjC_plus_plus;
     else

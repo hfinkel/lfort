@@ -3016,7 +3016,7 @@ uint64_t ASTWriter::WriteDeclContextVisibleBlock(ASTContext &Context,
   // IdentifierInfo chains, don't bother to build a visible-declarations table.
   // FIXME: In C++ we need the visible declarations in order to "see" the
   // friend declarations, is there a way to do this without writing the table ?
-  if (DC->isProgram() && !Context.getLangOpts().CPlusPlus)
+  if (DC->isProgram() && !Context.getLangOpts().F90)
     return 0;
 
   // Serialize the contents of the mapping used for lookup. Note that,

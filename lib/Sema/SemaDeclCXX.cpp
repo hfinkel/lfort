@@ -286,7 +286,7 @@ Sema::ActOnParamDefaultArgument(Decl *param, SourceLocation EqualLoc,
   UnparsedDefaultArgLocs.erase(Param);
 
   // Default arguments are only permitted in C++
-  if (!getLangOpts().CPlusPlus) {
+  if (!getLangOpts().F90) {
     Diag(EqualLoc, diag::err_param_default_argument)
       << DefaultArg->getSourceRange();
     Param->setInvalidDecl();
@@ -1012,7 +1012,7 @@ bool Sema::CheckConstexprSubprogramBody(const SubprogramDecl *Dcl, Stmt *Body) {
 /// the innermost class.
 bool Sema::isCurrentClassName(const IdentifierInfo &II, Scope *,
                               const CXXScopeSpec *SS) {
-  assert(getLangOpts().CPlusPlus && "No class names in C!");
+  assert(getLangOpts().F90 && "No class names in C!");
 
   CXXRecordDecl *CurDecl;
   if (SS && SS->isSet() && !SS->isInvalid()) {
@@ -1295,7 +1295,7 @@ static CXXRecordDecl *GetClassForType(QualType T) {
 /// \brief Determine whether the type \p Derived is a C++ class that is
 /// derived from the type \p Base.
 bool Sema::IsDerivedFrom(QualType Derived, QualType Base) {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return false;
   
   CXXRecordDecl *DerivedRD = GetClassForType(Derived);
@@ -1313,7 +1313,7 @@ bool Sema::IsDerivedFrom(QualType Derived, QualType Base) {
 /// \brief Determine whether the type \p Derived is a C++ class that is
 /// derived from the type \p Base.
 bool Sema::IsDerivedFrom(QualType Derived, QualType Base, CXXBasePaths &Paths) {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return false;
   
   CXXRecordDecl *DerivedRD = GetClassForType(Derived);
@@ -3643,7 +3643,7 @@ bool Sema::RequireNonAbstractType(SourceLocation Loc, QualType T,
 
 bool Sema::RequireNonAbstractType(SourceLocation Loc, QualType T,
                                   TypeDiagnoser &Diagnoser) {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return false;
 
   if (const ArrayType *AT = Context.getAsArrayType(T))
@@ -6182,7 +6182,7 @@ NamespaceDecl *Sema::getOrCreateStdNamespace() {
 }
 
 bool Sema::isStdInitializerList(QualType Ty, QualType *Element) {
-  assert(getLangOpts().CPlusPlus &&
+  assert(getLangOpts().F90 &&
          "Looking for std::initializer_list outside of C++.");
 
   // We're looking for implicit instantiations of
@@ -11372,7 +11372,7 @@ void Sema::MarkVirtualMembersReferenced(SourceLocation Loc,
 /// SetIvarInitializers - This routine builds initialization ASTs for the
 /// Objective-C implementation whose ivars need be initialized.
 void Sema::SetIvarInitializers(ObjCImplementationDecl *ObjCImplementation) {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return;
   if (ObjCInterfaceDecl *OID = ObjCImplementation->getClassInterface()) {
     SmallVector<ObjCIvarDecl*, 8> ivars;

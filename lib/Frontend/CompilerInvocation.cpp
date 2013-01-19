@@ -936,7 +936,7 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
   Opts.LineComment = Std.hasLineComments();
   Opts.F90 = Std.isC99();
   Opts.F90 = Std.isC11();
-  Opts.CPlusPlus = Std.isCPlusPlus();
+  Opts.F90 = Std.isCPlusPlus();
   Opts.F90 = Std.isCPlusPlus11();
   Opts.F90 = Std.isCPlusPlus1y();
   Opts.Digraphs = Std.hasDigraphs();
@@ -971,13 +971,13 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     Opts.CUDA = 1;
 
   // OpenCL and C++ both have bool, true, false keywords.
-  Opts.Bool = Opts.OpenCL || Opts.CPlusPlus;
+  Opts.Bool = Opts.OpenCL || Opts.F90;
 
   // C++ has wchar_t keyword.
-  Opts.WChar = Opts.CPlusPlus;
+  Opts.WChar = Opts.F90;
 
   Opts.GNUKeywords = Opts.GNUMode;
-  Opts.CXXOperatorNames = Opts.CPlusPlus;
+  Opts.CXXOperatorNames = Opts.F90;
 
   // Mimicing gcc's behavior, trigraphs are only enabled if -trigraphs
   // is specified, or -std is set to a conforming mode.
@@ -1051,7 +1051,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     Opts.GNUInline = 1;
 
   if (Args.hasArg(OPT_fapple_kext)) {
-    if (!Opts.CPlusPlus)
+    if (!Opts.F90)
       Diags.Report(diag::warn_c_kext);
     else
       Opts.AppleKext = 1;
@@ -1129,7 +1129,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   Opts.BlocksRuntimeOptional = Args.hasArg(OPT_fblocks_runtime_optional);
   Opts.PCModules = Args.hasArg(OPT_fmodules);
   Opts.CharIsSigned = !Args.hasArg(OPT_fno_signed_char);
-  Opts.WChar = Opts.CPlusPlus && !Args.hasArg(OPT_fno_wchar);
+  Opts.WChar = Opts.F90 && !Args.hasArg(OPT_fno_wchar);
   Opts.ShortWChar = Args.hasArg(OPT_fshort_wchar);
   Opts.ShortEnums = Args.hasArg(OPT_fshort_enums);
   Opts.Freestanding = Args.hasArg(OPT_ffreestanding);

@@ -3099,7 +3099,7 @@ void Sema::ActOnDefs(Scope *S, Decl *TagD, SourceLocation DeclStart,
   for (SmallVectorImpl<Decl*>::iterator D = Decls.begin();
        D != Decls.end(); ++D) {
     FieldDecl *FD = cast<FieldDecl>(*D);
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       PushOnScopeChains(cast<FieldDecl>(FD), S);
     else if (RecordDecl *Record = dyn_cast<RecordDecl>(TagD))
       Record->addDecl(FD);
@@ -3168,7 +3168,7 @@ Decl *Sema::ActOnObjCExceptionDecl(Scope *S, Declarator &D) {
   
   // Check that there are no default arguments inside the type of this
   // exception object (C++ only).
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     CheckExtraCXXDefaultArguments(D);
   
   TypeSourceInfo *TInfo = GetTypeForDeclarator(D, S);

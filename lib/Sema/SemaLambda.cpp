@@ -243,7 +243,7 @@ static bool checkReturnValueType(const ASTContext &Ctx, const Expr *E,
   // not the enum. When inferring block return types, we should allow
   // the enum type if an enum constant is used, unless the enum is
   // anonymous (in which case there can be no variables of its type).
-  if (!Ctx.getLangOpts().CPlusPlus) {
+  if (!Ctx.getLangOpts().F90) {
     const DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(E->IgnoreParenImpCasts());
     if (DRE) {
       const Decl *D = DRE->getDecl();

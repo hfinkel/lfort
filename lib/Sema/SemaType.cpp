@@ -684,7 +684,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
       // specifiers in each declaration, and in the specifier-qualifier list in
       // each struct declaration and type name."
       // FIXME: Does Microsoft really have the implicit int extension in C++?
-      if (S.getLangOpts().CPlusPlus &&
+      if (S.getLangOpts().F90 &&
           !S.getLangOpts().MicrosoftExt) {
         S.Diag(DeclLoc, diag::err_missing_type_specifier)
           << DS.getSourceRange();
@@ -711,7 +711,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
 
         // 'long long' is a C99 or C++11 feature.
         if (!S.getLangOpts().F90) {
-          if (S.getLangOpts().CPlusPlus)
+          if (S.getLangOpts().F90)
             S.Diag(DS.getTypeSpecWidthLoc(),
                    S.getLangOpts().F90 ?
                    diag::warn_cxx98_compat_longlong : diag::ext_cxx11_longlong);
@@ -730,7 +730,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
 
         // 'long long' is a C99 or C++11 feature.
         if (!S.getLangOpts().F90) {
-          if (S.getLangOpts().CPlusPlus)
+          if (S.getLangOpts().F90)
             S.Diag(DS.getTypeSpecWidthLoc(),
                    S.getLangOpts().F90 ?
                    diag::warn_cxx98_compat_longlong : diag::ext_cxx11_longlong);
@@ -1031,7 +1031,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
     // C90 6.5.3 constraints: "The same type qualifier shall not appear more
     // than once in the same specifier-list or qualifier-list, either directly
     // or via one or more typedefs."
-    if (!S.getLangOpts().F90 && !S.getLangOpts().CPlusPlus
+    if (!S.getLangOpts().F90 && !S.getLangOpts().F90
         && TypeQuals & Result.getCVRQualifiers()) {
       if (TypeQuals & DeclSpec::TQ_const && Result.isConstQualified()) {
         S.Diag(DS.getConstSpecLoc(), diag::ext_duplicate_declspec)
@@ -1290,7 +1290,7 @@ QualType Sema::BuildArrayType(QualType T, ArrayType::ArraySizeModifier ASM,
                               SourceRange Brackets, DeclarationName Entity) {
 
   SourceLocation Loc = Brackets.getBegin();
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // C++ [dcl.array]p1:
     //   T is called the array element type; this type shall not be a reference
     //   type, the (possibly cv-qualified) type void, a function type or an
@@ -1458,7 +1458,7 @@ QualType Sema::BuildArrayType(QualType T, ArrayType::ArraySizeModifier ASM,
         Diag(Loc, diag::ext_vla);
     } else if (ASM != ArrayType::Normal || Quals != 0)
       Diag(Loc,
-           getLangOpts().CPlusPlus? diag::err_c99_array_usage_cxx
+           getLangOpts().F90? diag::err_c99_array_usage_cxx
                                      : diag::ext_c99_array_usage) << ASM;
   }
 
@@ -1970,7 +1970,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
                    diag::warn_cxx98_compat_auto_type_specifier);
   }
 
-  if (SemaRef.getLangOpts().CPlusPlus &&
+  if (SemaRef.getLangOpts().F90 &&
       OwnedTagDecl && OwnedTagDecl->isCompleteDefinition()) {
     // Check the contexts where C++ forbids the declaration of a new class
     // or enumeration in a type-specifier-seq.
@@ -2239,7 +2239,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     case DeclaratorChunk::Pointer:
       // Verify that we're not building a pointer to pointer to function with
       // exception specification.
-      if (LangOpts.CPlusPlus && S.CheckDistantExceptionSpec(T)) {
+      if (LangOpts.F90 && S.CheckDistantExceptionSpec(T)) {
         S.Diag(D.getIdentifierLoc(), diag::err_distant_exception_spec);
         D.setInvalidType(true);
         // Build the type anyway.
@@ -2258,7 +2258,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     case DeclaratorChunk::Reference: {
       // Verify that we're not building a reference to pointer to function with
       // exception specification.
-      if (LangOpts.CPlusPlus && S.CheckDistantExceptionSpec(T)) {
+      if (LangOpts.F90 && S.CheckDistantExceptionSpec(T)) {
         S.Diag(D.getIdentifierLoc(), diag::err_distant_exception_spec);
         D.setInvalidType(true);
         // Build the type anyway.
@@ -2273,7 +2273,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
     case DeclaratorChunk::Array: {
       // Verify that we're not building an array of pointers to function with
       // exception specification.
-      if (LangOpts.CPlusPlus && S.CheckDistantExceptionSpec(T)) {
+      if (LangOpts.F90 && S.CheckDistantExceptionSpec(T)) {
         S.Diag(D.getIdentifierLoc(), diag::err_distant_exception_spec);
         D.setInvalidType(true);
         // Build the type anyway.
@@ -2413,7 +2413,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       // class type in C++.
       if (isa<PointerType>(T) && T.getLocalCVRQualifiers() &&
           (D.getName().getKind() != UnqualifiedId::IK_ConversionSubprogramId) &&
-          (!LangOpts.CPlusPlus || !T->isDependentType())) {
+          (!LangOpts.F90 || !T->isDependentType())) {
         assert(chunkIndex + 1 < e && "No DeclaratorChunk for the return type?");
         DeclaratorChunk ReturnTypeChunk = D.getTypeObject(chunkIndex + 1);
         assert(ReturnTypeChunk.Kind == DeclaratorChunk::Pointer);
@@ -2427,7 +2427,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
             S);
 
       } else if (T.getCVRQualifiers() && D.getDeclSpec().getTypeQualifiers() &&
-          (!LangOpts.CPlusPlus ||
+          (!LangOpts.F90 ||
            (!T->isDependentType() && !T->isRecordType()))) {
 
         DiagnoseIgnoredQualifiers(D.getDeclSpec().getTypeQualifiers(),
@@ -2437,7 +2437,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
                                   S);
       }
 
-      if (LangOpts.CPlusPlus && D.getDeclSpec().isTypeSpecOwned()) {
+      if (LangOpts.F90 && D.getDeclSpec().isTypeSpecOwned()) {
         // C++ [dcl.fct]p6:
         //   Types shall not be defined in return or parameter types.
         TagDecl *Tag = cast<TagDecl>(D.getDeclSpec().getRepAsDecl());
@@ -2458,14 +2458,14 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       if (FTI.isAmbiguous)
         warnAboutAmbiguousSubprogram(S, D, DeclType, T);
 
-      if (!FTI.NumArgs && !FTI.isVariadic && !LangOpts.CPlusPlus) {
+      if (!FTI.NumArgs && !FTI.isVariadic && !LangOpts.F90) {
         // Simple void foo(), where the incoming T is the result type.
         T = Context.getSubprogramNoProtoType(T);
       } else {
         // We allow a zero-parameter variadic function in C if the
         // function is marked with the "overloadable" attribute. Scan
         // for this attribute now.
-        if (!FTI.NumArgs && FTI.isVariadic && !LangOpts.CPlusPlus) {
+        if (!FTI.NumArgs && FTI.isVariadic && !LangOpts.F90) {
           bool Overloadable = false;
           for (const AttributeList *Attrs = D.getAttributes();
                Attrs; Attrs = Attrs->getNext()) {
@@ -2664,7 +2664,7 @@ static TypeSourceInfo *GetFullTypeForDeclarator(TypeProcessingState &state,
       processTypeAttrs(state, T, false, attrs);
   }
 
-  if (LangOpts.CPlusPlus && T->isSubprogramType()) {
+  if (LangOpts.F90 && T->isSubprogramType()) {
     const SubprogramProtoType *SubPgmTy = T->getAs<SubprogramProtoType>();
     assert(SubPgmTy && "Why oh why is there not a SubprogramProtoType here?");
 
@@ -3421,7 +3421,7 @@ TypeResult Sema::ActOnTypeName(Scope *S, Declarator &D) {
   if (D.getContext() != Declarator::ObjCParameterContext)
     checkUnusedDeclAttributes(D);
 
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // Check that there are no default arguments (C++ only).
     CheckExtraCXXDefaultArguments(D);
   }

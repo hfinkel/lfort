@@ -556,7 +556,7 @@ void CodeGenSubprogram::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
   // C11 6.9.1p12:
   //   If the '}' that terminates a function is reached, and the value of the
   //   function call is used by the caller, the behavior is undefined.
-  if (getLangOpts().CPlusPlus && !FD->hasImplicitReturnZero() &&
+  if (getLangOpts().F90 && !FD->hasImplicitReturnZero() &&
       !FD->getResultType()->isVoidType() && Builder.GetInsertBlock()) {
     if (getLangOpts().SanitizeReturn)
       EmitCheck(Builder.getFalse(), "missing_return",
@@ -839,7 +839,7 @@ static void emitNonZeroVLAInit(CodeGenSubprogram &CGF, QualType baseType,
 void
 CodeGenSubprogram::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
   // Ignore empty classes in C++.
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     if (const RecordType *RT = Ty->getAs<RecordType>()) {
       if (cast<CXXRecordDecl>(RT->getDecl())->isEmpty())
         return;

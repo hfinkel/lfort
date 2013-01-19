@@ -308,7 +308,7 @@ ExprResult Sema::ActOnObjCBoolLiteral(SourceLocation AtLoc,
                                       SourceLocation ValueLoc,
                                       bool Value) {
   ExprResult Inner;
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     Inner = ActOnCXXBoolLiteral(ValueLoc, Value? tok::kw_true : tok::kw_false);
   } else {
     // C doesn't actually have a way to represent literal values of type 
@@ -336,7 +336,7 @@ static ExprResult CheckObjCCollectionLiteralElement(Sema &S, Expr *Element,
 
   // In C++, check for an implicit conversion to an Objective-C object pointer 
   // type.
-  if (S.getLangOpts().CPlusPlus && Element->getType()->isRecordType()) {
+  if (S.getLangOpts().F90 && Element->getType()->isRecordType()) {
     InitializedEntity Entity
       = InitializedEntity::InitializeParameter(S.Context, T,
                                                /*Consumed=*/false);
@@ -939,7 +939,7 @@ ExprResult Sema::BuildObjCEncodeExpression(SourceLocation AtLoc,
     // which is an array type.
     StrTy = Context.CharTy;
     // A C++ string literal has a const-qualified element type (C++ 2.13.4p1).
-    if (getLangOpts().CPlusPlus || getLangOpts().ConstStrings)
+    if (getLangOpts().F90 || getLangOpts().ConstStrings)
       StrTy.addConst();
     StrTy = Context.getConstantArrayType(StrTy, llvm::APInt(32, Str.size()+1),
                                          ArrayType::Normal, 0);
@@ -1937,7 +1937,7 @@ ExprResult Sema::BuildClassMessage(TypeSourceInfo *ReceiverTypeInfo,
   }
   assert(Class && "We don't know which class we're messaging?");
   // objc++ diagnoses during typename annotation.
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     (void)DiagnoseUseOfDecl(Class, Loc);
   // Find the method we are messaging.
   if (!Method) {
@@ -2279,7 +2279,7 @@ ExprResult Sema::BuildInstanceMessage(Expr *Receiver,
         ReceiverType = Receiver->getType();
       } else {
         ExprResult ReceiverRes;
-        if (getLangOpts().CPlusPlus)
+        if (getLangOpts().F90)
           ReceiverRes = PerformContextuallyConvertToObjCPointer(Receiver);
         if (ReceiverRes.isUsable()) {
           Receiver = ReceiverRes.take();

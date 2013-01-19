@@ -219,7 +219,7 @@ void Parser::ConsumeExtraSemi(ExtraSemiKind Kind, unsigned TST) {
 
   // C++11 allows extra semicolons at namespace scope, but not in any of the
   // other contexts.
-  if (Kind == OutsideSubprogram && getLangOpts().CPlusPlus) {
+  if (Kind == OutsideSubprogram && getLangOpts().F90) {
     if (getLangOpts().F90)
       Diag(StartLoc, diag::warn_cxx98_compat_top_level_semi)
           << FixItHint::CreateRemoval(SourceRange(StartLoc, EndLoc));
@@ -1001,7 +1001,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
   case tok::kw_static:
     // Parse (then ignore) 'static' prior to a template instantiation. This is
     // a GCC extension that we intentionally do not support.
-    if (getLangOpts().CPlusPlus && NextToken().is(tok::kw_template)) {
+    if (getLangOpts().F90 && NextToken().is(tok::kw_template)) {
       Diag(ConsumeToken(), diag::warn_static_inline_explicit_inst_ignored)
         << 0;
       SourceLocation DeclEnd;
@@ -1011,7 +1011,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
     goto dont_know;
       
   case tok::kw_inline:
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       tok::TokenKind NextKind = NextToken().getKind();
       
       // Inline namespaces. Allowed as an extension even in C++03.
@@ -1034,7 +1034,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
     goto dont_know;
 
   case tok::kw_extern:
-    if (getLangOpts().CPlusPlus && NextToken().is(tok::kw_template)) {
+    if (getLangOpts().F90 && NextToken().is(tok::kw_template)) {
       // Extern templates
       SourceLocation ExternLoc = ConsumeToken();
       SourceLocation TemplateLoc = ConsumeToken();
@@ -1069,7 +1069,7 @@ Parser::ParseExternalDeclaration(ParsedAttributesWithRange &attrs,
 /// declarator, continues a declaration or declaration list.
 bool Parser::isDeclarationAfterDeclarator() {
   // Check for '= delete' or '= default'
-  if (getLangOpts().CPlusPlus && Tok.is(tok::equal)) {
+  if (getLangOpts().F90 && Tok.is(tok::equal)) {
     const Token &KW = NextToken();
     if (KW.is(tok::kw_default) || KW.is(tok::kw_delete))
       return false;
@@ -1080,7 +1080,7 @@ bool Parser::isDeclarationAfterDeclarator() {
     Tok.is(tok::semi)  ||           // int X();  -> not a function def
     Tok.is(tok::kw_asm) ||          // int X() __asm__ -> not a function def
     Tok.is(tok::kw___attribute) ||  // int X() __attr__ -> not a function def
-    (getLangOpts().CPlusPlus &&
+    (getLangOpts().F90 &&
      Tok.is(tok::l_paren));         // int X(0) -> not a function def [C++]
 }
 
@@ -1092,11 +1092,11 @@ bool Parser::isStartOfSubprogramDefinition(const ParsingDeclarator &Declarator) 
     return true;
   
   // Handle K&R C argument lists: int X(f) int f; {}
-  if (!getLangOpts().CPlusPlus &&
+  if (!getLangOpts().F90 &&
       Declarator.getSubprogramTypeInfo().isKNRPrototype()) 
     return isDeclarationSpecifier();
 
-  if (getLangOpts().CPlusPlus && Tok.is(tok::equal)) {
+  if (getLangOpts().F90 && Tok.is(tok::equal)) {
     const Token &KW = NextToken();
     return KW.is(tok::kw_default) || KW.is(tok::kw_delete);
   }
@@ -1169,7 +1169,7 @@ Parser::ParseDeclOrSubprogramDefInternal(ParsedAttributesWithRange &attrs,
   // If the declspec consisted only of 'extern' and we have a string
   // literal following it, this must be a C++ linkage specifier like
   // 'extern "C"'.
-  if (Tok.is(tok::string_literal) && getLangOpts().CPlusPlus &&
+  if (Tok.is(tok::string_literal) && getLangOpts().F90 &&
       DS.getStorageClassSpec() == DeclSpec::SCS_extern &&
       DS.getParsedSpecifiers() == DeclSpec::PQ_StorageClassSpecifier) {
     Decl *TheDecl = ParseLinkage(DS, Declarator::FileContext);
@@ -1238,7 +1238,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
   // We should have either an opening brace or, in a C++ constructor,
   // we may have a colon.
   if (Tok.isNot(tok::l_brace) && 
-      (!getLangOpts().CPlusPlus ||
+      (!getLangOpts().F90 ||
        (Tok.isNot(tok::colon) && Tok.isNot(tok::kw_try) &&
         Tok.isNot(tok::equal)))) {
     Diag(Tok, diag::err_expected_fn_body);
@@ -1338,7 +1338,7 @@ Decl *Parser::ParseSubprogramDefinition(ParsingDeclarator &D,
   D.getMutableDeclSpec().abort();
 
   if (Tok.is(tok::equal)) {
-    assert(getLangOpts().CPlusPlus && "Only C++ function definitions have '='");
+    assert(getLangOpts().F90 && "Only C++ function definitions have '='");
     ConsumeToken();
 
     Actions.ActOnFinishSubprogramBody(Res, 0, false);
@@ -1629,7 +1629,7 @@ Parser::TryAnnotateName(bool IsAddressOfOperand,
   const bool WasScopeAnnotation = Tok.is(tok::annot_cxxscope);
 
   CXXScopeSpec SS;
-  if (getLangOpts().CPlusPlus &&
+  if (getLangOpts().F90 &&
       ParseOptionalCXXScopeSpecifier(SS, ParsedType(), EnteringContext))
     return ANK_Error;
 
@@ -1835,7 +1835,7 @@ bool Parser::TryAnnotateTypeOrScopeToken(bool EnteringContext, bool NeedType) {
   bool WasScopeAnnotation = Tok.is(tok::annot_cxxscope);
 
   CXXScopeSpec SS;
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     if (ParseOptionalCXXScopeSpecifier(SS, ParsedType(), EnteringContext))
       return true;
 
@@ -1878,7 +1878,7 @@ bool Parser::TryAnnotateTypeOrScopeTokenAfterScopeSpec(bool EnteringContext,
       return false;
     }
 
-    if (!getLangOpts().CPlusPlus) {
+    if (!getLangOpts().F90) {
       // If we're in C, we can't have :: tokens at all (the lexer won't return
       // them).  If the identifier is not a type, then it can't be scope either,
       // just early exit.
@@ -1942,7 +1942,7 @@ bool Parser::TryAnnotateTypeOrScopeTokenAfterScopeSpec(bool EnteringContext,
 /// Note that this routine emits an error if you call it with ::new or ::delete
 /// as the current tokens, so only call it in contexts where these are invalid.
 bool Parser::TryAnnotateCXXScopeToken(bool EnteringContext) {
-  assert(getLangOpts().CPlusPlus &&
+  assert(getLangOpts().F90 &&
          "Call sites of this function should be guarded by checking for C++");
   assert((Tok.is(tok::identifier) || Tok.is(tok::coloncolon) ||
           (Tok.is(tok::annot_template_id) && NextToken().is(tok::coloncolon)) ||

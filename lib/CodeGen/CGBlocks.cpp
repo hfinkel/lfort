@@ -244,7 +244,7 @@ static llvm::Constant *tryCaptureAsConstant(CodeGenModule &CGM,
   //   Except that any class member declared mutable can be
   //   modified, any attempt to modify a const object during its
   //   lifetime results in undefined behavior.
-  if (CGM.getLangOpts().CPlusPlus && !isSafeForCXXConstantCapture(type))
+  if (CGM.getLangOpts().F90 && !isSafeForCXXConstantCapture(type))
     return 0;
 
   // If the variable doesn't have any initializer (shouldn't this be
@@ -394,7 +394,7 @@ static void computeBlockInfo(CodeGenModule &CGM, CodeGenSubprogram *CGF,
       info.HasCXXObject = true;
 
     // And so do types with destructors.
-    } else if (CGM.getLangOpts().CPlusPlus) {
+    } else if (CGM.getLangOpts().F90) {
       if (const CXXRecordDecl *record =
             variable->getType()->getAsCXXRecordDecl()) {
         if (!record->hasTrivialDestructor()) {

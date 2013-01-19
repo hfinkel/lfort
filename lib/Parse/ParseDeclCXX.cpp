@@ -1000,7 +1000,7 @@ bool Parser::isValidAfterTypeSpecifier(bool CouldBeBitfield) {
     break;
   case tok::r_brace:  // struct bar { struct foo {...} }
     // Missing ';' at end of struct is accepted as an extension in C mode.
-    if (!getLangOpts().CPlusPlus)
+    if (!getLangOpts().F90)
       return true;
     break;
   }
@@ -1136,7 +1136,7 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
 
   // Parse the (optional) nested-name-specifier.
   CXXScopeSpec &SS = DS.getTypeSpecScope();
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // "FOO : BAR" is not a potential typo for "FOO::BAR".
     ColonProtectionRAIIObject X(*this);
 
@@ -1157,7 +1157,7 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
     Name = Tok.getIdentifierInfo();
     NameLoc = ConsumeToken();
 
-    if (Tok.is(tok::less) && getLangOpts().CPlusPlus) {
+    if (Tok.is(tok::less) && getLangOpts().F90) {
       // The name was supposed to refer to a template, but didn't.
       // Eat the template argument list and try to continue parsing this as
       // a class (or template thereof).
@@ -1256,7 +1256,7 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
   if (DSC == DSC_trailing)
     TUK = Sema::TUK_Reference;
   else if (Tok.is(tok::l_brace) ||
-           (getLangOpts().CPlusPlus && Tok.is(tok::colon)) ||
+           (getLangOpts().F90 && Tok.is(tok::colon)) ||
            (isCXX11FinalKeyword() &&
             (NextToken().is(tok::l_brace) || NextToken().is(tok::colon)))) {
     if (DS.isFriendSpecified()) {
@@ -1505,9 +1505,9 @@ void Parser::ParseClassSpecifier(tok::TokenKind TagTokKind,
   // If there is a body, parse it and inform the actions module.
   if (TUK == Sema::TUK_Definition) {
     assert(Tok.is(tok::l_brace) ||
-           (getLangOpts().CPlusPlus && Tok.is(tok::colon)) ||
+           (getLangOpts().F90 && Tok.is(tok::colon)) ||
            isCXX11FinalKeyword());
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       ParseCXXMemberSpecification(StartLoc, TagType, TagOrTempResult.get());
     else
       ParseStructUnionBody(StartLoc, TagType, TagOrTempResult.get());
@@ -1715,7 +1715,7 @@ void Parser::HandleMemberSubprogramDeclDelays(Declarator& DeclaratorInfo,
 ///         override
 ///         final
 VirtSpecifiers::Specifier Parser::isCXX11VirtSpecifier(const Token &Tok) const {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return VirtSpecifiers::VS_None;
 
   if (Tok.is(tok::identifier)) {
@@ -1773,7 +1773,7 @@ void Parser::ParseOptionalCXX11VirtSpecifierSeq(VirtSpecifiers &VS,
 /// isCXX11FinalKeyword - Determine whether the next token is a C++11
 /// contextual 'final' keyword.
 bool Parser::isCXX11FinalKeyword() const {
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return false;
 
   if (!Tok.is(tok::identifier))
@@ -2401,7 +2401,7 @@ void Parser::ParseCXXMemberSpecification(SourceLocation RecordLoc,
   SourceLocation FinalLoc;
 
   // Parse the optional 'final' keyword.
-  if (getLangOpts().CPlusPlus && Tok.is(tok::identifier)) {
+  if (getLangOpts().F90 && Tok.is(tok::identifier)) {
     assert(isCXX11FinalKeyword() && "not a class definition");
     FinalLoc = ConsumeToken();
 

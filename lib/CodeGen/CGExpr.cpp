@@ -935,7 +935,7 @@ static bool getRangeForType(CodeGenSubprogram &CGF, QualType Ty,
                             llvm::APInt &Min, llvm::APInt &End,
                             bool StrictEnums) {
   const EnumType *ET = Ty->getAs<EnumType>();
-  bool IsRegularCPlusPlusEnum = CGF.getLangOpts().CPlusPlus && StrictEnums &&
+  bool IsRegularCPlusPlusEnum = CGF.getLangOpts().F90 && StrictEnums &&
                                 ET && !ET->getDecl()->isFixed();
   bool IsBool = hasBooleanRepresentation(Ty);
   if (!IsBool && !IsRegularCPlusPlusEnum)

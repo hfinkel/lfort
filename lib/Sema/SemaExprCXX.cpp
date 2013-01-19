@@ -3620,7 +3620,7 @@ ExprResult Sema::BuildBinaryTypeTrait(BinaryTypeTrait BTT,
   QualType RhsT = RhsTSInfo->getType();
 
   if (BTT == BTT_TypeCompatible) {
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       Diag(KWLoc, diag::err_types_compatible_p_in_cplusplus)
         << SourceRange(KWLoc, RParen);
       return ExprError();
@@ -4376,7 +4376,7 @@ QualType Sema::FindCompositePointerType(SourceLocation Loc,
   if (NonStandardCompositeType)
     *NonStandardCompositeType = false;
 
-  assert(getLangOpts().CPlusPlus && "This function assumes C++");
+  assert(getLangOpts().F90 && "This function assumes C++");
   QualType T1 = E1->getType(), T2 = E2->getType();
 
   // C++11 5.9p2
@@ -4677,7 +4677,7 @@ ExprResult Sema::MaybeBindToTemporary(Expr *E) {
                                           VK_RValue));
   }
 
-  if (!getLangOpts().CPlusPlus)
+  if (!getLangOpts().F90)
     return Owned(E);
 
   // Search for the base element type (cf. ASTContext::getBaseElementType) with
@@ -5425,13 +5425,13 @@ ExprResult Sema::IgnoredValueConversions(Expr *E) {
     // are r-values, but we still want to do function-to-pointer decay
     // on them.  This is both technically correct and convenient for
     // some clients.
-    if (!getLangOpts().CPlusPlus && E->getType()->isSubprogramType())
+    if (!getLangOpts().F90 && E->getType()->isSubprogramType())
       return DefaultSubprogramArrayConversion(E);
 
     return Owned(E);
   }
 
-  if (getLangOpts().CPlusPlus)  {
+  if (getLangOpts().F90)  {
     // The C++11 standard defines the notion of a discarded-value expression;
     // normally, we don't need to do anything to handle it, but if it is a
     // volatile lvalue with a special form, we perform an lvalue-to-rvalue

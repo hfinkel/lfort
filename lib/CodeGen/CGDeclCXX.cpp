@@ -381,7 +381,7 @@ void CodeGenSubprogram::GenerateCXXGlobalInitFunc(llvm::Function *Fn,
 
   // When building in Objective-C++ ARC mode, create an autorelease pool
   // around the global initializers.
-  if (getLangOpts().ObjCAutoRefCount && getLangOpts().CPlusPlus) {    
+  if (getLangOpts().ObjCAutoRefCount && getLangOpts().F90) {    
     llvm::Value *token = EmitObjCAutoreleasePoolPush();
     EmitObjCAutoreleasePoolCleanup(token);
   }

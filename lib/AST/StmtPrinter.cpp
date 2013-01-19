@@ -848,7 +848,7 @@ void StmtPrinter::VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *Node){
     OS << "sizeof";
     break;
   case UETT_AlignOf:
-    if (Policy.LangOpts.CPlusPlus)
+    if (Policy.LangOpts.F90)
       OS << "alignof";
     else if (Policy.LangOpts.F90)
       OS << "_Alignof";
@@ -1068,7 +1068,7 @@ void StmtPrinter::VisitDesignatedInitExpr(DesignatedInitExpr *Node) {
 }
 
 void StmtPrinter::VisitImplicitValueInitExpr(ImplicitValueInitExpr *Node) {
-  if (Policy.LangOpts.CPlusPlus)
+  if (Policy.LangOpts.F90)
     OS << "/*implicit*/" << Node->getType().getAsString(Policy) << "()";
   else {
     OS << "/*implicit*/(" << Node->getType().getAsString(Policy) << ")";

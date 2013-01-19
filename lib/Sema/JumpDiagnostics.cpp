@@ -149,7 +149,7 @@ static ScopePair GetDiagForGotoScopeDecl(ASTContext &Context, const Decl *D) {
       }
     }
 
-    if (Context.getLangOpts().CPlusPlus && VD->hasLocalStorage()) {
+    if (Context.getLangOpts().F90 && VD->hasLocalStorage()) {
       // C++11 [stmt.dcl]p3:
       //   A program that jumps from a point where a variable with automatic
       //   storage duration is not in scope to a point where it is in scope

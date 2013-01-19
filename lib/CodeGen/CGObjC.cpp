@@ -2345,7 +2345,7 @@ static TryEmitResult tryEmitARCRetainLoadOfScalar(CodeGenSubprogram &CGF,
   // As a very special optimization, in ARC++, if the l-value is the
   // result of a non-volatile assignment, do a simple retain of the
   // result of the call to objc_storeWeak instead of reloading.
-  if (CGF.getLangOpts().CPlusPlus &&
+  if (CGF.getLangOpts().F90 &&
       !type.isVolatileQualified() &&
       type.getObjCLifetime() == Qualifiers::OCL_Weak &&
       isa<BinaryOperator>(e) &&
@@ -2806,7 +2806,7 @@ void CodeGenSubprogram::EmitExtendGCLifetime(llvm::Value *object) {
 llvm::Constant *
 CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperSubprogram(
                                         const ObjCPropertyImplDecl *PID) {
-  if (!getLangOpts().CPlusPlus ||
+  if (!getLangOpts().F90 ||
       !getLangOpts().ObjCRuntime.hasAtomicCopyHelper())
     return 0;
   QualType Ty = PID->getPropertyIvarDecl()->getType();
@@ -2889,7 +2889,7 @@ CodeGenSubprogram::GenerateObjCAtomicSetterCopyHelperSubprogram(
 llvm::Constant *
 CodeGenSubprogram::GenerateObjCAtomicGetterCopyHelperSubprogram(
                                             const ObjCPropertyImplDecl *PID) {
-  if (!getLangOpts().CPlusPlus ||
+  if (!getLangOpts().F90 ||
       !getLangOpts().ObjCRuntime.hasAtomicCopyHelper())
     return 0;
   const ObjCPropertyDecl *PD = PID->getPropertyDecl();

@@ -294,7 +294,7 @@ static void InitializeStandardPredefinedMacros(const TargetInfo &TI,
   else
     Builder.defineMacro("__STDC_HOSTED__");
 
-  if (!LangOpts.CPlusPlus) {
+  if (!LangOpts.F90) {
     if (LangOpts.F90)
       Builder.defineMacro("__STDC_VERSION__", "201112L");
     else if (LangOpts.F90)
@@ -426,7 +426,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
   if (LangOpts.Deprecated)
     Builder.defineMacro("__DEPRECATED");
 
-  if (LangOpts.CPlusPlus) {
+  if (LangOpts.F90) {
     Builder.defineMacro("__GNUG__", "4");
     Builder.defineMacro("__GXX_WEAK__");
     Builder.defineMacro("__private_extern__", "extern");
@@ -442,7 +442,7 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
       Builder.defineMacro("_WCHAR_T_DEFINED");
       Builder.defineMacro("_NATIVE_WCHAR_T_DEFINED");
     }
-    if (LangOpts.CPlusPlus) {
+    if (LangOpts.F90) {
       // FIXME: Support Microsoft's __identifier extension in the lexer.
       Builder.append("#define __identifier(x) x");
       Builder.append("class type_info;");
@@ -735,7 +735,7 @@ void lfort::InitializePreprocessor(Preprocessor &PP,
 
     // Install definitions to make Objective-C++ ARC work well with various
     // C++ Standard Library implementations.
-    if (LangOpts.ObjC1 && LangOpts.CPlusPlus && LangOpts.ObjCAutoRefCount) {
+    if (LangOpts.ObjC1 && LangOpts.F90 && LangOpts.ObjCAutoRefCount) {
       switch (InitOpts.ObjCXXARCStandardLibrary) {
       case ARCXX_nolib:
         case ARCXX_libcxx:

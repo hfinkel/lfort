@@ -1610,7 +1610,7 @@ static bool ExtractSubobject(EvalInfo &Info, const Expr *E,
       ObjType = Field->getType();
 
       if (ObjType.isVolatileQualified()) {
-        if (Info.getLangOpts().CPlusPlus) {
+        if (Info.getLangOpts().F90) {
           // FIXME: Include a description of the path to the volatile subobject.
           Info.Diag(E, diag::note_constexpr_ltor_volatile_obj, 1)
             << 2 << Field;
@@ -1743,7 +1743,7 @@ static bool HandleLValueToRValueConversion(EvalInfo &Info, const Expr *Conv,
   // apply this rule to C++98, in order to conform to the expected 'volatile'
   // semantics.
   if (Type.isVolatileQualified()) {
-    if (Info.getLangOpts().CPlusPlus)
+    if (Info.getLangOpts().F90)
       Info.Diag(Conv, diag::note_constexpr_ltor_volatile_type) << Type;
     else
       Info.Diag(Conv);
@@ -1770,7 +1770,7 @@ static bool HandleLValueToRValueConversion(EvalInfo &Info, const Expr *Conv,
     // behavior is undefined so the result is not a constant expression.
     QualType VT = VD->getType();
     if (VT.isVolatileQualified()) {
-      if (Info.getLangOpts().CPlusPlus) {
+      if (Info.getLangOpts().F90) {
         Info.Diag(Conv, diag::note_constexpr_ltor_volatile_obj, 1) << 1 << VD;
         Info.Note(VD->getLocation(), diag::note_declared_at);
       } else {
@@ -1784,7 +1784,7 @@ static bool HandleLValueToRValueConversion(EvalInfo &Info, const Expr *Conv,
         // OK, we can read this variable.
       } else if (VT->isIntegralOrEnumerationType()) {
         if (!VT.isConstQualified()) {
-          if (Info.getLangOpts().CPlusPlus) {
+          if (Info.getLangOpts().F90) {
             Info.Diag(Conv, diag::note_constexpr_ltor_non_const_int, 1) << VD;
             Info.Note(VD->getLocation(), diag::note_declared_at);
           } else {
@@ -1843,7 +1843,7 @@ static bool HandleLValueToRValueConversion(EvalInfo &Info, const Expr *Conv,
 
   // Volatile temporary objects cannot be read in constant expressions.
   if (Base->getType().isVolatileQualified()) {
-    if (Info.getLangOpts().CPlusPlus) {
+    if (Info.getLangOpts().F90) {
       Info.Diag(Conv, diag::note_constexpr_ltor_volatile_obj, 1) << 0;
       Info.Note(Base->getExprLoc(), diag::note_constexpr_temporary_here);
     } else {
@@ -1861,7 +1861,7 @@ static bool HandleLValueToRValueConversion(EvalInfo &Info, const Expr *Conv,
     // In C99, a CompoundLiteralExpr is an lvalue, and we defer evaluating the
     // initializer until now for such expressions. Such an expression can't be
     // an ICE in C, so this only matters for fold.
-    assert(!Info.getLangOpts().CPlusPlus && "lvalue compound literal in c++?");
+    assert(!Info.getLangOpts().F90 && "lvalue compound literal in c++?");
     if (!Evaluate(RVal, Info, CLE->getInitializer()))
       return false;
   } else if (isa<StringLiteral>(Base)) {
@@ -2880,7 +2880,7 @@ bool LValueExprEvaluator::VisitMaterializeTemporaryExpr(
 
 bool
 LValueExprEvaluator::VisitCompoundLiteralExpr(const CompoundLiteralExpr *E) {
-  assert(!Info.getLangOpts().CPlusPlus && "lvalue compound literal in c++?");
+  assert(!Info.getLangOpts().F90 && "lvalue compound literal in c++?");
   // Defer visiting the literal until the lvalue-to-rvalue conversion. We can
   // only see this when folding in C, so there's no standard to follow here.
   return Success(E);
@@ -6330,7 +6330,7 @@ bool Expr::EvaluateAsInitializer(APValue &Value, const ASTContext &Ctx,
   //  Variables with static storage duration or thread storage duration shall be
   //  zero-initialized before any other initialization takes place.
   // This behavior is not present in C.
-  if (Ctx.getLangOpts().CPlusPlus && !VD->hasLocalStorage() &&
+  if (Ctx.getLangOpts().F90 && !VD->hasLocalStorage() &&
       !VD->getType()->isReferenceType()) {
     ImplicitValueInitExpr VIE(VD->getType());
     if (!EvaluateInPlace(Value, InitInfo, LVal, &VIE, CCEK_Constant,
@@ -6533,7 +6533,7 @@ static ICEDiag CheckICE(const Expr* E, ASTContext &Ctx) {
     if (isa<EnumConstantDecl>(cast<DeclRefExpr>(E)->getDecl()))
       return NoDiag();
     const ValueDecl *D = dyn_cast<ValueDecl>(cast<DeclRefExpr>(E)->getDecl());
-    if (Ctx.getLangOpts().CPlusPlus &&
+    if (Ctx.getLangOpts().F90 &&
         D && IsConstNonVolatile(D->getType())) {
       // Parameter variables are never constants.  Without this check,
       // getAnyInitializer() can find a default argument, which leads
@@ -6827,7 +6827,7 @@ bool Expr::isCXX11ConstantExpr(ASTContext &Ctx, APValue *Result,
                                SourceLocation *Loc) const {
   // We support this checking in C++98 mode in order to diagnose compatibility
   // issues.
-  assert(Ctx.getLangOpts().CPlusPlus);
+  assert(Ctx.getLangOpts().F90);
 
   // Build evaluation settings.
   Expr::EvalStatus Status;

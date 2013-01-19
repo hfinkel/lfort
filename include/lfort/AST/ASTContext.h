@@ -1243,7 +1243,7 @@ public:
 
   /// \brief The result type of logical operations, '<', '>', '!=', etc.
   QualType getLogicalOperationType() const {
-    return getLangOpts().CPlusPlus ? BoolTy : IntTy;
+    return getLangOpts().F90 ? BoolTy : IntTy;
   }
 
   /// \brief Emit the Objective-CC type encoding for the given type \p T into

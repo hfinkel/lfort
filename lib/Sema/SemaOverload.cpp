@@ -297,7 +297,7 @@ StandardConversionSequence::getNarrowingKind(ASTContext &Ctx,
                                              const Expr *Converted,
                                              APValue &ConstantValue,
                                              QualType &ConstantType) const {
-  assert(Ctx.getLangOpts().CPlusPlus && "narrowing check outside C++");
+  assert(Ctx.getLangOpts().F90 && "narrowing check outside C++");
 
   // C++11 [dcl.init.list]p7:
   //   A narrowing conversion is an implicit conversion ...
@@ -1165,7 +1165,7 @@ TryImplicitConversion(Sema &S, Expr *From, QualType ToType,
     return ICS;
   }
 
-  if (!S.getLangOpts().CPlusPlus) {
+  if (!S.getLangOpts().F90) {
     ICS.setBad(BadConversionSequence::no_conversion, From, ToType);
     return ICS;
   }
@@ -1374,7 +1374,7 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
   // There are no standard conversions for class types in C++, so
   // abort early. When overloading in C, however, we do permit
   if (FromType->isRecordType() || ToType->isRecordType()) {
-    if (S.getLangOpts().CPlusPlus)
+    if (S.getLangOpts().F90)
       return false;
 
     // When we're overloading in C, we allow, as standard conversions,
@@ -1568,7 +1568,7 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
   } else if (IsVectorConversion(S.Context, FromType, ToType, SecondICK)) {
     SCS.Second = SecondICK;
     FromType = ToType.getUnqualifiedType();
-  } else if (!S.getLangOpts().CPlusPlus &&
+  } else if (!S.getLangOpts().F90 &&
              S.Context.typesAreCompatible(ToType, FromType)) {
     // Compatible conversions (LFort extension for C function overloading)
     SCS.Second = ICK_Compatible_Conversion;
@@ -1820,7 +1820,7 @@ bool Sema::IsFloatingPointPromotion(QualType FromType, QualType ToType) {
       // C99 6.3.1.5p1:
       //   When a float is promoted to double or long double, or a
       //   double is promoted to long double [...].
-      if (!getLangOpts().CPlusPlus &&
+      if (!getLangOpts().F90 &&
           (FromBuiltin->getKind() == BuiltinType::Float ||
            FromBuiltin->getKind() == BuiltinType::Double) &&
           (ToBuiltin->getKind() == BuiltinType::LongDouble))
@@ -2027,7 +2027,7 @@ bool Sema::IsPointerConversion(Expr *From, QualType FromType, QualType ToType,
 
   // When we're overloading in C, we allow a special kind of pointer
   // conversion for compatible-but-not-identical pointee types.
-  if (!getLangOpts().CPlusPlus &&
+  if (!getLangOpts().F90 &&
       Context.typesAreCompatible(FromPointeeType, ToPointeeType)) {
     ConvertedType = BuildSimilarlyQualifiedPointerType(FromTypePtr,
                                                        ToPointeeType,
@@ -2048,7 +2048,7 @@ bool Sema::IsPointerConversion(Expr *From, QualType FromType, QualType ToType,
   //
   // Note that we do not check for ambiguity or inaccessibility
   // here. That is handled by CheckPointerConversion.
-  if (getLangOpts().CPlusPlus &&
+  if (getLangOpts().F90 &&
       FromPointeeType->isRecordType() && ToPointeeType->isRecordType() &&
       !Context.hasSameUnqualifiedType(FromPointeeType, ToPointeeType) &&
       !RequireCompleteType(From->getLocStart(), FromPointeeType, 0) &&
@@ -2129,7 +2129,7 @@ bool Sema::isObjCPointerConversion(QualType FromType, QualType ToType,
     if (Context.canAssignObjCInterfaces(ToObjCPtr, FromObjCPtr)) {
       const ObjCInterfaceType* LHS = ToObjCPtr->getInterfaceType();
       const ObjCInterfaceType* RHS = FromObjCPtr->getInterfaceType();
-      if (getLangOpts().CPlusPlus && LHS && RHS &&
+      if (getLangOpts().F90 && LHS && RHS &&
           !ToObjCPtr->getPointeeType().isAtLeastAsQualifiedAs(
                                                 FromObjCPtr->getPointeeType()))
         return false;
@@ -2389,7 +2389,7 @@ bool Sema::IsBlockPointerConversion(QualType FromType, QualType ToType,
   } else {
     QualType RHS = FromSubprogramType->getResultType();
     QualType LHS = ToSubprogramType->getResultType();
-    if ((!getLangOpts().CPlusPlus || !RHS->isRecordType()) &&
+    if ((!getLangOpts().F90 || !RHS->isRecordType()) &&
         !RHS.hasQualifiers() && LHS.hasQualifiers())
        LHS = LHS.getUnqualifiedType();
 
@@ -5090,7 +5090,7 @@ Sema::ConvertToIntegralOrEnumerationType(SourceLocation Loc, Expr *From,
   // If we don't have a class type in C++, there's no way we can get an
   // expression of integral or enumeration type.
   const RecordType *RecordTy = T->getAs<RecordType>();
-  if (!RecordTy || !getLangOpts().CPlusPlus) {
+  if (!RecordTy || !getLangOpts().F90) {
     if (!Diagnoser.Suppress)
       Diagnoser.diagnoseNotInt(*this, Loc, T) << From->getSourceRange();
     return Owned(From);
@@ -9621,7 +9621,7 @@ class RecoveryCallCCC : public CorrectionCandidateCallback {
  public:
   RecoveryCallCCC(Sema &SemaRef, unsigned NumArgs, bool HasExplicitTemplateArgs)
       : NumArgs(NumArgs), HasExplicitTemplateArgs(HasExplicitTemplateArgs) {
-    WantTypeSpecifiers = SemaRef.getLangOpts().CPlusPlus;
+    WantTypeSpecifiers = SemaRef.getLangOpts().F90;
     WantRemainingKeywords = false;
   }
 
@@ -9783,7 +9783,7 @@ bool Sema::buildOverloadedCallSet(Scope *S, Expr *SubPgm,
       llvm_unreachable("performing ADL for builtin");
 
     // We don't perform ADL in C.
-    assert(getLangOpts().CPlusPlus && "ADL enabled in C");
+    assert(getLangOpts().F90 && "ADL enabled in C");
   }
 #endif
 

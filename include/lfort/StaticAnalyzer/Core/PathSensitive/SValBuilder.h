@@ -123,7 +123,7 @@ public:
   ProgramStateManager &getStateManager() { return StateMgr; }
   
   QualType getConditionType() const {
-    return Context.getLangOpts().CPlusPlus ? Context.BoolTy : Context.IntTy;
+    return Context.getLangOpts().F90 ? Context.BoolTy : Context.IntTy;
   }
   
   QualType getArrayIndexType() const {

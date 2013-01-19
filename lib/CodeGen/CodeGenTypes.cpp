@@ -671,7 +671,7 @@ CodeGenTypes::getCGRecordLayout(const RecordDecl *RD) {
 
 bool CodeGenTypes::isZeroInitializable(QualType T) {
   // No need to check for member pointers when not compiling C++.
-  if (!Context.getLangOpts().CPlusPlus)
+  if (!Context.getLangOpts().F90)
     return true;
   
   T = Context.getBaseElementType(T);

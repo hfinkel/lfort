@@ -177,7 +177,7 @@ bool Parser::ParseOptionalCXXScopeSpecifier(CXXScopeSpec &SS,
                                             bool EnteringContext,
                                             bool *MayBePseudoDestructor,
                                             bool IsTypename) {
-  assert(getLangOpts().CPlusPlus &&
+  assert(getLangOpts().F90 &&
          "Call sites of this function should be guarded by checking for C++");
 
   if (Tok.is(tok::annot_cxxscope)) {
@@ -2069,7 +2069,7 @@ bool Parser::ParseUnqualifiedId(CXXScopeSpec &SS, bool EnteringContext,
   // Handle 'A::template B'. This is for template-ids which have not
   // already been annotated by ParseOptionalCXXScopeSpecifier().
   bool TemplateSpecified = false;
-  if (getLangOpts().CPlusPlus && Tok.is(tok::kw_template) &&
+  if (getLangOpts().F90 && Tok.is(tok::kw_template) &&
       (ObjectType || SS.isSet())) {
     TemplateSpecified = true;
     TemplateKWLoc = ConsumeToken();
@@ -2083,7 +2083,7 @@ bool Parser::ParseUnqualifiedId(CXXScopeSpec &SS, bool EnteringContext,
     IdentifierInfo *Id = Tok.getIdentifierInfo();
     SourceLocation IdLoc = ConsumeToken();
 
-    if (!getLangOpts().CPlusPlus) {
+    if (!getLangOpts().F90) {
       // If we're not in C++, only identifiers matter. Record the
       // identifier and return.
       Result.setIdentifier(Id, IdLoc);
@@ -2180,7 +2180,7 @@ bool Parser::ParseUnqualifiedId(CXXScopeSpec &SS, bool EnteringContext,
     return false;
   }
   
-  if (getLangOpts().CPlusPlus && 
+  if (getLangOpts().F90 && 
       (AllowDestructorName || SS.isSet()) && Tok.is(tok::tilde)) {
     // C++ [expr.unary.op]p10:
     //   There is an ambiguity in the unary-expression ~X(), where X is a 
@@ -2231,7 +2231,7 @@ bool Parser::ParseUnqualifiedId(CXXScopeSpec &SS, bool EnteringContext,
   }
   
   Diag(Tok, diag::err_expected_unqualified_id)
-    << getLangOpts().CPlusPlus;
+    << getLangOpts().F90;
   return true;
 }
 
@@ -2768,7 +2768,7 @@ ExprResult
 Parser::ParseCXXAmbiguousParenExpression(ParenParseOption &ExprType,
                                          ParsedType &CastTy,
                                          BalancedDelimiterTracker &Tracker) {
-  assert(getLangOpts().CPlusPlus && "Should only be called for C++!");
+  assert(getLangOpts().F90 && "Should only be called for C++!");
   assert(ExprType == CastExpr && "Compound literals are not ambiguous!");
   assert(isTypeIdInParens() && "Not a type-id!");
 

@@ -1304,7 +1304,7 @@ void DeclContext::makeDeclVisibleInContextWithFlags(NamedDecl *D, bool Internal,
   // performed.
   if (LookupPtr.getPointer() || hasExternalVisibleStorage() ||
       ((!Recoverable || D->getDeclContext() != D->getLexicalDeclContext()) &&
-       (getParentASTContext().getLangOpts().CPlusPlus ||
+       (getParentASTContext().getLangOpts().F90 ||
         !isProgram()))) {
     // If we have lazily omitted any decls, they might have the same name as
     // the decl which we are adding, so build a full lookup table before adding

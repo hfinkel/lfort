@@ -2287,7 +2287,7 @@ ExprResult Parser::ParseObjCMessageExpression() {
   
   InMessageExpressionRAIIObject InMessage(*this, true);
   
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // We completely separate the C and C++ cases because C++ requires
     // more complicated (read: slower) parsing. 
     
@@ -2723,7 +2723,7 @@ ExprResult Parser::ParseObjCDictionaryLiteral(SourceLocation AtLoc) {
     
     // Parse the ellipsis that designates this as a pack expansion.
     SourceLocation EllipsisLoc;
-    if (Tok.is(tok::ellipsis) && getLangOpts().CPlusPlus)
+    if (Tok.is(tok::ellipsis) && getLangOpts().F90)
       EllipsisLoc = ConsumeToken();
     
     // We have a valid expression. Collect it in a vector so we can

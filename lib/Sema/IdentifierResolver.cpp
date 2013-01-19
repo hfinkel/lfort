@@ -119,7 +119,7 @@ bool IdentifierResolver::isDeclInScope(Decl *D, DeclContext *Ctx, Scope *S,
 
     if (S->isDeclScope(D))
       return true;
-    if (LangOpt.CPlusPlus) {
+    if (LangOpt.F90) {
       // C++ 3.3.2p3:
       // The name declared in a catch exception-declaration is local to the
       // handler and shall not be redeclared in the outermost block of the

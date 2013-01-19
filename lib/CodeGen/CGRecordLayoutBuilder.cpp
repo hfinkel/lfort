@@ -946,7 +946,7 @@ void CGRecordLayoutBuilder::CheckZeroInitializable(QualType T) {
     return;
 
   // Can only have member pointers if we're compiling C++.
-  if (!Types.getContext().getLangOpts().CPlusPlus)
+  if (!Types.getContext().getLangOpts().F90)
     return;
 
   const Type *elementType = T->getBaseElementTypeUnsafe();

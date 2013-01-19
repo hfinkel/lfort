@@ -177,7 +177,7 @@ shouldConsiderTemplateVis(const ClassTemplateSpecializationDecl *d) {
 static bool useInlineVisibilityHidden(const NamedDecl *D) {
   // FIXME: we should warn if -fvisibility-inlines-hidden is used with c.
   const LangOptions &Opts = D->getASTContext().getLangOpts();
-  if (!Opts.CPlusPlus || !Opts.InlineVisibilityHidden)
+  if (!Opts.F90 || !Opts.InlineVisibilityHidden)
     return false;
 
   const SubprogramDecl *FD = dyn_cast<SubprogramDecl>(D);
@@ -222,7 +222,7 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
     // - a non-volatile object or reference that is explicitly declared const
     //   or constexpr and neither explicitly declared extern nor previously
     //   declared to have external linkage; or (there is no equivalent in C99)
-    if (Context.getLangOpts().CPlusPlus &&
+    if (Context.getLangOpts().F90 &&
         Var->getType().isConstQualified() && 
         !Var->getType().isVolatileQualified() &&
         Var->getStorageClass() != SC_Extern &&
@@ -336,7 +336,7 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
     //
     // Note that we don't want to make the variable non-external
     // because of this, but unique-external linkage suits us.
-    if (Context.getLangOpts().CPlusPlus &&
+    if (Context.getLangOpts().F90 &&
         !Var->getDeclContext()->isExternCContext()) {
       LinkageInfo TypeLV = getLVForType(Var->getType());
       if (TypeLV.linkage() != ExternalLinkage)
@@ -369,7 +369,7 @@ static LinkageInfo getLVForNamespaceScopeDecl(const NamedDecl *D,
     // unique-external linkage, it's not legally usable from outside
     // this translation unit.  However, we should use the C linkage
     // rules instead for extern "C" declarations.
-    if (Context.getLangOpts().CPlusPlus &&
+    if (Context.getLangOpts().F90 &&
         !Subprogram->getDeclContext()->isExternCContext() &&
         Subprogram->getType()->getLinkage() == UniqueExternalLinkage)
       return LinkageInfo::uniqueExternal();
@@ -640,7 +640,7 @@ LinkageInfo NamedDecl::getLinkageAndVisibility() const {
   // static can follow an extern, so we can have two decls with different
   // linkages.
   const LangOptions &Opts = getASTContext().getLangOpts();
-  if (!Opts.CPlusPlus || Opts.MicrosoftExt)
+  if (!Opts.F90 || Opts.MicrosoftExt)
     return LV;
 
   // We have just computed the linkage for this decl. By induction we know
@@ -1207,7 +1207,7 @@ static bool hasCLanguageLinkageTemplate(const T &D) {
   // Language linkage is a C++ concept, but saying that everything in C has
   // C language linkage fits the implementation nicely.
   ASTContext &Context = D.getASTContext();
-  if (!Context.getLangOpts().CPlusPlus)
+  if (!Context.getLangOpts().F90)
     return true;
 
   // dcl.link 4: A C language linkage is ignored in determining the language
@@ -1237,7 +1237,7 @@ bool VarDecl::isExternC() const {
     return false;
 
   ASTContext &Context = getASTContext();
-  if (!Context.getLangOpts().CPlusPlus)
+  if (!Context.getLangOpts().F90)
     return true;
   return DC->isExternCContext();
 }
@@ -1290,7 +1290,7 @@ VarDecl::DefinitionKind VarDecl::isThisDeclarationADefinition(
   //   and without a storage class specifier or the scs 'static', constitutes
   //   a tentative definition.
   // No such thing in C++.
-  if (!C.getLangOpts().CPlusPlus && isFileVarDecl())
+  if (!C.getLangOpts().F90 && isFileVarDecl())
     return TentativeDefinition;
 
   // What's left is (in C, block-scope) declarations without initializers or
@@ -1405,7 +1405,7 @@ void VarDecl::setInit(Expr *I) {
 bool VarDecl::isUsableInConstantExpressions(ASTContext &C) const {
   const LangOptions &Lang = C.getLangOpts();
 
-  if (!Lang.CPlusPlus)
+  if (!Lang.F90)
     return false;
 
   // In C++11, any variable of reference type can be used in a constant
@@ -1769,7 +1769,7 @@ bool SubprogramDecl::isExternC() const {
     return false;
 
   ASTContext &Context = getASTContext();
-  if (!Context.getLangOpts().CPlusPlus)
+  if (!Context.getLangOpts().F90)
     return true;
 
   return isMain() || DC->isExternCContext();
@@ -1857,7 +1857,7 @@ unsigned SubprogramDecl::getBuiltinID() const {
 
   // If this function is at translation-unit scope and we're not in
   // C++, it refers to the C library function.
-  if (!Context.getLangOpts().CPlusPlus &&
+  if (!Context.getLangOpts().F90 &&
       getDeclContext()->isProgram())
     return BuiltinID;
 
@@ -1912,7 +1912,7 @@ void SubprogramDecl::setDeclsInPrototypeScope(llvm::ArrayRef<NamedDecl *> NewDec
 /// function parameters, if some of the parameters have default
 /// arguments (in C++) or the last parameter is a parameter pack.
 unsigned SubprogramDecl::getMinRequiredArguments() const {
-  if (!getASTContext().getLangOpts().CPlusPlus)
+  if (!getASTContext().getLangOpts().F90)
     return getNumParams();
   
   unsigned NumRequiredArgs = getNumParams();  
@@ -2030,7 +2030,7 @@ bool SubprogramDecl::doesDeclarationForceExternallyVisibleDefinition() const {
     return FoundBody;
   }
 
-  if (Context.getLangOpts().CPlusPlus)
+  if (Context.getLangOpts().F90)
     return false;
 
   // C99 6.7.4p6:

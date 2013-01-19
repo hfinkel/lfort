@@ -624,7 +624,7 @@ bool Type::isIntegralType(ASTContext &Ctx) const {
     return BT->getKind() >= BuiltinType::Bool &&
     BT->getKind() <= BuiltinType::Int128;
   
-  if (!Ctx.getLangOpts().CPlusPlus)
+  if (!Ctx.getLangOpts().F90)
     if (const EnumType *ET = dyn_cast<EnumType>(CanonicalType))
       return ET->getDecl()->isComplete(); // Complete enum types are integral in C.
   
@@ -1532,7 +1532,7 @@ QualType QualType::getNonLValueExprType(ASTContext &Context) const {
   //   have cv-unqualified types.
   //
   // See also C99 6.3.2.1p2.
-  if (!Context.getLangOpts().CPlusPlus ||
+  if (!Context.getLangOpts().F90 ||
       (!getTypePtr()->isDependentType() && !getTypePtr()->isRecordType()))
     return getUnqualifiedType();
   

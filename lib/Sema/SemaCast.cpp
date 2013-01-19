@@ -222,7 +222,7 @@ Sema::ActOnCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
   if (D.isInvalidType())
     return ExprError();
 
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // Check that there are no default arguments (C++ only).
     CheckExtraCXXDefaultArguments(D);
   }
@@ -1961,7 +1961,7 @@ static void DiagnoseBadSubprogramCast(Sema &Self, const ExprResult &SrcExpr,
 
 /// Check the semantics of a C-style cast operation, in C.
 void CastOperation::CheckCStyleCast() {
-  assert(!Self.getLangOpts().CPlusPlus);
+  assert(!Self.getLangOpts().F90);
 
   // C-style casts can resolve __unknown_any types.
   if (claimPlaceholder(BuiltinType::UnknownAny)) {
@@ -2151,7 +2151,7 @@ ExprResult Sema::BuildCStyleCastExpr(SourceLocation LPLoc,
   Op.DestRange = CastTypeInfo->getTypeLoc().getSourceRange();
   Op.OpRange = SourceRange(LPLoc, CastExpr->getLocEnd());
 
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     Op.CheckCXXCStyleCast(/*SubprogramalStyle=*/ false,
                           isa<InitListExpr>(CastExpr));
   } else {

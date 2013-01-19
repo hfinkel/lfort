@@ -1849,7 +1849,7 @@ void RecordLayoutBuilder::LayoutWideBitField(uint64_t FieldSize,
                                              uint64_t TypeSize,
                                              bool FieldPacked,
                                              const FieldDecl *D) {
-  assert(Context.getLangOpts().CPlusPlus &&
+  assert(Context.getLangOpts().F90 &&
          "Can only have wide bit-fields in C++!");
 
   // Itanium C++ ABI 2.4:
@@ -2173,7 +2173,7 @@ void RecordLayoutBuilder::LayoutField(const FieldDecl *D) {
 
 void RecordLayoutBuilder::FinishLayout(const NamedDecl *D) {
   // In C++, records cannot be of size 0.
-  if (Context.getLangOpts().CPlusPlus && getSizeInBits() == 0) {
+  if (Context.getLangOpts().F90 && getSizeInBits() == 0) {
     if (const CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(D)) {
       // Compatibility with gcc requires a class (pod or non-pod)
       // which is not empty but of size 0; such as having fields of

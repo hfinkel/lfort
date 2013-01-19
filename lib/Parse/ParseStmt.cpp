@@ -169,7 +169,7 @@ Retry:
   }
 
   default: {
-    if ((getLangOpts().CPlusPlus || !OnlyStatement) && isDeclarationStatement()) {
+    if ((getLangOpts().F90 || !OnlyStatement) && isDeclarationStatement()) {
       SourceLocation DeclStart = Tok.getLocation(), DeclEnd;
       DeclGroupPtrTy Decl = ParseDeclaration(Stmts, Declarator::BlockContext,
                                              DeclEnd, Attrs);
@@ -1127,7 +1127,7 @@ bool Parser::ParseParenExprOrCondition(ExprResult &ExprResult,
   BalancedDelimiterTracker T(*this, tok::l_paren);
   T.consumeOpen();
 
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     ParseCXXCondition(ExprResult, DeclResult, Loc, ConvertToBoolean);
   else {
     ExprResult = ParseExpression();
@@ -1275,7 +1275,7 @@ StmtResult Parser::ParseSwitchStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXX = getLangOpts().F90 || getLangOpts().CPlusPlus;
+  bool C99orCXX = getLangOpts().F90 || getLangOpts().F90;
 
   // C99 6.8.4p3 - In C99, the switch statement is a block.  This is
   // not the case for C90.  Start the switch scope.
@@ -1364,7 +1364,7 @@ StmtResult Parser::ParseWhileStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXX = getLangOpts().F90 || getLangOpts().CPlusPlus;
+  bool C99orCXX = getLangOpts().F90 || getLangOpts().F90;
 
   // C99 6.8.5p5 - In C99, the while statement is a block.  This is not
   // the case for C90.  Start the loop scope.
@@ -1448,7 +1448,7 @@ StmtResult Parser::ParseDoStatement() {
   // which is entered and exited each time through the loop.
   //
   ParseScope InnerScope(this, Scope::DeclScope,
-                        (getLangOpts().F90 || getLangOpts().CPlusPlus) &&
+                        (getLangOpts().F90 || getLangOpts().F90) &&
                         Tok.isNot(tok::l_brace));
 
   // Read the body statement.
@@ -1522,7 +1522,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXXorObjC = getLangOpts().F90 || getLangOpts().CPlusPlus ||
+  bool C99orCXXorObjC = getLangOpts().F90 || getLangOpts().F90 ||
     getLangOpts().ObjC1;
 
   // C99 6.8.5p5 - In C99, the for statement is a block.  This is not
@@ -1588,7 +1588,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
     MaybeParseCXX11Attributes(attrs);
 
     // In C++0x, "for (T NS:a" might not be a typo for ::
-    bool MightBeForRangeStmt = getLangOpts().CPlusPlus;
+    bool MightBeForRangeStmt = getLangOpts().F90;
     ColonProtectionRAIIObject ColonProtection(*this, MightBeForRangeStmt);
 
     SourceLocation DeclStart = Tok.getLocation(), DeclEnd;
@@ -1672,7 +1672,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
       // missing both semicolons.
     } else {
       ExprResult Second;
-      if (getLangOpts().CPlusPlus)
+      if (getLangOpts().F90)
         ParseCXXCondition(Second, SecondVar, ForLoc, true);
       else {
         Second = ParseExpression();
@@ -1838,7 +1838,7 @@ StmtResult Parser::ParseReturnStatement() {
       return StmtError();
     }
 
-    if (Tok.is(tok::l_brace) && getLangOpts().CPlusPlus) {
+    if (Tok.is(tok::l_brace) && getLangOpts().F90) {
       R = ParseInitializer();
       if (R.isUsable())
         Diag(R.get()->getLocStart(), getLangOpts().F90 ?

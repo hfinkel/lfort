@@ -531,7 +531,7 @@ bool ResultBuilder::isInterestingDecl(NamedDecl *ND,
   // Filter out any unwanted results.
   if (Filter && !(this->*Filter)(ND)) {
     // Check whether it is interesting as a nested-name-specifier.
-    if (AllowNestedNameSpecifiers && SemaRef.getLangOpts().CPlusPlus && 
+    if (AllowNestedNameSpecifiers && SemaRef.getLangOpts().F90 && 
         IsNestedNameSpecifier(ND) &&
         (Filter != &ResultBuilder::IsMember ||
          (isa<CXXRecordDecl>(ND) && 
@@ -551,7 +551,7 @@ bool ResultBuilder::CheckHiddenResult(Result &R, DeclContext *CurContext,
   // In C, there is no way to refer to a hidden name.
   // FIXME: This isn't true; we can find a tag name hidden by an ordinary
   // name if we introduce the tag type.
-  if (!SemaRef.getLangOpts().CPlusPlus)
+  if (!SemaRef.getLangOpts().F90)
     return true;
   
   DeclContext *HiddenCtx = R.Declaration->getDeclContext()->getRedeclContext();
@@ -730,7 +730,7 @@ void ResultBuilder::AdjustResultPriorityForDecl(Result &R) {
 }
 
 void ResultBuilder::MaybeAddConstructorResults(Result R) {
-  if (!SemaRef.getLangOpts().CPlusPlus || !R.Declaration ||
+  if (!SemaRef.getLangOpts().F90 || !R.Declaration ||
       !CompletionContext.wantConstructorResults())
     return;
   
@@ -987,7 +987,7 @@ bool ResultBuilder::IsOrdinaryName(NamedDecl *ND) const {
   ND = cast<NamedDecl>(ND->getUnderlyingDecl());
 
   unsigned IDNS = Decl::IDNS_Ordinary;
-  if (SemaRef.getLangOpts().CPlusPlus)
+  if (SemaRef.getLangOpts().F90)
     IDNS |= Decl::IDNS_Tag | Decl::IDNS_Namespace | Decl::IDNS_Member;
   else if (SemaRef.getLangOpts().ObjC1) {
     if (isa<ObjCIvarDecl>(ND))
@@ -1005,7 +1005,7 @@ bool ResultBuilder::IsOrdinaryNonTypeName(NamedDecl *ND) const {
     return false;
   
   unsigned IDNS = Decl::IDNS_Ordinary;
-  if (SemaRef.getLangOpts().CPlusPlus)
+  if (SemaRef.getLangOpts().F90)
     IDNS |= Decl::IDNS_Tag | Decl::IDNS_Namespace | Decl::IDNS_Member;
   else if (SemaRef.getLangOpts().ObjC1) {
     if (isa<ObjCIvarDecl>(ND))
@@ -1032,7 +1032,7 @@ bool ResultBuilder::IsOrdinaryNonValueName(NamedDecl *ND) const {
   ND = cast<NamedDecl>(ND->getUnderlyingDecl());
 
   unsigned IDNS = Decl::IDNS_Ordinary;
-  if (SemaRef.getLangOpts().CPlusPlus)
+  if (SemaRef.getLangOpts().F90)
     IDNS |= Decl::IDNS_Tag | Decl::IDNS_Namespace;
   
   return (ND->getIdentifierNamespace() & IDNS) && 
@@ -1136,7 +1136,7 @@ static bool isObjCReceiverType(ASTContext &C, QualType T) {
     break;
   }
   
-  if (!C.getLangOpts().CPlusPlus)
+  if (!C.getLangOpts().F90)
     return false;
 
   // FIXME: We could perform more analysis here to determine whether a 
@@ -1166,8 +1166,8 @@ bool ResultBuilder::IsObjCMessageReceiverOrLambdaCapture(NamedDecl *ND) const {
 }
 
 bool ResultBuilder::IsObjCCollection(NamedDecl *ND) const {
-  if ((SemaRef.getLangOpts().CPlusPlus && !IsOrdinaryName(ND)) ||
-      (!SemaRef.getLangOpts().CPlusPlus && !IsOrdinaryNonTypeName(ND)))
+  if ((SemaRef.getLangOpts().F90 && !IsOrdinaryName(ND)) ||
+      (!SemaRef.getLangOpts().F90 && !IsOrdinaryNonTypeName(ND)))
     return false;
   
   QualType T = getDeclUsageType(SemaRef.Context, ND);
@@ -1177,7 +1177,7 @@ bool ResultBuilder::IsObjCCollection(NamedDecl *ND) const {
   T = SemaRef.Context.getBaseElementType(T);
   return T->isObjCObjectType() || T->isObjCObjectPointerType() ||
          T->isObjCIdType() || 
-         (SemaRef.getLangOpts().CPlusPlus && T->isRecordType());
+         (SemaRef.getLangOpts().F90 && T->isRecordType());
 }
 
 bool ResultBuilder::IsImpossibleToSatisfy(NamedDecl *ND) const {
@@ -1242,7 +1242,7 @@ static void AddTypeSpecifierResults(const LangOptions &LangOpts,
   
   CodeCompletionBuilder Builder(Results.getAllocator(),
                                 Results.getCodeCompletionPgmInfo());
-  if (LangOpts.CPlusPlus) {
+  if (LangOpts.F90) {
     // C++-specific
     Results.AddResult(Result("bool", CCP_Type + 
                              (LangOpts.ObjC1? CCD_bool_in_ObjC : 0)));
@@ -1308,7 +1308,7 @@ static void AddSubprogramSpecifiers(Sema::ParserCompletionContext CCC,
   switch (CCC) {
   case Sema::PCC_Class:
   case Sema::PCC_MemberTemplate:
-    if (LangOpts.CPlusPlus) {
+    if (LangOpts.F90) {
       Results.AddResult(Result("explicit"));
       Results.AddResult(Result("friend"));
       Results.AddResult(Result("mutable"));
@@ -1320,7 +1320,7 @@ static void AddSubprogramSpecifiers(Sema::ParserCompletionContext CCC,
   case Sema::PCC_ObjCImplementation:
   case Sema::PCC_Namespace:
   case Sema::PCC_Template:
-    if (LangOpts.CPlusPlus || LangOpts.F90)
+    if (LangOpts.F90 || LangOpts.F90)
       Results.AddResult(Result("inline"));
     break;
 
@@ -1378,14 +1378,14 @@ static bool WantTypesInContext(Sema::ParserCompletionContext CCC,
     
   case Sema::PCC_Expression:
   case Sema::PCC_Condition:
-    return LangOpts.CPlusPlus;
+    return LangOpts.F90;
       
   case Sema::PCC_ObjCInterface:
   case Sema::PCC_ObjCImplementation:
     return false;
     
   case Sema::PCC_ForInit:
-    return LangOpts.CPlusPlus || LangOpts.ObjC1 || LangOpts.F90;
+    return LangOpts.F90 || LangOpts.ObjC1 || LangOpts.F90;
   }
 
   llvm_unreachable("Invalid ParserCompletionContext!");
@@ -1468,7 +1468,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
   typedef CodeCompletionResult Result;
   switch (CCC) {
   case Sema::PCC_Namespace:
-    if (SemaRef.getLangOpts().CPlusPlus) {
+    if (SemaRef.getLangOpts().F90) {
       if (Results.includeCodePatterns()) {
         // namespace <identifier> { declarations }
         Builder.AddTypedTextChunk("namespace");
@@ -1520,7 +1520,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
     // Fall through
 
   case Sema::PCC_Class:
-    if (SemaRef.getLangOpts().CPlusPlus) {
+    if (SemaRef.getLangOpts().F90) {
       // Using declaration
       Builder.AddTypedTextChunk("using");
       Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
@@ -1567,7 +1567,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
 
   case Sema::PCC_Template:
   case Sema::PCC_MemberTemplate:
-    if (SemaRef.getLangOpts().CPlusPlus && Results.includeCodePatterns()) {
+    if (SemaRef.getLangOpts().F90 && Results.includeCodePatterns()) {
       // template < parameters >
       Builder.AddTypedTextChunk("template");
       Builder.AddChunk(CodeCompletionString::CK_LeftAngle);
@@ -1600,7 +1600,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
   case Sema::PCC_Statement: {
     AddTypedefResult(Results);
 
-    if (SemaRef.getLangOpts().CPlusPlus && Results.includeCodePatterns() &&
+    if (SemaRef.getLangOpts().F90 && Results.includeCodePatterns() &&
         SemaRef.getLangOpts().CXXExceptions) {
       Builder.AddTypedTextChunk("try");
       Builder.AddChunk(CodeCompletionString::CK_LeftBrace);
@@ -1624,7 +1624,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       // if (condition) { statements }
       Builder.AddTypedTextChunk("if");
       Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-      if (SemaRef.getLangOpts().CPlusPlus)
+      if (SemaRef.getLangOpts().F90)
         Builder.AddPlaceholderChunk("condition");
       else
         Builder.AddPlaceholderChunk("expression");
@@ -1638,7 +1638,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       // switch (condition) { }
       Builder.AddTypedTextChunk("switch");
       Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-      if (SemaRef.getLangOpts().CPlusPlus)
+      if (SemaRef.getLangOpts().F90)
         Builder.AddPlaceholderChunk("condition");
       else
         Builder.AddPlaceholderChunk("expression");
@@ -1668,7 +1668,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       /// while (condition) { statements }
       Builder.AddTypedTextChunk("while");
       Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-      if (SemaRef.getLangOpts().CPlusPlus)
+      if (SemaRef.getLangOpts().F90)
         Builder.AddPlaceholderChunk("condition");
       else
         Builder.AddPlaceholderChunk("expression");
@@ -1694,7 +1694,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       // for ( for-init-statement ; condition ; expression ) { statements }
       Builder.AddTypedTextChunk("for");
       Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-      if (SemaRef.getLangOpts().CPlusPlus || SemaRef.getLangOpts().F90)
+      if (SemaRef.getLangOpts().F90 || SemaRef.getLangOpts().F90)
         Builder.AddPlaceholderChunk("init-statement");
       else
         Builder.AddPlaceholderChunk("init-expression");
@@ -1792,7 +1792,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
     // Fall through
 
   case Sema::PCC_Expression: {
-    if (SemaRef.getLangOpts().CPlusPlus) {
+    if (SemaRef.getLangOpts().F90) {
       // 'this', if we're in a non-static member function.
       addThisCompletion(SemaRef, Results);
       
@@ -1990,7 +1990,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
   if (WantTypesInContext(CCC, SemaRef.getLangOpts()))
     AddTypeSpecifierResults(SemaRef.getLangOpts(), Results);
 
-  if (SemaRef.getLangOpts().CPlusPlus && CCC != Sema::PCC_Type)
+  if (SemaRef.getLangOpts().F90 && CCC != Sema::PCC_Type)
     Results.AddResult(Result("operator"));
 }
 
@@ -2975,7 +2975,7 @@ static enum CodeCompletionContext::Kind mapCodeCompletionContext(Sema &S,
     return CodeCompletionContext::CCC_Recovery;
 
   case Sema::PCC_ForInit:
-    if (S.getLangOpts().CPlusPlus || S.getLangOpts().F90 ||
+    if (S.getLangOpts().F90 || S.getLangOpts().F90 ||
         S.getLangOpts().ObjC1)
       return CodeCompletionContext::CCC_ParenthesizedExpression;
     else
@@ -3165,7 +3165,7 @@ void Sema::CodeCompleteOrdinaryName(Scope *S,
     else
       Results.setFilter(&ResultBuilder::IsOrdinaryNonTypeName);
       
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       MaybeAddOverrideCalls(*this, /*InContext=*/0, Results);
     break;
       
@@ -3243,7 +3243,7 @@ void Sema::CodeCompleteDeclSpec(Scope *S, DeclSpec &DS,
   if (getLangOpts().F90)
     Results.AddResult(Result("restrict"));
 
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     if (AllowNonIdentifiers) {
       Results.AddResult(Result("operator")); 
     }
@@ -3518,7 +3518,7 @@ void Sema::CodeCompleteMemberReferenceExpr(Scope *S, Expr *Base,
     LookupVisibleDecls(Record->getDecl(), LookupMemberName, Consumer,
                        CodeCompleter->includeGlobals());
 
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       if (!Results.empty()) {
         // The "template" keyword can follow "->" or "." in the grammar.
         // However, we only want to suggest the template keyword if something
@@ -3707,7 +3707,7 @@ void Sema::CodeCompleteCase(Scope *S) {
       }
   }
   
-  if (getLangOpts().CPlusPlus && !Qualifier && EnumeratorsSeen.empty()) {
+  if (getLangOpts().F90 && !Qualifier && EnumeratorsSeen.empty()) {
     // If there are no prior enumerators in C++, check whether we have to 
     // qualify the names of the enumerators that we suggest, because they
     // may not be visible in this scope.
@@ -3808,7 +3808,7 @@ void Sema::CodeCompleteCall(Scope *S, Expr *SubPgmIn,
   else if (DeclRefExpr *DRE = dyn_cast<DeclRefExpr>(NakedSubPgm)) {
     SubprogramDecl *FDecl = dyn_cast<SubprogramDecl>(DRE->getDecl());
     if (FDecl) {
-      if (!getLangOpts().CPlusPlus || 
+      if (!getLangOpts().F90 || 
           !FDecl->getType()->getAs<SubprogramProtoType>())
         Results.push_back(ResultCandidate(FDecl));
       else
@@ -3937,7 +3937,7 @@ void Sema::CodeCompleteAfterIf(Scope *S) {
   Builder.AddTextChunk("if");
   Builder.AddChunk(CodeCompletionString::CK_HorizontalSpace);
   Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     Builder.AddPlaceholderChunk("condition");
   else
     Builder.AddPlaceholderChunk("expression");
@@ -4437,7 +4437,7 @@ static void AddObjCExpressionResults(ResultBuilder &Results, bool NeedAt) {
 
   // @encode ( type-name )
   const char *EncodeType = "char[]";
-  if (Results.getSema().getLangOpts().CPlusPlus ||
+  if (Results.getSema().getLangOpts().F90 ||
       Results.getSema().getLangOpts().ConstStrings)
     EncodeType = "const char[]";
   Builder.AddResultTypeChunk(EncodeType);

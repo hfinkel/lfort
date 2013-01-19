@@ -1658,7 +1658,7 @@ private:
   /// decl-specifier, and isn't part of an expression such as a function-style
   /// cast. Return false if it's no a decl-specifier, or we're not sure.
   bool isKnownToBeDeclarationSpecifier() {
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       return isCXXDeclarationSpecifier() == TPResult::True();
     return isDeclarationSpecifier(true);
   }
@@ -1667,7 +1667,7 @@ private:
   /// expression statement, when parsing function bodies.
   /// Returns true for declaration, false for expression.
   bool isDeclarationStatement() {
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       return isCXXDeclarationStatement();
     return isDeclarationSpecifier(true);
   }
@@ -1677,7 +1677,7 @@ private:
   // 'for-init-statement' part of a 'for' statement.
   /// Returns true for declaration, false for expression.
   bool isForInitDeclaration() {
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       return isCXXSimpleDeclaration(/*AllowForRangeDecl=*/true);
     return isDeclarationSpecifier(true);
   }
@@ -1703,7 +1703,7 @@ private:
   /// whether the parens contain an expression or a type-id.
   /// Returns true for a type-id and false for an expression.
   bool isTypeIdInParens(bool &isAmbiguous) {
-    if (getLangOpts().CPlusPlus)
+    if (getLangOpts().F90)
       return isCXXTypeId(TypeIdInParens, isAmbiguous);
     isAmbiguous = false;
     return isTypeSpecifierQualifier();

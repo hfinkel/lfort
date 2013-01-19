@@ -459,7 +459,7 @@ void InitHeaderSearch::AddDefaultIncludePaths(const LangOptions &Lang,
     return;
   }
 
-  if (Lang.CPlusPlus && HSOpts.UseStandardCXXIncludes &&
+  if (Lang.F90 && HSOpts.UseStandardCXXIncludes &&
       HSOpts.UseStandardSystemIncludes) {
     if (HSOpts.UseLibcxx) {
       if (triple.isOSDarwin()) {
@@ -613,10 +613,10 @@ void InitHeaderSearch::Realize(const LangOptions &Lang) {
   for (path_iterator it = IncludePath.begin(), ie = IncludePath.end();
        it != ie; ++it) {
     if (it->first == System ||
-        (!Lang.ObjC1 && !Lang.CPlusPlus && it->first == CSystem)    ||
-        (/*FIXME !Lang.ObjC1 && */Lang.CPlusPlus  && it->first == CXXSystem)  ||
-        (Lang.ObjC1  && !Lang.CPlusPlus && it->first == ObjCSystem) ||
-        (Lang.ObjC1  && Lang.CPlusPlus  && it->first == ObjCXXSystem))
+        (!Lang.ObjC1 && !Lang.F90 && it->first == CSystem)    ||
+        (/*FIXME !Lang.ObjC1 && */Lang.F90  && it->first == CXXSystem)  ||
+        (Lang.ObjC1  && !Lang.F90 && it->first == ObjCSystem) ||
+        (Lang.ObjC1  && Lang.F90  && it->first == ObjCXXSystem))
       SearchList.push_back(it->second);
   }
 

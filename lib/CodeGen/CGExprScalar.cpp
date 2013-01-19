@@ -1910,7 +1910,7 @@ Value *ScalarExprEmitter::EmitCompoundAssign(const CompoundAssignOperator *E,
     return 0;
 
   // The result of an assignment in C is the assigned r-value.
-  if (!CGF.getLangOpts().CPlusPlus)
+  if (!CGF.getLangOpts().F90)
     return RHS;
 
   // If the lvalue is non-volatile, return the computed value of the assignment.
@@ -2389,7 +2389,7 @@ Value *ScalarExprEmitter::EmitShl(const BinOpInfo &Ops) {
                            Builder.CreateSub(WidthMinusOne, RHS, "shl.zeros",
                                              /*NUW*/true, /*NSW*/true),
                            "shl.check");
-      if (CGF.getLangOpts().CPlusPlus) {
+      if (CGF.getLangOpts().F90) {
         // In C99, we are not permitted to shift a 1 bit into the sign bit.
         // Under C++11's rules, shifting a 1 bit into the sign bit is
         // OK, but shifting a 1 bit out of it is not. (C89 and C++03 don't
@@ -2634,7 +2634,7 @@ Value *ScalarExprEmitter::VisitBinAssign(const BinaryOperator *E) {
     return 0;
 
   // The result of an assignment in C is the assigned r-value.
-  if (!CGF.getLangOpts().CPlusPlus)
+  if (!CGF.getLangOpts().F90)
     return RHS;
 
   // If the lvalue is non-volatile, return the computed value of the assignment.

@@ -39,7 +39,7 @@ static Cl::Kinds ClassifyExprValueKind(const LangOptions &Lang,
                                        ExprValueKind Kind) {
   switch (Kind) {
   case VK_RValue:
-    return Lang.CPlusPlus && E->getType()->isRecordType() ?
+    return Lang.F90 && E->getType()->isRecordType() ?
       Cl::CL_ClassTemporary : Cl::CL_PRValue;
   case VK_LValue:
     return Cl::CL_LValue;
@@ -55,7 +55,7 @@ Cl Expr::ClassifyImpl(ASTContext &Ctx, SourceLocation *Loc) const {
   Cl::Kinds kind = ClassifyInternal(Ctx, this);
   // C99 6.3.2.1: An lvalue is an expression with an object type or an
   //   incomplete type other than void.
-  if (!Ctx.getLangOpts().CPlusPlus) {
+  if (!Ctx.getLangOpts().F90) {
     // Thus, no functions.
     if (TR->isSubprogramType() || TR == Ctx.OverloadTy)
       kind = Cl::CL_Subprogram;
@@ -140,7 +140,7 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
     // C99 6.5.2.5p5 says that compound literals are lvalues.
     // In C++, they're prvalue temporaries.
   case Expr::CompoundLiteralExprClass:
-    return Ctx.getLangOpts().CPlusPlus ? ClassifyTemporary(E->getType())
+    return Ctx.getLangOpts().F90 ? ClassifyTemporary(E->getType())
                                        : Cl::CL_LValue;
 
     // Expressions that are prvalues.
@@ -238,7 +238,7 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
       // Not so in C.
     case UO_PreInc:
     case UO_PreDec:
-      return Lang.CPlusPlus ? Cl::CL_LValue : Cl::CL_PRValue;
+      return Lang.F90 ? Cl::CL_LValue : Cl::CL_PRValue;
 
     default:
       return Cl::CL_PRValue;
@@ -273,7 +273,7 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
   case Expr::BinaryOperatorClass:
   case Expr::CompoundAssignOperatorClass:
     // C doesn't have any binary expressions that are lvalues.
-    if (Lang.CPlusPlus)
+    if (Lang.F90)
       return ClassifyBinaryOp(Ctx, cast<BinaryOperator>(E));
     return Cl::CL_PRValue;
 
@@ -315,7 +315,7 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
   case Expr::CXXConstCastExprClass:
   case Expr::ObjCBridgedCastExprClass:
     // Only in C++ can casts be interesting at all.
-    if (!Lang.CPlusPlus) return Cl::CL_PRValue;
+    if (!Lang.F90) return Cl::CL_PRValue;
     return ClassifyUnnamed(Ctx, cast<ExplicitCastExpr>(E)->getTypeAsWritten());
 
   case Expr::CXXUnresolvedConstructExprClass:
@@ -323,14 +323,14 @@ static Cl::Kinds ClassifyInternal(ASTContext &Ctx, const Expr *E) {
                       cast<CXXUnresolvedConstructExpr>(E)->getTypeAsWritten());
       
   case Expr::BinaryConditionalOperatorClass: {
-    if (!Lang.CPlusPlus) return Cl::CL_PRValue;
+    if (!Lang.F90) return Cl::CL_PRValue;
     const BinaryConditionalOperator *co = cast<BinaryConditionalOperator>(E);
     return ClassifyConditional(Ctx, co->getTrueExpr(), co->getFalseExpr());
   }
 
   case Expr::ConditionalOperatorClass: {
     // Once again, only C++ is interesting.
-    if (!Lang.CPlusPlus) return Cl::CL_PRValue;
+    if (!Lang.F90) return Cl::CL_PRValue;
     const ConditionalOperator *co = cast<ConditionalOperator>(E);
     return ClassifyConditional(Ctx, co->getTrueExpr(), co->getFalseExpr());
   }
@@ -410,7 +410,7 @@ static Cl::Kinds ClassifyDecl(ASTContext &Ctx, const Decl *D) {
   else
     islvalue = isa<VarDecl>(D) || isa<FieldDecl>(D) ||
 	  isa<IndirectFieldDecl>(D) ||
-      (Ctx.getLangOpts().CPlusPlus &&
+      (Ctx.getLangOpts().F90 &&
         (isa<SubprogramDecl>(D) || isa<SubprogramTemplateDecl>(D)));
 
   return islvalue ? Cl::CL_LValue : Cl::CL_PRValue;
@@ -421,7 +421,7 @@ static Cl::Kinds ClassifyDecl(ASTContext &Ctx, const Decl *D) {
 /// calls and casts.
 static Cl::Kinds ClassifyUnnamed(ASTContext &Ctx, QualType T) {
   // In C, function calls are always rvalues.
-  if (!Ctx.getLangOpts().CPlusPlus) return Cl::CL_PRValue;
+  if (!Ctx.getLangOpts().F90) return Cl::CL_PRValue;
 
   // C++ [expr.call]p10: A function call is an lvalue if the result type is an
   //   lvalue reference type or an rvalue reference to function type, an xvalue
@@ -442,7 +442,7 @@ static Cl::Kinds ClassifyMemberExpr(ASTContext &Ctx, const MemberExpr *E) {
               ? Cl::CL_PRValue : Cl::CL_LValue);
 
   // Handle C first, it's easier.
-  if (!Ctx.getLangOpts().CPlusPlus) {
+  if (!Ctx.getLangOpts().F90) {
     // C99 6.5.2.3p3
     // For dot access, the expression is an lvalue if the first part is. For
     // arrow access, it always is an lvalue.
@@ -494,7 +494,7 @@ static Cl::Kinds ClassifyMemberExpr(ASTContext &Ctx, const MemberExpr *E) {
 }
 
 static Cl::Kinds ClassifyBinaryOp(ASTContext &Ctx, const BinaryOperator *E) {
-  assert(Ctx.getLangOpts().CPlusPlus &&
+  assert(Ctx.getLangOpts().F90 &&
          "This is only relevant for C++.");
   // C++ [expr.ass]p1: All [...] return an lvalue referring to the left operand.
   // Except we override this for writes to ObjC properties.
@@ -530,7 +530,7 @@ static Cl::Kinds ClassifyBinaryOp(ASTContext &Ctx, const BinaryOperator *E) {
 
 static Cl::Kinds ClassifyConditional(ASTContext &Ctx, const Expr *True,
                                      const Expr *False) {
-  assert(Ctx.getLangOpts().CPlusPlus &&
+  assert(Ctx.getLangOpts().F90 &&
          "This is only relevant for C++.");
 
   // C++ [expr.cond]p2
@@ -569,7 +569,7 @@ static Cl::ModifiableType IsModifiable(ASTContext &Ctx, const Expr *E,
 
   // This is the lvalue case.
   // Subprograms are lvalues in C++, but not modifiable. (C++ [basic.lval]p6)
-  if (Ctx.getLangOpts().CPlusPlus && E->getType()->isSubprogramType())
+  if (Ctx.getLangOpts().F90 && E->getType()->isSubprogramType())
     return Cl::CM_Subprogram;
 
   // Assignment to a property in ObjC is an implicit setter access. But a
@@ -594,7 +594,7 @@ static Cl::ModifiableType IsModifiable(ASTContext &Ctx, const Expr *E,
   // Records with any const fields (recursively) are not modifiable.
   if (const RecordType *R = CT->getAs<RecordType>()) {
     assert((E->getObjectKind() == OK_ObjCProperty ||
-            !Ctx.getLangOpts().CPlusPlus) &&
+            !Ctx.getLangOpts().F90) &&
            "C++ struct assignment should be resolved by the "
            "copy assignment operator.");
     if (R->hasConstFields())

@@ -175,7 +175,7 @@ static std::string getScalarZeroExpressionForType(const Type& T, const Sema& S) 
     return "nil";
   if (T.isRealFloatingType())
     return "0.0";
-  if (T.isBooleanType() && S.LangOpts.CPlusPlus)
+  if (T.isBooleanType() && S.LangOpts.F90)
     return "false";
   if (T.isPointerType() || T.isMemberPointerType()) {
     if (S.LangOpts.F90)

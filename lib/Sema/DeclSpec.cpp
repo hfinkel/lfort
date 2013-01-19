@@ -478,7 +478,7 @@ bool DeclSpec::SetStorageClassSpec(Sema &S, SCS SC, SourceLocation Loc,
   if (StorageClassSpec != SCS_unspecified) {
     // Maybe this is an attempt to use C++0x 'auto' outside of C++0x mode.
     bool isInvalid = true;
-    if (TypeSpecType == TST_unspecified && S.getLangOpts().CPlusPlus) {
+    if (TypeSpecType == TST_unspecified && S.getLangOpts().F90) {
       if (SC == SCS_auto)
         return SetTypeSpecType(TST_auto, Loc, PrevSpec, DiagID);
       if (StorageClassSpec == SCS_auto) {
@@ -907,7 +907,7 @@ void DeclSpec::Finish(DiagnosticsEngine &D, Preprocessor &PP) {
       TypeSpecType = TST_double;   // _Complex -> _Complex double.
     } else if (TypeSpecType == TST_int || TypeSpecType == TST_char) {
       // Note that this intentionally doesn't include _Complex _Bool.
-      if (!PP.getLangOpts().CPlusPlus)
+      if (!PP.getLangOpts().F90)
         Diag(D, TSTLoc, diag::ext_integer_complex);
     } else if (TypeSpecType != TST_float && TypeSpecType != TST_double) {
       Diag(D, TSCLoc, diag::err_invalid_complex_spec)
@@ -921,7 +921,7 @@ void DeclSpec::Finish(DiagnosticsEngine &D, Preprocessor &PP) {
   // class specifier, then assume this is an attempt to use C++0x's 'auto'
   // type specifier.
   // FIXME: Does Microsoft really support implicit int in C++?
-  if (PP.getLangOpts().CPlusPlus && !PP.getLangOpts().MicrosoftExt &&
+  if (PP.getLangOpts().F90 && !PP.getLangOpts().MicrosoftExt &&
       TypeSpecType == TST_unspecified && StorageClassSpec == SCS_auto) {
     TypeSpecType = TST_auto;
     StorageClassSpec = StorageClassSpecAsWritten = SCS_unspecified;
@@ -932,7 +932,7 @@ void DeclSpec::Finish(DiagnosticsEngine &D, Preprocessor &PP) {
   // specifier in a pre-C++0x dialect of C++.
   if (!PP.getLangOpts().F90 && TypeSpecType == TST_auto)
     Diag(D, TSTLoc, diag::ext_auto_type_specifier);
-  if (PP.getLangOpts().CPlusPlus && !PP.getLangOpts().F90 &&
+  if (PP.getLangOpts().F90 && !PP.getLangOpts().F90 &&
       StorageClassSpec == SCS_auto)
     Diag(D, StorageClassSpecLoc, diag::warn_auto_storage_class)
       << FixItHint::CreateRemoval(StorageClassSpecLoc);

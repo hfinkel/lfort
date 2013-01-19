@@ -869,7 +869,7 @@ bool Parser::AnnotateTemplateIdToken(TemplateTy Template, TemplateNameKind TNK,
                                      SourceLocation TemplateKWLoc,
                                      UnqualifiedId &TemplateName,
                                      bool AllowTypeAnnotation) {
-  assert(getLangOpts().CPlusPlus && "Can only annotate template-ids in C++");
+  assert(getLangOpts().F90 && "Can only annotate template-ids in C++");
   assert(Template && Tok.is(tok::less) &&
          "Parser isn't at the beginning of a template-id");
 

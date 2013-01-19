@@ -363,7 +363,7 @@ static unsigned long long getContextsForContextKind(
     case CodeCompletionContext::CCC_Type: {
       contexts = CXCompletionContext_AnyType | 
                  CXCompletionContext_ObjCInterface;
-      if (S.getLangOpts().CPlusPlus) {
+      if (S.getLangOpts().F90) {
         contexts |= CXCompletionContext_EnumTag |
                     CXCompletionContext_UnionTag |
                     CXCompletionContext_StructTag |
@@ -376,7 +376,7 @@ static unsigned long long getContextsForContextKind(
       contexts = CXCompletionContext_AnyType |
                  CXCompletionContext_ObjCInterface |
                  CXCompletionContext_AnyValue;
-      if (S.getLangOpts().CPlusPlus) {
+      if (S.getLangOpts().F90) {
         contexts |= CXCompletionContext_EnumTag |
                     CXCompletionContext_UnionTag |
                     CXCompletionContext_StructTag |
@@ -387,7 +387,7 @@ static unsigned long long getContextsForContextKind(
     }
     case CodeCompletionContext::CCC_Expression: {
       contexts = CXCompletionContext_AnyValue;
-      if (S.getLangOpts().CPlusPlus) {
+      if (S.getLangOpts().F90) {
         contexts |= CXCompletionContext_AnyType |
                     CXCompletionContext_ObjCInterface |
                     CXCompletionContext_EnumTag |
@@ -402,7 +402,7 @@ static unsigned long long getContextsForContextKind(
       contexts = CXCompletionContext_ObjCObjectValue |
                  CXCompletionContext_ObjCSelectorValue |
                  CXCompletionContext_ObjCInterface;
-      if (S.getLangOpts().CPlusPlus) {
+      if (S.getLangOpts().F90) {
         contexts |= CXCompletionContext_CXXClassTypeValue |
                     CXCompletionContext_AnyType |
                     CXCompletionContext_EnumTag |
@@ -469,7 +469,7 @@ static unsigned long long getContextsForContextKind(
       contexts = CXCompletionContext_AnyType |
                  CXCompletionContext_ObjCInterface |
                  CXCompletionContext_AnyValue;
-      if (S.getLangOpts().CPlusPlus) {
+      if (S.getLangOpts().F90) {
         contexts |= CXCompletionContext_EnumTag |
                     CXCompletionContext_UnionTag |
                     CXCompletionContext_StructTag |

@@ -613,7 +613,7 @@ void TypePrinter::printSubprogramProtoAfter(const SubprogramProtoType *T,
     if (T->getNumArgs())
       OS << ", ";
     OS << "...";
-  } else if (T->getNumArgs() == 0 && !Policy.LangOpts.CPlusPlus) {
+  } else if (T->getNumArgs() == 0 && !Policy.LangOpts.F90) {
     // Do not emit int() if we have a proto, emit 'int(void)'.
     OS << "void";
   }
@@ -840,11 +840,11 @@ void TypePrinter::printTag(TagDecl *D, raw_ostream &OS) {
   bool HasKindDecoration = false;
 
   // bool SuppressTagKeyword
-  //   = Policy.LangOpts.CPlusPlus || Policy.SuppressTagKeyword;
+  //   = Policy.LangOpts.F90 || Policy.SuppressTagKeyword;
 
   // We don't print tags unless this is an elaborated type.
   // In C, we just assume every RecordType is an elaborated type.
-  if (!(Policy.LangOpts.CPlusPlus || Policy.SuppressTagKeyword ||
+  if (!(Policy.LangOpts.F90 || Policy.SuppressTagKeyword ||
         D->getTypedefNameForAnonDecl())) {
     HasKindDecoration = true;
     OS << D->getKindName();

@@ -2835,7 +2835,7 @@ static FormatAttrKind getFormatAttrKind(StringRef Format) {
 /// http://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Attributes.html
 static void handleInitPriorityAttr(Sema &S, Decl *D,
                                    const AttributeList &Attr) {
-  if (!S.getLangOpts().CPlusPlus) {
+  if (!S.getLangOpts().F90) {
     S.Diag(Attr.getLoc(), diag::warn_attribute_ignored) << Attr.getName();
     return;
   }

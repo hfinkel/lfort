@@ -2975,7 +2975,7 @@ Expr::isNullPointerConstant(ASTContext &Ctx,
 
   // Strip off a cast to void*, if it exists. Except in C++.
   if (const ExplicitCastExpr *CE = dyn_cast<ExplicitCastExpr>(this)) {
-    if (!Ctx.getLangOpts().CPlusPlus) {
+    if (!Ctx.getLangOpts().F90) {
       // Check that it is a cast to void*.
       if (const PointerType *PT = CE->getType()->getAs<PointerType>()) {
         QualType Pointee = PT->getPointeeType();
@@ -3023,7 +3023,7 @@ Expr::isNullPointerConstant(ASTContext &Ctx,
       }
   // This expression must be an integer type.
   if (!getType()->isIntegerType() || 
-      (Ctx.getLangOpts().CPlusPlus && getType()->isEnumeralType()))
+      (Ctx.getLangOpts().F90 && getType()->isEnumeralType()))
     return NPCK_NotNull;
 
   // If we have an integer constant expression, we need to *evaluate* it and

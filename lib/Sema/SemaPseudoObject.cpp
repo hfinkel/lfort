@@ -666,9 +666,9 @@ ExprResult ObjCPropertyOpBuilder::buildSet(Expr *op, SourceLocation opcLoc,
   // Use assignment constraints when possible; they give us better
   // diagnostics.  "When possible" basically means anything except a
   // C++ class type.
-  if (!S.getLangOpts().CPlusPlus || !op->getType()->isRecordType()) {
+  if (!S.getLangOpts().F90 || !op->getType()->isRecordType()) {
     QualType paramType = (*Setter->param_begin())->getType();
-    if (!S.getLangOpts().CPlusPlus || !paramType->isRecordType()) {
+    if (!S.getLangOpts().F90 || !paramType->isRecordType()) {
       ExprResult opResult = op;
       Sema::AssignConvertType assignResult
         = S.CheckSingleAssignmentConstraints(paramType, opResult);
@@ -747,7 +747,7 @@ ExprResult ObjCPropertyOpBuilder::buildRValueOperation(Expr *op) {
 ///   succeeded
 bool ObjCPropertyOpBuilder::tryBuildGetOfReference(Expr *op,
                                                    ExprResult &result) {
-  if (!S.getLangOpts().CPlusPlus) return false;
+  if (!S.getLangOpts().F90) return false;
 
   findGetter();
   assert(Getter && "property has no setter and no getter!");
@@ -931,7 +931,7 @@ Sema::ObjCSubscriptKind
     // All other scalar cases are assumed to be dictionary indexing which
     // caller handles, with diagnostics if needed.
     return OS_Dictionary;
-  if (!getLangOpts().CPlusPlus || 
+  if (!getLangOpts().F90 || 
       !RecordTy || RecordTy->isIncompleteType()) {
     // No indexing can be done. Issue diagnostics and quit.
     const Expr *IndexExpr = FromE->IgnoreParenImpCasts();

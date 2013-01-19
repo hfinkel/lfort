@@ -265,7 +265,7 @@ Sema::ActOnBlock(SourceLocation L, SourceLocation R,
   // FIXME: This applies to all Fortran versions...
   // If we're in C89 mode, check that we don't have any decls after stmts.  If
   // so, emit an extension diagnostic.
-  if (!getLangOpts().F90 && !getLangOpts().CPlusPlus) {
+  if (!getLangOpts().F90 && !getLangOpts().F90) {
     // Note that __extension__ can be around a decl.
     unsigned i = 0;
     // Skip over all declarations.
@@ -1381,7 +1381,7 @@ Sema::ActOnForStmt(SourceLocation ForLoc, SourceLocation LParenLoc,
                    Stmt *First, FullExprArg second, Decl *secondVar,
                    FullExprArg third,
                    SourceLocation RParenLoc, Stmt *Body) {
-  if (!getLangOpts().CPlusPlus) {
+  if (!getLangOpts().F90) {
     if (DeclStmt *DS = dyn_cast_or_null<DeclStmt>(First)) {
       // C99 6.8.5p3: The declaration part of a 'for' statement shall only
       // declare identifiers for objects having storage class 'auto' or
@@ -2335,10 +2335,10 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
     // types we can conclusively prove aren't void.
   } else if (SubPgmRetType->isVoidType()) {
     if (RetValExp && !isa<InitListExpr>(RetValExp) &&
-        !(getLangOpts().CPlusPlus &&
+        !(getLangOpts().F90 &&
           (RetValExp->isTypeDependent() ||
            RetValExp->getType()->isVoidType()))) {
-      if (!getLangOpts().CPlusPlus &&
+      if (!getLangOpts().F90 &&
           RetValExp->getType()->isVoidType())
         Diag(ReturnLoc, diag::ext_return_has_void_expr) << "literal" << 2;
       else {
@@ -2382,7 +2382,7 @@ Sema::ActOnCapScopeReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   // or if we need to infer the return type,
   // save the return statement in our scope for later processing.
   if (CurCap->HasImplicitReturnType ||
-      (getLangOpts().CPlusPlus && SubPgmRetType->isRecordType() &&
+      (getLangOpts().F90 && SubPgmRetType->isRecordType() &&
        !CurContext->isDependentContext()))
     SubprogramScopes.back()->Returns.push_back(Result);
 
@@ -2457,7 +2457,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
         // return (some void expression); is legal in C++.
         if (D != diag::ext_return_has_void_expr ||
-            !getLangOpts().CPlusPlus) {
+            !getLangOpts().F90) {
           NamedDecl *CurDecl = getCurSubprogramOrMethodDecl();
 
           int SubprogramKind = 0;
@@ -2542,7 +2542,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
 
   // If we need to check for the named return value optimization, save the
   // return statement in our scope for later processing.
-  if (getLangOpts().CPlusPlus && SubPgmRetType->isRecordType() &&
+  if (getLangOpts().F90 && SubPgmRetType->isRecordType() &&
       !CurContext->isDependentContext())
     SubprogramScopes.back()->Returns.push_back(Result);
 

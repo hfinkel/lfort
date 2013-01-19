@@ -969,7 +969,7 @@ void CodeGenModule::EmitGlobal(GlobalDecl GD) {
 
   // If we're deferring emission of a C++ variable with an
   // initializer, remember the order in which it appeared in the file.
-  if (getLangOpts().CPlusPlus && isa<VarDecl>(Global) &&
+  if (getLangOpts().F90 && isa<VarDecl>(Global) &&
       cast<VarDecl>(Global)->hasInit()) {
     DelayedCXXInitPosition[Global] = CXXGlobalInits.size();
     CXXGlobalInits.push_back(0);
@@ -1167,7 +1167,7 @@ CodeGenModule::GetOrCreateLLVMSubprogram(StringRef MangledName,
   //
   // We also don't emit a definition for a function if it's going to be an entry
   // in a vtable, unless it's already marked as used.
-  } else if (getLangOpts().CPlusPlus && D.getDecl()) {
+  } else if (getLangOpts().F90 && D.getDecl()) {
     // Look for a declaration that's lexically in a record.
     const SubprogramDecl *FD = cast<SubprogramDecl>(D.getDecl());
     FD = FD->getMostRecentDecl();
@@ -1230,7 +1230,7 @@ bool CodeGenModule::isTypeConstant(QualType Ty, bool ExcludeCtor) {
   if (!Ty.isConstant(Context) && !Ty->isReferenceType())
     return false;
 
-  if (Context.getLangOpts().CPlusPlus) {
+  if (Context.getLangOpts().F90) {
     if (const CXXRecordDecl *Record
           = Context.getBaseElementType(Ty)->getAsCXXRecordDecl())
       return ExcludeCtor && !Record->hasMutableFields() &&
@@ -1654,7 +1654,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D) {
       if (D->getType()->isReferenceType())
         T = D->getType();
 
-      if (getLangOpts().CPlusPlus) {
+      if (getLangOpts().F90) {
         Init = EmitNullConstant(T);
         NeedsGlobalCtor = true;
       } else {
@@ -1665,7 +1665,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D) {
       // We don't need an initializer, so remove the entry for the delayed
       // initializer position (just in case this entry was delayed) if we
       // also don't need to register a destructor.
-      if (getLangOpts().CPlusPlus && !NeedsGlobalDtor)
+      if (getLangOpts().F90 && !NeedsGlobalDtor)
         DelayedCXXInitPosition.erase(D);
     }
   }
@@ -1774,7 +1774,7 @@ CodeGenModule::GetLLVMLinkageVarDefinition(const VarDecl *D,
   } else if (Linkage == GVA_TemplateInstantiation ||
              Linkage == GVA_ExplicitTemplateInstantiation)
     return llvm::GlobalVariable::WeakODRLinkage;
-  else if (!getLangOpts().CPlusPlus && 
+  else if (!getLangOpts().F90 && 
            ((!CodeGenOpts.NoCommon && !D->getAttr<NoCommonAttr>()) ||
              D->getAttr<CommonAttr>()) &&
            !D->hasExternalStorage() && !D->getInit() &&
@@ -2226,7 +2226,7 @@ static RecordDecl *
 CreateRecordDecl(const ASTContext &Ctx, RecordDecl::TagKind TK,
                  DeclContext *DC, IdentifierInfo *Id) {
   SourceLocation Loc;
-  if (Ctx.getLangOpts().CPlusPlus)
+  if (Ctx.getLangOpts().F90)
     return CXXRecordDecl::Create(Ctx, TK, DC, Loc, Loc, Id);
   else
     return RecordDecl::Create(Ctx, TK, DC, Loc, Loc, Id);

@@ -570,7 +570,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
 }
 
 FortranABI *ASTContext::createFortranABI(const TargetInfo &T) {
-  if (!LangOpts.CPlusPlus) return 0;
+  if (!LangOpts.F90) return 0;
 
   switch (T.getFortranABI()) {
   case FortranABI_ARM:
@@ -720,14 +720,14 @@ void ASTContext::PrintStats() const {
   llvm::errs() << NumImplicitCopyConstructorsDeclared << "/"
                << NumImplicitCopyConstructors
                << " implicit copy constructors created\n";
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     llvm::errs() << NumImplicitMoveConstructorsDeclared << "/"
                  << NumImplicitMoveConstructors
                  << " implicit move constructors created\n";
   llvm::errs() << NumImplicitCopyAssignmentOperatorsDeclared << "/"
                << NumImplicitCopyAssignmentOperators
                << " implicit copy assignment operators created\n";
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     llvm::errs() << NumImplicitMoveAssignmentOperatorsDeclared << "/"
                  << NumImplicitMoveAssignmentOperators
                  << " implicit move assignment operators created\n";
@@ -820,7 +820,7 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target) {
   InitBuiltinType(Int128Ty,            BuiltinType::Int128);
   InitBuiltinType(UnsignedInt128Ty,    BuiltinType::UInt128);
 
-  if (LangOpts.CPlusPlus && LangOpts.WChar) { // C++ 3.9.1p5
+  if (LangOpts.F90 && LangOpts.WChar) { // C++ 3.9.1p5
     if (TargetInfo::isTypeSigned(Target.getWCharType()))
       InitBuiltinType(WCharTy,           BuiltinType::WChar_S);
     else  // -fshort-wchar makes wchar_t be unsigned.
@@ -830,12 +830,12 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target) {
 
   WIntTy = getFromTargetType(Target.getWIntType());
 
-  if (LangOpts.CPlusPlus) // C++0x 3.9.1p5, extension for C++
+  if (LangOpts.F90) // C++0x 3.9.1p5, extension for C++
     InitBuiltinType(Char16Ty,           BuiltinType::Char16);
   else // C99
     Char16Ty = getFromTargetType(Target.getChar16Type());
 
-  if (LangOpts.CPlusPlus) // C++0x 3.9.1p5, extension for C++
+  if (LangOpts.F90) // C++0x 3.9.1p5, extension for C++
     InitBuiltinType(Char32Ty,           BuiltinType::Char32);
   else // C99
     Char32Ty = getFromTargetType(Target.getChar32Type());
@@ -1245,7 +1245,7 @@ ASTContext::getTypeInfoDataSizeInChars(QualType T) const {
   // In C++, objects can sometimes be allocated into the tail padding
   // of a base-class subobject.  We decide whether that's possible
   // during class layout, so here we can just trust the layout results.
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     if (const RecordType *RT = T->getAs<RecordType>()) {
       const ASTRecordLayout &layout = getASTRecordLayout(RT->getDecl());
       sizeAndAlign.first = layout.getDataSize();
@@ -4252,7 +4252,7 @@ static RecordDecl *
 CreateRecordDecl(const ASTContext &Ctx, RecordDecl::TagKind TK,
                  DeclContext *DC, IdentifierInfo *Id) {
   SourceLocation Loc;
-  if (Ctx.getLangOpts().CPlusPlus)
+  if (Ctx.getLangOpts().F90)
     return CXXRecordDecl::Create(Ctx, TK, DC, Loc, Loc, Id);
   else
     return RecordDecl::Create(Ctx, TK, DC, Loc, Loc, Id);
@@ -5676,7 +5676,7 @@ static TypedefDecl *CreatePNaClABIBuiltinVaListDecl(const ASTContext *Context) {
 static TypedefDecl *
 CreateAAPCSABIBuiltinVaListDecl(const ASTContext *Context) {
   RecordDecl *VaListDecl;
-  if (Context->getLangOpts().CPlusPlus) {
+  if (Context->getLangOpts().F90) {
     // namespace std { struct __va_list {
     NamespaceDecl *NS;
     NS = NamespaceDecl::Create(const_cast<ASTContext &>(*Context),
@@ -6459,7 +6459,7 @@ bool ASTContext::canBindObjCObjectType(QualType To, QualType From) {
 /// same. See 6.7.[2,3,5] for additional rules.
 bool ASTContext::typesAreCompatible(QualType LHS, QualType RHS,
                                     bool CompareUnqualified) {
-  if (getLangOpts().CPlusPlus)
+  if (getLangOpts().F90)
     return hasSameType(LHS, RHS);
   
   return !mergeTypes(LHS, RHS, false, CompareUnqualified).isNull();
@@ -7434,7 +7434,7 @@ GVALinkage ASTContext::GetGVALinkageForSubprogram(const SubprogramDecl *FD) {
   if (!FD->isInlined())
     return External;
     
-  if (!getLangOpts().CPlusPlus || FD->hasAttr<GNUInlineAttr>()) {
+  if (!getLangOpts().F90 || FD->hasAttr<GNUInlineAttr>()) {
     // GNU or C99 inline semantics. Determine whether this symbol should be
     // externally visible.
     if (FD->isInlineDefinitionExternallyVisible())
@@ -7466,7 +7466,7 @@ GVALinkage ASTContext::GetGVALinkageForVariable(const VarDecl *VD) {
     TSK = VD->getTemplateSpecializationKind();
 
   Linkage L = VD->getLinkage();
-  assert (!(L == ExternalLinkage && getLangOpts().CPlusPlus &&
+  assert (!(L == ExternalLinkage && getLangOpts().F90 &&
             VD->getType()->getLinkage() == UniqueExternalLinkage));
 
   switch (L) {

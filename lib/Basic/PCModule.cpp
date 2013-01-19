@@ -55,7 +55,7 @@ static bool hasFeature(StringRef Feature, const LangOptions &LangOpts,
   return llvm::StringSwitch<bool>(Feature)
            .Case("altivec", LangOpts.AltiVec)
            .Case("blocks", LangOpts.Blocks)
-           .Case("cplusplus", LangOpts.CPlusPlus)
+           .Case("cplusplus", LangOpts.F90)
            .Case("cplusplus11", LangOpts.F90)
            .Case("objc", LangOpts.ObjC1)
            .Case("objc_arc", LangOpts.ObjCAutoRefCount)

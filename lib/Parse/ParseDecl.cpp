@@ -1355,7 +1355,7 @@ Parser::DeclGroupPtrTy Parser::ParseDeclaration(StmtVector &Stmts,
     break;
   case tok::kw_inline:
     // Could be the start of an inline namespace. Allowed as an ext in C++03.
-    if (getLangOpts().CPlusPlus && NextToken().is(tok::kw_namespace)) {
+    if (getLangOpts().F90 && NextToken().is(tok::kw_namespace)) {
       ProhibitAttributes(attrs);
       SourceLocation InlineLoc = ConsumeToken();
       SingleDecl = ParseNamespace(Context, DeclEnd, InlineLoc);
@@ -1457,14 +1457,14 @@ bool Parser::MightBeDeclarator(unsigned Context) {
 
   case tok::amp:
   case tok::ampamp:
-    return getLangOpts().CPlusPlus;
+    return getLangOpts().F90;
 
   case tok::l_square: // Might be an attribute on an unnamed bit-field.
     return Context == Declarator::MemberContext && getLangOpts().F90 &&
            NextToken().is(tok::l_square);
 
   case tok::colon: // Might be a typo for '::' or an unnamed bit-field.
-    return Context == Declarator::MemberContext || getLangOpts().CPlusPlus;
+    return Context == Declarator::MemberContext || getLangOpts().F90;
 
   case tok::identifier:
     switch (NextToken().getKind()) {
@@ -1491,7 +1491,7 @@ bool Parser::MightBeDeclarator(unsigned Context) {
       // and in block scope it's probably a label. Inside a class definition,
       // this is a bit-field.
       return Context == Declarator::MemberContext ||
-             (getLangOpts().CPlusPlus && Context == Declarator::FileContext);
+             (getLangOpts().F90 && Context == Declarator::FileContext);
 
     case tok::identifier: // Possible virt-specifier.
       return getLangOpts().F90 && isCXX11VirtSpecifier(NextToken());
@@ -1888,7 +1888,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
       else
         Diag(ConsumeToken(), diag::err_default_special_members);
     } else {
-      if (getLangOpts().CPlusPlus && D.getCXXScopeSpec().isSet()) {
+      if (getLangOpts().F90 && D.getCXXScopeSpec().isSet()) {
         EnterScope(0);
         Actions.ActOnCXXEnterDeclInitializer(getCurScope(), ThisDecl);
       }
@@ -1902,7 +1902,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
 
       ExprResult Init(ParseInitializer());
 
-      if (getLangOpts().CPlusPlus && D.getCXXScopeSpec().isSet()) {
+      if (getLangOpts().F90 && D.getCXXScopeSpec().isSet()) {
         Actions.ActOnCXXExitDeclInitializer(getCurScope(), ThisDecl);
         ExitScope();
       }
@@ -1922,7 +1922,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
     ExprVector Exprs;
     CommaLocsTy CommaLocs;
 
-    if (getLangOpts().CPlusPlus && D.getCXXScopeSpec().isSet()) {
+    if (getLangOpts().F90 && D.getCXXScopeSpec().isSet()) {
       EnterScope(0);
       Actions.ActOnCXXEnterDeclInitializer(getCurScope(), ThisDecl);
     }
@@ -1931,7 +1931,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
       Actions.ActOnInitializerError(ThisDecl);
       SkipUntil(tok::r_paren);
 
-      if (getLangOpts().CPlusPlus && D.getCXXScopeSpec().isSet()) {
+      if (getLangOpts().F90 && D.getCXXScopeSpec().isSet()) {
         Actions.ActOnCXXExitDeclInitializer(getCurScope(), ThisDecl);
         ExitScope();
       }
@@ -1942,7 +1942,7 @@ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(Declarator &D,
       assert(!Exprs.empty() && Exprs.size()-1 == CommaLocs.size() &&
              "Unexpected number of commas!");
 
-      if (getLangOpts().CPlusPlus && D.getCXXScopeSpec().isSet()) {
+      if (getLangOpts().F90 && D.getCXXScopeSpec().isSet()) {
         Actions.ActOnCXXExitDeclInitializer(getCurScope(), ThisDecl);
         ExitScope();
       }
@@ -2100,7 +2100,7 @@ bool Parser::ParseImplicitInt(DeclSpec &DS, CXXScopeSpec *SS,
   // implicit int as an extension in C99 and C11. Allegedly, MS also
   // supports implicit int in C++ mode.
   if (DSC != DSC_type_specifier && DSC != DSC_trailing &&
-      (!getLangOpts().CPlusPlus || getLangOpts().MicrosoftExt) &&
+      (!getLangOpts().F90 || getLangOpts().MicrosoftExt) &&
       isValidAfterIdentifierInDeclarator(NextToken())) {
     // If this token is valid for implicit int, e.g. "static x = 4", then
     // we just avoid eating the identifier, so it will be parsed as the
@@ -2108,7 +2108,7 @@ bool Parser::ParseImplicitInt(DeclSpec &DS, CXXScopeSpec *SS,
     return false;
   }
 
-  if (getLangOpts().CPlusPlus &&
+  if (getLangOpts().F90 &&
       DS.getStorageClassSpec() == DeclSpec::SCS_auto) {
     // Don't require a type specifier if we have the 'auto' storage class
     // specifier in C++98 -- we'll promote it to a type specifier.
@@ -2146,7 +2146,7 @@ bool Parser::ParseImplicitInt(DeclSpec &DS, CXXScopeSpec *SS,
                      Sema::LookupOrdinaryName);
 
       Diag(Loc, diag::err_use_of_tag_name_without_tag)
-        << TokenName << TagName << getLangOpts().CPlusPlus
+        << TokenName << TagName << getLangOpts().F90
         << FixItHint::CreateInsertion(Tok.getLocation(), FixitTagName);
 
       if (Actions.LookupParsedName(R, getCurScope(), SS)) {
@@ -2656,7 +2656,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
     case tok::identifier: {
       // In C++, check to see if this is a scope specifier like foo::bar::, if
       // so handle it as such.  This is important for ctor parsing.
-      if (getLangOpts().CPlusPlus) {
+      if (getLangOpts().F90) {
         if (TryAnnotateCXXScopeToken(true)) {
           if (!DS.hasTypeSpecifier())
             DS.SetTypeSpecError();
@@ -2701,7 +2701,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
 
       // If we're in a context where the identifier could be a class name,
       // check whether this is a constructor declaration.
-      if (getLangOpts().CPlusPlus && DSContext == DSC_class &&
+      if (getLangOpts().F90 && DSContext == DSC_class &&
           Actions.isCurrentClassName(*Tok.getIdentifierInfo(), getCurScope()) &&
           isConstructorDeclarator())
         goto DoneWithDeclSpec;
@@ -2737,7 +2737,7 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
       // If we're in a context where the template-id could be a
       // constructor name or specialization, check whether this is a
       // constructor declaration.
-      if (getLangOpts().CPlusPlus && DSContext == DSC_class &&
+      if (getLangOpts().F90 && DSContext == DSC_class &&
           Actions.isCurrentClassName(*TemplateId->Name, getCurScope()) &&
           isConstructorDeclarator())
         goto DoneWithDeclSpec;
@@ -3546,7 +3546,7 @@ void Parser::ParseStructUnionBody(SourceLocation RecordLoc,
 
   // Empty structs are an extension in C (C99 6.7.2.1p7), but are allowed in
   // C++.
-  if (Tok.is(tok::r_brace) && !getLangOpts().CPlusPlus) {
+  if (Tok.is(tok::r_brace) && !getLangOpts().F90) {
     Diag(Tok, diag::ext_empty_struct_union) << (TagType == TST_union);
     Diag(Tok, diag::warn_empty_struct_union_compat) << (TagType == TST_union);
   }
@@ -3726,7 +3726,7 @@ void Parser::ParseEnumSpecifier(SourceLocation StartLoc, DeclSpec &DS,
      getLangOpts().ObjC2);
 
   CXXScopeSpec &SS = DS.getTypeSpecScope();
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().F90) {
     // "enum foo : bar;" is not a potential typo for "enum foo::bar;"
     // if a fixed underlying type is allowed.
     ColonProtectionRAIIObject X(*this, AllowFixedUnderlyingType);
@@ -3821,9 +3821,9 @@ void Parser::ParseEnumSpecifier(SourceLocation StartLoc, DeclSpec &DS,
         // underlying type.
         // FIXME: The standard is not entirely clear on how to disambiguate in
         // this case.
-        if ((getLangOpts().CPlusPlus &&
+        if ((getLangOpts().F90 &&
              isCXXDeclarationSpecifier(TPResult::True()) != TPResult::True()) ||
-            (!getLangOpts().CPlusPlus && !isDeclarationSpecifier(true))) {
+            (!getLangOpts().F90 && !isDeclarationSpecifier(true))) {
           // We'll parse this as a bitfield later.
           PossibleBitfield = true;
           TPA.Revert();
@@ -3844,7 +3844,7 @@ void Parser::ParseEnumSpecifier(SourceLocation StartLoc, DeclSpec &DS,
       if (getLangOpts().F90) {
         Diag(StartLoc, diag::warn_cxx98_compat_enum_fixed_underlying_type);
       } else if (!getLangOpts().ObjC2) {
-        if (getLangOpts().CPlusPlus)
+        if (getLangOpts().F90)
           Diag(StartLoc, diag::ext_cxx11_enum_fixed_underlying_type) << Range;
         else
           Diag(StartLoc, diag::ext_c_enum_fixed_underlying_type) << Range;
@@ -4005,7 +4005,7 @@ void Parser::ParseEnumBody(SourceLocation StartLoc, Decl *EnumDecl) {
   T.consumeOpen();
 
   // C does not allow an empty enumerator-list, C++ does [dcl.enum].
-  if (Tok.is(tok::r_brace) && !getLangOpts().CPlusPlus)
+  if (Tok.is(tok::r_brace) && !getLangOpts().F90)
     Diag(Tok, diag::error_empty_enum);
 
   SmallVector<Decl *, 32> EnumConstantDecls;
@@ -4059,7 +4059,7 @@ void Parser::ParseEnumBody(SourceLocation StartLoc, Decl *EnumDecl) {
 
     if (Tok.isNot(tok::identifier)) {
       if (!getLangOpts().F90 && !getLangOpts().F90)
-        Diag(CommaLoc, getLangOpts().CPlusPlus ?
+        Diag(CommaLoc, getLangOpts().F90 ?
                diag::ext_enumerator_list_comma_cxx :
                diag::ext_enumerator_list_comma_c)
           << FixItHint::CreateRemoval(CommaLoc);
@@ -4716,7 +4716,7 @@ static bool isPtrOperatorToken(tok::TokenKind Kind, const LangOptions &Lang) {
     return true;
 
   // We parse rvalue refs in C++03, because otherwise the errors are scary.
-  if (!Lang.CPlusPlus)
+  if (!Lang.F90)
     return false;
 
   return Kind == tok::amp || Kind == tok::ampamp;
@@ -4755,7 +4755,7 @@ void Parser::ParseDeclaratorInternal(Declarator &D,
   // C++ member pointers start with a '::' or a nested-name.
   // Member pointers get special handling, since there's no place for the
   // scope spec in the generic path below.
-  if (getLangOpts().CPlusPlus &&
+  if (getLangOpts().F90 &&
       (Tok.is(tok::coloncolon) || Tok.is(tok::identifier) ||
        Tok.is(tok::annot_cxxscope))) {
     bool EnteringContext = D.getContext() == Declarator::FileContext ||
@@ -4940,7 +4940,7 @@ static void diagnoseMisplacedEllipsis(Parser &P, Declarator &D,
 void Parser::ParseDirectDeclarator(Declarator &D) {
   DeclaratorScopeObj DeclScopeObj(*this, D.getCXXScopeSpec());
 
-  if (getLangOpts().CPlusPlus && D.mayHaveIdentifier()) {
+  if (getLangOpts().F90 && D.mayHaveIdentifier()) {
     // ParseDeclaratorInternal might already have parsed the scope.
     if (D.getCXXScopeSpec().isEmpty()) {
       bool EnteringContext = D.getContext() == Declarator::FileContext ||
@@ -5020,7 +5020,7 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
       goto PastIdentifier;
     }
   } else if (Tok.is(tok::identifier) && D.mayHaveIdentifier()) {
-    assert(!getLangOpts().CPlusPlus &&
+    assert(!getLangOpts().F90 &&
            "There's a C++-specific check for tok::identifier above");
     assert(Tok.getIdentifierInfo() && "Not an identifier?");
     D.SetIdentifier(Tok.getIdentifierInfo(), Tok.getLocation());
@@ -5056,8 +5056,8 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
     if (D.getContext() == Declarator::MemberContext)
       Diag(Tok, diag::err_expected_member_name_or_semi)
         << D.getDeclSpec().getSourceRange();
-    else if (getLangOpts().CPlusPlus)
-      Diag(Tok, diag::err_expected_unqualified_id) << getLangOpts().CPlusPlus;
+    else if (getLangOpts().F90)
+      Diag(Tok, diag::err_expected_unqualified_id) << getLangOpts().F90;
     else
       Diag(Tok, diag::err_expected_ident_lparen);
     D.SetIdentifier(0, Tok.getLocation());
@@ -5082,7 +5082,7 @@ void Parser::ParseDirectDeclarator(Declarator &D) {
       // In such a case, check if we actually have a function declarator; if it
       // is not, the declarator has been fully parsed.
       bool IsAmbiguous = false;
-      if (getLangOpts().CPlusPlus && D.mayBeFollowedByCXXDirectInit()) {
+      if (getLangOpts().F90 && D.mayBeFollowedByCXXDirectInit()) {
         // The name of the declarator, if any, is tentatively declared within
         // a possible direct initializer.
         TentativelyDeclaredIdentifiers.push_back(D.getIdentifier());
@@ -5161,7 +5161,7 @@ void Parser::ParseParenDeclarator(Declarator &D) {
     // paren, because we haven't seen the identifier yet.
     isGrouping = true;
   } else if (Tok.is(tok::r_paren) ||           // 'int()' is a function.
-             (getLangOpts().CPlusPlus && Tok.is(tok::ellipsis) &&
+             (getLangOpts().F90 && Tok.is(tok::ellipsis) &&
               NextToken().is(tok::r_paren)) || // C++ int(...)
              isDeclarationSpecifier() ||       // 'int(int)' is a function.
              isCXX11AttributeSpecifier()) {    // 'int([[]]int)' is a function.
@@ -5288,7 +5288,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
     else if (RequiresArg)
       Diag(Tok, diag::err_argument_required_after_attribute);
 
-    HasProto = ParamInfo.size() || getLangOpts().CPlusPlus;
+    HasProto = ParamInfo.size() || getLangOpts().F90;
 
     // If we have the closing ')', eat it.
     Tracker.consumeClose();
@@ -5296,7 +5296,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
     LocalEndLoc = RParenLoc;
     EndLoc = RParenLoc;
 
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       // FIXME: Accept these components in any order, and produce fixits to
       // correct the order if the user gets it wrong. Ideally we should deal
       // with the virt-specifier-seq and pure-specifier in the same way.
@@ -5393,7 +5393,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
 /// Note that identifier-lists are only allowed for normal declarators, not for
 /// abstract-declarators.
 bool Parser::isSubprogramDeclaratorIdentifierList() {
-  return !getLangOpts().CPlusPlus
+  return !getLangOpts().F90
          && Tok.is(tok::identifier)
          && !TryAltiVecVectorToken()
          // K&R identifier lists can't have typedefs as identifiers, per C99
@@ -5636,7 +5636,7 @@ void Parser::ParseParameterDeclarationClause(
       if (Tok.is(tok::ellipsis)) {
         EllipsisLoc = ConsumeToken();     // Consume the ellipsis.
 
-        if (!getLangOpts().CPlusPlus) {
+        if (!getLangOpts().F90) {
           // We have ellipsis without a preceding ',', which is ill-formed
           // in C. Complain and provide the fix.
           Diag(EllipsisLoc, diag::err_missing_comma_before_ellipsis)
@@ -5739,7 +5739,7 @@ void Parser::ParseBracketDeclarator(Declarator &D) {
 
     // Parse the constant-expression or assignment-expression now (depending
     // on dialect).
-    if (getLangOpts().CPlusPlus) {
+    if (getLangOpts().F90) {
       NumElements = ParseConstantExpression();
     } else {
       EnterExpressionEvaluationContext Unevaluated(Actions,

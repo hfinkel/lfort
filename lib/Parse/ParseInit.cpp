@@ -228,7 +228,7 @@ ExprResult Parser::ParseInitializerWithPotentialDesignator() {
     // send) or send to 'super', parse this as a message send
     // expression.  We handle C++ and C separately, since C++ requires
     // much more complicated parsing.
-    if  (getLangOpts().ObjC1 && getLangOpts().CPlusPlus) {
+    if  (getLangOpts().ObjC1 && getLangOpts().F90) {
       // Send to 'super'.
       if (Tok.is(tok::identifier) && Tok.getIdentifierInfo() == Ident_super &&
           NextToken().isNot(tok::period) && 
@@ -409,7 +409,7 @@ ExprResult Parser::ParseBraceInitializer() {
 
   if (Tok.is(tok::r_brace)) {
     // Empty initializers are a C++ feature and a GNU extension to C.
-    if (!getLangOpts().CPlusPlus)
+    if (!getLangOpts().F90)
       Diag(LBraceLoc, diag::ext_gnu_empty_initializer);
     // Match the '}'.
     return Actions.ActOnInitList(LBraceLoc, MultiExprArg(), ConsumeBrace());

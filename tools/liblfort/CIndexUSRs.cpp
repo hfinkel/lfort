@@ -188,7 +188,7 @@ void USRGenerator::VisitSubprogramDecl(SubprogramDecl *D) {
   D->printName(Out);
 
   ASTContext &Ctx = *Context;
-  if (!Ctx.getLangOpts().CPlusPlus || D->isExternC())
+  if (!Ctx.getLangOpts().F90 || D->isExternC())
     return;
 
   if (const TemplateArgumentList *

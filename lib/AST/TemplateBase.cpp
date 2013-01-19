@@ -548,7 +548,7 @@ const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
     SmallString<32> Str;
     llvm::raw_svector_ostream OS(Str);
     LangOptions LangOpts;
-    LangOpts.CPlusPlus = true;
+    LangOpts.F90 = true;
     PrintingPolicy Policy(LangOpts);
     Arg.getAsExpr()->printPretty(OS, 0, Policy);
     return DB << OS.str();
@@ -559,7 +559,7 @@ const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
     SmallString<32> Str;
     llvm::raw_svector_ostream OS(Str);
     LangOptions LangOpts;
-    LangOpts.CPlusPlus = true;
+    LangOpts.F90 = true;
     PrintingPolicy Policy(LangOpts);
     Arg.print(Policy, OS);
     return DB << OS.str();

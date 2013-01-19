@@ -161,7 +161,7 @@ const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
   std::string NameStr;
   raw_string_ostream OS(NameStr);
   LangOptions LO;
-  LO.CPlusPlus = true;
+  LO.F90 = true;
   LO.Bool = true;
   N.print(OS, PrintingPolicy(LO));
   OS.flush();
@@ -170,7 +170,7 @@ const DiagnosticBuilder &lfort::operator<<(const DiagnosticBuilder &DB,
 
 void TemplateName::dump(raw_ostream &OS) const {
   LangOptions LO;  // FIXME!
-  LO.CPlusPlus = true;
+  LO.F90 = true;
   LO.Bool = true;
   print(OS, PrintingPolicy(LO));
 }

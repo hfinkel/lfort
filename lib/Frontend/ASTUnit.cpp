@@ -284,7 +284,7 @@ static unsigned getDeclShowContexts(NamedDecl *ND,
   if (isa<TypeDecl>(ND) || isa<ObjCInterfaceDecl>(ND) || 
       isa<ClassTemplateDecl>(ND) || isa<TemplateTemplateParmDecl>(ND)) {
     // Types can appear in these contexts.
-    if (LangOpts.CPlusPlus || !isa<TagDecl>(ND))
+    if (LangOpts.F90 || !isa<TagDecl>(ND))
       Contexts |= (1LL << CodeCompletionContext::CCC_TopLevel)
                |  (1LL << CodeCompletionContext::CCC_ObjCIvarList)
                |  (1LL << CodeCompletionContext::CCC_ClassStructUnion)
@@ -293,12 +293,12 @@ static unsigned getDeclShowContexts(NamedDecl *ND,
                |  (1LL << CodeCompletionContext::CCC_ParenthesizedExpression);
 
     // In C++, types can appear in expressions contexts (for functional casts).
-    if (LangOpts.CPlusPlus)
+    if (LangOpts.F90)
       Contexts |= (1LL << CodeCompletionContext::CCC_Expression);
     
     // In Objective-C, message sends can send interfaces. In Objective-C++,
     // all types are available due to functional casts.
-    if (LangOpts.CPlusPlus || isa<ObjCInterfaceDecl>(ND))
+    if (LangOpts.F90 || isa<ObjCInterfaceDecl>(ND))
       Contexts |= (1LL << CodeCompletionContext::CCC_ObjCMessageReceiver);
     
     // In Objective-C, you can only be a subclass of another Objective-C class
@@ -318,7 +318,7 @@ static unsigned getDeclShowContexts(NamedDecl *ND,
       else
         Contexts |= (1LL << CodeCompletionContext::CCC_ClassOrStructTag);
       
-      if (LangOpts.CPlusPlus)
+      if (LangOpts.F90)
         IsNestedNameSpecifier = true;
     } else if (isa<ClassTemplateDecl>(ND))
       IsNestedNameSpecifier = true;
@@ -406,7 +406,7 @@ void ASTUnit::CacheCodeCompletionResults() {
       CachedCompletionResults.push_back(CachedResult);
       
       /// Handle nested-name-specifiers in C++.
-      if (TheSema->Context.getLangOpts().CPlusPlus && 
+      if (TheSema->Context.getLangOpts().F90 && 
           IsNestedNameSpecifier && !Results[I].StartsNestedNameSpecifier) {
         // The contexts in which a nested-name-specifier can appear in C++.
         uint64_t NNSContexts
@@ -2108,7 +2108,7 @@ namespace {
         | (1LL << CodeCompletionContext::CCC_ParenthesizedExpression)
         | (1LL << CodeCompletionContext::CCC_Recovery);
 
-      if (AST.getASTContext().getLangOpts().CPlusPlus)
+      if (AST.getASTContext().getLangOpts().F90)
         NormalContexts |= (1LL << CodeCompletionContext::CCC_EnumTag)
                        |  (1LL << CodeCompletionContext::CCC_UnionTag)
                        |  (1LL << CodeCompletionContext::CCC_ClassOrStructTag);
@@ -2203,7 +2203,7 @@ static void CalculateHiddenNames(const CodeCompletionContext &Context,
       unsigned HiddenIDNS = (Decl::IDNS_Type | Decl::IDNS_Member | 
                              Decl::IDNS_Namespace | Decl::IDNS_Ordinary |
                              Decl::IDNS_NonMemberOperator);
-      if (Ctx.getLangOpts().CPlusPlus)
+      if (Ctx.getLangOpts().F90)
         HiddenIDNS |= Decl::IDNS_Tag;
       Hiding = (IDNS & HiddenIDNS);
     }
