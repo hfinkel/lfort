@@ -445,7 +445,7 @@ bool ScanfSpecifier::fixType(QualType QT, const LangOptions &LangOpt,
   }
 
   // Handle size_t, ptrdiff_t, etc. that have dedicated length modifiers in C99.
-  if (isa<TypedefType>(PT) && (LangOpt.C99 || LangOpt.CPlusPlus11))
+  if (isa<TypedefType>(PT) && (LangOpt.F90 || LangOpt.CPlusPlus11))
     namedTypeToLengthModifier(PT, LM);
 
   // If fixing the length modifier was enough, we are done.

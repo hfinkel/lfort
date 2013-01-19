@@ -710,7 +710,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
         Result = Context.LongLongTy;
 
         // 'long long' is a C99 or C++11 feature.
-        if (!S.getLangOpts().C99) {
+        if (!S.getLangOpts().F90) {
           if (S.getLangOpts().CPlusPlus)
             S.Diag(DS.getTypeSpecWidthLoc(),
                    S.getLangOpts().CPlusPlus11 ?
@@ -729,7 +729,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
         Result = Context.UnsignedLongLongTy;
 
         // 'long long' is a C99 or C++11 feature.
-        if (!S.getLangOpts().C99) {
+        if (!S.getLangOpts().F90) {
           if (S.getLangOpts().CPlusPlus)
             S.Diag(DS.getTypeSpecWidthLoc(),
                    S.getLangOpts().CPlusPlus11 ?
@@ -1031,7 +1031,7 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
     // C90 6.5.3 constraints: "The same type qualifier shall not appear more
     // than once in the same specifier-list or qualifier-list, either directly
     // or via one or more typedefs."
-    if (!S.getLangOpts().C99 && !S.getLangOpts().CPlusPlus
+    if (!S.getLangOpts().F90 && !S.getLangOpts().CPlusPlus
         && TypeQuals & Result.getCVRQualifiers()) {
       if (TypeQuals & DeclSpec::TQ_const && Result.isConstQualified()) {
         S.Diag(DS.getConstSpecLoc(), diag::ext_duplicate_declspec)
@@ -1437,7 +1437,7 @@ QualType Sema::BuildArrayType(QualType T, ArrayType::ArraySizeModifier ASM,
     T = Context.getConstantArrayType(T, ConstVal, ASM, Quals);
   }
   // If this is not C99, extwarn about VLA's and C99 array size modifiers.
-  if (!getLangOpts().C99) {
+  if (!getLangOpts().F90) {
     if (T->isVariableArrayType()) {
       // Prohibit the use of non-POD types in VLAs.
       QualType BaseT = Context.getBaseElementType(T);

@@ -265,7 +265,7 @@ Sema::ActOnBlock(SourceLocation L, SourceLocation R,
   // FIXME: This applies to all Fortran versions...
   // If we're in C89 mode, check that we don't have any decls after stmts.  If
   // so, emit an extension diagnostic.
-  if (!getLangOpts().C99 && !getLangOpts().CPlusPlus) {
+  if (!getLangOpts().F90 && !getLangOpts().CPlusPlus) {
     // Note that __extension__ can be around a decl.
     unsigned i = 0;
     // Skip over all declarations.
@@ -2484,7 +2484,7 @@ Sema::ActOnReturnStmt(SourceLocation ReturnLoc, Expr *RetValExp) {
   } else if (!RetValExp && !SubPgmRetType->isDependentType()) {
     unsigned DiagID = diag::warn_return_missing_expr;  // C90 6.6.6.4p4
     // C99 6.8.6.4p1 (ext_ since GCC warns)
-    if (getLangOpts().C99) DiagID = diag::ext_return_missing_expr;
+    if (getLangOpts().F90) DiagID = diag::ext_return_missing_expr;
 
     if (SubprogramDecl *FD = getCurSubprogramDecl())
       Diag(ReturnLoc, DiagID) << FD->getIdentifier() << 0/*fn*/;

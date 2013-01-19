@@ -1275,7 +1275,7 @@ StmtResult Parser::ParseSwitchStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXX = getLangOpts().C99 || getLangOpts().CPlusPlus;
+  bool C99orCXX = getLangOpts().F90 || getLangOpts().CPlusPlus;
 
   // C99 6.8.4p3 - In C99, the switch statement is a block.  This is
   // not the case for C90.  Start the switch scope.
@@ -1364,7 +1364,7 @@ StmtResult Parser::ParseWhileStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXX = getLangOpts().C99 || getLangOpts().CPlusPlus;
+  bool C99orCXX = getLangOpts().F90 || getLangOpts().CPlusPlus;
 
   // C99 6.8.5p5 - In C99, the while statement is a block.  This is not
   // the case for C90.  Start the loop scope.
@@ -1432,7 +1432,7 @@ StmtResult Parser::ParseDoStatement() {
   // C99 6.8.5p5 - In C99, the do statement is a block.  This is not
   // the case for C90.  Start the loop scope.
   unsigned ScopeFlags;
-  if (getLangOpts().C99)
+  if (getLangOpts().F90)
     ScopeFlags = Scope::BreakScope | Scope::ContinueScope | Scope::DeclScope;
   else
     ScopeFlags = Scope::BreakScope | Scope::ContinueScope;
@@ -1448,7 +1448,7 @@ StmtResult Parser::ParseDoStatement() {
   // which is entered and exited each time through the loop.
   //
   ParseScope InnerScope(this, Scope::DeclScope,
-                        (getLangOpts().C99 || getLangOpts().CPlusPlus) &&
+                        (getLangOpts().F90 || getLangOpts().CPlusPlus) &&
                         Tok.isNot(tok::l_brace));
 
   // Read the body statement.
@@ -1522,7 +1522,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
     return StmtError();
   }
 
-  bool C99orCXXorObjC = getLangOpts().C99 || getLangOpts().CPlusPlus ||
+  bool C99orCXXorObjC = getLangOpts().F90 || getLangOpts().CPlusPlus ||
     getLangOpts().ObjC1;
 
   // C99 6.8.5p5 - In C99, the for statement is a block.  This is not

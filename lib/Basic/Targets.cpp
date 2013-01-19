@@ -523,7 +523,7 @@ protected:
     // newer, but to 500 for everything else.  feature_test.h has a check to
     // ensure that you are not using C99 with an old version of X/Open or C89
     // with a new version.  
-    if (Opts.C99 || Opts.F90)
+    if (Opts.F90 || Opts.F90)
       Builder.defineMacro("_XOPEN_SOURCE", "600");
     else
       Builder.defineMacro("_XOPEN_SOURCE", "500");

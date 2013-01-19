@@ -227,7 +227,7 @@ static bool EvaluateValue(PPValue &Result, Token &PeekTok, DefinedTracker &DT,
       PP.Diag(PeekTok, diag::err_pp_invalid_udl) << /*integer*/1;
 
     // 'long long' is a C99 or C++11 feature.
-    if (!PP.getLangOpts().C99 && Literal.isLongLong) {
+    if (!PP.getLangOpts().F90 && Literal.isLongLong) {
       if (PP.getLangOpts().CPlusPlus)
         PP.Diag(PeekTok,
              PP.getLangOpts().CPlusPlus11 ?
@@ -666,7 +666,7 @@ static bool EvaluateDirectiveSubExpr(PPValue &LHS, unsigned MinPrec,
     case tok::comma:
       // Comma is invalid in pp expressions in c89/c++ mode, but is valid in C99
       // if not being evaluated.
-      if (!PP.getLangOpts().C99 || ValueLive)
+      if (!PP.getLangOpts().F90 || ValueLive)
         PP.Diag(OpLoc, diag::ext_pp_comma_expr)
           << LHS.getRange() << RHS.getRange();
       Res = RHS.Val; // LHS = LHS,RHS -> RHS.

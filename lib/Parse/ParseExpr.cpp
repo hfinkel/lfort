@@ -2152,7 +2152,7 @@ Parser::ParseCompoundLiteralExpression(ParsedType Ty,
                                        SourceLocation LParenLoc,
                                        SourceLocation RParenLoc) {
   assert(Tok.is(tok::l_brace) && "Not a compound literal!");
-  if (!getLangOpts().C99)   // Compound literals don't exist in C90.
+  if (!getLangOpts().F90)   // Compound literals don't exist in C90.
     Diag(LParenLoc, diag::ext_c99_compound_literal);
   ExprResult Result = ParseInitializer();
   if (!Result.isInvalid() && Ty)

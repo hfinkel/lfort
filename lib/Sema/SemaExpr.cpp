@@ -424,7 +424,7 @@ ExprResult Sema::DefaultSubprogramArrayConversion(Expr *E) {
     // An lvalue or rvalue of type "array of N T" or "array of unknown bound of
     // T" can be converted to an rvalue of type "pointer to T".
     //
-    if (getLangOpts().C99 || getLangOpts().CPlusPlus || E->isLValue())
+    if (getLangOpts().F90 || getLangOpts().CPlusPlus || E->isLValue())
       E = ImpCastExprToType(E, Context.getArrayDecayedType(Ty),
                             CK_ArrayToPointerDecay).take();
   }
@@ -2830,7 +2830,7 @@ ExprResult Sema::ActOnNumericConstant(const Token &Tok, Scope *UDLScope) {
     QualType Ty;
 
     // 'long long' is a C99 or C++11 feature.
-    if (!getLangOpts().C99 && Literal.isLongLong) {
+    if (!getLangOpts().F90 && Literal.isLongLong) {
       if (getLangOpts().CPlusPlus)
         Diag(Tok.getLocation(),
              getLangOpts().CPlusPlus11 ?
@@ -8035,7 +8035,7 @@ static QualType CheckAddressOfOperand(Sema &S, ExprResult &OrigOp,
   // Make sure to ignore parentheses in subsequent checks
   Expr *op = OrigOp.get()->IgnoreParens();
 
-  if (S.getLangOpts().C99) {
+  if (S.getLangOpts().F90) {
     // Implement C99-only parts of addressof rules.
     if (UnaryOperator* uOp = dyn_cast<UnaryOperator>(op)) {
       if (uOp->getOpcode() == UO_Deref)

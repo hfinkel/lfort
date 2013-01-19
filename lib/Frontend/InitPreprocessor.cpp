@@ -297,7 +297,7 @@ static void InitializeStandardPredefinedMacros(const TargetInfo &TI,
   if (!LangOpts.CPlusPlus) {
     if (LangOpts.F90)
       Builder.defineMacro("__STDC_VERSION__", "201112L");
-    else if (LangOpts.C99)
+    else if (LangOpts.F90)
       Builder.defineMacro("__STDC_VERSION__", "199901L");
     else if (!LangOpts.GNUMode && LangOpts.Digraphs)
       Builder.defineMacro("__STDC_VERSION__", "199409L");

@@ -6656,7 +6656,7 @@ static ICEDiag CheckICE(const Expr* E, ASTContext &Ctx) {
         }
       }
       if (Exp->getOpcode() == BO_Comma) {
-        if (Ctx.getLangOpts().C99) {
+        if (Ctx.getLangOpts().F90) {
           // C99 6.6p3 introduces a strange edge case: comma can be in an ICE
           // if it isn't evaluated.
           if (LHSResult.Kind == IK_ICE && RHSResult.Kind == IK_ICE)

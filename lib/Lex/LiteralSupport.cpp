@@ -284,7 +284,7 @@ static bool ProcessUCNEscape(const char *ThisTokBegin, const char *&ThisTokBuf,
       return false;
   }
 
-  if (!Features.CPlusPlus && !Features.C99 && Diags)
+  if (!Features.CPlusPlus && !Features.F90 && Diags)
     Diag(Diags, Features, Loc, ThisTokBegin, UcnBegin, ThisTokBuf,
          diag::warn_ucn_not_valid_in_c89);
 
@@ -1371,13 +1371,13 @@ void StringLiteralParser::init(const Token *StringToks, unsigned NumStringToks){
     }
   } else if (Diags) {
     // Complain if this string literal has too many characters.
-    unsigned MaxChars = Features.CPlusPlus? 65536 : Features.C99 ? 4095 : 509;
+    unsigned MaxChars = Features.CPlusPlus? 65536 : Features.F90 ? 4095 : 509;
 
     if (GetNumStringChars() > MaxChars)
       Diags->Report(StringToks[0].getLocation(),
                     diag::ext_string_too_long)
         << GetNumStringChars() << MaxChars
-        << (Features.CPlusPlus ? 2 : Features.C99 ? 1 : 0)
+        << (Features.CPlusPlus ? 2 : Features.F90 ? 1 : 0)
         << SourceRange(StringToks[0].getLocation(),
                        StringToks[NumStringToks-1].getLocation());
   }

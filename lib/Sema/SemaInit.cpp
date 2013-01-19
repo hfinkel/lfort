@@ -2269,7 +2269,7 @@ ExprResult Sema::ActOnDesignatedInitializer(Designation &Desig,
                                  InitExpressions, Loc, GNUSyntax,
                                  Init.takeAs<Expr>());
 
-  if (!getLangOpts().C99)
+  if (!getLangOpts().F90)
     Diag(DIE->getLocStart(), diag::ext_designated_init)
       << DIE->getSourceRange();
 

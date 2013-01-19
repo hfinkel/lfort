@@ -185,7 +185,7 @@ void Preprocessor::CheckEndOfDirective(const char *DirType, bool EnableMacros) {
     // trouble than it is worth to insert /**/ and check that there is no /**/
     // in the range also.
     FixItHint Hint;
-    if ((LangOpts.GNUMode || LangOpts.C99 || LangOpts.CPlusPlus) &&
+    if ((LangOpts.GNUMode || LangOpts.F90 || LangOpts.CPlusPlus) &&
         !CurTokenLexer)
       Hint = FixItHint::CreateInsertion(Tmp.getLocation(),"//");
     Diag(Tmp, diag::ext_pp_extra_tokens_at_eol) << DirType << Hint;
@@ -841,7 +841,7 @@ void Preprocessor::HandleLineDirective(Token &Tok) {
   // Enforce C99 6.10.4p3: "The digit sequence shall not specify ... a
   // number greater than 2147483647".  C90 requires that the line # be <= 32767.
   unsigned LineLimit = 32768U;
-  if (LangOpts.C99 || LangOpts.CPlusPlus11)
+  if (LangOpts.F90 || LangOpts.CPlusPlus11)
     LineLimit = 2147483648U;
   if (LineNo >= LineLimit)
     Diag(DigitTok, diag::ext_pp_line_too_big) << LineLimit;
@@ -1660,7 +1660,7 @@ bool Preprocessor::ReadMacroDefinitionArgList(MacroInfo *MI, Token &Tok) {
       Diag(Tok, diag::err_pp_expected_ident_in_arg_list);
       return true;
     case tok::ellipsis:  // #define X(... -> C99 varargs
-      if (!LangOpts.C99)
+      if (!LangOpts.F90)
         Diag(Tok, LangOpts.CPlusPlus11 ? 
              diag::warn_cxx98_compat_variadic_macro :
              diag::ext_variadic_macro);
@@ -1787,7 +1787,7 @@ void Preprocessor::HandleDefineDirective(Token &DefineTok) {
 
     // Read the first token after the arg list for down below.
     LexUnexpandedToken(Tok);
-  } else if (LangOpts.C99 || LangOpts.CPlusPlus11) {
+  } else if (LangOpts.F90 || LangOpts.CPlusPlus11) {
     // C99 requires whitespace between the macro definition and the body.  Emit
     // a diagnostic for something like "#define X+".
     Diag(Tok, diag::ext_c99_whitespace_required_after_macro_name);

@@ -700,7 +700,7 @@ bool DeclSpec::SetTypeQual(TQ T, SourceLocation Loc, const char *&PrevSpec,
   // do not need to set the qualifier's location since we already have it.
   if (TypeQualifiers & T) {
     bool IsExtension = true;
-    if (Lang.C99)
+    if (Lang.F90)
       IsExtension = false;
     return BadSpecifier(T, T, PrevSpec, DiagID, IsExtension);
   }

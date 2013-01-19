@@ -129,7 +129,7 @@ static void AddKeyword(StringRef Keyword,
   if (Flags == KEYALL) AddResult = 2;
   else if (LangOpts.CPlusPlus && (Flags & KEYCXX)) AddResult = 2;
   else if (LangOpts.CPlusPlus11 && (Flags & KEYCXX11)) AddResult = 2;
-  else if (LangOpts.C99 && (Flags & KEYC99)) AddResult = 2;
+  else if (LangOpts.F90 && (Flags & KEYC99)) AddResult = 2;
   else if (LangOpts.GNUKeywords && (Flags & KEYGNU)) AddResult = 1;
   else if (LangOpts.MicrosoftExt && (Flags & KEYMS)) AddResult = 1;
   else if (LangOpts.Borland && (Flags & KEYBORLAND)) AddResult = 1;

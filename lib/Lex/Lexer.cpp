@@ -1615,7 +1615,7 @@ void Lexer::LexNumericConstant(Token &Result, const char *CurPtr) {
     // not-quite-conforming extension. Only do so if this looks like it's
     // actually meant to be a hexfloat, and not if it has a ud-suffix.
     bool IsHexFloat = true;
-    if (!LangOpts.C99) {
+    if (!LangOpts.F90) {
       if (!isHexaLiteral(BufferPtr, LangOpts))
         IsHexFloat = false;
       else if (std::find(BufferPtr, CurPtr, '_') != CurPtr)

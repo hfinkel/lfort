@@ -141,7 +141,7 @@ static bool MaybeRemoveCommaBeforeVaArgs(SmallVector<Token, 128> &ResultToks,
   // named arguments, where it remains.  In all other modes, including C99
   // with GNU extensions, it is removed regardless of named arguments.
   // Microsoft also appears to support this extension, unofficially.
-  if (PP.getLangOpts().C99 && !PP.getLangOpts().GNUMode
+  if (PP.getLangOpts().F90 && !PP.getLangOpts().GNUMode
         && Macro->getNumArgs() < 2)
     return false;
 

@@ -3544,11 +3544,11 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
     for (unsigned I = 0; I != NumCTypeSpecs; ++I)
       Consumer.addKeywordResult(CTypeSpecs[I]);
 
-    if (SemaRef.getLangOpts().C99)
+    if (SemaRef.getLangOpts().F90)
       Consumer.addKeywordResult("restrict");
     if (SemaRef.getLangOpts().Bool || SemaRef.getLangOpts().CPlusPlus)
       Consumer.addKeywordResult("bool");
-    else if (SemaRef.getLangOpts().C99)
+    else if (SemaRef.getLangOpts().F90)
       Consumer.addKeywordResult("_Bool");
     
     if (SemaRef.getLangOpts().CPlusPlus) {

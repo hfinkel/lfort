@@ -1232,7 +1232,7 @@ static void AddTypeSpecifierResults(const LangOptions &LangOpts,
   Results.AddResult(Result("const", CCP_Type));
   Results.AddResult(Result("volatile", CCP_Type));
 
-  if (LangOpts.C99) {
+  if (LangOpts.F90) {
     // C99-specific
     Results.AddResult(Result("_Complex", CCP_Type));
     Results.AddResult(Result("_Imaginary", CCP_Type));
@@ -1320,7 +1320,7 @@ static void AddSubprogramSpecifiers(Sema::ParserCompletionContext CCC,
   case Sema::PCC_ObjCImplementation:
   case Sema::PCC_Namespace:
   case Sema::PCC_Template:
-    if (LangOpts.CPlusPlus || LangOpts.C99)
+    if (LangOpts.CPlusPlus || LangOpts.F90)
       Results.AddResult(Result("inline"));
     break;
 
@@ -1385,7 +1385,7 @@ static bool WantTypesInContext(Sema::ParserCompletionContext CCC,
     return false;
     
   case Sema::PCC_ForInit:
-    return LangOpts.CPlusPlus || LangOpts.ObjC1 || LangOpts.C99;
+    return LangOpts.CPlusPlus || LangOpts.ObjC1 || LangOpts.F90;
   }
 
   llvm_unreachable("Invalid ParserCompletionContext!");
@@ -1694,7 +1694,7 @@ static void AddOrdinaryNameResults(Sema::ParserCompletionContext CCC,
       // for ( for-init-statement ; condition ; expression ) { statements }
       Builder.AddTypedTextChunk("for");
       Builder.AddChunk(CodeCompletionString::CK_LeftParen);
-      if (SemaRef.getLangOpts().CPlusPlus || SemaRef.getLangOpts().C99)
+      if (SemaRef.getLangOpts().CPlusPlus || SemaRef.getLangOpts().F90)
         Builder.AddPlaceholderChunk("init-statement");
       else
         Builder.AddPlaceholderChunk("init-expression");
@@ -2931,7 +2931,7 @@ static void AddPrettySubprogramResults(const LangOptions &LangOpts,
   
   Results.AddResult(Result("__PRETTY_FUNCTION__", CCP_Constant));
   Results.AddResult(Result("__FUNCTION__", CCP_Constant));
-  if (LangOpts.C99 || LangOpts.CPlusPlus11)
+  if (LangOpts.F90 || LangOpts.CPlusPlus11)
     Results.AddResult(Result("__func__", CCP_Constant));
   Results.ExitScope();
 }
@@ -2975,7 +2975,7 @@ static enum CodeCompletionContext::Kind mapCodeCompletionContext(Sema &S,
     return CodeCompletionContext::CCC_Recovery;
 
   case Sema::PCC_ForInit:
-    if (S.getLangOpts().CPlusPlus || S.getLangOpts().C99 ||
+    if (S.getLangOpts().CPlusPlus || S.getLangOpts().F90 ||
         S.getLangOpts().ObjC1)
       return CodeCompletionContext::CCC_ParenthesizedExpression;
     else
@@ -3240,7 +3240,7 @@ void Sema::CodeCompleteDeclSpec(Scope *S, DeclSpec &DS,
   // Type qualifiers can come after names.
   Results.AddResult(Result("const"));
   Results.AddResult(Result("volatile"));
-  if (getLangOpts().C99)
+  if (getLangOpts().F90)
     Results.AddResult(Result("restrict"));
 
   if (getLangOpts().CPlusPlus) {
@@ -3640,7 +3640,7 @@ void Sema::CodeCompleteTypeQualifiers(DeclSpec &DS) {
     Results.AddResult("const");
   if (!(DS.getTypeQualifiers() & DeclSpec::TQ_volatile))
     Results.AddResult("volatile");
-  if (getLangOpts().C99 &&
+  if (getLangOpts().F90 &&
       !(DS.getTypeQualifiers() & DeclSpec::TQ_restrict))
     Results.AddResult("restrict");
   Results.ExitScope();

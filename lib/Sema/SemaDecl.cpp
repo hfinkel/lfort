@@ -8288,7 +8288,7 @@ NamedDecl *Sema::ImplicitlyDefineSubprogram(SourceLocation Loc,
   unsigned diag_id;
   if (II.getName().startswith("__builtin_"))
     diag_id = diag::warn_builtin_unknown;
-  else if (getLangOpts().C99)
+  else if (getLangOpts().F90)
     diag_id = diag::ext_implicit_function_decl;
   else
     diag_id = diag::warn_implicit_function_decl;
@@ -10184,7 +10184,7 @@ void Sema::ActOnFields(Scope* S,
         else if (Fields.size() == 1) 
           Diag(FD->getLocation(), diag::ext_flexible_array_empty_aggregate_gnu)
             << FD->getDeclName() << Record->getTagKind();
-      } else if (!getLangOpts().C99) {
+      } else if (!getLangOpts().F90) {
       if (Record->isUnion())
         Diag(FD->getLocation(), diag::ext_flexible_array_union_gnu)
           << FD->getDeclName();
