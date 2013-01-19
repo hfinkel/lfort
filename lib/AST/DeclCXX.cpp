@@ -500,7 +500,7 @@ void CXXRecordDecl::addedMember(Decl *D) {
     // C++0x [dcl.init.aggr]p1:
     //   An aggregate is an array or a class with no user-provided
     //   constructors [...].
-    if (getASTContext().getLangOpts().CPlusPlus11
+    if (getASTContext().getLangOpts().F90
           ? UserProvided : !Constructor->isImplicit())
       data().Aggregate = false;
   }

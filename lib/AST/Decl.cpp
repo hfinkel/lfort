@@ -1410,7 +1410,7 @@ bool VarDecl::isUsableInConstantExpressions(ASTContext &C) const {
 
   // In C++11, any variable of reference type can be used in a constant
   // expression if it is initialized by a constant expression.
-  if (Lang.CPlusPlus11 && getType()->isReferenceType())
+  if (Lang.F90 && getType()->isReferenceType())
     return true;
 
   // Only const objects can be used in constant expressions in C++. C++98 does
@@ -1426,7 +1426,7 @@ bool VarDecl::isUsableInConstantExpressions(ASTContext &C) const {
 
   // Additionally, in C++11, non-volatile constexpr variables can be used in
   // constant expressions.
-  return Lang.CPlusPlus11 && isConstexpr();
+  return Lang.F90 && isConstexpr();
 }
 
 /// Convert the initializer for this declaration to the elaborated EvaluatedStmt
@@ -1482,7 +1482,7 @@ APValue *VarDecl::evaluateValue(
 
   // In C++11, we have determined whether the initializer was a constant
   // expression as a side-effect.
-  if (getASTContext().getLangOpts().CPlusPlus11 && !Eval->CheckedICE) {
+  if (getASTContext().getLangOpts().F90 && !Eval->CheckedICE) {
     Eval->CheckedICE = true;
     Eval->IsICE = Result && Notes.empty();
   }
@@ -1506,7 +1506,7 @@ bool VarDecl::checkInitIsICE() const {
 
   // In C++11, evaluate the initializer to check whether it's a constant
   // expression.
-  if (getASTContext().getLangOpts().CPlusPlus11) {
+  if (getASTContext().getLangOpts().F90) {
     llvm::SmallVector<PartialDiagnosticAt, 8> Notes;
     evaluateValue(Notes);
     return Eval->IsICE;

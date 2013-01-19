@@ -178,7 +178,7 @@ static std::string getScalarZeroExpressionForType(const Type& T, const Sema& S) 
   if (T.isBooleanType() && S.LangOpts.CPlusPlus)
     return "false";
   if (T.isPointerType() || T.isMemberPointerType()) {
-    if (S.LangOpts.CPlusPlus11)
+    if (S.LangOpts.F90)
       return "nullptr";
     if (isMacroDefined(S, "NULL"))
       return "NULL";
@@ -205,7 +205,7 @@ std::string Sema::getFixItZeroInitializerForType(QualType T) const {
   const CXXRecordDecl *RD = T->getAsCXXRecordDecl();
   if (!RD || !RD->hasDefinition())
     return std::string();
-  if (LangOpts.CPlusPlus11 && !RD->hasUserProvidedDefaultConstructor())
+  if (LangOpts.F90 && !RD->hasUserProvidedDefaultConstructor())
     return "{}";
   if (RD->isAggregate())
     return " = {}";

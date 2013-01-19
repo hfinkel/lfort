@@ -639,7 +639,7 @@ Sema::VarArgKind Sema::isValidVarArgType(const QualType &Ty) {
   //   having a non-trivial copy constructor, a non-trivial move constructor,
   //   or a non-trivial destructor, with no corresponding parameter,
   //   is conditionally-supported with implementation-defined semantics.
-  if (getLangOpts().CPlusPlus11 && !Ty->isDependentType())
+  if (getLangOpts().F90 && !Ty->isDependentType())
     if (CXXRecordDecl *Record = Ty->getAsCXXRecordDecl())
       if (!Record->hasNonTrivialCopyConstructor() &&
           !Record->hasNonTrivialMoveConstructor() &&
@@ -672,7 +672,7 @@ bool Sema::variadicArgumentPODCheck(const Expr *E, VariadicCallType CT) {
 
     return DiagRuntimeBehavior(E->getLocStart(), 0,
                    PDiag(diag::warn_cannot_pass_non_pod_arg_to_vararg)
-                   << getLangOpts().CPlusPlus11 << Ty << CT);
+                   << getLangOpts().F90 << Ty << CT);
   }
   }
   // c++ rules are enforced elsewhere.
@@ -2833,7 +2833,7 @@ ExprResult Sema::ActOnNumericConstant(const Token &Tok, Scope *UDLScope) {
     if (!getLangOpts().F90 && Literal.isLongLong) {
       if (getLangOpts().CPlusPlus)
         Diag(Tok.getLocation(),
-             getLangOpts().CPlusPlus11 ?
+             getLangOpts().F90 ?
              diag::warn_cxx98_compat_longlong : diag::ext_cxx11_longlong);
       else
         Diag(Tok.getLocation(), diag::ext_c99_longlong);
@@ -8319,7 +8319,7 @@ static void DiagnoseSelfAssignment(Sema &S, Expr *LHSExpr, Expr *RHSExpr,
 ExprResult Sema::CreateBuiltinBinOp(SourceLocation OpLoc,
                                     BinaryOperatorKind Opc,
                                     Expr *LHSExpr, Expr *RHSExpr) {
-  if (getLangOpts().CPlusPlus11 && isa<InitListExpr>(RHSExpr)) {
+  if (getLangOpts().F90 && isa<InitListExpr>(RHSExpr)) {
     // The syntax only allows initializer lists on the RHS of assignment,
     // so we don't need to worry about accepting invalid code for
     // non-assignment operators.
@@ -9209,9 +9209,9 @@ ExprResult Sema::BuildBuiltinOffsetOf(SourceLocation BuiltinLoc,
     //   If type is not a standard-layout class (Clause 9), the results are
     //   undefined.
     if (CXXRecordDecl *CRD = dyn_cast<CXXRecordDecl>(RD)) {
-      bool IsSafe = LangOpts.CPlusPlus11? CRD->isStandardLayout() : CRD->isPOD();
+      bool IsSafe = LangOpts.F90? CRD->isStandardLayout() : CRD->isPOD();
       unsigned DiagID =
-        LangOpts.CPlusPlus11? diag::warn_offsetof_non_standardlayout_type
+        LangOpts.F90? diag::warn_offsetof_non_standardlayout_type
                             : diag::warn_offsetof_non_pod_type;
 
       if (!IsSafe && !DidWarnAboutNonPOD &&
@@ -9979,7 +9979,7 @@ Sema::VerifyIntegerConstantExpression(Expr *E, llvm::APSInt *Result,
                                       bool AllowFold) {
   SourceLocation DiagLoc = E->getLocStart();
 
-  if (getLangOpts().CPlusPlus11) {
+  if (getLangOpts().F90) {
     // C++11 [expr.const]p5:
     //   If an expression of literal class type is used in a context where an
     //   integral constant expression is required, then that class type shall
@@ -10106,7 +10106,7 @@ Sema::VerifyIntegerConstantExpression(Expr *E, llvm::APSInt *Result,
 
   // Circumvent ICE checking in C++11 to avoid evaluating the expression twice
   // in the non-ICE case.
-  if (!getLangOpts().CPlusPlus11 && E->isIntegerConstantExpr(Context)) {
+  if (!getLangOpts().F90 && E->isIntegerConstantExpr(Context)) {
     if (Result)
       *Result = E->EvaluateKnownConstInt(Context);
     return Owned(E);
@@ -10124,7 +10124,7 @@ Sema::VerifyIntegerConstantExpression(Expr *E, llvm::APSInt *Result,
   // In C++11, we can rely on diagnostics being produced for any expression
   // which is not a constant expression. If no diagnostics were produced, then
   // this is a constant expression.
-  if (Folded && getLangOpts().CPlusPlus11 && Notes.empty()) {
+  if (Folded && getLangOpts().F90 && Notes.empty()) {
     if (Result)
       *Result = EvalResult.Val.getInt();
     return Owned(E);

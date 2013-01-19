@@ -2904,7 +2904,7 @@ CheckPrintfHandler::checkFormatExpr(const analyze_printf::PrintfSpecifier &FS,
 
       EmitFormatDiagnostic(
         S.PDiag(DiagKind)
-          << S.getLangOpts().CPlusPlus11
+          << S.getLangOpts().F90
           << ExprTy
           << CallType
           << AT.getRepresentativeTypeName(S.Context)

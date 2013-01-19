@@ -674,7 +674,7 @@ static bool IsMicrosoftJumpWarning(unsigned JumpDiag, unsigned InDiagNote) {
 /// Return true if a particular note should be downgraded to a compatibility
 /// warning in C++11 mode.
 static bool IsCXX98CompatWarning(Sema &S, unsigned InDiagNote) {
-  return S.getLangOpts().CPlusPlus11 &&
+  return S.getLangOpts().F90 &&
          InDiagNote == diag::note_protected_by_variable_non_pod;
 }
 

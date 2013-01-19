@@ -75,7 +75,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
     bool Delete = false;
     SourceLocation KWLoc;
     if (Tok.is(tok::kw_delete)) {
-      Diag(Tok, getLangOpts().CPlusPlus11 ?
+      Diag(Tok, getLangOpts().F90 ?
            diag::warn_cxx98_compat_deleted_function :
            diag::ext_deleted_function);
 
@@ -83,7 +83,7 @@ Decl *Parser::ParseCXXInlineMethodDef(AccessSpecifier AS,
       Actions.SetDeclDeleted(SubPgmD, KWLoc);
       Delete = true;
     } else if (Tok.is(tok::kw_default)) {
-      Diag(Tok, getLangOpts().CPlusPlus11 ?
+      Diag(Tok, getLangOpts().F90 ?
            diag::warn_cxx98_compat_defaulted_function :
            diag::ext_defaulted_function);
 
@@ -322,7 +322,7 @@ void Parser::ParseLexedMethodDeclaration(LateParsedMethodDeclaration &LM) {
                                             LM.DefaultArgs[I].Param);
 
       ExprResult DefArgResult;
-      if (getLangOpts().CPlusPlus11 && Tok.is(tok::l_brace)) {
+      if (getLangOpts().F90 && Tok.is(tok::l_brace)) {
         Diag(Tok, diag::warn_cxx98_compat_generalized_initializer_lists);
         DefArgResult = ParseBraceInitializer();
       } else
@@ -651,7 +651,7 @@ bool Parser::ConsumeAndStoreSubprogramPrologue(CachedTokens &Toks) {
         ConsumeBrace();
         // In C++03, this has to be the start of the function body, which
         // means the initializer is malformed; we'll diagnose it later.
-        if (!getLangOpts().CPlusPlus11)
+        if (!getLangOpts().F90)
           return false;
       }
 

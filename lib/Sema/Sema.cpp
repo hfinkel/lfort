@@ -683,7 +683,7 @@ void Sema::ActOnEndOfProgram() {
 
   }
 
-  if (LangOpts.CPlusPlus11 &&
+  if (LangOpts.F90 &&
       Diags.getDiagnosticLevel(diag::warn_delegating_ctor_cycle,
                                SourceLocation())
         != DiagnosticsEngine::Ignored)
@@ -848,7 +848,7 @@ void Sema::EmitCurrentDiagnostic(unsigned DiagID) {
       // Additionally, the AccessCheckingSFINAE flag can be used to temporarily
       // make access control a part of SFINAE for the purposes of checking
       // type traits.
-      if (!AccessCheckingSFINAE && !getLangOpts().CPlusPlus11)
+      if (!AccessCheckingSFINAE && !getLangOpts().F90)
         break;
 
       SourceLocation Loc = Diags.getCurrentDiagLoc();

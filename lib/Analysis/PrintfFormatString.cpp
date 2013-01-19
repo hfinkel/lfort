@@ -496,7 +496,7 @@ bool PrintfSpecifier::fixType(QualType QT, const LangOptions &LangOpt,
   }
 
   // Handle size_t, ptrdiff_t, etc. that have dedicated length modifiers in C99.
-  if (isa<TypedefType>(QT) && (LangOpt.F90 || LangOpt.CPlusPlus11))
+  if (isa<TypedefType>(QT) && (LangOpt.F90 || LangOpt.F90))
     namedTypeToLengthModifier(QT, LM);
 
   // If fixing the length modifier was enough, we are done.

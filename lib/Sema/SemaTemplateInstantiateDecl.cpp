@@ -1287,7 +1287,7 @@ Decl *TemplateDeclInstantiator::VisitSubprogramDecl(SubprogramDecl *D,
     //
     // If -Wc++98-compat is enabled, we go through the motions of checking for a
     // redefinition, but don't instantiate the function.
-    if ((!SemaRef.getLangOpts().CPlusPlus11 ||
+    if ((!SemaRef.getLangOpts().F90 ||
          SemaRef.Diags.getDiagnosticLevel(
              diag::warn_cxx98_compat_friend_redefinition,
              Subprogram->getLocation())
@@ -1298,11 +1298,11 @@ Decl *TemplateDeclInstantiator::VisitSubprogramDecl(SubprogramDecl *D,
       if (Subprogram->isDefined(Definition) &&
           Definition->getTemplateSpecializationKind() == TSK_Undeclared) {
         SemaRef.Diag(Subprogram->getLocation(),
-                     SemaRef.getLangOpts().CPlusPlus11 ?
+                     SemaRef.getLangOpts().F90 ?
                        diag::warn_cxx98_compat_friend_redefinition :
                        diag::err_redefinition) << Subprogram->getDeclName();
         SemaRef.Diag(Definition->getLocation(), diag::note_previous_definition);
-        if (!SemaRef.getLangOpts().CPlusPlus11)
+        if (!SemaRef.getLangOpts().F90)
           Subprogram->setInvalidDecl();
       }
       // Check for redefinitions due to other instantiations of this or
@@ -1314,7 +1314,7 @@ Decl *TemplateDeclInstantiator::VisitSubprogramDecl(SubprogramDecl *D,
           continue;
         switch (R->getFriendObjectKind()) {
         case Decl::FOK_None:
-          if (!SemaRef.getLangOpts().CPlusPlus11 &&
+          if (!SemaRef.getLangOpts().F90 &&
               !queuedInstantiation && R->isUsed(false)) {
             if (MemberSpecializationInfo *MSInfo
                 = Subprogram->getMemberSpecializationInfo()) {
@@ -1333,12 +1333,12 @@ Decl *TemplateDeclInstantiator::VisitSubprogramDecl(SubprogramDecl *D,
               = R->getTemplateInstantiationPattern())
             if (RPattern->isDefined(RPattern)) {
               SemaRef.Diag(Subprogram->getLocation(),
-                           SemaRef.getLangOpts().CPlusPlus11 ?
+                           SemaRef.getLangOpts().F90 ?
                              diag::warn_cxx98_compat_friend_redefinition :
                              diag::err_redefinition)
                 << Subprogram->getDeclName();
               SemaRef.Diag(R->getLocation(), diag::note_previous_definition);
-              if (!SemaRef.getLangOpts().CPlusPlus11)
+              if (!SemaRef.getLangOpts().F90)
                 Subprogram->setInvalidDecl();
               break;
             }
@@ -2427,7 +2427,7 @@ static void InstantiateExceptionSpec(Sema &SemaRef, SubprogramDecl *New,
     ThisTypeQuals = Method->getTypeQualifiers();
   }
   Sema::CXXThisScopeRAII ThisScope(SemaRef, ThisContext, ThisTypeQuals,
-                                   SemaRef.getLangOpts().CPlusPlus11);
+                                   SemaRef.getLangOpts().F90);
 
   // The function has an exception specification or a "noreturn"
   // attribute. Substitute into each of the exception types.
@@ -2615,7 +2615,7 @@ TemplateDeclInstantiator::InitSubprogramInstantiation(SubprogramDecl *New,
 
     // DR1330: In C++11, defer instantiation of a non-trivial
     // exception specification.
-    if (SemaRef.getLangOpts().CPlusPlus11 &&
+    if (SemaRef.getLangOpts().F90 &&
         EPI.ExceptionSpecType != EST_None &&
         EPI.ExceptionSpecType != EST_DynamicNone &&
         EPI.ExceptionSpecType != EST_BasicNoexcept) {

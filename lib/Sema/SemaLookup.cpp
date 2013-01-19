@@ -553,7 +553,7 @@ void Sema::ForceDeclarationOfImplicitMembers(CXXRecordDecl *Class) {
   if (Class->needsImplicitCopyAssignment())
     DeclareImplicitCopyAssignment(Class);
 
-  if (getLangOpts().CPlusPlus11) {
+  if (getLangOpts().F90) {
     // If the move constructor has not yet been declared, do so now.
     if (Class->needsImplicitMoveConstructor())
       DeclareImplicitMoveConstructor(Class); // might not actually do it
@@ -603,7 +603,7 @@ static void DeclareImplicitMemberSubprogramsWithName(Sema &S,
           S.DeclareImplicitDefaultConstructor(Class);
         if (Record->needsImplicitCopyConstructor())
           S.DeclareImplicitCopyConstructor(Class);
-        if (S.getLangOpts().CPlusPlus11 &&
+        if (S.getLangOpts().F90 &&
             Record->needsImplicitMoveConstructor())
           S.DeclareImplicitMoveConstructor(Class);
       }
@@ -625,7 +625,7 @@ static void DeclareImplicitMemberSubprogramsWithName(Sema &S,
         CXXRecordDecl *Class = const_cast<CXXRecordDecl *>(Record);
         if (Record->needsImplicitCopyAssignment())
           S.DeclareImplicitCopyAssignment(Class);
-        if (S.getLangOpts().CPlusPlus11 &&
+        if (S.getLangOpts().F90 &&
             Record->needsImplicitMoveAssignment())
           S.DeclareImplicitMoveAssignment(Class);
       }
@@ -2289,13 +2289,13 @@ Sema::SpecialMemberOverloadResult *Sema::LookupSpecialMember(CXXRecordDecl *RD,
       Name = Context.DeclarationNames.getCXXConstructorName(CanTy);
       if (RD->needsImplicitCopyConstructor())
         DeclareImplicitCopyConstructor(RD);
-      if (getLangOpts().CPlusPlus11 && RD->needsImplicitMoveConstructor())
+      if (getLangOpts().F90 && RD->needsImplicitMoveConstructor())
         DeclareImplicitMoveConstructor(RD);
     } else {
       Name = Context.DeclarationNames.getCXXOperatorName(OO_Equal);
       if (RD->needsImplicitCopyAssignment())
         DeclareImplicitCopyAssignment(RD);
-      if (getLangOpts().CPlusPlus11 && RD->needsImplicitMoveAssignment())
+      if (getLangOpts().F90 && RD->needsImplicitMoveAssignment())
         DeclareImplicitMoveAssignment(RD);
     }
 
@@ -2448,7 +2448,7 @@ DeclContext::lookup_result Sema::LookupConstructors(CXXRecordDecl *Class) {
       DeclareImplicitDefaultConstructor(Class);
     if (Class->needsImplicitCopyConstructor())
       DeclareImplicitCopyConstructor(Class);
-    if (getLangOpts().CPlusPlus11 && Class->needsImplicitMoveConstructor())
+    if (getLangOpts().F90 && Class->needsImplicitMoveConstructor())
       DeclareImplicitMoveConstructor(Class);
   }
 
@@ -3556,7 +3556,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
       Consumer.addKeywordResult("typename");
       Consumer.addKeywordResult("wchar_t");
 
-      if (SemaRef.getLangOpts().CPlusPlus11) {
+      if (SemaRef.getLangOpts().F90) {
         Consumer.addKeywordResult("char16_t");
         Consumer.addKeywordResult("char32_t");
         Consumer.addKeywordResult("constexpr");
@@ -3595,7 +3595,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
           cast<CXXMethodDecl>(SemaRef.CurContext)->isInstance())
         Consumer.addKeywordResult("this");
 
-      if (SemaRef.getLangOpts().CPlusPlus11) {
+      if (SemaRef.getLangOpts().F90) {
         Consumer.addKeywordResult("alignof");
         Consumer.addKeywordResult("nullptr");
       }
@@ -3652,7 +3652,7 @@ static void AddKeywordsToConsumer(Sema &SemaRef,
     if (SemaRef.getLangOpts().CPlusPlus) {
       Consumer.addKeywordResult("using");
 
-      if (SemaRef.getLangOpts().CPlusPlus11)
+      if (SemaRef.getLangOpts().F90)
         Consumer.addKeywordResult("static_assert");
     }
   }

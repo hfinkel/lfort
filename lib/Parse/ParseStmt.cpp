@@ -1600,7 +1600,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
     FirstPart = Actions.ActOnDeclStmt(DG, DeclStart, Tok.getLocation());
 
     if (ForRangeInit.ParsedForRangeDecl()) {
-      Diag(ForRangeInit.ColonLoc, getLangOpts().CPlusPlus11 ?
+      Diag(ForRangeInit.ColonLoc, getLangOpts().F90 ?
            diag::warn_cxx98_compat_for_range : diag::ext_for_range);
 
       ForRange = true;
@@ -1645,7 +1645,7 @@ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
         return StmtError();
       }
       Collection = ParseExpression();
-    } else if (getLangOpts().CPlusPlus11 && Tok.is(tok::colon) && FirstPart.get()) {
+    } else if (getLangOpts().F90 && Tok.is(tok::colon) && FirstPart.get()) {
       // User tried to write the reasonable, but ill-formed, for-range-statement
       //   for (expr : expr) { ... }
       Diag(Tok, diag::err_for_range_expected_decl)
@@ -1841,7 +1841,7 @@ StmtResult Parser::ParseReturnStatement() {
     if (Tok.is(tok::l_brace) && getLangOpts().CPlusPlus) {
       R = ParseInitializer();
       if (R.isUsable())
-        Diag(R.get()->getLocStart(), getLangOpts().CPlusPlus11 ?
+        Diag(R.get()->getLocStart(), getLangOpts().F90 ?
              diag::warn_cxx98_compat_generalized_initializer_lists :
              diag::ext_generalized_initializer_lists)
           << R.get()->getSourceRange();
