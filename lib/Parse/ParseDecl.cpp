@@ -3134,6 +3134,20 @@ void Parser::ParseDeclarationSpecifiers(DeclSpec &DS,
   }
 }
 
+static std::string sizeArrAsStr(llvm::ArrayRef<unsigned> A) {
+  std::string Str;
+  for (unsigned i = 0, e = A.size(); i != e; ++i) {
+    if (e > 1 && i == e-1)
+      Str += " and ";
+    else if (i > 0)
+      Str += ", ";
+
+    Str += llvm::utostr_32(A[i]);
+  }
+
+  return Str;
+}
+
 /// R403 declaration-type-spec is
 ///      intrinsic-type-spec
 ///   or TYPE ( intrinsic-type-spec )
@@ -3163,6 +3177,10 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     DS.SetRangeStart(Tok.getLocation());
     DS.SetRangeEnd(Tok.getLocation());
   }
+
+  // character length selectors can have a trailing comma (but only if there
+  // is no :: and attribute list).
+  bool TrailingCommaAllowed = false;
 
   bool isInvalid = false;
   const char *PrevSpec = 0;
@@ -3259,16 +3277,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         if (AllowedKinds.back() != LongDoubleBytes)
           AllowedKinds.push_back(LongDoubleBytes);
 
-        std::string AKStr;
-        for (unsigned i = 0, e = AllowedKinds.size(); i != e; ++i) {
-          if (e > 1 && i == e-1)
-            AKStr += " and ";
-          else if (i > 0)
-            AKStr += ", ";
-
-          AKStr += llvm::utostr_32(AllowedKinds[i]);
-        }
-
+        std::string AKStr = sizeArrAsStr(AllowedKinds);
         if (OldStyle)
           Diag(KindValueLoc, diag::err_invalid_old_kind_value) <<
             (isComplex ? "complex" : "real") << AKStr;
@@ -3316,7 +3325,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         isInvalid |= DS.SetTypeSpecWidth(DeclSpec::TSW_longlong, Loc, PrevSpec,
                                          DiagID);
       } else {
-        llvm::SmallVector<unsigned, 3> AllowedKinds(1, CharBytes);
+        llvm::SmallVector<unsigned, 5> AllowedKinds(1, CharBytes);
         if (AllowedKinds.back() != ShortBytes)
           AllowedKinds.push_back(ShortBytes);
         if (AllowedKinds.back() != IntBytes)
@@ -3326,22 +3335,45 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
         if (AllowedKinds.back() != LongLongBytes)
           AllowedKinds.push_back(LongLongBytes);
 
-        std::string AKStr;
-        for (unsigned i = 0, e = AllowedKinds.size(); i != e; ++i) {
-          if (e > 1 && i == e-1)
-            AKStr += " and ";
-          else if (i > 0)
-            AKStr += ", ";
-
-          AKStr += llvm::utostr_32(AllowedKinds[i]);
-        }
-
+        std::string AKStr = sizeArrAsStr(AllowedKinds);
         if (OldStyle)
           Diag(KindValueLoc, diag::err_invalid_old_kind_value) <<
             "integer" << AKStr;
         else
           Diag(KindValueLoc, diag::err_invalid_kind_value) <<
             KindValue << "integer" << AKStr;
+      }
+    }
+
+    isInvalid |= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
+    break; }
+  case tok::kw_character: {
+    DeclSpec::TST T = DeclSpec::TST_char;
+    if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
+      bool OldStyle = NextToken().isInLine(tok::star);
+      unsigned KindValue;
+      SourceLocation KindValueLoc;
+      if (!ParseDeclKind(KindValue, KindValueLoc))
+        return;
+
+      if (OldStyle)
+        TrailingCommaAllowed = true;
+
+      unsigned CharBytes = (getTargetInfo().getCharWidth()+7)/8;
+      unsigned WCharBytes = (getTargetInfo().getWCharWidth()+7)/8;
+
+      if (KindValue == CharBytes) {
+        T = DeclSpec::TST_char;
+      } else if (KindValue == WCharBytes) {
+        T = DeclSpec::TST_wchar;
+      } else {
+        llvm::SmallVector<unsigned, 2> AllowedKinds(1, CharBytes);
+        if (AllowedKinds.back() != WCharBytes)
+          AllowedKinds.push_back(WCharBytes);
+
+        std::string AKStr = sizeArrAsStr(AllowedKinds);
+        Diag(KindValueLoc, diag::err_invalid_kind_value) <<
+          KindValue << "character" << AKStr;
       }
     }
 
@@ -3362,6 +3394,9 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
 
   // Now there may be a comma-separated list of attributes...
   // FIXME:
+
+  if (TrailingCommaAllowed && Tok.isInLine(tok::comma))
+    ConsumeToken();
 }
 
 bool Parser::ParseDeclKind(unsigned &KindValue, SourceLocation &KindValueLoc) {

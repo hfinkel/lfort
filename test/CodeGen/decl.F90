@@ -50,4 +50,8 @@ integer(kind = 8) i6
 ! CHECK: %i4 = alloca i16, align 2
 ! CHECK: %i5 = alloca i32, align 4
 ! CHECK: %i6 = alloca i64, align 8
+character c
+character(kind = 4) c2
+! CHECK: %c = alloca i8, align 1
+! CHECK: %c2 = alloca i32, align 4
 end program hello
