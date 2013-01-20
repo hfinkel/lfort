@@ -4466,7 +4466,7 @@ bool Parser::isDeclarationSpecifier(bool DisambiguatingWithExpression) {
 
   case tok::identifier:   // foo::bar
     // Unfortunate hack to support "Class.factoryMethod" notation.
-    if (getLangOpts().ObjC1 && NextToken().is(tok::period))
+    if (getLangOpts().ObjC1 && NextToken().is(tok::percent))
       return false;
     if (TryAltiVecVectorToken())
       return true;

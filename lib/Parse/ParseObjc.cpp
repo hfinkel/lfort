@@ -2295,7 +2295,7 @@ ExprResult Parser::ParseObjCMessageExpression() {
     // FIXME: This doesn't benefit from the same typo-correction we
     // get in Objective-C.
     if (Tok.is(tok::identifier) && Tok.getIdentifierInfo() == Ident_super &&
-        NextToken().isNot(tok::period) && getCurScope()->isInObjcMethodScope())
+        NextToken().isNot(tok::percent) && getCurScope()->isInObjcMethodScope())
       return ParseObjCMessageExpressionBody(LBracLoc, ConsumeToken(),
                                             ParsedType(), 0);
 
@@ -2323,7 +2323,7 @@ ExprResult Parser::ParseObjCMessageExpression() {
     ParsedType ReceiverType;
     switch (Actions.getObjCMessageKind(getCurScope(), Name, NameLoc,
                                        Name == Ident_super,
-                                       NextToken().is(tok::period),
+                                       NextToken().is(tok::percent),
                                        ReceiverType)) {
     case Sema::ObjCSuperMessage:
       return ParseObjCMessageExpressionBody(LBracLoc, ConsumeToken(),

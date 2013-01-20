@@ -768,7 +768,7 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     SourceLocation ILoc = ConsumeToken();
 
     // Support 'Class.property' and 'super.property' notation.
-    if (getLangOpts().ObjC1 && Tok.is(tok::period) &&
+    if (getLangOpts().ObjC1 && Tok.is(tok::percent) &&
         (Actions.getTypeName(II, ILoc, getCurScope()) ||
          // Allow the base to be 'super' if in an objc-method.
          (&II == Ident_super && getCurScope()->isInObjcMethodScope()))) {
@@ -1437,7 +1437,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
       break;
     }
     case tok::arrow:
-    case tok::period: {
+    case tok::percent: {
       // postfix-expression: p-e '->' template[opt] id-expression
       // postfix-expression: p-e '.' template[opt] id-expression
       tok::TokenKind OpKind = Tok.getKind();
@@ -1484,7 +1484,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
       // FIXME: Add support for explicit call of template constructor.
       SourceLocation TemplateKWLoc;
       UnqualifiedId Name;
-      if (getLangOpts().ObjC2 && OpKind == tok::period && Tok.is(tok::kw_class)) {
+      if (getLangOpts().ObjC2 && OpKind == tok::percent && Tok.is(tok::kw_class)) {
         // Objective-C++:
         //   After a '.' in a member access expression, treat the keyword
         //   'class' as if it were an identifier.
@@ -1785,7 +1785,7 @@ ExprResult Parser::ParseBuiltinPrimaryExpression() {
 
     // FIXME: This loop leaks the index expressions on error.
     while (1) {
-      if (Tok.is(tok::period)) {
+      if (Tok.is(tok::percent)) {
         // offsetof-member-designator: offsetof-member-designator '.' identifier
         Comps.push_back(Sema::OffsetOfComponent());
         Comps.back().isBrackets = false;
@@ -2083,7 +2083,7 @@ Parser::ParseParenExpression(ParenParseOption &ExprType, bool stopIfCastExpr,
         if (Tok.is(tok::identifier) && getLangOpts().ObjC1 &&
             Tok.getIdentifierInfo() == Ident_super && 
             getCurScope()->isInObjcMethodScope() &&
-            GetLookAheadToken(1).isNot(tok::period)) {
+            GetLookAheadToken(1).isNot(tok::percent)) {
           Diag(Tok.getLocation(), diag::err_illegal_super_cast)
             << SourceRange(OpenLoc, RParenLoc);
           return ExprError();

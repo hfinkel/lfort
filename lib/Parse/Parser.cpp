@@ -1856,7 +1856,7 @@ bool Parser::TryAnnotateTypeOrScopeTokenAfterScopeSpec(bool EnteringContext,
     if (ParsedType Ty = Actions.getTypeName(*Tok.getIdentifierInfo(),
                                             Tok.getLocation(), getCurScope(),
                                             &SS, false, 
-                                            NextToken().is(tok::period),
+                                            NextToken().is(tok::percent),
                                             ParsedType(),
                                             /*IsCtorOrDtorName=*/false,
                                             /*NonTrivialTypeSourceInfo*/true,
@@ -2163,7 +2163,7 @@ Parser::DeclGroupPtrTy Parser::ParsePCModuleImport(SourceLocation AtLoc) {
     Path.push_back(std::make_pair(Tok.getIdentifierInfo(), Tok.getLocation()));
     ConsumeToken();
     
-    if (Tok.is(tok::period)) {
+    if (Tok.is(tok::percent)) {
       ConsumeToken();
       continue;
     }

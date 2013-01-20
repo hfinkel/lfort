@@ -1483,7 +1483,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
 /// where 'identifier' encompasses a fairly broad spectrum of
 /// possibilities, including destructor and operator references.
 ///
-/// \param OpKind either tok::arrow or tok::period
+/// \param OpKind either tok::arrow or tok::percent
 /// \param HasTrailingLParen whether the next token is '(', which
 ///   is used to diagnose mis-uses of special members that can
 ///   only be called

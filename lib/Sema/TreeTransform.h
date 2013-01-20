@@ -7409,7 +7409,7 @@ TreeTransform<Derived>::TransformCXXPseudoDestructorExpr(
   bool MayBePseudoDestructor = false;
   Base = SemaRef.ActOnStartCXXMemberReference(0, Base.get(),
                                               E->getOperatorLoc(),
-                                        E->isArrow()? tok::arrow : tok::period,
+                                        E->isArrow()? tok::arrow : tok::percent,
                                               ObjectTypePtr,
                                               MayBePseudoDestructor);
   if (Base.isInvalid())
@@ -8123,7 +8123,7 @@ TreeTransform<Derived>::TransformCXXDependentScopeMemberExpr(
     bool MayBePseudoDestructor = false;
     Base = SemaRef.ActOnStartCXXMemberReference(0, Base.get(),
                                                 E->getOperatorLoc(),
-                                      E->isArrow()? tok::arrow : tok::period,
+                                      E->isArrow()? tok::arrow : tok::percent,
                                                 ObjectTy,
                                                 MayBePseudoDestructor);
     if (Base.isInvalid())
@@ -9320,7 +9320,7 @@ TreeTransform<Derived>::RebuildCXXPseudoDestructorExpr(Expr *Base,
                                               ->template getAs<RecordType>())){
     // This pseudo-destructor expression is still a pseudo-destructor.
     return SemaRef.BuildPseudoDestructorExpr(Base, OperatorLoc,
-                                             isArrow? tok::arrow : tok::period,
+                                             isArrow? tok::arrow : tok::percent,
                                              SS, ScopeType, CCLoc, TildeLoc,
                                              Destroyed,
                                              /*FIXME?*/true);

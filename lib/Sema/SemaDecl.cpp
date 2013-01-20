@@ -840,7 +840,7 @@ Corrected:
   if (Class) {
     DiagnoseUseOfDecl(Class, NameLoc);
     
-    if (NextToken.is(tok::period)) {
+    if (NextToken.is(tok::percent)) {
       // Interface. <something> is parsed as a property reference expression.
       // Just return "unknown" as a fall-through for now.
       Result.suppressDiagnostics();

@@ -5017,7 +5017,7 @@ static bool CheckArrow(Sema& S, QualType& ObjectType, Expr *&Base,
       if (S.isSFINAEContext())
         return true;
 
-      OpKind = tok::period;
+      OpKind = tok::percent;
     }
   }
 

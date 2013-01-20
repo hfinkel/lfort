@@ -29,7 +29,7 @@ bool Parser::MayBeDesignationStart() {
   default: 
     return false;
       
-  case tok::period:      // designator: '.' identifier
+  case tok::percent:      // designator: '.' identifier
     return true;
       
   case tok::l_square: {  // designator: array-designator
@@ -180,8 +180,8 @@ ExprResult Parser::ParseInitializerWithPotentialDesignator() {
   Designation Desig;
 
   // Parse each designator in the designator list until we find an initializer.
-  while (Tok.is(tok::period) || Tok.is(tok::l_square)) {
-    if (Tok.is(tok::period)) {
+  while (Tok.is(tok::percent) || Tok.is(tok::l_square)) {
+    if (Tok.is(tok::percent)) {
       // designator: '.' identifier
       SourceLocation DotLoc = ConsumeToken();
 
@@ -231,7 +231,7 @@ ExprResult Parser::ParseInitializerWithPotentialDesignator() {
     if  (getLangOpts().ObjC1 && getLangOpts().F90) {
       // Send to 'super'.
       if (Tok.is(tok::identifier) && Tok.getIdentifierInfo() == Ident_super &&
-          NextToken().isNot(tok::period) && 
+          NextToken().isNot(tok::percent) && 
           getCurScope()->isInObjcMethodScope()) {
         CheckArrayDesignatorSyntax(*this, StartLoc, Desig);
         return ParseAssignmentExprWithObjCMessageExprStart(StartLoc,
@@ -273,7 +273,7 @@ ExprResult Parser::ParseInitializerWithPotentialDesignator() {
       switch (Sema::ObjCMessageKind Kind
                 = Actions.getObjCMessageKind(getCurScope(), II, IILoc, 
                                              II == Ident_super,
-                                             NextToken().is(tok::period),
+                                             NextToken().is(tok::percent),
                                              ReceiverType)) {
       case Sema::ObjCSuperMessage:
       case Sema::ObjCClassMessage:
