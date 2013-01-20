@@ -8223,37 +8223,32 @@ static inline BinaryOperatorKind ConvertTokenKindToBinaryOpcode(
   BinaryOperatorKind Opc;
   switch (Kind) {
   default: llvm_unreachable("Unknown binop!");
-  case tok::periodstar:           Opc = BO_PtrMemD; break;
-  case tok::arrowstar:            Opc = BO_PtrMemI; break;
   case tok::star:                 Opc = BO_Mul; break;
   case tok::slash:                Opc = BO_Div; break;
-  case tok::percent:              Opc = BO_Rem; break;
   case tok::plus:                 Opc = BO_Add; break;
   case tok::minus:                Opc = BO_Sub; break;
   case tok::lessless:             Opc = BO_Shl; break;
   case tok::greatergreater:       Opc = BO_Shr; break;
+  case tok::kw_dotledot:
   case tok::lessequal:            Opc = BO_LE; break;
+  case tok::kw_dotltdot:
   case tok::less:                 Opc = BO_LT; break;
+  case tok::kw_dotgedot:
   case tok::greaterequal:         Opc = BO_GE; break;
+  case tok::kw_dotgtdot:
   case tok::greater:              Opc = BO_GT; break;
-  case tok::exclaimequal:         Opc = BO_NE; break;
+  case tok::kw_dotnedot:
+  case tok::slashequal:           Opc = BO_NE; break;
+  case tok::kw_doteqdot:
   case tok::equalequal:           Opc = BO_EQ; break;
   case tok::amp:                  Opc = BO_And; break;
   case tok::caret:                Opc = BO_Xor; break;
   case tok::pipe:                 Opc = BO_Or; break;
+  case tok::kw_dotanddot:
   case tok::ampamp:               Opc = BO_LAnd; break;
+  case tok::kw_dotordot:
   case tok::pipepipe:             Opc = BO_LOr; break;
   case tok::equal:                Opc = BO_Assign; break;
-  case tok::starequal:            Opc = BO_MulAssign; break;
-  case tok::slashequal:           Opc = BO_DivAssign; break;
-  case tok::percentequal:         Opc = BO_RemAssign; break;
-  case tok::plusequal:            Opc = BO_AddAssign; break;
-  case tok::minusequal:           Opc = BO_SubAssign; break;
-  case tok::lesslessequal:        Opc = BO_ShlAssign; break;
-  case tok::greatergreaterequal:  Opc = BO_ShrAssign; break;
-  case tok::ampequal:             Opc = BO_AndAssign; break;
-  case tok::caretequal:           Opc = BO_XorAssign; break;
-  case tok::pipeequal:            Opc = BO_OrAssign; break;
   case tok::comma:                Opc = BO_Comma; break;
   }
   return Opc;

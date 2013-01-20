@@ -40,36 +40,31 @@ prec::Level getBinOpPrecedence(tok::TokenKind Kind, bool GreaterThanIsOperator,
 
   default:                        return prec::Unknown;
   case tok::comma:                return prec::Comma;
-  case tok::equal:
-  case tok::starequal:
-  case tok::slashequal:
-  case tok::percentequal:
-  case tok::plusequal:
-  case tok::minusequal:
-  case tok::lesslessequal:
-  case tok::greatergreaterequal:
-  case tok::ampequal:
-  case tok::caretequal:
-  case tok::pipeequal:            return prec::Assignment;
-  case tok::question:             return prec::Conditional;
+  case tok::equalgreater:
+  case tok::equal:                return prec::Assignment;
+  case tok::kw_dotordot:
   case tok::pipepipe:             return prec::LogicalOr;
+  case tok::kw_dotanddot:
   case tok::ampamp:               return prec::LogicalAnd;
   case tok::pipe:                 return prec::InclusiveOr;
   case tok::caret:                return prec::ExclusiveOr;
   case tok::amp:                  return prec::And;
-  case tok::exclaimequal:
+  case tok::kw_doteqdot:
+  case tok::kw_dotnedot:
+  case tok::slashequal:
   case tok::equalequal:           return prec::Equality;
+  case tok::kw_dotltdot:
+  case tok::kw_dotledot:
+  case tok::kw_dotgtdot:
+  case tok::kw_dotgedot:
   case tok::lessequal:
   case tok::less:
   case tok::greaterequal:         return prec::Relational;
   case tok::lessless:             return prec::Shift;
   case tok::plus:
   case tok::minus:                return prec::Additive;
-  case tok::percent:
   case tok::slash:
   case tok::star:                 return prec::Multiplicative;
-  case tok::periodstar:
-  case tok::arrowstar:            return prec::PointerToMember;
   }
 }
 
