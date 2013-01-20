@@ -835,12 +835,12 @@ Sema::BuildMemberReferenceExpr(Expr *BaseExpr, QualType BaseExprType,
         ParsedType ObjectType;
         bool MayBePseudoDestructor = false;
         RetryExpr = ActOnStartCXXMemberReference(getCurScope(), BaseExpr,
-                                                 OpLoc, tok::arrow, ObjectType,
+                                                 OpLoc, tok::percent, ObjectType,
                                                  MayBePseudoDestructor);
         if (RetryExpr.isUsable() && !Trap.hasErrorOccurred()) {
           CXXScopeSpec TempSS(SS);
           RetryExpr = ActOnMemberAccessExpr(
-              ExtraArgs->S, RetryExpr.get(), OpLoc, tok::arrow, TempSS,
+              ExtraArgs->S, RetryExpr.get(), OpLoc, tok::percent, TempSS,
               TemplateKWLoc, ExtraArgs->Id, ExtraArgs->ObjCImpDecl,
               ExtraArgs->HasTrailingLParen);
         }
@@ -1483,7 +1483,7 @@ Sema::LookupMemberExpr(LookupResult &R, ExprResult &BaseExpr,
 /// where 'identifier' encompasses a fairly broad spectrum of
 /// possibilities, including destructor and operator references.
 ///
-/// \param OpKind either tok::arrow or tok::percent
+/// \param OpKind either tok::percent or tok::percent
 /// \param HasTrailingLParen whether the next token is '(', which
 ///   is used to diagnose mis-uses of special members that can
 ///   only be called
@@ -1516,7 +1516,7 @@ ExprResult Sema::ActOnMemberAccessExpr(Scope *S, Expr *Base,
                          NameInfo, TemplateArgs);
 
   DeclarationName Name = NameInfo.getName();
-  bool IsArrow = (OpKind == tok::arrow);
+  bool IsArrow = (OpKind == tok::percent);
 
   NamedDecl *FirstQualifierInScope
     = (!SS.isSet() ? 0 : FindFirstQualifierInScope(S,

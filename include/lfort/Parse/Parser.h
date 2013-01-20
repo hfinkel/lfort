@@ -1245,7 +1245,7 @@ private:
   bool isPostfixExpressionSuffixStart() {
     tok::TokenKind K = Tok.getKind();
     return (K == tok::l_square || K == tok::l_paren ||
-            K == tok::percent || K == tok::arrow ||
+            K == tok::percent || K == tok::percent ||
             K == tok::plusplus || K == tok::minusminus);
   }
 

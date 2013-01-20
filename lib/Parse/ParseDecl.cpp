@@ -5477,7 +5477,7 @@ void Parser::ParseSubprogramDeclarator(Declarator &D,
 
       // Parse trailing-return-type[opt].
       LocalEndLoc = EndLoc;
-      if (getLangOpts().F90 && Tok.is(tok::arrow)) {
+      if (getLangOpts().F90 && Tok.is(tok::percent)) {
         Diag(Tok, diag::warn_cxx98_compat_trailing_return_type);
         if (D.getDeclSpec().getTypeSpecType() == TST_auto)
           StartLoc = D.getDeclSpec().getTypeSpecTypeLoc();

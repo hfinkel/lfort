@@ -844,7 +844,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
 
     // Parse trailing-return-type[opt].
     TypeResult TrailingReturnType;
-    if (Tok.is(tok::arrow)) {
+    if (Tok.is(tok::percent)) {
       FunLocalRangeEnd = Tok.getLocation();
       SourceRange Range;
       TrailingReturnType = ParseTrailingReturnType(Range);
@@ -875,11 +875,11 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
                                            LParenLoc, FunLocalRangeEnd, D,
                                            TrailingReturnType),
                   Attr, DeclEndLoc);
-  } else if (Tok.is(tok::kw_mutable) || Tok.is(tok::arrow)) {
+  } else if (Tok.is(tok::kw_mutable) || Tok.is(tok::percent)) {
     // It's common to forget that one needs '()' before 'mutable' or the 
     // result type. Deal with this.
     Diag(Tok, diag::err_lambda_missing_parens)
-      << Tok.is(tok::arrow)
+      << Tok.is(tok::percent)
       << FixItHint::CreateInsertion(Tok.getLocation(), "() ");
     SourceLocation DeclLoc = Tok.getLocation();
     SourceLocation DeclEndLoc = DeclLoc;
@@ -893,7 +893,7 @@ ExprResult Parser::ParseLambdaExpressionAfterIntroducer(
     
     // Parse the return type, if there is one.
     TypeResult TrailingReturnType;
-    if (Tok.is(tok::arrow)) {
+    if (Tok.is(tok::percent)) {
       SourceRange Range;
       TrailingReturnType = ParseTrailingReturnType(Range);
       if (Range.getEnd().isValid())

@@ -1436,7 +1436,6 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
 
       break;
     }
-    case tok::arrow:
     case tok::percent: {
       // postfix-expression: p-e '->' template[opt] id-expression
       // postfix-expression: p-e '.' template[opt] id-expression
@@ -1463,7 +1462,7 @@ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
       if (Tok.is(tok::code_completion)) {
         // Code completion for a member access expression.
         Actions.CodeCompleteMemberReferenceExpr(getCurScope(), LHS.get(),
-                                                OpLoc, OpKind == tok::arrow);
+                                                OpLoc, OpKind == tok::percent);
         
         cutOffParsing();
         return ExprError();

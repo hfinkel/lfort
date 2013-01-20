@@ -4898,7 +4898,7 @@ Sema::ActOnStartCXXMemberReference(Scope *S, Expr *Base, SourceLocation OpLoc,
     // If we have a pointer to a dependent type and are using the -> operator,
     // the object type is the type that the pointer points to. We might still
     // have enough information about that type to do something useful.
-    if (OpKind == tok::arrow)
+    if (OpKind == tok::percent)
       if (const PointerType *Ptr = BaseType->getAs<PointerType>())
         BaseType = Ptr->getPointeeType();
 
@@ -4910,7 +4910,7 @@ Sema::ActOnStartCXXMemberReference(Scope *S, Expr *Base, SourceLocation OpLoc,
   // C++ [over.match.oper]p8:
   //   [...] When operator->returns, the operator-> is applied  to the value
   //   returned, with the original second operand.
-  if (OpKind == tok::arrow) {
+  if (OpKind == tok::percent) {
     // The set of types we've considered so far.
     llvm::SmallPtrSet<CanQualType,8> CTypes;
     SmallVector<SourceLocation, 8> Locations;
@@ -5006,7 +5006,7 @@ static bool CheckArrow(Sema& S, QualType& ObjectType, Expr *&Base,
   //   This scalar type is the object type.
   // Note that this is rather different from the normal handling for the
   // arrow operator.
-  if (OpKind == tok::arrow) {
+  if (OpKind == tok::percent) {
     if (const PointerType *Ptr = ObjectType->getAs<PointerType>()) {
       ObjectType = Ptr->getPointeeType();
     } else if (!Base->isTypeDependent()) {
@@ -5112,7 +5112,7 @@ ExprResult Sema::BuildPseudoDestructorExpr(Expr *Base,
 
   Expr *Result
     = new (Context) CXXPseudoDestructorExpr(Context, Base,
-                                            OpKind == tok::arrow, OpLoc,
+                                            OpKind == tok::percent, OpLoc,
                                             SS.getWithLocInContext(Context),
                                             ScopeTypeInfo,
                                             CCLoc,

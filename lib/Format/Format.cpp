@@ -252,7 +252,7 @@ private:
                  State.FirstLessLess[ParenLevel] != 0) {
         State.Column = State.FirstLessLess[ParenLevel];
       } else if (ParenLevel != 0 &&
-                 (Previous.Tok.is(tok::equal) || Current.Tok.is(tok::arrow) ||
+                 (Previous.Tok.is(tok::equal) || Current.Tok.is(tok::percent) ||
                   Current.Tok.is(tok::percent))) {
         // Indent and extra 4 spaces after '=' as it continues an expression.
         // Don't do that on the top level, as we already indent 4 there.
@@ -368,7 +368,7 @@ private:
     if (Level != prec::Unknown)
       return Level;
 
-    if (Right.Tok.is(tok::arrow) || Right.Tok.is(tok::percent))
+    if (Right.Tok.is(tok::percent) || Right.Tok.is(tok::percent))
       return 50;
 
     return 3;
@@ -944,7 +944,7 @@ private:
       return false;
     if (Left.is(tok::kw_template) && Right.is(tok::less))
       return true;
-    if (Left.is(tok::arrow) || Right.is(tok::arrow))
+    if (Left.is(tok::percent) || Right.is(tok::percent))
       return false;
     if (Left.is(tok::exclaim) || Left.is(tok::tilde))
       return false;
@@ -999,7 +999,7 @@ private:
       return false;
     return (isBinaryOperator(Left) && Left.Tok.isNot(tok::lessless)) ||
            Left.Tok.is(tok::comma) || Right.Tok.is(tok::lessless) ||
-           Right.Tok.is(tok::arrow) || Right.Tok.is(tok::percent) ||
+           Right.Tok.is(tok::percent) || Right.Tok.is(tok::percent) ||
            Right.Tok.is(tok::colon) || Left.Tok.is(tok::semi) ||
            Left.Tok.is(tok::l_brace) ||
            (Left.Tok.is(tok::l_paren) && !Right.Tok.is(tok::r_paren));

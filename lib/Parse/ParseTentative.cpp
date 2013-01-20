@@ -1398,7 +1398,7 @@ bool Parser::isCXXSubprogramDeclarator(bool *IsAmbiguous) {
           Next.is(tok::kw_throw) || Next.is(tok::kw_noexcept) ||
           Next.is(tok::l_square) || isCXX11VirtSpecifier(Next) ||
           Next.is(tok::l_brace) || Next.is(tok::kw_try) ||
-          Next.is(tok::equal) || Next.is(tok::arrow))
+          Next.is(tok::equal) || Next.is(tok::percent))
         // The next token cannot appear after a constructor-style initializer,
         // and can appear next in a function definition. This must be a function
         // declarator.

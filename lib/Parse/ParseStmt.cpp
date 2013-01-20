@@ -145,7 +145,7 @@ Retry:
           Next.is(tok::amp) || Next.is(tok::l_square);
       DefaultValidator.WantExpressionKeywords =
           Next.is(tok::l_paren) || Next.is(tok::identifier) ||
-          Next.is(tok::arrow) || Next.is(tok::percent);
+          Next.is(tok::percent) || Next.is(tok::percent);
       DefaultValidator.WantRemainingKeywords =
           Next.is(tok::l_paren) || Next.is(tok::semi) ||
           Next.is(tok::identifier) || Next.is(tok::l_brace);
