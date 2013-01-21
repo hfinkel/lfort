@@ -479,9 +479,9 @@ Sema::ActOnCXXUuidof(SourceLocation OpLoc, SourceLocation LParenLoc,
 /// ActOnCXXBoolLiteral - Parse {true,false} literals.
 ExprResult
 Sema::ActOnCXXBoolLiteral(SourceLocation OpLoc, tok::TokenKind Kind) {
-  assert((Kind == tok::kw_true || Kind == tok::kw_false) &&
-         "Unknown C++ Boolean value!");
-  return Owned(new (Context) CXXBoolLiteralExpr(Kind == tok::kw_true,
+  assert((Kind == tok::kw_dottruedot || Kind == tok::kw_dotfalsedot) &&
+         "Unknown Fortran Boolean value!");
+  return Owned(new (Context) CXXBoolLiteralExpr(Kind == tok::kw_dottruedot,
                                                 Context.BoolTy, OpLoc));
 }
 

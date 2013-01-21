@@ -309,7 +309,8 @@ ExprResult Sema::ActOnObjCBoolLiteral(SourceLocation AtLoc,
                                       bool Value) {
   ExprResult Inner;
   if (getLangOpts().F90) {
-    Inner = ActOnCXXBoolLiteral(ValueLoc, Value? tok::kw_true : tok::kw_false);
+    Inner = ActOnCXXBoolLiteral(ValueLoc, Value? tok::kw_dottruedot :
+              tok::kw_dotfalsedot);
   } else {
     // C doesn't actually have a way to represent literal values of type 
     // _Bool. So, we'll use 0/1 and implicit cast to _Bool.

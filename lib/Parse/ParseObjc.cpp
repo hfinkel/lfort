@@ -2087,10 +2087,10 @@ ExprResult Parser::ParseObjCAtExpression(SourceLocation AtLoc) {
   case tok::numeric_constant:
     return ParsePostfixExpressionSuffix(ParseObjCNumericLiteral(AtLoc));
 
-  case tok::kw_true:  // Objective-C++, etc.
+  case tok::kw_dottruedot:  // Objective-C++, etc.
   case tok::kw___objc_yes: // c/c++/objc/objc++ __objc_yes
     return ParsePostfixExpressionSuffix(ParseObjCBooleanLiteral(AtLoc, true));
-  case tok::kw_false: // Objective-C++, etc.
+  case tok::kw_dotfalsedot: // Objective-C++, etc.
   case tok::kw___objc_no: // c/c++/objc/objc++ __objc_no
     return ParsePostfixExpressionSuffix(ParseObjCBooleanLiteral(AtLoc, false));
     

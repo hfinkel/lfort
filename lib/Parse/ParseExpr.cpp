@@ -674,8 +674,8 @@ ExprResult Parser::ParseCastExpression(bool isUnaryExpression,
     ConsumeToken();
     break;
 
-  case tok::kw_true:
-  case tok::kw_false:
+  case tok::kw_dottruedot:
+  case tok::kw_dotfalsedot:
     return ParseCXXBoolLiteral();
   
   case tok::kw___objc_yes:
