@@ -52,8 +52,8 @@ integer(kind = 8) i6
 ! CHECK: %i6 = alloca i64, align 8
 character c
 character(kind = 4) c2
-! CHECK: %c = alloca i8, align 1
-! CHECK: %c2 = alloca i32, align 4
+! CHECK: %c = alloca [1 x i8], align 1
+! CHECK: %c2 = alloca [1 x i32], align 4
 character*3 c3
 character*4, c4
 character*(2+3) c5

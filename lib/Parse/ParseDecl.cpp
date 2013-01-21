@@ -13,6 +13,7 @@
 
 #include "lfort/Parse/Parser.h"
 #include "RAIIObjectsForParser.h"
+#include "lfort/AST/ASTContext.h"
 #include "lfort/Basic/AddressSpaces.h"
 #include "lfort/Basic/OpenCL.h"
 #include "lfort/Basic/TargetInfo.h"
@@ -3355,6 +3356,7 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
     break; }
   case tok::kw_character: {
     DeclSpec::TST T = DeclSpec::TST_char;
+    bool LenProvided = false;
     if (NextToken().isInLine(tok::l_paren) || NextToken().isInLine(tok::star)) {
       bool OldStyle = NextToken().isInLine(tok::star);
       unsigned KindValue;
@@ -3386,9 +3388,21 @@ void Parser::ParseDeclarationTypeSpec(DeclSpec &DS,
       }
 
       if (!LenValueLoc.isInvalid()) {
+        LenProvided = true;
         DeclaratorChunks.push_back(DeclaratorChunk::getArray(0, false, 0,
           LenValue.release(), LenValueLoc, LenValueLoc));
       }
+    }
+
+    // The default length is 1.
+    if (!LenProvided) {
+      QualType SizeTy = Actions.getASTContext().getSizeType();
+      unsigned SizeSize = Actions.getASTContext().getTypeSize(SizeTy);
+      DeclaratorChunks.push_back(DeclaratorChunk::getArray(0, false, 0,
+        IntegerLiteral::Create(Actions.getASTContext(),
+                               llvm::APInt(SizeSize, 1),
+                               SizeTy, SourceLocation()),
+        Loc, Loc));
     }
 
     isInvalid |= DS.SetTypeSpecType(T, Loc, PrevSpec, DiagID);
