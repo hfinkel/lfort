@@ -2882,7 +2882,7 @@ ExceptionSpecificationType Parser::ParseDynamicExceptionSpecification(
 /// ParseTrailingReturnType - Parse a trailing return type on a new-style
 /// function declaration.
 TypeResult Parser::ParseTrailingReturnType(SourceRange &Range) {
-  assert(Tok.is(tok::percent) && "expected arrow");
+  assert(Tok.is(tok::percent) && "expected percent");
 
   ConsumeToken();
 
